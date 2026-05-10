@@ -35,6 +35,35 @@ def test_packet_evidence_detects_complete_synthetic_packet(tmp_path: Path) -> No
     assert all(check["passed"] for check in summary["checks"])
 
 
+def test_packet_evidence_profiles_review_packet_separately(tmp_path: Path) -> None:
+    packet = tmp_path / "packet"
+    (packet / "tests").mkdir(parents=True)
+    (packet / "manifest.json").write_text("{}\n", encoding="utf-8")
+    (packet / "tests" / "test_review.py").write_text("def test_ok(): pass\n", encoding="utf-8")
+    (packet / "README.md").write_text("Lean theorem owner: A.root\n", encoding="utf-8")
+
+    summary = summarize_packet_evidence(packet, profile="review_packet")
+
+    assert summary["status"] == "partial"
+    assert summary["profile"] == "review_packet"
+    assert summary["profile_status"] == "complete"
+    assert summary["required_checks"] == ["metadata", "tests", "owner_references"]
+    assert summary["missing_required_checks"] == []
+
+
+def test_packet_evidence_profiles_witness_bundle_as_partial(tmp_path: Path) -> None:
+    packet = tmp_path / "packet"
+    packet.mkdir()
+    (packet / "manifest.json").write_text("{}\n", encoding="utf-8")
+    (packet / "README.md").write_text("Lean theorem owner: A.root\n", encoding="utf-8")
+
+    summary = summarize_packet_evidence(packet, profile="witness_bundle")
+
+    assert summary["profile_status"] == "partial"
+    assert "witness_json" in summary["missing_required_checks"]
+    assert "checker_script" in summary["missing_required_checks"]
+
+
 def test_packet_evidence_reports_partial_missing_packet() -> None:
     summary = summarize_packet_evidence(Path("/definitely/missing/ladon/packet"))
 
@@ -58,6 +87,8 @@ def test_cli_packet_dir_adds_packet_evidence_to_reports(tmp_path: Path) -> None:
             "Tiny.lean",
             "--packet-dir",
             str(packet),
+            "--packet-profile",
+            "review_packet",
             "--output-json",
             str(json_path),
             "--output-text",
@@ -69,6 +100,7 @@ def test_cli_packet_dir_adds_packet_evidence_to_reports(tmp_path: Path) -> None:
 
     assert status == 0
     assert payload["packet_evidence"][0]["packet_dir"] == str(packet)
+    assert payload["packet_evidence"][0]["profile"] == "review_packet"
     assert "Packet Evidence" in text_path.read_text(encoding="utf-8")
 
 
@@ -88,6 +120,8 @@ def test_text_report_renders_packet_evidence() -> None:
             {
                 "packet_dir": "/packet",
                 "status": "partial",
+                "profile": "review_packet",
+                "profile_status": "complete",
                 "score": 2,
                 "max_score": 6,
                 "checks": [],
@@ -98,4 +132,4 @@ def test_text_report_renders_packet_evidence() -> None:
     text = render_text(payload)
 
     assert "Packet Evidence" in text
-    assert "- /packet: partial score=2/6" in text
+    assert "- /packet: partial score=2/6 profile=review_packet profile_status=complete" in text

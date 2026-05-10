@@ -17,6 +17,7 @@ from ladon.analysis.findings import summarize_findings
 from ladon.analysis.declaration_graph import summarize_declaration_graph
 from ladon.analysis.module_dag import summarize_module_dag
 from ladon.analysis.quality_baseline import summarize_quality_baseline
+from ladon.analysis.review_regions import summarize_review_regions
 from ladon.analysis.witness_packet import summarize_packet_evidence
 from ladon.extraction import ModuleDiscovery, discover_modules
 from ladon.ir import ExtractionBundle, LeanDeclaration, LeanModule
@@ -32,6 +33,7 @@ REQUIRED_PHASES = (
     "quality_baseline",
     "findings",
     "packet_evidence",
+    "review_regions",
     "rendering",
 )
 
@@ -66,6 +68,7 @@ class RunContext:
     lean_extraction_scope: str = "root"
     lean_cache_dir: Path | None = None
     packet_dirs: tuple[Path, ...] = ()
+    packet_profile: str = "generic"
     lean_extractor: Callable[["RunContext", ModuleDiscovery], ExtractionBundle | dict[str, LeanModule]] | None = None
     generated_at_utc: str | None = None
     warnings: list[str] = field(default_factory=list)
@@ -104,6 +107,7 @@ class PipelineResult:
     quality_baseline: dict[str, Any] | None = None
     findings: list[dict[str, Any]] = field(default_factory=list)
     packet_evidence: list[dict[str, Any]] = field(default_factory=list)
+    review_regions: list[dict[str, Any]] = field(default_factory=list)
 
     def timing_by_phase(self) -> dict[str, PhaseTiming]:
         """Return the last timing record for each phase name."""
@@ -126,6 +130,8 @@ class PipelineResult:
         payload["findings"] = list(self.findings)
         if self.packet_evidence:
             payload["packet_evidence"] = list(self.packet_evidence)
+        if self.review_regions:
+            payload["review_regions"] = list(self.review_regions)
         payload["pipeline"] = {"timings": timing_payload(self.context.timings)}
         return payload
 
@@ -212,13 +218,22 @@ def run_pipeline(context: RunContext) -> PipelineResult:
     if context.packet_dirs:
         with context.phase("packet_evidence") as counters:
             packet_evidence = [
-                summarize_packet_evidence(packet_dir)
+                summarize_packet_evidence(packet_dir, profile=context.packet_profile)
                 for packet_dir in context.packet_dirs
             ]
             counters["packet_dirs"] = len(packet_evidence)
     else:
         packet_evidence = []
         context.record_skipped("packet_evidence", "no packet directories requested")
+
+    with context.phase("review_regions") as counters:
+        review_regions = summarize_review_regions(
+            dag,
+            declaration_graph,
+            findings,
+            packet_evidence,
+        )
+        counters["regions"] = len(review_regions)
 
     result = PipelineResult(
         context=context,
@@ -228,6 +243,7 @@ def run_pipeline(context: RunContext) -> PipelineResult:
         quality_baseline=quality_baseline,
         findings=findings,
         packet_evidence=packet_evidence,
+        review_regions=review_regions,
     )
     with context.phase("rendering") as counters:
         result.to_report_payload()

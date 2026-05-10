@@ -71,20 +71,72 @@ def root_scope_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
     unreachable = int(module_dag.get("source_modules_not_reachable_from_chosen_roots_count", 0))
     if module_count < BROAD_INVENTORY_THRESHOLD or unreachable < module_count // 2:
         return []
-    return [
-        composite_finding(
-            "root_scope_pressure",
-            "chosen_roots",
-            (
-                "The chosen root reaches a narrow slice of a broad inventory; "
-                "treat repo-wide inventory rows as review-scope pressure."
-            ),
-            [
-                component_signal("module_count", "inventory", module_count),
-                component_signal("unreachable_modules", "chosen_roots", unreachable),
-            ],
-        )
-    ]
+    root_scope = classify_root_scope(module_dag)
+    finding = composite_finding(
+        "root_scope_pressure",
+        "chosen_roots",
+        root_scope_message(root_scope),
+        [
+            component_signal("module_count", "inventory", module_count),
+            component_signal("unreachable_modules", "chosen_roots", unreachable),
+        ],
+    )
+    finding["root_scope"] = root_scope
+    return [finding]
+
+
+def classify_root_scope(module_dag: dict[str, Any]) -> dict[str, Any]:
+    """Classify why chosen-root reachability is narrow."""
+
+    root = first_chosen_root(module_dag)
+    closure = top_root_closure(module_dag)
+    classification = root_scope_classification(root, closure)
+    return {
+        "classification": classification,
+        "chosen_root": root,
+        "unreachable_ratio": unreachable_ratio(module_dag),
+        "largest_direct_import_closure": int(closure["value"]) if closure else 0,
+    }
+
+
+def root_scope_classification(root: str | None, closure: dict[str, Any] | None) -> str:
+    """Return the explanatory root-scope class."""
+
+    if root and "." not in root:
+        return "public_root_narrow_inventory"
+    if closure and int(closure["value"]) >= BROAD_INVENTORY_THRESHOLD:
+        return "narrow_owner_broad_import"
+    if root and "." in root:
+        return "narrow_owner"
+    return "broad_inventory_scope_gap"
+
+
+def first_chosen_root(module_dag: dict[str, Any]) -> str | None:
+    """Return the selected root module when available."""
+
+    roots = module_dag.get("chosen_roots", [])
+    return str(roots[0]) if roots else None
+
+
+def unreachable_ratio(module_dag: dict[str, Any]) -> float:
+    """Return unreachable modules divided by total modules."""
+
+    module_count = int(module_dag.get("module_count", 0))
+    if module_count == 0:
+        return 0.0
+    unreachable = int(module_dag.get("source_modules_not_reachable_from_chosen_roots_count", 0))
+    return round(unreachable / module_count, 3)
+
+
+def root_scope_message(root_scope: dict[str, Any]) -> str:
+    """Build a root-scope pressure message with classification context."""
+
+    classification = root_scope["classification"]
+    return (
+        "The chosen root reaches a narrow slice of a broad inventory; "
+        f"classification={classification}. Treat repo-wide inventory rows as "
+        "review-scope pressure."
+    )
 
 
 def proof_family_import_findings(

@@ -41,6 +41,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--generated-at-utc")
     parser.add_argument("--doc-file", action="append", default=[])
     parser.add_argument("--packet-dir", action="append", default=[])
+    parser.add_argument(
+        "--packet-profile",
+        choices=["generic", "review_packet", "witness_bundle", "release_bundle"],
+        default="generic",
+        help="Evidence profile used for --packet-dir summaries.",
+    )
     parser.add_argument("--verify-export-surface", action="store_true")
     parser.add_argument("--certificate-artifact", action="append", default=[])
     return parser
@@ -86,6 +92,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 lean_extraction_scope=args.lean_extraction_scope,
                 lean_cache_dir=optional_path(args.lean_cache_dir),
                 packet_dirs=tuple(Path(path) for path in args.packet_dir),
+                packet_profile=args.packet_profile,
                 generated_at_utc=args.generated_at_utc,
                 warnings=clean_core_warnings(args),
             )

@@ -22,13 +22,34 @@ COMMAND_NAMES = {
     "verification.md",
 }
 OWNER_MARKERS = ("Lean", "theorem", "owner", "proof")
+PROFILE_REQUIRED_CHECKS = {
+    "generic": (
+        "metadata",
+        "witness_json",
+        "checker_script",
+        "tests",
+        "verification_commands",
+        "owner_references",
+    ),
+    "review_packet": ("metadata", "tests", "owner_references"),
+    "witness_bundle": (
+        "metadata",
+        "witness_json",
+        "checker_script",
+        "tests",
+        "verification_commands",
+        "owner_references",
+    ),
+    "release_bundle": ("metadata", "verification_commands", "owner_references"),
+}
 
 
-def summarize_packet_evidence(packet_dir: Path) -> dict[str, Any]:
+def summarize_packet_evidence(packet_dir: Path, *, profile: str = "generic") -> dict[str, Any]:
     """Return a generic evidence-completeness summary for one packet."""
 
+    ensure_known_profile(profile)
     if not packet_dir.is_dir():
-        return missing_packet_summary(packet_dir)
+        return missing_packet_summary(packet_dir, profile=profile)
     files = packet_files(packet_dir)
     checks = evidence_checks(packet_dir, files)
     score = sum(1 for check in checks if check["passed"])
@@ -36,6 +57,7 @@ def summarize_packet_evidence(packet_dir: Path) -> dict[str, Any]:
         "packet_dir": str(packet_dir),
         "exists": True,
         "status": packet_status(score, len(checks)),
+        **profile_summary(checks, profile),
         "score": score,
         "max_score": len(checks),
         "file_count": len(files),
@@ -43,13 +65,18 @@ def summarize_packet_evidence(packet_dir: Path) -> dict[str, Any]:
     }
 
 
-def missing_packet_summary(packet_dir: Path) -> dict[str, Any]:
+def missing_packet_summary(packet_dir: Path, *, profile: str = "generic") -> dict[str, Any]:
     """Return the stable shape for absent packet paths."""
 
+    ensure_known_profile(profile)
     return {
         "packet_dir": str(packet_dir),
         "exists": False,
         "status": "missing",
+        "profile": profile,
+        "profile_status": "missing",
+        "required_checks": list(PROFILE_REQUIRED_CHECKS[profile]),
+        "missing_required_checks": list(PROFILE_REQUIRED_CHECKS[profile]),
         "score": 0,
         "max_score": len(check_definitions()),
         "file_count": 0,
@@ -58,6 +85,28 @@ def missing_packet_summary(packet_dir: Path) -> dict[str, Any]:
             for name, _predicate in check_definitions()
         ],
     }
+
+
+def profile_summary(checks: list[dict[str, Any]], profile: str) -> dict[str, Any]:
+    """Return profile-specific completeness fields."""
+
+    required = list(PROFILE_REQUIRED_CHECKS[profile])
+    passed = {check["name"] for check in checks if check["passed"]}
+    missing = [name for name in required if name not in passed]
+    return {
+        "profile": profile,
+        "profile_status": "complete" if not missing else "partial",
+        "required_checks": required,
+        "missing_required_checks": missing,
+    }
+
+
+def ensure_known_profile(profile: str) -> None:
+    """Reject unknown packet-evidence profiles with a direct error."""
+
+    if profile not in PROFILE_REQUIRED_CHECKS:
+        known = ", ".join(sorted(PROFILE_REQUIRED_CHECKS))
+        raise ValueError(f"unknown packet evidence profile {profile!r}; expected one of: {known}")
 
 
 def packet_files(packet_dir: Path) -> list[Path]:

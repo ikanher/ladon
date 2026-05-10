@@ -69,6 +69,7 @@ def render_text(payload: dict[str, Any]) -> str:
     lines.extend(finding_lines(payload.get("findings", [])))
     lines.extend(quality_baseline_lines(payload.get("quality_baseline")))
     lines.extend(packet_evidence_lines(payload.get("packet_evidence", [])))
+    lines.extend(review_region_lines(payload.get("review_regions", [])))
     lines.extend(declaration_graph_lines(payload.get("declaration_graph")))
     lines.extend(timing_lines(payload.get("pipeline", {}).get("timings", {})))
     lines.extend(module_dag_detail_lines(dag))
@@ -216,7 +217,32 @@ def packet_evidence_lines(rows: list[dict[str, Any]]) -> list[str]:
 def packet_evidence_line(row: dict[str, Any]) -> str:
     """Render one packet evidence row."""
 
-    return f"- {row['packet_dir']}: {row['status']} score={row['score']}/{row['max_score']}"
+    suffix = packet_profile_suffix(row)
+    return f"- {row['packet_dir']}: {row['status']} score={row['score']}/{row['max_score']}{suffix}"
+
+
+def packet_profile_suffix(row: dict[str, Any]) -> str:
+    """Render optional evidence-profile status."""
+
+    if "profile" not in row:
+        return ""
+    return f" profile={row['profile']} profile_status={row['profile_status']}"
+
+
+def review_region_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render additive review-region summaries."""
+
+    if not rows:
+        return []
+    lines = ["Review Regions"]
+    lines.extend(review_region_line(row) for row in rows)
+    return [*lines, ""]
+
+
+def review_region_line(row: dict[str, Any]) -> str:
+    """Render one review-region row."""
+
+    return f"- {row['kind']}: {row['title']} (signals={row['signal_count']})"
 
 
 def declaration_graph_lines(summary: dict[str, Any] | None) -> list[str]:
