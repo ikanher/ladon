@@ -47,3 +47,30 @@ def test_module_dag_reports_cycles_without_claiming_layers() -> None:
     ]
     assert summary["topological_layer_count"] == 0
     assert summary["max_rank"] == 0
+
+
+def test_module_dag_reports_root_direct_import_closure_sizes() -> None:
+    modules = {
+        "A": LeanModule(name="A", path="A.lean", imports=("B", "C")),
+        "B": LeanModule(name="B", path="B.lean", imports=("D",)),
+        "C": LeanModule(name="C", path="C.lean"),
+        "D": LeanModule(name="D", path="D.lean", imports=("E",)),
+        "E": LeanModule(name="E", path="E.lean"),
+    }
+
+    summary = summarize_module_dag(modules, chosen_roots=("A",))
+
+    assert summary["root_direct_import_closures"] == [
+        {
+            "root": "A",
+            "direct_import": "B",
+            "reachable_module_count": 3,
+            "sample_modules": ["B", "D", "E"],
+        },
+        {
+            "root": "A",
+            "direct_import": "C",
+            "reachable_module_count": 1,
+            "sample_modules": ["C"],
+        },
+    ]

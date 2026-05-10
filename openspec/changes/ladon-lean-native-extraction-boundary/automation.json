@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-lean-native-extraction-boundary",
+  "phases": {
+    "verify": [
+      "openspec validate ladon-lean-native-extraction-boundary --strict",
+      "uv run pytest -q",
+      "uv run python scripts/python_quality.py --strict",
+      "uv run python -m compileall -q src tests scripts",
+      "uv build"
+    ],
+    "smoke": [
+      "bin/ladon --repo-root /home/codex/projects/quux --root Quux/Semantics/Propagation.lean --skip-build --extraction-backend text --output-json /tmp/ladon-text.json --output-text /tmp/ladon-text.txt"
+    ]
+  }
+}

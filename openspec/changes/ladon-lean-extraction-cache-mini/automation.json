@@ -1,0 +1,9 @@
+{
+  "commands": [
+    "openspec validate ladon-lean-extraction-cache-mini --strict",
+    "uv run pytest -q",
+    "uv run python scripts/python_quality.py --strict",
+    "uv run python -m compileall -q src tests scripts",
+    "uv build"
+  ]
+}

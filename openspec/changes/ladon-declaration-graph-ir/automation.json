@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-declaration-graph-ir",
+  "phases": {
+    "verify": [
+      "openspec validate ladon-declaration-graph-ir --strict",
+      "uv run pytest -q",
+      "uv run python scripts/python_quality.py --strict",
+      "uv run python -m compileall -q src tests scripts",
+      "uv build"
+    ]
+  }
+}

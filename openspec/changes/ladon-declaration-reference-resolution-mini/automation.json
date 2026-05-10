@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-declaration-reference-resolution-mini",
+  "phases": {
+    "verify": [
+      "openspec validate ladon-declaration-reference-resolution-mini --strict",
+      "uv run pytest -q",
+      "uv run python scripts/python_quality.py --strict",
+      "uv run python -m compileall -q src tests scripts",
+      "uv build"
+    ],
+    "smoke": [
+      "bin/ladon --repo-root /home/codex/projects/quux --root Quux/Semantics/Propagation.lean --extraction-backend lean --lean-extraction-scope root --output-json /tmp/ladon-lean-resolved.json --output-text /tmp/ladon-lean-resolved.txt"
+    ]
+  }
+}

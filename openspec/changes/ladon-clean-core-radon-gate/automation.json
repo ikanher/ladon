@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-clean-core-radon-gate",
+  "phases": {
+    "preflight": [
+      "uv run pytest -q",
+      "uv run python scripts/python_quality.py"
+    ],
+    "verify": [
+      "uv run pytest -q",
+      "uv run python scripts/python_quality.py --strict",
+      "uv run python -m compileall -q src tests scripts",
+      "uv build"
+    ],
+    "smoke": [
+      "bin/ladon --repo-root /home/codex/projects/quux --root Quux/Semantics/Propagation.lean --skip-build --output-json /tmp/ladon-clean-core-quux.json --output-text /tmp/ladon-clean-core-quux.txt"
+    ]
+  }
+}
