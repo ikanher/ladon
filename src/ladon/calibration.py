@@ -29,7 +29,7 @@ BUILTIN_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
             "max_rank": 1,
             "min_value": 6,
         },
-        {"type": "finding_kind_present", "kind": "unresolved_reference_hotspot"},
+        {"type": "finding_kind_absent", "kind": "unresolved_reference_hotspot"},
         {"type": "proof_similarity_absent"},
     ],
     "matrix-factorization/project-mf.json": [
@@ -59,6 +59,77 @@ BUILTIN_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
         {"type": "packet_status", "status": "partial", "score": 3, "max_score": 6},
     ],
 }
+
+
+ROOT_MATRIX_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
+    "quux/quux-project.json": [
+        {"type": "acyclic"},
+        {"type": "module_count_between", "min": 360, "max": 390},
+        {"type": "top_module_fan_in", "module": "Quux.Basic", "max_rank": 1, "min_value": 90},
+        {"type": "top_module_fan_out", "module": "Quux.Problems", "max_rank": 1, "min_value": 80},
+        {"type": "review_region_present", "kind": "import_pressure_region", "min_signals": 5},
+    ],
+    "quux/quux-propagation.json": [
+        {"type": "declaration_count_between", "min": 8, "max": 20},
+        {
+            "type": "declaration_fan_in",
+            "declaration": "Quux.Semantics.PropagationAlgebra",
+            "max_rank": 1,
+            "min_value": 6,
+        },
+        {"type": "finding_kind_absent", "kind": "unresolved_reference_hotspot"},
+        {"type": "root_scope_classification", "classification": "narrow_owner"},
+    ],
+    "quux/quux-bifr-rmse-problem.json": [
+        {"type": "module_count_between", "min": 360, "max": 390},
+        {"type": "declaration_count_between", "min": 8, "max": 20},
+        {"type": "review_region_present", "kind": "import_context_region", "min_signals": 2},
+    ],
+    "matrix-factorization/mf-project.json": [
+        {"type": "module_count_between", "min": 500, "max": 560},
+        {"type": "top_module_fan_in", "module": "Mf.DP.Sensitivity", "max_rank": 1, "min_value": 10},
+        {"type": "top_module_fan_out", "module": "Mf.NTK", "max_rank": 1, "min_value": 20},
+        {"type": "root_scope_classification", "classification": "public_root_narrow_inventory"},
+    ],
+    "matrix-factorization/mf-bifr-packed-profile.json": [
+        {"type": "root_scope_classification", "classification": "narrow_owner_broad_import"},
+        {"type": "finding_kind_present", "kind": "proof_family_import_pressure"},
+        {"type": "review_region_present", "kind": "import_pressure_region", "min_signals": 3},
+        {"type": "review_region_present", "kind": "proof_family_region", "min_signals": 10},
+        {
+            "type": "declaration_fan_in",
+            "declaration": "Mf.DP.bifrHalfLinePackedProfileIndex",
+            "max_rank": 1,
+            "min_value": 10,
+        },
+        {"type": "declaration_family_present", "suffix": "ge_one_add_firstLag", "min_count": 5},
+        {"type": "declaration_family_present", "suffix": "nonneg", "min_count": 5},
+    ],
+    "matrix-factorization/mf-gaussian-core.json": [
+        {"type": "module_count_between", "min": 500, "max": 560},
+        {"type": "declaration_count_between", "min": 25, "max": 45},
+        {"type": "finding_kind_absent", "kind": "unresolved_reference_hotspot"},
+        {"type": "review_region_present", "kind": "import_context_region", "min_signals": 2},
+    ],
+    "matrix-factorization/mf-bsr-factor-core.json": [
+        {"type": "declaration_count_between", "min": 50, "max": 80},
+        {"type": "finding_kind_present", "kind": "proof_family_import_pressure"},
+        {"type": "review_region_present", "kind": "proof_family_region", "min_signals": 10},
+    ],
+    "matrix-factorization/mf-optimization-ftrl.json": [
+        {"type": "declaration_count_between", "min": 10, "max": 25},
+        {"type": "root_scope_classification", "classification": "narrow_owner"},
+    ],
+}
+
+
+def expectation_suites_by_name() -> dict[str, dict[str, list[Expectation]]]:
+    """Return named built-in expectation suites."""
+
+    return {
+        "live": BUILTIN_EXPECTATION_SUITES,
+        "root-matrix": ROOT_MATRIX_EXPECTATION_SUITES,
+    }
 
 
 def evaluate_reports_root(
@@ -131,6 +202,9 @@ def predicate_dispatch() -> dict[str, Any]:
         "top_module_fan_in": check_top_module_fan_in,
         "top_module_fan_out": check_top_module_fan_out,
         "finding_kind_present": check_finding_kind_present,
+        "finding_kind_absent": check_finding_kind_absent,
+        "root_scope_classification": check_root_scope_classification,
+        "review_region_present": check_review_region_present,
         "declaration_count_between": check_declaration_count_between,
         "declaration_fan_in": check_declaration_fan_in,
         "declaration_family_present": check_declaration_family_present,
@@ -174,6 +248,35 @@ def check_finding_kind_present(payload: dict[str, Any], expectation: Expectation
     kinds = [finding.get("kind") for finding in payload.get("findings", [])]
     expected = expectation["kind"]
     return expected in kinds, f"finding kinds={kinds}"
+
+
+def check_finding_kind_absent(payload: dict[str, Any], expectation: Expectation) -> tuple[bool, str]:
+    kinds = [finding.get("kind") for finding in payload.get("findings", [])]
+    expected = expectation["kind"]
+    return expected not in kinds, f"finding kinds={kinds}"
+
+
+def check_root_scope_classification(
+    payload: dict[str, Any],
+    expectation: Expectation,
+) -> tuple[bool, str]:
+    expected = str(expectation["classification"])
+    classes = [
+        finding.get("root_scope", {}).get("classification")
+        for finding in payload.get("findings", [])
+        if finding.get("kind") == "root_scope_pressure"
+    ]
+    return expected in classes, f"root_scope classifications={classes}"
+
+
+def check_review_region_present(payload: dict[str, Any], expectation: Expectation) -> tuple[bool, str]:
+    expected = str(expectation["kind"])
+    row = find_row(payload.get("review_regions", []), "kind", expected)
+    if row is None:
+        return False, f"review region {expected} missing"
+    signals = int(row.get("signal_count", 0))
+    min_signals = int(expectation.get("min_signals", 1))
+    return signals >= min_signals, f"{expected} signals={signals}"
 
 
 def check_declaration_count_between(payload: dict[str, Any], expectation: Expectation) -> tuple[bool, str]:

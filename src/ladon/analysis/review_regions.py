@@ -4,6 +4,9 @@ from __future__ import annotations
 
 from typing import Any
 
+IMPORT_PRESSURE_THRESHOLD = 5
+IMPORT_PRESSURE_FINDINGS = {"root_import_closure_hotspot", "composite_import_pressure"}
+
 
 def summarize_review_regions(
     module_dag: dict[str, Any],
@@ -27,12 +30,28 @@ def import_pressure_region(
 ) -> dict[str, Any] | None:
     """Return an import-pressure region when closure/finding signals exist."""
 
+    closures = module_dag.get("root_direct_import_closures", [])[:3]
     signals = [
         closure_signal(row)
-        for row in module_dag.get("root_direct_import_closures", [])[:3]
+        for row in closures
     ]
-    signals.extend(finding_signals(findings, {"root_import_closure_hotspot", "composite_import_pressure"}))
-    return region("import_pressure_region", "Import-pressure review region", signals)
+    pressure_findings = finding_signals(findings, IMPORT_PRESSURE_FINDINGS)
+    signals.extend(pressure_findings)
+    if is_import_pressure_region(closures, pressure_findings):
+        return region("import_pressure_region", "Import-pressure review region", signals)
+    return region("import_context_region", "Import-context review region", signals)
+
+
+def is_import_pressure_region(
+    closures: list[dict[str, Any]],
+    pressure_findings: list[dict[str, Any]],
+) -> bool:
+    """Return whether an import region should be labeled as pressure."""
+
+    return bool(pressure_findings) or any(
+        int(row.get("reachable_module_count", 0)) >= IMPORT_PRESSURE_THRESHOLD
+        for row in closures
+    )
 
 
 def proof_family_region(

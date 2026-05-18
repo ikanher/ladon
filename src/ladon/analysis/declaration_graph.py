@@ -19,8 +19,10 @@ EXTERNAL_REFERENCE_ROOTS = {
     "Bool",
     "Classical",
     "Decidable",
+    "ENNReal",
     "Eq",
     "False",
+    "Filter",
     "Fin",
     "Finset",
     "Fintype",
@@ -28,19 +30,35 @@ EXTERNAL_REFERENCE_ROOTS = {
     "HEq",
     "Int",
     "List",
+    "MeasurableSet",
+    "MeasureTheory",
     "Nat",
+    "NNReal",
     "Option",
     "Prod",
     "Prop",
+    "ProbabilityTheory",
     "Rat",
     "Real",
     "Set",
     "Sigma",
     "Sort",
+    "StrictMonoOn",
     "Subtype",
     "True",
     "Type",
     "Unit",
+    "WellFounded",
+}
+
+LOCAL_TYPE_PARAMETER_CANDIDATES = {
+    "Edge",
+    "Key",
+    "Node",
+    "State",
+    "Value",
+    "Vertex",
+    "Weight",
 }
 
 
@@ -236,6 +254,8 @@ def classify_unresolved_candidate(
         return "external_candidate"
     if is_known_inventory_candidate(candidate, inventory):
         return "known_inventory_candidate"
+    if is_local_type_parameter_candidate(candidate):
+        return "local_type_parameter_candidate"
     if is_local_or_field_candidate(candidate):
         return "local_or_field_candidate"
     return "actionable_unknown"
@@ -261,6 +281,18 @@ def is_known_inventory_candidate(candidate: str, known_reference_names: set[str]
         candidate in known_reference_names
         or candidate.rsplit(".", 1)[-1] in known_reference_names
     )
+
+
+def is_local_type_parameter_candidate(candidate: str) -> bool:
+    """Return whether a candidate is common local type-parameter vocabulary."""
+
+    return candidate in LOCAL_TYPE_PARAMETER_CANDIDATES or is_single_upper_identifier(candidate)
+
+
+def is_single_upper_identifier(candidate: str) -> bool:
+    """Return whether a candidate looks like a one-letter local theorem variable."""
+
+    return len(candidate) == 1 and candidate.isalpha() and candidate.isupper()
 
 
 def is_local_or_field_candidate(candidate: str) -> bool:

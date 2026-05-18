@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "proofir_bridge_index",
+  "verificationStatus": "packet_local_verified",
+  "surfaces": [
+    {
+      "surfaceId": "surface.complex.root_plus",
+      "claimId": "claim.complex.root_plus_supplied_sqrt",
+      "module": "Quux.Semantics.ComplexQuadratic",
+      "declarationName": "Quux.Semantics.ComplexQuadratic.root_plus_is_root",
+      "sourcePath": "Quux/Semantics/ComplexQuadratic.lean",
+      "sourceRange": {"startLine": 20, "endLine": 31},
+      "contentHash": "sha256:complex-quadratic-source",
+      "authority": "lean_kernel_external",
+      "status": "established"
+    },
+    {
+      "surfaceId": "surface.complex.root_minus",
+      "claimId": "claim.complex.root_minus_supplied_sqrt",
+      "module": "Quux.Semantics.ComplexQuadratic",
+      "declarationName": "Quux.Semantics.ComplexQuadratic.root_minus_is_root",
+      "sourcePath": "Quux/Semantics/ComplexQuadratic.lean",
+      "sourceRange": {"startLine": 33, "endLine": 44},
+      "contentHash": "sha256:complex-quadratic-source",
+      "authority": "lean_kernel_external",
+      "status": "established"
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "claim.complex.root_plus_supplied_sqrt",
+      "status": "established",
+      "authority": ["lean_kernel_external"],
+      "scope": "theorem_implication"
+    },
+    {
+      "claimId": "claim.complex.root_minus_supplied_sqrt",
+      "status": "established",
+      "authority": ["lean_kernel_external"],
+      "scope": "theorem_implication"
+    }
+  ],
+  "witnessEndpoints": [
+    {
+      "endpointId": "endpoint.complex.listed_witness",
+      "claimId": "claim.complex.listed_witness_endpoint",
+      "surfaceIds": [
+        "surface.complex.root_plus",
+        "surface.complex.root_minus"
+      ],
+      "status": "established",
+      "authority": ["lean_kernel_external", "deterministic_checker"],
+      "scope": "one_listed_json_witness"
+    }
+  ],
+  "nonclaims": [
+    {
+      "nonclaimId": "nonclaim.no_global_python_solver_correctness",
+      "surfaceIds": ["surface.complex.root_plus"],
+      "statement": "Does not prove global Python solver correctness."
+    }
+  ],
+  "projectionBoundaries": []
+}

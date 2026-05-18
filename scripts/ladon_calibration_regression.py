@@ -7,7 +7,7 @@ import argparse
 import json
 from pathlib import Path
 
-from ladon.calibration import evaluate_reports_root
+from ladon.calibration import evaluate_reports_root, expectation_suites_by_name
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -21,12 +21,19 @@ def build_parser() -> argparse.ArgumentParser:
         "--json-output",
         help="Optional path for machine-readable predicate rows.",
     )
+    parser.add_argument(
+        "--suite",
+        choices=sorted(expectation_suites_by_name()),
+        default="live",
+        help="Named built-in expectation suite to evaluate.",
+    )
     return parser
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    rows = evaluate_reports_root(Path(args.reports_root))
+    suites = expectation_suites_by_name()[args.suite]
+    rows = evaluate_reports_root(Path(args.reports_root), suites)
     if args.json_output:
         write_json(Path(args.json_output), rows)
     print_rows(rows)

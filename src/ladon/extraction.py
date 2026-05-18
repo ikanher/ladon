@@ -15,7 +15,7 @@ from typing import Sequence
 from ladon.ir import LeanModule
 
 
-IMPORT_RE = re.compile(r"^import\s+([A-Za-z0-9_.]+)\s*$", re.MULTILINE)
+IMPORT_MODULE_RE = re.compile(r"^[A-Za-z0-9_.]+$")
 DECL_RE = re.compile(
     r"^\s*(?:@[^\n]+\n\s*)*"
     r"(?:def|theorem|lemma|structure|class|abbrev|instance|inductive)\s+"
@@ -150,9 +150,94 @@ def parse_lean_module(repo_root: Path, file_path: Path) -> LeanModule:
     return LeanModule(
         name=module_name(repo_root, file_path),
         path=str(file_path.relative_to(repo_root)),
-        imports=tuple(IMPORT_RE.findall(text)),
+        imports=parse_imports(text),
         declarations=tuple(DECL_RE.findall(text)),
     )
+
+
+def parse_imports(text: str) -> tuple[str, ...]:
+    """Extract Lean module imports from supported text-level import forms."""
+
+    cleaned = mask_lean_block_comments(text)
+    imports: list[str] = []
+    for line in cleaned.splitlines():
+        imports.extend(parse_import_line(line))
+    return tuple(imports)
+
+
+def parse_import_line(line: str) -> tuple[str, ...]:
+    """Parse one Lean import line after block comments have been masked."""
+
+    tokens = import_tokens(line)
+    if not starts_import_command(tokens):
+        return ()
+    return module_tokens(tokens[import_module_start(tokens):])
+
+
+def import_tokens(line: str) -> list[str]:
+    """Return whitespace tokens before a trailing Lean line comment."""
+
+    return line.split("--", 1)[0].strip().split()
+
+
+def starts_import_command(tokens: Sequence[str]) -> bool:
+    """Return whether tokens begin with a supported Lean import form."""
+
+    return import_keyword_index(tokens) is not None
+
+
+def import_module_start(tokens: Sequence[str]) -> int:
+    """Return the token index where imported module names start."""
+
+    index = import_keyword_index(tokens)
+    if index is None:
+        return len(tokens)
+    first_module = index + 1
+    return first_module + int(first_module < len(tokens) and tokens[first_module] == "all")
+
+
+def import_keyword_index(tokens: Sequence[str]) -> int | None:
+    """Return the `import` token position after supported modifiers."""
+
+    index = consume_prefix(tokens, 0, "public")
+    index = consume_prefix(tokens, index, "meta")
+    return index if index < len(tokens) and tokens[index] == "import" else None
+
+
+def consume_prefix(tokens: Sequence[str], index: int, token: str) -> int:
+    """Consume one optional token at `index`."""
+
+    return index + 1 if index < len(tokens) and tokens[index] == token else index
+
+
+def module_tokens(tokens: Sequence[str]) -> tuple[str, ...]:
+    """Keep syntactically plausible module-name tokens."""
+
+    return tuple(token for token in tokens if IMPORT_MODULE_RE.match(token))
+
+
+def mask_lean_block_comments(text: str) -> str:
+    """Replace Lean block comments with spaces while preserving newlines."""
+
+    output: list[str] = []
+    index = 0
+    depth = 0
+    while index < len(text):
+        pair = text[index:index + 2]
+        if pair == "/-":
+            depth += 1
+            output.extend("  ")
+            index += 2
+            continue
+        if depth and pair == "-/":
+            depth -= 1
+            output.extend("  ")
+            index += 2
+            continue
+        char = text[index]
+        output.append(char if depth == 0 or char == "\n" else " ")
+        index += 1
+    return "".join(output)
 
 
 def discover_modules(repo_root: Path, raw_root: str | None) -> ModuleDiscovery:

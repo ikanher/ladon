@@ -32,26 +32,26 @@ def default_root_matrix() -> list[MatrixEntry]:
             "/home/codex/projects/quux",
             "Quux/Semantics/Propagation.lean",
         ),
-        text_entry(
+        lean_entry(
             "quux-bifr-rmse-problem",
             "quux",
             "/home/codex/projects/quux",
             "Quux/Problems/BIFRRMSESaturationMini.lean",
         ),
         text_entry("mf-project", "matrix-factorization", "/home/codex/projects/lean/matrix-factorization", "Mf"),
-        text_entry(
+        lean_entry(
             "mf-gaussian-core",
             "matrix-factorization",
             "/home/codex/projects/lean/matrix-factorization",
             "Mf/DP/GaussianCore.lean",
         ),
-        text_entry(
+        lean_entry(
             "mf-bsr-factor-core",
             "matrix-factorization",
             "/home/codex/projects/lean/matrix-factorization",
             "Mf/DP/BSRFactorCore.lean",
         ),
-        text_entry(
+        lean_entry(
             "mf-optimization-ftrl",
             "matrix-factorization",
             "/home/codex/projects/lean/matrix-factorization",

@@ -21,6 +21,31 @@ def test_root_matrix_generates_ladon_commands() -> None:
     assert "--extraction-backend" in command
 
 
+def test_root_matrix_uses_lean_backend_for_calibrated_owner_roots() -> None:
+    entries = select_matrix_entries(
+        default_root_matrix(),
+        [
+            "quux-bifr-rmse-problem",
+            "mf-gaussian-core",
+            "mf-bsr-factor-core",
+            "mf-optimization-ftrl",
+        ],
+    )
+
+    assert {entry["name"] for entry in entries if entry["backend"] == "lean"} == {
+        "quux-bifr-rmse-problem",
+        "mf-gaussian-core",
+        "mf-bsr-factor-core",
+        "mf-optimization-ftrl",
+    }
+
+
+def test_root_matrix_keeps_project_roots_text_backed() -> None:
+    entries = select_matrix_entries(default_root_matrix(), ["quux-project", "mf-project"])
+
+    assert [entry["backend"] for entry in entries] == ["text", "text"]
+
+
 def test_root_matrix_selects_named_entries() -> None:
     entries = select_matrix_entries(
         default_root_matrix(),

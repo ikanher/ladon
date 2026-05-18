@@ -112,8 +112,18 @@ def test_unresolved_candidate_classifier_labels_common_noise() -> None:
         "[anonymous]": "parser_noise",
         "count": "local_or_field_candidate",
         "Fin": "external_candidate",
+        "ENNReal.ofReal": "external_candidate",
+        "Filter.Eventually.of_forall": "external_candidate",
         "Finset.univ": "external_candidate",
         "Fintype.sum_equiv": "external_candidate",
+        "MeasurableSet": "external_candidate",
+        "ProbabilityTheory.gaussianReal": "external_candidate",
+        "StrictMonoOn": "external_candidate",
+        "WellFounded.fix": "external_candidate",
+        "C": "local_type_parameter_candidate",
+        "X": "local_type_parameter_candidate",
+        "Δ": "local_type_parameter_candidate",
+        "Edge": "local_type_parameter_candidate",
         "_ht": "local_or_field_candidate",
         "t.rev": "local_or_field_candidate",
         "MissingTheorem": "actionable_unknown",
@@ -144,6 +154,30 @@ def test_declaration_graph_splits_actionable_unresolved_candidates() -> None:
             "classification": "actionable_unknown",
             "count": 2,
             "sample_sources": ["A.root", "A.root"],
+        }
+    ]
+
+
+def test_declaration_graph_excludes_calibrated_lean_noise_from_actionable_rows() -> None:
+    declarations = {
+        "A.root": LeanDeclaration(
+            name="A.root",
+            module="A",
+            references=("Edge", "WellFounded.fix", "MissingTheorem"),
+        )
+    }
+
+    summary = summarize_declaration_graph(declarations, chosen_roots=("A.root",))
+
+    rows = {row["candidate"]: row for row in summary["top_unresolved_references"]}
+    assert rows["Edge"]["classification"] == "local_type_parameter_candidate"
+    assert rows["WellFounded.fix"]["classification"] == "external_candidate"
+    assert summary["top_actionable_unresolved_references"] == [
+        {
+            "candidate": "MissingTheorem",
+            "classification": "actionable_unknown",
+            "count": 1,
+            "sample_sources": ["A.root"],
         }
     ]
 

@@ -34,6 +34,52 @@ def test_review_regions_group_import_proof_family_and_packet_evidence() -> None:
     assert by_kind["packet_evidence_region"]["signal_count"] == 1
 
 
+def test_review_regions_label_small_import_closures_as_context() -> None:
+    module_dag = {
+        "root_direct_import_closures": [
+            {
+                "root": "Quux.Small",
+                "direct_import": "Quux.Small.Helper",
+                "reachable_module_count": 2,
+            }
+        ]
+    }
+
+    regions = summarize_review_regions(module_dag, None, [], [])
+
+    assert regions == [
+        {
+            "kind": "import_context_region",
+            "title": "Import-context review region",
+            "signal_count": 1,
+            "signals": [
+                {
+                    "kind": "root_import_closure",
+                    "subject": "Quux.Small -> Quux.Small.Helper",
+                    "count": 2,
+                }
+            ],
+        }
+    ]
+
+
+def test_review_regions_label_broad_import_closures_as_pressure() -> None:
+    module_dag = {
+        "root_direct_import_closures": [
+            {
+                "root": "Mf.Owner",
+                "direct_import": "Mf.Big",
+                "reachable_module_count": 5,
+            }
+        ]
+    }
+
+    regions = summarize_review_regions(module_dag, None, [], [])
+
+    assert regions[0]["kind"] == "import_pressure_region"
+    assert regions[0]["title"] == "Import-pressure review region"
+
+
 def test_text_report_renders_review_regions() -> None:
     payload = {
         "metadata": {"repo_root": "/repo", "analysis_root_module": "A"},

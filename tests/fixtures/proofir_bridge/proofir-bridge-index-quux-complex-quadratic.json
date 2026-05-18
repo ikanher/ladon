@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "proofir_bridge_index",
+  "verificationStatus": "packet_local_verified",
+  "surfaces": [
+    {
+      "surfaceId": "surface.complex_quadratic.root_plus",
+      "claimId": "claim.complex_quadratic.root_plus_supplied_sqrt",
+      "module": "Quux.Semantics.ComplexQuadratic",
+      "declarationName": "Quux.Semantics.ComplexQuadratic.quadraticEval_rootPlus_eq_zero",
+      "sourcePath": "Quux/Semantics/ComplexQuadratic.lean",
+      "sourceRange": {"startLine": 31, "endLine": 38},
+      "contentHash": "sha256:f199b757a7ac77a41021d5f639746711b963686de58f4da9286f84a1e3a5999d",
+      "authority": "lean_kernel_external",
+      "status": "established"
+    },
+    {
+      "surfaceId": "surface.complex_quadratic.root_minus",
+      "claimId": "claim.complex_quadratic.root_minus_supplied_sqrt",
+      "module": "Quux.Semantics.ComplexQuadratic",
+      "declarationName": "Quux.Semantics.ComplexQuadratic.quadraticEval_rootMinus_eq_zero",
+      "sourcePath": "Quux/Semantics/ComplexQuadratic.lean",
+      "sourceRange": {"startLine": 45, "endLine": 52},
+      "contentHash": "sha256:f199b757a7ac77a41021d5f639746711b963686de58f4da9286f84a1e3a5999d",
+      "authority": "lean_kernel_external",
+      "status": "established"
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "claim.complex_quadratic.root_plus_supplied_sqrt",
+      "status": "established",
+      "authority": ["lean_kernel_external"],
+      "scope": "theorem_implication"
+    },
+    {
+      "claimId": "claim.complex_quadratic.root_minus_supplied_sqrt",
+      "status": "established",
+      "authority": ["lean_kernel_external"],
+      "scope": "theorem_implication"
+    }
+  ],
+  "witnessEndpoints": [
+    {
+      "endpointId": "endpoint.complex_quadratic.root_plus_for_listed_witness",
+      "claimId": "claim.endpoint.complex_quadratic.root_plus_for_listed_witness",
+      "surfaceIds": ["surface.complex_quadratic.root_plus"],
+      "status": "established",
+      "authority": ["lean_kernel_external", "deterministic_checker"],
+      "scope": "one_listed_json_witness"
+    },
+    {
+      "endpointId": "endpoint.complex_quadratic.root_minus_for_listed_witness",
+      "claimId": "claim.endpoint.complex_quadratic.root_minus_for_listed_witness",
+      "surfaceIds": ["surface.complex_quadratic.root_minus"],
+      "status": "established",
+      "authority": ["lean_kernel_external", "deterministic_checker"],
+      "scope": "one_listed_json_witness"
+    }
+  ],
+  "nonclaims": [
+    {
+      "nonclaimId": "nonclaim.complex_quadratic.no_global_python_solver_correctness",
+      "surfaceIds": [
+        "surface.complex_quadratic.root_plus",
+        "surface.complex_quadratic.root_minus"
+      ],
+      "statement": "Does not prove global Python solver correctness."
+    },
+    {
+      "nonclaimId": "nonclaim.complex_quadratic.no_always_distinct_roots",
+      "surfaceIds": [
+        "surface.complex_quadratic.root_plus",
+        "surface.complex_quadratic.root_minus"
+      ],
+      "statement": "Does not prove the two quadratic formula branches are always distinct."
+    }
+  ],
+  "projectionBoundaries": []
+}

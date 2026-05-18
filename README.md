@@ -64,6 +64,12 @@ Not yet reintroduced:
 - witness audits;
 - elaborated proof dependency extraction.
 
+Optional bridge:
+
+- `ladon-proofir-bridge` can join an existing Ladon JSON report with a compact
+  ProofIR bridge index and emit reviewer cards/diagnostics.  This is separate
+  from core Ladon analysis and does not make Ladon a proof checker.
+
 Unsupported legacy flags fail explicitly rather than emitting partial reports.
 
 Near-term work:

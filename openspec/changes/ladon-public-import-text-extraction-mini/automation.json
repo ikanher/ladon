@@ -1,0 +1,10 @@
+{
+  "commands": [
+    "openspec validate ladon-public-import-text-extraction-mini --strict",
+    "uv run pytest -q",
+    "uv run python scripts/python_quality.py --strict",
+    "uv run python -m compileall -q src tests scripts",
+    "uv build",
+    "uv run ladon --repo-root /home/codex/projects/quux/.lake/packages/mathlib --root Mathlib --skip-build --output-json temp/mathlib-ladon-smoke/report.json --output-text temp/mathlib-ladon-smoke/report.txt"
+  ]
+}
