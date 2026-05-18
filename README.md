@@ -1,13 +1,9 @@
-# Ladon
+# Ladon is an experimenteal Lean codebase quality tool, e.g. "radon" for Lean.
 
 Ladon is a host-side analyzer for Lean projects. The current clean core reads
 Lean source text, can optionally ask Lean for root-file declaration candidates,
 reports module/declaration graph structure, and keeps Python quality gates
 strict enough that analyzer code stays small and testable.
-
-This repository is the shared home for Ladon. Downstream projects such as
-`matrix-factorization` and `quux` should call this tool instead of carrying
-their own copies.
 
 ## Usage
 
@@ -39,8 +35,7 @@ lake env lean --run /home/codex/projects/ladon/src/ladon/lean/ladon_parser_helpe
 
 ## Current State
 
-Ladon is now a clean Python-first seed, not a copy of the old
-`matrix-factorization` monolith.
+Very experimental.
 
 Supported today:
 
@@ -78,7 +73,7 @@ Near-term work:
 - reintroduce witness audit and packet audit as small TDD-backed modules;
 - only port stable hot paths after profiling proves they are worth moving.
 
-## Python Quality Audits
+## Internal Python quality audits of Ladon
 
 Run the project-local quality command from this repository:
 
@@ -101,3 +96,8 @@ Strict mode fails on active C-or-worse radon blocks, C-grade maintainability,
 high-confidence vulture findings, compile failures, or test failures. Treat
 that as a design constraint: split analyzer behavior into small modules before
 adding more heuristics.
+
+## LLM Disclaimer
+
+This is close to 100% AI assisted code. Much of it is even "vibe-coded", i.e. not looking at the generated code. This is evolved on the side when developing some experimental Lean code and trying to keep the codebase clean.
+
