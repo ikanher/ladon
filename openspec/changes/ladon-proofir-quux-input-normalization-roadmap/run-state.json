@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "runstate.ladon-proofir-quux-input-normalization-roadmap.r01",
+  "goal": "Apply the Ladon ProofIR Quux input normalization umbrella through child packets, code changes, tests, and gates.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "governance_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "theorem_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.inspect_umbrella_and_current_bridge",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.openspec_apply_instructions.umbrella.ready",
+        "check.current_bridge_missing_quux_shapes"
+      ],
+      "commandRefs": [
+        "openspec instructions apply --change ladon-proofir-quux-input-normalization-roadmap --json",
+        "sed -n '1,320p' src/ladon/proofir_bridge.py",
+        "sed -n '1,360p' src/ladon/atlas_workflow.py"
+      ]
+    },
+    {
+      "stepId": "step.open_child_packets",
+      "status": "completed",
+      "prerequisites": [
+        "step.inspect_umbrella_and_current_bridge"
+      ],
+      "evidenceRefs": [
+        "check.openspec_validate.surface_bundle.valid",
+        "check.openspec_validate.source_anchor.valid",
+        "check.openspec_validate.snapshot_atlas.valid"
+      ],
+      "commandRefs": [
+        "openspec new change ladon-proofir-quux-surface-bundle-adapter-mini",
+        "openspec new change ladon-proofir-quux-source-anchor-normalization-mini",
+        "openspec new change ladon-proofir-quux-bridge-snapshot-atlas-import-mini"
+      ]
+    },
+    {
+      "stepId": "step.implement_quux_proofir_normalization",
+      "status": "completed",
+      "prerequisites": [
+        "step.open_child_packets"
+      ],
+      "evidenceRefs": [
+        "check.targeted_bridge_and_workflow_tests.passed"
+      ],
+      "commandRefs": [
+        "uv run pytest -q tests/test_proofir_bridge.py tests/test_atlas_workflow.py"
+      ]
+    },
+    {
+      "stepId": "step.fix_quality_gate",
+      "status": "completed",
+      "prerequisites": [
+        "step.implement_quux_proofir_normalization"
+      ],
+      "evidenceRefs": [
+        "check.full_tests.initial_quality_failure",
+        "check.strict_quality.passed",
+        "check.full_tests.final_passed"
+      ],
+      "commandRefs": [
+        "uv run pytest -q tests",
+        "uv run python scripts/python_quality.py --strict"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.openspec_apply_instructions.umbrella.ready",
+      "command": "openspec instructions apply --change ladon-proofir-quux-input-normalization-roadmap --json",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": ""
+    },
+    {
+      "checkId": "check.current_bridge_missing_quux_shapes",
+      "command": "manual inspection of src/ladon/proofir_bridge.py and src/ladon/atlas_workflow.py",
+      "status": "invalid",
+      "failureClass": "checker_failure",
+      "failureMessage": "Bridge accepts proofir_bridge_index only, ignores sourceHash aliases and nested sourceAnchor rows, and atlas workflow expects ladon_proofir_bridge_report rather than ladon_proofir_bridge_snapshot."
+    },
+    {
+      "checkId": "check.openspec_validate.surface_bundle.valid",
+      "command": "openspec validate ladon-proofir-quux-surface-bundle-adapter-mini --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": ""
+    },
+    {
+      "checkId": "check.openspec_validate.source_anchor.valid",
+      "command": "openspec validate ladon-proofir-quux-source-anchor-normalization-mini --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": ""
+    },
+    {
+      "checkId": "check.openspec_validate.snapshot_atlas.valid",
+      "command": "openspec validate ladon-proofir-quux-bridge-snapshot-atlas-import-mini --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": ""
+    },
+    {
+      "checkId": "check.targeted_bridge_and_workflow_tests.passed",
+      "command": "uv run pytest -q tests/test_proofir_bridge.py tests/test_atlas_workflow.py",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "19 passed"
+    },
+    {
+      "checkId": "check.full_tests.initial_quality_failure",
+      "command": "uv run pytest -q tests",
+      "status": "invalid",
+      "failureClass": "checker_failure",
+      "failureMessage": "142 passed, 1 failed; strict quality test reported radon C complexity for proofir_bridge.join_surface and file-level maintainability rank C."
+    },
+    {
+      "checkId": "check.strict_quality.passed",
+      "command": "uv run python scripts/python_quality.py --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "radon/vulture clean; compileall passed; pytest 143 passed"
+    },
+    {
+      "checkId": "check.full_tests.final_passed",
+      "command": "uv run pytest -q tests",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "143 passed"
+    }
+  ],
+  "blockers": [],
+  "replayBoundary": {
+    "packetLocalReplay": false,
+    "externalEvidenceIncluded": false
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not theorem evidence.",
+    "The loop must not rely on chat history as completed-step truth.",
+    "ProofIR and Lean statuses quoted by fixtures are external evidence; Ladon does not validate theorem truth."
+  ],
+  "nextAction": "Close umbrella tasks and report completed gates."
+}

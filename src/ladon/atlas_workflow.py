@@ -16,7 +16,7 @@ def build_atlas_workflow(
 ) -> dict[str, Any]:
     """Build the combined reviewer workflow surface."""
 
-    bridges = bridge_reports or []
+    bridges = normalize_bridge_reports(bridge_reports or [])
     diff = diff_atlases(before_atlas, atlas) if before_atlas is not None else empty_diff()
     return {
         "schema": "ladon-atlas-workflow-v1",
@@ -34,6 +34,107 @@ def build_atlas_workflow(
             "incompleteOrStaleEvidence": incomplete_or_stale_evidence(atlas, bridges),
         },
         "reviewerCards": atlas_reviewer_cards(atlas, bridges),
+    }
+
+
+def normalize_bridge_reports(bridge_reports: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Normalize optional bridge report inputs for workflow summaries."""
+
+    return [
+        normalize_bridge_report(report)
+        for report in bridge_reports
+        if isinstance(report, dict)
+    ]
+
+
+def normalize_bridge_report(report: dict[str, Any]) -> dict[str, Any]:
+    """Return a workflow-compatible bridge report summary."""
+
+    if report.get("artifactKind") == "ladon_proofir_bridge_snapshot":
+        return bridge_snapshot_as_report(report)
+    return report
+
+
+def bridge_snapshot_as_report(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Adapt a downstream bridge snapshot to workflow bridge-report shape."""
+
+    bridge = snapshot.get("bridgeReport", {})
+    if not isinstance(bridge, dict):
+        bridge = {}
+    root = snapshot_root(snapshot)
+    surfaces = snapshot_surfaces_by_id(snapshot)
+    return {
+        "artifactKind": "ladon_proofir_bridge_report",
+        "sourceArtifactKind": "ladon_proofir_bridge_snapshot",
+        "reviewerCards": [{"root": root}] if root else [],
+        "joins": [normalize_snapshot_join(row, surfaces) for row in bridge.get("joins", []) if isinstance(row, dict)],
+        "diagnostics": [
+            normalize_snapshot_diagnostic(row)
+            for row in bridge.get("diagnostics", [])
+            if isinstance(row, dict)
+        ],
+        "trustRules": [
+            "bridge snapshots are quoted external evidence, not Ladon proof truth",
+            "source-anchor joins establish attachment confidence only",
+        ],
+    }
+
+
+def snapshot_root(snapshot: dict[str, Any]) -> str:
+    """Return the analysis root recorded in a bridge snapshot."""
+
+    source = snapshot.get("sourceLadonReport", {})
+    if isinstance(source, dict):
+        return str(source.get("analysisRootModule", ""))
+    return ""
+
+
+def snapshot_surfaces_by_id(snapshot: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Return snapshot surface rows keyed by id."""
+
+    surfaces = snapshot.get("surfaces", [])
+    if not isinstance(surfaces, list):
+        return {}
+    return {
+        str(surface.get("surfaceId", "")): surface
+        for surface in surfaces
+        if isinstance(surface, dict)
+    }
+
+
+def normalize_snapshot_join(
+    join: dict[str, Any],
+    surfaces: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    """Normalize one bridge-snapshot join row."""
+
+    surface = surfaces.get(str(join.get("surfaceId", "")), {})
+    match_kind = str(join.get("matchKind", ""))
+    warning_only = snapshot_join_warning_only(match_kind)
+    return {
+        "surfaceId": str(join.get("surfaceId", "")),
+        "claimId": str(join.get("claimId", surface.get("claimId", ""))),
+        "declarationName": str(surface.get("declarationName", "")),
+        "matchKind": match_kind,
+        "confidence": "low" if warning_only else "medium",
+        "warningOnly": warning_only,
+    }
+
+
+def snapshot_join_warning_only(match_kind: str) -> bool:
+    """Return whether a snapshot join should stay in warning-oriented rows."""
+
+    return match_kind in {"basename_only", "unmatched"} or "source_anchor" in match_kind
+
+
+def normalize_snapshot_diagnostic(row: dict[str, Any]) -> dict[str, Any]:
+    """Normalize one bridge-snapshot diagnostic row."""
+
+    return {
+        "ruleId": str(row.get("ruleId") or row.get("diagnosticId", "")),
+        "level": str(row.get("level") or row.get("severity", "")),
+        "subject": str(row.get("subject") or row.get("diagnosticId", "")),
+        "message": str(row.get("message", "")),
     }
 
 

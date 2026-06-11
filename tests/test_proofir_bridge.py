@@ -55,9 +55,60 @@ def test_clean_core_declaration_graph_joins_quux_surfaces_by_module_decl() -> No
     assert "proofir.nonclaim_attached_to_root" in diagnostic_ids(report)
 
 
+def test_quux_surface_bundle_adapts_and_joins_by_source_hash() -> None:
+    surface_bundle = load_fixture("proofir-lean-surface-bundle-quux-complex-quadratic.json")
+
+    report = report_for(surface_bundle)
+
+    assert report["summary"]["surfaceCount"] == 1
+    assert report["joins"][0]["matchKind"] == "exact_source_hash_decl"
+    assert report["joins"][0]["confidence"] == "high"
+    claim = report["reviewerCards"][0]["claims"][0]
+    assert claim["status"] == "not_replayed_by_extractor"
+    assert claim["authority"] == ["lean_kernel_external"]
+
+
+def test_quux_source_hash_alias_produces_source_hash_join_without_mutation() -> None:
+    proofir_index = load_fixture("proofir-bridge-index-sourcehash-quux-complex-quadratic.json")
+    before = copy.deepcopy(proofir_index)
+
+    report = report_for(proofir_index)
+
+    assert report["joins"][0]["matchKind"] == "exact_source_hash_decl"
+    assert report["joins"][0]["confidence"] == "high"
+    assert "proofir.packet_stale_source" not in diagnostic_ids(report)
+    assert report["reviewerCards"][0]["claims"][0]["authority"] == ["lean_kernel_external"]
+    assert proofir_index == before
+
+
+def test_quux_source_anchor_is_low_confidence_warning_not_hash_join() -> None:
+    proofir_index = load_fixture("proofir-bridge-index-sourceanchor-quux-complex-quadratic.json")
+
+    report = report_for(proofir_index)
+
+    join = report["joins"][0]
+    assert join["matchKind"] == "source_line_anchor_decl"
+    assert join["confidence"] == "low"
+    assert join["warningOnly"] is True
+    assert join["sourceAnchor"]["lineSha256"] == "sha256:root-plus-line"
+    assert "declarationContentHash" in join
+    assert "proofir.source_anchor_join_warning" in diagnostic_ids(report)
+    assert "proofir.packet_stale_source" not in diagnostic_ids(report)
+
+
 def test_stale_source_hash_emits_diagnostic_but_still_joins_by_range() -> None:
     index = load_fixture("proofir-bridge-index-complex-quadratic.json")
     index["surfaces"][0]["contentHash"] = "sha256:stale"
+
+    report = report_for(index)
+
+    assert report["joins"][0]["matchKind"] == "exact_source_range_decl"
+    assert "proofir.packet_stale_source" in diagnostic_ids(report)
+
+
+def test_stale_source_hash_alias_emits_diagnostic_but_still_joins_by_range() -> None:
+    index = load_fixture("proofir-bridge-index-sourcehash-quux-complex-quadratic.json")
+    index["surfaces"][0]["sourceHash"] = "sha256:stale"
 
     report = report_for(index)
 

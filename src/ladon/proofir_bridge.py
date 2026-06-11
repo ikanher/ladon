@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-
-EXPECTED_INDEX_KIND = "proofir_bridge_index"
+from ladon.proofir_input import authority_list, normalize_proofir_index, surface_content_hash
 
 
 def build_bridge_report(
@@ -19,19 +18,20 @@ def build_bridge_report(
     declarations = declaration_rows(ladon_report)
     if proofir_index is None:
         return empty_report(ladon_report)
-    if proofir_index.get("artifactKind") != EXPECTED_INDEX_KIND:
+    normalized_index = normalize_proofir_index(proofir_index)
+    if normalized_index is None:
         return malformed_report(ladon_report)
 
-    joins = join_surfaces(declarations, proofir_index.get("surfaces", []))
-    diagnostics = bridge_diagnostics(joins, proofir_index)
-    cards = reviewer_cards(ladon_report, proofir_index, joins, diagnostics)
+    joins = join_surfaces(declarations, normalized_index.get("surfaces", []))
+    diagnostics = bridge_diagnostics(joins, normalized_index)
+    cards = reviewer_cards(ladon_report, normalized_index, joins, diagnostics)
     return {
         "schemaVersion": 1,
         "artifactKind": "ladon_proofir_bridge_report",
         "summary": {
             "proofirIndexPresent": True,
             "declarationCount": len(declarations),
-            "surfaceCount": len(proofir_index.get("surfaces", [])),
+            "surfaceCount": len(normalized_index.get("surfaces", [])),
             "joinedSurfaceCount": joined_count(joins),
             "unmatchedSurfaceCount": unmatched_count(joins),
             "diagnosticCount": len(diagnostics),
@@ -217,18 +217,43 @@ def join_surfaces(declarations: list[dict[str, Any]], surfaces: Any) -> list[dic
 def join_surface(declarations: list[dict[str, Any]], surface: dict[str, Any]) -> dict[str, Any]:
     """Join one ProofIR surface to the best available declaration row."""
 
+    for match_kind, confidence, matcher in join_matchers():
+        row = first_matching_join(declarations, surface, match_kind, confidence, matcher)
+        if row:
+            return row
+    return unmatched_surface_row(surface)
+
+
+def join_matchers() -> tuple[tuple[str, str, Any], ...]:
+    """Return matchers in strongest-to-weakest attachment order."""
+
+    return (
+        ("exact_source_hash_decl", "high", exact_source_hash_decl),
+        ("exact_source_range_decl", "medium", exact_source_range_decl),
+        ("source_line_anchor_decl", "low", source_line_anchor_decl),
+        ("exact_module_decl", "medium", exact_module_decl),
+        ("basename_only", "low", basename_match),
+    )
+
+
+def first_matching_join(
+    declarations: list[dict[str, Any]],
+    surface: dict[str, Any],
+    match_kind: str,
+    confidence: str,
+    matcher: Any,
+) -> dict[str, Any] | None:
+    """Return the first join row accepted by one matcher."""
+
     for declaration in declarations:
-        if exact_source_hash_decl(surface, declaration):
-            return join_row(surface, declaration, "exact_source_hash_decl", "high")
-    for declaration in declarations:
-        if exact_source_range_decl(surface, declaration):
-            return join_row(surface, declaration, "exact_source_range_decl", source_range_confidence(surface))
-    for declaration in declarations:
-        if exact_module_decl(surface, declaration):
-            return join_row(surface, declaration, "exact_module_decl", "medium")
-    for declaration in declarations:
-        if basename_match(surface, declaration):
-            return join_row(surface, declaration, "basename_only", "low")
+        if matcher(surface, declaration):
+            return join_row(surface, declaration, match_kind, confidence)
+    return None
+
+
+def unmatched_surface_row(surface: dict[str, Any]) -> dict[str, Any]:
+    """Return the stable unmatched surface row."""
+
     return {
         "surfaceId": str(surface.get("surfaceId", "")),
         "claimId": str(surface.get("claimId", "")),
@@ -244,8 +269,8 @@ def exact_source_hash_decl(surface: dict[str, Any], declaration: dict[str, Any])
     return (
         same_decl(surface, declaration)
         and same_source_path(surface, declaration)
-        and bool(surface.get("contentHash"))
-        and surface.get("contentHash") == declaration.get("contentHash")
+        and bool(surface_content_hash(surface))
+        and surface_content_hash(surface) == declaration.get("contentHash")
     )
 
 
@@ -266,6 +291,20 @@ def exact_module_decl(surface: dict[str, Any], declaration: dict[str, Any]) -> b
         same_decl(surface, declaration)
         and bool(surface.get("module"))
         and surface.get("module") == declaration.get("module")
+    )
+
+
+def source_line_anchor_decl(surface: dict[str, Any], declaration: dict[str, Any]) -> bool:
+    """Return true for conservative declaration/path/start-line anchor matches."""
+
+    source_line = surface.get("sourceLine")
+    source_range = declaration.get("sourceRange")
+    return (
+        same_decl(surface, declaration)
+        and same_source_path(surface, declaration)
+        and source_line is not None
+        and isinstance(source_range, dict)
+        and source_line == source_range.get("startLine")
     )
 
 
@@ -312,13 +351,6 @@ def same_source_range(surface_range: Any, declaration_range: Any) -> bool:
     )
 
 
-def source_range_confidence(surface: dict[str, Any]) -> str:
-    """Return confidence for a source-range match."""
-
-    del surface
-    return "medium"
-
-
 def join_row(
     surface: dict[str, Any],
     declaration: dict[str, Any],
@@ -335,8 +367,10 @@ def join_row(
         "matchKind": match_kind,
         "confidence": confidence,
         "declarationConfidence": str(declaration.get("confidence", "")),
-        "warningOnly": match_kind == "basename_only",
+        "warningOnly": match_kind in {"basename_only", "source_line_anchor_decl"},
     }
+    if surface.get("sourceAnchor"):
+        row["sourceAnchor"] = dict(surface["sourceAnchor"])
     if declaration.get("contentHash"):
         row["declarationContentHash"] = str(declaration["contentHash"])
     return row
@@ -366,6 +400,15 @@ def bridge_diagnostics(joins: list[dict[str, Any]], proofir_index: dict[str, Any
                     "Surface joined by basename only; this is reviewer context, not evidence.",
                 )
             )
+        if join["matchKind"] == "source_line_anchor_decl":
+            diagnostics.append(
+                diagnostic(
+                    "proofir.source_anchor_join_warning",
+                    "warning",
+                    join["surfaceId"],
+                    "Surface joined by source line anchor only; this is reviewer context, not proof evidence.",
+                )
+            )
 
     diagnostics.extend(stale_source_diagnostics(joins, proofir_index))
     diagnostics.extend(witness_endpoint_diagnostics(proofir_index, joined_surfaces))
@@ -385,7 +428,7 @@ def stale_source_diagnostics(
         surface = surfaces.get(join["surfaceId"], {})
         if (
             join["matchKind"] == "exact_source_range_decl"
-            and surface.get("contentHash")
+            and surface_content_hash(surface)
             and join.get("declarationContentHash")
         ):
             diagnostics.append(
@@ -482,7 +525,7 @@ def joined_claims(proofir_index: dict[str, Any], joins: list[dict[str, Any]]) ->
                 {
                     "claimId": str(claim.get("claimId", "")),
                     "status": str(claim.get("status", "")),
-                    "authority": list(claim.get("authority", [])),
+                    "authority": authority_list(claim.get("authority")),
                     "scope": str(claim.get("scope", "")),
                 }
             )
@@ -503,7 +546,7 @@ def joined_witness_endpoints(proofir_index: dict[str, Any], joins: list[dict[str
                 {
                     "endpointId": str(endpoint.get("endpointId", "")),
                     "status": str(endpoint.get("status", "")),
-                    "authority": list(endpoint.get("authority", [])),
+                    "authority": authority_list(endpoint.get("authority")),
                     "scope": str(endpoint.get("scope", "")),
                 }
             )

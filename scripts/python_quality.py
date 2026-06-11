@@ -98,7 +98,7 @@ def run_strict(root: Path, targets: list[str]) -> int:
         return 1
     if (root / "scripts").exists() and not compileall.compile_dir(root / "scripts", quiet=1):
         return 1
-    return run_command("pytest", [sys.executable, "-m", "pytest", "-q"], root)
+    return run_command("pytest", [sys.executable, "-m", "pytest", "-q", "tests"], root)
 
 
 def main(argv: list[str] | None = None) -> int:

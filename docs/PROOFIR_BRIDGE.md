@@ -25,15 +25,34 @@ The bridge does not:
 
 ## Input Boundary
 
-The bridge consumes a compact `proofir_bridge_index`, not raw ProofIR dialects.
-ProofIR should own extraction and validation of the index.  Ladon only joins the
-small fields needed for architecture review:
+The bridge consumes compact ProofIR review inputs, not raw ProofIR dialects.
+ProofIR should own extraction and validation of these artifacts. Ladon only
+normalizes and joins the small fields needed for architecture review.
+
+Accepted bridge inputs:
+
+- `proofir_bridge_index`;
+- `proof_ir_lean_surface_bundle`, adapted into the compact bridge-index shape.
+
+Unsupported ProofIR artifact kinds remain malformed optional input and do not
+produce fabricated surfaces, claims, witnesses, or proof statuses.
+
+The compact bridge-index shape carries:
 
 - surfaces;
 - claims;
 - witness endpoints;
 - nonclaims;
 - projection boundaries.
+
+Quux compatibility notes:
+
+- `sourceHash` is treated as a `contentHash` alias for source-hash attachment
+  joins.
+- nested `sourceAnchor` rows can supply repository path, packet path, start
+  line, and line hash metadata.
+- source-line anchors are warning-oriented review routes unless stronger source
+  range or source hash evidence is also present.
 
 ## Current Diagnostics
 
@@ -43,6 +62,7 @@ The MVP emits conservative diagnostics:
 - `proofir.witness_endpoint_without_declaration_join`;
 - `proofir.nonclaim_attached_to_root`;
 - `proofir.name_only_join_warning`;
+- `proofir.source_anchor_join_warning`;
 - `proofir.packet_stale_source`;
 - `proofir.malformed_bridge_index`.
 
@@ -66,9 +86,10 @@ ProofIR surfaces in this order:
 
 1. exact declaration, source path, and source content hash;
 2. exact declaration, source path, and source range;
-3. exact declaration and module;
-4. basename-only warning;
-5. unmatched.
+3. exact declaration, source path, and source start line from a source anchor;
+4. exact declaration and module;
+5. basename-only warning;
+6. unmatched.
 
 Older or derived reports may omit the table. In that case the bridge derives
 fallback declaration rows from:
@@ -81,3 +102,12 @@ fallback declaration rows from:
 Those derived rows can support `exact_module_decl` joins at medium confidence.
 They cannot support source-hash or source-range evidence unless the Ladon report
 contains those fields explicitly.
+
+## Atlas Workflow Snapshots
+
+The atlas workflow can also summarize optional
+`ladon_proofir_bridge_snapshot` artifacts that already contain joined bridge
+rows and diagnostics. Those snapshots are downstream reviewer evidence, not the
+canonical bridge input and not proof authority. The workflow maps snapshot
+diagnostics into the normal `ruleId`/`level` shape and keeps snapshot statuses
+quoted as external context.

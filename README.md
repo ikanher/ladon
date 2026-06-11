@@ -1,9 +1,14 @@
-# Ladon is an experimenteal Lean codebase quality tool, e.g. "radon" for Lean.
+# Ladon is an experimental Lean codebase quality tool, e.g. "radon" for Lean.
 
 Ladon is a host-side analyzer for Lean projects. The current clean core reads
 Lean source text, can optionally ask Lean for root-file declaration candidates,
 reports module/declaration graph structure, and keeps Python quality gates
 strict enough that analyzer code stays small and testable.
+
+Ladon is not a proof checker. Declaration edges, source ranges, source hashes,
+packet diagnostics, and optional ProofIR bridge joins are review-routing
+evidence only. Theorem truth and proof correctness must come from Lean or an
+explicit external artifact with its own authority and hash.
 
 ## Usage
 
@@ -43,6 +48,9 @@ Supported today:
 - optional Lean parser-helper extraction for root-file declaration candidates;
 - pure module-DAG analysis through `ladon.analysis.module_dag`;
 - pure declaration graph analysis through `ladon.analysis.declaration_graph`;
+- additive `declaration_graph.declarations` rows with source path/range/hash,
+  extraction backend/version, name-resolution method, and confidence when the
+  Lean helper supplies that evidence;
 - root-focused findings for module fan-in, root import closure, declaration
   fan-in/fan-out, and unresolved-reference hotspots;
 - unresolved-reference classification into local/field, external, parser-noise,
@@ -64,6 +72,15 @@ Optional bridge:
 - `ladon-proofir-bridge` can join an existing Ladon JSON report with a compact
   ProofIR bridge index and emit reviewer cards/diagnostics.  This is separate
   from core Ladon analysis and does not make Ladon a proof checker.
+
+Atlas workflow:
+
+- `scripts/ladon_atlas_export.py` builds canonical atlas JSON plus optional
+  Markdown, SQLite, and reviewer-card outputs from a report directory.
+- `scripts/ladon_atlas_workflow.py` derives a reviewer workflow from atlas JSON,
+  an optional earlier atlas, and optional ProofIR bridge reports. It summarizes
+  changed rows, recurring hotspots, review-priority roots, low-confidence joins,
+  and incomplete or stale evidence.
 
 Unsupported legacy flags fail explicitly rather than emitting partial reports.
 
@@ -100,4 +117,3 @@ adding more heuristics.
 ## LLM Disclaimer
 
 This is close to 100% AI assisted code. Much of it is even "vibe-coded", i.e. not looking at the generated code. This is evolved on the side when developing some experimental Lean code and trying to keep the codebase clean.
-

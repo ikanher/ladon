@@ -24,10 +24,14 @@ is not listed as supported here, do not describe it as implemented.
 8. `pipeline`: record phase timings and counters around extraction, analysis,
    findings, and rendering.
 9. `render`: write JSON/text reports from already-computed data.
-10. `atlas`, `atlas_diff`, `atlas_sqlite`, and `atlas_workflow`: derive
+10. `proofir_bridge`: optionally joins compact ProofIR review inputs to Ladon
+    declaration evidence. Accepted inputs are `proofir_bridge_index` and
+    Quux-style `proof_ir_lean_surface_bundle`; raw ProofIR dialects remain out
+    of core.
+11. `atlas`, `atlas_diff`, `atlas_sqlite`, and `atlas_workflow`: derive
     reviewer-routing graphs, diffs, canned queries, cards, and workflow
     summaries from Ladon report JSON plus optional bridge reports.
-11. `quality`: enforce radon/vulture gates for active Python code.
+12. `quality`: enforce radon/vulture gates for active Python code.
 
 Unsupported until rebuilt with tests:
 
@@ -123,7 +127,9 @@ The workflow answers review-routing questions: what changed, what recurs, which
 roots need review first, which joins are low-confidence, and which packet or
 bridge evidence is incomplete or stale. Optional bridge diagnostics stay in the
 `proofir.*` namespace and remain quoted context, not Ladon-validated proof
-status.
+status. Quux `ladon_proofir_bridge_snapshot` artifacts can be summarized as
+already-rendered bridge evidence, but compact surface inputs remain the primary
+ProofIR bridge contract.
 
 ## TDD Rules
 
