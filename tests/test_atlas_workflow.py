@@ -73,6 +73,21 @@ def test_atlas_workflow_imports_quux_bridge_snapshot_as_optional_evidence(tmp_pa
     )
 
 
+def test_atlas_workflow_keeps_source_line_anchor_snapshot_join_warning_only(tmp_path: Path) -> None:
+    write_report(tmp_path / "quux" / "one.json", sample_report("Quux.One", fan_in=8))
+    snapshot = sample_bridge_snapshot()
+    snapshot["bridgeReport"]["joins"][0]["matchKind"] = "source_line_anchor_decl"
+
+    workflow = build_atlas_workflow(
+        build_report_atlas(tmp_path),
+        bridge_reports=[snapshot],
+    )
+
+    assert workflow["sections"]["lowConfidenceJoins"][0]["matchKind"] == "source_line_anchor_decl"
+    assert workflow["sections"]["lowConfidenceJoins"][0]["confidence"] == "low"
+    assert workflow["sections"]["lowConfidenceJoins"][0]["warningOnly"] is True
+
+
 def write_report(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload), encoding="utf-8")

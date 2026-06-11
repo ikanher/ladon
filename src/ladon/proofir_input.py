@@ -9,9 +9,11 @@ EXPECTED_INDEX_KIND = "proofir_bridge_index"
 SURFACE_BUNDLE_KIND = "proof_ir_lean_surface_bundle"
 
 
-def normalize_proofir_index(proofir_index: dict[str, Any]) -> dict[str, Any] | None:
+def normalize_proofir_index(proofir_index: Any) -> dict[str, Any] | None:
     """Return a compact bridge index for supported ProofIR input shapes."""
 
+    if not isinstance(proofir_index, dict):
+        return None
     kind = proofir_index.get("artifactKind")
     if kind == EXPECTED_INDEX_KIND:
         return normalize_compact_bridge_index(proofir_index)
@@ -35,19 +37,43 @@ def normalize_compact_bridge_index(proofir_index: dict[str, Any]) -> dict[str, A
 def normalize_surface_bundle(proofir_index: dict[str, Any]) -> dict[str, Any]:
     """Adapt a Quux Lean surface bundle into the compact bridge-index shape."""
 
-    surfaces = normalized_surfaces(proofir_index.get("surfaces", []))
     source = proofir_index.get("source", {})
+    source_defaults = dict(source) if isinstance(source, dict) else {}
+    surfaces = normalized_bundle_surfaces(proofir_index.get("surfaces", []), source_defaults)
     return {
         "schemaVersion": 1,
         "artifactKind": EXPECTED_INDEX_KIND,
         "sourceArtifactKind": SURFACE_BUNDLE_KIND,
-        "source": dict(source) if isinstance(source, dict) else {},
+        "source": source_defaults,
         "surfaces": surfaces,
         "claims": [claim_from_surface(surface) for surface in surfaces],
         "witnessEndpoints": [],
         "nonclaims": [],
         "projectionBoundaries": [],
     }
+
+
+def normalized_bundle_surfaces(rows: Any, source: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return bundle surfaces with top-level source fields used as defaults."""
+
+    if not isinstance(rows, list):
+        return []
+    return [
+        normalize_surface_row(bundle_surface_with_source_defaults(surface, source))
+        for surface in rows
+        if isinstance(surface, dict)
+    ]
+
+
+def bundle_surface_with_source_defaults(surface: dict[str, Any], source: dict[str, Any]) -> dict[str, Any]:
+    """Copy top-level bundle source fields into a surface when absent."""
+
+    normalized = dict(surface)
+    if not normalized.get("sourcePath") and source.get("sourcePath"):
+        normalized["sourcePath"] = source["sourcePath"]
+    if not normalized.get("contentHash") and source.get("contentHash"):
+        normalized["contentHash"] = source["contentHash"]
+    return normalized
 
 
 def normalized_surfaces(rows: Any) -> list[dict[str, Any]]:
@@ -85,9 +111,11 @@ def normalize_source_anchor(surface: dict[str, Any]) -> None:
     if not isinstance(anchor, dict):
         return
     surface["sourceAnchor"] = dict(anchor)
-    surface.setdefault("declarationName", str(anchor.get("declarationName", "")))
-    surface.setdefault("sourcePath", source_anchor_path(anchor))
-    if "sourceLine" not in surface and anchor.get("startLine") is not None:
+    if not surface.get("declarationName"):
+        surface["declarationName"] = str(anchor.get("declarationName", ""))
+    if not surface.get("sourcePath"):
+        surface["sourcePath"] = source_anchor_path(anchor)
+    if surface.get("sourceLine") is None and anchor.get("startLine") is not None:
         surface["sourceLine"] = anchor.get("startLine")
 
 
@@ -124,6 +152,10 @@ def claim_from_surface(surface: dict[str, Any]) -> dict[str, Any]:
         "scope": surface_scope(surface),
         "proofTrust": str(surface.get("proofTrust", "")),
         "replayBoundary": surface.get("replayBoundary", {}),
+        "extractorGuarantee": str(surface.get("extractorGuarantee", "")),
+        "sourcePath": str(surface.get("sourcePath", "")),
+        "sourceRange": surface.get("sourceRange", {}),
+        "contentHash": surface_content_hash(surface),
     }
 
 

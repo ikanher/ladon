@@ -66,6 +66,23 @@ def test_quux_surface_bundle_adapts_and_joins_by_source_hash() -> None:
     claim = report["reviewerCards"][0]["claims"][0]
     assert claim["status"] == "not_replayed_by_extractor"
     assert claim["authority"] == ["lean_kernel_external"]
+    assert claim["quotedOnly"] is True
+    assert claim["proofTrust"] == "lean_source_marker_extracted"
+    assert claim["replayBoundary"]["recommendedCommand"] == "lake env lean Quux/Semantics/ComplexQuadratic.lean"
+    assert claim["extractorGuarantee"] == "source_surface_only"
+
+
+def test_surface_bundle_top_level_source_backfills_surface_source_fields() -> None:
+    surface_bundle = load_fixture("proofir-lean-surface-bundle-quux-complex-quadratic.json")
+    surface_bundle["surfaces"][0].pop("sourcePath")
+    surface_bundle["surfaces"][0].pop("contentHash")
+
+    report = report_for(surface_bundle)
+
+    assert report["joins"][0]["matchKind"] == "exact_source_hash_decl"
+    claim = report["reviewerCards"][0]["claims"][0]
+    assert claim["sourcePath"] == "Quux/Semantics/ComplexQuadratic.lean"
+    assert claim["contentHash"] == "sha256:complex-quadratic-source"
 
 
 def test_quux_source_hash_alias_produces_source_hash_join_without_mutation() -> None:
@@ -113,6 +130,29 @@ def test_stale_source_hash_alias_emits_diagnostic_but_still_joins_by_range() -> 
     report = report_for(index)
 
     assert report["joins"][0]["matchKind"] == "exact_source_range_decl"
+    assert "proofir.packet_stale_source" in diagnostic_ids(report)
+
+
+def test_stale_source_hash_emits_diagnostic_on_source_anchor_fallback() -> None:
+    index = load_fixture("proofir-bridge-index-sourceanchor-quux-complex-quadratic.json")
+    index["surfaces"][0]["sourceHash"] = "sha256:stale"
+
+    report = report_for(index)
+
+    assert report["joins"][0]["matchKind"] == "source_line_anchor_decl"
+    assert "proofir.packet_stale_source" in diagnostic_ids(report)
+
+
+def test_stale_source_hash_emits_diagnostic_on_module_decl_fallback() -> None:
+    index = load_fixture("proofir-bridge-index-sourcehash-quux-complex-quadratic.json")
+    surface = index["surfaces"][0]
+    surface["sourceHash"] = "sha256:stale"
+    surface.pop("sourceRange")
+    surface.pop("sourcePath")
+
+    report = report_for(index)
+
+    assert report["joins"][0]["matchKind"] == "exact_module_decl"
     assert "proofir.packet_stale_source" in diagnostic_ids(report)
 
 
@@ -251,6 +291,16 @@ def test_malformed_index_reports_error_diagnostic() -> None:
     report = build_bridge_report(load_fixture("ladon-report-complex-quadratic.json"), {"artifactKind": "wrong"})
 
     assert report["summary"]["proofirIndexPresent"] is True
+    assert diagnostic_ids(report) == ["proofir.malformed_bridge_index"]
+    assert "proofir_bridge_index" in report["diagnostics"][0]["message"]
+    assert "proof_ir_lean_surface_bundle" in report["diagnostics"][0]["message"]
+
+
+def test_non_object_proofir_payload_reports_malformed_diagnostic() -> None:
+    report = build_bridge_report(load_fixture("ladon-report-complex-quadratic.json"), [])
+
+    assert report["summary"]["proofirIndexPresent"] is True
+    assert report["joins"] == []
     assert diagnostic_ids(report) == ["proofir.malformed_bridge_index"]
 
 

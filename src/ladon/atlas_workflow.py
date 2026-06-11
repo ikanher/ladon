@@ -124,7 +124,12 @@ def normalize_snapshot_join(
 def snapshot_join_warning_only(match_kind: str) -> bool:
     """Return whether a snapshot join should stay in warning-oriented rows."""
 
-    return match_kind in {"basename_only", "unmatched"} or "source_anchor" in match_kind
+    return match_kind in {
+        "basename_only",
+        "unmatched",
+        "source_line_anchor_decl",
+        "root_module_source_anchor",
+    } or match_kind.endswith("_source_anchor")
 
 
 def normalize_snapshot_diagnostic(row: dict[str, Any]) -> dict[str, Any]:
