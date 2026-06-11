@@ -257,6 +257,7 @@ def declaration_graph_lines(summary: dict[str, Any] | None) -> list[str]:
         f"- unresolved references: {summary['unresolved_reference_count']}",
         "",
     ]
+    lines.extend(declaration_evidence_lines(summary.get("declarations", [])))
     lines.extend(declaration_fan_lines("Top Declaration Fan-In", summary.get("top_fan_in", []), "fan_in"))
     lines.extend(
         declaration_fan_lines("Top Declaration Fan-Out", summary.get("top_fan_out", []), "fan_out")
@@ -273,6 +274,39 @@ def declaration_graph_lines(summary: dict[str, Any] | None) -> list[str]:
         )
     )
     return lines
+
+
+def declaration_evidence_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render declaration source-evidence coverage without proof overclaims."""
+
+    if not rows:
+        return []
+    confidences = confidence_counts(rows)
+    lines = [
+        "Declaration Evidence",
+        f"- rows: {len(rows)}",
+        f"- source ranges: {count_present(rows, 'sourceRange')}",
+        f"- content hashes: {count_present(rows, 'contentHash')}",
+    ]
+    lines.extend(f"- confidence {name}: {count}" for name, count in sorted(confidences.items()))
+    lines.append("- trust: source evidence is attachment confidence, not proof truth")
+    return [*lines, ""]
+
+
+def confidence_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
+    """Count declaration evidence rows by explicit confidence label."""
+
+    counts: dict[str, int] = {}
+    for row in rows:
+        confidence = str(row.get("confidence", "unspecified"))
+        counts[confidence] = counts.get(confidence, 0) + 1
+    return counts
+
+
+def count_present(rows: list[dict[str, Any]], key: str) -> int:
+    """Count rows that expose one optional evidence field."""
+
+    return sum(1 for row in rows if row.get(key) is not None)
 
 
 def declaration_fan_lines(

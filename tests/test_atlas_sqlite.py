@@ -8,26 +8,28 @@ from ladon.atlas import build_report_atlas
 from ladon.atlas_sqlite import run_canned_query, write_atlas_sqlite
 
 
+QUERY_TABLES = (
+    "nodes",
+    "edges",
+    "reports",
+    "findings",
+    "review_regions",
+    "signals",
+    "declaration_highlights",
+    "module_highlights",
+    "packet_evidence",
+    "bridge_joins",
+    "bridge_diagnostics",
+)
+
+
 def test_write_atlas_sqlite_creates_query_tables(tmp_path: Path) -> None:
     atlas = sample_atlas(tmp_path)
     db_path = tmp_path / "atlas.sqlite"
 
     write_atlas_sqlite(atlas, db_path)
 
-    with sqlite3.connect(db_path) as connection:
-        counts = {
-            table: connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
-            for table in (
-                "nodes",
-                "edges",
-                "reports",
-                "findings",
-                "review_regions",
-                "signals",
-                "declaration_highlights",
-                "module_highlights",
-            )
-        }
+    counts = table_counts(db_path)
 
     assert counts["reports"] == 2
     assert counts["findings"] == 2
@@ -35,6 +37,17 @@ def test_write_atlas_sqlite_creates_query_tables(tmp_path: Path) -> None:
     assert counts["signals"] == 2
     assert counts["declaration_highlights"] == 2
     assert counts["module_highlights"] >= 2
+    assert counts["packet_evidence"] == 2
+    assert counts["bridge_joins"] == 0
+    assert counts["bridge_diagnostics"] == 0
+
+
+def table_counts(db_path: Path) -> dict[str, int]:
+    with sqlite3.connect(db_path) as connection:
+        return {
+            table: connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
+            for table in QUERY_TABLES
+        }
 
 
 def test_atlas_sqlite_hotspot_query_groups_findings(tmp_path: Path) -> None:
@@ -80,6 +93,34 @@ def test_atlas_sqlite_proof_family_pressure_query(tmp_path: Path) -> None:
     assert rows[0]["report_count"] == 2
 
 
+def test_atlas_sqlite_packet_evidence_gap_query(tmp_path: Path) -> None:
+    db_path = write_sample_db(tmp_path)
+
+    rows = run_canned_query(db_path, "packet_evidence_gaps")
+
+    assert rows[0]["incomplete"] == 1
+    assert rows[0]["partial"] == 1
+
+
+def test_atlas_sqlite_low_confidence_join_query(tmp_path: Path) -> None:
+    atlas = sample_atlas(tmp_path)
+    db_path = tmp_path / "atlas.sqlite"
+    write_atlas_sqlite(atlas, db_path, bridge_reports=[sample_bridge_report()])
+
+    rows = run_canned_query(db_path, "low_confidence_joins")
+
+    assert rows == [
+        {
+            "root": "Quux.One",
+            "surface_id": "surface.name_only",
+            "declaration_name": "target",
+            "match_kind": "basename_only",
+            "confidence": "low",
+            "warning_only": 1,
+        }
+    ]
+
+
 def write_sample_db(tmp_path: Path) -> Path:
     atlas = sample_atlas(tmp_path)
     db_path = tmp_path / "atlas.sqlite"
@@ -120,6 +161,13 @@ def sample_report(root: str) -> dict:
                 "count": 8,
             }
         ],
+        "packet_evidence": [
+            {
+                "packet_dir": "/packets/review",
+                "status": "partial",
+                "profile_status": "partial",
+            }
+        ],
         "review_regions": [
             {
                 "kind": "proof_family_region",
@@ -132,6 +180,27 @@ def sample_report(root: str) -> dict:
                         "count": 3,
                     }
                 ],
+            }
+        ],
+    }
+
+
+def sample_bridge_report() -> dict:
+    return {
+        "reviewerCards": [{"root": "Quux.One"}],
+        "joins": [
+            {
+                "surfaceId": "surface.name_only",
+                "declarationName": "target",
+                "matchKind": "basename_only",
+                "confidence": "low",
+                "warningOnly": True,
+            }
+        ],
+        "diagnostics": [
+            {
+                "ruleId": "proofir.name_only_join_warning",
+                "level": "warning",
             }
         ],
     }

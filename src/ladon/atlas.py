@@ -51,6 +51,8 @@ def add_report_payload(
     metadata = payload.get("metadata", {})
     module_dag = payload.get("module_dag", {})
     declaration_graph = payload.get("declaration_graph", {})
+    declaration_rows = declaration_graph.get("declarations", [])
+    packet_evidence = payload.get("packet_evidence", [])
     findings = payload.get("findings", [])
     regions = payload.get("review_regions", [])
     warnings = payload.get("warnings", [])
@@ -66,6 +68,8 @@ def add_report_payload(
             "finding_count": len(findings),
             "review_region_count": len(regions),
             "extraction_backend": metadata.get("extraction_backend", "unknown"),
+            "declaration_evidence": declaration_evidence_summary(declaration_rows),
+            "packet_evidence": packet_evidence_summary(packet_evidence),
             "warning_count": len(warnings),
             "warnings": warnings[:3],
         },
@@ -75,6 +79,63 @@ def add_report_payload(
     add_declaration_highlights(nodes, edges, report_id, repo_key, declaration_graph)
     add_findings(nodes, edges, report_id, relative_path, findings)
     add_review_regions(nodes, edges, report_id, relative_path, regions)
+
+
+def declaration_evidence_summary(rows: Any) -> dict[str, Any]:
+    """Summarize declaration source-evidence confidence for atlas cards."""
+
+    if not isinstance(rows, list):
+        rows = []
+    valid_rows = [row for row in rows if isinstance(row, dict)]
+    return {
+        "rows": len(valid_rows),
+        "source_ranges": sum(1 for row in valid_rows if row.get("sourceRange")),
+        "content_hashes": sum(1 for row in valid_rows if row.get("contentHash")),
+        "confidence_counts": confidence_counts(valid_rows),
+    }
+
+
+def packet_evidence_summary(rows: Any) -> dict[str, Any]:
+    """Summarize packet evidence gaps for atlas cards."""
+
+    valid_rows = valid_packet_rows(rows)
+    return {
+        "rows": len(valid_rows),
+        "incomplete": sum(1 for row in valid_rows if packet_incomplete(row)),
+        "missing": sum(1 for row in valid_rows if row.get("status") == "missing"),
+        "partial": sum(1 for row in valid_rows if row.get("status") == "partial"),
+        "stale": sum(1 for row in valid_rows if packet_stale(row)),
+    }
+
+
+def valid_packet_rows(rows: Any) -> list[dict[str, Any]]:
+    """Return packet evidence rows that have dictionary shape."""
+
+    if not isinstance(rows, list):
+        return []
+    return [row for row in rows if isinstance(row, dict)]
+
+
+def packet_incomplete(row: dict[str, Any]) -> bool:
+    """Return whether a packet evidence row is incomplete."""
+
+    return row.get("status") != "complete" or row.get("profile_status") not in {None, "complete"}
+
+
+def packet_stale(row: dict[str, Any]) -> bool:
+    """Return whether a packet evidence row reports stale status."""
+
+    return "stale" in str(row.get("status", "")) or "stale" in str(row.get("profile_status", ""))
+
+
+def confidence_counts(rows: list[dict[str, Any]]) -> dict[str, int]:
+    """Count declaration rows by confidence label."""
+
+    counts: dict[str, int] = {}
+    for row in rows:
+        confidence = str(row.get("confidence", "unspecified"))
+        counts[confidence] = counts.get(confidence, 0) + 1
+    return dict(sorted(counts.items()))
 
 
 def add_root_module(
@@ -158,12 +219,19 @@ def add_declaration_highlights(
 ) -> None:
     """Add highlighted declaration fan rows."""
 
+    evidence_rows = declaration_rows_by_name(declaration_graph.get("declarations", []))
     for metric, value_key in (("declaration_fan_in", "fan_in"), ("declaration_fan_out", "fan_out")):
         for rank, row in enumerate(declaration_graph.get(top_key(metric), [])[:5], start=1):
             declaration = row.get("declaration")
             if declaration:
                 node_id = declaration_node_id(repo_key, str(declaration))
-                add_node(nodes, node_id, "declaration", str(declaration), {"repo_key": repo_key})
+                add_node(
+                    nodes,
+                    node_id,
+                    "declaration",
+                    str(declaration),
+                    declaration_node_data(repo_key, evidence_rows.get(str(declaration))),
+                )
                 edges.append(
                     edge(
                         report_id,
@@ -172,6 +240,35 @@ def add_declaration_highlights(
                         {"metric": metric, "rank": rank, "value": row.get(value_key, 0)},
                     )
                 )
+
+
+def declaration_rows_by_name(rows: Any) -> dict[str, dict[str, Any]]:
+    """Return explicit declaration rows keyed by declaration name."""
+
+    if not isinstance(rows, list):
+        return {}
+    return {
+        str(row["declaration"]): row
+        for row in rows
+        if isinstance(row, dict) and row.get("declaration")
+    }
+
+
+def declaration_node_data(repo_key: str, row: dict[str, Any] | None) -> dict[str, Any]:
+    """Return atlas node data for a declaration highlight."""
+
+    data: dict[str, Any] = {"repo_key": repo_key}
+    if not row:
+        return data
+    if row.get("module"):
+        data["module"] = row["module"]
+    if row.get("confidence"):
+        data["evidence_confidence"] = row["confidence"]
+    if row.get("sourcePath"):
+        data["source_path"] = row["sourcePath"]
+    data["has_source_range"] = bool(row.get("sourceRange"))
+    data["has_content_hash"] = bool(row.get("contentHash"))
+    return data
 
 
 def add_findings(
@@ -254,13 +351,17 @@ def render_atlas_markdown(atlas: dict[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def atlas_reviewer_cards(atlas: dict[str, Any]) -> list[dict[str, Any]]:
+def atlas_reviewer_cards(
+    atlas: dict[str, Any],
+    bridge_reports: list[dict[str, Any]] | None = None,
+) -> list[dict[str, Any]]:
     """Return compact reviewer cards derived from atlas graph rows."""
 
     nodes = {node["id"]: node for node in atlas.get("nodes", [])}
     edges = atlas.get("edges", [])
+    bridge_by_root = bridge_summaries_by_root(bridge_reports or [])
     cards = [
-        reviewer_card(report, nodes, edges)
+        reviewer_card(report, nodes, edges, bridge_by_root.get(report_root(report)))
         for report in sorted(
             (node for node in nodes.values() if node["kind"] == "report"),
             key=lambda node: node["label"],
@@ -273,6 +374,7 @@ def reviewer_card(
     report: Node,
     nodes: dict[str, Node],
     edges: list[Edge],
+    bridge_summary: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build one reviewer card for a report node."""
 
@@ -287,11 +389,102 @@ def reviewer_card(
         "extraction_backend": data.get("extraction_backend", "unknown"),
         "top_findings": finding_labels(findings),
         "review_regions": region_labels(regions),
+        "declaration_evidence": data.get("declaration_evidence", declaration_evidence_summary([])),
+        "packet_evidence": data.get("packet_evidence", packet_evidence_summary([])),
+        "bridge_diagnostics": bridge_summary or empty_bridge_summary(),
         "strongest_evidence": strongest_evidence(findings, regions),
         "known_non_claims": warnings if warnings else ["not recorded in atlas"],
         "source_report_json": report["label"],
         "source_report_text": report["label"].removesuffix(".json") + ".txt",
     }
+
+
+def report_root(report: Node) -> str:
+    """Return the analysis root recorded on a report node."""
+
+    return str(report.get("data", {}).get("analysis_root_module", ""))
+
+
+def bridge_summaries_by_root(bridge_reports: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Group optional ProofIR bridge diagnostics by reviewer-card root."""
+
+    grouped: dict[str, dict[str, Any]] = {}
+    for report in bridge_reports:
+        root = bridge_root(report)
+        if not root:
+            continue
+        summary = grouped.setdefault(root, empty_bridge_summary())
+        merge_bridge_summary(summary, bridge_report_summary(report))
+    return grouped
+
+
+def bridge_root(report: dict[str, Any]) -> str:
+    """Return the first root named by a bridge reviewer card, if present."""
+
+    cards = report.get("reviewerCards", [])
+    if isinstance(cards, list):
+        for card in cards:
+            if isinstance(card, dict) and card.get("root"):
+                return str(card["root"])
+    return ""
+
+
+def bridge_report_summary(report: dict[str, Any]) -> dict[str, Any]:
+    """Summarize one optional ProofIR bridge report for atlas cards."""
+
+    diagnostics = [row for row in report.get("diagnostics", []) if isinstance(row, dict)]
+    joins = [row for row in report.get("joins", []) if isinstance(row, dict)]
+    return {
+        "diagnostic_count": len(diagnostics),
+        "diagnostic_counts": counts_by_key(diagnostics, "ruleId"),
+        "low_confidence_join_count": low_confidence_join_count(joins),
+        "unmatched_join_count": sum(1 for row in joins if row.get("matchKind") == "unmatched"),
+        "trust_rules": sorted(str(rule) for rule in report.get("trustRules", [])),
+    }
+
+
+def merge_bridge_summary(target: dict[str, Any], update: dict[str, Any]) -> None:
+    """Merge a bridge report summary into a root-grouped summary."""
+
+    target["diagnostic_count"] += update["diagnostic_count"]
+    target["low_confidence_join_count"] += update["low_confidence_join_count"]
+    target["unmatched_join_count"] += update["unmatched_join_count"]
+    for key, count in update["diagnostic_counts"].items():
+        target["diagnostic_counts"][key] = target["diagnostic_counts"].get(key, 0) + count
+    target["trust_rules"] = sorted(set(target["trust_rules"]) | set(update["trust_rules"]))
+
+
+def empty_bridge_summary() -> dict[str, Any]:
+    """Return the stable bridge summary shape for cards without bridge input."""
+
+    return {
+        "diagnostic_count": 0,
+        "diagnostic_counts": {},
+        "low_confidence_join_count": 0,
+        "unmatched_join_count": 0,
+        "trust_rules": [],
+    }
+
+
+def counts_by_key(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
+    """Count dictionaries by one string key."""
+
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = str(row.get(key, ""))
+        if value:
+            counts[value] = counts.get(value, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def low_confidence_join_count(joins: list[dict[str, Any]]) -> int:
+    """Count bridge joins that should remain review warnings."""
+
+    return sum(
+        1
+        for row in joins
+        if row.get("confidence") in {"low", "none"} or row.get("warningOnly") is True
+    )
 
 
 def linked_nodes(
@@ -336,11 +529,14 @@ def strongest_evidence(findings: list[Node], regions: list[Node]) -> list[str]:
     return ["not recorded in atlas"]
 
 
-def render_reviewer_cards_markdown(atlas: dict[str, Any]) -> str:
+def render_reviewer_cards_markdown(
+    atlas: dict[str, Any],
+    bridge_reports: list[dict[str, Any]] | None = None,
+) -> str:
     """Render reviewer cards as compact Markdown."""
 
     lines = ["# Ladon Atlas Reviewer Cards", ""]
-    for card in atlas_reviewer_cards(atlas):
+    for card in atlas_reviewer_cards(atlas, bridge_reports):
         lines.extend(reviewer_card_lines(card))
     return "\n".join(lines).rstrip() + "\n"
 
@@ -353,6 +549,9 @@ def reviewer_card_lines(card: dict[str, Any]) -> list[str]:
         "",
         f"- root: {card['root']}",
         f"- extraction backend: {card['extraction_backend']}",
+        f"- declaration evidence: {format_declaration_evidence(card['declaration_evidence'])}",
+        f"- packet evidence: {format_packet_evidence(card['packet_evidence'])}",
+        f"- bridge diagnostics: {format_bridge_diagnostics(card['bridge_diagnostics'])}",
         f"- source JSON: `{card['source_report_json']}`",
         f"- source text: `{card['source_report_text']}`",
         "- top findings:",
@@ -363,9 +562,57 @@ def reviewer_card_lines(card: dict[str, Any]) -> list[str]:
         *[f"  - {item}" for item in card["strongest_evidence"]],
         "- known non-claims:",
         *[f"  - {item}" for item in card["known_non_claims"]],
+        "- bridge trust notes:",
+        *[f"  - {item}" for item in bridge_trust_notes(card["bridge_diagnostics"])],
         "",
     ]
     return lines
+
+
+def format_declaration_evidence(summary: dict[str, Any]) -> str:
+    """Render one compact declaration-evidence summary for reviewer cards."""
+
+    counts = summary.get("confidence_counts", {})
+    confidence = ", ".join(f"{key}={value}" for key, value in sorted(counts.items()))
+    suffix = f" confidence({confidence})" if confidence else ""
+    return (
+        f"rows={summary.get('rows', 0)} "
+        f"ranges={summary.get('source_ranges', 0)} "
+        f"hashes={summary.get('content_hashes', 0)}"
+        f"{suffix}"
+    )
+
+
+def format_packet_evidence(summary: dict[str, Any]) -> str:
+    """Render one compact packet-evidence summary for reviewer cards."""
+
+    return (
+        f"rows={summary.get('rows', 0)} "
+        f"incomplete={summary.get('incomplete', 0)} "
+        f"missing={summary.get('missing', 0)} "
+        f"stale={summary.get('stale', 0)}"
+    )
+
+
+def format_bridge_diagnostics(summary: dict[str, Any]) -> str:
+    """Render one compact bridge-diagnostic summary for reviewer cards."""
+
+    counts = summary.get("diagnostic_counts", {})
+    diagnostics = ", ".join(f"{key}={value}" for key, value in sorted(counts.items()))
+    suffix = f" diagnostics({diagnostics})" if diagnostics else ""
+    return (
+        f"diagnostics={summary.get('diagnostic_count', 0)} "
+        f"low_confidence_joins={summary.get('low_confidence_join_count', 0)} "
+        f"unmatched={summary.get('unmatched_join_count', 0)}"
+        f"{suffix}"
+    )
+
+
+def bridge_trust_notes(summary: dict[str, Any]) -> list[str]:
+    """Return visible bridge trust notes or a stable no-input marker."""
+
+    notes = summary.get("trust_rules", [])
+    return notes if notes else ["no bridge report supplied"]
 
 
 def summary_lines(summary: dict[str, int]) -> list[str]:

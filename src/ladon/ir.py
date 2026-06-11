@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -26,13 +27,22 @@ class LeanDeclaration:
 
     `references` stores raw candidate names supplied by extraction. Analysis
     only turns them into edges when a candidate exactly matches another known
-    declaration name.
+    declaration name. Source evidence fields identify the file/range/hash used
+    for attachment confidence; they are not Lean kernel dependency facts.
     """
 
     name: str
     module: str
     kind: str | None = None
     references: tuple[str, ...] = ()
+    source_path: str | None = None
+    source_range: dict[str, Any] | None = None
+    selection_range: dict[str, Any] | None = None
+    content_hash: str | None = None
+    extraction_backend: str | None = None
+    extractor_version: str | None = None
+    name_resolution_method: str | None = None
+    confidence: str | None = None
 
 
 @dataclass(frozen=True)

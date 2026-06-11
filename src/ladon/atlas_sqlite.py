@@ -44,10 +44,28 @@ CANNED_QUERIES = {
         GROUP BY subject, source_kind
         ORDER BY report_count DESC, total_count DESC, subject ASC, source_kind ASC
     """,
+    "packet_evidence_gaps": """
+        SELECT reports.path, rows, incomplete, missing, partial, stale
+        FROM packet_evidence
+        JOIN reports ON reports.id = packet_evidence.report_id
+        WHERE incomplete > 0 OR missing > 0 OR partial > 0 OR stale > 0
+        ORDER BY incomplete DESC, stale DESC, missing DESC, reports.path ASC
+    """,
+    "low_confidence_joins": """
+        SELECT root, surface_id, declaration_name, match_kind, confidence, warning_only
+        FROM bridge_joins
+        WHERE confidence IN ('low', 'none') OR warning_only = 1 OR match_kind = 'unmatched'
+        ORDER BY root ASC, surface_id ASC, declaration_name ASC
+    """,
 }
 
 
-def write_atlas_sqlite(atlas: dict[str, Any], db_path: Path) -> None:
+def write_atlas_sqlite(
+    atlas: dict[str, Any],
+    db_path: Path,
+    *,
+    bridge_reports: list[dict[str, Any]] | None = None,
+) -> None:
     """Write a deterministic SQLite database from an atlas JSON payload."""
 
     db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -55,7 +73,7 @@ def write_atlas_sqlite(atlas: dict[str, Any], db_path: Path) -> None:
         db_path.unlink()
     with sqlite3.connect(db_path) as connection:
         create_schema(connection)
-        insert_atlas(connection, atlas)
+        insert_atlas(connection, atlas, bridge_reports or [])
 
 
 def create_schema(connection: sqlite3.Connection) -> None:
@@ -83,6 +101,28 @@ def create_schema(connection: sqlite3.Connection) -> None:
             declaration_count INTEGER NOT NULL,
             finding_count INTEGER NOT NULL,
             review_region_count INTEGER NOT NULL
+        );
+        CREATE TABLE packet_evidence (
+            report_id TEXT PRIMARY KEY,
+            rows INTEGER NOT NULL,
+            incomplete INTEGER NOT NULL,
+            missing INTEGER NOT NULL,
+            partial INTEGER NOT NULL,
+            stale INTEGER NOT NULL
+        );
+        CREATE TABLE bridge_joins (
+            root TEXT NOT NULL,
+            surface_id TEXT NOT NULL,
+            declaration_name TEXT NOT NULL,
+            match_kind TEXT NOT NULL,
+            confidence TEXT NOT NULL,
+            warning_only INTEGER NOT NULL
+        );
+        CREATE TABLE bridge_diagnostics (
+            root TEXT NOT NULL,
+            rule_id TEXT NOT NULL,
+            level TEXT NOT NULL,
+            count INTEGER NOT NULL
         );
         CREATE TABLE findings (
             id TEXT PRIMARY KEY,
@@ -124,7 +164,11 @@ def create_schema(connection: sqlite3.Connection) -> None:
     )
 
 
-def insert_atlas(connection: sqlite3.Connection, atlas: dict[str, Any]) -> None:
+def insert_atlas(
+    connection: sqlite3.Connection,
+    atlas: dict[str, Any],
+    bridge_reports: list[dict[str, Any]],
+) -> None:
     """Insert normalized atlas graph rows."""
 
     nodes = {node["id"]: node for node in atlas.get("nodes", [])}
@@ -132,6 +176,8 @@ def insert_atlas(connection: sqlite3.Connection, atlas: dict[str, Any]) -> None:
     insert_nodes(connection, nodes.values())
     insert_edges(connection, edges)
     insert_reports(connection, nodes.values())
+    insert_packet_evidence(connection, nodes.values())
+    insert_bridge_reports(connection, bridge_reports)
     insert_joined_rows(connection, nodes, edges)
 
 
@@ -197,6 +243,101 @@ def insert_reports(connection: sqlite3.Connection, nodes: Any) -> None:
         """,
         rows,
     )
+
+
+def insert_packet_evidence(connection: sqlite3.Connection, nodes: Any) -> None:
+    """Insert report-level packet evidence summaries."""
+
+    rows = []
+    for node in nodes:
+        if node["kind"] != "report":
+            continue
+        packet = node.get("data", {}).get("packet_evidence", {})
+        rows.append(
+            (
+                node["id"],
+                int(packet.get("rows", 0)),
+                int(packet.get("incomplete", 0)),
+                int(packet.get("missing", 0)),
+                int(packet.get("partial", 0)),
+                int(packet.get("stale", 0)),
+            )
+        )
+    connection.executemany(
+        """
+        INSERT INTO packet_evidence(report_id, rows, incomplete, missing, partial, stale)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+
+
+def insert_bridge_reports(
+    connection: sqlite3.Connection,
+    bridge_reports: list[dict[str, Any]],
+) -> None:
+    """Insert optional ProofIR bridge joins and diagnostics."""
+
+    for report in bridge_reports:
+        root = bridge_report_root(report)
+        insert_bridge_joins(connection, root, report.get("joins", []))
+        insert_bridge_diagnostics(connection, root, report.get("diagnostics", []))
+
+
+def insert_bridge_joins(connection: sqlite3.Connection, root: str, joins: Any) -> None:
+    """Insert bridge join rows for low-confidence query support."""
+
+    if not isinstance(joins, list):
+        return
+    connection.executemany(
+        """
+        INSERT INTO bridge_joins(
+            root, surface_id, declaration_name, match_kind, confidence, warning_only
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                root,
+                str(row.get("surfaceId", "")),
+                str(row.get("declarationName", "")),
+                str(row.get("matchKind", "")),
+                str(row.get("confidence", "")),
+                int(row.get("warningOnly") is True),
+            )
+            for row in joins
+            if isinstance(row, dict)
+        ],
+    )
+
+
+def insert_bridge_diagnostics(connection: sqlite3.Connection, root: str, diagnostics: Any) -> None:
+    """Insert grouped bridge diagnostic rows."""
+
+    if not isinstance(diagnostics, list):
+        return
+    counts: dict[tuple[str, str], int] = {}
+    for row in diagnostics:
+        if isinstance(row, dict) and row.get("ruleId"):
+            key = (str(row["ruleId"]), str(row.get("level", "")))
+            counts[key] = counts.get(key, 0) + 1
+    connection.executemany(
+        """
+        INSERT INTO bridge_diagnostics(root, rule_id, level, count)
+        VALUES (?, ?, ?, ?)
+        """,
+        [(root, rule_id, level, count) for (rule_id, level), count in sorted(counts.items())],
+    )
+
+
+def bridge_report_root(report: dict[str, Any]) -> str:
+    """Return the first reviewer-card root named in a bridge report."""
+
+    cards = report.get("reviewerCards", [])
+    if isinstance(cards, list):
+        for card in cards:
+            if isinstance(card, dict) and card.get("root"):
+                return str(card["root"])
+    return ""
 
 
 def insert_joined_rows(

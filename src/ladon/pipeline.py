@@ -123,6 +123,7 @@ class PipelineResult:
             generated_at_utc=self.context.generated_at_utc,
             warnings=self.context.warnings,
         )
+        payload["metadata"]["extraction_backend"] = self.context.extraction_backend
         if self.declaration_graph is not None:
             payload["declaration_graph"] = self.declaration_graph
         if self.quality_baseline is not None:
@@ -268,7 +269,14 @@ def declarations_from_modules(
     """Create declaration rows without references from module declaration names."""
 
     return {
-        declaration_name: LeanDeclaration(name=declaration_name, module=module.name)
+        declaration_name: LeanDeclaration(
+            name=declaration_name,
+            module=module.name,
+            source_path=module.path,
+            extraction_backend="text_inventory",
+            name_resolution_method="module_declaration_inventory",
+            confidence="derived",
+        )
         for module in modules.values()
         for declaration_name in module.declarations
     }

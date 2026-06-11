@@ -1,0 +1,380 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "ladon-architecture-review-evidence-routing-roadmap.apply-r01",
+  "goal": "Apply the Ladon architecture review evidence-routing roadmap umbrella, starting with portable benchmark fixtures and signal oracles.",
+  "controlStateSource": "openspec/changes/ladon-architecture-review-evidence-routing-roadmap/run-state.json",
+  "activeChange": "ladon-architecture-review-evidence-routing-roadmap",
+  "activeChildChange": null,
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "governance_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "theorem_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.inspect_umbrella_and_child1",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.openspec_apply_context.loaded"
+      ],
+      "commandRefs": [
+        "openspec instructions apply --change ladon-architecture-review-evidence-routing-roadmap --json",
+        "openspec instructions apply --change ladon-portable-benchmark-fixtures-and-signal-oracles --json"
+      ]
+    },
+    {
+      "stepId": "step.implement_child1_benchmark_oracles",
+      "status": "completed",
+      "prerequisites": [
+        "step.inspect_umbrella_and_child1"
+      ],
+      "evidenceRefs": [
+        "check.child1.targeted_tests.passed",
+        "check.child1.adjacent_tests.passed"
+      ],
+      "commandRefs": [
+        "uv run pytest -q tests/test_benchmark_oracles.py",
+        "uv run pytest -q tests/test_benchmark_oracles.py tests/test_declaration_graph.py tests/test_module_dag.py tests/test_witness_packet.py tests/test_calibration_regression.py"
+      ]
+    },
+    {
+      "stepId": "step.fix_lean_parser_initializer_gate",
+      "status": "completed",
+      "prerequisites": [
+        "step.implement_child1_benchmark_oracles"
+      ],
+      "evidenceRefs": [
+        "check.child1.full_pytest.initial_failed_lean_initializer",
+        "check.lean_parser_open_scoped_regression.passed"
+      ],
+      "commandRefs": [
+        "uv run pytest -q tests",
+        "uv run pytest -q tests/test_lean_extraction.py::test_parser_helper_preserves_open_scoped_parser_context"
+      ]
+    },
+    {
+      "stepId": "step.scope_strict_quality_pytest",
+      "status": "completed",
+      "prerequisites": [
+        "step.fix_lean_parser_initializer_gate"
+      ],
+      "evidenceRefs": [
+        "check.child1.strict_quality.initial_failed_temp_collection",
+        "check.strict_quality_pytest_scope_regression.passed"
+      ],
+      "commandRefs": [
+        "uv run python scripts/python_quality.py --strict",
+        "uv run pytest -q tests/test_python_quality.py::test_strict_quality_pytest_gate_is_scoped_to_maintained_tests"
+      ]
+    },
+    {
+      "stepId": "step.validate_child1_gates",
+      "status": "completed",
+      "prerequisites": [
+        "step.scope_strict_quality_pytest"
+      ],
+      "evidenceRefs": [
+        "check.child1.openspec_valid",
+        "check.child1.full_pytest.passed",
+        "check.child1.strict_quality.passed",
+        "check.child1.compileall.passed"
+      ],
+      "commandRefs": [
+        "openspec validate ladon-portable-benchmark-fixtures-and-signal-oracles --strict",
+        "uv run pytest -q tests",
+        "uv run python scripts/python_quality.py --strict",
+        "uv run python -m compileall -q src tests scripts"
+      ]
+    },
+    {
+      "stepId": "step.implement_child2_declaration_source_evidence",
+      "status": "completed",
+      "prerequisites": [
+        "step.validate_child1_gates"
+      ],
+      "evidenceRefs": [
+        "check.child2.openspec_valid",
+        "check.child2.full_pytest.passed",
+        "check.child2.strict_quality.passed",
+        "check.child2.compileall.passed"
+      ],
+      "commandRefs": [
+        "openspec validate ladon-declaration-table-source-evidence-contract --strict",
+        "uv run pytest -q tests",
+        "uv run python scripts/python_quality.py --strict",
+        "uv run python -m compileall -q src tests scripts"
+      ]
+    },
+    {
+      "stepId": "step.implement_child3_atlas_workflow",
+      "status": "completed",
+      "prerequisites": [
+        "step.implement_child2_declaration_source_evidence"
+      ],
+      "evidenceRefs": [
+        "check.child3.atlas_slice.passed"
+      ],
+      "commandRefs": [
+        "uv run pytest -q tests/test_atlas.py tests/test_atlas_diff.py tests/test_atlas_sqlite.py tests/test_atlas_script.py tests/test_atlas_workflow.py"
+      ]
+    },
+    {
+      "stepId": "step.refactor_child3_quality_complexity",
+      "status": "completed",
+      "prerequisites": [
+        "step.implement_child3_atlas_workflow"
+      ],
+      "evidenceRefs": [
+        "check.child3.full_pytest.initial_failed_quality_gate",
+        "check.child3.strict_quality.after_refactor.passed"
+      ],
+      "commandRefs": [
+        "uv run pytest -q tests",
+        "uv run python scripts/python_quality.py --strict"
+      ]
+    },
+    {
+      "stepId": "step.validate_child3_gates",
+      "status": "completed",
+      "prerequisites": [
+        "step.refactor_child3_quality_complexity"
+      ],
+      "evidenceRefs": [
+        "check.child3.openspec_valid",
+        "check.child3.full_pytest.passed",
+        "check.child3.strict_quality.passed",
+        "check.child3.compileall.passed"
+      ],
+      "commandRefs": [
+        "openspec validate ladon-atlas-review-workflow-and-bridge-cards --strict",
+        "uv run pytest -q tests",
+        "uv run python scripts/python_quality.py --strict",
+        "uv run python -m compileall -q src tests scripts"
+      ]
+    },
+    {
+      "stepId": "step.final_umbrella_closeout",
+      "status": "completed",
+      "prerequisites": [
+        "step.validate_child3_gates"
+      ],
+      "evidenceRefs": [
+        "check.umbrella_and_children.openspec_valid",
+        "check.umbrella.final_full_pytest.passed",
+        "check.umbrella.final_strict_quality.passed",
+        "check.umbrella.final_compileall.passed"
+      ],
+      "commandRefs": [
+        "openspec validate ladon-architecture-review-evidence-routing-roadmap --strict && openspec validate ladon-portable-benchmark-fixtures-and-signal-oracles --strict && openspec validate ladon-declaration-table-source-evidence-contract --strict && openspec validate ladon-atlas-review-workflow-and-bridge-cards --strict",
+        "uv run pytest -q tests",
+        "uv run python scripts/python_quality.py --strict",
+        "uv run python -m compileall -q src tests scripts"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.openspec_apply_context.loaded",
+      "command": "openspec instructions apply --change ladon-architecture-review-evidence-routing-roadmap --json && openspec instructions apply --change ladon-portable-benchmark-fixtures-and-signal-oracles --json",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": ""
+    },
+    {
+      "checkId": "check.child1.targeted_tests.passed",
+      "command": "uv run pytest -q tests/test_benchmark_oracles.py",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "5 passed"
+    },
+    {
+      "checkId": "check.child1.adjacent_tests.passed",
+      "command": "uv run pytest -q tests/test_benchmark_oracles.py tests/test_declaration_graph.py tests/test_module_dag.py tests/test_witness_packet.py tests/test_calibration_regression.py",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "30 passed"
+    },
+    {
+      "checkId": "check.child1.full_pytest.initial_failed_lean_initializer",
+      "command": "uv run pytest -q tests",
+      "status": "invalid",
+      "failureClass": "checker_failure",
+      "failureMessage": "test_parser_helper_preserves_open_scoped_parser_context failed because Lean import loading requires enableInitializersExecution before processHeader(loadExts := true)."
+    },
+    {
+      "checkId": "check.lean_parser_open_scoped_regression.passed",
+      "command": "uv run pytest -q tests/test_lean_extraction.py::test_parser_helper_preserves_open_scoped_parser_context",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "1 passed"
+    },
+    {
+      "checkId": "check.child1.strict_quality.initial_failed_temp_collection",
+      "command": "uv run python scripts/python_quality.py --strict",
+      "status": "invalid",
+      "failureClass": "artifact_drift",
+      "failureMessage": "Strict quality used bare pytest -q and collected generated review-packet copies under temp/, causing import-file mismatch errors."
+    },
+    {
+      "checkId": "check.strict_quality_pytest_scope_regression.passed",
+      "command": "uv run pytest -q tests/test_python_quality.py::test_strict_quality_pytest_gate_is_scoped_to_maintained_tests",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "1 passed"
+    },
+    {
+      "checkId": "check.child1.openspec_valid",
+      "command": "openspec validate ladon-portable-benchmark-fixtures-and-signal-oracles --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "Change is valid"
+    },
+    {
+      "checkId": "check.child1.full_pytest.passed",
+      "command": "uv run pytest -q tests",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "128 passed"
+    },
+    {
+      "checkId": "check.child1.strict_quality.passed",
+      "command": "uv run python scripts/python_quality.py --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "radon/vulture clean; pytest tests passed with 128 passed"
+    },
+    {
+      "checkId": "check.child1.compileall.passed",
+      "command": "uv run python -m compileall -q src tests scripts",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "compileall completed"
+    },
+    {
+      "checkId": "check.child2.openspec_valid",
+      "command": "openspec validate ladon-declaration-table-source-evidence-contract --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "Change is valid"
+    },
+    {
+      "checkId": "check.child2.full_pytest.passed",
+      "command": "uv run pytest -q tests",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "131 passed"
+    },
+    {
+      "checkId": "check.child2.strict_quality.passed",
+      "command": "uv run python scripts/python_quality.py --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "radon/vulture clean; pytest tests passed with 131 passed"
+    },
+    {
+      "checkId": "check.child2.compileall.passed",
+      "command": "uv run python -m compileall -q src tests scripts",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "compileall completed"
+    },
+    {
+      "checkId": "check.child3.atlas_slice.passed",
+      "command": "uv run pytest -q tests/test_atlas.py tests/test_atlas_diff.py tests/test_atlas_sqlite.py tests/test_atlas_script.py tests/test_atlas_workflow.py",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "23 passed"
+    },
+    {
+      "checkId": "check.child3.full_pytest.initial_failed_quality_gate",
+      "command": "uv run pytest -q tests",
+      "status": "invalid",
+      "failureClass": "checker_failure",
+      "failureMessage": "strict quality test reported radon C complexity for packet_evidence_summary and the SQLite table-count test."
+    },
+    {
+      "checkId": "check.child3.strict_quality.after_refactor.passed",
+      "command": "uv run python scripts/python_quality.py --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "radon/vulture clean; pytest tests passed with 138 passed"
+    },
+    {
+      "checkId": "check.child3.openspec_valid",
+      "command": "openspec validate ladon-atlas-review-workflow-and-bridge-cards --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "Change is valid"
+    },
+    {
+      "checkId": "check.child3.full_pytest.passed",
+      "command": "uv run pytest -q tests",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "138 passed"
+    },
+    {
+      "checkId": "check.child3.strict_quality.passed",
+      "command": "uv run python scripts/python_quality.py --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "radon/vulture clean; pytest tests passed with 138 passed"
+    },
+    {
+      "checkId": "check.child3.compileall.passed",
+      "command": "uv run python -m compileall -q src tests scripts",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "compileall completed"
+    },
+    {
+      "checkId": "check.umbrella_and_children.openspec_valid",
+      "command": "openspec validate ladon-architecture-review-evidence-routing-roadmap --strict && openspec validate ladon-portable-benchmark-fixtures-and-signal-oracles --strict && openspec validate ladon-declaration-table-source-evidence-contract --strict && openspec validate ladon-atlas-review-workflow-and-bridge-cards --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "All four changes are valid"
+    },
+    {
+      "checkId": "check.umbrella.final_full_pytest.passed",
+      "command": "uv run pytest -q tests",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "138 passed"
+    },
+    {
+      "checkId": "check.umbrella.final_strict_quality.passed",
+      "command": "uv run python scripts/python_quality.py --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "radon/vulture clean; pytest tests passed with 138 passed"
+    },
+    {
+      "checkId": "check.umbrella.final_compileall.passed",
+      "command": "uv run python -m compileall -q src tests scripts",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "compileall completed"
+    }
+  ],
+  "blockers": [],
+  "nextAction": "Umbrella applied. Archive only when the user wants to finalize the OpenSpec changes.",
+  "replayBoundary": {
+    "packetLocalReplay": false,
+    "externalEvidenceIncluded": false
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not theorem evidence.",
+    "Ladon benchmark oracles route review signal checks; they do not validate theorem truth."
+  ]
+}

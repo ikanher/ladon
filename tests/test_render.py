@@ -56,6 +56,15 @@ def test_text_report_renders_unresolved_reference_classifications() -> None:
         "declaration_graph": {
             "declaration_count": 1,
             "edge_count": 0,
+            "declarations": [
+                {
+                    "declaration": "A.x_ge_one",
+                    "module": "A",
+                    "sourceRange": {"startLine": 1, "endLine": 3},
+                    "contentHash": "sha256:a",
+                    "confidence": "parser_source_range",
+                }
+            ],
             "unresolved_reference_count": 2,
             "declaration_name_families": [
                 {
@@ -89,6 +98,8 @@ def test_text_report_renders_unresolved_reference_classifications() -> None:
     text = render_text(payload)
 
     assert "Top Unresolved References\n- count: 9 (local_or_field_candidate)" in text
+    assert "Declaration Evidence\n- rows: 1\n- source ranges: 1\n- content hashes: 1" in text
+    assert "- trust: source evidence is attachment confidence, not proof truth" in text
     assert "Declaration Name Families\n- ge_one: 3" in text
     assert "Unresolved Reference Classes\n- local_or_field_candidate: 9" in text
     assert "Top Actionable Unresolved References\n- MissingTheorem: 2" in text

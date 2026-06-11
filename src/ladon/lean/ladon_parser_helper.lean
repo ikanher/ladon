@@ -3,6 +3,7 @@ import Lean.Parser.Module
 import Lean.Elab.DeclModifiers
 import Lean.Elab.DeclarationRange
 import Lean.Elab.Import
+import Lean.ImportingFlag
 
 open Lean Parser Elab
 
@@ -225,6 +226,34 @@ private def applyScopeTransition (stack : List ScopeFrame) (cmd : Syntax) : List
     else
       stack
 
+private def activateOpenNamespaces (pmctx : ParserModuleContext) (ids : Array Name)
+    (addOpenSimple : Bool) : ParserModuleContext :=
+  ids.foldl
+    (init := pmctx)
+    fun c id =>
+      let nss := ResolveName.resolveNamespace c.env c.currNamespace c.openDecls id
+      nss.foldl
+        (init := c)
+        fun c ns =>
+          let openDecls := if addOpenSimple then OpenDecl.simple ns [] :: c.openDecls else c.openDecls
+          let env := Parser.parserExtension.activateScoped c.env ns
+          { c with env, openDecls }
+
+private def applyParserContextTransition (pmctx : ParserModuleContext) (cmd : Syntax) :
+    ParserModuleContext :=
+  if cmd.isOfKind ``Lean.Parser.Command.open then
+    let openDeclStx := cmd[1]
+    if openDeclStx.getKind == `Lean.Parser.Command.openSimple then
+      activateOpenNamespaces pmctx (openDeclStx[0].getArgs.map fun stx => stx.getId)
+        (addOpenSimple := true)
+    else if openDeclStx.getKind == `Lean.Parser.Command.openScoped then
+      activateOpenNamespaces pmctx (openDeclStx[1].getArgs.map fun stx => stx.getId)
+        (addOpenSimple := false)
+    else
+      pmctx
+  else
+    pmctx
+
 private def parseImports (header : TSyntax ``Lean.Parser.Module.header) : Except String HelperHeader := do
   match header with
   | `(Module.header| $[module%$moduleTk?]? $[prelude]? $importsStx:import*) =>
@@ -245,18 +274,10 @@ private def parseImports (header : TSyntax ``Lean.Parser.Module.header) : Except
       }
   | _ => throw "unexpected header syntax"
 
-private partial def collectCommands (inputCtx : InputContext) (pmctx : ParserModuleContext)
-    (state : ModuleParserState) (messages : MessageLog) (fileMap : FileMap)
-    (stack : List ScopeFrame := []) (index : Nat := 0) (acc : Array HelperCommand := #[]) : ExceptT String IO (Array HelperCommand) := do
-  let (cmd, nextState, nextMessages) := Parser.parseCommand inputCtx pmctx state messages
-  if nextMessages.hasErrors then
-    let msg ← nextMessages.toList.mapM fun m => m.toString
-    let details := String.intercalate "\n" msg
-    throw s!"parse errors:\n{details}"
-  if Parser.isTerminalCommand cmd then
-    return acc
+private def helperCommandOfSyntax (fileMap : FileMap) (stack : List ScopeFrame)
+    (index : Nat) (cmd : Syntax) : HelperCommand :=
   let rawName? := declarationName? cmd
-  let command : HelperCommand := {
+  {
     index := index
     syntaxKind := toString cmd.getKind
     range? := mkRange? fileMap cmd
@@ -268,7 +289,35 @@ private partial def collectCommands (inputCtx : InputContext) (pmctx : ParserMod
     bodyTree? := bodyTree? cmd
     referenceCandidates := referenceCandidates cmd
   }
-  collectCommands inputCtx pmctx nextState nextMessages fileMap (applyScopeTransition stack cmd) (index + 1) (acc.push command)
+
+private partial def helperCommandsFromSyntax (fileMap : FileMap)
+    (cmds : Array Syntax) (cursor : Nat := 0) (stack : List ScopeFrame := [])
+    (index : Nat := 0) (acc : Array HelperCommand := #[]) : Array HelperCommand :=
+  if h : cursor < cmds.size then
+    let cmd := cmds[cursor]
+    if Parser.isTerminalCommand cmd then
+      acc
+    else
+      helperCommandsFromSyntax fileMap cmds (cursor + 1)
+        (applyScopeTransition stack cmd) (index + 1)
+        (acc.push (helperCommandOfSyntax fileMap stack index cmd))
+  else
+    acc
+
+private partial def collectCommands (inputCtx : InputContext) (pmctx : ParserModuleContext)
+    (state : ModuleParserState) (messages : MessageLog) (fileMap : FileMap)
+    (stack : List ScopeFrame := []) (index : Nat := 0) (acc : Array HelperCommand := #[]) :
+    ExceptT String IO (Array HelperCommand) := do
+  let (cmd, nextState, nextMessages) := Parser.parseCommand inputCtx pmctx state messages
+  if nextMessages.hasErrors then
+    let msg ← nextMessages.toList.mapM fun m => m.toString
+    let details := String.intercalate "\n" msg
+    throw s!"parse errors:\n{details}"
+  if Parser.isTerminalCommand cmd then
+    return acc
+  collectCommands inputCtx (applyParserContextTransition pmctx cmd) nextState nextMessages fileMap
+    (applyScopeTransition stack cmd) (index + 1)
+    (acc.push (helperCommandOfSyntax fileMap stack index cmd))
 
 private def runHelper (file : String) : IO UInt32 := do
   let contents ← IO.FS.readFile file
@@ -279,6 +328,7 @@ private def runHelper (file : String) : IO UInt32 := do
     let details := String.intercalate "\n" (← messages.toList.mapM fun m => m.toString)
     IO.eprintln s!"PARSE_FAILURE {file}\n{details}"
     return 1
+  unsafe Lean.enableInitializersExecution
   let (env, headerMessages) ← Lean.Elab.processHeader header {} messages inputCtx (leakEnv := true)
   if headerMessages.hasErrors then
     let details := String.intercalate "\n" (← headerMessages.toList.mapM fun m => m.toString)

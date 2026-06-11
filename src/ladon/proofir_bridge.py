@@ -43,6 +43,7 @@ def build_bridge_report(
             "bridge diagnostics do not establish theorem truth",
             "bridge diagnostics do not promote ProofIR status",
             "Ladon declaration edges are structural context, not proof dependencies",
+            "source-hash and source-range joins establish attachment confidence only",
             "name-only joins are warning-only",
         ],
     }
@@ -108,8 +109,30 @@ def declaration_rows(ladon_report: dict[str, Any]) -> list[dict[str, Any]]:
         return []
     rows = graph.get("declarations", [])
     if isinstance(rows, list) and rows:
-        return [row for row in rows if isinstance(row, dict)]
+        return [explicit_declaration_row(row) for row in rows if isinstance(row, dict)]
     return derived_declaration_rows(ladon_report)
+
+
+def explicit_declaration_row(row: dict[str, Any]) -> dict[str, Any]:
+    """Normalize one explicit declaration row without mutating the report."""
+
+    normalized = dict(row)
+    if "sourcePath" not in normalized and normalized.get("path"):
+        normalized["sourcePath"] = normalized["path"]
+    normalized.setdefault("confidence", explicit_row_confidence(normalized))
+    return normalized
+
+
+def explicit_row_confidence(row: dict[str, Any]) -> str:
+    """Return a conservative declaration-row confidence label."""
+
+    if row.get("sourcePath") and row.get("contentHash"):
+        return "source_hash"
+    if row.get("sourcePath") and row.get("sourceRange"):
+        return "source_range"
+    if row.get("declaration") and row.get("module"):
+        return "module_decl"
+    return "none"
 
 
 def derived_declaration_rows(ladon_report: dict[str, Any]) -> list[dict[str, Any]]:
@@ -129,9 +152,11 @@ def derived_declaration_rows(ladon_report: dict[str, Any]) -> list[dict[str, Any
         row = {
             "declaration": name,
             "module": module,
+            "nameResolutionMethod": "graph_summary_derived",
+            "confidence": "derived",
         }
         if root_path and module == root_module:
-            row["path"] = root_path
+            row["sourcePath"] = root_path
         rows.append(row)
     return rows
 
@@ -230,14 +255,18 @@ def exact_source_range_decl(surface: dict[str, Any], declaration: dict[str, Any]
     return (
         same_decl(surface, declaration)
         and same_source_path(surface, declaration)
-        and surface.get("sourceRange") == declaration.get("sourceRange")
+        and same_source_range(surface.get("sourceRange"), declaration.get("sourceRange"))
     )
 
 
 def exact_module_decl(surface: dict[str, Any], declaration: dict[str, Any]) -> bool:
     """Return true for exact module and declaration match."""
 
-    return same_decl(surface, declaration) and bool(surface.get("module")) and surface.get("module") == declaration.get("module")
+    return (
+        same_decl(surface, declaration)
+        and bool(surface.get("module"))
+        and surface.get("module") == declaration.get("module")
+    )
 
 
 def basename_match(surface: dict[str, Any], declaration: dict[str, Any]) -> bool:
@@ -257,7 +286,30 @@ def same_decl(surface: dict[str, Any], declaration: dict[str, Any]) -> bool:
 def same_source_path(surface: dict[str, Any], declaration: dict[str, Any]) -> bool:
     """Return true for exact source-path match."""
 
-    return bool(surface.get("sourcePath")) and surface.get("sourcePath") == declaration.get("path")
+    return bool(surface.get("sourcePath")) and surface.get("sourcePath") == declaration_source_path(declaration)
+
+
+def declaration_source_path(declaration: dict[str, Any]) -> str:
+    """Return the declaration source path from current or legacy row fields."""
+
+    return str(declaration.get("sourcePath") or declaration.get("path") or "")
+
+
+def same_source_range(surface_range: Any, declaration_range: Any) -> bool:
+    """Return true for exact or compatible line-only source ranges."""
+
+    if surface_range == declaration_range and surface_range is not None:
+        return True
+    if not isinstance(surface_range, dict) or not isinstance(declaration_range, dict):
+        return False
+    start_line = surface_range.get("startLine")
+    end_line = surface_range.get("endLine")
+    return (
+        start_line is not None
+        and end_line is not None
+        and start_line == declaration_range.get("startLine")
+        and end_line == declaration_range.get("endLine")
+    )
 
 
 def source_range_confidence(surface: dict[str, Any]) -> str:
@@ -275,14 +327,19 @@ def join_row(
 ) -> dict[str, Any]:
     """Build one bridge join row."""
 
-    return {
+    row = {
         "surfaceId": str(surface.get("surfaceId", "")),
         "claimId": str(surface.get("claimId", "")),
         "declarationName": str(declaration.get("declaration", "")),
         "module": str(declaration.get("module", "")),
         "matchKind": match_kind,
         "confidence": confidence,
+        "declarationConfidence": str(declaration.get("confidence", "")),
+        "warningOnly": match_kind == "basename_only",
     }
+    if declaration.get("contentHash"):
+        row["declarationContentHash"] = str(declaration["contentHash"])
+    return row
 
 
 def bridge_diagnostics(joins: list[dict[str, Any]], proofir_index: dict[str, Any]) -> list[dict[str, Any]]:
@@ -326,7 +383,11 @@ def stale_source_diagnostics(
     diagnostics: list[dict[str, Any]] = []
     for join in joins:
         surface = surfaces.get(join["surfaceId"], {})
-        if join["matchKind"] == "exact_source_range_decl" and surface.get("contentHash"):
+        if (
+            join["matchKind"] == "exact_source_range_decl"
+            and surface.get("contentHash")
+            and join.get("declarationContentHash")
+        ):
             diagnostics.append(
                 diagnostic(
                     "proofir.packet_stale_source",

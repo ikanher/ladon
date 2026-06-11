@@ -24,7 +24,10 @@ is not listed as supported here, do not describe it as implemented.
 8. `pipeline`: record phase timings and counters around extraction, analysis,
    findings, and rendering.
 9. `render`: write JSON/text reports from already-computed data.
-10. `quality`: enforce radon/vulture gates for active Python code.
+10. `atlas`, `atlas_diff`, `atlas_sqlite`, and `atlas_workflow`: derive
+    reviewer-routing graphs, diffs, canned queries, cards, and workflow
+    summaries from Ladon report JSON plus optional bridge reports.
+11. `quality`: enforce radon/vulture gates for active Python code.
 
 Unsupported until rebuilt with tests:
 
@@ -69,6 +72,14 @@ candidates. The pure graph analysis resolves only exact full names,
 module-local names, and globally unique basenames. This is useful for triage,
 but it is not an elaborated proof-dependency graph.
 
+When declaration extraction is available, reports include an additive
+`declaration_graph.declarations` table. Rows can carry the declaration name,
+module, kind, source path, source range, selection range, source content hash,
+extractor backend/version, name-resolution method, and confidence label. These
+fields establish source attachment confidence for reviewer routing. They do not
+establish Lean kernel dependencies, theorem truth, witness adequacy, or proof
+correctness.
+
 The seam also classifies unresolved reference candidates. It separates parser
 noise, local/field names, external Lean/library names, known text-inventory
 declarations, and genuinely actionable unknowns. Text inventory is used only as
@@ -102,6 +113,18 @@ triage items. It currently reports:
 Findings are not proof claims. They are ordering hints for reviewers so raw graph
 tables are not the first thing a human has to interpret.
 
+## Current Atlas Workflow Seam
+
+Atlas JSON is the canonical machine-readable surface for report sets. Markdown,
+SQLite, diffs, reviewer cards, and workflow summaries are derived from atlas
+JSON and optional ProofIR bridge reports.
+
+The workflow answers review-routing questions: what changed, what recurs, which
+roots need review first, which joins are low-confidence, and which packet or
+bridge evidence is incomplete or stale. Optional bridge diagnostics stay in the
+`proofir.*` namespace and remain quoted context, not Ladon-validated proof
+status.
+
 ## TDD Rules
 
 - New architecture surfaces start with tests in `tests/`.
@@ -116,8 +139,10 @@ tables are not the first thing a human has to interpret.
 
 ## Next Test Slices
 
-1. Improve declaration reference resolution without overclaiming elaboration.
-2. Move OpenSpec task backlog scanning into `analysis.openspec_backlog`.
-3. Move witness metadata checks into `analysis.witnesses`.
-4. Rebuild export-surface freshness checks as a separate tested module.
-5. Profile stable hot paths before considering Rust.
+1. Calibrate declaration-reference and evidence-join signals on portable
+   fixtures before adding more finding classes.
+2. Improve declaration reference resolution without overclaiming elaboration.
+3. Move OpenSpec task backlog scanning into `analysis.openspec_backlog`.
+4. Move witness metadata checks into `analysis.witnesses`.
+5. Rebuild export-surface freshness checks as a separate tested module.
+6. Profile stable hot paths before considering Rust.

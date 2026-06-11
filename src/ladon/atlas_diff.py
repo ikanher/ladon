@@ -60,6 +60,8 @@ def atlas_row_map(atlas: dict[str, Any]) -> dict[tuple[str, str], AtlasRow]:
     nodes = {node["id"]: node for node in atlas.get("nodes", [])}
     rows: list[AtlasRow] = []
     rows.extend(report_rows(nodes.values()))
+    rows.extend(evidence_rows(nodes.values()))
+    rows.extend(bridge_diagnostic_rows(nodes.values()))
     rows.extend(edge_rows(nodes, atlas.get("edges", [])))
     return {(row.category, row.key): row for row in rows}
 
@@ -85,6 +87,50 @@ def report_rows(nodes: Any) -> list[AtlasRow]:
                 },
             )
         )
+    return rows
+
+
+def evidence_rows(nodes: Any) -> list[AtlasRow]:
+    """Return comparable packet/declaration evidence status rows."""
+
+    rows = []
+    for node in nodes:
+        if node["kind"] != "report":
+            continue
+        data = node.get("data", {})
+        packet = data.get("packet_evidence", {})
+        declaration = data.get("declaration_evidence", {})
+        rows.append(
+            row(
+                "evidence_status",
+                node["label"],
+                {
+                    "packet_incomplete": packet.get("incomplete", 0),
+                    "packet_stale": packet.get("stale", 0),
+                    "declaration_rows": declaration.get("rows", 0),
+                    "declaration_hashes": declaration.get("content_hashes", 0),
+                },
+            )
+        )
+    return rows
+
+
+def bridge_diagnostic_rows(nodes: Any) -> list[AtlasRow]:
+    """Return comparable optional bridge diagnostic rows."""
+
+    rows = []
+    for node in nodes:
+        if node["kind"] != "report":
+            continue
+        diagnostics = node.get("data", {}).get("bridge_diagnostics", {}).get("diagnostic_counts", {})
+        for rule_id, count in sorted(diagnostics.items()):
+            rows.append(
+                row(
+                    "bridge_diagnostics",
+                    f"{node['label']}|{rule_id}",
+                    {"count": count},
+                )
+            )
     return rows
 
 

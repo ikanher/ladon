@@ -63,7 +63,18 @@ def test_pipeline_reports_declaration_graph_when_lean_bundle_has_declarations() 
         "Tiny": LeanModule(name="Tiny", path="Tiny.lean", declarations=("Tiny.root", "Tiny.leaf"))
     }
     declarations = {
-        "Tiny.root": LeanDeclaration(name="Tiny.root", module="Tiny", references=("Tiny.leaf",)),
+        "Tiny.root": LeanDeclaration(
+            name="Tiny.root",
+            module="Tiny",
+            references=("Tiny.leaf",),
+            source_path="Tiny.lean",
+            source_range={"startLine": 1, "endLine": 3},
+            content_hash="sha256:tiny",
+            extraction_backend="lean_parser_helper",
+            extractor_version="1",
+            name_resolution_method="parser_namespace_stack",
+            confidence="parser_source_range",
+        ),
         "Tiny.leaf": LeanDeclaration(name="Tiny.leaf", module="Tiny"),
     }
 
@@ -82,6 +93,17 @@ def test_pipeline_reports_declaration_graph_when_lean_bundle_has_declarations() 
 
     assert result.timing_by_phase()["declaration_graph"].status == "ok"
     assert payload["declaration_graph"]["edge_count"] == 1
+    assert payload["declaration_graph"]["declarations"][1] == {
+        "declaration": "Tiny.root",
+        "module": "Tiny",
+        "sourcePath": "Tiny.lean",
+        "sourceRange": {"startLine": 1, "endLine": 3},
+        "contentHash": "sha256:tiny",
+        "extractionBackend": "lean_parser_helper",
+        "extractorVersion": "1",
+        "nameResolutionMethod": "parser_namespace_stack",
+        "confidence": "parser_source_range",
+    }
     assert payload["declaration_graph"]["top_fan_in"][0]["declaration"] == "Tiny.leaf"
 
 

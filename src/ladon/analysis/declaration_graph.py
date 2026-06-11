@@ -82,6 +82,7 @@ def summarize_declaration_graph(
         "method": "exact_declaration_reference_graph",
         "declaration_count": len(names),
         "edge_count": sum(len(targets) for targets in edges.values()),
+        "declarations": declaration_rows(declarations),
         "unresolved_reference_count": unresolved_reference_count(declarations),
         "unresolved_reference_classes": unresolved_reference_classes(
             declarations,
@@ -107,7 +108,39 @@ def summarize_declaration_graph(
         "declarations_not_reachable_from_chosen_roots": unreachable[:50],
         "declarations_not_reachable_from_chosen_roots_count": len(unreachable),
         "edges": edges,
+}
+
+
+def declaration_rows(declarations: Mapping[str, LeanDeclaration]) -> list[dict[str, Any]]:
+    """Return explicit declaration source-evidence rows for reports."""
+
+    return [declaration_row(declarations[name]) for name in sorted(declarations)]
+
+
+def declaration_row(declaration: LeanDeclaration) -> dict[str, Any]:
+    """Return one additive declaration evidence row."""
+
+    row: dict[str, Any] = {
+        "declaration": declaration.name,
+        "module": declaration.module,
     }
+    add_optional(row, "kind", declaration.kind)
+    add_optional(row, "sourcePath", declaration.source_path)
+    add_optional(row, "sourceRange", declaration.source_range)
+    add_optional(row, "selectionRange", declaration.selection_range)
+    add_optional(row, "contentHash", declaration.content_hash)
+    add_optional(row, "extractionBackend", declaration.extraction_backend)
+    add_optional(row, "extractorVersion", declaration.extractor_version)
+    add_optional(row, "nameResolutionMethod", declaration.name_resolution_method)
+    add_optional(row, "confidence", declaration.confidence)
+    return row
+
+
+def add_optional(row: dict[str, Any], key: str, value: Any) -> None:
+    """Add a report field only when the source evidence is known."""
+
+    if value is not None:
+        row[key] = value
 
 
 def declaration_edges(

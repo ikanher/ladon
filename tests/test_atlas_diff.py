@@ -71,6 +71,28 @@ def test_diff_atlases_specializes_proof_family_and_unresolved_reference_categori
     assert diff["summary"]["by_category"]["unresolved_reference_classes"]["added"] == 1
 
 
+def test_diff_atlases_specializes_evidence_and_bridge_categories() -> None:
+    before = atlas_with_finding("A.Root")
+    after = atlas_with_finding("A.Root")
+    after["nodes"][0]["data"]["packet_evidence"] = {
+        "rows": 1,
+        "incomplete": 1,
+        "stale": 0,
+    }
+    after["nodes"][0]["data"]["declaration_evidence"] = {
+        "rows": 2,
+        "content_hashes": 1,
+    }
+    after["nodes"][0]["data"]["bridge_diagnostics"] = {
+        "diagnostic_counts": {"proofir.name_only_join_warning": 1}
+    }
+
+    diff = diff_atlases(before, after)
+
+    assert diff["summary"]["by_category"]["evidence_status"]["changed"] == 1
+    assert diff["summary"]["by_category"]["bridge_diagnostics"]["added"] == 1
+
+
 def test_render_atlas_diff_markdown_includes_summary_and_sections() -> None:
     diff = diff_atlases(atlas_with_finding("A.Root", finding_count=1), atlas_with_finding("A.Root", finding_count=2))
 

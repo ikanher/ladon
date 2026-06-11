@@ -23,7 +23,7 @@ def test_atlas_export_script_writes_json_and_markdown(tmp_path: Path) -> None:
     output_sqlite = tmp_path / "atlas.sqlite"
     output_cards = tmp_path / "cards.md"
 
-    status = script_main()(
+    status = script_main("ladon_atlas_export.py")(
         [
             "--reports-root",
             str(reports),
@@ -45,9 +45,51 @@ def test_atlas_export_script_writes_json_and_markdown(tmp_path: Path) -> None:
     assert "# Ladon Atlas Reviewer Cards" in output_cards.read_text(encoding="utf-8")
 
 
-def script_main():
-    script = Path(__file__).parents[1] / "scripts" / "ladon_atlas_export.py"
-    spec = importlib.util.spec_from_file_location("ladon_atlas_export", script)
+def test_atlas_workflow_script_writes_json_and_markdown(tmp_path: Path) -> None:
+    atlas_json = tmp_path / "atlas.json"
+    atlas_json.write_text(
+        json.dumps(
+            {
+                "schema": "ladon-report-atlas-v1",
+                "nodes": [
+                    {
+                        "id": "report:quux/owner.json",
+                        "kind": "report",
+                        "label": "quux/owner.json",
+                        "data": {
+                            "analysis_root_module": "Quux.Root",
+                            "finding_count": 0,
+                            "review_region_count": 0,
+                        },
+                    }
+                ],
+                "edges": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    output_json = tmp_path / "workflow.json"
+    output_md = tmp_path / "workflow.md"
+
+    status = script_main("ladon_atlas_workflow.py")(
+        [
+            "--atlas-json",
+            str(atlas_json),
+            "--output-json",
+            str(output_json),
+            "--output-markdown",
+            str(output_md),
+        ]
+    )
+
+    assert status == 0
+    assert json.loads(output_json.read_text(encoding="utf-8"))["schema"] == "ladon-atlas-workflow-v1"
+    assert "# Ladon Atlas Review Workflow" in output_md.read_text(encoding="utf-8")
+
+
+def script_main(script_name: str):
+    script = Path(__file__).parents[1] / "scripts" / script_name
+    spec = importlib.util.spec_from_file_location(script_name.removesuffix(".py"), script)
     assert spec is not None
     assert spec.loader is not None
     module = importlib.util.module_from_spec(spec)

@@ -70,7 +70,11 @@ def extract_file(
 
     payload = helper_payload(repo_root, file_path, helper_path, cache_dir, counters)
     module = module_from_helper_payload(repo_root, file_path, payload)
-    return module, declarations_from_helper_payload(module, payload)
+    return module, declarations_from_helper_payload(
+        module,
+        payload,
+        source_content_hash=source_content_hash(file_path),
+    )
 
 
 def helper_payload(
@@ -149,6 +153,12 @@ def file_digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def source_content_hash(path: Path) -> str:
+    """Return the report-facing source content hash for one local file."""
+
+    return f"sha256:{file_digest(path)}"
+
+
 def write_cache_entry(path: Path, payload: Mapping[str, Any]) -> None:
     """Write one helper payload to its cache path."""
 
@@ -188,11 +198,18 @@ def module_from_helper_payload(
 def declarations_from_helper_payload(
     module: LeanModule,
     payload: Mapping[str, Any],
+    *,
+    source_content_hash: str | None = None,
 ) -> dict[str, LeanDeclaration]:
     """Normalize parser-helper declaration commands into declaration IR."""
 
     declarations = [
-        declaration_from_command(module, command)
+        declaration_from_command(
+            module,
+            command,
+            source_content_hash=source_content_hash,
+            extractor_version=str(payload.get("version", "")) or None,
+        )
         for command in payload.get("commands", [])
         if command.get("isDeclarationLike")
     ]
@@ -202,18 +219,70 @@ def declarations_from_helper_payload(
 def declaration_from_command(
     module: LeanModule,
     command: Mapping[str, Any],
+    *,
+    source_content_hash: str | None = None,
+    extractor_version: str | None = None,
 ) -> LeanDeclaration | None:
     """Convert one helper command to `LeanDeclaration` when named."""
 
     name = command.get("declarationFullName") or command.get("declarationName")
     if not name:
         return None
+    source_range = normalize_helper_range(command.get("range"))
     return LeanDeclaration(
         name=name,
         module=module.name,
         kind=command.get("declarationKind"),
         references=tuple(command.get("referenceCandidates", [])),
+        source_path=module.path,
+        source_range=source_range,
+        selection_range=normalize_helper_range(command.get("selectionRange")),
+        content_hash=source_content_hash,
+        extraction_backend="lean_parser_helper",
+        extractor_version=extractor_version,
+        name_resolution_method=name_resolution_method(command),
+        confidence="parser_source_range" if source_range else "parser_decl_name",
     )
+
+
+def name_resolution_method(command: Mapping[str, Any]) -> str:
+    """Return the helper method used to attach a declaration name."""
+
+    if command.get("declarationFullName"):
+        return "parser_namespace_stack"
+    return "parser_decl_name"
+
+
+def normalize_helper_range(value: Any) -> dict[str, int] | None:
+    """Normalize helper ranges to report-facing line and column fields."""
+
+    if not isinstance(value, Mapping):
+        return None
+    start = helper_position(value.get("start"))
+    finish = helper_position(value.get("finish"))
+    if start is None or finish is None:
+        return None
+    return {
+        "startLine": start["line"],
+        "startColumn": start["column"],
+        "endLine": finish["line"],
+        "endColumn": finish["column"],
+    }
+
+
+def helper_position(value: Any) -> dict[str, int] | None:
+    """Normalize one helper position object."""
+
+    if not isinstance(value, Mapping):
+        return None
+    try:
+        line = int(value.get("line", 0))
+        column = int(value.get("column", 0))
+    except (TypeError, ValueError):
+        return None
+    if line <= 0 or column <= 0:
+        return None
+    return {"line": line, "column": column}
 
 
 def helper_imports(payload: Mapping[str, Any]) -> tuple[str, ...]:

@@ -33,8 +33,11 @@ def test_exact_source_hash_declaration_join_produces_high_confidence_card() -> N
     first_join = report["joins"][0]
     assert first_join["matchKind"] == "exact_source_hash_decl"
     assert first_join["confidence"] == "high"
+    assert first_join["declarationConfidence"] == "source_hash"
+    assert first_join["warningOnly"] is False
     assert report["reviewerCards"][0]["surfaceCount"] == 2
     assert "proofir.nonclaim_attached_to_root" in diagnostic_ids(report)
+    assert "source-hash and source-range joins establish attachment confidence only" in report["trustRules"]
 
 
 def test_clean_core_declaration_graph_joins_quux_surfaces_by_module_decl() -> None:
@@ -47,6 +50,7 @@ def test_clean_core_declaration_graph_joins_quux_surfaces_by_module_decl() -> No
     assert report["summary"]["joinedSurfaceCount"] == 2
     assert {join["matchKind"] for join in report["joins"]} == {"exact_module_decl"}
     assert {join["confidence"] for join in report["joins"]} == {"medium"}
+    assert {join["declarationConfidence"] for join in report["joins"]} == {"derived"}
     assert "proofir.packet_stale_source" not in diagnostic_ids(report)
     assert "proofir.nonclaim_attached_to_root" in diagnostic_ids(report)
 
@@ -59,6 +63,81 @@ def test_stale_source_hash_emits_diagnostic_but_still_joins_by_range() -> None:
 
     assert report["joins"][0]["matchKind"] == "exact_source_range_decl"
     assert "proofir.packet_stale_source" in diagnostic_ids(report)
+
+
+def test_explicit_declaration_rows_are_preferred_over_derived_rows() -> None:
+    ladon_report = {
+        "metadata": {"analysis_root_module": "A"},
+        "declaration_graph": {
+            "declarations": [
+                {
+                    "declaration": "A.exact",
+                    "module": "A",
+                    "sourcePath": "A.lean",
+                    "contentHash": "sha256:a",
+                }
+            ],
+            "edges": {"A.derived_only": []},
+            "top_fan_in": [{"declaration": "A.derived_only"}],
+        },
+    }
+    proofir_index = {
+        "artifactKind": "proofir_bridge_index",
+        "surfaces": [
+            {
+                "surfaceId": "surface.a",
+                "claimId": "claim.a",
+                "module": "A",
+                "declarationName": "A.exact",
+                "sourcePath": "A.lean",
+                "contentHash": "sha256:a",
+            }
+        ],
+    }
+
+    report = build_bridge_report(ladon_report, proofir_index)
+
+    assert report["summary"]["declarationCount"] == 1
+    assert report["joins"][0]["matchKind"] == "exact_source_hash_decl"
+
+
+def test_hash_and_range_joins_outrank_module_only_rows() -> None:
+    surface = {
+        "surfaceId": "surface.a",
+        "claimId": "claim.a",
+        "module": "A",
+        "declarationName": "A.target",
+        "sourcePath": "A.lean",
+        "sourceRange": {"startLine": 7, "endLine": 9},
+        "contentHash": "sha256:new",
+    }
+    ladon_report = {
+        "declaration_graph": {
+            "declarations": [
+                {"declaration": "A.target", "module": "A"},
+                {
+                    "declaration": "A.target",
+                    "module": "A",
+                    "sourcePath": "A.lean",
+                    "sourceRange": {"startLine": 7, "endLine": 9},
+                    "contentHash": "sha256:new",
+                },
+            ]
+        }
+    }
+
+    hash_report = build_bridge_report(
+        ladon_report,
+        {"artifactKind": "proofir_bridge_index", "surfaces": [surface]},
+    )
+    range_surface = {key: value for key, value in surface.items() if key != "contentHash"}
+    range_report = build_bridge_report(
+        ladon_report,
+        {"artifactKind": "proofir_bridge_index", "surfaces": [range_surface]},
+    )
+
+    assert hash_report["joins"][0]["matchKind"] == "exact_source_hash_decl"
+    assert range_report["joins"][0]["matchKind"] == "exact_source_range_decl"
 
 
 def test_missing_declaration_emits_unattached_surface() -> None:
@@ -93,6 +172,7 @@ def test_name_only_join_is_low_confidence_warning() -> None:
 
     assert report["joins"][0]["matchKind"] == "basename_only"
     assert report["joins"][0]["confidence"] == "low"
+    assert report["joins"][0]["warningOnly"] is True
     assert "proofir.name_only_join_warning" in diagnostic_ids(report)
 
 
