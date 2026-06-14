@@ -434,11 +434,15 @@ def bridge_report_summary(report: dict[str, Any]) -> dict[str, Any]:
 
     diagnostics = [row for row in report.get("diagnostics", []) if isinstance(row, dict)]
     joins = [row for row in report.get("joins", []) if isinstance(row, dict)]
+    route_audit = report.get("routeAudit", {})
+    route_summary = route_audit.get("summary", {}) if isinstance(route_audit, dict) else {}
     return {
         "diagnostic_count": len(diagnostics),
         "diagnostic_counts": counts_by_key(diagnostics, "ruleId"),
         "low_confidence_join_count": low_confidence_join_count(joins),
         "unmatched_join_count": sum(1 for row in joins if row.get("matchKind") == "unmatched"),
+        "route_audit_claim_count": int(route_summary.get("claimRouteCount", 0)),
+        "route_audit_diagnostic_count": int(route_summary.get("diagnosticCount", 0)),
         "trust_rules": sorted(str(rule) for rule in report.get("trustRules", [])),
     }
 
@@ -449,6 +453,8 @@ def merge_bridge_summary(target: dict[str, Any], update: dict[str, Any]) -> None
     target["diagnostic_count"] += update["diagnostic_count"]
     target["low_confidence_join_count"] += update["low_confidence_join_count"]
     target["unmatched_join_count"] += update["unmatched_join_count"]
+    target["route_audit_claim_count"] += update["route_audit_claim_count"]
+    target["route_audit_diagnostic_count"] += update["route_audit_diagnostic_count"]
     for key, count in update["diagnostic_counts"].items():
         target["diagnostic_counts"][key] = target["diagnostic_counts"].get(key, 0) + count
     target["trust_rules"] = sorted(set(target["trust_rules"]) | set(update["trust_rules"]))
@@ -462,6 +468,8 @@ def empty_bridge_summary() -> dict[str, Any]:
         "diagnostic_counts": {},
         "low_confidence_join_count": 0,
         "unmatched_join_count": 0,
+        "route_audit_claim_count": 0,
+        "route_audit_diagnostic_count": 0,
         "trust_rules": [],
     }
 
@@ -603,7 +611,9 @@ def format_bridge_diagnostics(summary: dict[str, Any]) -> str:
     return (
         f"diagnostics={summary.get('diagnostic_count', 0)} "
         f"low_confidence_joins={summary.get('low_confidence_join_count', 0)} "
-        f"unmatched={summary.get('unmatched_join_count', 0)}"
+        f"unmatched={summary.get('unmatched_join_count', 0)} "
+        f"route_audit_claims={summary.get('route_audit_claim_count', 0)} "
+        f"route_audit_diagnostics={summary.get('route_audit_diagnostic_count', 0)}"
         f"{suffix}"
     )
 

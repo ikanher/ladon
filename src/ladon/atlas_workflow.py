@@ -309,7 +309,7 @@ def packet_evidence_gaps(atlas: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def bridge_stale_evidence(bridge_reports: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Return stale-source bridge diagnostics."""
+    """Return stale-source or route-authority bridge diagnostics."""
 
     rows = []
     for report in bridge_reports:
@@ -317,14 +317,20 @@ def bridge_stale_evidence(bridge_reports: list[dict[str, Any]]) -> list[dict[str
         for diagnostic in report.get("diagnostics", []):
             if not isinstance(diagnostic, dict):
                 continue
-            if diagnostic.get("ruleId") != "proofir.packet_stale_source":
+            rule_id = str(diagnostic.get("ruleId", ""))
+            if rule_id == "proofir.packet_stale_source":
+                kind = "bridge_stale_source"
+            elif rule_id.startswith("ladon.claim.") or rule_id.startswith("ladon.evidence."):
+                kind = "claim_authority_route"
+            else:
                 continue
             rows.append(
                 {
-                    "kind": "bridge_stale_source",
+                    "kind": kind,
                     "subject": str(diagnostic.get("subject", "")),
                     "root": root,
                     "level": str(diagnostic.get("level", "")),
+                    "ruleId": rule_id,
                 }
             )
     return rows

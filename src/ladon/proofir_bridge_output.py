@@ -144,6 +144,7 @@ def reviewer_cards(
     proofir_index: dict[str, Any],
     joins: list[dict[str, Any]],
     diagnostics: list[dict[str, Any]],
+    route_audit: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Build compact reviewer cards."""
 
@@ -158,9 +159,29 @@ def reviewer_cards(
             "witnessEndpoints": joined_witness_endpoints(proofir_index, joined),
             "nonclaims": joined_nonclaims(proofir_index, joined),
             "diagnostics": [row["ruleId"] for row in diagnostics],
+            "routeAudit": route_audit_card(route_audit),
             "trustNote": "Ladon structural context only; ProofIR statuses are quoted, not promoted.",
         }
     ]
+
+
+def route_audit_card(route_audit: dict[str, Any] | None) -> dict[str, Any]:
+    """Return compact route-audit metadata for one reviewer card."""
+
+    if not route_audit:
+        return {
+            "claimRouteCount": 0,
+            "diagnosticCount": 0,
+            "routes": [],
+            "trustNote": "no claim authority route audit supplied",
+        }
+    summary = route_audit.get("summary", {})
+    return {
+        "claimRouteCount": int(summary.get("claimRouteCount", 0)),
+        "diagnosticCount": int(summary.get("diagnosticCount", 0)),
+        "routes": route_audit.get("routes", []),
+        "trustNote": str(route_audit.get("trustNote", "")),
+    }
 
 
 def joined_claims(proofir_index: dict[str, Any], joins: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -184,8 +205,32 @@ def joined_claim_row(claim: dict[str, Any]) -> dict[str, Any]:
         "scope": str(claim.get("scope", "")),
         "quotedOnly": True,
     }
+    copy_route_claim_metadata(row, claim)
     copy_optional_claim_metadata(row, claim)
     return row
+
+
+def copy_route_claim_metadata(target: dict[str, Any], claim: dict[str, Any]) -> None:
+    """Copy quoted route-authority metadata into one claim row."""
+
+    for key in ("claimedStatus", "endpointScope"):
+        if claim.get(key):
+            target[key] = str(claim[key])
+    for key in (
+        "claimedAuthority",
+        "primaryTheoremSurfaces",
+        "supportingTheoremSurfaces",
+        "backgroundTheoremSurfaces",
+        "allowedExternalEvidence",
+        "nonclaims",
+    ):
+        if isinstance(claim.get(key), list) and claim[key]:
+            target[key] = list(claim[key])
+    if isinstance(claim.get("requiredEvidenceAuthorities"), dict) and claim["requiredEvidenceAuthorities"]:
+        target["requiredEvidenceAuthorities"] = {
+            str(name): list(authority_list(authority))
+            for name, authority in claim["requiredEvidenceAuthorities"].items()
+        }
 
 
 def copy_optional_claim_metadata(target: dict[str, Any], claim: dict[str, Any]) -> None:

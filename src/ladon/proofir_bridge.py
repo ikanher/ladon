@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ladon.analysis.claim_authority import audit_claim_authority
+from ladon.analysis.conditional_signature import conditional_signature_diagnostics
 from ladon.proofir_bridge_output import bridge_diagnostics, diagnostic, reviewer_cards
 from ladon.proofir_input import EXPECTED_INDEX_KIND, SURFACE_BUNDLE_KIND, normalize_proofir_index, surface_content_hash
 
@@ -24,8 +26,17 @@ def build_bridge_report(
         return malformed_report(ladon_report)
 
     joins = join_surfaces(declarations, normalized_index.get("surfaces", []))
-    diagnostics = bridge_diagnostics(joins, normalized_index)
-    cards = reviewer_cards(ladon_report, normalized_index, joins, diagnostics)
+    route_audit = audit_claim_authority(
+        normalized_index.get("claims", []),
+        joins=joins,
+        surfaces=normalized_index.get("surfaces", []),
+    )
+    diagnostics = [
+        *bridge_diagnostics(joins, normalized_index),
+        *route_audit["diagnostics"],
+        *conditional_signature_diagnostics(declarations, normalized_index.get("claims", [])),
+    ]
+    cards = reviewer_cards(ladon_report, normalized_index, joins, diagnostics, route_audit)
     return {
         "schemaVersion": 1,
         "artifactKind": "ladon_proofir_bridge_report",
@@ -39,6 +50,7 @@ def build_bridge_report(
         },
         "joins": joins,
         "diagnostics": diagnostics,
+        "routeAudit": route_audit,
         "reviewerCards": cards,
         "trustRules": [
             "bridge diagnostics do not establish theorem truth",
@@ -46,6 +58,7 @@ def build_bridge_report(
             "Ladon declaration edges are structural context, not proof dependencies",
             "source-hash and source-range joins establish attachment confidence only",
             "name-only joins are warning-only",
+            "claim authority diagnostics audit evidence-route alignment only",
         ],
     }
 

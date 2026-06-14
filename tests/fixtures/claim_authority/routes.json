@@ -1,0 +1,116 @@
+{
+  "claims": [
+    {
+      "claimId": "claim.closed.imported_window",
+      "claimedStatus": "lean_closed",
+      "claimedAuthority": "lean_proved",
+      "endpointScope": "sampled_null_event_dp",
+      "primaryTheoremSurfaces": ["surface.closed"],
+      "requiredEvidenceAuthorities": {
+        "finiteWindow": "imported_interval_certified"
+      },
+      "allowedExternalEvidence": [],
+      "nonclaims": ["not arbitrary_neighbor_event_dp"]
+    },
+    {
+      "claimId": "claim.scope.overclaim",
+      "claimedStatus": "lean_closed",
+      "claimedAuthority": "lean_proved",
+      "endpointScope": "arbitrary_neighbor_event_dp",
+      "primaryTheoremSurfaces": ["surface.sampled_null"],
+      "requiredEvidenceAuthorities": {
+        "countMassEvidence": "lean_checker"
+      },
+      "allowedExternalEvidence": [],
+      "nonclaims": []
+    },
+    {
+      "claimId": "claim.scalar.replay_overclaim",
+      "claimedStatus": "production",
+      "claimedAuthority": "fully_proved",
+      "endpointScope": "sampled_null_event_dp",
+      "primaryTheoremSurfaces": ["surface.closed"],
+      "requiredEvidenceAuthorities": {
+        "scalarRows": "smoke"
+      },
+      "allowedExternalEvidence": [],
+      "nonclaims": []
+    },
+    {
+      "claimId": "claim.sampled_null.scoped",
+      "claimedStatus": "lean_closed",
+      "claimedAuthority": "lean_proved",
+      "endpointScope": "sampled_null_event_dp",
+      "primaryTheoremSurfaces": ["surface.sampled_null"],
+      "requiredEvidenceAuthorities": {
+        "countMassEvidence": "lean_checker"
+      },
+      "allowedExternalEvidence": [],
+      "nonclaims": ["not arbitrary_neighbor_event_dp"]
+    },
+    {
+      "claimId": "claim.imported.honest",
+      "claimedStatus": "conditional_external_evidence",
+      "claimedAuthority": "conditional_external_evidence",
+      "endpointScope": "sampled_null_event_dp",
+      "primaryTheoremSurfaces": ["surface.closed"],
+      "requiredEvidenceAuthorities": {
+        "finiteWindow": "imported_interval_certified"
+      },
+      "allowedExternalEvidence": ["finiteWindow"],
+      "nonclaims": ["not Lean-closed without imported finite-window evidence"]
+    }
+  ],
+  "surfaces": [
+    {
+      "surfaceId": "surface.closed",
+      "claimId": "claim.closed.imported_window",
+      "declarationName": "BMinSep.CountBucket.closed_eventDP",
+      "endpointScope": "sampled_null_event_dp",
+      "sourcePath": "BMinSep/CountBucket.lean",
+      "sourceRange": {
+        "startLine": 10,
+        "endLine": 16
+      },
+      "contentHash": "sha256:closed-eventdp"
+    },
+    {
+      "surfaceId": "surface.sampled_null",
+      "claimId": "claim.scope.overclaim",
+      "declarationName": "BMinSep.CountBucket.sampled_null_eventDP",
+      "endpointScope": "sampled_null_event_dp",
+      "sourcePath": "BMinSep/CountBucket.lean",
+      "sourceRange": {
+        "startLine": 22,
+        "endLine": 30
+      },
+      "contentHash": "sha256:sampled-null"
+    },
+    {
+      "surfaceId": "surface.basename_only",
+      "claimId": "claim.weak.attachment",
+      "declarationName": "closed_eventDP",
+      "endpointScope": "sampled_null_event_dp"
+    }
+  ],
+  "joins": [
+    {
+      "surfaceId": "surface.closed",
+      "matchKind": "exact_source_hash_decl",
+      "confidence": "high",
+      "warningOnly": false
+    },
+    {
+      "surfaceId": "surface.sampled_null",
+      "matchKind": "exact_source_hash_decl",
+      "confidence": "high",
+      "warningOnly": false
+    },
+    {
+      "surfaceId": "surface.basename_only",
+      "matchKind": "basename_only",
+      "confidence": "low",
+      "warningOnly": true
+    }
+  ]
+}

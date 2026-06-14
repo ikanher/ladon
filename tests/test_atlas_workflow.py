@@ -27,8 +27,12 @@ def test_atlas_workflow_answers_reviewer_routing_questions(tmp_path: Path) -> No
     assert sections["reviewPriorityRoots"][0]["root"] == "Quux.One"
     assert sections["lowConfidenceJoins"][0]["matchKind"] == "basename_only"
     assert sections["incompleteOrStaleEvidence"]
+    assert any(
+        row["kind"] == "claim_authority_route"
+        for row in sections["incompleteOrStaleEvidence"]
+    )
     cards = {card["root"]: card for card in workflow["reviewerCards"]}
-    assert cards["Quux.One"]["bridge_diagnostics"]["diagnostic_count"] == 1
+    assert cards["Quux.One"]["bridge_diagnostics"]["diagnostic_count"] == 2
 
 
 def test_atlas_workflow_without_bridge_has_stable_empty_bridge_sections(tmp_path: Path) -> None:
@@ -151,7 +155,12 @@ def sample_bridge_report() -> dict:
                 "ruleId": "proofir.name_only_join_warning",
                 "level": "warning",
                 "subject": "surface.name_only",
-            }
+            },
+            {
+                "ruleId": "ladon.claim.closed_with_imported_evidence",
+                "level": "warning",
+                "subject": "claim.closed.imported",
+            },
         ],
         "trustRules": ["name-only joins are warning-only"],
     }

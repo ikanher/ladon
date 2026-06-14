@@ -46,6 +46,22 @@ The compact bridge-index shape carries:
 - nonclaims;
 - projection boundaries.
 
+Claim rows may also carry route-authority metadata for Ladon's claim authority
+audit:
+
+- `claimedStatus`;
+- `claimedAuthority`;
+- `endpointScope`;
+- `primaryTheoremSurfaces`;
+- `supportingTheoremSurfaces`;
+- `backgroundTheoremSurfaces`;
+- `requiredEvidenceAuthorities`;
+- `allowedExternalEvidence`;
+- `nonclaims`.
+
+These fields let Ladon ask whether a claim's authority label matches its
+evidence route. They do not let Ladon decide theorem truth.
+
 Quux compatibility notes:
 
 - `sourceHash` is treated as a `contentHash` alias for source-hash attachment
@@ -70,6 +86,20 @@ The MVP emits conservative diagnostics:
 - `proofir.packet_stale_source`;
 - `proofir.malformed_bridge_index`.
 
+When route-authority metadata is present, the bridge can also emit governance
+diagnostics:
+
+- `ladon.claim.closed_with_imported_evidence`;
+- `ladon.claim.endpoint_scope_overclaim`;
+- `ladon.claim.missing_primary_theorem_surface`;
+- `ladon.evidence.authority_mismatch`;
+- `ladon.evidence.unknown_authority`;
+- `ladon.theorem.final_name_conditional_statement`.
+
+These diagnostics mean that the advertised claim authority and observed evidence
+route need review. They are not theorem falsehood, proof invalidity, or witness
+adequacy claims.
+
 ## Trust Rule
 
 Bridge output is review context only:
@@ -85,6 +115,41 @@ correctness. Name-only joins are warning-only and never evidence.
 Reviewer cards preserve quoted ProofIR metadata such as `proofTrust`,
 `replayBoundary`, extractor guarantees, and source hashes when supplied. These
 fields explain the external status boundary; they are not promoted by Ladon.
+
+Reviewer cards also keep route authority separate from source attachment. A
+source-hash join can say "this external route row attaches strongly to this
+declaration," while the route audit can still say "the claim advertises
+Lean-closed authority but a required premise is imported interval-certified."
+The first statement is attachment confidence. The second is authority/evidence
+alignment. Neither is a proof-truth verdict.
+
+Example:
+
+```text
+Claim Authority Audit
+
+- claim: bminsep.h2.maintained.production_event_dp
+  claimed: lean_closed
+  observed route:
+    Lean-owned:
+      false-step branch
+      source-tail aggregation
+      production transport
+    Imported:
+      finite-window interval upper
+  diagnostic: ladon.claim.closed_with_imported_evidence
+  verdict: conditional external evidence remains in the route
+
+- claim: bminsep.count_bucket.arbitrary_neighbor
+  claimed endpoint: arbitrary_neighbor_event_dp
+  observed primary theorem: sampled_null_event_dp
+  diagnostic: ladon.claim.endpoint_scope_overclaim
+
+- claim: bminsep.count_bucket.sampled_null
+  claimed endpoint: sampled_null_event_dp
+  observed primary theorem: sampled_null_event_dp
+  verdict: scope consistent
+```
 
 ## Clean-Core Ladon Reports
 

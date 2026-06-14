@@ -40,6 +40,26 @@ Unsupported until rebuilt with tests:
 - export-surface freshness checks;
 - elaborated proof dependency extraction.
 
+## Current Claim Authority Audit Seam
+
+`ladon.analysis.claim_authority` defines a pure governance layer for quoted
+claim/evidence route metadata. It answers one question:
+
+```text
+Does the claim's authority label match the observed evidence route?
+```
+
+It does not prove theorem truth, replay Lean, validate witnesses, or decide
+mathematical correctness. It emits review-routing diagnostics when route
+metadata says, for example, that a claim is Lean-closed while a required premise
+is imported interval-certified, or that a public claim advertises an
+arbitrary-neighbor endpoint while the primary theorem surface is sampled/null.
+
+This is Ladon's highest-priority product seam after the ProofIR bridge: process
+overclaim detection is more urgent than adding new architecture-smell classes.
+Graph metrics, proof-family similarity, atlas diffs, and OpenSpec hygiene remain
+useful context, but they should not displace claim authority route auditing.
+
 ## Target Pipeline
 
 1. `extraction`: run text or Lean-native extraction and produce stable IR.

@@ -72,6 +72,11 @@ Optional bridge:
 - `ladon-proofir-bridge` can join an existing Ladon JSON report with a compact
   ProofIR bridge index and emit reviewer cards/diagnostics.  This is separate
   from core Ladon analysis and does not make Ladon a proof checker.
+- when compact ProofIR inputs include route-authority fields, Ladon can audit
+  whether a claim's advertised authority matches its evidence route. For
+  example, it can flag a Lean-closed claim whose required finite-window evidence
+  is still imported interval-certified, or an arbitrary-neighbor public claim
+  whose primary theorem surface is sampled/null only.
 
 Atlas workflow:
 
@@ -86,6 +91,9 @@ Unsupported legacy flags fail explicitly rather than emitting partial reports.
 
 Near-term work:
 
+- make claim authority route auditing the priority review surface: claimed
+  status vs required evidence authority, endpoint-scope overclaim, missing
+  primary theorem surfaces, and warning-only conditional-signature hints;
 - improve declaration-reference resolution beyond string classification;
 - reintroduce witness audit and packet audit as small TDD-backed modules;
 - only port stable hot paths after profiling proves they are worth moving.

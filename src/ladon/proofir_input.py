@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ladon.analysis.claim_authority import authority_values
+
 
 EXPECTED_INDEX_KIND = "proofir_bridge_index"
 SURFACE_BUNDLE_KIND = "proof_ir_lean_surface_bundle"
@@ -138,14 +140,68 @@ def normalize_claim_row(row: dict[str, Any]) -> dict[str, Any]:
 
     normalized = dict(row)
     normalized["authority"] = authority_list(normalized.get("authority"))
+    if "claimedAuthority" in normalized:
+        normalized["claimedAuthority"] = authority_values(normalized.get("claimedAuthority"))
+    if "requiredEvidenceAuthorities" in normalized:
+        normalized["requiredEvidenceAuthorities"] = normalized_evidence_authority_map(
+            normalized.get("requiredEvidenceAuthorities")
+        )
+    if "allowedExternalEvidence" in normalized:
+        normalized["allowedExternalEvidence"] = string_list(normalized.get("allowedExternalEvidence"))
+    if "nonclaims" in normalized:
+        normalized["nonclaims"] = string_list(normalized.get("nonclaims"))
+    for key in (
+        "primaryTheoremSurfaces",
+        "supportingTheoremSurfaces",
+        "backgroundTheoremSurfaces",
+    ):
+        if key in normalized:
+            normalized[key] = normalized_surface_refs(normalized.get(key))
     return normalized
+
+
+def normalized_evidence_authority_map(value: Any) -> dict[str, list[str]]:
+    """Return evidence authorities keyed by evidence name."""
+
+    if not isinstance(value, dict):
+        return {}
+    return {
+        str(name): authority_values(authority)
+        for name, authority in sorted(value.items())
+    }
+
+
+def string_list(value: Any) -> list[str]:
+    """Return compact route string fields as lists."""
+
+    if isinstance(value, str):
+        return [value] if value else []
+    if isinstance(value, list):
+        return [str(item) for item in value if str(item)]
+    if isinstance(value, dict):
+        return [str(key) for key, item in value.items() if item]
+    return []
+
+
+def normalized_surface_refs(value: Any) -> list[Any]:
+    """Return route theorem surface references without mutating nested rows."""
+
+    if not isinstance(value, list):
+        return []
+    rows: list[Any] = []
+    for item in value:
+        if isinstance(item, dict):
+            rows.append(dict(item))
+        elif isinstance(item, str):
+            rows.append(item)
+    return rows
 
 
 def claim_from_surface(surface: dict[str, Any]) -> dict[str, Any]:
     """Build a quoted claim row from a normalized surface bundle row."""
 
     claim_id = str(surface.get("claimId") or surface.get("surfaceId", ""))
-    return {
+    row = {
         "claimId": claim_id,
         "status": surface_status(surface),
         "authority": authority_list(surface.get("authority")),
@@ -157,6 +213,20 @@ def claim_from_surface(surface: dict[str, Any]) -> dict[str, Any]:
         "sourceRange": surface.get("sourceRange", {}),
         "contentHash": surface_content_hash(surface),
     }
+    for key in (
+        "claimedStatus",
+        "claimedAuthority",
+        "endpointScope",
+        "primaryTheoremSurfaces",
+        "supportingTheoremSurfaces",
+        "backgroundTheoremSurfaces",
+        "requiredEvidenceAuthorities",
+        "allowedExternalEvidence",
+        "nonclaims",
+    ):
+        if key in surface:
+            row[key] = surface[key]
+    return normalize_claim_row(row)
 
 
 def surface_status(surface: dict[str, Any]) -> str:

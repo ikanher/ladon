@@ -108,6 +108,8 @@ def test_atlas_reviewer_cards_include_routing_fields(tmp_path: Path) -> None:
                 "diagnostic_counts": {},
                 "low_confidence_join_count": 0,
                 "unmatched_join_count": 0,
+                "route_audit_claim_count": 0,
+                "route_audit_diagnostic_count": 0,
                 "trust_rules": [],
             },
             "strongest_evidence": [
@@ -133,6 +135,8 @@ def test_atlas_reviewer_cards_include_optional_bridge_data(tmp_path: Path) -> No
         },
         "low_confidence_join_count": 1,
         "unmatched_join_count": 0,
+        "route_audit_claim_count": 1,
+        "route_audit_diagnostic_count": 1,
         "trust_rules": ["name-only joins are warning-only"],
     }
 
@@ -254,5 +258,9 @@ def sample_bridge_report(root: str = "Quux.Semantics.Propagation") -> dict:
                 "subject": "surface.name_only",
             },
         ],
+        "routeAudit": {
+            "summary": {"claimRouteCount": 1, "diagnosticCount": 1},
+            "routes": [],
+        },
         "trustRules": ["name-only joins are warning-only"],
     }

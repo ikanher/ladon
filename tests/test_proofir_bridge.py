@@ -279,6 +279,49 @@ def test_bridge_quotes_proofir_status_without_promotion() -> None:
     assert all(row.get("status") != "established_by_ladon" for row in claim_rows)
 
 
+def test_bridge_preserves_route_authority_metadata_and_emits_audit_diagnostic() -> None:
+    index = load_fixture("proofir-bridge-index-complex-quadratic.json")
+    index["claims"][0].update(
+        {
+            "claimedStatus": "lean_closed",
+            "claimedAuthority": "lean_proved",
+            "endpointScope": "sampled_null_event_dp",
+            "primaryTheoremSurfaces": [index["surfaces"][0]["surfaceId"]],
+            "requiredEvidenceAuthorities": {"finiteWindow": "imported_interval_certified"},
+            "allowedExternalEvidence": [],
+            "nonclaims": ["not arbitrary_neighbor_event_dp"],
+        }
+    )
+
+    report = report_for(index)
+
+    assert "ladon.claim.closed_with_imported_evidence" in diagnostic_ids(report)
+    claim = report["reviewerCards"][0]["claims"][0]
+    assert claim["claimedAuthority"] == ["lean_proved"]
+    assert claim["requiredEvidenceAuthorities"] == {
+        "finiteWindow": ["imported_interval_certified"]
+    }
+    route = report["routeAudit"]["routes"][0]
+    assert route["primaryTheoremSurfaces"][0]["attachmentConfidence"] == "high"
+    assert "claim authority diagnostics audit evidence-route alignment only" in report["trustRules"]
+
+
+def test_bridge_preserves_unknown_authority_without_upgrading() -> None:
+    index = load_fixture("proofir-bridge-index-complex-quadratic.json")
+    index["claims"][0].update(
+        {
+            "claimedAuthority": "project_local_magic",
+            "primaryTheoremSurfaces": [index["surfaces"][0]["surfaceId"]],
+        }
+    )
+
+    report = report_for(index)
+
+    assert "ladon.evidence.unknown_authority" in diagnostic_ids(report)
+    claim = report["reviewerCards"][0]["claims"][0]
+    assert claim["claimedAuthority"] == ["project_local_magic"]
+
+
 def test_no_proofir_index_leaves_empty_optional_report() -> None:
     report = build_bridge_report(load_fixture("ladon-report-complex-quadratic.json"), None)
 

@@ -1,0 +1,106 @@
+{
+  "change": "ladon-claim-authority-route-audit-roadmap",
+  "goal": "Implement claim authority route auditing from the umbrella packet with ProofIR route metadata, warning-only signature heuristics, packet validation clarity, docs, and gates.",
+  "status": "complete",
+  "completedTasks": [
+    "1.1",
+    "1.2",
+    "1.3",
+    "1.4",
+    "2.1",
+    "2.2",
+    "2.3",
+    "2.4",
+    "2.5",
+    "2.6",
+    "3.1",
+    "3.2",
+    "3.3",
+    "3.4",
+    "4.1",
+    "4.2",
+    "4.3",
+    "4.4",
+    "5.1",
+    "5.2",
+    "5.3",
+    "6.1",
+    "6.2",
+    "6.3",
+    "6.4",
+    "7.1",
+    "7.2",
+    "7.3",
+    "7.4"
+  ],
+  "currentFailure": null,
+  "failureClass": null,
+  "commandsRun": [
+    {
+      "command": "openspec status --change \"ladon-claim-authority-route-audit-roadmap\" --json",
+      "result": "ready; 29 tasks pending"
+    },
+    {
+      "command": "openspec instructions apply --change \"ladon-claim-authority-route-audit-roadmap\" --json",
+      "result": "apply context loaded"
+    },
+    {
+      "command": "uv run pytest -q tests/test_claim_authority.py tests/test_proofir_bridge.py tests/test_atlas.py tests/test_atlas_workflow.py tests/test_pro_review_packet_helper.py",
+      "result": "45 passed"
+    },
+    {
+      "command": "uv run pytest -q tests",
+      "result": "160 passed, 1 failed: strict quality test reported radon complexity in claim_authority.py"
+    },
+    {
+      "command": "uv run python scripts/python_quality.py --strict",
+      "result": "radon/vulture clean; compileall passed; pytest 161 passed"
+    },
+    {
+      "command": "python3 .codex/skills/pro-review-packet/scripts/create_pro_review_packet.py ...",
+      "result": "created temp/ladon-claim-authority-route-audit-review-data-r01.zip"
+    },
+    {
+      "command": "python3 -m zipfile --test temp/ladon-claim-authority-route-audit-review-data-r01.zip",
+      "result": "passed"
+    },
+    {
+      "command": "openspec validate \"ladon-claim-authority-route-audit-roadmap\" --strict",
+      "result": "valid"
+    },
+    {
+      "command": "openspec status --change \"ladon-claim-authority-route-audit-roadmap\"",
+      "result": "4/4 artifacts complete"
+    },
+    {
+      "command": "uv run pytest -q tests/test_claim_authority.py tests/test_proofir_bridge.py",
+      "result": "33 passed after closing allowedExternalEvidence bypass and making signature lowering declaration-linked"
+    },
+    {
+      "command": "python3 .codex/skills/pro-review-packet/scripts/create_pro_review_packet.py ... --file src/ladon/atlas_diff.py ...",
+      "result": "created temp/ladon-claim-authority-route-audit-review-data-r02.zip"
+    },
+    {
+      "command": "python3 -m zipfile --test temp/ladon-claim-authority-route-audit-review-data-r02.zip",
+      "result": "passed; packet includes src/ladon/atlas_diff.py"
+    },
+    {
+      "command": "uv run pytest -q tests",
+      "result": "163 passed"
+    },
+    {
+      "command": "uv run python scripts/python_quality.py --strict",
+      "result": "radon/vulture clean; compileall passed; pytest 163 passed"
+    },
+    {
+      "command": "openspec validate \"ladon-claim-authority-route-audit-roadmap\" --strict",
+      "result": "valid"
+    },
+    {
+      "command": "openspec status --change \"ladon-claim-authority-route-audit-roadmap\"",
+      "result": "4/4 artifacts complete"
+    }
+  ],
+  "nextGate": "archive when ready",
+  "blockers": []
+}
