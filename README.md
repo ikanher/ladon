@@ -38,6 +38,68 @@ cd <target-repo>
 lake env lean --run /home/codex/projects/ladon/src/ladon/lean/ladon_parser_helper.lean -- <target-file>
 ```
 
+Project-specific architecture boundary policy:
+
+```bash
+uv run ladon --repo-root /path/to/lean/project --root Some/Owner.lean --skip-build \
+  --architecture-policy docs/ladon-architecture-policy.json \
+  --output-json /tmp/ladon-report.json --output-text /tmp/ladon-report.txt
+```
+
+Architecture policies are JSON files that define module groups with glob
+patterns and rules between those groups. Ladon does not hard-code project
+families such as samplers, kernels, bridges, or generated modules; the target
+project supplies those names and exclusions.
+See `docs/policies/architecture-policy.example.json` for a generic starting
+point.
+
+If `--architecture-policy` is omitted, Ladon looks for these repo-local files:
+
+- `.ladon/architecture-policy.json`
+- `ladon.architecture.json`
+- `ladon-architecture-policy.json`
+
+When no policy is found, Ladon emits an
+`architecture_policy.skipped_no_policy` info finding and may include a
+draft-policy suggestion derived from repeated module-name prefixes with
+cross-prefix imports. Draft suggestions are review prompts only; they are not
+enforced rules.
+
+Project-specific source pattern policy:
+
+```bash
+uv run ladon --repo-root /path/to/lean/project --root Some/Owner.lean --skip-build \
+  --source-pattern-policy docs/ladon-source-pattern-policy.json \
+  --output-json /tmp/ladon-report.json --output-text /tmp/ladon-report.txt
+```
+
+Source-pattern policies are JSON files with project-owned pattern rows:
+
+```json
+{
+  "id": "local-source-audit",
+  "patterns": [
+    {
+      "id": "stale-term",
+      "pattern": "OldProjectTerm",
+      "kind": "stale_term",
+      "severity": "warning",
+      "excludeGenerated": true
+    }
+  ]
+}
+```
+
+Patterns are plain substring searches by default. Set `"regex": true` for a
+regular expression, `"caseSensitive": false` for case-insensitive matching, and
+`"maxMatches"` to cap reported rows per pattern. Ladon does not hard-code stale
+terms, trust words, or project conventions; the target repository supplies
+those names. If `--source-pattern-policy` is omitted, Ladon looks for
+`.ladon/source-pattern-policy.json`, `.ladon/source-patterns.json`,
+`ladon.source-patterns.json`, or `ladon-source-pattern-policy.json`.
+See `docs/policies/source-pattern-policy.example.json` for a generic starting
+point.
+
 ## Current State
 
 Very experimental.
@@ -47,11 +109,37 @@ Supported today:
 - text-based Lean module discovery under a selected root namespace;
 - optional Lean parser-helper extraction for root-file declaration candidates;
 - pure module-DAG analysis through `ladon.analysis.module_dag`;
+- optional project-supplied architecture policy checks over the module DAG,
+  including forbidden direct imports, optional transitive witness paths, and
+  shared-dependency extraction candidates;
+- line-level import evidence for text-backed architecture policy findings;
+- policy text summaries for direct group pairs, top offending files, and ranked
+  common-layer candidates while full edge/path detail remains in JSON;
+- common-layer candidate modes for either policy-target-only scanning or all
+  multi-group imports via `sharedDependencyMode: "all_multi_group_imports"`;
+- policy finding triage context for direct imports, including configurable
+  bridge/facade/core-looking classification and fix-oriented suggested actions;
+- duplicate import detection with line-level evidence, while graph edges remain
+  deduplicated, including generated-family attribution when files look
+  generated;
+- source-level module metadata, including line counts and generic generated-code
+  tags inferred from common file/path/comment conventions;
+- generated-aware fan-in/fan-out, facade/barrel fan-out, implementation fan-out,
+  and largest-handwritten-module report rows so generated modules and public
+  barrels do not hide owner-file architecture pressure;
+- facade-like module subtype rows for pure barrels, generated `All` barrels,
+  public root facades, and mixed barrel/theorem modules;
+- lightweight lexical and import-target smell rows for anchored
+  `sorry`/`admit`/`axiom`, TODO/FIXME, and missing internal import targets;
+- optional project-supplied source-pattern scans for stale terms, local trust
+  words, or other project conventions, with source locations and generated-code
+  filtering when configured;
 - pure declaration graph analysis through `ladon.analysis.declaration_graph`;
 - additive `declaration_graph.declarations` rows with source path/range/hash,
   extraction backend/version, name-resolution method, and confidence when the
   Lean helper supplies that evidence;
-- root-focused findings for module fan-in, root import closure, declaration
+- root-focused findings for module fan-in, handwritten module fan-in, root
+  import closure, duplicate imports, large handwritten modules, declaration
   fan-in/fan-out, and unresolved-reference hotspots;
 - unresolved-reference classification into local/field, external, parser-noise,
   known-inventory, and actionable-unknown classes;

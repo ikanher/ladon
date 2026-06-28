@@ -1,0 +1,39 @@
+{
+  "id": "example-source-patterns",
+  "patterns": [
+    {
+      "id": "deprecated-term",
+      "pattern": "DeprecatedLocalTerm",
+      "kind": "stale_term",
+      "severity": "warning",
+      "excludeGenerated": true
+    },
+    {
+      "id": "local-trust-marker",
+      "pattern": "\\bUncheckedLocalMarker\\b",
+      "kind": "trust_marker",
+      "severity": "warning",
+      "regex": true,
+      "caseSensitive": true,
+      "excludeGenerated": false,
+      "maxMatches": 50
+    },
+    {
+      "id": "todo-class",
+      "pattern": "TODO\\((review|proof|cleanup)\\)",
+      "kind": "todo_class",
+      "severity": "info",
+      "regex": true,
+      "excludeGenerated": true,
+      "maxMatches": 100
+    },
+    {
+      "id": "banned-prose",
+      "pattern": "obviously proved",
+      "kind": "banned_prose",
+      "severity": "warning",
+      "caseSensitive": false,
+      "excludeGenerated": true
+    }
+  ]
+}

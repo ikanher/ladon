@@ -1,0 +1,28 @@
+{
+  "id": "example-peer-boundaries",
+  "groups": {
+    "alpha_family": {
+      "patterns": ["Example.Alpha.*"]
+    },
+    "beta_family": {
+      "patterns": ["Example.Beta.*"]
+    },
+    "common_layer": {
+      "patterns": ["Example.Common.*"]
+    }
+  },
+  "rules": [
+    {
+      "id": "peer-families-do-not-import-each-other",
+      "kind": "forbid_imports",
+      "from": ["alpha_family", "beta_family"],
+      "to": ["alpha_family", "beta_family"],
+      "ignoreTarget": ["Example.Common.*"],
+      "suggestCommonDependencies": true,
+      "sharedDependencyMode": "all_multi_group_imports",
+      "contextClassifiers": {
+        "bridgeTokens": ["Bridge", "Transport", "Comparison", "Calibration", "Surface"]
+      }
+    }
+  ]
+}

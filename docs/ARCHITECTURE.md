@@ -14,24 +14,32 @@ is not listed as supported here, do not describe it as implemented.
 2. `extraction`: discover Lean modules from source text without invoking Lake.
 3. `ir`: hold stable dataclasses shared by pure analysis passes.
 4. `analysis.module_dag`: summarize importer-to-imported module DAG structure,
-   including root direct-import closure attribution.
-5. `lean_extraction`: optionally run the bundled Lean parser helper for selected
+   including root direct-import closure attribution, duplicate import rows,
+   generated-module tags, generated-filtered fan tables, facade/barrel fan-out,
+   implementation fan-out, and large source-file triage rows.
+5. `analysis.architecture_policy`: apply optional project-supplied module group
+   policies to the DAG. Ladon supplies generic glob matching and graph traversal
+   only; projects define the groups, forbidden imports, and exclusions.
+6. `analysis.source_patterns`: apply optional project-supplied source text
+   pattern scans. Ladon supplies generic substring/regex matching only; projects
+   define stale terms, local trust markers, and generated-code filtering.
+7. `lean_extraction`: optionally run the bundled Lean parser helper for selected
    files and cache helper JSON payloads by source/helper content.
-6. `analysis.declaration_graph`: summarize conservative declaration-reference
+8. `analysis.declaration_graph`: summarize conservative declaration-reference
    edges, fan-in/fan-out, reachability, and unresolved candidate hot spots.
-7. `analysis.findings`: promote high-signal graph rows into concise root-focused
+9. `analysis.findings`: promote high-signal graph rows into concise root-focused
    findings.
-8. `pipeline`: record phase timings and counters around extraction, analysis,
+10. `pipeline`: record phase timings and counters around extraction, analysis,
    findings, and rendering.
-9. `render`: write JSON/text reports from already-computed data.
-10. `proofir_bridge`: optionally joins compact ProofIR review inputs to Ladon
+11. `render`: write JSON/text reports from already-computed data.
+12. `proofir_bridge`: optionally joins compact ProofIR review inputs to Ladon
     declaration evidence. Accepted inputs are `proofir_bridge_index` and
     Quux-style `proof_ir_lean_surface_bundle`; raw ProofIR dialects remain out
     of core.
-11. `atlas`, `atlas_diff`, `atlas_sqlite`, and `atlas_workflow`: derive
+13. `atlas`, `atlas_diff`, `atlas_sqlite`, and `atlas_workflow`: derive
     reviewer-routing graphs, diffs, canned queries, cards, and workflow
     summaries from Ladon report JSON plus optional bridge reports.
-12. `quality`: enforce radon/vulture gates for active Python code.
+14. `quality`: enforce radon/vulture gates for active Python code.
 
 Unsupported until rebuilt with tests:
 
@@ -59,6 +67,104 @@ This is Ladon's highest-priority product seam after the ProofIR bridge: process
 overclaim detection is more urgent than adding new architecture-smell classes.
 Graph metrics, proof-family similarity, atlas diffs, and OpenSpec hygiene remain
 useful context, but they should not displace claim authority route auditing.
+
+## Current Architecture Policy Seam
+
+`ladon.analysis.architecture_policy` defines a pure policy layer over the
+module DAG. A project can define module groups using glob patterns and then
+state which group-to-group imports are forbidden. Ladon can report direct
+violations, optional transitive witness paths, ambiguous group matches, and
+shared peer dependencies that may belong in a lower common layer.
+
+This seam is intentionally generic. Ladon does not know about any project's
+samplers, proof families, generated modules, bridges, or kernels. A target
+repository must provide those names in a JSON policy file, and rule-level
+exclusions decide which integration or generated modules are allowed to cross
+boundaries. The resulting diagnostics are source-level architecture findings;
+they are not proof dependencies or theorem-truth claims.
+
+Intentional bridge or common-layer imports should be modeled in the policy, not
+hard-coded into Ladon. Typical choices are separate groups such as `bridge` or
+`common`, plus rule exclusions like `ignoreSource`, `ignoreTarget`, or exact
+`ignoreEdges`. This keeps the same analyzer usable for sampler families,
+optimization kernels, generated surfaces, integration modules, and future Lean
+projects without teaching Ladon any project-specific names.
+
+Policy discovery is repo-local and explicit. The CLI accepts
+`--architecture-policy <json>`, otherwise the pipeline searches
+`.ladon/architecture-policy.json`, `ladon.architecture.json`, and
+`ladon-architecture-policy.json`. If no file is found, the report includes an
+`architecture_policy.skipped_no_policy` info finding instead of silently
+omitting this class of checks. The skipped report may include a draft policy
+suggestion based on repeated module-name prefixes and observed cross-prefix
+imports; that suggestion is heuristic guidance and is not enforced.
+
+Text extraction preserves source path, line, and import text for imports.
+Policy findings attach that evidence to direct violations, while transitive
+findings carry witness paths plus per-edge source evidence when available. The
+policy report also includes direct pair summaries and ranked shared-dependency
+summaries so reviewers can see whether a problem is a single bad import or a
+systemic misplaced common layer.
+
+Human-readable policy output is deliberately summary-first: direct group-pair
+counts, top offending source files, and ranked common-layer candidates come
+before raw finding counts. The complete direct edges, transitive witness paths,
+and import-site evidence remain in JSON for scripts and detailed review.
+
+Common-layer candidate scanning has two explicit modes. The default
+`sharedDependencyMode: "policy_targets"` preserves the narrow behavior: only
+targets selected by the rule's `to` groups are considered. Projects that want a
+broader lower-layer audit can set
+`sharedDependencyMode: "all_multi_group_imports"`; then any imported target seen
+from multiple selected source groups can become a ranked common-layer
+candidate. Both modes use project-supplied groups and exclusions rather than
+hard-coded module-family names.
+
+Direct policy findings also carry triage context. Rules can provide
+`bridgeTokens` or `contextClassifiers.bridgeTokens`; otherwise Ladon uses a
+small generic bridge vocabulary such as `Bridge`, `Transport`, `Comparison`,
+`Calibration`, and `Surface`. Matching rows are labeled `bridge-ish`; rows
+whose source or target module metadata says `facade` are labeled `facade-ish`;
+the rest are `core-looking`. These labels do not suppress policy violations.
+They help reviewers decide whether to extract a lower common layer, make an
+intentional bridge explicit in policy, or move facade aggregation out of owner
+implementation code.
+
+The module DAG itself deduplicates graph edges so repeated import lines do not
+inflate fan-in, fan-out, pair summaries, or policy violations. Repeated import
+targets are still reported separately as duplicate-import rows with line
+evidence and a generic cleanup hint to remove repeated import lines or fix the
+generator that emits them.
+
+Module metadata includes facade-like subtypes. `pure_barrel` means imports with
+no declarations; `generated_all` means generated `All` aggregation files;
+`public_root_facade` means a namespace root file importing a broad child
+surface; `mixed_barrel_and_theorems` means a module combines broad imports with
+local declarations. These are source-shape classifications, not proof claims.
+
+Text extraction also records lightweight lexical markers for anchored
+`sorry`/`admit`/`axiom` in code and TODO/FIXME markers in source text, plus
+imports that look internal to the top namespace but are missing from the
+discovered inventory.
+
+## Current Source Pattern Policy Seam
+
+`ladon.analysis.source_patterns` defines a generic policy layer for source text
+matches that are project-specific. A policy row names the pattern, its kind, its
+severity, whether it is a regex, whether matching is case-sensitive, and whether
+generated files should be excluded. The analyzer does not know about any target
+project's stale names, local trust terms, or deprecated phases.
+
+The CLI accepts `--source-pattern-policy <json>`, otherwise the pipeline
+searches `.ladon/source-pattern-policy.json`, `.ladon/source-patterns.json`,
+`ladon.source-patterns.json`, and `ladon-source-pattern-policy.json`. If no
+policy is found, the phase is recorded as skipped and no source-pattern findings
+are emitted.
+
+Matches carry module, source path, line, matched policy id, kind, severity, and
+whether extraction classified the file as generated. They are review-routing
+signals only. A stale term in source text does not establish a proof issue, and
+the absence of a configured term does not prove semantic freshness.
 
 ## Target Pipeline
 
@@ -128,7 +234,10 @@ Why this seam now:
 triage items. It currently reports:
 
 - module fan-in hotspots;
+- handwritten module fan-in hotspots;
 - root direct-import closure hotspots;
+- duplicate import targets;
+- large handwritten modules;
 - declaration fan-in/fan-out hotspots;
 - declaration name family hotspots;
 - unresolved reference hotspots;
