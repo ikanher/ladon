@@ -56,6 +56,46 @@ def test_findings_ignore_below_threshold_rows() -> None:
     assert summarize_findings({}, declaration_graph) == []
 
 
+def test_findings_flag_duplicate_imports_and_large_handwritten_modules() -> None:
+    module_dag = {
+        "top_fan_in": [],
+        "top_handwritten_fan_in": [],
+        "root_direct_import_closures": [],
+        "duplicate_imports": [
+            {
+                "module": "A.Owner",
+                "target": "A.Core",
+                "count": 2,
+                "lines": [1, 2],
+            }
+        ],
+        "module_name_smells": [
+            {
+                "module": "A.GeneratedScalarBw2Eps0p5Gamma0p8.Base",
+                "reasonKinds": ["generated_encoded_parameters", "long_segment"],
+                "suggestedAction": "move generated parameters into a manifest",
+            }
+        ],
+        "top_large_handwritten_modules": [
+            {
+                "module": "A.Owner",
+                "lineCount": 3000,
+            }
+        ],
+    }
+
+    findings = summarize_findings(module_dag, None)
+
+    assert [finding["kind"] for finding in findings] == [
+        "duplicate_import_target",
+        "module_name_smell",
+        "large_handwritten_module",
+    ]
+    assert "lines 1, 2" in findings[0]["message"]
+    assert "generated_encoded_parameters" in findings[1]["message"]
+    assert findings[2]["count"] == 3000
+
+
 def test_findings_cap_each_hotspot_family() -> None:
     declaration_graph = {
         "top_fan_in": [],

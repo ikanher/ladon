@@ -14,6 +14,15 @@ from typing import Any
 from ladon.extraction import ModuleDiscovery
 
 
+POLICY_DETAIL_FINDING_KINDS = {
+    "architecture_policy.direct_forbidden_import",
+    "architecture_policy.transitive_forbidden_import",
+    "architecture_policy.shared_dependency_candidate",
+    "source_pattern.invalid_policy",
+    "source_pattern.match",
+}
+
+
 def generated_timestamp(override: str | None = None) -> str:
     """Return a deterministic timestamp override or the current UTC time."""
 
@@ -63,9 +72,13 @@ def render_text(payload: dict[str, Any]) -> str:
         f"- acyclic: {dag['acyclic']}",
         f"- topological layers: {dag['topological_layer_count']}",
         f"- facade modules: {dag['facade_module_count']}",
+        f"- generated modules: {dag.get('generated_module_count', 0)}",
+        f"- duplicate import targets: {dag.get('duplicate_import_count', 0)}",
         "",
     ]
     lines.extend(warning_lines(payload.get("warnings", [])))
+    lines.extend(architecture_policy_lines(payload.get("architecture_policy")))
+    lines.extend(source_pattern_lines(payload.get("source_patterns")))
     lines.extend(finding_lines(payload.get("findings", [])))
     lines.extend(quality_baseline_lines(payload.get("quality_baseline")))
     lines.extend(packet_evidence_lines(payload.get("packet_evidence", [])))
@@ -84,16 +97,355 @@ def warning_lines(warnings: list[str]) -> list[str]:
     return ["Warnings", *[f"- {warning}" for warning in warnings], ""]
 
 
+def architecture_policy_lines(policy: dict[str, Any] | None) -> list[str]:
+    """Render architecture policy summary rows when supplied."""
+
+    if not policy:
+        return []
+    summary = policy.get("summary", {})
+    finding_count = sum(int(value) for value in summary.values())
+    lines = [
+        "Architecture Policy",
+        f"- policy: {policy.get('policyId', '') or '(unnamed)'}",
+        f"- groups: {policy.get('groupCount', 0)}",
+        f"- rules: {policy.get('ruleCount', 0)}",
+        f"- findings: {finding_count}",
+    ]
+    lines.extend(architecture_pair_lines(policy.get("directPairSummary", [])))
+    lines.extend(architecture_context_lines(policy.get("directContextSummary", [])))
+    lines.extend(architecture_offending_file_lines(policy.get("directOffendingFileSummary", [])))
+    lines.extend(architecture_shared_dependency_lines(policy.get("sharedDependencySummary", [])))
+    lines.extend(
+        f"- {kind}: {count}"
+        for kind, count in sorted(summary.items())
+    )
+    return [*lines, ""]
+
+
+def architecture_pair_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render top architecture policy pair counts."""
+
+    if not rows:
+        return []
+    return [
+        f"- pair {row['sourceGroup']} -> {row['targetGroup']}: {row['uniqueDirectEdgeCount']}"
+        for row in rows[:5]
+    ]
+
+
+def architecture_context_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render direct policy finding context counts."""
+
+    if not rows:
+        return []
+    return [
+        (
+            f"- context {row['policyContext']}: {row['count']} "
+            f"triage={','.join(row.get('triageSeverities', []))}"
+        )
+        for row in rows[:5]
+    ]
+
+
+def architecture_offending_file_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render files with the most direct policy violations."""
+
+    if not rows:
+        return []
+    return [
+        architecture_offending_file_line(row)
+        for row in rows[:5]
+    ]
+
+
+def architecture_offending_file_line(row: dict[str, Any]) -> str:
+    """Render one compact offending-file policy row."""
+
+    samples = row.get("sampleImports", [])
+    sample = architecture_import_sample(samples[0]) if samples else ""
+    return (
+        f"- file {row.get('sourcePath') or row.get('sourceModule')}: "
+        f"{row['uniqueDirectEdgeCount']} direct violations{sample}"
+    )
+
+
+def architecture_import_sample(sample: dict[str, Any]) -> str:
+    """Render one import sample from an offending-file summary."""
+
+    line = f":{sample['line']}" if sample.get("line") is not None else ""
+    import_text = str(sample.get("importText", ""))
+    if import_text:
+        return f" sample line{line} {import_text}"
+    return ""
+
+
+def architecture_shared_dependency_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render top shared-dependency extraction candidates."""
+
+    if not rows:
+        return []
+    return [
+        (
+            f"- common-layer candidate {row['targetModule']}: "
+            f"confidence={row.get('confidence', 'low')} "
+            f"scope={row.get('dependencyScope', 'policy_targets')} "
+            f"groups={','.join(row['sourceGroups'])} "
+            f"importers={row.get('importerCount', 0)}"
+        )
+        for row in rows[:5]
+    ]
+
+
+def source_pattern_lines(report: dict[str, Any] | None) -> list[str]:
+    """Render configurable source-pattern scan results."""
+
+    if not report:
+        return []
+    lines = [
+        "Source Patterns",
+        f"- policy: {report.get('policyId', '') or '(unnamed)'}",
+        f"- patterns: {report.get('patternCount', 0)}",
+        source_pattern_count_line(report),
+    ]
+    lines.extend(source_pattern_diagnostic_lines(report.get("diagnostics", [])))
+    lines.extend(source_pattern_summary_lines(report.get("patternSummary", [])))
+    lines.extend(source_pattern_match_lines(report.get("matches", [])))
+    return [*lines, ""]
+
+
+def source_pattern_count_line(report: dict[str, Any]) -> str:
+    """Render total and reported source-pattern match counts."""
+
+    total = int(report.get("matchCount", 0))
+    reported = int(report.get("reportedMatchCount", total))
+    if reported != total:
+        return f"- matches: {total} (reported {reported})"
+    return f"- matches: {total}"
+
+
+def source_pattern_diagnostic_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render invalid source-pattern policy rows."""
+
+    return [
+        f"- policy diagnostic {row.get('subject', '')}: {row.get('message', '')}"
+        for row in rows[:5]
+    ]
+
+
+def source_pattern_summary_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render per-pattern source scan counts."""
+
+    if not rows:
+        return []
+    return [
+        (
+            f"- pattern {row['patternId']}: {row['matchCount']} "
+            f"kind={row['kind']} severity={row['severity']}"
+        )
+        for row in rows[:5]
+    ]
+
+
+def source_pattern_match_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render first source-pattern matches with source locations."""
+
+    if not rows:
+        return []
+    return [
+        (
+            f"- {row['path']}:{row['line']} {row['patternId']} "
+            f"generated={row.get('generated', False)}"
+        )
+        for row in rows[:5]
+    ]
+
+
 def module_dag_detail_lines(dag: dict[str, Any]) -> list[str]:
     """Render grouped module-DAG detail sections."""
 
     lines: list[str] = []
     lines.extend(module_fan_lines("Top Module Fan-In", dag.get("top_fan_in", []), "fan_in"))
     lines.extend(module_fan_lines("Top Module Fan-Out", dag.get("top_fan_out", []), "fan_out"))
+    lines.extend(
+        module_fan_lines(
+            "Top Facade/Barrel Module Fan-Out",
+            dag.get("top_facade_fan_out", []),
+            "fan_out",
+        )
+    )
+    lines.extend(
+        module_fan_lines(
+            "Top Implementation Module Fan-Out",
+            dag.get("top_implementation_fan_out", []),
+            "fan_out",
+        )
+    )
+    lines.extend(
+        module_fan_lines(
+            "Top Handwritten Module Fan-In",
+            dag.get("top_handwritten_fan_in", []),
+            "fan_in",
+        )
+    )
+    lines.extend(
+        module_fan_lines(
+            "Top Handwritten Module Fan-Out",
+            dag.get("top_handwritten_fan_out", []),
+            "fan_out",
+        )
+    )
+    lines.extend(large_module_lines(dag.get("top_large_handwritten_modules", [])))
+    lines.extend(module_name_smell_lines(dag))
+    lines.extend(generated_family_lines(dag.get("generated_family_summary", [])))
+    lines.extend(duplicate_import_lines(dag.get("duplicate_imports", [])))
+    lines.extend(duplicate_family_lines(dag.get("duplicate_import_family_summary", [])))
+    lines.extend(facade_subtype_lines(dag))
+    lines.extend(missing_internal_import_lines(dag.get("missing_internal_imports", [])))
+    lines.extend(lexical_marker_lines(dag))
     lines.extend(root_import_closure_lines(dag.get("root_direct_import_closures", [])))
     lines.extend(named_module_lines("Facade Modules", dag.get("facade_modules", [])))
     lines.extend(unreachable_module_lines(dag))
     return lines
+
+
+def large_module_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render largest non-generated source files."""
+
+    visible = [row for row in rows if row.get("lineCount", 0) > 0][:5]
+    if not visible:
+        return []
+    lines = ["Largest Handwritten Modules"]
+    lines.extend(f"- {row['module']}: {row['lineCount']} lines" for row in visible)
+    return [*lines, ""]
+
+
+def module_name_smell_lines(dag: dict[str, Any]) -> list[str]:
+    """Render module-name pressure summaries and samples."""
+
+    summary = dag.get("module_name_smell_summary", {})
+    rows = dag.get("module_name_smells", [])
+    if not summary and not rows:
+        return []
+    lines = ["Module Naming Smells"]
+    lines.extend(f"- {kind}: {count}" for kind, count in sorted(summary.items()))
+    lines.extend(module_name_smell_line(row) for row in rows[:5])
+    return [*lines, ""]
+
+
+def module_name_smell_line(row: dict[str, Any]) -> str:
+    """Render one module naming-smell row."""
+
+    reasons = ",".join(row.get("reasonKinds", [])[:4])
+    action = row.get("suggestedAction", "review module naming")
+    return (
+        f"- {row['module']}: generated={row.get('generated', False)} "
+        f"reasons={reasons}; {action}"
+    )
+
+
+def generated_family_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render generated families even when no duplicate imports exist."""
+
+    if not rows:
+        return []
+    lines = ["Generated Families"]
+    lines.extend(generated_family_line(row) for row in rows[:5])
+    return [*lines, ""]
+
+
+def generated_family_line(row: dict[str, Any]) -> str:
+    """Render one generated-family summary row."""
+
+    reasons = row.get("reasonSummary", {})
+    reason_text = ",".join(
+        f"{kind}={count}"
+        for kind, count in sorted(reasons.items())[:4]
+    )
+    suffix = f" reasons={reason_text}" if reason_text else ""
+    return (
+        f"- {row.get('generatorFamily') or '(generated)'}: "
+        f"{row['moduleCount']} modules maxDepth={row.get('maxPathDepth', 0)}{suffix}"
+    )
+
+
+def duplicate_import_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render duplicate import targets with compact line evidence."""
+
+    if not rows:
+        return []
+    lines = ["Duplicate Imports"]
+    lines.extend(duplicate_import_line(row) for row in rows[:5])
+    return [*lines, ""]
+
+
+def duplicate_import_line(row: dict[str, Any]) -> str:
+    """Render one duplicate import row."""
+
+    lines = row.get("lines", [])
+    line_suffix = f" lines={','.join(str(line) for line in lines[:5])}" if lines else ""
+    action = row.get("suggestedAction", "deduplicate the import target")
+    return f"- {row['module']} -> {row['target']}: {row['count']}{line_suffix}; {action}"
+
+
+def duplicate_family_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render duplicate imports grouped by generated family and target."""
+
+    if not rows:
+        return []
+    lines = ["Duplicate Import Families"]
+    lines.extend(
+        (
+            f"- {row.get('generatorFamily') or '(handwritten)'} -> {row['target']}: "
+            f"{row['duplicateModuleCount']} modules generated={row.get('generated', False)}"
+        )
+        for row in rows[:5]
+    )
+    return [*lines, ""]
+
+
+def facade_subtype_lines(dag: dict[str, Any]) -> list[str]:
+    """Render facade subtype counts and top facade-like modules."""
+
+    summary = dag.get("facade_subtype_summary", {})
+    rows = dag.get("top_facade_like_modules", [])
+    if not summary and not rows:
+        return []
+    lines = ["Facade Subtypes"]
+    lines.extend(f"- {name}: {count}" for name, count in sorted(summary.items()))
+    lines.extend(
+        f"- {row['module']}: {row['subtype']} imports={row['fan_out']}"
+        for row in rows[:5]
+    )
+    return [*lines, ""]
+
+
+def missing_internal_import_lines(rows: list[dict[str, Any]]) -> list[str]:
+    """Render missing internal import targets."""
+
+    if not rows:
+        return []
+    lines = ["Missing Internal Import Targets"]
+    lines.extend(
+        f"- {row['sourcePath']}:{row.get('line', '')} imports {row['targetModule']}"
+        for row in rows[:5]
+    )
+    return [*lines, ""]
+
+
+def lexical_marker_lines(dag: dict[str, Any]) -> list[str]:
+    """Render lexical marker summary and samples."""
+
+    summary = dag.get("lexical_marker_summary", {})
+    rows = dag.get("lexical_markers", [])
+    lines = ["Lexical Markers"]
+    if not summary:
+        return [*lines, "- none", ""]
+    lines.extend(f"- {kind}: {count}" for kind, count in sorted(summary.items()))
+    lines.extend(
+        f"- {row['path']}:{row['line']} {row['kind']}"
+        for row in rows[:5]
+    )
+    return [*lines, ""]
 
 
 def module_fan_lines(
@@ -151,11 +503,22 @@ def unreachable_module_lines(dag: dict[str, Any]) -> list[str]:
 def finding_lines(findings: list[dict[str, Any]]) -> list[str]:
     """Render concise root-focused findings."""
 
-    if not findings:
+    visible = visible_findings(findings)
+    if not visible:
         return []
     lines = ["Findings"]
-    lines.extend(finding_line(finding) for finding in findings)
+    lines.extend(finding_line(finding) for finding in visible)
     return [*lines, ""]
+
+
+def visible_findings(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Keep detailed policy rows in JSON while avoiding noisy text output."""
+
+    return [
+        finding
+        for finding in findings
+        if finding.get("kind") not in POLICY_DETAIL_FINDING_KINDS
+    ]
 
 
 def finding_line(finding: dict[str, Any]) -> str:
@@ -163,8 +526,19 @@ def finding_line(finding: dict[str, Any]) -> str:
 
     return (
         f"- [{finding['severity']}] {finding['kind']} "
-        f"{finding['subject']}: {finding['message']}{baseline_suffix(finding)}"
+        f"{finding['subject']}: {finding['message']}"
+        f"{policy_context_suffix(finding)}{baseline_suffix(finding)}"
     )
+
+
+def policy_context_suffix(finding: dict[str, Any]) -> str:
+    """Render optional direct-policy triage context."""
+
+    if "policyContext" not in finding:
+        return ""
+    action = finding.get("suggestedAction", "")
+    action_text = f"; {action}" if action else ""
+    return f" ({finding['policyContext']} triage={finding.get('triageSeverity', '')}{action_text})"
 
 
 def baseline_suffix(finding: dict[str, Any]) -> str:

@@ -47,6 +47,80 @@ def test_pipeline_json_payload_has_additive_timing_namespace() -> None:
     assert "timings" in payload["pipeline"]
     assert payload["pipeline"]["timings"]["module_dag"]["status"] == "ok"
     assert payload["pipeline"]["timings"]["declaration_graph"]["status"] == "skipped"
+    assert payload["pipeline"]["timings"]["architecture_policy"]["status"] == "ok"
+    assert payload["architecture_policy"]["status"] == "skipped_no_policy"
+    assert any(
+        finding["kind"] == "architecture_policy.skipped_no_policy"
+        for finding in payload["findings"]
+    )
+
+
+def test_pipeline_applies_architecture_policy_findings() -> None:
+    context = RunContext(
+        repo_root=FIXTURE_ROOT,
+        requested_root="Tiny.lean",
+        architecture_policy={
+            "id": "tiny-policy",
+            "groups": {
+                "root": ["Tiny"],
+                "helper": ["Tiny.Helper"],
+            },
+            "rules": [
+                {
+                    "id": "root-helper-boundary",
+                    "kind": "forbid_direct_imports",
+                    "from": ["root"],
+                    "to": ["helper"],
+                }
+            ],
+        },
+    )
+
+    payload = run_pipeline(context).to_report_payload()
+
+    assert payload["architecture_policy"]["policyId"] == "tiny-policy"
+    assert payload["pipeline"]["timings"]["architecture_policy"]["status"] == "ok"
+    assert any(
+        finding["kind"] == "architecture_policy.direct_forbidden_import"
+        and finding["subject"] == "Tiny -> Tiny.Helper"
+        for finding in payload["findings"]
+    )
+
+
+def test_pipeline_applies_source_pattern_policy_findings() -> None:
+    context = RunContext(
+        repo_root=FIXTURE_ROOT,
+        requested_root="Tiny.lean",
+        source_pattern_policy={
+            "id": "tiny-source-policy",
+            "patterns": [
+                {
+                    "id": "theorem-keyword",
+                    "pattern": "theorem",
+                    "kind": "keyword_scan",
+                    "severity": "info",
+                }
+            ],
+        },
+    )
+
+    payload = run_pipeline(context).to_report_payload()
+
+    assert payload["source_patterns"]["policyId"] == "tiny-source-policy"
+    assert payload["source_patterns"]["matchCount"] == 1
+    assert payload["pipeline"]["timings"]["source_patterns"]["status"] == "ok"
+    assert any(
+        finding["kind"] == "source_pattern.match"
+        and finding["sourcePath"] == "Tiny/Core.lean"
+        for finding in payload["findings"]
+    )
+
+
+def test_pipeline_skips_source_patterns_without_policy() -> None:
+    payload = run_pipeline(RunContext(repo_root=FIXTURE_ROOT, requested_root="Tiny.lean")).to_report_payload()
+
+    assert "source_patterns" not in payload
+    assert payload["pipeline"]["timings"]["source_patterns"]["status"] == "skipped"
 
 
 def test_current_extraction_modules_adapt_to_stable_ir() -> None:

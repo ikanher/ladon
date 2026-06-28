@@ -42,6 +42,14 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--doc-file", action="append", default=[])
     parser.add_argument("--packet-dir", action="append", default=[])
     parser.add_argument(
+        "--architecture-policy",
+        help="Optional JSON policy defining project-specific module groups and forbidden imports.",
+    )
+    parser.add_argument(
+        "--source-pattern-policy",
+        help="Optional JSON policy defining project-specific source text patterns to report.",
+    )
+    parser.add_argument(
         "--packet-profile",
         choices=["generic", "review_packet", "witness_bundle", "release_bundle"],
         default="generic",
@@ -93,6 +101,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 lean_cache_dir=optional_path(args.lean_cache_dir),
                 packet_dirs=tuple(Path(path) for path in args.packet_dir),
                 packet_profile=args.packet_profile,
+                architecture_policy_path=optional_path(args.architecture_policy),
+                source_pattern_policy_path=optional_path(args.source_pattern_policy),
                 generated_at_utc=args.generated_at_utc,
                 warnings=clean_core_warnings(args),
             )

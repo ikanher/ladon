@@ -18,6 +18,7 @@ def summarize_quality_baseline(
     metrics = {
         "module_fan_in": distribution_summary(module_fan_in_values(module_dag)),
         "module_fan_out": distribution_summary(module_fan_out_values(module_dag)),
+        "module_line_count": distribution_summary(module_line_count_values(module_dag)),
         "root_import_closure": distribution_summary(root_import_closure_values(module_dag)),
     }
     if declaration_graph:
@@ -138,6 +139,19 @@ def module_fan_out_values(module_dag: dict[str, Any]) -> list[int]:
     edges = graph_edges(module_dag)
     modules = graph_nodes(edges)
     return [len(edges.get(module, [])) for module in modules]
+
+
+def module_line_count_values(module_dag: dict[str, Any]) -> list[int]:
+    """Return source line-count values from module metadata."""
+
+    metadata = module_dag.get("module_metadata", {})
+    if not isinstance(metadata, dict):
+        return []
+    return [
+        int(row.get("lineCount", 0))
+        for row in metadata.values()
+        if isinstance(row, dict) and int(row.get("lineCount", 0)) > 0
+    ]
 
 
 def declaration_fan_in_values(declaration_graph: dict[str, Any]) -> list[int]:

@@ -9,6 +9,7 @@ from ladon.analysis.quality_baseline import calibrate_count
 
 
 HOTSPOT_THRESHOLD = 5
+LARGE_MODULE_LINE_THRESHOLD = 2000
 MAX_FINDINGS_PER_KIND = 3
 
 
@@ -21,7 +22,11 @@ def summarize_findings(
 
     findings: list[dict[str, Any]] = []
     findings.extend(module_fan_in_findings(module_dag))
+    findings.extend(handwritten_module_fan_in_findings(module_dag))
     findings.extend(root_import_closure_findings(module_dag))
+    findings.extend(duplicate_import_findings(module_dag))
+    findings.extend(module_name_smell_findings(module_dag))
+    findings.extend(large_handwritten_module_findings(module_dag))
     if declaration_graph:
         findings.extend(declaration_fan_findings(declaration_graph, "top_fan_in", "fan_in"))
         findings.extend(declaration_fan_findings(declaration_graph, "top_fan_out", "fan_out"))
@@ -50,6 +55,23 @@ def module_fan_in_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
     return rows[:MAX_FINDINGS_PER_KIND]
 
 
+def handwritten_module_fan_in_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
+    """Flag high fan-in among modules not tagged as generated."""
+
+    rows = [
+        finding(
+            "handwritten_module_fan_in_hotspot",
+            row["module"],
+            int(row["fan_in"]),
+            f"{row['module']} is imported by {row['fan_in']} non-generated graph modules.",
+            metric="module_fan_in",
+        )
+        for row in module_dag.get("top_handwritten_fan_in", [])
+        if int(row.get("fan_in", 0)) >= HOTSPOT_THRESHOLD
+    ]
+    return rows[:MAX_FINDINGS_PER_KIND]
+
+
 def root_import_closure_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
     """Flag direct root imports with large reachable closures."""
 
@@ -63,6 +85,79 @@ def root_import_closure_findings(module_dag: dict[str, Any]) -> list[dict[str, A
         )
         for row in module_dag.get("root_direct_import_closures", [])
         if int(row.get("reachable_module_count", 0)) >= HOTSPOT_THRESHOLD
+    ]
+    return rows[:MAX_FINDINGS_PER_KIND]
+
+
+def duplicate_import_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
+    """Flag modules that repeat the same import target."""
+
+    rows = [
+        finding(
+            "duplicate_import_target",
+            f"{row['module']} -> {row['target']}",
+            int(row["count"]),
+            duplicate_import_message(row),
+        )
+        for row in module_dag.get("duplicate_imports", [])
+    ]
+    return rows[:MAX_FINDINGS_PER_KIND]
+
+
+def duplicate_import_message(row: dict[str, Any]) -> str:
+    """Build a duplicate-import finding message with source evidence."""
+
+    line_suffix = source_line_suffix(row.get("lines", []))
+    return (
+        f"{row['module']} imports {row['target']} {row['count']} times"
+        f"{line_suffix}; {row.get('suggestedAction', 'deduplicate the import target')}."
+    )
+
+
+def source_line_suffix(lines: Any) -> str:
+    """Render optional line evidence for source-level findings."""
+
+    if not isinstance(lines, list) or not lines:
+        return ""
+    return " on lines " + ", ".join(str(line) for line in lines[:5])
+
+
+def module_name_smell_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
+    """Flag module names that encode generator, parameter, or proof-case pressure."""
+
+    rows = [
+        finding(
+            "module_name_smell",
+            row["module"],
+            len(row.get("reasonKinds", [])),
+            module_name_smell_message(row),
+        )
+        for row in module_dag.get("module_name_smells", [])
+    ]
+    return rows[:MAX_FINDINGS_PER_KIND]
+
+
+def module_name_smell_message(row: dict[str, Any]) -> str:
+    """Build a concise module-name smell finding message."""
+
+    reasons = ", ".join(str(kind) for kind in row.get("reasonKinds", [])[:5])
+    action = row.get("suggestedAction", "review module naming")
+    return f"{row['module']} has module-name review pressure ({reasons}); {action}."
+
+
+def large_handwritten_module_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
+    """Flag very large source files after generated modules are filtered."""
+
+    rows = [
+        finding(
+            "large_handwritten_module",
+            row["module"],
+            int(row["lineCount"]),
+            f"{row['module']} has {row['lineCount']} source lines and is not tagged generated.",
+            metric="module_line_count",
+        )
+        for row in module_dag.get("top_large_handwritten_modules", [])
+        if int(row.get("lineCount", 0)) >= LARGE_MODULE_LINE_THRESHOLD
     ]
     return rows[:MAX_FINDINGS_PER_KIND]
 

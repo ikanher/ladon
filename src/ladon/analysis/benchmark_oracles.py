@@ -11,7 +11,13 @@ Oracle = Mapping[str, Any]
 Payload = Mapping[str, Any]
 ORACLE_SCHEMA_VERSION = "ladon-benchmark-oracle-v1"
 SUPPORTED_SIGNALS = (
+    "architecture_pair_count",
+    "claim_authority_diagnostic_present",
+    "facade_subtype_count",
+    "generated_duplicate_family",
     "resolved_edge",
+    "shared_dependency_candidate",
+    "source_pattern_match_count",
     "unresolved_class",
     "proof_family_candidate",
     "root_scope_classification",
@@ -68,7 +74,13 @@ def oracle_dispatch() -> dict[str, Callable[[Payload, Oracle], tuple[bool, Any]]
     """Return supported oracle evaluators by signal name."""
 
     return {
+        "architecture_pair_count": check_architecture_pair_count,
+        "claim_authority_diagnostic_present": check_claim_authority_diagnostic_present,
+        "facade_subtype_count": check_facade_subtype_count,
+        "generated_duplicate_family": check_generated_duplicate_family,
         "resolved_edge": check_resolved_edge,
+        "shared_dependency_candidate": check_shared_dependency_candidate,
+        "source_pattern_match_count": check_source_pattern_match_count,
         "unresolved_class": check_unresolved_class,
         "proof_family_candidate": check_proof_family_candidate,
         "root_scope_classification": check_root_scope_classification,
@@ -102,6 +114,60 @@ def existing_optional_smoke_roots(candidates: Mapping[str, str]) -> dict[str, st
     }
 
 
+def check_architecture_pair_count(payload: Payload, oracle: Oracle) -> tuple[bool, Any]:
+    """Check a direct architecture-policy group pair count."""
+
+    source_group = str(oracle["sourceGroup"])
+    target_group = str(oracle["targetGroup"])
+    row = next(
+        (
+            item
+            for item in payload.get("architecture_policy", {}).get("directPairSummary", [])
+            if item.get("sourceGroup") == source_group and item.get("targetGroup") == target_group
+        ),
+        None,
+    )
+    observed = int(row.get("uniqueDirectEdgeCount", 0)) if row else 0
+    return observed == int(oracle.get("expected", 0)), observed
+
+
+def check_claim_authority_diagnostic_present(payload: Payload, oracle: Oracle) -> tuple[bool, Any]:
+    """Check whether a claim-authority diagnostic rule is present."""
+
+    diagnostics = claim_authority_diagnostics(payload)
+    rule_id = str(oracle["ruleId"])
+    observed = any(row.get("ruleId") == rule_id for row in diagnostics)
+    return observed == bool(oracle.get("expected", True)), observed
+
+
+def check_facade_subtype_count(payload: Payload, oracle: Oracle) -> tuple[bool, Any]:
+    """Check a facade subtype count from module-DAG metadata."""
+
+    subtype = str(oracle["subtype"])
+    observed = int(payload.get("module_dag", {}).get("facade_subtype_summary", {}).get(subtype, 0))
+    return observed == int(oracle.get("expected", 0)), observed
+
+
+def check_generated_duplicate_family(payload: Payload, oracle: Oracle) -> tuple[bool, Any]:
+    """Check generated duplicate-import family summary rows."""
+
+    family = str(oracle["generatorFamily"])
+    target = str(oracle["target"])
+    row = next(
+        (
+            item
+            for item in payload.get("module_dag", {}).get("duplicate_import_family_summary", [])
+            if item.get("generatorFamily") == family and item.get("target") == target
+        ),
+        None,
+    )
+    if "duplicateModuleCount" in oracle:
+        observed: Any = int(row.get("duplicateModuleCount", 0)) if row else 0
+        return observed == int(oracle["duplicateModuleCount"]), observed
+    observed = row is not None
+    return observed == bool(oracle.get("expected", True)), observed
+
+
 def check_resolved_edge(payload: Payload, oracle: Oracle) -> tuple[bool, Any]:
     """Check whether a declaration graph edge is present or absent."""
 
@@ -110,6 +176,30 @@ def check_resolved_edge(payload: Payload, oracle: Oracle) -> tuple[bool, Any]:
     edges = graph_edges(payload)
     observed = target in edges.get(source, [])
     return observed == bool(oracle.get("expected", True)), observed
+
+
+def check_shared_dependency_candidate(payload: Payload, oracle: Oracle) -> tuple[bool, Any]:
+    """Check whether a common-layer candidate target appears."""
+
+    target = str(oracle["targetModule"])
+    observed = any(
+        row.get("targetModule") == target
+        for row in payload.get("architecture_policy", {}).get("sharedDependencySummary", [])
+    )
+    return observed == bool(oracle.get("expected", True)), observed
+
+
+def check_source_pattern_match_count(payload: Payload, oracle: Oracle) -> tuple[bool, Any]:
+    """Check total source-pattern matches for one pattern id."""
+
+    pattern_id = str(oracle["patternId"])
+    row = find_by_key(
+        payload.get("source_patterns", {}).get("patternSummary", []),
+        "patternId",
+        pattern_id,
+    )
+    observed = int(row.get("matchCount", 0)) if row else 0
+    return observed == int(oracle.get("expected", 0)), observed
 
 
 def check_unresolved_class(payload: Payload, oracle: Oracle) -> tuple[bool, Any]:
@@ -184,6 +274,22 @@ def finding_kinds(payload: Payload) -> list[str]:
     """Return finding kinds in report order."""
 
     return [str(finding.get("kind", "")) for finding in payload.get("findings", [])]
+
+
+def claim_authority_diagnostics(payload: Payload) -> list[dict[str, Any]]:
+    """Return claim-authority diagnostic rows from supported report namespaces."""
+
+    diagnostics: list[dict[str, Any]] = []
+    for key in ("claim_authority", "claimAuthority"):
+        rows = payload.get(key, {}).get("diagnostics", [])
+        if isinstance(rows, list):
+            diagnostics.extend(row for row in rows if isinstance(row, dict))
+    bridge = payload.get("proofir_bridge", {})
+    if isinstance(bridge, dict):
+        rows = bridge.get("routeAuthorityAudit", {}).get("diagnostics", [])
+        if isinstance(rows, list):
+            diagnostics.extend(row for row in rows if isinstance(row, dict))
+    return diagnostics
 
 
 def find_by_key(rows: Any, key: str, value: str) -> dict[str, Any] | None:

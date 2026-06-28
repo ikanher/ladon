@@ -47,7 +47,10 @@ def facade_fanout_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
     """Correlate facade-heavy inventory with high module fan-out."""
 
     facade_count = int(module_dag.get("facade_module_count", 0))
-    fan_out = top_metric_row(module_dag, "top_fan_out", "fan_out")
+    fan_out = (
+        top_metric_row(module_dag, "top_facade_fan_out", "fan_out")
+        or top_metric_row(module_dag, "top_fan_out", "fan_out")
+    )
     if facade_count < HOTSPOT_THRESHOLD or not is_hot(fan_out):
         return []
     facade_signal = component_signal("facade_module_count", "module_inventory", facade_count)
@@ -56,8 +59,9 @@ def facade_fanout_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
             "facade_fanout_pressure",
             fan_out["subject"],
             (
-                "Facade-heavy inventory and high fan-out co-occur; this is "
-                "architecture pressure, not a defect claim."
+                "Facade/barrel modules with high fan-out are public aggregation "
+                "architecture pressure; read this as API-surface context, not "
+                "ordinary implementation coupling."
             ),
             [facade_signal, fan_out],
         )
@@ -192,6 +196,10 @@ def metric_name(row_key: str, metric: str) -> str:
         return "module_fan_in"
     if row_key == "top_fan_out":
         return "module_fan_out"
+    if row_key == "top_facade_fan_out":
+        return "module_facade_fan_out"
+    if row_key == "top_implementation_fan_out":
+        return "module_implementation_fan_out"
     if row_key == "declaration_name_families":
         return "declaration_family_size"
     return metric

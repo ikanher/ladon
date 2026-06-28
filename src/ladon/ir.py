@@ -7,10 +7,31 @@ from typing import Any
 
 
 @dataclass(frozen=True)
+class LeanImport:
+    """Source evidence for one Lean import command target."""
+
+    module: str
+    line: int | None = None
+    text: str | None = None
+
+
+@dataclass(frozen=True)
+class LeanLexicalMarker:
+    """Source-level lexical marker used for lightweight smell scans."""
+
+    kind: str
+    line: int
+    text: str
+
+
+@dataclass(frozen=True)
 class LeanModule:
     """Stable module-level IR shared by pure Ladon analysis passes.
 
     `imports` stores module names as written in Lean import headers.
+    `import_sites` optionally stores source locations for those imports.
+    `line_count` and `tags` are source-level triage metadata for report
+    filtering; they do not change graph semantics.
     `declarations` stores only names in the clean core; declaration-level proof
     facts are a future Lean-native extraction surface.
     """
@@ -18,6 +39,10 @@ class LeanModule:
     name: str
     path: str
     imports: tuple[str, ...] = ()
+    import_sites: tuple[LeanImport, ...] = ()
+    line_count: int = 0
+    tags: tuple[str, ...] = ()
+    lexical_markers: tuple[LeanLexicalMarker, ...] = ()
     declarations: tuple[str, ...] = ()
 
 

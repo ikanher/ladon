@@ -168,7 +168,9 @@ def test_lean_backend_records_extraction_phase_with_fake_runner() -> None:
     result = run_pipeline(context)
     timing = result.timing_by_phase()["lean_extraction"]
 
-    assert result.discovery.modules["Tiny"] == modules["Tiny"]
+    assert result.discovery.modules["Tiny"].imports == modules["Tiny"].imports
+    assert result.discovery.modules["Tiny"].declarations == modules["Tiny"].declarations
+    assert result.discovery.modules["Tiny"].import_sites[0].line == 1
     assert "Tiny.Core" in result.discovery.modules
     assert "Tiny.Helper" in result.discovery.modules
     assert timing.status == "ok"

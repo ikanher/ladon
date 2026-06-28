@@ -6,11 +6,14 @@ from ladon.analysis.architecture_correlator import (
 )
 
 
-def test_architecture_correlator_emits_composite_findings_with_components() -> None:
-    module_dag = {
+def composite_module_dag() -> dict:
+    """Return a broad module DAG with correlated architecture signals."""
+
+    return {
         "module_count": 40,
         "top_fan_in": [{"module": "A.Core", "fan_in": 9}],
         "top_fan_out": [{"module": "A.Root", "fan_out": 11}],
+        "top_facade_fan_out": [{"module": "A.Public", "fan_out": 12}],
         "facade_module_count": 8,
         "chosen_roots": ["A.Root"],
         "source_modules_not_reachable_from_chosen_roots_count": 33,
@@ -22,23 +25,50 @@ def test_architecture_correlator_emits_composite_findings_with_components() -> N
             }
         ],
     }
-    declaration_graph = {
+
+
+def composite_declaration_graph() -> dict:
+    """Return declaration-family pressure for composite finding tests."""
+
+    return {
         "declaration_name_families": [{"suffix": "ge_one", "count": 5}],
     }
 
-    findings = architecture_pressure_findings(module_dag, declaration_graph)
-    by_kind = {finding["kind"]: finding for finding in findings}
+
+def composite_findings_by_kind() -> dict:
+    """Return composite findings keyed by finding kind."""
+
+    findings = architecture_pressure_findings(
+        composite_module_dag(),
+        composite_declaration_graph(),
+    )
+    return {finding["kind"]: finding for finding in findings}
+
+
+def test_architecture_correlator_emits_expected_composite_findings() -> None:
+    by_kind = composite_findings_by_kind()
 
     assert "composite_import_pressure" in by_kind
     assert "facade_fanout_pressure" in by_kind
     assert "root_scope_pressure" in by_kind
     assert "proof_family_import_pressure" in by_kind
+
+
+def test_architecture_correlator_records_composite_components() -> None:
+    by_kind = composite_findings_by_kind()
+
     assert by_kind["composite_import_pressure"]["component_signals"] == [
         {"metric": "root_import_closure", "subject": "A.Root -> A.Big", "value": 25},
         {"metric": "module_fan_in", "subject": "A.Core", "value": 9},
     ]
+
+
+def test_architecture_correlator_labels_root_scope_and_facade_fanout() -> None:
+    by_kind = composite_findings_by_kind()
+
     assert by_kind["root_scope_pressure"]["root_scope"]["classification"] == "narrow_owner_broad_import"
     assert by_kind["root_scope_pressure"]["component_signals"]
+    assert by_kind["facade_fanout_pressure"]["subject"] == "A.Public"
     assert "architecture pressure" in by_kind["facade_fanout_pressure"]["message"]
 
 
