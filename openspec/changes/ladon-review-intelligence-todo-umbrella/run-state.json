@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "ladon-review-intelligence-todo-umbrella.apply.2026-06-28",
+  "goal": "Apply the review-intelligence TODO umbrella through child packets, focused fixtures, policy examples, and verification gates.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "governance_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "theorem_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.child_packets",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.child_openspec_validate.passed"
+      ],
+      "commandRefs": [
+        "openspec validate each child packet --strict"
+      ]
+    },
+    {
+      "stepId": "step.policy_examples",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.focused_tests.passed",
+        "check.repo_local_policy_smoke.passed"
+      ],
+      "commandRefs": [
+        "uv run pytest -q tests/test_clean_cli.py",
+        "uv run ladon --repo-root temp/ladon-review-intelligence-todo-umbrella/repo-local-policy-smoke/fixture --root Example --skip-build"
+      ]
+    },
+    {
+      "stepId": "step.review_signal_oracles",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.focused_tests.passed"
+      ],
+      "commandRefs": [
+        "uv run pytest -q tests/test_benchmark_oracles.py tests/test_architecture_policy.py tests/test_source_patterns.py tests/test_module_dag.py tests/test_clean_cli.py"
+      ]
+    },
+    {
+      "stepId": "step.full_gate",
+      "status": "completed",
+      "prerequisites": [
+        "step.child_packets",
+        "step.policy_examples",
+        "step.review_signal_oracles"
+      ],
+      "evidenceRefs": [
+        "check.strict_gate.passed"
+      ],
+      "commandRefs": [
+        "uv run python scripts/python_quality.py --strict"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.child_openspec_validate.passed",
+      "command": "openspec validate ladon-review-intelligence-todo-umbrella --strict && openspec validate each child packet --strict",
+      "status": "valid",
+      "failureClass": "",
+      "failureMessage": ""
+    },
+    {
+      "checkId": "check.focused_tests.passed",
+      "command": "uv run pytest -q tests/test_benchmark_oracles.py tests/test_architecture_policy.py tests/test_source_patterns.py tests/test_module_dag.py tests/test_clean_cli.py",
+      "status": "valid",
+      "failureClass": "",
+      "failureMessage": "44 passed"
+    },
+    {
+      "checkId": "check.repo_local_policy_smoke.passed",
+      "command": "uv run ladon --repo-root temp/ladon-review-intelligence-todo-umbrella/repo-local-policy-smoke/fixture --root Example --skip-build --output-json temp/ladon-review-intelligence-todo-umbrella/repo-local-policy-smoke/report.json --output-text temp/ladon-review-intelligence-todo-umbrella/repo-local-policy-smoke/report.txt",
+      "status": "valid",
+      "failureClass": "",
+      "failureMessage": "Discovered example architecture and source-pattern policies without CLI policy paths; direct policy findings=1; source-pattern matches=1."
+    },
+    {
+      "checkId": "check.strict_gate.passed",
+      "command": "uv run python scripts/python_quality.py --strict",
+      "status": "valid",
+      "failureClass": "",
+      "failureMessage": "207 passed"
+    }
+  ],
+  "blockers": [],
+  "replayBoundary": {
+    "packetLocalReplay": true,
+    "externalEvidenceIncluded": false,
+    "liveSmokeEvidencePath": "temp/ladon-review-intelligence-todo-umbrella/repo-local-policy-smoke"
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not theorem evidence.",
+    "Ladon review signals route human inspection and do not validate theorem truth.",
+    "The live smoke path is local replay evidence and is separate from portable fixture/oracle coverage."
+  ]
+}
