@@ -322,6 +322,8 @@ def bridge_stale_evidence(bridge_reports: list[dict[str, Any]]) -> list[dict[str
                 kind = "bridge_stale_source"
             elif rule_id.startswith("ladon.claim.") or rule_id.startswith("ladon.evidence."):
                 kind = "claim_authority_route"
+            elif rule_id.startswith("ladon.proof_surface."):
+                kind = "proof_surface_route"
             else:
                 continue
             rows.append(

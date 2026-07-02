@@ -145,22 +145,26 @@ def reviewer_cards(
     joins: list[dict[str, Any]],
     diagnostics: list[dict[str, Any]],
     route_audit: dict[str, Any] | None = None,
+    proof_surface_joins: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Build compact reviewer cards."""
 
+    proof_surface_joins = proof_surface_joins or []
     joined = [join for join in joins if join["matchKind"] != "unmatched"]
-    if not joined:
+    proof_surface_joined = [join for join in proof_surface_joins if join["matchKind"] != "unmatched"]
+    if not joined and not proof_surface_joined:
         return []
     return [
         {
             "root": ladon_report.get("metadata", {}).get("analysis_root_module"),
             "surfaceCount": len(joined),
+            "proofSurfaceCount": len(proof_surface_joined),
             "claims": joined_claims(proofir_index, joined),
             "witnessEndpoints": joined_witness_endpoints(proofir_index, joined),
             "nonclaims": joined_nonclaims(proofir_index, joined),
             "diagnostics": [row["ruleId"] for row in diagnostics],
             "routeAudit": route_audit_card(route_audit),
-            "trustNote": "Ladon structural context only; ProofIR statuses are quoted, not promoted.",
+            "trustNote": "Ladon structural context only; ProofIR and proof-surface statuses are quoted, not promoted.",
         }
     ]
 

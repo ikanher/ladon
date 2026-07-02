@@ -33,6 +33,8 @@ def normalize_compact_bridge_index(proofir_index: dict[str, Any]) -> dict[str, A
     normalized["witnessEndpoints"] = copied_dict_rows(proofir_index.get("witnessEndpoints", []))
     normalized["nonclaims"] = copied_dict_rows(proofir_index.get("nonclaims", []))
     normalized["projectionBoundaries"] = copied_dict_rows(proofir_index.get("projectionBoundaries", []))
+    if "proofSurfaceWitness" in proofir_index:
+        normalized["proofSurfaceWitness"] = proofir_index["proofSurfaceWitness"]
     return normalized
 
 

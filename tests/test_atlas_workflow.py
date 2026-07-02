@@ -92,6 +92,29 @@ def test_atlas_workflow_keeps_source_line_anchor_snapshot_join_warning_only(tmp_
     assert workflow["sections"]["lowConfidenceJoins"][0]["warningOnly"] is True
 
 
+def test_atlas_workflow_routes_proof_surface_diagnostics(tmp_path: Path) -> None:
+    write_report(tmp_path / "quux" / "one.json", sample_report("Quux.One", fan_in=8))
+    bridge = sample_bridge_report()
+    bridge["diagnostics"].append(
+        {
+            "ruleId": "ladon.proof_surface.missing_axiom_audit",
+            "level": "warning",
+            "subject": "claim.proof_surface",
+        }
+    )
+
+    workflow = build_atlas_workflow(
+        build_report_atlas(tmp_path),
+        bridge_reports=[bridge],
+    )
+
+    assert any(
+        row["kind"] == "proof_surface_route"
+        and row["ruleId"] == "ladon.proof_surface.missing_axiom_audit"
+        for row in workflow["sections"]["incompleteOrStaleEvidence"]
+    )
+
+
 def write_report(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload), encoding="utf-8")

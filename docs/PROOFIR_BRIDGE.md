@@ -6,6 +6,7 @@ The first bridge slice is intentionally separate from Ladon core.
 ladon-proofir-bridge \
   --ladon-report ladon-report.json \
   --proofir-index proofir-bridge-index.json \
+  --proof-surface-witness proof-surface-witness.json \
   --out bridge-report.json
 ```
 
@@ -45,6 +46,10 @@ The compact bridge-index shape carries:
 - witness endpoints;
 - nonclaims;
 - projection boundaries.
+
+It may also embed a `proofSurfaceWitness` object. The same witness can be
+provided separately through `--proof-surface-witness`; see
+`docs/PROOF_SURFACE_WITNESS.md` for the compact contract.
 
 Claim rows may also carry route-authority metadata for Ladon's claim authority
 audit:
@@ -96,6 +101,17 @@ diagnostics:
 - `ladon.evidence.unknown_authority`;
 - `ladon.theorem.final_name_conditional_statement`.
 
+When proof-surface witness input is supplied, the bridge can also emit
+proof-surface route diagnostics:
+
+- `ladon.proof_surface.spec_stub_used_as_authority`;
+- `ladon.proof_surface.missing_no_drift_gate`;
+- `ladon.proof_surface.missing_axiom_audit`;
+- `ladon.proof_surface.suspicious_axiom`;
+- `ladon.proof_surface.clean_endpoint`;
+- `ladon.proof_surface.frozen_spec_hub`;
+- `ladon.proof_surface.proof_hole_outside_quarantine`.
+
 These diagnostics mean that the advertised claim authority and observed evidence
 route need review. They are not theorem falsehood, proof invalidity, or witness
 adequacy claims.
@@ -122,6 +138,11 @@ declaration," while the route audit can still say "the claim advertises
 Lean-closed authority but a required premise is imported interval-certified."
 The first statement is attachment confidence. The second is authority/evidence
 alignment. Neither is a proof-truth verdict.
+
+Proof-surface witness rows use the same boundary. A clean no-drift gate or clean
+axiom audit row is quoted verifier metadata. It can clear a route-governance
+requirement only under the configured attachment rules; it does not make Ladon a
+Lean verifier.
 
 Example:
 

@@ -36,14 +36,17 @@ is not listed as supported here, do not describe it as implemented.
     declaration evidence. Accepted inputs are `proofir_bridge_index` and
     Quux-style `proof_ir_lean_surface_bundle`; raw ProofIR dialects remain out
     of core.
-13. `atlas`, `atlas_diff`, `atlas_sqlite`, and `atlas_workflow`: derive
+13. `proof_surface_witness`: normalizes optional quoted proof-surface witness
+    artifacts for frozen spec stubs, proof endpoints, no-drift gates, source
+    pins, axiom audits, and proof-hole quarantine. The witness is route
+    governance metadata, not theorem-truth evidence.
+14. `atlas`, `atlas_diff`, `atlas_sqlite`, and `atlas_workflow`: derive
     reviewer-routing graphs, diffs, canned queries, cards, and workflow
     summaries from Ladon report JSON plus optional bridge reports.
-14. `quality`: enforce radon/vulture gates for active Python code.
+15. `quality`: enforce radon/vulture gates for active Python code.
 
 Unsupported until rebuilt with tests:
 
-- witness metadata audits;
 - review-packet audits;
 - export-surface freshness checks;
 - elaborated proof dependency extraction.
@@ -67,6 +70,13 @@ This is Ladon's highest-priority product seam after the ProofIR bridge: process
 overclaim detection is more urgent than adding new architecture-smell classes.
 Graph metrics, proof-family similarity, atlas diffs, and OpenSpec hygiene remain
 useful context, but they should not displace claim authority route auditing.
+
+Proof-surface witness audit extends this seam with quoted verifier metadata.
+It can report when a claim cites a frozen spec stub as authority, lacks a clean
+no-drift gate, lacks an accepted axiom audit, quotes suspicious axioms, or has a
+clean endpoint route. These diagnostics are source-attachment and
+route-governance checks only. They do not validate Lean theorem truth, replay
+proofs, certify witness adequacy, or decide mathematical scope.
 
 ## Current Architecture Policy Seam
 

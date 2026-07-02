@@ -8,49 +8,74 @@ from ladon.analysis.claim_authority import audit_claim_authority
 from ladon.analysis.conditional_signature import conditional_signature_diagnostics
 from ladon.proofir_bridge_output import bridge_diagnostics, diagnostic, reviewer_cards
 from ladon.proofir_input import EXPECTED_INDEX_KIND, SURFACE_BUNDLE_KIND, normalize_proofir_index, surface_content_hash
+from ladon.proof_surface_witness import normalize_proof_surface_witness
 
 
 def build_bridge_report(
     ladon_report: dict[str, Any],
     proofir_index: Any,
+    proof_surface_witness: Any = None,
     policy: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Join one Ladon report with one compact ProofIR bridge index."""
 
     del policy
     declarations = declaration_rows(ladon_report)
-    if proofir_index is None:
+    if proofir_index is None and proof_surface_witness is None:
         return empty_report(ladon_report)
-    normalized_index = normalize_proofir_index(proofir_index)
+    normalized_index = normalize_proofir_index(proofir_index) if proofir_index is not None else empty_index()
     if normalized_index is None:
         return malformed_report(ladon_report)
+    embedded_witness = normalized_index.get("proofSurfaceWitness")
+    normalized_witness = normalize_proof_surface_witness(
+        proof_surface_witness if proof_surface_witness is not None else embedded_witness
+    )
 
     joins = join_surfaces(declarations, normalized_index.get("surfaces", []))
+    proof_surface_joins = join_surfaces(
+        declarations,
+        normalized_witness.get("surfaces", []) if isinstance(normalized_witness, dict) else [],
+    )
     route_audit = audit_claim_authority(
         normalized_index.get("claims", []),
         joins=joins,
         surfaces=normalized_index.get("surfaces", []),
+        proof_surface_witness=normalized_witness,
+        proof_surface_joins=proof_surface_joins,
     )
     diagnostics = [
         *bridge_diagnostics(joins, normalized_index),
         *route_audit["diagnostics"],
         *conditional_signature_diagnostics(declarations, normalized_index.get("claims", [])),
     ]
-    cards = reviewer_cards(ladon_report, normalized_index, joins, diagnostics, route_audit)
+    cards = reviewer_cards(
+        ladon_report,
+        normalized_index,
+        joins,
+        diagnostics,
+        route_audit,
+        proof_surface_joins=proof_surface_joins,
+    )
     return {
         "schemaVersion": 1,
         "artifactKind": "ladon_proofir_bridge_report",
         "summary": {
             "proofirIndexPresent": True,
+            "proofSurfaceWitnessPresent": normalized_witness is not None,
             "declarationCount": len(declarations),
             "surfaceCount": len(normalized_index.get("surfaces", [])),
             "joinedSurfaceCount": joined_count(joins),
             "unmatchedSurfaceCount": unmatched_count(joins),
+            "proofSurfaceSurfaceCount": len(normalized_witness.get("surfaces", [])) if isinstance(normalized_witness, dict) else 0,
+            "proofSurfaceJoinedSurfaceCount": joined_count(proof_surface_joins),
+            "proofSurfaceUnmatchedSurfaceCount": unmatched_count(proof_surface_joins),
             "diagnosticCount": len(diagnostics),
         },
         "joins": joins,
+        "proofSurfaceJoins": proof_surface_joins,
         "diagnostics": diagnostics,
         "routeAudit": route_audit,
+        "proofSurfaceWitness": proof_surface_report_summary(normalized_witness),
         "reviewerCards": cards,
         "trustRules": [
             "bridge diagnostics do not establish theorem truth",
@@ -59,7 +84,47 @@ def build_bridge_report(
             "source-hash and source-range joins establish attachment confidence only",
             "name-only joins are warning-only",
             "claim authority diagnostics audit evidence-route alignment only",
+            "proof-surface witness rows are quoted route-governance evidence only",
         ],
+    }
+
+
+def empty_index() -> dict[str, Any]:
+    """Return an empty compact bridge-index shape for witness-only reports."""
+
+    return {
+        "schemaVersion": 1,
+        "artifactKind": EXPECTED_INDEX_KIND,
+        "surfaces": [],
+        "claims": [],
+        "witnessEndpoints": [],
+        "nonclaims": [],
+        "projectionBoundaries": [],
+    }
+
+
+def proof_surface_report_summary(witness: dict[str, Any] | None) -> dict[str, Any]:
+    """Return a compact report-level proof-surface witness summary."""
+
+    if not isinstance(witness, dict):
+        return {
+            "present": False,
+            "valid": False,
+            "surfaceCount": 0,
+            "quotedOnly": True,
+            "routeGovernanceOnly": True,
+        }
+    return {
+        "present": True,
+        "valid": witness.get("valid") is True,
+        "surfaceCount": len(witness.get("surfaces", [])),
+        "specSurfaceCount": len(witness.get("specSurfaces", [])),
+        "proofEndpointCount": len(witness.get("proofEndpoints", [])),
+        "noDriftGateCount": len(witness.get("noDriftGates", [])),
+        "axiomAuditCount": len(witness.get("axiomAudits", [])),
+        "nonclaims": list(witness.get("nonclaims", [])),
+        "quotedOnly": True,
+        "routeGovernanceOnly": True,
     }
 
 

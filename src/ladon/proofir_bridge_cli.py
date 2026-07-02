@@ -17,6 +17,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Join a Ladon report with a compact ProofIR bridge index")
     parser.add_argument("--ladon-report", required=True, help="Path to Ladon JSON report")
     parser.add_argument("--proofir-index", help="Path to compact proofir_bridge_index JSON")
+    parser.add_argument("--proof-surface-witness", help="Path to optional proof_surface_witness JSON")
     parser.add_argument("--out", required=True, help="Output bridge report JSON")
     return parser
 
@@ -29,7 +30,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         ladon_report = read_json(Path(args.ladon_report))
         proofir_index = read_json(Path(args.proofir_index)) if args.proofir_index else None
-        report = build_bridge_report(ladon_report, proofir_index)
+        proof_surface_witness = read_json(Path(args.proof_surface_witness)) if args.proof_surface_witness else None
+        report = build_bridge_report(ladon_report, proofir_index, proof_surface_witness=proof_surface_witness)
         output = Path(args.out)
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

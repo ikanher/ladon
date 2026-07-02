@@ -1,0 +1,250 @@
+{
+  "artifactKind": "proof_surface_witness",
+  "schemaVersion": 1,
+  "producer": {
+    "tool": "synthetic-proof-surface-verifier",
+    "version": "1.0"
+  },
+  "specSurfaces": [
+    {
+      "surfaceId": "spec.main",
+      "declarationName": "Synthetic.SpecHub.frozen_statement",
+      "role": "lean_spec_stub",
+      "sourcePath": "Synthetic/SpecHub.lean",
+      "sourceRange": {
+        "startLine": 3,
+        "endLine": 4
+      },
+      "contentHash": "sha256:spec-main",
+      "proofHolePolicy": {
+        "quarantined": true,
+        "markerCount": 1
+      },
+      "producerSpecific": "preserved"
+    },
+    {
+      "surfaceId": "spec.odd",
+      "declarationName": "Odd.Payload.carried_spec",
+      "role": "lean_spec_stub",
+      "sourcePath": "Odd/Payload.lean",
+      "sourceRange": {
+        "startLine": 2,
+        "endLine": 3
+      },
+      "contentHash": "sha256:odd-spec"
+    }
+  ],
+  "proofEndpoints": [
+    {
+      "surfaceId": "endpoint.clean",
+      "declarationName": "Synthetic.ProofCore.proved_statement",
+      "role": "lean_proof_endpoint",
+      "endpointScope": "public_claim",
+      "sourcePath": "Synthetic/ProofCore.lean",
+      "sourceRange": {
+        "startLine": 5,
+        "endLine": 8
+      },
+      "contentHash": "sha256:endpoint-clean",
+      "requiresNoDriftGate": true,
+      "requiresAxiomAudit": true,
+      "verifier": {
+        "command": "lake env lean Synthetic/ProofCore.lean"
+      }
+    },
+    {
+      "surfaceId": "endpoint.missing_gate",
+      "declarationName": "Synthetic.ProofCore.missing_gate_endpoint",
+      "role": "lean_proof_endpoint",
+      "sourcePath": "Synthetic/ProofCore.lean",
+      "sourceRange": {
+        "startLine": 12,
+        "endLine": 15
+      },
+      "contentHash": "sha256:missing-gate",
+      "requiresNoDriftGate": true,
+      "requiresAxiomAudit": true
+    },
+    {
+      "surfaceId": "endpoint.missing_axiom",
+      "declarationName": "Synthetic.ProofCore.missing_axiom_endpoint",
+      "role": "lean_proof_endpoint",
+      "sourcePath": "Synthetic/ProofCore.lean",
+      "sourceRange": {
+        "startLine": 18,
+        "endLine": 21
+      },
+      "contentHash": "sha256:missing-axiom",
+      "requiresAxiomAudit": true
+    },
+    {
+      "surfaceId": "endpoint.suspicious",
+      "declarationName": "Synthetic.ProofCore.suspicious_axiom_endpoint",
+      "role": "lean_proof_endpoint",
+      "sourcePath": "Synthetic/ProofCore.lean",
+      "sourceRange": {
+        "startLine": 25,
+        "endLine": 29
+      },
+      "contentHash": "sha256:suspicious",
+      "requiresAxiomAudit": true
+    },
+    {
+      "surfaceId": "endpoint.stale",
+      "declarationName": "Synthetic.ProofCore.stale_endpoint",
+      "role": "lean_proof_endpoint",
+      "sourcePath": "Synthetic/ProofCore.lean",
+      "sourceRange": {
+        "startLine": 33,
+        "endLine": 37
+      },
+      "contentHash": "sha256:stale-old",
+      "requiresAxiomAudit": true
+    },
+    {
+      "surfaceId": "endpoint.weak",
+      "declarationName": "weak_endpoint",
+      "role": "lean_proof_endpoint",
+      "requiresAxiomAudit": true
+    },
+    {
+      "surfaceId": "endpoint.escaped_hole",
+      "declarationName": "Synthetic.ProofCore.escaped_hole",
+      "role": "lean_proof_endpoint",
+      "sourcePath": "Synthetic/ProofCore.lean",
+      "sourceRange": {
+        "startLine": 42,
+        "endLine": 44
+      },
+      "contentHash": "sha256:escaped"
+    },
+    {
+      "surfaceId": "endpoint.odd",
+      "declarationName": "Odd.Payload.carried_endpoint",
+      "role": "lean_proof_endpoint",
+      "requiresNoDriftGate": true,
+      "requiresAxiomAudit": true
+    }
+  ],
+  "noDriftGates": [
+    {
+      "gateId": "gate.clean",
+      "surfaceId": "gate.clean",
+      "declarationName": "Synthetic.Discharge.no_drift_proved_statement",
+      "specSurfaceId": "spec.main",
+      "proofEndpointSurfaceId": "endpoint.clean",
+      "status": "clean",
+      "sourcePath": "Synthetic/Discharge.lean",
+      "sourceRange": {
+        "startLine": 3,
+        "endLine": 3
+      },
+      "contentHash": "sha256:gate-clean",
+      "verifier": {
+        "command": "example : @frozen_statement = @proved_statement := rfl"
+      }
+    },
+    {
+      "gateId": "gate.odd",
+      "surfaceId": "gate.odd",
+      "declarationName": "Odd.Payload.carried_gate",
+      "specSurfaceId": "spec.odd",
+      "proofEndpointSurfaceId": "endpoint.odd",
+      "status": "clean",
+      "sourcePath": "Odd/Payload.lean",
+      "sourceRange": {
+        "startLine": 16,
+        "endLine": 16
+      },
+      "contentHash": "sha256:odd-gate"
+    }
+  ],
+  "axiomAudits": [
+    {
+      "auditId": "axiom.clean",
+      "proofEndpointSurfaceId": "endpoint.clean",
+      "declarationName": "Synthetic.ProofCore.proved_statement",
+      "status": "clean",
+      "allowedAxioms": ["Classical.choice"],
+      "command": "#print axioms Synthetic.ProofCore.proved_statement"
+    },
+    {
+      "auditId": "axiom.missing_gate",
+      "proofEndpointSurfaceId": "endpoint.missing_gate",
+      "declarationName": "Synthetic.ProofCore.missing_gate_endpoint",
+      "status": "clean",
+      "allowedAxioms": ["Classical.choice"]
+    },
+    {
+      "auditId": "axiom.suspicious",
+      "proofEndpointSurfaceId": "endpoint.suspicious",
+      "declarationName": "Synthetic.ProofCore.suspicious_axiom_endpoint",
+      "status": "needs_review",
+      "suspiciousAxioms": ["Synthetic.Unsafe.assumeFalse"]
+    },
+    {
+      "auditId": "axiom.stale",
+      "proofEndpointSurfaceId": "endpoint.stale",
+      "declarationName": "Synthetic.ProofCore.stale_endpoint",
+      "status": "clean",
+      "allowedAxioms": ["Classical.choice"]
+    },
+    {
+      "auditId": "axiom.weak",
+      "proofEndpointSurfaceId": "endpoint.weak",
+      "declarationName": "weak_endpoint",
+      "status": "clean",
+      "allowedAxioms": ["Classical.choice"]
+    },
+    {
+      "auditId": "axiom.odd",
+      "proofEndpointSurfaceId": "endpoint.odd",
+      "declarationName": "Odd.Payload.carried_endpoint",
+      "status": "clean",
+      "allowedAxioms": ["Classical.choice"]
+    }
+  ],
+  "sourcePins": [
+    {
+      "pinId": "pin.odd.endpoint",
+      "surfaceId": "endpoint.odd",
+      "declarationName": "Odd.Payload.carried_endpoint",
+      "sourcePath": "Odd/Payload.lean",
+      "sourceRange": {
+        "startLine": 8,
+        "endLine": 12
+      },
+      "contentHash": "sha256:odd-endpoint",
+      "status": "fresh",
+      "toolVersion": "synthetic-1.0",
+      "generatedAtUtc": "2026-07-02T00:00:00Z"
+    }
+  ],
+  "proofHolePolicy": {
+    "frozenSpecHubs": [
+      {
+        "module": "Synthetic.SpecHub",
+        "surfaceIds": ["spec.main"]
+      }
+    ],
+    "quarantinedProofHoles": [
+      {
+        "surfaceId": "spec.main",
+        "marker": "sorry"
+      }
+    ],
+    "violations": [
+      {
+        "declarationName": "Synthetic.ProofCore.escaped_hole",
+        "marker": "sorry"
+      }
+    ]
+  },
+  "nonclaims": [
+    "proof-surface witness rows are not theorem truth",
+    "source pins establish attachment confidence only"
+  ],
+  "extraTopLevel": {
+    "kept": true
+  }
+}
