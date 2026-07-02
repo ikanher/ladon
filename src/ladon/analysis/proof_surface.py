@@ -358,6 +358,7 @@ def proof_surface_route_row(route: Any, ctx: dict[str, Any]) -> dict[str, Any]:
             "axiomAudits": [axiom_audit_summary(audit) for audit in audits],
             "requiresNoDriftGate": proof_surface_requires_gate(route, endpoint),
             "requiresAxiomAudit": proof_surface_requires_axiom_audit(route, endpoint),
+            "routeEvidenceCompleteness": route_evidence_completeness(route, spec, endpoint, ctx),
             "nonclaims": proof_surface_nonclaims(route, spec, endpoint, ctx),
             "quotedOnly": True,
             "routeGovernanceOnly": True,
@@ -428,6 +429,46 @@ def axiom_audit_summary(audit: dict[str, Any]) -> dict[str, Any]:
             "forbiddenAxioms": list(audit.get("forbiddenAxioms", [])),
             "command": str(audit.get("command", "")),
             "toolVersion": str(audit.get("toolVersion", "")),
+            "buildCommand": str(audit.get("buildCommand", "")),
+            "sourcePinCommand": str(audit.get("sourcePinCommand", "")),
+            "noDriftCommand": str(audit.get("noDriftCommand", "")),
+            "axiomAuditCommand": str(audit.get("axiomAuditCommand", "")),
+            "replayBoundary": audit.get("replayBoundary", {}),
+        }
+    )
+
+
+def route_evidence_completeness(
+    route: Any,
+    spec: dict[str, Any],
+    endpoint: dict[str, Any],
+    ctx: dict[str, Any],
+) -> dict[str, Any]:
+    """Return a compact completeness summary using existing trust predicates."""
+
+    endpoint_attached = clean_endpoint_surface(endpoint, ctx)
+    gate_required = proof_surface_requires_gate(route, endpoint)
+    axiom_required = proof_surface_requires_axiom_audit(route, endpoint)
+    gate_clean = (not gate_required) or clean_gate_for_route(spec, endpoint, ctx)
+    axiom_clean = (not axiom_required) or clean_axiom_audit_for_endpoint(endpoint, ctx)
+    missing = []
+    if not endpoint_attached:
+        missing.append("clean_proof_endpoint_attachment")
+    if not gate_clean:
+        missing.append("clean_no_drift_gate")
+    if not axiom_clean:
+        missing.append("accepted_axiom_audit")
+    return compact_route_dict(
+        {
+            "complete": not missing,
+            "endpointAttached": endpoint_attached,
+            "requiresNoDriftGate": gate_required,
+            "hasCleanNoDriftGate": gate_clean,
+            "requiresAxiomAudit": axiom_required,
+            "hasAcceptedAxiomAudit": axiom_clean,
+            "missing": missing,
+            "diagnosticNamespace": "ladon.proof_surface",
+            "quotedOnly": True,
         }
     )
 

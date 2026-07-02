@@ -50,6 +50,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="Optional JSON policy defining project-specific source text patterns to report.",
     )
     parser.add_argument(
+        "--module-system-witness",
+        help="Optional JSON witness quoting Lean module-system boundary evidence.",
+    )
+    parser.add_argument(
+        "--import-diet-witness",
+        help="Optional JSON witness quoting Lean/Lake import minimization evidence.",
+    )
+    parser.add_argument(
+        "--proof-xray",
+        help="Optional JSON witness quoting elaborated proof-shape evidence.",
+    )
+    parser.add_argument(
         "--packet-profile",
         choices=["generic", "review_packet", "witness_bundle", "release_bundle"],
         default="generic",
@@ -103,6 +115,9 @@ def main(argv: Sequence[str] | None = None) -> int:
                 packet_profile=args.packet_profile,
                 architecture_policy_path=optional_path(args.architecture_policy),
                 source_pattern_policy_path=optional_path(args.source_pattern_policy),
+                module_system_witness_path=optional_path(args.module_system_witness),
+                import_diet_witness_path=optional_path(args.import_diet_witness),
+                proof_xray_path=optional_path(args.proof_xray),
                 generated_at_utc=args.generated_at_utc,
                 warnings=clean_core_warnings(args),
             )

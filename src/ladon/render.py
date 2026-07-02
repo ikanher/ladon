@@ -12,12 +12,42 @@ from pathlib import Path
 from typing import Any
 
 from ladon.extraction import ModuleDiscovery
+from ladon.review_intelligence_render import (
+    import_diet_lines,
+    module_readiness_lines,
+    proof_xray_lines,
+    refactoring_prescription_lines,
+)
 
 
 POLICY_DETAIL_FINDING_KINDS = {
     "architecture_policy.direct_forbidden_import",
     "architecture_policy.transitive_forbidden_import",
     "architecture_policy.shared_dependency_candidate",
+    "module_readiness.malformed_witness",
+    "module_readiness.public_facade_pressure",
+    "module_readiness.implementation_public_pressure",
+    "module_readiness.generated_public_aggregation",
+    "module_readiness.namespace_module_drift",
+    "module_readiness.module_system_witness",
+    "import_diet.malformed_witness",
+    "import_diet.redundant_import_candidate",
+    "import_diet.stale_import_diet_witness",
+    "proof_xray.malformed_witness",
+    "proof_xray.weak_authority_metadata",
+    "proof_xray.automation_hotspot",
+    "proof_xray.dependency_context",
+    "proof_xray.trust_footprint",
+    "refactoring_prescription.extract_common_lower_layer",
+    "refactoring_prescription.move_bridge_to_neutral_namespace",
+    "refactoring_prescription.declare_explicit_bridge_policy",
+    "refactoring_prescription.split_large_owner",
+    "refactoring_prescription.promote_public_facade",
+    "refactoring_prescription.demote_implementation_import",
+    "refactoring_prescription.clean_generator_output",
+    "refactoring_prescription.move_generated_parameters_to_manifest",
+    "refactoring_prescription.run_import_diet",
+    "refactoring_prescription.add_proof_surface_witness_evidence",
     "source_pattern.invalid_policy",
     "source_pattern.match",
 }
@@ -77,8 +107,12 @@ def render_text(payload: dict[str, Any]) -> str:
         "",
     ]
     lines.extend(warning_lines(payload.get("warnings", [])))
+    lines.extend(module_readiness_lines(payload.get("module_readiness")))
     lines.extend(architecture_policy_lines(payload.get("architecture_policy")))
     lines.extend(source_pattern_lines(payload.get("source_patterns")))
+    lines.extend(import_diet_lines(payload.get("import_diet")))
+    lines.extend(proof_xray_lines(payload.get("proof_xray")))
+    lines.extend(refactoring_prescription_lines(payload.get("refactoring_prescriptions")))
     lines.extend(finding_lines(payload.get("findings", [])))
     lines.extend(quality_baseline_lines(payload.get("quality_baseline")))
     lines.extend(packet_evidence_lines(payload.get("packet_evidence", [])))

@@ -19,9 +19,13 @@ from ladon.analysis.architecture_policy import (
     summarize_architecture_policy,
 )
 from ladon.analysis.findings import summarize_findings
+from ladon.analysis.import_diet import summarize_import_diet
 from ladon.analysis.declaration_graph import summarize_declaration_graph
 from ladon.analysis.module_dag import summarize_module_dag
+from ladon.analysis.module_readiness import summarize_module_readiness
+from ladon.analysis.proof_xray import summarize_proof_xray
 from ladon.analysis.quality_baseline import summarize_quality_baseline
+from ladon.analysis.refactoring_prescriptions import summarize_refactoring_prescriptions
 from ladon.analysis.review_regions import summarize_review_regions
 from ladon.analysis.source_patterns import SourceDocument, summarize_source_patterns
 from ladon.analysis.witness_packet import summarize_packet_evidence
@@ -36,10 +40,14 @@ REQUIRED_PHASES = (
     "lean_extraction",
     "indexing",
     "module_dag",
+    "module_readiness",
     "architecture_policy",
     "source_patterns",
+    "import_diet",
+    "proof_xray",
     "quality_baseline",
     "findings",
+    "refactoring_prescriptions",
     "packet_evidence",
     "review_regions",
     "rendering",
@@ -92,6 +100,12 @@ class RunContext:
     architecture_policy: dict[str, Any] | None = None
     source_pattern_policy_path: Path | None = None
     source_pattern_policy: dict[str, Any] | None = None
+    module_system_witness_path: Path | None = None
+    module_system_witness: dict[str, Any] | None = None
+    import_diet_witness_path: Path | None = None
+    import_diet_witness: dict[str, Any] | None = None
+    proof_xray_path: Path | None = None
+    proof_xray: dict[str, Any] | None = None
     lean_extractor: Callable[["RunContext", ModuleDiscovery], ExtractionBundle | dict[str, LeanModule]] | None = None
     generated_at_utc: str | None = None
     warnings: list[str] = field(default_factory=list)
@@ -126,10 +140,14 @@ class PipelineResult:
     context: RunContext
     discovery: ModuleDiscovery
     module_dag: dict[str, Any]
+    module_readiness: dict[str, Any] | None = None
     architecture_policy: dict[str, Any] | None = None
     source_patterns: dict[str, Any] | None = None
+    import_diet: dict[str, Any] | None = None
+    proof_xray: dict[str, Any] | None = None
     declaration_graph: dict[str, Any] | None = None
     quality_baseline: dict[str, Any] | None = None
+    refactoring_prescriptions: dict[str, Any] | None = None
     findings: list[dict[str, Any]] = field(default_factory=list)
     packet_evidence: list[dict[str, Any]] = field(default_factory=list)
     review_regions: list[dict[str, Any]] = field(default_factory=list)
@@ -149,14 +167,7 @@ class PipelineResult:
             warnings=self.context.warnings,
         )
         payload["metadata"]["extraction_backend"] = self.context.extraction_backend
-        if self.declaration_graph is not None:
-            payload["declaration_graph"] = self.declaration_graph
-        if self.architecture_policy is not None:
-            payload["architecture_policy"] = self.architecture_policy
-        if self.source_patterns is not None:
-            payload["source_patterns"] = self.source_patterns
-        if self.quality_baseline is not None:
-            payload["quality_baseline"] = self.quality_baseline
+        add_optional_payload_sections(payload, self)
         payload["findings"] = list(self.findings)
         if self.packet_evidence:
             payload["packet_evidence"] = list(self.packet_evidence)
@@ -164,6 +175,23 @@ class PipelineResult:
             payload["review_regions"] = list(self.review_regions)
         payload["pipeline"] = {"timings": timing_payload(self.context.timings)}
         return payload
+
+
+def add_optional_payload_sections(payload: dict[str, Any], result: PipelineResult) -> None:
+    """Attach optional analysis sections that were actually produced."""
+
+    for section, value in (
+        ("declaration_graph", result.declaration_graph),
+        ("module_readiness", result.module_readiness),
+        ("architecture_policy", result.architecture_policy),
+        ("source_patterns", result.source_patterns),
+        ("import_diet", result.import_diet),
+        ("proof_xray", result.proof_xray),
+        ("quality_baseline", result.quality_baseline),
+        ("refactoring_prescriptions", result.refactoring_prescriptions),
+    ):
+        if value is not None:
+            payload[section] = value
 
 
 def adapt_modules(modules: Mapping[str, LeanModule]) -> dict[str, LeanModule]:
@@ -216,39 +244,134 @@ def text_extraction_bundle(discovery: ModuleDiscovery) -> ExtractionBundle:
 def run_pipeline(context: RunContext) -> PipelineResult:
     """Run the clean-core pipeline and return normalized results."""
 
+    discovery, modules, declarations = run_extraction_phases(context)
+    dag = run_module_dag_phase(context, modules, discovery)
+    declaration_graph = run_declaration_graph_phase(
+        context,
+        discovery,
+        declarations,
+        modules,
+    )
+    module_readiness = run_module_readiness_phase(context, dag, declaration_graph)
+    architecture_policy = run_architecture_policy_phase(context, dag)
+    source_patterns = run_source_pattern_phase(context, modules)
+    import_diet = run_import_diet_phase(context, dag)
+    proof_xray = run_proof_xray_phase(context)
+    quality_baseline = run_quality_baseline_phase(context, dag, declaration_graph)
+    findings = run_findings_phase(
+        context,
+        dag,
+        declaration_graph,
+        quality_baseline,
+        module_readiness,
+        architecture_policy,
+        source_patterns,
+        import_diet,
+        proof_xray,
+    )
+    refactoring_prescriptions = run_refactoring_prescription_phase(
+        context,
+        dag,
+        findings,
+        architecture_policy,
+        import_diet,
+        proof_xray,
+    )
+    packet_evidence = run_packet_evidence_phase(context)
+    review_regions = run_review_regions_phase(
+        context,
+        dag,
+        declaration_graph,
+        findings,
+        packet_evidence,
+    )
+
+    result = PipelineResult(
+        context=context,
+        discovery=discovery,
+        module_dag=dag,
+        module_readiness=module_readiness,
+        architecture_policy=architecture_policy,
+        source_patterns=source_patterns,
+        import_diet=import_diet,
+        proof_xray=proof_xray,
+        declaration_graph=declaration_graph,
+        quality_baseline=quality_baseline,
+        refactoring_prescriptions=refactoring_prescriptions,
+        findings=findings,
+        packet_evidence=packet_evidence,
+        review_regions=review_regions,
+    )
+    with context.phase("rendering") as counters:
+        result.to_report_payload()
+        counters["payloads"] = 1
+    return result
+
+
+def run_extraction_phases(
+    context: RunContext,
+) -> tuple[ModuleDiscovery, dict[str, LeanModule], dict[str, LeanDeclaration]]:
+    """Run discovery, selected extraction backend, and normalized indexing."""
+
     with context.phase("discover") as counters:
         discovery = discover_modules(context.repo_root, context.requested_root)
         counters["modules"] = len(discovery.modules)
 
-    if context.extraction_backend == "lean":
-        with context.phase("lean_extraction") as counters:
-            bundle = coerce_extraction_bundle(run_lean_extractor(context, discovery))
-            modules = merge_module_inventory(discovery.modules, bundle.modules)
-            bundle = ExtractionBundle(
-                modules=modules,
-                declarations=bundle.declarations,
-                counters=bundle.counters,
-            )
-            discovery = discovery_with_modules(discovery, bundle.modules)
-            declarations = bundle.declarations or {}
-            counters["modules"] = len(bundle.modules)
-            counters["declarations"] = len(declarations)
-            counters.update(bundle.counters)
-    else:
-        bundle = text_extraction_bundle(discovery)
-        declarations = bundle.declarations or {}
-        context.record_skipped("lean_extraction", "text backend selected")
+    bundle, discovery = run_selected_extraction_backend(context, discovery)
+    declarations = bundle.declarations or {}
 
     with context.phase("indexing") as counters:
         modules = adapt_modules(bundle.modules)
         counters["modules"] = len(modules)
+    return discovery, modules, declarations
+
+
+def run_selected_extraction_backend(
+    context: RunContext,
+    discovery: ModuleDiscovery,
+) -> tuple[ExtractionBundle, ModuleDiscovery]:
+    """Run the selected extraction backend and return backend-owned inventory."""
+
+    if context.extraction_backend != "lean":
+        context.record_skipped("lean_extraction", "text backend selected")
+        return text_extraction_bundle(discovery), discovery
+
+    with context.phase("lean_extraction") as counters:
+        bundle = coerce_extraction_bundle(run_lean_extractor(context, discovery))
+        modules = merge_module_inventory(discovery.modules, bundle.modules)
+        bundle = ExtractionBundle(
+            modules=modules,
+            declarations=bundle.declarations,
+            counters=bundle.counters,
+        )
+        discovery = discovery_with_modules(discovery, bundle.modules)
+        declarations = bundle.declarations or {}
+        counters["modules"] = len(bundle.modules)
+        counters["declarations"] = len(declarations)
+        counters.update(bundle.counters)
+        return bundle, discovery
+
+
+def run_module_dag_phase(
+    context: RunContext,
+    modules: Mapping[str, LeanModule],
+    discovery: ModuleDiscovery,
+) -> dict[str, Any]:
+    """Summarize the module DAG for the selected analysis root."""
 
     with context.phase("module_dag") as counters:
         dag = summarize_module_dag(modules, chosen_roots=(discovery.analysis_root_module,))
         counters["edges"] = int(dag["edge_count"])
+        return dag
 
-    architecture_policy = run_architecture_policy_phase(context, dag)
-    source_patterns = run_source_pattern_phase(context, modules)
+
+def run_declaration_graph_phase(
+    context: RunContext,
+    discovery: ModuleDiscovery,
+    declarations: Mapping[str, LeanDeclaration],
+    modules: Mapping[str, LeanModule],
+) -> dict[str, Any] | None:
+    """Summarize declaration evidence when the backend provided declarations."""
 
     if declarations:
         with context.phase("declaration_graph") as counters:
@@ -262,21 +385,78 @@ def run_pipeline(context: RunContext) -> PipelineResult:
             )
             counters["declarations"] = int(declaration_graph["declaration_count"])
             counters["edges"] = int(declaration_graph["edge_count"])
+            return declaration_graph
     else:
-        declaration_graph = None
         context.record_skipped("declaration_graph", "no declaration IR available")
+        return None
+
+
+def run_quality_baseline_phase(
+    context: RunContext,
+    dag: dict[str, Any],
+    declaration_graph: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Summarize baseline quality metrics."""
 
     with context.phase("quality_baseline") as counters:
         quality_baseline = summarize_quality_baseline(dag, declaration_graph)
         counters["metrics"] = len(quality_baseline["metrics"])
+        return quality_baseline
+
+
+def run_findings_phase(
+    context: RunContext,
+    dag: dict[str, Any],
+    declaration_graph: dict[str, Any] | None,
+    quality_baseline: dict[str, Any],
+    module_readiness: dict[str, Any] | None,
+    architecture_policy: dict[str, Any] | None,
+    source_patterns: dict[str, Any] | None,
+    import_diet: dict[str, Any] | None,
+    proof_xray: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    """Build the combined findings list from all completed analyses."""
 
     with context.phase("findings") as counters:
         findings = summarize_findings(dag, declaration_graph, quality_baseline)
-        if architecture_policy is not None:
-            findings.extend(architecture_policy["findings"])
-        if source_patterns is not None:
-            findings.extend(source_patterns["findings"])
+        for report in (
+            module_readiness,
+            architecture_policy,
+            source_patterns,
+            import_diet,
+            proof_xray,
+        ):
+            if report is not None:
+                findings.extend(report["findings"])
         counters["findings"] = len(findings)
+        return findings
+
+
+def run_refactoring_prescription_phase(
+    context: RunContext,
+    dag: dict[str, Any],
+    findings: list[dict[str, Any]],
+    architecture_policy: dict[str, Any] | None,
+    import_diet: dict[str, Any] | None,
+    proof_xray: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Create review-prescription rows and append their findings."""
+
+    with context.phase("refactoring_prescriptions") as counters:
+        refactoring_prescriptions = summarize_refactoring_prescriptions(
+            module_dag=dag,
+            findings=findings,
+            architecture_policy=architecture_policy,
+            import_diet=import_diet,
+            proof_xray=proof_xray,
+        )
+        findings.extend(refactoring_prescriptions["findings"])
+        counters["prescriptions"] = len(refactoring_prescriptions["rows"])
+        return refactoring_prescriptions
+
+
+def run_packet_evidence_phase(context: RunContext) -> list[dict[str, Any]]:
+    """Summarize optional OpenSpec/proof packet evidence directories."""
 
     if context.packet_dirs:
         with context.phase("packet_evidence") as counters:
@@ -285,9 +465,20 @@ def run_pipeline(context: RunContext) -> PipelineResult:
                 for packet_dir in context.packet_dirs
             ]
             counters["packet_dirs"] = len(packet_evidence)
+            return packet_evidence
     else:
-        packet_evidence = []
         context.record_skipped("packet_evidence", "no packet directories requested")
+        return []
+
+
+def run_review_regions_phase(
+    context: RunContext,
+    dag: dict[str, Any],
+    declaration_graph: dict[str, Any] | None,
+    findings: list[dict[str, Any]],
+    packet_evidence: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Summarize reviewer routing regions."""
 
     with context.phase("review_regions") as counters:
         review_regions = summarize_review_regions(
@@ -297,23 +488,7 @@ def run_pipeline(context: RunContext) -> PipelineResult:
             packet_evidence,
         )
         counters["regions"] = len(review_regions)
-
-    result = PipelineResult(
-        context=context,
-        discovery=discovery,
-        module_dag=dag,
-        architecture_policy=architecture_policy,
-        source_patterns=source_patterns,
-        declaration_graph=declaration_graph,
-        quality_baseline=quality_baseline,
-        findings=findings,
-        packet_evidence=packet_evidence,
-        review_regions=review_regions,
-    )
-    with context.phase("rendering") as counters:
-        result.to_report_payload()
-        counters["payloads"] = 1
-    return result
+        return review_regions
 
 
 def coerce_extraction_bundle(
@@ -450,6 +625,68 @@ def run_architecture_policy_phase(
         return architecture_policy
 
 
+def run_module_readiness_phase(
+    context: RunContext,
+    dag: dict[str, Any],
+    declaration_graph: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Run Lean module-readiness analysis with optional witness metadata."""
+
+    with context.phase("module_readiness") as counters:
+        witness, source = resolve_optional_json(
+            inline=context.module_system_witness,
+            path=context.module_system_witness_path,
+            label="module-system witness",
+        )
+        report = summarize_module_readiness(dag, declaration_graph, witness)
+        if source:
+            report["source"] = source
+        counters["rows"] = len(report["rows"])
+        counters["findings"] = len(report["findings"])
+        return report
+
+
+def run_import_diet_phase(
+    context: RunContext,
+    dag: dict[str, Any],
+) -> dict[str, Any] | None:
+    """Run optional import-diet witness analysis."""
+
+    witness, source = resolve_optional_json(
+        inline=context.import_diet_witness,
+        path=context.import_diet_witness_path,
+        label="import-diet witness",
+    )
+    if witness is None:
+        context.record_skipped("import_diet", "no import-diet witness supplied")
+        return None
+    with context.phase("import_diet") as counters:
+        report = summarize_import_diet(dag, witness)
+        report["source"] = source
+        counters["rows"] = len(report["rows"])
+        counters["findings"] = len(report["findings"])
+        return report
+
+
+def run_proof_xray_phase(context: RunContext) -> dict[str, Any] | None:
+    """Run optional proof-xray witness analysis."""
+
+    witness, source = resolve_optional_json(
+        inline=context.proof_xray,
+        path=context.proof_xray_path,
+        label="proof-xray witness",
+    )
+    if witness is None:
+        context.record_skipped("proof_xray", "no proof-xray witness supplied")
+        return None
+    with context.phase("proof_xray") as counters:
+        report = summarize_proof_xray(witness)
+        report["source"] = source
+        counters["rows"] = len(report["rows"])
+        counters["findings"] = len(report["findings"])
+        return report
+
+
 def run_source_pattern_phase(
     context: RunContext,
     modules: Mapping[str, LeanModule],
@@ -522,6 +759,31 @@ def load_source_pattern_policy(policy_path: Path | None) -> dict[str, Any] | Non
         payload = json.load(handle)
     if not isinstance(payload, dict):
         raise ValueError(f"source-pattern policy {policy_path} must be a JSON object")
+    return payload
+
+
+def resolve_optional_json(
+    *,
+    inline: dict[str, Any] | None,
+    path: Path | None,
+    label: str,
+) -> tuple[dict[str, Any] | None, str]:
+    """Return optional inline or path-loaded JSON object."""
+
+    if inline is not None:
+        return inline, "inline"
+    if path is None:
+        return None, ""
+    return load_json_object(path, label), str(path)
+
+
+def load_json_object(path: Path, label: str) -> dict[str, Any]:
+    """Load a JSON object from a path with a targeted error message."""
+
+    with path.open(encoding="utf-8") as handle:
+        payload = json.load(handle)
+    if not isinstance(payload, dict):
+        raise ValueError(f"{label} {path} must be a JSON object")
     return payload
 
 

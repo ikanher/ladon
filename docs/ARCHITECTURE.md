@@ -40,10 +40,17 @@ is not listed as supported here, do not describe it as implemented.
     artifacts for frozen spec stubs, proof endpoints, no-drift gates, source
     pins, axiom audits, and proof-hole quarantine. The witness is route
     governance metadata, not theorem-truth evidence.
-14. `atlas`, `atlas_diff`, `atlas_sqlite`, and `atlas_workflow`: derive
+14. `analysis.module_readiness`, `analysis.import_diet`,
+    `analysis.proof_xray`, and `analysis.refactoring_prescriptions`: provide
+    optional Lean-review intelligence surfaces for module boundary readiness,
+    Lean/Lake import-diet witnesses, authority-labeled proof-shape context, and
+    prioritized refactoring prescriptions. These rows route review and do not
+    prove Lean module-system status, import removability, proof dependencies, or
+    theorem truth.
+15. `atlas`, `atlas_diff`, `atlas_sqlite`, and `atlas_workflow`: derive
     reviewer-routing graphs, diffs, canned queries, cards, and workflow
     summaries from Ladon report JSON plus optional bridge reports.
-15. `quality`: enforce radon/vulture gates for active Python code.
+16. `quality`: enforce radon/vulture gates for active Python code.
 
 Unsupported until rebuilt with tests:
 
@@ -77,6 +84,40 @@ no-drift gate, lacks an accepted axiom audit, quotes suspicious axioms, or has a
 clean endpoint route. These diagnostics are source-attachment and
 route-governance checks only. They do not validate Lean theorem truth, replay
 proofs, certify witness adequacy, or decide mathematical scope.
+
+Verifier handoff metadata such as build commands, source-pin commands,
+no-drift commands, axiom-audit commands, replay boundaries, source hashes, and
+tool versions may be preserved in proof-surface witness rows. Ladon uses that
+metadata to summarize route-evidence completeness. The completeness row only
+answers whether required quoted evidence is attached; it is not a proof-truth
+or witness-adequacy certificate.
+
+## Current Lean Review Intelligence Seams
+
+`ladon.analysis.module_readiness` summarizes module-boundary pressure from the
+module DAG, facade subtypes, generated tags, declaration namespace evidence,
+and optional module-system witness rows. A module-readiness row can say that a
+module looks like a public facade, that an implementation module is heavily
+imported, that generated aggregation dominates the public surface, or that
+declaration namespaces and module paths drift. These are review hints. Lean
+still owns module-system semantics.
+
+`ladon.analysis.import_diet` consumes optional import-diet witness JSON from
+Lean/Lake-owned tools. It compares fresh minimized-import evidence with
+Ladon's observed source import sites and reports redundant-import candidates
+with file/line/command metadata. Ladon does not run `lake shake` by default and
+does not prove an import can be removed without replaying the quoted command.
+
+`ladon.analysis.proof_xray` consumes optional authority-labeled proof-shape
+rows from an elaborated backend or external tool. Rows must say whether they are
+parser-observed, Lean-elaborated, externally quoted, or unknown. Parser rows are
+never promoted to elaborated proof dependencies.
+
+`ladon.analysis.refactoring_prescriptions` converts selected findings into
+prioritized review actions such as extracting a common layer, moving bridge
+glue to a neutral namespace, splitting a large owner, cleaning generator output,
+running import diet, or adding proof-surface witness evidence. Prescriptions
+are not source rewrites and do not prove the proposed refactor is correct.
 
 ## Current Architecture Policy Seam
 

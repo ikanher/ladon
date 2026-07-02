@@ -144,6 +144,14 @@ output and checks whether public claims cite proof endpoints rather than frozen
 spec stubs, whether advertised no-drift and axiom evidence is present, and
 whether suspicious quoted metadata needs review.
 
+Verifier handoff rows may also carry command metadata such as `buildCommand`,
+`sourcePinCommand`, `noDriftCommand`, `axiomAuditCommand`, `toolVersion`, and
+`replayBoundary`. Ladon preserves this metadata in route output so reviewers can
+see which external command produced the evidence. A route may also include a
+`routeEvidenceCompleteness` summary derived from the existing endpoint,
+no-drift, axiom-audit, and attachment predicates. That summary is only a
+checklist over quoted route evidence; it is not a theorem-truth verdict.
+
 ## Composition With ProofIR
 
 ProofIR route authority answers whether a public claim's status and required

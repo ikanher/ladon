@@ -90,6 +90,15 @@ def test_bridge_audits_clean_endpoint_and_proof_surface_nonclaims() -> None:
     assert "proof-surface witness rows are quoted route-governance evidence only" in report["trustRules"]
 
 
+def test_clean_endpoint_reports_route_evidence_completeness() -> None:
+    report = build_fixture_report()
+    clean_route = routes_by_claim(report)["claim.clean"]["proofSurface"]
+
+    completeness = clean_route["routeEvidenceCompleteness"]
+    assert completeness["complete"] is True
+    assert completeness["diagnosticNamespace"] == "ladon.proof_surface"
+
+
 def test_bridge_flags_spec_stub_gate_axiom_and_suspicious_axiom_routes() -> None:
     report = build_fixture_report()
     by_subject = diagnostics_by_subject(report)
