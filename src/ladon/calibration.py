@@ -4,14 +4,16 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
+
+from ladon.report_v2 import supported_report_view
 
 
 Expectation = dict[str, Any]
 ResultRow = dict[str, Any]
 
 
-BUILTIN_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
+_BUILTIN_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
     "quux/project-quux.json": [
         {"type": "acyclic"},
         {"type": "module_count_between", "min": 360, "max": 390},
@@ -61,7 +63,7 @@ BUILTIN_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
 }
 
 
-ROOT_MATRIX_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
+_ROOT_MATRIX_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
     "quux/quux-project.json": [
         {"type": "acyclic"},
         {"type": "module_count_between", "min": 360, "max": 390},
@@ -122,6 +124,51 @@ ROOT_MATRIX_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
     ],
 }
 
+LIVE_DRIFT_PREDICATES = frozenset(
+    {
+        "module_count_between",
+        "top_module_fan_in",
+        "top_module_fan_out",
+        "declaration_count_between",
+        "declaration_fan_in",
+        "declaration_family_present",
+    }
+)
+
+
+def observational_live_suites(
+    suites: Mapping[str, list[Expectation]],
+) -> dict[str, list[Expectation]]:
+    """Mark moving live-repository cardinalities as non-blocking drift."""
+
+    return {
+        report: [
+            observational_live_expectation(expectation)
+            for expectation in expectations
+        ]
+        for report, expectations in suites.items()
+    }
+
+
+def observational_live_expectation(expectation: Expectation) -> Expectation:
+    """Return one expectation with explicit live-drift policy when applicable."""
+
+    if expectation.get("type") not in LIVE_DRIFT_PREDICATES:
+        return dict(expectation)
+    return {
+        **expectation,
+        "blocking": False,
+        "evidenceKind": "optional_live_drift",
+    }
+
+
+BUILTIN_EXPECTATION_SUITES = observational_live_suites(
+    _BUILTIN_EXPECTATION_SUITES
+)
+ROOT_MATRIX_EXPECTATION_SUITES = observational_live_suites(
+    _ROOT_MATRIX_EXPECTATION_SUITES
+)
+
 
 def expectation_suites_by_name() -> dict[str, dict[str, list[Expectation]]]:
     """Return named built-in expectation suites."""
@@ -153,7 +200,10 @@ def evaluate_report_suite(
         if not report_path.exists():
             rows.append(missing_report_row(relative_path))
             continue
-        payload = json.loads(report_path.read_text(encoding="utf-8"))
+        payload = supported_report_view(
+            json.loads(report_path.read_text(encoding="utf-8")),
+            consumer=f"calibration report reader ({report_path})",
+        )
         rows.extend(evaluate_expectations(payload, expectations, report_name=relative_path))
     return rows
 
@@ -182,13 +232,18 @@ def evaluate_expectation(
 
     predicate = str(expectation["type"])
     try:
-        passed, message = predicate_dispatch()[predicate](payload, expectation)
+        observed_passed, message = predicate_dispatch()[predicate](payload, expectation)
     except KeyError:
-        passed, message = False, f"unknown predicate type: {predicate}"
+        observed_passed, message = False, f"unknown predicate type: {predicate}"
+    blocking = bool(expectation.get("blocking", True))
     return {
         "report": report_name,
         "predicate": predicate,
-        "passed": passed,
+        "passed": observed_passed if blocking else True,
+        "observedPassed": observed_passed,
+        "blocking": blocking,
+        "evidenceKind": expectation.get("evidenceKind", "regression_predicate"),
+        "status": "stable" if observed_passed else "drift",
         "message": message,
     }
 

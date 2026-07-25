@@ -1,0 +1,924 @@
+{
+  "artifactKind": "ladon_signal_benchmark_manifest",
+  "schemaVersion": 1,
+  "productVersion": "0.1.0-alpha",
+  "reportVersion": "ladon-report-v2",
+  "metricFamilies": [
+    "correctness",
+    "coverage",
+    "runtime",
+    "memory",
+    "cache",
+    "process",
+    "stability"
+  ],
+  "budgets": {
+    "coldWallSeconds": 20.0,
+    "warmWallSeconds": 20.0,
+    "peakRssMiB": 512.0,
+    "jsonBytes": 2000000,
+    "textBytes": 500000,
+    "timeoutCleanupSeconds": 5.0,
+    "inventoryHelperLaunches": 12,
+    "rationale": "Portable fixtures normally finish in well under one second and below 100 MiB on development hardware. The required ceilings are deliberately broad CI regression tripwires, not throughput claims."
+  },
+  "cases": [
+    {
+      "id": "text-structural-signals",
+      "required": true,
+      "fixture": "tests/fixtures/benchmark_harness/text_signals",
+      "fixtureOwner": "ladon-signal-benchmark-harness from the reviewed signal-correctness handoff",
+      "executionMode": "installed_cli",
+      "command": [
+        "ladon",
+        "--repo-root",
+        "{fixture}",
+        "--root",
+        "Pkg.lean",
+        "--format",
+        "json",
+        "--output",
+        "{output}",
+        "--generated-at-utc",
+        "2026-07-25T00:00:00+00:00"
+      ],
+      "reportVersion": "ladon-report-v2",
+      "metrics": [
+        "correctness",
+        "coverage",
+        "runtime",
+        "memory",
+        "stability"
+      ],
+      "labels": [
+        {
+          "id": "missing-internal.pkg-missing",
+          "class": "positive",
+          "metricFamily": "correctness",
+          "signalKind": "missing_internal_import",
+          "expectedOutcome": "present",
+          "authority": "lexical_text",
+          "promotionFamily": "missing_internal_import",
+          "rationale": "Pkg is a discovered project namespace even though the missing import is owned by a nested module.",
+          "oracle": {
+            "signal": "missing_internal_import",
+            "targetModule": "Pkg.Missing",
+            "authority": "lexical_text",
+            "expected": true
+          }
+        },
+        {
+          "id": "missing-internal.external-missing",
+          "class": "intentional_negative",
+          "metricFamily": "correctness",
+          "signalKind": "missing_internal_import",
+          "expectedOutcome": "absent",
+          "promotionFamily": "missing_internal_import",
+          "rationale": "The fixture does not own the External namespace, so the absent import is not an internal missing module.",
+          "oracle": {
+            "signal": "missing_internal_import",
+            "targetModule": "External.Missing",
+            "expected": false
+          }
+        },
+        {
+          "id": "missing-internal.authority-boundary",
+          "class": "boundary",
+          "metricFamily": "correctness",
+          "signalKind": "missing_internal_import",
+          "expectedOutcome": "exact",
+          "authority": "lexical_text",
+          "promotionFamily": "missing_internal_import",
+          "rationale": "The internal-missing classification remains source-authority evidence at the project-namespace boundary.",
+          "oracle": {
+            "signal": "missing_internal_import",
+            "targetModule": "Pkg.Missing",
+            "authority": "lexical_text",
+            "expected": true
+          }
+        },
+        {
+          "id": "fan-in.mixed-generic",
+          "class": "boundary",
+          "metricFamily": "correctness",
+          "signalKind": "fan_population",
+          "expectedOutcome": "exact",
+          "authority": "module_import_graph",
+          "rationale": "The generic table counts one handwritten and five generated importers.",
+          "oracle": {
+            "signal": "fan_population_count",
+            "table": "top_fan_in",
+            "module": "Pkg.CoreMixed",
+            "population": "all_importers_to_all_targets",
+            "authority": "module_import_graph",
+            "expected": 6
+          }
+        },
+        {
+          "id": "fan-in.mixed-handwritten",
+          "class": "boundary",
+          "metricFamily": "correctness",
+          "signalKind": "fan_population",
+          "expectedOutcome": "exact",
+          "authority": "module_import_graph",
+          "rationale": "The handwritten population excludes generated importers and generated targets.",
+          "oracle": {
+            "signal": "fan_population_count",
+            "table": "top_handwritten_fan_in",
+            "module": "Pkg.CoreMixed",
+            "population": "handwritten_importers_to_handwritten_targets",
+            "authority": "module_import_graph",
+            "expected": 1
+          }
+        },
+        {
+          "id": "fan-in.mixed-generated",
+          "class": "boundary",
+          "metricFamily": "correctness",
+          "signalKind": "generated_attribution",
+          "expectedOutcome": "exact",
+          "authority": "module_import_graph",
+          "rationale": "Generated importer contribution remains visible as its own raw population.",
+          "oracle": {
+            "signal": "fan_population_count",
+            "table": "top_generated_importer_fan_in",
+            "module": "Pkg.CoreMixed",
+            "population": "generated_importers_to_all_targets",
+            "authority": "module_import_graph",
+            "expected": 5
+          }
+        },
+        {
+          "id": "fan-in.equivalent-promotion",
+          "class": "boundary",
+          "metricFamily": "correctness",
+          "signalKind": "finding_deduplication",
+          "expectedOutcome": "exact",
+          "authority": "module_import_graph",
+          "rationale": "Equivalent generic and handwritten raw rows remain measured while promotion uses the more specific population once.",
+          "oracle": {
+            "signal": "finding_count",
+            "kind": "handwritten_module_fan_in_hotspot",
+            "subject": "Pkg.CoreShared",
+            "promotionPopulation": "handwritten_importers_to_handwritten_targets",
+            "expected": 1
+          }
+        },
+        {
+          "id": "declaration.modified-theorem",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "text_declaration_theorem",
+          "expectedOutcome": "present",
+          "authority": "lexical_text",
+          "rationale": "Attributes and a private modifier are within the scanner's documented bounded surface.",
+          "oracle": {
+            "signal": "text_declaration",
+            "module": "Pkg.CoreShared",
+            "name": "keptTheorem",
+            "kind": "theorem",
+            "authority": "lexical_text",
+            "expected": true
+          }
+        },
+        {
+          "id": "declaration.modified-def",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "text_declaration_def",
+          "expectedOutcome": "present",
+          "authority": "lexical_text",
+          "rationale": "A noncomputable definition is a documented supported modifier and kind.",
+          "oracle": {
+            "signal": "text_declaration",
+            "module": "Pkg.CoreShared",
+            "name": "keptDef",
+            "kind": "def",
+            "authority": "lexical_text",
+            "expected": true
+          }
+        },
+        {
+          "id": "declaration.unsafe-def",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "text_declaration_unsafe",
+          "expectedOutcome": "present",
+          "authority": "lexical_text",
+          "rationale": "Unsafe forms are retained as lexical declaration evidence without implying elaboration.",
+          "oracle": {
+            "signal": "text_declaration",
+            "module": "Pkg.CoreShared",
+            "name": "keptUnsafe",
+            "kind": "def",
+            "authority": "lexical_text",
+            "expected": true
+          }
+        },
+        {
+          "id": "declaration.opaque",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "text_declaration_opaque",
+          "expectedOutcome": "present",
+          "authority": "lexical_text",
+          "rationale": "Opaque is part of the bounded declaration-kind inventory.",
+          "oracle": {
+            "signal": "text_declaration",
+            "module": "Pkg.CoreShared",
+            "name": "keptOpaque",
+            "kind": "opaque",
+            "authority": "lexical_text",
+            "expected": true
+          }
+        },
+        {
+          "id": "declaration.axiom",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "text_declaration_axiom",
+          "expectedOutcome": "present",
+          "authority": "lexical_text",
+          "rationale": "Axiom declarations are inventory and trust-footprint evidence, not theorem verdicts.",
+          "oracle": {
+            "signal": "text_declaration",
+            "module": "Pkg.CoreShared",
+            "name": "keptAxiom",
+            "kind": "axiom",
+            "authority": "lexical_text",
+            "expected": true
+          }
+        },
+        {
+          "id": "declaration.masked-block-comment",
+          "class": "intentional_negative",
+          "metricFamily": "coverage",
+          "signalKind": "text_declaration_masking",
+          "expectedOutcome": "absent",
+          "rationale": "Declaration-shaped text in a block comment must not enter the inventory.",
+          "oracle": {
+            "signal": "text_declaration",
+            "module": "Pkg.CoreShared",
+            "name": "BlockFake",
+            "expected": false
+          }
+        },
+        {
+          "id": "declaration.masked-string",
+          "class": "intentional_negative",
+          "metricFamily": "coverage",
+          "signalKind": "text_declaration_masking",
+          "expectedOutcome": "absent",
+          "rationale": "Declaration-shaped string content must not enter the inventory.",
+          "oracle": {
+            "signal": "text_declaration",
+            "module": "Pkg.CoreShared",
+            "name": "StringFake",
+            "expected": false
+          }
+        },
+        {
+          "id": "trust.lexical-sorry",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "trust_footprint",
+          "expectedOutcome": "present",
+          "authority": "lexical_text",
+          "rationale": "A real source sorry is preserved as non-elaborated lexical trust evidence.",
+          "oracle": {
+            "signal": "lexical_marker",
+            "module": "Pkg.CoreShared",
+            "kind": "sorry",
+            "authority": "lexical_text",
+            "expected": true
+          }
+        },
+        {
+          "id": "facade.public-root",
+          "class": "positive",
+          "metricFamily": "correctness",
+          "signalKind": "facade_classification",
+          "expectedOutcome": "exact",
+          "rationale": "The top-level import-only project root is a portable public-root facade.",
+          "oracle": {
+            "signal": "facade_subtype_count",
+            "subtype": "public_root_facade",
+            "expected": 1
+          }
+        },
+        {
+          "id": "architecture.owner-core",
+          "class": "positive",
+          "metricFamily": "correctness",
+          "signalKind": "architecture_policy",
+          "expectedOutcome": "exact",
+          "rationale": "The fixture-owned policy labels direct owner-to-core imports as review evidence.",
+          "oracle": {
+            "signal": "architecture_pair_count",
+            "sourceGroup": "owners",
+            "targetGroup": "cores",
+            "expected": 6
+          }
+        },
+        {
+          "id": "source-pattern.present",
+          "class": "positive",
+          "metricFamily": "correctness",
+          "signalKind": "source_pattern",
+          "expectedOutcome": "exact",
+          "promotionFamily": "source_pattern",
+          "rationale": "The reviewed source contains exactly one deprecated local term.",
+          "oracle": {
+            "signal": "source_pattern_match_count",
+            "patternId": "deprecated-local-term",
+            "expected": 1
+          }
+        },
+        {
+          "id": "source-pattern.intentional-absent",
+          "class": "intentional_negative",
+          "metricFamily": "correctness",
+          "signalKind": "source_pattern",
+          "expectedOutcome": "absent",
+          "promotionFamily": "source_pattern",
+          "rationale": "An absent configured term must not produce a match.",
+          "oracle": {
+            "signal": "source_pattern_match_count",
+            "patternId": "intentional-absent-term",
+            "expected": 0
+          }
+        },
+        {
+          "id": "source-pattern.count-boundary",
+          "class": "boundary",
+          "metricFamily": "correctness",
+          "signalKind": "source_pattern",
+          "expectedOutcome": "exact",
+          "promotionFamily": "source_pattern",
+          "rationale": "The promoted source pattern is guarded by an exact reviewed count, not merely substring presence.",
+          "oracle": {
+            "signal": "source_pattern_match_count",
+            "patternId": "deprecated-local-term",
+            "expected": 1
+          }
+        }
+      ],
+      "rationale": "One installed text-backend run exercises the signal-correctness handoff without a benchmark-only analysis route."
+    },
+    {
+      "id": "lean-declaration-signals",
+      "required": true,
+      "fixture": "tests/fixtures/benchmark_harness/lean_signals",
+      "fixtureOwner": "ladon-signal-benchmark-harness from the reviewed signal-correctness handoff",
+      "executionMode": "installed_cli",
+      "setup": "fake_lake",
+      "command": [
+        "ladon",
+        "--repo-root",
+        "{fixture}",
+        "--root",
+        "Pkg/Surface/Deep.lean",
+        "--build",
+        "--extraction-backend",
+        "lean",
+        "--lean-extraction-scope",
+        "inventory",
+        "--lean-cache-dir",
+        "{cache}",
+        "--format",
+        "json",
+        "--output",
+        "{output}",
+        "--generated-at-utc",
+        "2026-07-25T00:00:00+00:00"
+      ],
+      "reportVersion": "ladon-report-v2",
+      "metrics": [
+        "correctness",
+        "coverage",
+        "runtime",
+        "memory",
+        "cache",
+        "process",
+        "stability"
+      ],
+      "labels": [
+        {
+          "id": "namespace.parent-layout",
+          "class": "intentional_negative",
+          "metricFamily": "correctness",
+          "signalKind": "namespace_drift",
+          "expectedOutcome": "absent",
+          "promotionFamily": "namespace_drift",
+          "rationale": "A declaration in the conventional parent namespace is compatible with a deeper module path.",
+          "oracle": {
+            "signal": "namespace_drift",
+            "module": "Pkg.Surface.Deep",
+            "namespace": "Pkg",
+            "expected": false
+          }
+        },
+        {
+          "id": "namespace.unrelated-layout",
+          "class": "positive",
+          "metricFamily": "correctness",
+          "signalKind": "namespace_drift",
+          "expectedOutcome": "present",
+          "authority": "source_declaration_inventory",
+          "promotionFamily": "namespace_drift",
+          "rationale": "Two declarations in an unrelated namespace aggregate into one source-authority row.",
+          "oracle": {
+            "signal": "namespace_drift",
+            "module": "Pkg.Surface.Deep",
+            "namespace": "Other.Space",
+            "declarationCount": 2,
+            "authority": "source_declaration_inventory",
+            "expected": true
+          }
+        },
+        {
+          "id": "namespace.aggregate-boundary",
+          "class": "boundary",
+          "metricFamily": "correctness",
+          "signalKind": "namespace_drift",
+          "expectedOutcome": "exact",
+          "authority": "source_declaration_inventory",
+          "promotionFamily": "namespace_drift",
+          "rationale": "Multiple declarations in one unrelated namespace collapse into one exact aggregate with a reviewed count.",
+          "oracle": {
+            "signal": "namespace_drift",
+            "module": "Pkg.Surface.Deep",
+            "namespace": "Other.Space",
+            "declarationCount": 2,
+            "authority": "source_declaration_inventory",
+            "expected": true
+          }
+        },
+        {
+          "id": "similarity.coarse-only",
+          "class": "intentional_negative",
+          "metricFamily": "correctness",
+          "signalKind": "proof_similarity",
+          "expectedOutcome": "absent",
+          "promotionFamily": "proof_similarity",
+          "rationale": "Equal coarse unresolved classes with disjoint identifiers remain visible but cannot be promoted.",
+          "oracle": {
+            "signal": "proof_similarity_state",
+            "suffix": "ge_one",
+            "fields": [
+              "similarity_score",
+              "coarse_only",
+              "promoted"
+            ],
+            "expected": {
+              "similarity_score": 0.5,
+              "coarse_only": true,
+              "promoted": false
+            }
+          }
+        },
+        {
+          "id": "similarity.concrete-identifiers",
+          "class": "positive",
+          "metricFamily": "correctness",
+          "signalKind": "proof_similarity",
+          "expectedOutcome": "exact",
+          "promotionFamily": "proof_similarity",
+          "rationale": "Normalized concrete identifier overlap is admissible high-confidence evidence.",
+          "oracle": {
+            "signal": "proof_similarity_state",
+            "suffix": "eq_zero",
+            "fields": [
+              "max_concrete_identifier_overlap",
+              "promoted"
+            ],
+            "expected": {
+              "max_concrete_identifier_overlap": 1.0,
+              "promoted": true
+            }
+          }
+        },
+        {
+          "id": "similarity.coarse-cap-boundary",
+          "class": "boundary",
+          "metricFamily": "correctness",
+          "signalKind": "proof_similarity",
+          "expectedOutcome": "exact",
+          "promotionFamily": "proof_similarity",
+          "rationale": "Coarse-only evidence remains observable at the explicit score cap while promotion stays disabled.",
+          "oracle": {
+            "signal": "proof_similarity_state",
+            "suffix": "ge_one",
+            "fields": [
+              "similarity_score",
+              "coarse_only_cap",
+              "promoted"
+            ],
+            "expected": {
+              "similarity_score": 0.5,
+              "coarse_only_cap": 0.5,
+              "promoted": false
+            }
+          }
+        },
+        {
+          "id": "surface.theorem",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "elaborated_declaration_surface",
+          "expectedOutcome": "present",
+          "authority": "lean_environment",
+          "promotionFamily": "elaborated_declaration_surface",
+          "rationale": "The theorem row must retain its real kind, source identity, and bounded statement fields.",
+          "oracle": {
+            "signal": "declaration_required_fields",
+            "declaration": "Pkg.parentValue",
+            "requiredFields": [
+              "kind",
+              "sourcePath",
+              "contentHash",
+              "surface.renderedType",
+              "surface.statementExcerpt.text",
+              "surface.conclusion"
+            ],
+            "expectedFields": {
+              "kind": "theorem",
+              "surface.status": "complete"
+            },
+            "expected": true
+          }
+        },
+        {
+          "id": "surface.definition",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "elaborated_declaration_kind",
+          "expectedOutcome": "present",
+          "authority": "lean_environment",
+          "rationale": "A definition is retained as an elaborated definition, not a theorem-shaped parser guess.",
+          "oracle": {
+            "signal": "declaration_required_fields",
+            "declaration": "Pkg.helperValue",
+            "requiredFields": [
+              "sourcePath",
+              "contentHash",
+              "surface.statementExcerpt.text"
+            ],
+            "expectedFields": {
+              "kind": "def",
+              "surface.status": "complete"
+            },
+            "expected": true
+          }
+        },
+        {
+          "id": "surface.axiom-trust",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "elaborated_trust_footprint",
+          "expectedOutcome": "present",
+          "authority": "lean_environment",
+          "rationale": "The declared axiom has a direct scoped trust fact without making a transitive closure claim.",
+          "oracle": {
+            "signal": "declaration_required_fields",
+            "declaration": "Pkg.surfaceAxiom",
+            "requiredFields": [
+              "sourcePath",
+              "contentHash",
+              "surface.trustFacts"
+            ],
+            "expectedFields": {
+              "kind": "axiom",
+              "surface.declaredAxiom": true,
+              "surface.status": "complete"
+            },
+            "expected": true
+          }
+        },
+        {
+          "id": "surface.opaque",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "elaborated_declaration_kind",
+          "expectedOutcome": "present",
+          "authority": "lean_environment",
+          "rationale": "Opaque declarations remain a distinct declaration kind in the bounded inventory.",
+          "oracle": {
+            "signal": "declaration_required_fields",
+            "declaration": "Pkg.hiddenValue",
+            "requiredFields": [
+              "sourcePath",
+              "contentHash",
+              "surface.statementExcerpt.text"
+            ],
+            "expectedFields": {
+              "kind": "opaque",
+              "surface.status": "complete"
+            },
+            "expected": true
+          }
+        },
+        {
+          "id": "surface.unsafe-boundary",
+          "class": "boundary",
+          "metricFamily": "coverage",
+          "signalKind": "elaborated_declaration_surface",
+          "expectedOutcome": "exact",
+          "authority": "lean_environment",
+          "promotionFamily": "elaborated_declaration_surface",
+          "rationale": "Unsafe is an explicit surface field while the declaration's Lean kind remains def.",
+          "oracle": {
+            "signal": "declaration_required_fields",
+            "declaration": "Pkg.unsafeValue",
+            "requiredFields": [
+              "sourcePath",
+              "contentHash",
+              "surface.statementExcerpt.text"
+            ],
+            "expectedFields": {
+              "kind": "def",
+              "surface.unsafe": true,
+              "surface.status": "complete"
+            },
+            "expected": true
+          }
+        },
+        {
+          "id": "dependency.type-direct",
+          "class": "positive",
+          "metricFamily": "coverage",
+          "signalKind": "elaborated_type_dependency",
+          "expectedOutcome": "present",
+          "authority": "lean_environment",
+          "promotionFamily": "elaborated_dependency_authority",
+          "rationale": "The direct theorem type constant is counted under Lean-environment type authority.",
+          "oracle": {
+            "signal": "direct_dependency",
+            "declaration": "Pkg.parentValue",
+            "dependencyKind": "type",
+            "target": "True",
+            "authority": "lean_environment",
+            "expected": true
+          }
+        },
+        {
+          "id": "dependency.value-direct",
+          "class": "boundary",
+          "metricFamily": "coverage",
+          "signalKind": "elaborated_value_dependency",
+          "expectedOutcome": "present",
+          "authority": "lean_environment",
+          "promotionFamily": "elaborated_dependency_authority",
+          "rationale": "A value constant from an imported inventory module remains distinct from the theorem type constants.",
+          "oracle": {
+            "signal": "direct_dependency",
+            "declaration": "Pkg.parentValue",
+            "dependencyKind": "value",
+            "target": "Pkg.dependencyValue",
+            "authority": "lean_environment",
+            "expected": true
+          }
+        },
+        {
+          "id": "dependency.parser-not-value",
+          "class": "intentional_negative",
+          "metricFamily": "coverage",
+          "signalKind": "elaborated_value_dependency",
+          "expectedOutcome": "absent",
+          "authority": "lean_environment",
+          "promotionFamily": "elaborated_dependency_authority",
+          "rationale": "The parser-only LeftOnly candidate must not count as a Lean-environment value dependency.",
+          "oracle": {
+            "signal": "direct_dependency",
+            "declaration": "Pkg.left_ge_one",
+            "dependencyKind": "value",
+            "target": "LeftOnly",
+            "authority": "lean_environment",
+            "expected": false
+          }
+        },
+        {
+          "id": "surface.parser-only-not-elaborated",
+          "class": "intentional_negative",
+          "metricFamily": "coverage",
+          "signalKind": "elaborated_declaration_surface",
+          "expectedOutcome": "absent",
+          "authority": "lean_environment",
+          "promotionFamily": "elaborated_declaration_surface",
+          "rationale": "A parser-only identifier cannot satisfy an elaborated-surface dependency requirement.",
+          "oracle": {
+            "signal": "direct_dependency",
+            "declaration": "Pkg.left_ge_one",
+            "dependencyKind": "value",
+            "target": "LeftOnly",
+            "authority": "lean_environment",
+            "expected": false
+          }
+        }
+      ],
+      "rationale": "A PATH-local Lake stand-in supplies deterministic helper output while the installed ordinary CLI owns build, extraction, cache, report, and process behavior."
+    },
+    {
+      "id": "tiny-report-contract",
+      "required": true,
+      "fixture": "tests/fixtures/tiny_lean",
+      "fixtureOwner": "clean-core portable fixture",
+      "executionMode": "installed_cli",
+      "command": [
+        "ladon",
+        "--repo-root",
+        "{fixture}",
+        "--root",
+        "Tiny.lean",
+        "--format",
+        "json",
+        "--output",
+        "{output}",
+        "--generated-at-utc",
+        "2026-07-25T00:00:00+00:00"
+      ],
+      "reportVersion": "ladon-report-v2",
+      "metrics": [
+        "runtime",
+        "memory",
+        "stability"
+      ],
+      "labels": [
+        {
+          "id": "tiny.facade",
+          "class": "positive",
+          "metricFamily": "correctness",
+          "signalKind": "facade_classification",
+          "expectedOutcome": "exact",
+          "rationale": "The existing tiny fixture has one import-only root facade.",
+          "oracle": {
+            "signal": "facade_subtype_count",
+            "subtype": "pure_barrel",
+            "expected": 1
+          }
+        }
+      ],
+      "rationale": "The existing tiny fixture is reused for deterministic report and broad synthetic resource checks."
+    }
+  ],
+  "controlLabels": [
+    {
+      "id": "cache.warm-hit",
+      "class": "positive",
+      "metricFamily": "cache",
+      "signalKind": "cache_hit",
+      "expectedOutcome": "present",
+      "promotionFamily": "cache_runtime",
+      "rationale": "An unchanged installed-CLI inventory run must reuse its valid parser cache.",
+      "oracle": {
+        "signal": "warm_cache_hit",
+        "expected": true
+      }
+    },
+    {
+      "id": "cache.unchanged-no-helper",
+      "class": "intentional_negative",
+      "metricFamily": "cache",
+      "signalKind": "cache_invalidation",
+      "expectedOutcome": "absent",
+      "promotionFamily": "cache_runtime",
+      "rationale": "An unchanged warm run must not relaunch the parser helper.",
+      "oracle": {
+        "signal": "warm_helper_launches",
+        "expected": 0
+      }
+    },
+    {
+      "id": "cache.fingerprint-boundary",
+      "class": "boundary",
+      "metricFamily": "cache",
+      "signalKind": "cache_invalidation",
+      "expectedOutcome": "exact",
+      "promotionFamily": "cache_runtime",
+      "rationale": "Each required fingerprint input has its own inspectable invalidation reason.",
+      "oracle": {
+        "signal": "cache_invalidation_reasons",
+        "expected": {
+          "helper": "helper_changed",
+          "imported_source": "transitive_import_changed",
+          "lake_manifest": "lake_state_changed",
+          "source": "source_changed",
+          "toolchain": "toolchain_changed"
+        }
+      }
+    },
+    {
+      "id": "process.timeout-prefix",
+      "class": "positive",
+      "metricFamily": "process",
+      "signalKind": "timeout_control",
+      "expectedOutcome": "present",
+      "promotionFamily": "process_control",
+      "rationale": "A timed-out batch retains its completed prefix in a partial report.",
+      "oracle": {
+        "signal": "timeout_partial_report",
+        "expected": true
+      }
+    },
+    {
+      "id": "process.timeout-no-orphan",
+      "class": "intentional_negative",
+      "metricFamily": "process",
+      "signalKind": "timeout_control",
+      "expectedOutcome": "absent",
+      "promotionFamily": "process_control",
+      "rationale": "The timeout path must leave no live descendant process.",
+      "oracle": {
+        "signal": "timeout_orphan_present",
+        "expected": false
+      }
+    },
+    {
+      "id": "process.cleanup-boundary",
+      "class": "boundary",
+      "metricFamily": "process",
+      "signalKind": "timeout_control",
+      "expectedOutcome": "exact",
+      "promotionFamily": "process_control",
+      "rationale": "Timeout and caller cancellation both satisfy the committed cleanup deadline.",
+      "oracle": {
+        "signal": "process_cleanup_passed",
+        "expected": true
+      }
+    },
+    {
+      "id": "report.schema-valid",
+      "class": "positive",
+      "metricFamily": "stability",
+      "signalKind": "report_contract",
+      "expectedOutcome": "present",
+      "promotionFamily": "report_contract",
+      "rationale": "Every installed product report validates against the packaged report-v2 schema.",
+      "oracle": {
+        "signal": "all_reports_schema_valid",
+        "expected": true
+      }
+    },
+    {
+      "id": "report.no-normalized-drift",
+      "class": "intentional_negative",
+      "metricFamily": "stability",
+      "signalKind": "report_contract",
+      "expectedOutcome": "absent",
+      "promotionFamily": "report_contract",
+      "rationale": "Equivalent explicit-metadata runs have no normalized byte mismatch.",
+      "oracle": {
+        "signal": "normalized_mismatch_count",
+        "expected": 0
+      }
+    },
+    {
+      "id": "report.size-boundary",
+      "class": "boundary",
+      "metricFamily": "stability",
+      "signalKind": "report_contract",
+      "expectedOutcome": "exact",
+      "promotionFamily": "report_contract",
+      "rationale": "Canonical JSON and text representations remain below broad synthetic size ceilings.",
+      "oracle": {
+        "signal": "all_report_size_budgets_passed",
+        "expected": true
+      }
+    }
+  ],
+  "optionalLiveRuns": [
+    {
+      "id": "quux",
+      "enabledBy": "LADON_QUUX_ROOT",
+      "blocking": false,
+      "provenance": [
+        "repository",
+        "revision",
+        "toolchain",
+        "environment"
+      ]
+    },
+    {
+      "id": "matrix-factorization",
+      "enabledBy": "LADON_MATRIX_FACTORIZATION_ROOT",
+      "blocking": false,
+      "provenance": [
+        "repository",
+        "revision",
+        "toolchain",
+        "environment"
+      ]
+    },
+    {
+      "id": "mathlib",
+      "enabledBy": "LADON_MATHLIB_ROOT",
+      "blocking": false,
+      "provenance": [
+        "repository",
+        "revision",
+        "toolchain",
+        "environment"
+      ]
+    }
+  ]
+}

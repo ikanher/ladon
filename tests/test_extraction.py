@@ -2,12 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import ladon.extraction as extraction
 from ladon.analysis.module_dag import summarize_module_dag
 from ladon.extraction import (
     discover_modules,
     parse_imports,
     parse_import_sites,
     parse_lean_module,
+    parse_text_declarations,
 )
 
 
@@ -102,6 +104,36 @@ import all Root.All
     assert parsed.line_count == 4
 
 
+def test_parse_lean_module_masks_source_once(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    root = tmp_path / "Root.lean"
+    root.write_text(
+        """\
+import Root.Core
+-- sorry and def fake are comments
+theorem kept : True := by trivial
+""",
+        encoding="utf-8",
+    )
+    original = extraction.mask_lean_comments_and_strings
+    calls = 0
+
+    def counted(text: str) -> str:
+        nonlocal calls
+        calls += 1
+        return original(text)
+
+    monkeypatch.setattr(extraction, "mask_lean_comments_and_strings", counted)
+
+    parsed = parse_lean_module(tmp_path, root)
+
+    assert calls == 1
+    assert parsed.imports == ("Root.Core",)
+    assert parsed.declarations == ("kept",)
+
+
 def test_parse_lean_module_tags_generated_files_from_generic_conventions(tmp_path: Path) -> None:
     generated = tmp_path / "GeneratedRoute.lean"
     handwritten = tmp_path / "Owner.lean"
@@ -135,6 +167,40 @@ theorem owner : True := by
         ("axiom", 4),
         ("admit", 6),
     ]
+
+
+def test_text_declarations_mask_comments_strings_and_record_supported_forms(
+    tmp_path: Path,
+) -> None:
+    text = """\
+/- axiom BlockFake : True -/
+def quoted : String := "constant StringFake : Nat"
+-- opaque LineFake : Nat
+@[simp] private theorem kept_theorem : True := by trivial
+noncomputable def kept_def : Nat := 1
+opaque kept_opaque : Nat
+axiom kept_axiom : True
+constant kept_constant : Nat
+syntax "custom" : term
+"""
+    path = tmp_path / "Owner.lean"
+    path.write_text(text, encoding="utf-8")
+
+    rows = parse_text_declarations(text)
+    parsed = parse_lean_module(tmp_path, path)
+
+    assert [(row.kind, row.name, row.line) for row in rows] == [
+        ("def", "quoted", 2),
+        ("theorem", "kept_theorem", 4),
+        ("def", "kept_def", 5),
+        ("opaque", "kept_opaque", 6),
+        ("axiom", "kept_axiom", 7),
+        ("constant", "kept_constant", 8),
+    ]
+    assert parsed.declarations == tuple(row.name for row in rows)
+    assert all(row.authority == "lexical_text" for row in rows)
+    assert all("not a complete Lean parse" in row.nonclaim for row in rows)
+    assert text[rows[0].start_offset:rows[0].end_offset] == "quoted"
 
 
 def test_discover_modules_accepts_directory_root(tmp_path: Path) -> None:

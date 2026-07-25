@@ -56,6 +56,48 @@ structure HelperOutput where
   commands : Array HelperCommand
   deriving Inhabited, ToJson
 
+structure BatchModuleRequest where
+  requestIndex : Nat
+  module : String
+  file : String
+  deriving Inhabited, FromJson
+
+structure BatchRequest where
+  protocolVersion : String
+  modules : Array BatchModuleRequest
+  deriving Inhabited, FromJson
+
+structure HelperDiagnostic where
+  id : String
+  severity : String
+  message : String
+  deriving Inhabited, ToJson
+
+structure ModuleFrame where
+  frame : String
+  protocolVersion : String
+  requestIndex : Nat
+  module : String
+  file : String
+  status : String
+  payload : Option HelperOutput
+  diagnostic : Option HelperDiagnostic
+  deriving Inhabited, ToJson
+
+structure SummaryFrame where
+  frame : String
+  protocolVersion : String
+  helperVersion : String
+  leanVersion : String
+  requested : Nat
+  completed : Nat
+  failed : Nat
+  deriving Inhabited, ToJson
+
+private def protocolVersion : String := "ladon-lean-batch-v1"
+
+private def helperVersion : String := "ladon-parser-helper-v2"
+
 inductive ScopeFrame where
   | section
   | namespace (name : String)
@@ -319,45 +361,132 @@ private partial def collectCommands (inputCtx : InputContext) (pmctx : ParserMod
     (applyScopeTransition stack cmd) (index + 1)
     (acc.push (helperCommandOfSyntax fileMap stack index cmd))
 
-private def runHelper (file : String) : IO UInt32 := do
-  let contents ← IO.FS.readFile file
-  let inputCtx := Parser.mkInputContext contents file
-  let fileMap := inputCtx.fileMap
-  let (header, state, messages) ← Parser.parseHeader inputCtx
-  if messages.hasErrors then
-    let details := String.intercalate "\n" (← messages.toList.mapM fun m => m.toString)
-    IO.eprintln s!"PARSE_FAILURE {file}\n{details}"
-    return 1
-  unsafe Lean.enableInitializersExecution
-  let (env, headerMessages) ← Lean.Elab.processHeader header {} messages inputCtx (leakEnv := true)
-  if headerMessages.hasErrors then
-    let details := String.intercalate "\n" (← headerMessages.toList.mapM fun m => m.toString)
-    IO.eprintln s!"PARSE_FAILURE {file}\n{details}"
-    return 1
-  match parseImports header with
+private def extractionFailure (file details : String) : String :=
+  s!"PARSE_FAILURE {file}\n{details}"
+
+private def extractFile (file : String) : IO (Except String HelperOutput) := do
+  try
+    let contents ← IO.FS.readFile file
+    let inputCtx := Parser.mkInputContext contents file
+    let fileMap := inputCtx.fileMap
+    let (header, state, messages) ← Parser.parseHeader inputCtx
+    if messages.hasErrors then
+      let details := String.intercalate "\n" (← messages.toList.mapM fun m => m.toString)
+      return .error (extractionFailure file details)
+    unsafe Lean.enableInitializersExecution
+    let (env, headerMessages) ←
+      Lean.Elab.processHeader header {} messages inputCtx (leakEnv := true)
+    if headerMessages.hasErrors then
+      let details := String.intercalate "\n" (← headerMessages.toList.mapM fun m => m.toString)
+      return .error (extractionFailure file details)
+    let headerInfo ←
+      match parseImports header with
+      | .error err => return .error (extractionFailure file err)
+      | .ok info => pure info
+    let commandsResult ←
+      (collectCommands inputCtx { env := env, options := {} } state headerMessages fileMap).run
+    let commands ←
+      match commandsResult with
+      | .error err => return .error (extractionFailure file err)
+      | .ok commands => pure commands
+    return .ok {
+      version := helperVersion
+      file := file
+      header := headerInfo
+      commands := commands
+    }
+  catch error =>
+    return .error (extractionFailure file error.toString)
+
+private def emitFrame {α : Type} [ToJson α] (frame : α) : IO Unit :=
+  IO.println <| Json.compress <| toJson frame
+
+private def runSingle (file : String) : IO UInt32 := do
+  match ← extractFile file with
   | .error err =>
-      IO.eprintln s!"PARSE_FAILURE {file}\n{err}"
+      IO.eprintln err
       return 1
-  | .ok headerInfo =>
-      let commands ← (collectCommands inputCtx { env := env, options := {} } state headerMessages fileMap).run
-      match commands with
-      | Except.error err =>
-          IO.eprintln s!"PARSE_FAILURE {file}\n{err}"
+  | .ok output =>
+      IO.println <| Json.pretty <| toJson output
+      return 0
+
+private def moduleSuccessFrame (request : BatchModuleRequest)
+    (output : HelperOutput) : ModuleFrame := {
+  frame := "module"
+  protocolVersion := protocolVersion
+  requestIndex := request.requestIndex
+  module := request.module
+  file := request.file
+  status := "ok"
+  payload := some output
+  diagnostic := none
+}
+
+private def moduleFailureFrame (request : BatchModuleRequest)
+    (message : String) : ModuleFrame := {
+  frame := "module"
+  protocolVersion := protocolVersion
+  requestIndex := request.requestIndex
+  module := request.module
+  file := request.file
+  status := "failed"
+  payload := none
+  diagnostic := some {
+    id := "lean.parse_or_load_failure"
+    severity := "error"
+    message := message
+  }
+}
+
+private def runBatchRequest (request : BatchRequest) : IO UInt32 := do
+  if request.protocolVersion != protocolVersion then
+    IO.eprintln s!"unsupported protocol version: {request.protocolVersion}"
+    return 1
+  let mut completed := 0
+  let mut failed := 0
+  for moduleRequest in request.modules do
+    match ← extractFile moduleRequest.file with
+    | .ok output =>
+        emitFrame (moduleSuccessFrame moduleRequest output)
+        completed := completed + 1
+    | .error err =>
+        emitFrame (moduleFailureFrame moduleRequest err)
+        failed := failed + 1
+  emitFrame ({
+    frame := "summary"
+    protocolVersion := protocolVersion
+    helperVersion := helperVersion
+    leanVersion := Lean.versionString
+    requested := request.modules.size
+    completed := completed
+    failed := failed
+  } : SummaryFrame)
+  return 0
+
+private def runBatchFile (requestFile : String) : IO UInt32 := do
+  try
+    let contents ← IO.FS.readFile requestFile
+    let json ←
+      match Json.parse contents with
+      | .error err =>
+          IO.eprintln s!"invalid batch request JSON: {err}"
           return 1
-      | Except.ok commands =>
-          let output : HelperOutput := {
-            version := "1"
-            file := file
-            header := headerInfo
-            commands := commands
-          }
-          IO.println <| Json.pretty <| toJson output
-          return 0
+      | .ok json => pure json
+    match Lean.fromJson? (α := BatchRequest) json with
+    | .error err =>
+        IO.eprintln s!"invalid batch request shape: {err}"
+        return 1
+    | .ok request => runBatchRequest request
+  catch error =>
+    IO.eprintln s!"failed to read batch request: {error}"
+    return 1
 
 def main (args : List String) : IO UInt32 := do
   match args with
-  | ["--", file] => runHelper file
-  | [file] => runHelper file
+  | ["--", "--batch", requestFile] => runBatchFile requestFile
+  | ["--batch", requestFile] => runBatchFile requestFile
+  | ["--", file] => runSingle file
+  | [file] => runSingle file
   | _ =>
-      IO.eprintln "usage: ladon_parser_helper.lean <file>"
+      IO.eprintln "usage: ladon_parser_helper.lean <file> | --batch <request.json>"
       return 1

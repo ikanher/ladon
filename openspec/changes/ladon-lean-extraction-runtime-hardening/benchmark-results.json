@@ -1,0 +1,56 @@
+{
+  "batchSize": 8,
+  "fixture": "tests/fixtures/lean_integration",
+  "nonclaim": "Synthetic timings characterize this fixture and host only; they are not a general performance guarantee.",
+  "quux": {
+    "elapsedSeconds": null,
+    "reason": "optional external Quux timing was not supplied",
+    "status": "not_run"
+  },
+  "scenarios": {
+    "cold": {
+      "cacheInvalidationReasons": [
+        "cold_miss"
+      ],
+      "cacheStatuses": {
+        "miss": 3
+      },
+      "completed": 3,
+      "failed": 0,
+      "helperInvocations": 1,
+      "phaseSeconds": 5.102212439989671,
+      "requested": 3,
+      "wallSeconds": 5.212120288051665
+    },
+    "invalidated": {
+      "cacheInvalidationReasons": [
+        "source_changed",
+        "transitive_import_changed"
+      ],
+      "cacheStatuses": {
+        "hit": 1,
+        "miss": 2
+      },
+      "completed": 3,
+      "failed": 0,
+      "helperInvocations": 1,
+      "phaseSeconds": 4.76269317092374,
+      "requested": 3,
+      "wallSeconds": 4.859677707077935
+    },
+    "warm": {
+      "cacheInvalidationReasons": [],
+      "cacheStatuses": {
+        "hit": 3
+      },
+      "completed": 3,
+      "failed": 0,
+      "helperInvocations": 0,
+      "phaseSeconds": 3.257227696944028,
+      "requested": 3,
+      "wallSeconds": 3.354747024131939
+    }
+  },
+  "schemaVersion": 1,
+  "toolchain": "leanprover/lean4:v4.32.1"
+}

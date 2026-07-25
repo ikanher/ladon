@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from ladon.artifact_versions import (
+    ATLAS_WORKFLOW_SCHEMA,
+    require_atlas_v1,
+    require_bridge_v1,
+)
 from ladon.atlas import atlas_reviewer_cards
 from ladon.atlas_diff import diff_atlases
 
@@ -16,21 +21,27 @@ def build_atlas_workflow(
 ) -> dict[str, Any]:
     """Build the combined reviewer workflow surface."""
 
+    require_atlas_v1(atlas, consumer="atlas workflow current-reader")
+    if before_atlas is not None:
+        require_atlas_v1(before_atlas, consumer="atlas workflow before-reader")
     bridges = normalize_bridge_reports(bridge_reports or [])
     diff = diff_atlases(before_atlas, atlas) if before_atlas is not None else empty_diff()
+    workflow_diagnostics = atlas_workflow_diagnostics(atlas)
     return {
-        "schema": "ladon-atlas-workflow-v1",
+        "schema": ATLAS_WORKFLOW_SCHEMA,
         "canonicalMachineReadableSurface": "atlas_json",
         "canonicalAtlasSchema": atlas.get("schema", ""),
         "inputs": {
             "beforeAtlasPresent": before_atlas is not None,
             "bridgeReportCount": len(bridges),
+            "workflowDiagnosticCount": len(workflow_diagnostics),
         },
         "sections": {
             "changedRows": changed_rows(diff),
             "recurringHotspots": recurring_hotspots(atlas),
             "reviewPriorityRoots": review_priority_roots(atlas, bridges),
             "lowConfidenceJoins": low_confidence_joins(bridges),
+            "workflowDiagnostics": workflow_diagnostics,
             "incompleteOrStaleEvidence": incomplete_or_stale_evidence(atlas, bridges),
         },
         "reviewerCards": atlas_reviewer_cards(atlas, bridges),
@@ -40,6 +51,8 @@ def build_atlas_workflow(
 def normalize_bridge_reports(bridge_reports: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Normalize optional bridge report inputs for workflow summaries."""
 
+    for report in bridge_reports:
+        require_bridge_v1(report, consumer="atlas workflow bridge reader")
     return [
         normalize_bridge_report(report)
         for report in bridge_reports
@@ -283,7 +296,46 @@ def incomplete_or_stale_evidence(
 
     rows = packet_evidence_gaps(atlas)
     rows.extend(bridge_stale_evidence(bridge_reports))
+    rows.extend(workflow_evidence_rows(atlas))
     return sorted(rows, key=lambda row: (row["kind"], row["subject"]))[:25]
+
+
+def atlas_workflow_diagnostics(
+    atlas: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Return deterministic bundle-state diagnostics quoted by the atlas."""
+
+    rows = atlas.get("workflowDiagnostics", [])
+    if not isinstance(rows, list):
+        return []
+    return sorted(
+        (dict(row) for row in rows if isinstance(row, dict)),
+        key=lambda row: (
+            str(row.get("entryId", "")),
+            str(row.get("state", "")),
+        ),
+    )
+
+
+def workflow_evidence_rows(
+    atlas: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Route missing-report workflow states through the evidence-gap view."""
+
+    return [
+        {
+            "authority": row.get("authority", ""),
+            "bundleStatus": row.get("bundleStatus", ""),
+            "kind": "runset_entry_state",
+            "nonclaim": row.get("nonclaim", ""),
+            "reason": row.get("reason", ""),
+            "required": row.get("required", False),
+            "root": row.get("root", ""),
+            "state": row.get("state", ""),
+            "subject": row.get("entryId", ""),
+        }
+        for row in atlas_workflow_diagnostics(atlas)
+    ]
 
 
 def packet_evidence_gaps(atlas: dict[str, Any]) -> list[dict[str, Any]]:
@@ -373,6 +425,13 @@ def render_atlas_workflow_markdown(workflow: dict[str, Any]) -> str:
     lines.extend(row_section_lines("Low Confidence Joins", sections["lowConfidenceJoins"], "surfaceId"))
     lines.extend(
         row_section_lines(
+            "Bundle Workflow Diagnostics",
+            sections["workflowDiagnostics"],
+            "entryId",
+        )
+    )
+    lines.extend(
+        row_section_lines(
             "Incomplete Or Stale Evidence",
             sections["incompleteOrStaleEvidence"],
             "subject",
@@ -411,5 +470,5 @@ def compact_row_payload(row: dict[str, Any], label_key: str) -> str:
     return ", ".join(
         f"{key}={value}"
         for key, value in sorted(row.items())
-        if key != label_key and value not in {"", None}
+        if key != label_key and value is not None and value != ""
     )

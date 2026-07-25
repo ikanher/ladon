@@ -93,6 +93,69 @@ def test_diff_atlases_specializes_evidence_and_bridge_categories() -> None:
     assert diff["summary"]["by_category"]["bridge_diagnostics"]["added"] == 1
 
 
+def test_diff_atlases_keeps_unreported_workflow_state_explicit() -> None:
+    before = atlas_with_finding("A.Root")
+    after = atlas_with_finding("A.Root")
+    after["workflowDiagnostics"] = [
+        {
+            "authority": "ladon_analysis_bundle",
+            "bundleStatus": "failed",
+            "entryId": "owner",
+            "nonclaim": "Workflow state only; no analysis evidence.",
+            "reason": "runner failed",
+            "required": True,
+            "root": "A.lean",
+            "state": "failed",
+        }
+    ]
+
+    diff = diff_atlases(before, after)
+
+    row = diff["added"][0]
+    assert diff["summary"]["by_category"]["workflow_diagnostics"]["added"] == 1
+    assert row["key"] == "owner"
+    assert row["payload"]["state"] == "failed"
+    assert row["payload"]["nonclaim"] == (
+        "Workflow state only; no analysis evidence."
+    )
+
+
+def test_diff_atlases_keeps_declaration_dependency_kinds_separate() -> None:
+    before = atlas_with_finding("A.Root")
+    after = atlas_with_finding("A.Root")
+    for atlas in (before, after):
+        atlas["nodes"].extend(declaration_nodes())
+    after["edges"].extend(
+        {
+            "source": "declaration:repo:A.root",
+            "target": "declaration:repo:A.target",
+            "kind": kind,
+            "data": {"authority": authority},
+        }
+        for kind, authority in (
+            ("parser_candidate_dependency", "lean_parser"),
+            ("type_dependency", "lean_environment"),
+            ("value_dependency", "lean_environment"),
+        )
+    )
+
+    diff = diff_atlases(before, after)
+
+    categories = diff["summary"]["by_category"]
+    assert categories["parser_candidate_dependency_edges"]["added"] == 1
+    assert categories["type_dependency_edges"]["added"] == 1
+    assert categories["value_dependency_edges"]["added"] == 1
+    assert {
+        (row["payload"]["kind"], row["payload"]["authority"])
+        for row in diff["added"]
+        if row["category"].endswith("_dependency_edges")
+    } == {
+        ("parser_candidate_dependency", "lean_parser"),
+        ("type_dependency", "lean_environment"),
+        ("value_dependency", "lean_environment"),
+    }
+
+
 def test_render_atlas_diff_markdown_includes_summary_and_sections() -> None:
     diff = diff_atlases(atlas_with_finding("A.Root", finding_count=1), atlas_with_finding("A.Root", finding_count=2))
 
@@ -101,6 +164,20 @@ def test_render_atlas_diff_markdown_includes_summary_and_sections() -> None:
     assert "# Ladon Atlas Diff" in markdown
     assert "## Categories" in markdown
     assert "## Changed" in markdown
+
+
+def declaration_nodes() -> list[dict]:
+    """Return stable declaration endpoints for typed dependency edges."""
+
+    return [
+        {
+            "id": f"declaration:repo:{name}",
+            "kind": "declaration",
+            "label": name,
+            "data": {},
+        }
+        for name in ("A.root", "A.target")
+    ]
 
 
 def atlas_with_finding(root: str, *, finding_count: int = 1, signal_count: int = 1) -> dict:

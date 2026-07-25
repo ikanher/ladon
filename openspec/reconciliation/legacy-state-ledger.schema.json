@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ladon.local/openspec/legacy-state-ledger.schema.json",
+  "title": "Ladon legacy OpenSpec reconciliation ledger",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "dependencyLedgerRef",
+    "baseline",
+    "packets",
+    "archiveBatches",
+    "selfArchiveHandoff"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "dependencyLedgerRef": {
+      "type": "string",
+      "minLength": 1
+    },
+    "baseline": {
+      "type": "object",
+      "required": [
+        "capturedOn",
+        "changeCount",
+        "inProgressCount",
+        "uncheckedTaskCount",
+        "strictValidationFailures",
+        "backlogFindingCount",
+        "hygieneDriftCount",
+        "canonicalSpecCount",
+        "archiveCount"
+      ],
+      "additionalProperties": true
+    },
+    "packets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/packet"
+      }
+    },
+    "archiveBatches": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/archiveBatch"
+      }
+    },
+    "selfArchiveHandoff": {
+      "type": "object",
+      "required": [
+        "change",
+        "archiveLast",
+        "preconditions",
+        "postconditions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "change": {
+          "type": "string",
+          "minLength": 1
+        },
+        "archiveLast": {
+          "const": true
+        },
+        "preconditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "postconditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "evidence": {
+      "type": "object",
+      "required": [
+        "requirement",
+        "outcome",
+        "source",
+        "tests",
+        "gates"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "requirement": {
+          "type": "string",
+          "minLength": 1
+        },
+        "outcome": {
+          "enum": [
+            "covered",
+            "transferred",
+            "retained",
+            "blocked"
+          ]
+        },
+        "source": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "tests": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "gates": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "archiveResult": {
+      "type": "object",
+      "required": [
+        "status",
+        "archivePath",
+        "canonicalCapabilities",
+        "verifiedPostconditions"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "not-planned",
+            "planned",
+            "complete",
+            "failed"
+          ]
+        },
+        "archivePath": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "canonicalCapabilities": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "verifiedPostconditions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "packet": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "disposition",
+        "authoritativeOwner",
+        "replacement",
+        "residualOwner",
+        "requirementEvidence",
+        "specConflicts",
+        "archiveResult"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "pre-program-active",
+            "invalid-completed"
+          ]
+        },
+        "disposition": {
+          "enum": [
+            "complete",
+            "superseded-with-residuals",
+            "retained",
+            "blocked"
+          ]
+        },
+        "authoritativeOwner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "replacement": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "residualOwner": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requirementEvidence": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "specConflicts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "archiveResult": {
+          "$ref": "#/$defs/archiveResult"
+        }
+      }
+    },
+    "archiveBatch": {
+      "type": "object",
+      "required": [
+        "sequence",
+        "change",
+        "dependsOn",
+        "expectedCapabilities",
+        "expectedRequirements",
+        "conflicts",
+        "result"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "change": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "expectedCapabilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "expectedRequirements": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "conflicts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "result": {
+          "$ref": "#/$defs/archiveResult"
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

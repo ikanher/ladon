@@ -1,0 +1,8 @@
+{
+  "commands": [
+    "openspec validate ladon-lean-extraction-runtime-hardening --strict",
+    "uv run --locked pytest -q tests/test_lean_extraction.py tests/test_pipeline.py tests/test_extraction.py tests/test_root_matrix.py",
+    "uv run --locked python scripts/lean_runtime_gate.py --required",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

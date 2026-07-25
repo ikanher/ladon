@@ -1,0 +1,8 @@
+{
+  "commands": [
+    "openspec validate ladon-cli-execution-contract --strict",
+    "uv run --locked pytest -q tests/test_cli_execution.py tests/test_configuration.py tests/test_process_supervisor.py tests/test_target_build.py tests/test_installed_cli_contract.py",
+    "uv run --locked pytest -q tests/test_clean_cli.py tests/test_root_matrix.py tests/test_pipeline.py tests/test_render.py tests/test_proofir_bridge_cli.py tests/test_installed_cli_contract.py",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

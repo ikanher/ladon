@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "ladon.large-repository-review-loop.2026-07-25",
+  "goal": "Apply the large-repository review-loop umbrella and its eight child changes through portable and observational acceptance gates.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "governance_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "theorem_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.packet_setup",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.child_packets"
+      ],
+      "commandRefs": [
+        "openspec validate <each-large-repository-child> --strict --no-interactive"
+      ]
+    },
+    {
+      "stepId": "step.phase_a_foundation",
+      "status": "completed",
+      "prerequisites": [
+        "step.packet_setup"
+      ],
+      "evidenceRefs": [
+        "check.integrated_python_quality",
+        "check.installed_distribution",
+        "check.local_large_inventory"
+      ],
+      "commandRefs": [
+        "uv run --locked pytest -q <phase-a-tests>"
+      ]
+    },
+    {
+      "stepId": "step.phase_b_scope_calibration",
+      "status": "completed",
+      "prerequisites": [
+        "step.phase_a_foundation"
+      ],
+      "evidenceRefs": [
+        "check.integrated_python_quality",
+        "check.live_matrix_factorization"
+      ],
+      "commandRefs": [
+        "uv run --locked pytest -q <phase-b-tests>"
+      ]
+    },
+    {
+      "stepId": "step.phase_c_review_surfaces",
+      "status": "completed",
+      "prerequisites": [
+        "step.phase_b_scope_calibration"
+      ],
+      "evidenceRefs": [
+        "check.integrated_python_quality",
+        "check.lean_integration",
+        "check.lean_declaration"
+      ],
+      "commandRefs": [
+        "uv run --locked pytest -q <phase-c-tests>"
+      ]
+    },
+    {
+      "stepId": "step.phase_d_installed_workflow",
+      "status": "completed",
+      "prerequisites": [
+        "step.phase_c_review_surfaces"
+      ],
+      "evidenceRefs": [
+        "check.installed_distribution"
+      ],
+      "commandRefs": [
+        "uv run --locked pytest -q <phase-d-tests>"
+      ]
+    },
+    {
+      "stepId": "step.acceptance",
+      "status": "in_progress",
+      "prerequisites": [
+        "step.phase_d_installed_workflow"
+      ],
+      "evidenceRefs": [
+        "check.global_openspec",
+        "check.integrated_python_quality",
+        "check.installed_distribution",
+        "check.lean_integration",
+        "check.lean_declaration",
+        "check.local_large_inventory",
+        "check.live_matrix_factorization"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/python_quality.py --strict",
+        "openspec validate --all --strict --no-interactive"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.baseline_python",
+      "command": "uv run --locked pytest -q",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.initial_python_quality",
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.child_packets",
+      "command": "openspec validate <each-large-repository-child> --strict --no-interactive",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.global_openspec",
+      "command": "openspec validate --all --strict --no-interactive",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.integrated_python_quality",
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.installed_distribution",
+      "command": "uv run --locked python scripts/installed_distribution_smoke.py --candidate /home/codex/projects/ladon",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.lean_integration",
+      "command": "uv run --locked python scripts/lean_integration_gate.py --candidate /home/codex/projects/ladon --required",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.lean_declaration",
+      "command": "uv run --locked python scripts/lean_declaration_gate.py --required",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.local_large_inventory",
+      "command": "uv run --locked python scripts/large_inventory_gate.py --candidate /home/codex/projects/ladon --samples 3 --output /tmp/ladon-large-inventory-final-r5.json",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.live_matrix_factorization",
+      "command": "ordinary Ladon CLI against the fingerprinted sibling Matrix-Factorization repository",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    }
+  ],
+  "blockers": [
+    {
+      "blockerId": "reference.large_inventory",
+      "failureClass": "environment_missing",
+      "message": "The registered Ubuntu 24.04 x86-64 four-core reference cell has not recorded the required cold/warm samples."
+    },
+    {
+      "blockerId": "reference.python_matrix",
+      "failureClass": "environment_missing",
+      "message": "Only CPython 3.11 was available locally; the declared CPython 3.12 reference cell remains pending."
+    },
+    {
+      "blockerId": "candidate.clean_tracked",
+      "failureClass": "artifact_drift",
+      "message": "Required implementation inputs are untracked, so the clean tracked-candidate sentinel correctly rejects this worktree; explicit materialized-directory gates pass."
+    }
+  ],
+  "replayBoundary": {
+    "packetLocalReplay": false,
+    "externalEvidenceIncluded": true
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not Lean theorem or kernel evidence.",
+    "The loop must not rely on chat history as completed-step truth.",
+    "Matrix-Factorization remains observational evidence and is not portable CI authority."
+  ]
+}

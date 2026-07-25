@@ -1,0 +1,253 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "ladon.alpha-hardening.2026-07-25",
+  "goal": "Apply the Ladon alpha-hardening umbrella and all eight child changes through their required gates.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "governance_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "theorem_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.packet_setup",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.new_packets_strict"
+      ],
+      "commandRefs": [
+        "openspec validate <each-alpha-change> --strict"
+      ]
+    },
+    {
+      "stepId": "step.reconciliation",
+      "status": "completed",
+      "prerequisites": [
+        "step.packet_setup"
+      ],
+      "evidenceRefs": [
+        "check.canonical_state",
+        "check.global_openspec"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/openspec_canonical_gate.py --profile legacy-cli --require-canonical",
+        "openspec validate --all --strict --no-interactive"
+      ]
+    },
+    {
+      "stepId": "step.clean_baseline",
+      "status": "completed",
+      "prerequisites": [
+        "step.packet_setup"
+      ],
+      "evidenceRefs": [
+        "check.clean_baseline"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --baseline-only"
+      ]
+    },
+    {
+      "stepId": "step.foundation_products",
+      "status": "completed",
+      "prerequisites": [
+        "step.reconciliation",
+        "step.clean_baseline"
+      ],
+      "evidenceRefs": [
+        "check.signal_correctness",
+        "check.installed_cli_wheel"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/installed_distribution_smoke.py --candidate <explicit-directory>"
+      ]
+    },
+    {
+      "stepId": "step.lean_surface",
+      "status": "completed",
+      "prerequisites": [
+        "step.foundation_products"
+      ],
+      "evidenceRefs": [
+        "check.lean_runtime",
+        "check.elaborated_surface"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/lean_integration_gate.py --candidate worktree --required",
+        "uv run --locked python scripts/lean_declaration_gate.py --required"
+      ]
+    },
+    {
+      "stepId": "step.measurement_release",
+      "status": "completed",
+      "prerequisites": [
+        "step.lean_surface"
+      ],
+      "evidenceRefs": [
+        "check.portable_benchmarks",
+        "check.alpha_readiness"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/ladon_benchmarks.py --candidate worktree --required",
+        "uv run --locked python scripts/alpha_readiness.py --candidate worktree --ledger openspec/changes/ladon-alpha-hardening-umbrella/children/dependency-ledger.json --require-all-children"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.new_packets_strict",
+      "command": "openspec validate <each-alpha-change> --strict",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.initial_python_quality",
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.global_openspec",
+      "command": "openspec validate --all --strict --no-interactive",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.cli_execution_narrow",
+      "command": ".venv/bin/python -m pytest -q tests/test_cli_execution.py tests/test_configuration.py tests/test_process_supervisor.py tests/test_target_build.py tests/test_installed_cli_contract.py",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.canonical_state",
+      "command": "uv run --locked python scripts/openspec_canonical_gate.py --profile legacy-cli --require-canonical",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.clean_directory_candidate",
+      "command": "uv run --locked python scripts/clean_checkout_gate.py --candidate <isolated-directory>",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.clean_baseline",
+      "command": "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --baseline-only",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.installed_cli_wheel",
+      "command": "uv run --locked python scripts/installed_distribution_smoke.py --candidate <explicit-directory>",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.report_package_resource",
+      "command": "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --package-resource ladon:schemas/ladon-report-v2.schema.json",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.portable_benchmarks",
+      "command": "uv run --locked python scripts/ladon_benchmarks.py --candidate worktree --required",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.signal_correctness",
+      "command": "uv run --locked pytest -q tests/test_extraction.py tests/test_module_dag.py tests/test_findings.py tests/test_proof_family_similarity.py tests/test_render.py tests/test_clean_cli.py tests/test_installed_cli_contract.py",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.lean_runtime",
+      "command": "uv run --locked python scripts/lean_integration_gate.py --candidate worktree --required",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.elaborated_surface",
+      "command": "uv run --locked python scripts/lean_declaration_gate.py --required",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.integrated_python_quality",
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.alpha_readiness",
+      "command": "uv run --locked python scripts/alpha_readiness.py --candidate worktree --ledger openspec/changes/ladon-alpha-hardening-umbrella/children/dependency-ledger.json --require-all-children",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    }
+  ],
+  "blockers": [
+    {
+      "blockerId": "blocker.legacy_proofir_packets",
+      "checkId": "check.global_openspec",
+      "status": "resolved",
+      "failureClass": "schema_invalid",
+      "nextAction": "No action; reconciliation archived the legacy chain and canonical validation now passes."
+    },
+    {
+      "blockerId": "blocker.alpha_children_incomplete",
+      "checkId": "check.alpha_readiness",
+      "status": "resolved",
+      "failureClass": "checker_failure",
+      "nextAction": "No action; all eight children are complete and strictly valid, and tracked-worktree readiness passes."
+    },
+    {
+      "blockerId": "blocker.integrated_python_quality",
+      "checkId": "check.integrated_python_quality",
+      "status": "resolved",
+      "failureClass": "checker_failure",
+      "nextAction": "No action; the table-count assertions were split below Radon rank C and the focused quality check passes."
+    },
+    {
+      "blockerId": "blocker.report_package_resource",
+      "checkId": "check.report_package_resource",
+      "status": "resolved",
+      "failureClass": "checker_failure",
+      "nextAction": "No action; both report and benchmark schemas passed sdist, wheel, isolated-install, and full installed-CLI checks."
+    }
+  ],
+  "replayBoundary": {
+    "packetLocalReplay": false,
+    "externalEvidenceIncluded": false
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not Lean theorem or kernel evidence.",
+    "The loop must not rely on chat history as completed-step truth.",
+    "External repository smokes remain observational unless explicitly promoted by a portable gate."
+  ]
+}

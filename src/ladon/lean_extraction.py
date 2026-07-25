@@ -9,14 +9,22 @@ from __future__ import annotations
 
 import json
 import hashlib
-import subprocess
+import threading
 from collections.abc import Callable, Mapping
 from importlib import resources
 from pathlib import Path
 from typing import Any
 
 from ladon.extraction import ModuleDiscovery, module_name
-from ladon.ir import ExtractionBundle, LeanDeclaration, LeanModule
+from ladon.ir import BoundedStrings, ExtractionBundle, LeanDeclaration, LeanModule
+from ladon.lean_runtime import (
+    DEFAULT_LEAN_BATCH_SIZE,
+    DEFAULT_LEAN_BATCH_TIMEOUT_SECONDS,
+    LeanRuntimeConfig,
+    RequestedModule,
+    execute_lean_runtime,
+)
+from ladon.process_supervisor import run_target_process
 
 
 DEFAULT_HELPER = Path(str(resources.files("ladon").joinpath("lean", "ladon_parser_helper.lean")))
@@ -29,33 +37,86 @@ def extract_with_lean_helper(
     helper_path: Path = DEFAULT_HELPER,
     scope: str = "root",
     cache_dir: Path | None = None,
+    batch_size: int = DEFAULT_LEAN_BATCH_SIZE,
+    timeout_seconds: float = DEFAULT_LEAN_BATCH_TIMEOUT_SECONDS,
+    strict: bool = False,
+    cancel_event: threading.Event | None = None,
+    build_requested: bool = False,
 ) -> ExtractionBundle:
-    """Run parser-helper extraction for selected files in the inventory."""
+    """Run bounded parser-helper batches for selected inventory modules."""
 
     modules: dict[str, LeanModule] = {}
     declarations: dict[str, LeanDeclaration] = {}
-    counters = {"lean_cache_hits": 0, "lean_cache_misses": 0}
-    for file_path in selected_helper_files(discovery, scope):
-        module, module_declarations = extract_file(
+    requested = selected_helper_modules(discovery, scope)
+    runtime = execute_lean_runtime(
+        repo_root=discovery.repo_root,
+        helper_path=helper_path,
+        requested=requested,
+        modules=discovery.modules,
+        cache_dir=cache_dir,
+        config=LeanRuntimeConfig(
+            batch_size=batch_size,
+            timeout_seconds=timeout_seconds,
+            strict=strict,
+            cancel_event=cancel_event,
+        ),
+        build_requested=build_requested,
+    )
+    requested_by_module = {row.module: row for row in requested}
+    for module_name_value, payload in runtime.payloads.items():
+        request = requested_by_module[module_name_value]
+        file_path = discovery.repo_root / request.file
+        module = module_from_helper_payload(
             discovery.repo_root,
             file_path,
-            helper_path,
-            cache_dir=cache_dir,
-            counters=counters,
+            payload,
+            module_override=module_name_value,
+        )
+        module_declarations = declarations_from_helper_payload(
+            module,
+            payload,
+            source_content_hash=source_content_hash(file_path),
         )
         modules[module.name] = module
         declarations.update(module_declarations)
-    return ExtractionBundle(modules=modules, declarations=declarations, counters=counters)
+    return ExtractionBundle(
+        modules=modules,
+        declarations=declarations,
+        counters=dict(runtime.counters),
+        diagnostics=runtime.diagnostics,
+        runtime=dict(runtime.provenance),
+    )
+
+
+def selected_helper_modules(
+    discovery: ModuleDiscovery,
+    scope: str,
+) -> tuple[RequestedModule, ...]:
+    """Select ordered module/file identities without re-inventing names."""
+
+    if scope == "root":
+        module = discovery.modules.get(discovery.analysis_root_module)
+        path = (
+            module.path
+            if module is not None
+            else str(discovery.analysis_root_file.relative_to(discovery.repo_root))
+        )
+        return (RequestedModule(discovery.analysis_root_module, path),)
+    if scope == "inventory":
+        return tuple(
+            RequestedModule(module.name, module.path)
+            for module in discovery.modules.values()
+        )
+    raise ValueError(f"unsupported Lean extraction scope: {scope}")
 
 
 def selected_helper_files(discovery: ModuleDiscovery, scope: str) -> list[Path]:
     """Select root-only or full-inventory files for parser-helper extraction."""
 
-    if scope == "root":
-        return [discovery.analysis_root_file]
-    if scope == "inventory":
-        return [discovery.repo_root / module.path for module in discovery.modules.values()]
-    raise ValueError(f"unsupported Lean extraction scope: {scope}")
+    return [
+        discovery.repo_root / request.file
+        for request in selected_helper_modules(discovery, scope)
+    ]
 
 
 def extract_file(
@@ -93,19 +154,17 @@ def helper_payload(
 
 
 def run_helper(repo_root: Path, file_path: Path, helper_path: Path) -> dict[str, Any]:
-    """Invoke `lake env lean --run` for the bundled helper."""
+    """Invoke the legacy single-file helper with a finite supervised deadline."""
 
     relative = str(file_path.relative_to(repo_root))
-    proc = subprocess.run(
+    result = run_target_process(
         ["lake", "env", "lean", "--run", str(helper_path), "--", relative],
         cwd=repo_root,
-        text=True,
-        capture_output=True,
-        check=False,
+        timeout_seconds=DEFAULT_LEAN_BATCH_TIMEOUT_SECONDS,
     )
-    if proc.returncode != 0:
-        raise RuntimeError(helper_error(relative, proc.stdout, proc.stderr))
-    return json.loads(proc.stdout)
+    if not result.succeeded:
+        raise RuntimeError(helper_error(relative, result.stdout, result.stderr))
+    return json.loads(result.stdout)
 
 
 def cached_or_run_helper(
@@ -184,11 +243,13 @@ def module_from_helper_payload(
     repo_root: Path,
     file_path: Path,
     payload: Mapping[str, Any],
+    *,
+    module_override: str | None = None,
 ) -> LeanModule:
     """Normalize parser-helper JSON into the stable `LeanModule` IR."""
 
     return LeanModule(
-        name=module_name(repo_root, file_path),
+        name=module_override or module_name(repo_root, file_path),
         path=str(file_path.relative_to(repo_root)),
         imports=helper_imports(payload),
         declarations=helper_declarations(payload),
@@ -229,11 +290,15 @@ def declaration_from_command(
     if not name:
         return None
     source_range = normalize_helper_range(command.get("range"))
+    references = tuple(
+        str(candidate)
+        for candidate in command.get("referenceCandidates", [])
+    )
     return LeanDeclaration(
         name=name,
         module=module.name,
         kind=command.get("declarationKind"),
-        references=tuple(command.get("referenceCandidates", [])),
+        references=references,
         source_path=module.path,
         source_range=source_range,
         selection_range=normalize_helper_range(command.get("selectionRange")),
@@ -242,6 +307,26 @@ def declaration_from_command(
         extractor_version=extractor_version,
         name_resolution_method=name_resolution_method(command),
         confidence="parser_source_range" if source_range else "parser_decl_name",
+        parser_candidates=bounded_parser_candidates(references),
+    )
+
+
+def bounded_parser_candidates(
+    references: tuple[str, ...],
+    *,
+    cap: int = 64,
+) -> BoundedStrings:
+    """Retain finite parser candidates without claiming elaborated authority."""
+
+    items = tuple(sorted(set(references)))
+    visible = items[:cap]
+    return BoundedStrings(
+        items=visible,
+        total=len(items),
+        truncated=len(items) > len(visible),
+        status="complete",
+        reason=None,
+        authority="lean_parser",
     )
 
 

@@ -1,0 +1,8 @@
+{
+  "commands": [
+    "openspec validate ladon-signal-benchmark-harness --strict",
+    "uv run --locked pytest -q tests/test_benchmark_oracles.py tests/test_calibration_regression.py tests/test_root_matrix.py tests/test_lean_extraction.py tests/test_render.py",
+    "uv run --locked python scripts/ladon_benchmarks.py --candidate worktree --required",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

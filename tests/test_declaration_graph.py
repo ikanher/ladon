@@ -4,7 +4,7 @@ from ladon.analysis.declaration_graph import (
     classify_unresolved_candidate,
     summarize_declaration_graph,
 )
-from ladon.ir import LeanDeclaration
+from ladon.ir import BoundedStrings, LeanDeclaration, LeanDeclarationSurface
 
 
 def test_declaration_graph_resolves_exact_edges_and_fan_counts() -> None:
@@ -256,3 +256,44 @@ def test_declaration_graph_groups_declaration_name_families_by_suffix() -> None:
             "sample_declarations": ["A.alpha_ge_one", "A.beta_ge_one"],
         }
     ]
+
+
+def test_declaration_graph_keeps_parser_type_and_value_edges_separate() -> None:
+    complete = lambda items, authority: BoundedStrings(  # noqa: E731
+        items=items,
+        total=len(items),
+        status="complete",
+        reason=None,
+        authority=authority,
+    )
+    declarations = {
+        "A.root": LeanDeclaration(
+            name="A.root",
+            module="A",
+            references=("A.target",),
+            parser_candidates=complete(("A.target",), "lean_parser"),
+            type_dependencies=complete(("A.target",), "lean_environment"),
+            value_dependencies=complete(("A.target",), "lean_environment"),
+            surface=LeanDeclarationSurface(status="complete", reason=None),
+        ),
+        "A.target": LeanDeclaration(name="A.target", module="A"),
+    }
+
+    summary = summarize_declaration_graph(declarations, chosen_roots=("A.root",))
+
+    assert summary["parser_edges"]["A.root"] == ["A.target"]
+    assert summary["type_dependency_edges"]["A.root"] == ["A.target"]
+    assert summary["value_dependency_edges"]["A.root"] == ["A.target"]
+    assert {
+        (row["kind"], row["authority"])
+        for row in summary["elaborated_edges"]
+    } == {
+        ("type_dependency", "lean_environment"),
+        ("value_dependency", "lean_environment"),
+    }
+    root = next(
+        row
+        for row in summary["declarations"]
+        if row["declaration"] == "A.root"
+    )
+    assert root["parserCandidates"]["authority"] == "lean_parser"

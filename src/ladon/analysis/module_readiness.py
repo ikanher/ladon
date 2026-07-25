@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ladon.finding_workflow import canonical_row_evidence
+
 
 SUPPORTED_WITNESS_KINDS = {"ladon_module_system_witness", "module_system_witness"}
 SUPPORTED_SCHEMA_VERSIONS = {1, "1"}
@@ -24,7 +26,10 @@ def summarize_module_readiness(
     witness = normalize_module_system_witness(module_system_witness)
     rows = module_readiness_rows(module_dag, declaration_graph, witness)
     diagnostics = witness.get("diagnostics", []) if witness else []
-    findings = [readiness_finding(row) for row in rows[:10]]
+    findings = [
+        readiness_finding(row, index)
+        for index, row in enumerate(rows[:10])
+    ]
     findings.extend(diagnostic_findings(diagnostics))
     return {
         "artifactKind": "ladon_module_readiness_report",
@@ -113,6 +118,7 @@ def normalize_witness_row(row: dict[str, Any]) -> dict[str, Any]:
         "command": str(row.get("command", "")),
         "contentHash": str(row.get("contentHash") or row.get("sourceHash") or ""),
         "confidence": str(row.get("confidence", "unknown")),
+        "authority": "external_tool_quoted",
         "quotedOnly": True,
     })
 
@@ -201,23 +207,72 @@ def namespace_drift_rows(
     if not declaration_graph:
         return []
     metadata = module_dag.get("module_metadata", {})
-    rows = []
+    by_module: dict[str, dict[str, list[dict[str, Any]]]] = {}
     for declaration in declaration_graph.get("declarations", []):
         name = str(declaration.get("declaration", ""))
         module = str(declaration.get("module", ""))
         namespace = name.rsplit(".", 1)[0] if "." in name else ""
-        if not module or not namespace or namespace == module or namespace.startswith(f"{module}."):
+        if not module or not namespace or namespace_compatible(module, namespace):
             continue
-        rows.append(readiness_row(
-            "namespace_module_drift",
-            module,
-            "info",
-            "Declaration namespace differs from module path; review conceptual organization without treating this as a Lean correctness failure.",
-            declaration=name,
-            namespace=namespace,
-            sourcePath=declaration.get("sourcePath") or metadata.get(module, {}).get("path"),
-        ))
-    return rows[:20]
+        by_module.setdefault(module, {}).setdefault(namespace, []).append(declaration)
+    return [
+        namespace_drift_row(module, namespaces, metadata)
+        for module, namespaces in sorted(by_module.items())
+    ][:20]
+
+
+def namespace_compatible(module: str, namespace: str) -> bool:
+    """Accept module, child, and conventional parent namespace layouts."""
+
+    return (
+        namespace == module
+        or namespace.startswith(f"{module}.")
+        or module.startswith(f"{namespace}.")
+    )
+
+
+def namespace_drift_row(
+    module: str,
+    namespaces: dict[str, list[dict[str, Any]]],
+    metadata: dict[str, Any],
+) -> dict[str, Any]:
+    """Build one aggregated unrelated-namespace diagnostic per module."""
+
+    ranked = sorted(
+        namespaces.items(),
+        key=lambda item: (-len(item[1]), item[0]),
+    )
+    namespace, declarations = ranked[0]
+    samples = sorted(
+        str(row.get("declaration", ""))
+        for rows in namespaces.values()
+        for row in rows
+    )
+    source_path = next(
+        (
+            row.get("sourcePath")
+            for row in declarations
+            if row.get("sourcePath")
+        ),
+        metadata.get(module, {}).get("path"),
+    )
+    return readiness_row(
+        "namespace_module_drift",
+        module,
+        "info",
+        "Dominant declaration namespace is unrelated to the module path; "
+        "review source organization without treating this as a Lean "
+        "correctness failure.",
+        namespace=namespace,
+        unrelatedNamespaceCounts={
+            name: len(rows)
+            for name, rows in ranked
+        },
+        declarationCount=sum(len(rows) for rows in namespaces.values()),
+        sampleDeclarations=samples[:8],
+        sourcePath=source_path,
+        authority="source_declaration_inventory",
+    )
 
 
 def witness_rows(witness: dict[str, Any] | None) -> list[dict[str, Any]]:
@@ -259,17 +314,34 @@ def readiness_row(kind: str, module: str, severity: str, message: str, **extra: 
     return row
 
 
-def readiness_finding(row: dict[str, Any]) -> dict[str, Any]:
+def readiness_finding(
+    row: dict[str, Any],
+    index: int,
+) -> dict[str, Any]:
     """Convert one readiness row into a report finding."""
 
-    return {
+    finding = {
         "kind": f"module_readiness.{row['kind']}",
         "severity": row.get("severity", "info"),
         "subject": row.get("subject", row.get("module", "")),
         "count": int(row.get("fanIn") or row.get("fanOut") or 1),
         "message": row.get("message", ""),
         "moduleReadinessOnly": True,
+        "evidenceRefs": [
+            canonical_row_evidence(
+                "module_readiness",
+                "rows",
+                index,
+                identity={
+                    "kind": row.get("kind"),
+                    "subject": row.get("subject", row.get("module", "")),
+                },
+                authority=str(row.get("authority", "module_readiness_analysis")),
+            )
+        ],
     }
+    copy_finding_source_fields(finding, row)
+    return finding
 
 
 def diagnostic_findings(diagnostics: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -283,9 +355,44 @@ def diagnostic_findings(diagnostics: list[dict[str, Any]]) -> list[dict[str, Any
             "count": 1,
             "message": row.get("message", ""),
             "moduleReadinessOnly": True,
+            "evidenceRefs": [
+                canonical_row_evidence(
+                    "module_readiness",
+                    "diagnostics",
+                    index,
+                    identity={
+                        "kind": row.get("kind", "module_readiness.diagnostic"),
+                        "subject": row.get("subject", "module_system_witness"),
+                    },
+                    authority="module_readiness_analysis",
+                )
+            ],
         }
-        for row in diagnostics
+        for index, row in enumerate(diagnostics)
     ]
+
+
+def copy_finding_source_fields(
+    finding: dict[str, Any],
+    row: dict[str, Any],
+) -> None:
+    """Preserve source attachment metadata supplied by a readiness row."""
+
+    for key in (
+        "sourcePath",
+        "sourceRange",
+        "selectionRange",
+        "contentHash",
+        "sourceHash",
+        "confidence",
+        "authority",
+        "line",
+        "column",
+        "endLine",
+        "endColumn",
+    ):
+        if key in row:
+            finding[key] = row[key]
 
 
 def readiness_summary(rows: list[dict[str, Any]], diagnostics: list[dict[str, Any]]) -> dict[str, int]:

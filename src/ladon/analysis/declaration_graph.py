@@ -12,6 +12,10 @@ from collections.abc import Collection, Mapping, Sequence
 from typing import Any
 
 from ladon.analysis.proof_family_similarity import proof_family_similarity_candidates
+from ladon.declaration_surface import (
+    bounded_strings_json,
+    declaration_surface_json,
+)
 from ladon.ir import LeanDeclaration
 
 EXTERNAL_REFERENCE_ROOTS = {
@@ -73,6 +77,8 @@ def summarize_declaration_graph(
     names = sorted(declarations)
     known_references = set(known_reference_names)
     edges = declaration_edges(declarations)
+    type_edges = elaborated_dependency_edges(declarations, "type_dependencies")
+    value_edges = elaborated_dependency_edges(declarations, "value_dependencies")
     reverse_edges = reverse_declaration_edges(names, edges)
     roots = known_declaration_roots(chosen_roots, declarations)
     unreachable = unreachable_declarations(names, edges, roots)
@@ -82,6 +88,13 @@ def summarize_declaration_graph(
         "method": "exact_declaration_reference_graph",
         "declaration_count": len(names),
         "edge_count": sum(len(targets) for targets in edges.values()),
+        "parser_edge_count": sum(len(targets) for targets in edges.values()),
+        "type_dependency_edge_count": sum(
+            len(targets) for targets in type_edges.values()
+        ),
+        "value_dependency_edge_count": sum(
+            len(targets) for targets in value_edges.values()
+        ),
         "declarations": declaration_rows(declarations),
         "unresolved_reference_count": unresolved_reference_count(declarations),
         "unresolved_reference_classes": unresolved_reference_classes(
@@ -108,7 +121,12 @@ def summarize_declaration_graph(
         "declarations_not_reachable_from_chosen_roots": unreachable[:50],
         "declarations_not_reachable_from_chosen_roots_count": len(unreachable),
         "edges": edges,
-}
+        "parser_edges": edges,
+        "type_dependency_edges": type_edges,
+        "value_dependency_edges": value_edges,
+        "elaborated_edges": elaborated_edge_rows(type_edges, value_edges),
+        "elaborated_surface": elaborated_surface_summary(declarations),
+    }
 
 
 def declaration_rows(declarations: Mapping[str, LeanDeclaration]) -> list[dict[str, Any]]:
@@ -133,6 +151,15 @@ def declaration_row(declaration: LeanDeclaration) -> dict[str, Any]:
     add_optional(row, "extractorVersion", declaration.extractor_version)
     add_optional(row, "nameResolutionMethod", declaration.name_resolution_method)
     add_optional(row, "confidence", declaration.confidence)
+    row["parserCandidates"] = bounded_strings_json(declaration.parser_candidates)
+    row["typeDependencies"] = bounded_strings_json(declaration.type_dependencies)
+    row["valueDependencies"] = bounded_strings_json(declaration.value_dependencies)
+    row["surface"] = declaration_surface_json(declaration.surface)
+    row["importedStub"] = declaration.is_imported_stub
+    add_optional(row, "compilerGenerated", declaration.compiler_generated)
+    add_optional(row, "compilerAuthority", declaration.compiler_authority)
+    add_optional(row, "compilerToolchain", declaration.compiler_toolchain)
+    add_optional(row, "resolution", declaration.resolution)
     return row
 
 
@@ -157,6 +184,89 @@ def declaration_edges(
             if resolved
         )
         for name, declaration in declarations.items()
+    }
+
+
+def elaborated_dependency_edges(
+    declarations: Mapping[str, LeanDeclaration],
+    attribute: str,
+) -> dict[str, list[str]]:
+    """Return exact Lean-observed dependency edges of one authority kind."""
+
+    names = set(declarations)
+    return {
+        name: sorted(
+            target
+            for target in getattr(declaration, attribute).items
+            if target in names and target != name
+        )
+        for name, declaration in declarations.items()
+    }
+
+
+def elaborated_edge_rows(
+    type_edges: Mapping[str, Sequence[str]],
+    value_edges: Mapping[str, Sequence[str]],
+) -> list[dict[str, str]]:
+    """Return a stable typed edge list for report/atlas consumers."""
+
+    rows = [
+        {
+            "source": source,
+            "target": target,
+            "kind": kind,
+            "authority": "lean_environment",
+        }
+        for kind, edges in (
+            ("type_dependency", type_edges),
+            ("value_dependency", value_edges),
+        )
+        for source in sorted(edges)
+        for target in edges[source]
+    ]
+    return sorted(
+        rows,
+        key=lambda row: (row["source"], row["kind"], row["target"]),
+    )
+
+
+def elaborated_surface_summary(
+    declarations: Mapping[str, LeanDeclaration],
+) -> dict[str, Any]:
+    """Summarize complete, partial, and unavailable declaration surfaces."""
+
+    rows = [
+        declaration
+        for declaration in declarations.values()
+        if not declaration.is_imported_stub
+    ]
+    statuses = [row.surface.status for row in rows]
+    complete = statuses.count("complete")
+    partial = statuses.count("partial")
+    unavailable = statuses.count("unavailable")
+    if rows and complete == len(rows):
+        status = "complete"
+        reason = None
+    elif complete or partial:
+        status = "partial"
+        reason = "some declaration surfaces were unavailable or incomplete"
+    else:
+        status = "skipped"
+        reason = "Lean elaborated declaration surfaces were unavailable"
+    return {
+        "status": status,
+        "reason": reason,
+        "declarationCount": len(rows),
+        "completeCount": complete,
+        "partialCount": partial,
+        "unavailableCount": unavailable,
+        "importedStubCount": sum(
+            1 for row in declarations.values() if row.is_imported_stub
+        ),
+        "nonclaim": (
+            "Declaration surfaces are navigation evidence, not independent "
+            "proof-correctness or theorem-truth results."
+        ),
     }
 
 

@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "ladon-elaborated-declaration-surface.2026-07-25",
+  "goal": "Apply the full elaborated declaration surface packet and pass its required gates.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "governance_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "theorem_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.context",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.openspec_context"
+      ],
+      "commandRefs": [
+        "openspec instructions apply --change ladon-elaborated-declaration-surface --json"
+      ]
+    },
+    {
+      "stepId": "step.fixtures",
+      "status": "completed",
+      "prerequisites": [
+        "step.context"
+      ],
+      "evidenceRefs": [
+        "check.fixture_build"
+      ],
+      "commandRefs": [
+        "cd tests/fixtures/lean_declarations && lake build"
+      ]
+    },
+    {
+      "stepId": "step.surface",
+      "status": "completed",
+      "prerequisites": [
+        "step.fixtures"
+      ],
+      "evidenceRefs": [
+        "check.lean_declaration_gate"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/lean_declaration_gate.py --required"
+      ]
+    },
+    {
+      "stepId": "step.integration",
+      "status": "completed",
+      "prerequisites": [
+        "step.surface"
+      ],
+      "evidenceRefs": [
+        "check.integration_pytest",
+        "check.surface_contract_pytest"
+      ],
+      "commandRefs": [
+        "uv run --locked pytest -q tests/test_lean_extraction.py tests/test_declaration_graph.py tests/test_pipeline.py tests/test_render.py tests/test_atlas.py tests/test_atlas_sqlite.py tests/test_atlas_diff.py",
+        "uv run --locked pytest -q tests/test_elaborated_extraction.py tests/test_report_v2.py"
+      ]
+    },
+    {
+      "stepId": "step.gates",
+      "status": "completed",
+      "prerequisites": [
+        "step.integration"
+      ],
+      "evidenceRefs": [
+        "check.lean_declaration_gate",
+        "check.python_quality",
+        "check.openspec_validate"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/lean_declaration_gate.py --required",
+        "uv run --locked python scripts/python_quality.py --strict",
+        "openspec validate ladon-elaborated-declaration-surface --strict"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.openspec_context",
+      "command": "openspec instructions apply --change ladon-elaborated-declaration-surface --json",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.fixture_build",
+      "command": "cd tests/fixtures/lean_declarations && lake build",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.lean_declaration_gate",
+      "command": "uv run --locked python scripts/lean_declaration_gate.py --required",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.integration_pytest",
+      "command": "uv run --locked pytest -q tests/test_lean_extraction.py tests/test_declaration_graph.py tests/test_pipeline.py tests/test_render.py tests/test_atlas.py tests/test_atlas_sqlite.py tests/test_atlas_diff.py",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.surface_contract_pytest",
+      "command": "uv run --locked pytest -q tests/test_elaborated_extraction.py tests/test_report_v2.py",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.python_quality",
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.openspec_validate",
+      "command": "openspec validate ladon-elaborated-declaration-surface --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    }
+  ],
+  "blockers": [],
+  "replayBoundary": {
+    "packetLocalReplay": true,
+    "externalEvidenceIncluded": false,
+    "replayCommand": "uv run --locked python scripts/lean_declaration_gate.py --required && uv run --locked python scripts/python_quality.py --strict && openspec validate ladon-elaborated-declaration-surface --strict"
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not theorem evidence.",
+    "Declaration surfaces are navigation evidence and do not independently establish theorem truth.",
+    "The loop must not rely on chat history as completed-step truth."
+  ]
+}

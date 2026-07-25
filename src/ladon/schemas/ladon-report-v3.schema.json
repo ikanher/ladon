@@ -1,0 +1,353 @@
+{
+  "$id": "urn:ladon:report:ladon-report-v3",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "$defs": {
+    "diagnostic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ref", "id", "severity", "message", "phase", "subject", "data"],
+      "properties": {
+        "ref": {"type": "string", "pattern": "^diagnostic:"},
+        "id": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["info", "warning", "error"]},
+        "message": {"type": "string"},
+        "phase": {"type": ["string", "null"]},
+        "subject": {"type": ["string", "null"]},
+        "data": {"type": "object"}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authority", "source", "backend", "version"],
+      "properties": {
+        "authority": {"type": "string", "minLength": 1},
+        "source": {"type": "string", "minLength": 1},
+        "backend": {"type": ["string", "null"]},
+        "version": {"type": ["string", "null"]}
+      }
+    },
+    "phase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "status",
+        "required",
+        "disposition",
+        "elapsed_seconds",
+        "counters",
+        "reason",
+        "diagnosticRefs",
+        "provenance",
+        "payloadRef"
+      ],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "status": {"enum": ["complete", "skipped", "partial", "failed"]},
+        "required": {"type": "boolean"},
+        "disposition": {
+          "enum": [
+            "accepted",
+            "complete",
+            "failed",
+            "required-rejection",
+            "selector-rejection",
+            "skipped",
+            "strict-rejection"
+          ]
+        },
+        "elapsed_seconds": {"type": "number", "minimum": 0},
+        "counters": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "reason": {"type": ["string", "null"]},
+        "diagnosticRefs": {
+          "type": "array",
+          "items": {"type": "string", "pattern": "^diagnostic:"},
+          "uniqueItems": true
+        },
+        "provenance": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/provenance"}
+        },
+        "payloadRef": {
+          "type": ["string", "null"],
+          "pattern": "^#/sections/"
+        }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "status", "elapsed_seconds", "counters", "payloadRef"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "status": {"enum": ["complete", "skipped", "partial", "failed"]},
+        "elapsed_seconds": {"type": "number", "minimum": 0},
+        "counters": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "payloadRef": {
+          "type": ["string", "null"],
+          "pattern": "^#/sections/"
+        }
+      }
+    },
+    "extension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespace",
+        "version",
+        "status",
+        "authority",
+        "provenance",
+        "reason",
+        "payloadRef",
+        "payloadView"
+      ],
+      "properties": {
+        "namespace": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "status": {"enum": ["complete", "skipped", "partial", "failed"]},
+        "authority": {"type": "string", "minLength": 1},
+        "provenance": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/provenance"}
+        },
+        "reason": {"type": ["string", "null"]},
+        "payloadRef": {
+          "type": ["string", "null"],
+          "pattern": "^#/sections/"
+        },
+        "payloadView": {"type": ["object", "null"]}
+      }
+    },
+    "omission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pointer", "reason", "omitted_count"],
+      "properties": {
+        "pointer": {"type": "string", "pattern": "^#/sections/"},
+        "reason": {"const": "projection_collection_limit"},
+        "omitted_count": {"type": "integer", "minimum": 1}
+      }
+    }
+  },
+  "required": [
+    "metadata",
+    "projection",
+    "warnings",
+    "diagnostics",
+    "phases",
+    "extensions",
+    "pipeline",
+    "sections"
+  ],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "tool_name",
+        "tool_version",
+        "report_version",
+        "source_report_version",
+        "generated_at_utc",
+        "repo_root",
+        "analysis_root",
+        "analysis_root_module",
+        "inventory_root",
+        "extraction_backend"
+      ],
+      "properties": {
+        "tool_name": {"const": "ladon"},
+        "tool_version": {"type": "string"},
+        "report_version": {"const": "ladon-report-v3"},
+        "source_report_version": {"const": "ladon-report-v2"},
+        "generated_at_utc": {"type": ["string", "null"]},
+        "repo_root": {"type": "string"},
+        "analysis_root": {"type": "string"},
+        "analysis_root_module": {"type": "string"},
+        "inventory_root": {"type": "string"},
+        "extraction_backend": {"type": "string"}
+      }
+    },
+    "projection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "analysis_fingerprint",
+        "included_sections",
+        "omissions",
+        "limits"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "ladon-report-v3:summary",
+            "ladon-report-v3:review",
+            "ladon-report-v3:full"
+          ]
+        },
+        "name": {"enum": ["summary", "review", "full"]},
+        "analysis_fingerprint": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "included_sections": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        },
+        "omissions": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/omission"}
+        },
+        "limits": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max_collection_items"],
+          "properties": {
+            "max_collection_items": {
+              "type": ["integer", "null"],
+              "minimum": 1
+            }
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/diagnostic"}
+    },
+    "phases": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/phase"},
+      "propertyNames": {
+        "enum": [
+          "build",
+          "discover",
+          "lean_extraction",
+          "indexing",
+          "module_dag",
+          "declaration_graph",
+          "module_readiness",
+          "architecture_policy",
+          "source_patterns",
+          "import_diet",
+          "proof_xray",
+          "quality_baseline",
+          "findings",
+          "refactoring_prescriptions",
+          "packet_evidence",
+          "review_regions",
+          "rendering"
+        ]
+      },
+      "required": [
+        "build",
+        "discover",
+        "lean_extraction",
+        "indexing",
+        "module_dag",
+        "declaration_graph",
+        "module_readiness",
+        "architecture_policy",
+        "source_patterns",
+        "import_diet",
+        "proof_xray",
+        "quality_baseline",
+        "findings",
+        "refactoring_prescriptions",
+        "packet_evidence",
+        "review_regions",
+        "rendering"
+      ]
+    },
+    "extensions": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/extension"},
+      "propertyNames": {
+        "enum": [
+          "atlas",
+          "elaborated_declarations",
+          "packet_evidence",
+          "proof_xray"
+        ]
+      },
+      "required": [
+        "atlas",
+        "elaborated_declarations",
+        "packet_evidence",
+        "proof_xray"
+      ]
+    },
+    "pipeline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["timings"],
+      "properties": {
+        "timings": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/timing"},
+          "propertyNames": {
+            "enum": [
+              "build",
+              "discover",
+              "lean_extraction",
+              "indexing",
+              "module_dag",
+              "declaration_graph",
+              "module_readiness",
+              "architecture_policy",
+              "source_patterns",
+              "import_diet",
+              "proof_xray",
+              "quality_baseline",
+              "findings",
+              "refactoring_prescriptions",
+              "packet_evidence",
+              "review_regions",
+              "rendering"
+            ]
+          },
+          "required": [
+            "build",
+            "discover",
+            "lean_extraction",
+            "indexing",
+            "module_dag",
+            "declaration_graph",
+            "module_readiness",
+            "architecture_policy",
+            "source_patterns",
+            "import_diet",
+            "proof_xray",
+            "quality_baseline",
+            "findings",
+            "refactoring_prescriptions",
+            "packet_evidence",
+            "review_regions",
+            "rendering"
+          ]
+        }
+      }
+    },
+    "sections": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true
+    }
+  }
+}

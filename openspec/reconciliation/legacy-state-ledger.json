@@ -1,0 +1,573 @@
+{
+  "schemaVersion": 1,
+  "dependencyLedgerRef": "openspec/changes/ladon-alpha-hardening-umbrella/children/dependency-ledger.json",
+  "baseline": {
+    "capturedOn": "2026-07-25",
+    "changeCount": 89,
+    "inProgressCount": 18,
+    "completeCount": 71,
+    "taskCount": 1059,
+    "checkedTaskCount": 748,
+    "uncheckedTaskCount": 311,
+    "strictValidationExit": 1,
+    "strictValidationFailures": [
+      "ladon-proofir-bridge-mvp",
+      "ladon-proofir-bridge-real-report-smoke"
+    ],
+    "backlogFindingCount": 24,
+    "backlogFindingKinds": {
+      "missing_automation": 18,
+      "missing_validation_command": 2,
+      "openspec_status_drift": 4
+    },
+    "hygieneDriftCount": 4,
+    "canonicalSpecCount": 0,
+    "archiveCount": 0
+  },
+  "packets": [
+    {
+      "id": "ladon-common-layer-and-facade-quality",
+      "kind": "pre-program-active",
+      "disposition": "complete",
+      "authoritativeOwner": "ladon-review-intelligence-todo-umbrella",
+      "replacement": null,
+      "residualOwner": null,
+      "requirementEvidence": [
+        {
+          "requirement": "Common-Layer and Facade Quality",
+          "outcome": "covered",
+          "source": [
+            "src/ladon/analysis/architecture_policy.py",
+            "src/ladon/analysis/module_dag.py",
+            "src/ladon/render.py"
+          ],
+          "tests": [
+            "tests/test_architecture_policy.py",
+            "tests/test_module_dag.py",
+            "tests/test_render.py"
+          ],
+          "gates": [
+            "uv run --locked pytest -q tests/test_architecture_policy.py tests/test_module_dag.py tests/test_render.py",
+            "openspec validate ladon-common-layer-and-facade-quality --strict"
+          ],
+          "note": "Ranked multi-group common dependencies, ignored-foundation negatives, facade subtypes, and separated implementation fan-out are shipped."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    },
+    {
+      "id": "ladon-configurable-lexical-audit-packs",
+      "kind": "pre-program-active",
+      "disposition": "complete",
+      "authoritativeOwner": "ladon-review-intelligence-todo-umbrella",
+      "replacement": null,
+      "residualOwner": null,
+      "requirementEvidence": [
+        {
+          "requirement": "Source Pattern Policy Packs",
+          "outcome": "covered",
+          "source": [
+            "src/ladon/analysis/source_patterns.py",
+            "docs/policies/source-pattern-policy.example.json",
+            "src/ladon/render.py"
+          ],
+          "tests": [
+            "tests/test_source_patterns.py",
+            "tests/test_clean_cli.py",
+            "tests/test_render.py"
+          ],
+          "gates": [
+            "uv run --locked pytest -q tests/test_source_patterns.py tests/test_clean_cli.py tests/test_render.py",
+            "openspec validate ladon-configurable-lexical-audit-packs --strict"
+          ],
+          "note": "Policy-supplied vocabulary, zero/capped counts, generated filtering, invalid-pattern diagnostics, and generic examples are shipped."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    },
+    {
+      "id": "ladon-fix-oriented-architecture-triage",
+      "kind": "pre-program-active",
+      "disposition": "complete",
+      "authoritativeOwner": "ladon-review-intelligence-todo-umbrella",
+      "replacement": null,
+      "residualOwner": null,
+      "requirementEvidence": [
+        {
+          "requirement": "Fix-Oriented Policy Summaries",
+          "outcome": "covered",
+          "source": [
+            "src/ladon/analysis/architecture_policy.py",
+            "src/ladon/analysis/architecture_policy_summary.py",
+            "src/ladon/render.py"
+          ],
+          "tests": [
+            "tests/test_architecture_policy.py",
+            "tests/test_render.py"
+          ],
+          "gates": [
+            "uv run --locked pytest -q tests/test_architecture_policy.py tests/test_render.py",
+            "openspec validate ladon-fix-oriented-architecture-triage --strict"
+          ],
+          "note": "Direct rows preserve source/group/context/action evidence and text output is summary-first without presenting suggestions as proven refactors."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    },
+    {
+      "id": "ladon-generated-artifact-attribution",
+      "kind": "pre-program-active",
+      "disposition": "superseded-with-residuals",
+      "authoritativeOwner": "ladon-review-intelligence-todo-umbrella",
+      "replacement": "ladon-signal-correctness-hardening",
+      "residualOwner": "ladon-signal-correctness-hardening",
+      "requirementEvidence": [
+        {
+          "requirement": "Generated Artifact Attribution",
+          "outcome": "transferred",
+          "source": [
+            "src/ladon/analysis/module_dag.py",
+            "src/ladon/analysis/module_naming.py",
+            "openspec/changes/ladon-signal-correctness-hardening/specs/ladon-signal-correctness/spec.md"
+          ],
+          "tests": [
+            "tests/test_module_dag.py",
+            "tests/test_render.py"
+          ],
+          "gates": [
+            "uv run --locked pytest -q tests/test_module_dag.py tests/test_render.py",
+            "openspec validate ladon-signal-correctness-hardening --strict"
+          ],
+          "note": "Generated-family duplicate attribution is shipped; the reproduced generated-importer inflation defect and population-label correction are explicitly transferred to the alpha signal owner."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    },
+    {
+      "id": "ladon-policy-persistence-and-workflow",
+      "kind": "pre-program-active",
+      "disposition": "complete",
+      "authoritativeOwner": "ladon-review-intelligence-todo-umbrella",
+      "replacement": null,
+      "residualOwner": null,
+      "requirementEvidence": [
+        {
+          "requirement": "Repo-Local Policy Persistence",
+          "outcome": "covered",
+          "source": [
+            "src/ladon/pipeline.py",
+            "README.md",
+            "docs/policies/architecture-policy.example.json",
+            "docs/policies/source-pattern-policy.example.json"
+          ],
+          "tests": [
+            "tests/test_clean_cli.py",
+            "tests/test_pipeline.py"
+          ],
+          "gates": [
+            "uv run --locked pytest -q tests/test_clean_cli.py tests/test_pipeline.py",
+            "openspec validate ladon-policy-persistence-and-workflow --strict"
+          ],
+          "note": "Repo-local discovery, visible source/id metadata, generic examples, and explicit no-policy status are shipped."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    },
+    {
+      "id": "ladon-proof-xray-roadmap",
+      "kind": "pre-program-active",
+      "disposition": "retained",
+      "authoritativeOwner": "ladon-proof-xray-roadmap",
+      "replacement": null,
+      "residualOwner": "ladon-proof-xray-roadmap",
+      "requirementEvidence": [
+        {
+          "requirement": "Proof X-Ray Evidence Contract",
+          "outcome": "retained",
+          "source": [
+            "openspec/changes/ladon-proof-xray-roadmap/specs/ladon-proof-xray-roadmap/spec.md",
+            "openspec/changes/ladon-elaborated-declaration-surface/specs/ladon-elaborated-declaration-surface/spec.md",
+            "openspec/changes/ladon-openspec-state-reconciliation/specs/ladon-proof-xray-staging/spec.md"
+          ],
+          "tests": [],
+          "gates": [
+            "openspec validate ladon-proof-xray-roadmap --strict",
+            "openspec validate ladon-elaborated-declaration-surface --strict"
+          ],
+          "note": "Quoted witness/trust rows remain staging-owned, direct Lean statement/dependency/trust facts move to the alpha declaration owner, and only future tactic-skeleton/InfoTree evidence remains here."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    },
+    {
+      "id": "ladon-review-signal-benchmarks",
+      "kind": "pre-program-active",
+      "disposition": "superseded-with-residuals",
+      "authoritativeOwner": "ladon-portable-benchmark-fixtures-and-signal-oracles",
+      "replacement": "ladon-signal-benchmark-harness",
+      "residualOwner": "ladon-signal-benchmark-harness",
+      "requirementEvidence": [
+        {
+          "requirement": "Portable Review Signal Benchmarks",
+          "outcome": "transferred",
+          "source": [
+            "src/ladon/analysis/benchmark_oracles.py",
+            "openspec/changes/ladon-signal-benchmark-harness/specs/ladon-signal-benchmark-harness/spec.md"
+          ],
+          "tests": [
+            "tests/test_benchmark_oracles.py"
+          ],
+          "gates": [
+            "uv run --locked pytest -q tests/test_benchmark_oracles.py",
+            "openspec validate ladon-signal-benchmark-harness --strict"
+          ],
+          "note": "Portable predicate oracles are shipped; complete positive/intentional-negative source-pattern and claim-authority coverage plus metric/drift policy are transferred to the alpha benchmark owner."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    },
+    {
+      "id": "ladon-theorem-surface-changelog",
+      "kind": "pre-program-active",
+      "disposition": "retained",
+      "authoritativeOwner": "ladon-theorem-surface-changelog",
+      "replacement": null,
+      "residualOwner": "ladon-theorem-surface-changelog",
+      "requirementEvidence": [
+        {
+          "requirement": "Semantic theorem changelog future lane",
+          "outcome": "retained",
+          "source": [
+            "openspec/changes/ladon-theorem-surface-changelog/specs/ladon-semantic-theorem-changelog/spec.md",
+            "openspec/changes/ladon-elaborated-declaration-surface/specs/ladon-elaborated-declaration-surface/spec.md"
+          ],
+          "tests": [],
+          "gates": [
+            "openspec validate ladon-theorem-surface-changelog --strict"
+          ],
+          "note": "This bounded future child consumes the alpha declaration surface and does not own a parallel extractor."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    },
+    {
+      "id": "ladon-review-radar-semantic-changelog-roadmap",
+      "kind": "pre-program-active",
+      "disposition": "retained",
+      "authoritativeOwner": "ladon-review-radar-semantic-changelog-roadmap",
+      "replacement": null,
+      "residualOwner": "future-ladon-review-radar-mvp",
+      "requirementEvidence": [
+        {
+          "requirement": "Review Radar planning umbrella",
+          "outcome": "retained",
+          "source": [
+            "openspec/changes/ladon-review-radar-semantic-changelog-roadmap/specs/ladon-review-radar/spec.md",
+            "openspec/changes/ladon-review-radar-semantic-changelog-roadmap/specs/ladon-proof-xray-enrichment/spec.md"
+          ],
+          "tests": [],
+          "gates": [
+            "openspec validate ladon-review-radar-semantic-changelog-roadmap --strict"
+          ],
+          "note": "The packet remains a planning umbrella. A later bounded MVP consumes the theorem changelog and optional declaration/proof-xray outputs."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    },
+    {
+      "id": "ladon-proofir-bridge-mvp",
+      "kind": "invalid-completed",
+      "disposition": "complete",
+      "authoritativeOwner": "ladon-proofir-bridge-mvp",
+      "replacement": null,
+      "residualOwner": null,
+      "requirementEvidence": [
+        {
+          "requirement": "ProofIR bridge MVP delta",
+          "outcome": "covered",
+          "source": [
+            "src/ladon/proofir_bridge.py",
+            "src/ladon/proofir_bridge_cli.py"
+          ],
+          "tests": [
+            "tests/test_proofir_bridge.py",
+            "tests/test_proofir_bridge_cli.py"
+          ],
+          "gates": [
+            "openspec validate ladon-proofir-bridge-mvp --strict"
+          ],
+          "note": "The existing bridge implementation is covered by a conservative compact-index and evidence-boundary delta; strict validation and focused bridge tests pass."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    },
+    {
+      "id": "ladon-proofir-bridge-real-report-smoke",
+      "kind": "invalid-completed",
+      "disposition": "complete",
+      "authoritativeOwner": "ladon-proofir-bridge-real-report-smoke",
+      "replacement": null,
+      "residualOwner": null,
+      "requirementEvidence": [
+        {
+          "requirement": "ProofIR real-report bridge delta",
+          "outcome": "covered",
+          "source": [
+            "src/ladon/proofir_bridge.py"
+          ],
+          "tests": [
+            "tests/test_proofir_bridge.py",
+            "tests/fixtures/proofir_bridge"
+          ],
+          "gates": [
+            "openspec validate ladon-proofir-bridge-real-report-smoke --strict"
+          ],
+          "note": "The existing clean-core adapter and CLI smoke are covered by a conservative real-report delta; strict validation and focused bridge tests pass."
+        }
+      ],
+      "specConflicts": [],
+      "archiveResult": {
+        "status": "not-planned",
+        "archivePath": null,
+        "canonicalCapabilities": [],
+        "verifiedPostconditions": []
+      }
+    }
+  ],
+  "archiveBatches": [
+    {
+      "sequence": 1,
+      "change": "ladon-pipeline-phase-boundaries-timing",
+      "dependsOn": [],
+      "expectedCapabilities": [
+        "ladon-pipeline"
+      ],
+      "expectedRequirements": [
+        "Ladon SHALL expose named pipeline phases",
+        "Ladon SHALL separate pure analysis kernels from side effects"
+      ],
+      "conflicts": [],
+      "result": {
+        "status": "complete",
+        "archivePath": "openspec/changes/archive/2026-07-25-ladon-pipeline-phase-boundaries-timing",
+        "canonicalCapabilities": [
+          "ladon-pipeline"
+        ],
+        "verifiedPostconditions": [
+          "active source absent",
+          "exactly one dated archive exists",
+          "canonical pipeline phase and pure-kernel requirements exist",
+          "canonical and all-active strict validation pass"
+        ]
+      }
+    },
+    {
+      "sequence": 2,
+      "change": "ladon-clean-core-radon-gate",
+      "dependsOn": [
+        "ladon-pipeline-phase-boundaries-timing"
+      ],
+      "expectedCapabilities": [
+        "ladon-pipeline",
+        "ladon-python-quality"
+      ],
+      "expectedRequirements": [
+        "Ladon SHALL separate pure analysis kernels from side effects",
+        "Ladon SHALL provide a strict Python quality gate",
+        "Ladon's clean core SHALL preserve tested module-DAG reporting"
+      ],
+      "conflicts": [],
+      "result": {
+        "status": "complete",
+        "archivePath": "openspec/changes/archive/2026-07-25-ladon-clean-core-radon-gate",
+        "canonicalCapabilities": [
+          "ladon-pipeline",
+          "ladon-python-quality"
+        ],
+        "verifiedPostconditions": [
+          "active source absent",
+          "exactly one dated archive exists",
+          "canonical pipeline modification and Python-quality source addition exist",
+          "canonical and all-active strict validation pass",
+          "active legacy CLI ordering gate passes"
+        ]
+      }
+    },
+    {
+      "sequence": 3,
+      "change": "ladon-root-matrix-lean-expansion",
+      "dependsOn": [
+        "ladon-clean-core-radon-gate"
+      ],
+      "expectedCapabilities": [
+        "ladon-root-matrix"
+      ],
+      "expectedRequirements": [
+        "Lean-Backed Owner Matrix Entries"
+      ],
+      "conflicts": [],
+      "result": {
+        "status": "complete",
+        "archivePath": "openspec/changes/archive/2026-07-25-ladon-root-matrix-lean-expansion",
+        "canonicalCapabilities": [
+          "ladon-root-matrix"
+        ],
+        "verifiedPostconditions": [
+          "active source absent",
+          "exactly one dated archive exists",
+          "canonical Lean-backed owner matrix source requirement exists",
+          "canonical and all-active strict validation pass",
+          "active legacy CLI ordering gate passes"
+        ]
+      }
+    },
+    {
+      "sequence": 4,
+      "change": "ladon-proof-xray-staging",
+      "dependsOn": [
+        "ladon-root-matrix-lean-expansion"
+      ],
+      "expectedCapabilities": [
+        "ladon-proof-xray-staging"
+      ],
+      "expectedRequirements": [
+        "Proof-xray witness rows",
+        "Absent-safe proof x-ray"
+      ],
+      "conflicts": [],
+      "result": {
+        "status": "complete",
+        "archivePath": "openspec/changes/archive/2026-07-25-ladon-proof-xray-staging",
+        "canonicalCapabilities": [
+          "ladon-proof-xray-staging"
+        ],
+        "verifiedPostconditions": [
+          "active source absent",
+          "exactly one dated archive exists",
+          "canonical witness-row and absent-safe requirements exist",
+          "canonical and all-active strict validation pass",
+          "active legacy CLI ordering gate passes"
+        ]
+      }
+    },
+    {
+      "sequence": 5,
+      "change": "ladon-openspec-state-reconciliation",
+      "dependsOn": [
+        "ladon-pipeline-phase-boundaries-timing",
+        "ladon-clean-core-radon-gate",
+        "ladon-root-matrix-lean-expansion",
+        "ladon-proof-xray-staging"
+      ],
+      "expectedCapabilities": [
+        "ladon-openspec-state-reconciliation",
+        "ladon-python-quality",
+        "ladon-root-matrix",
+        "ladon-proof-xray-staging"
+      ],
+      "expectedRequirements": [
+        "Evidence-backed reconciliation ledger",
+        "Ladon's clean core SHALL preserve tested module-DAG reporting",
+        "Lean-Backed Owner Matrix Entries",
+        "Proof-xray witness rows"
+      ],
+      "conflicts": [],
+      "result": {
+        "status": "complete",
+        "archivePath": "openspec/changes/archive/2026-07-25-ladon-openspec-state-reconciliation",
+        "canonicalCapabilities": [
+          "ladon-openspec-state-reconciliation",
+          "ladon-python-quality",
+          "ladon-root-matrix",
+          "ladon-proof-xray-staging"
+        ],
+        "verifiedPostconditions": [
+          "active source absent",
+          "exactly one dated archive exists",
+          "canonical reconciliation, Python-quality, root-matrix, and proof-xray requirements exist",
+          "canonical and all-active strict validation pass",
+          "canonical legacy CLI gate passes",
+          "archived automation resolves canonical state",
+          "umbrella child reference resolves through the dated archive"
+        ]
+      }
+    }
+  ],
+  "selfArchiveHandoff": {
+    "change": "ladon-openspec-state-reconciliation",
+    "archiveLast": true,
+    "preconditions": [
+      "all reconciliation tasks are checked",
+      "all retained and completed packets strictly validate",
+      "the four prerequisite archive batches have unique dated archives and expected canonical requirements",
+      "all declared reconciliation automation gates pass"
+    ],
+    "postconditions": [
+      "the active reconciliation directory is absent",
+      "exactly one dated reconciliation archive exists",
+      "openspec validate --specs --strict --no-interactive passes",
+      "uv run --locked python scripts/openspec_canonical_gate.py --profile legacy-cli --require-canonical passes",
+      "umbrella readiness can resolve the archived child and its preserved automation"
+    ]
+  }
+}

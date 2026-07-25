@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UV_LOCKED: "1"
+
+jobs:
+  python:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.10.2"
+      - name: Check and sync locked environment
+        run: |
+          uv lock --check
+          uv sync --locked --python "${{ matrix.python-version }}"
+      - name: Run maintained tests
+        run: uv run --locked --python "${{ matrix.python-version }}" pytest -q
+      - name: Smoke installed wheel
+        run: >-
+          uv run --locked --python "${{ matrix.python-version }}"
+          python scripts/installed_distribution_smoke.py
+          --candidate HEAD
+          --package-resource ladon:schemas/ladon-report-v2.schema.json
+          --package-resource ladon:schemas/ladon-benchmark-manifest-v1.schema.json
+
+  quality-and-state:
+    name: Clean source, quality, and OpenSpec
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.10.2"
+      - name: Install pinned OpenSpec CLI
+        run: npm install --global @fission-ai/openspec@1.2.0
+      - name: Sync locked environment
+        run: uv sync --locked
+      - name: Run strict Python quality
+        run: uv run --locked python scripts/python_quality.py --strict
+      - name: Run clean exported-candidate gate
+        run: uv run --locked python scripts/clean_checkout_gate.py --candidate HEAD
+      - name: Run portable installed-CLI signal benchmarks
+        run: >-
+          uv run --locked python scripts/ladon_benchmarks.py
+          --candidate HEAD
+          --required
+      - name: Validate reconciled OpenSpec state
+        run: |
+          openspec validate --all --strict --no-interactive
+          uv run --locked python scripts/ladon_openspec_backlog.py --openspec-root openspec --check
+          uv run --locked python scripts/ladon_openspec_hygiene.py --openspec-root openspec --check
+
+  lean:
+    name: Pinned real-Lean integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.10.2"
+      - uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          lake-package-directory: tests/fixtures/lean_integration
+          use-mathlib-cache: false
+      - name: Sync locked environment
+        run: uv sync --locked
+      - name: Run required installed Lean smoke
+        run: >-
+          uv run --locked python scripts/lean_integration_gate.py
+          --candidate HEAD
+          --required

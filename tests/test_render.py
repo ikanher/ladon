@@ -43,6 +43,77 @@ def test_text_report_groups_module_dag_details() -> None:
     assert "Modules Not Reachable From Chosen Roots\n- count: 1\n- A.Orphan" in text
 
 
+def test_text_report_names_fan_populations_and_stable_finding_evidence() -> None:
+    payload = {
+        "metadata": {"repo_root": "/repo", "analysis_root_module": "A"},
+        "warnings": [],
+        "module_dag": {
+            "module_count": 3,
+            "edge_count": 2,
+            "acyclic": True,
+            "topological_layer_count": 2,
+            "facade_module_count": 0,
+            "top_fan_in": [
+                {
+                    "module": "A.Core",
+                    "fan_in": 6,
+                    "population": "all_importers_to_all_targets",
+                    "authority": "module_import_graph",
+                }
+            ],
+            "top_fan_out": [],
+            "top_handwritten_fan_in": [
+                {
+                    "module": "A.Core",
+                    "fan_in": 1,
+                    "population": "handwritten_importers_to_handwritten_targets",
+                    "authority": "module_import_graph",
+                }
+            ],
+            "top_generated_importer_fan_in": [
+                {
+                    "module": "A.Core",
+                    "fan_in": 5,
+                    "population": "generated_importers_to_all_targets",
+                    "authority": "module_import_graph",
+                }
+            ],
+        },
+        "findings": [
+            {
+                "id": "ladon.finding.example",
+                "stable_key": "module_fan_in:A.Core:6",
+                "kind": "module_fan_in_hotspot",
+                "severity": "info",
+                "subject": "A.Core",
+                "count": 6,
+                "message": "A.Core is imported by six modules.",
+                "promotion_population": "all_importers_to_all_targets",
+                "promotion_threshold": 5,
+                "authority": "module_import_graph",
+                "evidence_count": 6,
+            }
+        ],
+        "pipeline": {"timings": {}},
+    }
+
+    text = render_text(payload)
+
+    assert (
+        "- A.Core: 6 population=all_importers_to_all_targets "
+        "authority=module_import_graph"
+    ) in text
+    assert (
+        "- A.Core: 1 population=handwritten_importers_to_handwritten_targets "
+        "authority=module_import_graph"
+    ) in text
+    assert (
+        "- A.Core: 5 population=generated_importers_to_all_targets "
+        "authority=module_import_graph"
+    ) in text
+    assert "id=ladon.finding.example evidence=6 authority=module_import_graph" in text
+
+
 def test_text_report_summarizes_policy_details_without_listing_every_policy_finding() -> None:
     payload = {
         "metadata": {"repo_root": "/repo", "analysis_root_module": "A"},
@@ -107,6 +178,7 @@ def test_text_report_summarizes_policy_details_without_listing_every_policy_find
         "- common-layer candidate A.Shared: confidence=medium "
         "scope=all_multi_group_imports groups=alpha,beta importers=3"
     ) in text
+    assert "- selected: 1\n- displayed: 0\n- omitted: 1" in text
     assert "detail row should stay in JSON only" not in text
 
 
@@ -275,3 +347,129 @@ def test_text_report_renders_unresolved_reference_classifications() -> None:
     assert "Declaration Name Families\n- ge_one: 3" in text
     assert "Unresolved Reference Classes\n- local_or_field_candidate: 9" in text
     assert "Top Actionable Unresolved References\n- MissingTheorem: 2" in text
+
+
+def test_text_report_renders_bounded_statement_and_direct_trust_surface() -> None:
+    payload = {
+        "metadata": {"repo_root": "/repo", "analysis_root_module": "A"},
+        "warnings": [],
+        "module_dag": {
+            "module_count": 1,
+            "edge_count": 0,
+            "acyclic": True,
+            "topological_layer_count": 1,
+            "facade_module_count": 0,
+            "top_fan_in": [],
+            "top_fan_out": [],
+        },
+        "declaration_graph": elaborated_declaration_summary(),
+        "findings": [],
+        "pipeline": {"timings": {}},
+    }
+
+    text = render_text(payload)
+
+    assert "- A.root (theorem, A.lean:3)" in text
+    assert "statement: True → True" in text
+    assert "premises: True" in text
+    assert "direct_axiom_reference scope=value" in text
+    assert "authority=lean_environment" in text
+    assert "no transitive axiom closure or proof verdict" in text
+
+
+def elaborated_declaration_summary() -> dict:
+    """Return one compact declaration surface for text rendering."""
+
+    return {
+        "declaration_count": 1,
+        "edge_count": 0,
+        "unresolved_reference_count": 0,
+        "chosen_roots": ["A.root"],
+        "elaborated_surface": {"status": "complete", "reason": None},
+        "declarations": [
+            {
+                "declaration": "A.root",
+                "module": "A",
+                "kind": "theorem",
+                "sourcePath": "A.lean",
+                "sourceRange": {"startLine": 3, "endLine": 5},
+                "surface": {
+                    "status": "complete",
+                    "reason": None,
+                    "renderedType": "True → True",
+                    "renderedTypeTruncated": False,
+                    "conclusion": "True",
+                    "premises": {"items": ["True"]},
+                    "bodyTruncated": False,
+                    "trustFacts": [
+                        {
+                            "kind": "direct_axiom_reference",
+                            "scope": "value",
+                            "target": "A.assumption",
+                            "authority": "lean_environment",
+                        }
+                    ],
+                },
+            }
+        ],
+    }
+
+
+def test_text_renders_population_counts_and_partial_diagnostics() -> None:
+    payload = {
+        "metadata": {"repo_root": "/repo", "analysis_root_module": "A"},
+        "warnings": [],
+        "module_dag": {
+            "module_count": 3,
+            "edge_count": 2,
+            "acyclic": True,
+            "topological_layer_count": 2,
+            "facade_module_count": 0,
+            "top_fan_in": [],
+            "top_fan_out": [],
+        },
+        "findings": [],
+        "pipeline": {
+            "timings": {
+                "module_dag": {
+                    "status": "complete",
+                    "elapsed_seconds": 0.25,
+                }
+            }
+        },
+    }
+    payload["module_dag"]["population_calibration"] = {
+        "summary": {
+            "selectedPopulation": "target_owned",
+            "numerator": 1,
+            "denominator": 3,
+            "populationCounts": {
+                "compiler_generated": 1,
+                "imported": 1,
+                "target_owned": 1,
+            },
+        },
+        "generatedFamilies": [],
+    }
+    phase = payload["pipeline"]["timings"]["module_dag"]
+    phase.update(
+        {
+            "status": "partial",
+            "reason": "resource limit crossed",
+            "counters": {"modules": 3},
+            "diagnostics": [
+                {
+                    "id": "resource.overall_wall_time",
+                    "subject": "module_dag",
+                    "message": "configured limit exceeded",
+                }
+            ],
+        }
+    )
+
+    text = render_text(payload)
+
+    assert "- compiler_generated: 1" in text
+    assert "- target_owned: 1" in text
+    assert "retained counters: modules=3" in text
+    assert "diagnostic resource.overall_wall_time subject=module_dag" in text

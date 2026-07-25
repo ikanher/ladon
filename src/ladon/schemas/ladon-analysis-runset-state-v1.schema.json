@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ladon:analysis-runset-state:v1",
+  "title": "Ladon durable analysis runset state v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifactKind",
+    "schema",
+    "schemaVersion",
+    "name",
+    "runsetFingerprint",
+    "entries"
+  ],
+  "properties": {
+    "artifactKind": {"const": "ladon_analysis_runset_state"},
+    "schema": {"const": "ladon-analysis-runset-state-v1"},
+    "schemaVersion": {"const": 1},
+    "name": {"type": "string", "minLength": 1},
+    "runsetFingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "entries": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "entryFingerprint",
+          "id",
+          "report",
+          "status",
+          "validity"
+        ]
+      }
+    }
+  }
+}

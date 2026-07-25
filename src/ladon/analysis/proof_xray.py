@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ladon.finding_workflow import canonical_row_evidence
+
 
 SUPPORTED_KINDS = {"ladon_proof_xray", "proof_xray"}
 SUPPORTED_SCHEMA_VERSIONS = {1, "1"}
@@ -21,7 +23,10 @@ def summarize_proof_xray(witness: Any) -> dict[str, Any]:
     normalized = normalize_proof_xray(witness)
     rows = proof_xray_rows(normalized)
     diagnostics = normalized.get("diagnostics", [])
-    findings = [proof_xray_finding(row) for row in rows]
+    findings = [
+        proof_xray_finding(row, index)
+        for index, row in enumerate(rows)
+    ]
     findings.extend(diagnostic_findings(diagnostics))
     return {
         "artifactKind": "ladon_proof_xray_report",
@@ -102,6 +107,8 @@ def normalize_row(row: dict[str, Any]) -> dict[str, Any]:
         "toolVersion": str(row.get("toolVersion", "")),
         "command": str(row.get("command", "")),
         "sourcePath": str(row.get("sourcePath", "")),
+        "sourceRange": copied_dict(row.get("sourceRange")),
+        "selectionRange": copied_dict(row.get("selectionRange")),
         "contentHash": str(row.get("contentHash") or row.get("sourceHash") or ""),
         "confidence": str(row.get("confidence", "unknown")),
         "tacticSkeleton": string_list(row.get("tacticSkeleton")),
@@ -178,17 +185,36 @@ def row_subject(row: dict[str, Any]) -> str:
     return str(row.get("declarationName") or row.get("module") or row.get("rowId") or "proof_xray")
 
 
-def proof_xray_finding(row: dict[str, Any]) -> dict[str, Any]:
+def proof_xray_finding(
+    row: dict[str, Any],
+    index: int,
+) -> dict[str, Any]:
     """Convert classified proof-xray row to a finding."""
 
-    return {
+    finding = {
         "kind": f"proof_xray.{row['kind']}",
         "severity": row.get("severity", "info"),
         "subject": row.get("subject", ""),
         "count": 1,
         "message": row.get("message", ""),
         "proofXrayOnly": True,
+        "evidenceRefs": [
+            canonical_row_evidence(
+                "proof_xray",
+                "rows",
+                index,
+                identity={
+                    "kind": row.get("kind"),
+                    "subject": row.get("subject", ""),
+                },
+                authority=str(row.get("authority", "external_tool_quoted")),
+            )
+        ],
     }
+    evidence = row.get("evidence")
+    if isinstance(evidence, dict):
+        copy_finding_source_fields(finding, evidence)
+    return finding
 
 
 def diagnostic_findings(diagnostics: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -202,9 +228,44 @@ def diagnostic_findings(diagnostics: list[dict[str, Any]]) -> list[dict[str, Any
             "count": 1,
             "message": row.get("message", ""),
             "proofXrayOnly": True,
+            "evidenceRefs": [
+                canonical_row_evidence(
+                    "proof_xray",
+                    "diagnostics",
+                    index,
+                    identity={
+                        "kind": row.get("kind", "proof_xray.diagnostic"),
+                        "subject": row.get("subject", "proof_xray"),
+                    },
+                    authority="external_tool_quoted",
+                )
+            ],
         }
-        for row in diagnostics
+        for index, row in enumerate(diagnostics)
     ]
+
+
+def copy_finding_source_fields(
+    finding: dict[str, Any],
+    row: dict[str, Any],
+) -> None:
+    """Preserve source attachment metadata supplied by a proof-xray row."""
+
+    for key in (
+        "sourcePath",
+        "sourceRange",
+        "selectionRange",
+        "contentHash",
+        "sourceHash",
+        "confidence",
+        "authority",
+        "line",
+        "column",
+        "endLine",
+        "endColumn",
+    ):
+        if key in row:
+            finding[key] = row[key]
 
 
 def proof_xray_summary(rows: list[dict[str, Any]], diagnostics: list[dict[str, Any]]) -> dict[str, int]:

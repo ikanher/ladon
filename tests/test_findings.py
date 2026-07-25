@@ -43,6 +43,26 @@ def test_findings_flag_declaration_graph_hotspots() -> None:
     assert findings[0]["subject"] == "A -> A.Big"
     assert findings[1]["subject"] == "A.kernel"
     assert findings[4]["subject"] == "MissingTheorem"
+    assert findings[0]["evidenceRefs"][0]["pointer"] == (
+        "#/sections/module_dag/root_direct_import_closures/0"
+    )
+    assert findings[1]["evidenceRefs"][0]["pointer"] == (
+        "#/sections/declaration_graph/top_fan_in/0"
+    )
+    assert findings[4]["evidenceRefs"][0]["pointer"] == (
+        "#/sections/declaration_graph/"
+        "top_actionable_unresolved_references/0"
+    )
+    assert findings[5]["evidenceRefs"][0] == {
+        "type": "aggregate",
+        "section": "declaration_graph",
+        "field": "declarations_not_reachable_from_chosen_roots_count",
+        "pointer": (
+            "#/sections/declaration_graph/"
+            "declarations_not_reachable_from_chosen_roots_count"
+        ),
+        "authority": "declaration_graph",
+    }
 
 
 def test_findings_ignore_below_threshold_rows() -> None:
@@ -127,6 +147,62 @@ def test_findings_use_actionable_unresolved_rows_when_available() -> None:
     findings = summarize_findings({}, declaration_graph)
 
     assert [finding["subject"] for finding in findings] == ["MissingTheorem"]
+
+
+def duplicate_fan_findings() -> tuple[list[dict], dict]:
+    """Return promoted findings plus unchanged raw fan tables."""
+
+    importers = [
+        "A.Owner1",
+        "A.Owner2",
+        "A.Owner3",
+        "A.Owner4",
+        "A.Owner5",
+    ]
+    module_dag = {
+        "top_fan_in": [
+            {
+                "module": "A.Core",
+                "fan_in": 5,
+                "sample_importers": importers,
+                "population": "all_importers_to_all_targets",
+                "authority": "module_import_graph",
+            }
+        ],
+        "top_handwritten_fan_in": [
+            {
+                "module": "A.Core",
+                "fan_in": 5,
+                "sample_importers": importers,
+                "population": "handwritten_importers_to_handwritten_targets",
+                "authority": "module_import_graph",
+            }
+        ],
+    }
+
+    return summarize_findings(module_dag, None), module_dag
+
+
+def test_equivalent_fan_promotions_are_promoted_once() -> None:
+    findings, module_dag = duplicate_fan_findings()
+
+    assert len(findings) == 1
+    assert findings[0]["kind"] == "handwritten_module_fan_in_hotspot"
+    assert findings[0]["promotion_population"] == (
+        "handwritten_importers_to_handwritten_targets"
+    )
+    assert len(module_dag["top_fan_in"]) == 1
+    assert len(module_dag["top_handwritten_fan_in"]) == 1
+
+
+def test_fan_promotion_exposes_stable_threshold_and_authority_metadata() -> None:
+    finding = duplicate_fan_findings()[0][0]
+
+    assert finding["promotion_threshold"] == 5
+    assert finding["authority"] == "module_import_graph"
+    assert finding["metric"] == "module_fan_in"
+    assert finding["stable_key"].startswith("module_fan_in:A.Core:5:")
+    assert finding["id"].startswith("ladon.finding.")
 
 
 def test_text_report_renders_findings_before_declaration_graph() -> None:

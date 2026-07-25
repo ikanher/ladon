@@ -9,6 +9,7 @@ from ladon.analysis.conditional_signature import conditional_signature_diagnosti
 from ladon.proofir_bridge_output import bridge_diagnostics, diagnostic, reviewer_cards
 from ladon.proofir_input import EXPECTED_INDEX_KIND, SURFACE_BUNDLE_KIND, normalize_proofir_index, surface_content_hash
 from ladon.proof_surface_witness import normalize_proof_surface_witness
+from ladon.report_v2 import supported_report_view
 
 
 def build_bridge_report(
@@ -20,6 +21,10 @@ def build_bridge_report(
     """Join one Ladon report with one compact ProofIR bridge index."""
 
     del policy
+    ladon_report = supported_report_view(
+        ladon_report,
+        consumer="ProofIR bridge report reader",
+    )
     declarations = declaration_rows(ladon_report)
     if proofir_index is None and proof_surface_witness is None:
         return empty_report(ladon_report)

@@ -1,0 +1,73 @@
+{
+  "artifactKind": "ladon_analysis_runset",
+  "schemaVersion": 1,
+  "name": "portable-multi-root",
+  "repository": "repository",
+  "policy": {
+    "concurrency": 1,
+    "stopOnRequiredFailure": true,
+    "continueOnAdvisoryFailure": true
+  },
+  "resources": {
+    "overallTimeoutSeconds": 20,
+    "maxRssMiB": 512,
+    "maxReportBytes": 1000000
+  },
+  "metadata": {
+    "fixture": "portable generated multi-root"
+  },
+  "entries": [
+    {
+      "id": "core",
+      "root": "Fixture/Core.lean",
+      "scope": {
+        "kind": "owner",
+        "roots": ["Fixture.Core"],
+        "resolvedPaths": ["Fixture/Core.lean"]
+      },
+      "backend": "text",
+      "projection": "review",
+      "output": "reports/core.json",
+      "required": true,
+      "reportVersion": "v3",
+      "options": {},
+      "dependsOn": []
+    },
+    {
+      "id": "helper",
+      "root": "Fixture/Helper.lean",
+      "scope": {
+        "kind": "owner",
+        "roots": ["Fixture.Helper"],
+        "resolvedPaths": ["Fixture/Helper.lean"]
+      },
+      "backend": "text",
+      "projection": "review",
+      "output": "reports/helper.json",
+      "required": false,
+      "reportVersion": "v3",
+      "options": {},
+      "dependsOn": []
+    },
+    {
+      "id": "facade",
+      "root": "Fixture.lean",
+      "scope": {
+        "kind": "closure",
+        "roots": ["Fixture"],
+        "resolvedPaths": [
+          "Fixture.lean",
+          "Fixture/Core.lean",
+          "Fixture/Helper.lean"
+        ]
+      },
+      "backend": "text",
+      "projection": "review",
+      "output": "reports/facade.json",
+      "required": true,
+      "reportVersion": "v3",
+      "options": {},
+      "dependsOn": ["core", "helper"]
+    }
+  ]
+}

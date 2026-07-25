@@ -16,6 +16,7 @@ QUERY_TABLES = (
     "review_regions",
     "signals",
     "declaration_highlights",
+    "declaration_dependencies",
     "module_highlights",
     "packet_evidence",
     "bridge_joins",
@@ -31,11 +32,24 @@ def test_write_atlas_sqlite_creates_query_tables(tmp_path: Path) -> None:
 
     counts = table_counts(db_path)
 
+    assert_primary_table_counts(counts)
+    assert_optional_table_counts(counts)
+
+
+def assert_primary_table_counts(counts: dict[str, int]) -> None:
+    """Check core query tables populated by the two-report sample."""
+
     assert counts["reports"] == 2
     assert counts["findings"] == 2
     assert counts["review_regions"] == 2
     assert counts["signals"] == 2
     assert counts["declaration_highlights"] == 2
+    assert counts["declaration_dependencies"] == 0
+
+
+def assert_optional_table_counts(counts: dict[str, int]) -> None:
+    """Check optional module, packet, and bridge query tables."""
+
     assert counts["module_highlights"] >= 2
     assert counts["packet_evidence"] == 2
     assert counts["bridge_joins"] == 0
@@ -118,6 +132,58 @@ def test_atlas_sqlite_low_confidence_join_query(tmp_path: Path) -> None:
             "confidence": "low",
             "warning_only": 1,
         }
+    ]
+
+
+def test_atlas_sqlite_declaration_dependencies_keep_kind_and_authority(
+    tmp_path: Path,
+) -> None:
+    source = {
+        "id": "declaration:repo:A.root",
+        "kind": "declaration",
+        "label": "A.root",
+        "data": {},
+    }
+    target = {
+        "id": "declaration:repo:A.target",
+        "kind": "declaration",
+        "label": "A.target",
+        "data": {},
+    }
+    atlas = {
+        "schema": "ladon-report-atlas-v1",
+        "summary": {},
+        "nodes": [source, target],
+        "edges": [
+            {
+                "source": source["id"],
+                "target": target["id"],
+                "kind": kind,
+                "data": {"authority": authority},
+            }
+            for kind, authority in (
+                ("parser_candidate_dependency", "lean_parser"),
+                ("type_dependency", "lean_environment"),
+                ("value_dependency", "lean_environment"),
+            )
+        ],
+    }
+    db_path = tmp_path / "dependencies.sqlite"
+
+    write_atlas_sqlite(atlas, db_path)
+
+    assert run_canned_query(db_path, "declaration_dependencies") == [
+        {
+            "source": "A.root",
+            "target": "A.target",
+            "kind": kind,
+            "authority": authority,
+        }
+        for kind, authority in (
+            ("parser_candidate_dependency", "lean_parser"),
+            ("type_dependency", "lean_environment"),
+            ("value_dependency", "lean_environment"),
+        )
     ]
 
 

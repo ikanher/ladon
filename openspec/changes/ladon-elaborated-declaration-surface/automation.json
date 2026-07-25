@@ -1,0 +1,8 @@
+{
+  "commands": [
+    "openspec validate ladon-elaborated-declaration-surface --strict",
+    "uv run --locked pytest -q tests/test_lean_extraction.py tests/test_declaration_graph.py tests/test_pipeline.py tests/test_render.py tests/test_atlas.py tests/test_atlas_sqlite.py tests/test_atlas_diff.py",
+    "uv run --locked python scripts/lean_declaration_gate.py --required",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

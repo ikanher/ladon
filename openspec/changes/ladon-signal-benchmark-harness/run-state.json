@@ -1,0 +1,161 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "ladon.signal-benchmark-harness.apply.2026-07-25",
+  "goal": "Apply the portable installed-CLI signal benchmark harness change and pass its declared gates.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "governance_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "theorem_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.inspect",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.openspec_apply_ready",
+        "check.fixture_inventory"
+      ],
+      "commandRefs": [
+        "openspec status --change ladon-signal-benchmark-harness --json",
+        "openspec instructions apply --change ladon-signal-benchmark-harness --json",
+        "rg --files | rg 'benchmark|calibration|root_matrix|fixtures'"
+      ]
+    },
+    {
+      "stepId": "step.manifest_and_fixtures",
+      "status": "completed",
+      "prerequisites": [
+        "step.inspect"
+      ],
+      "evidenceRefs": [
+        "check.manifest_schema"
+      ],
+      "commandRefs": [
+        "uv run --locked python -m json.tool tests/fixtures/benchmark_harness/manifest-v1.json",
+        "Draft202012Validator(schema).validate(manifest)"
+      ]
+    },
+    {
+      "stepId": "step.oracle_and_runner",
+      "status": "completed",
+      "prerequisites": [
+        "step.manifest_and_fixtures"
+      ],
+      "evidenceRefs": [
+        "check.focused_pytest",
+        "check.required_worktree"
+      ],
+      "commandRefs": [
+        "uv run --locked pytest -q tests/test_benchmark_oracles.py tests/test_calibration_regression.py tests/test_root_matrix.py tests/test_lean_extraction.py tests/test_render.py",
+        "uv run --locked python scripts/ladon_benchmarks.py --candidate worktree --required"
+      ]
+    },
+    {
+      "stepId": "step.required_gates",
+      "status": "completed",
+      "prerequisites": [
+        "step.oracle_and_runner"
+      ],
+      "evidenceRefs": [
+        "check.required_worktree",
+        "check.python_quality",
+        "check.openspec_validate"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/ladon_benchmarks.py --candidate worktree --required",
+        "uv run --locked python scripts/python_quality.py --strict",
+        "openspec validate ladon-signal-benchmark-harness --strict"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.openspec_apply_ready",
+      "command": "openspec instructions apply --change ladon-signal-benchmark-harness --json",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.fixture_inventory",
+      "command": "rg --files | rg 'benchmark|calibration|root_matrix|fixtures'",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.manifest_schema",
+      "command": "Draft202012Validator(schema).validate(manifest)",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.focused_pytest",
+      "command": "uv run --locked pytest -q tests/test_benchmark_oracles.py tests/test_calibration_regression.py tests/test_root_matrix.py tests/test_lean_extraction.py tests/test_render.py",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.required_worktree",
+      "command": "uv run --locked python scripts/ladon_benchmarks.py --candidate worktree --required",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.python_quality",
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.openspec_validate",
+      "command": "openspec validate ladon-signal-benchmark-harness --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    }
+  ],
+  "blockers": [],
+  "observations": {
+    "caseCount": 3,
+    "correctnessFailures": 0,
+    "coverageExpected": 17,
+    "coverageHits": 17,
+    "controlCount": 9,
+    "controlFailures": 0,
+    "cacheInvalidationCases": 5,
+    "cacheInvalidationFailures": 0,
+    "timeoutCleanupPassed": true,
+    "cancellationCleanupPassed": true,
+    "coldWallSecondsMax": 0.193225,
+    "warmWallSecondsMax": 0.176411,
+    "peakRssMiBMax": 34.371,
+    "helperLaunchesMax": 1
+  },
+  "replayBoundary": {
+    "packetLocalReplay": true,
+    "externalEvidenceIncluded": false,
+    "replayCommand": "uv run --locked python scripts/ladon_benchmarks.py --candidate worktree --required && uv run --locked python scripts/python_quality.py --strict && openspec validate ladon-signal-benchmark-harness --strict"
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not theorem evidence.",
+    "Benchmark oracle results characterize labeled Ladon behavior, not Lean theorem truth.",
+    "The loop does not rely on chat history as completed-step truth."
+  ]
+}

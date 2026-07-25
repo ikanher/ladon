@@ -14,6 +14,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--only", action="append", help="Run only a named matrix entry.")
     parser.add_argument(
+        "--repository-root",
+        action="append",
+        default=[],
+        metavar="NAME=PATH",
+        help=(
+            "Explicit optional repository root; NAME is quux or "
+            "matrix-factorization. Environment alternatives are "
+            "LADON_QUUX_ROOT and LADON_MATRIX_FACTORIZATION_ROOT."
+        ),
+    )
+    parser.add_argument(
         "--output-root",
         default="temp/ladon-root-matrix",
         help="Directory for generated report files.",
@@ -34,13 +45,30 @@ def main(argv: list[str] | None = None) -> int:
 
 
 def selected_commands(args: argparse.Namespace) -> list[tuple[str, list[str]]]:
-    entries = select_matrix_entries(default_root_matrix(), args.only)
+    entries = select_matrix_entries(
+        default_root_matrix(parse_repository_roots(args.repository_root)),
+        args.only,
+    )
     output_root = Path(args.output_root)
     ladon_bin = Path(args.ladon_bin)
     return [
         (entry["name"], matrix_command(entry, output_root=output_root, ladon_bin=ladon_bin))
         for entry in entries
     ]
+
+
+def parse_repository_roots(values: list[str]) -> dict[str, str]:
+    """Parse repeatable explicit ``NAME=PATH`` repository roots."""
+
+    roots: dict[str, str] = {}
+    for value in values:
+        name, separator, path = value.partition("=")
+        if not separator or not name or not path:
+            raise ValueError(
+                f"invalid --repository-root {value!r}; expected NAME=PATH"
+            )
+        roots[name] = path
+    return roots
 
 
 def print_commands(commands: list[tuple[str, list[str]]]) -> None:

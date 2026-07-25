@@ -12,6 +12,12 @@ from ladon.pipeline import RunContext, run_pipeline
 from ladon.render import render_text
 
 
+def finding_by_kind(report: dict, kind: str) -> dict:
+    """Return one expected finding by exact kind."""
+
+    return next(row for row in report["findings"] if row["kind"] == kind)
+
+
 def tiny_dag() -> dict:
     return {
         "module_count": 4,
@@ -74,6 +80,7 @@ def test_module_readiness_reports_facade_generated_and_namespace_drift() -> None
                     "backend": "lean_module_system_probe",
                     "toolVersion": "4.99.0",
                     "command": "lake env lean ...",
+                    "sourcePath": "Pkg.lean",
                     "contentHash": "sha256:pkg",
                     "confidence": "high",
                 }
@@ -88,6 +95,49 @@ def test_module_readiness_reports_facade_generated_and_namespace_drift() -> None
     assert "namespace_module_drift" in kinds
     assert "module_system_witness" in kinds
     assert report["witness"] == {"present": True, "valid": True, "rowCount": 1, "diagnosticCount": 0, "quotedOnly": True}
+    witness_finding = finding_by_kind(
+        report,
+        "module_readiness.module_system_witness",
+    )
+    assert witness_finding["contentHash"] == "sha256:pkg"
+    assert witness_finding["confidence"] == "high"
+
+
+def test_namespace_drift_accepts_parent_namespace_and_aggregates_unrelated_rows() -> None:
+    report = summarize_module_readiness(
+        tiny_dag(),
+        {
+            "declarations": [
+                {
+                    "declaration": "Pkg.Semantics.parentOwned",
+                    "module": "Pkg.Semantics.Propagation",
+                    "sourcePath": "Pkg/Semantics/Propagation.lean",
+                },
+                {
+                    "declaration": "Other.Space.first",
+                    "module": "Pkg.Core",
+                    "sourcePath": "Pkg/Core.lean",
+                },
+                {
+                    "declaration": "Other.Space.second",
+                    "module": "Pkg.Core",
+                    "sourcePath": "Pkg/Core.lean",
+                },
+            ]
+        },
+    )
+
+    drift = [
+        row
+        for row in report["rows"]
+        if row["kind"] == "namespace_module_drift"
+    ]
+
+    assert len(drift) == 1
+    assert drift[0]["module"] == "Pkg.Core"
+    assert drift[0]["namespace"] == "Other.Space"
+    assert drift[0]["declarationCount"] == 2
+    assert drift[0]["authority"] == "source_declaration_inventory"
 
 
 def test_static_review_intelligence_fixture_runs_through_pipeline() -> None:
@@ -95,7 +145,8 @@ def test_static_review_intelligence_fixture_runs_through_pipeline() -> None:
 
     payload = run_pipeline(RunContext(repo_root=fixture_root, requested_root="Pkg")).to_report_payload()
 
-    assert payload["module_dag"]["module_count"] == 7
+    assert payload["module_dag"]["module_count"] == 4
+    assert payload["module_dag"]["source_index"]["inventoryModuleCount"] == 7
     assert payload["module_readiness"]["summary"]["public_facade_pressure"] >= 1
     assert "refactoring_prescriptions" in payload
 
@@ -113,6 +164,8 @@ def test_import_diet_quotes_redundant_imports_and_rejects_stale_rows() -> None:
                     "toolName": "lake shake",
                     "toolVersion": "4.99.0",
                     "command": "lake shake Pkg",
+                    "sourcePath": "Pkg.lean",
+                    "contentHash": "sha256:pkg",
                     "confidence": "high",
                 }
             ],
@@ -123,6 +176,8 @@ def test_import_diet_quotes_redundant_imports_and_rejects_stale_rows() -> None:
     assert fresh["rows"][0]["subject"] == "Pkg -> Pkg.Helper"
     assert fresh["rows"][0]["line"] == 2
     assert fresh["rows"][0]["command"] == "lake shake Pkg"
+    assert fresh["findings"][0]["contentHash"] == "sha256:pkg"
+    assert fresh["findings"][0]["confidence"] == "high"
 
     stale = summarize_import_diet(
         tiny_dag(),
@@ -156,6 +211,16 @@ def test_proof_xray_keeps_authority_labels_and_reports_absent_safe_malformed_row
                     "backend": "infotree",
                     "toolVersion": "4.99.0",
                     "confidence": "high",
+                    "sourcePath": "Pkg/Proof.lean",
+                    "sourceRange": {
+                        "start": {"line": 5, "column": 0},
+                        "end": {"line": 8, "column": 3},
+                    },
+                    "selectionRange": {
+                        "start": {"line": 5, "column": 8},
+                        "end": {"line": 5, "column": 12},
+                    },
+                    "contentHash": "sha256:proof",
                     "tacticSkeleton": ["intro", "simp", "rw", "omega", "exact"],
                 },
                 {
@@ -185,6 +250,10 @@ def test_proof_xray_keeps_authority_labels_and_reports_absent_safe_malformed_row
     assert by_kind["trust_footprint"]["authority"] == "external_tool_quoted"
     assert by_kind["dependency_context"]["authority"] == "parser_observed"
     assert by_kind["dependency_context"]["evidence"]["dependencies"] == ["Parser.Candidate"]
+    finding = finding_by_kind(report, "proof_xray.automation_hotspot")
+    assert finding["sourceRange"]["end"]["line"] == 8
+    assert finding["selectionRange"]["start"]["column"] == 8
+    assert finding["contentHash"] == "sha256:proof"
 
     malformed = summarize_proof_xray([])
     assert malformed["diagnostics"][0]["kind"] == "proof_xray.malformed_witness"

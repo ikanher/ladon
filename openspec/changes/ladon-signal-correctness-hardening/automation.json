@@ -1,0 +1,7 @@
+{
+  "commands": [
+    "openspec validate ladon-signal-correctness-hardening --strict",
+    "uv run --locked pytest -q tests/test_extraction.py tests/test_module_dag.py tests/test_findings.py tests/test_proof_family_similarity.py tests/test_render.py tests/test_clean_cli.py",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

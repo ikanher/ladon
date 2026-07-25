@@ -1,0 +1,7 @@
+{
+  "commands": [
+    "openspec validate ladon-alpha-hardening-umbrella --strict",
+    "uv run --locked python scripts/alpha_readiness.py --candidate worktree --ledger openspec/changes/ladon-alpha-hardening-umbrella/children/dependency-ledger.json --require-all-children",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

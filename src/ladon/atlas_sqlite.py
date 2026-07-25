@@ -7,6 +7,8 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
+from ladon.artifact_versions import require_atlas_v1, require_bridge_v1
+
 
 CANNED_QUERIES = {
     "hotspots": """
@@ -22,6 +24,11 @@ CANNED_QUERIES = {
         GROUP BY declaration, metric
         HAVING report_count > 1
         ORDER BY report_count DESC, total_value DESC, declaration ASC, metric ASC
+    """,
+    "declaration_dependencies": """
+        SELECT source, target, kind, authority
+        FROM declaration_dependencies
+        ORDER BY source ASC, kind ASC, target ASC
     """,
     "review_region_pressure": """
         SELECT kind, COUNT(DISTINCT report_id) AS report_count, SUM(signal_count) AS total_signals
@@ -68,6 +75,9 @@ def write_atlas_sqlite(
 ) -> None:
     """Write a deterministic SQLite database from an atlas JSON payload."""
 
+    require_atlas_v1(atlas, consumer="atlas SQLite reader")
+    for report in bridge_reports or []:
+        require_bridge_v1(report, consumer="atlas SQLite bridge reader")
     db_path.parent.mkdir(parents=True, exist_ok=True)
     if db_path.exists():
         db_path.unlink()
@@ -152,6 +162,12 @@ def create_schema(connection: sqlite3.Connection) -> None:
             metric TEXT NOT NULL,
             rank INTEGER NOT NULL,
             value INTEGER NOT NULL
+        );
+        CREATE TABLE declaration_dependencies (
+            source TEXT NOT NULL,
+            target TEXT NOT NULL,
+            kind TEXT NOT NULL,
+            authority TEXT NOT NULL
         );
         CREATE TABLE module_highlights (
             report_id TEXT NOT NULL,
@@ -366,6 +382,20 @@ def insert_joined_rows(
                 insert_declaration_highlight(connection, target_node, source, edge_data)
             case "highlights_module":
                 insert_module_highlight(connection, target_node, source, edge_data)
+            case (
+                "parser_candidate_dependency"
+                | "type_dependency"
+                | "value_dependency"
+            ):
+                source_node = nodes.get(source)
+                if source_node is not None:
+                    insert_declaration_dependency(
+                        connection,
+                        source_node,
+                        target_node,
+                        row["kind"],
+                        edge_data,
+                    )
 
 
 def insert_finding(
@@ -384,6 +414,29 @@ def insert_finding(
             data.get("kind", ""),
             data.get("subject", ""),
             int(data.get("count", 0)),
+        ),
+    )
+
+
+def insert_declaration_dependency(
+    connection: sqlite3.Connection,
+    source_node: dict[str, Any],
+    target_node: dict[str, Any],
+    kind: str,
+    data: dict[str, Any],
+) -> None:
+    """Insert one parser- or Lean-authority declaration dependency."""
+
+    connection.execute(
+        """
+        INSERT INTO declaration_dependencies(source, target, kind, authority)
+        VALUES (?, ?, ?, ?)
+        """,
+        (
+            source_node.get("label", ""),
+            target_node.get("label", ""),
+            kind,
+            data.get("authority", "unknown"),
         ),
     )
 

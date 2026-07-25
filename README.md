@@ -10,40 +10,66 @@ packet diagnostics, and optional ProofIR bridge joins are review-routing
 evidence only. Theorem truth and proof correctness must come from Lean or an
 explicit external artifact with its own authority and hash.
 
+## Setup and support
+
+Ladon currently supports CPython 3.11 and 3.12. Create the project environment
+from the committed lock without re-resolving dependencies:
+
+```bash
+uv lock --check
+uv sync --locked
+```
+
+The required CI matrix tests both supported Python minors. Its Lean integration
+fixture pins Lean 4.32.1 as a reference compatibility target; normal analysis
+uses the target repository's own `lean-toolchain` and Lake environment.
+
+See [Reproducibility and release support](docs/REPRODUCIBILITY.md) for the
+tracked-input boundary, required gates, optional external smokes, execution
+risk, and publication status.
+See [Portable signal benchmarks](docs/BENCHMARKS.md) for the installed-CLI
+correctness, coverage, resource, cache, process, and report-stability gate.
+See [Report contract v3](docs/REPORT_CONTRACT_V3.md) for canonical payload
+ownership, projections, fingerprints, and bounded JSON serialization.
+
 ## Usage
 
 From this repository:
 
 ```bash
-uv run ladon --repo-root /path/to/lean/project --root Some/Owner.lean --skip-build \
-  --output-json /tmp/ladon-report.json --output-text /tmp/ladon-report.txt
+uv run --locked ladon --repo-root /path/to/lean/project --root Some/Owner.lean \
+  --format json --output /tmp/ladon-report.json
 ```
 
 Lean-backed root declaration graph:
 
 ```bash
-uv run ladon --repo-root /path/to/lean/project --root Some/Owner.lean \
+uv run --locked ladon --repo-root /path/to/lean/project --root Some/Owner.lean \
   --extraction-backend lean --lean-extraction-scope root \
   --lean-cache-dir /tmp/ladon-lean-cache \
-  --output-json /tmp/ladon-declarations.json --output-text /tmp/ladon-declarations.txt
+  --format json --output /tmp/ladon-declarations.json
 ```
 
-The clean core does not invoke Lake for `--skip-build` module-DAG smoke runs.
+The clean core does not invoke Lake during default module-DAG smoke runs.
+Building is opt-in with `--build`; the removed `--skip-build` flag is replaced
+by simply omitting `--build`.
 The Lean backend shells out through the target repo's Lake/Lean toolchain. The
 cache stores helper JSON payloads by source/helper content for repeated root
-runs; it is not a sound incremental cache for indirect import changes.
+runs; it is not a sound incremental cache for indirect import changes. Loading
+target modules can execute imported initializers, so the Lean backend is not a
+safe way to analyze an untrusted repository.
 
 ```bash
 cd <target-repo>
-lake env lean --run /home/codex/projects/ladon/src/ladon/lean/ladon_parser_helper.lean -- <target-file>
+lake env lean --run /path/to/ladon/src/ladon/lean/ladon_parser_helper.lean -- <target-file>
 ```
 
 Project-specific architecture boundary policy:
 
 ```bash
-uv run ladon --repo-root /path/to/lean/project --root Some/Owner.lean --skip-build \
+uv run --locked ladon --repo-root /path/to/lean/project --root Some/Owner.lean \
   --architecture-policy docs/ladon-architecture-policy.json \
-  --output-json /tmp/ladon-report.json --output-text /tmp/ladon-report.txt
+  --format json --output /tmp/ladon-report.json
 ```
 
 Architecture policies are JSON files that define module groups with glob
@@ -68,9 +94,9 @@ enforced rules.
 Project-specific source pattern policy:
 
 ```bash
-uv run ladon --repo-root /path/to/lean/project --root Some/Owner.lean --skip-build \
+uv run --locked ladon --repo-root /path/to/lean/project --root Some/Owner.lean \
   --source-pattern-policy docs/ladon-source-pattern-policy.json \
-  --output-json /tmp/ladon-report.json --output-text /tmp/ladon-report.txt
+  --format json --output /tmp/ladon-report.json
 ```
 
 Source-pattern policies are JSON files with project-owned pattern rows:
@@ -134,6 +160,14 @@ Supported today:
 - optional project-supplied source-pattern scans for stale terms, local trust
   words, or other project conventions, with source locations and generated-code
   filtering when configured;
+- optional proof-surface witness normalization and route diagnostics that
+  preserve quoted verifier commands, source pins, axiom-audit metadata, and
+  nonclaims without treating them as theorem-truth evidence;
+- packet-evidence summaries for tracked review artifacts, with explicit
+  completeness and authority boundaries;
+- optional module-readiness, import-diet, proof-xray, and refactoring-
+  prescription rows that route review while leaving Lean/Lake and named
+  external tools authoritative;
 - pure declaration graph analysis through `ladon.analysis.declaration_graph`;
 - additive `declaration_graph.declarations` rows with source path/range/hash,
   extraction backend/version, name-resolution method, and confidence when the
@@ -150,9 +184,7 @@ Supported today:
 
 Not yet reintroduced:
 
-- packet-review internals;
 - export-surface freshness checks;
-- witness audits;
 - elaborated proof dependency extraction.
 
 Optional bridge:
@@ -179,19 +211,24 @@ Unsupported legacy flags fail explicitly rather than emitting partial reports.
 
 Near-term work:
 
-- make claim authority route auditing the priority review surface: claimed
-  status vs required evidence authority, endpoint-scope overclaim, missing
-  primary theorem surfaces, and warning-only conditional-signature hints;
-- improve declaration-reference resolution beyond string classification;
-- reintroduce witness audit and packet audit as small TDD-backed modules;
-- only port stable hot paths after profiling proves they are worth moving.
+- harden the existing alpha surface: reconcile OpenSpec state, stabilize report
+  and CLI contracts, correct known signals, bound Lean execution, add a bounded
+  elaborated declaration surface, and require portable benchmark/clean-checkout
+  gates;
+- after that declaration surface is stable, let the bounded theorem-surface
+  changelog child consume it without creating a second extractor;
+- keep Review Radar as a planning umbrella until a separate MVP child can
+  consume stable report/changelog rows;
+- reserve future tactic-skeleton/InfoTree proof-xray generation for a separate
+  backend contract; current optional rows remain quoted or explicitly
+  authority-labeled inputs.
 
 ## Internal Python quality audits of Ladon
 
 Run the project-local quality command from this repository:
 
 ```bash
-uv run python scripts/python_quality.py
+uv run --locked python scripts/python_quality.py
 ```
 
 This runs:
@@ -202,7 +239,7 @@ This runs:
 Strict mode is the gate used for implementation work:
 
 ```bash
-uv run python scripts/python_quality.py --strict
+uv run --locked python scripts/python_quality.py --strict
 ```
 
 Strict mode fails on active C-or-worse radon blocks, C-grade maintainability,

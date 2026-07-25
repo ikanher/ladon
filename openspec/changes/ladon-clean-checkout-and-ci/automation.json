@@ -1,0 +1,13 @@
+{
+  "commands": [
+    "openspec validate ladon-clean-checkout-and-ci --strict",
+    "uv lock --check",
+    "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --baseline-only",
+    "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree",
+    "uv run --locked python scripts/installed_distribution_smoke.py --candidate worktree",
+    "uv run --locked python scripts/lean_integration_gate.py --candidate worktree --required",
+    "openspec validate --all --strict --no-interactive",
+    "uv run --locked python scripts/ladon_openspec_backlog.py --openspec-root openspec --check",
+    "uv run --locked python scripts/ladon_openspec_hygiene.py --openspec-root openspec --check"
+  ]
+}

@@ -1,6 +1,13 @@
 from __future__ import annotations
 
+import importlib.util
+import json
+import subprocess
+import sys
 from pathlib import Path
+
+import jsonschema
+import pytest
 
 from ladon.analysis.benchmark_oracles import (
     evaluate_oracles,
@@ -15,10 +22,25 @@ from ladon.analysis.module_dag import summarize_module_dag
 from ladon.analysis.proof_family_similarity import proof_family_similarity_candidates
 from ladon.analysis.source_patterns import SourceDocument, summarize_source_patterns
 from ladon.analysis.witness_packet import summarize_packet_evidence
+from ladon.benchmark_contract import (
+    BenchmarkContractError,
+    load_benchmark_manifest,
+    load_benchmark_manifest_schema,
+    promotion_readiness,
+    validate_manifest_contract,
+)
+from ladon.benchmark_control_oracles import evaluate_control_labels
+from ladon.benchmark_metrics import (
+    classification_metrics,
+    extraction_coverage,
+    known_case_recall,
+)
 from ladon.ir import LeanDeclaration, LeanImport, LeanModule
 
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "benchmark_oracles"
+HARNESS_ROOT = Path(__file__).parent / "fixtures" / "benchmark_harness"
+CLAIM_AUTHORITY_ROOT = Path(__file__).parent / "fixtures" / "claim_authority"
 
 
 def test_oracles_check_positive_and_negative_declaration_edges() -> None:
@@ -82,18 +104,21 @@ def test_oracles_check_unresolved_reference_classes() -> None:
         [
             {
                 "fixture": "reference-noise",
+                "class": "boundary",
                 "signal": "unresolved_class",
                 "candidate": "count",
                 "expected": "local_or_field_candidate",
             },
             {
                 "fixture": "reference-noise",
+                "class": "intentional_negative",
                 "signal": "unresolved_class",
                 "candidate": "Fin",
                 "expected": "external_candidate",
             },
             {
                 "fixture": "reference-noise",
+                "class": "positive",
                 "signal": "unresolved_class",
                 "candidate": "MissingTheorem",
                 "expected": "actionable_unknown",
@@ -275,17 +300,13 @@ def test_oracles_check_review_intelligence_signals() -> None:
         [SourceDocument(module="Pkg.Alpha.Owner", path="Pkg/Alpha/Owner.lean", text="DeprecatedLocalTerm\n")],
         {"patterns": [{"id": "deprecated-term", "pattern": "DeprecatedLocalTerm"}]},
     )
+    claim_fixture = json.loads(
+        (CLAIM_AUTHORITY_ROOT / "routes.json").read_text(encoding="utf-8")
+    )
     claim_authority = audit_claim_authority(
-        [
-            {
-                "claimId": "claim.closed",
-                "claimedStatus": "lean_closed",
-                "claimedAuthority": "lean_proved",
-                "requiredEvidenceAuthorities": {"finiteWindow": "imported_interval_certified"},
-            }
-        ],
-        joins=[],
-        surfaces=[],
+        claim_fixture["claims"],
+        joins=claim_fixture["joins"],
+        surfaces=claim_fixture["surfaces"],
     )
     payload = {
         "architecture_policy": architecture_policy,
@@ -299,6 +320,23 @@ def test_oracles_check_review_intelligence_signals() -> None:
         [
             {
                 "fixture": "peer-boundary",
+                "class": "positive",
+                "signal": "architecture_pair_count",
+                "sourceGroup": "alpha",
+                "targetGroup": "beta",
+                "expected": 1,
+            },
+            {
+                "fixture": "peer-boundary-absent",
+                "class": "intentional_negative",
+                "signal": "architecture_pair_count",
+                "sourceGroup": "beta",
+                "targetGroup": "alpha",
+                "expected": 0,
+            },
+            {
+                "fixture": "peer-boundary-exact",
+                "class": "boundary",
                 "signal": "architecture_pair_count",
                 "sourceGroup": "alpha",
                 "targetGroup": "beta",
@@ -312,24 +350,86 @@ def test_oracles_check_review_intelligence_signals() -> None:
             },
             {
                 "fixture": "source-pattern",
+                "class": "positive",
+                "signal": "source_pattern_match_count",
+                "patternId": "deprecated-term",
+                "expected": 1,
+            },
+            {
+                "fixture": "source-pattern-absent",
+                "class": "intentional_negative",
+                "signal": "source_pattern_match_count",
+                "patternId": "unconfigured-term",
+                "expected": 0,
+            },
+            {
+                "fixture": "source-pattern-exact",
+                "class": "boundary",
                 "signal": "source_pattern_match_count",
                 "patternId": "deprecated-term",
                 "expected": 1,
             },
             {
                 "fixture": "claim-authority",
+                "class": "positive",
                 "signal": "claim_authority_diagnostic_present",
                 "ruleId": "ladon.claim.closed_with_imported_evidence",
                 "expected": True,
             },
             {
+                "fixture": "claim-authority-scoped-negative",
+                "class": "intentional_negative",
+                "signal": "claim_authority_diagnostic_present",
+                "ruleId": "ladon.claim.honest_route_overclaim",
+                "expected": False,
+            },
+            {
+                "fixture": "claim-authority-scope-boundary",
+                "class": "boundary",
+                "signal": "claim_authority_diagnostic_present",
+                "ruleId": "ladon.claim.endpoint_scope_overclaim",
+                "expected": True,
+            },
+            {
                 "fixture": "facade-subtype",
+                "class": "positive",
+                "signal": "facade_subtype_count",
+                "subtype": "mixed_barrel_and_theorems",
+                "expected": 1,
+            },
+            {
+                "fixture": "facade-subtype-absent",
+                "class": "intentional_negative",
+                "signal": "facade_subtype_count",
+                "subtype": "public_root_facade",
+                "expected": 0,
+            },
+            {
+                "fixture": "facade-subtype-exact",
+                "class": "boundary",
                 "signal": "facade_subtype_count",
                 "subtype": "mixed_barrel_and_theorems",
                 "expected": 1,
             },
             {
                 "fixture": "generated-duplicate",
+                "class": "positive",
+                "signal": "generated_duplicate_family",
+                "generatorFamily": "GeneratedRoute",
+                "target": "Pkg.Common.Foundation",
+                "duplicateModuleCount": 1,
+            },
+            {
+                "fixture": "generated-duplicate-absent",
+                "class": "intentional_negative",
+                "signal": "generated_duplicate_family",
+                "generatorFamily": "OtherGenerator",
+                "target": "Pkg.Common.Foundation",
+                "expected": False,
+            },
+            {
+                "fixture": "generated-duplicate-exact",
+                "class": "boundary",
                 "signal": "generated_duplicate_family",
                 "generatorFamily": "GeneratedRoute",
                 "target": "Pkg.Common.Foundation",
@@ -369,3 +469,292 @@ def test_oracle_schema_and_optional_smoke_roots_are_explicit(tmp_path: Path) -> 
     assert "architecture_pair_count" in schema["supported_signals"]
     assert "source_pattern_match_count" in schema["supported_signals"]
     assert roots == {"quux": str(existing)}
+
+
+def test_versioned_benchmark_manifest_validates_and_uses_ordinary_cli() -> None:
+    manifest = load_benchmark_manifest(HARNESS_ROOT / "manifest-v1.json")
+    schema = load_benchmark_manifest_schema()
+
+    jsonschema.Draft202012Validator.check_schema(schema)
+    jsonschema.Draft202012Validator(schema).validate(manifest)
+    required = [case for case in manifest["cases"] if case["required"]]
+    assert required
+    assert all(case["command"][0] == "ladon" for case in required)
+    assert all(case["reportVersion"] == "ladon-report-v2" for case in required)
+    labels = [
+        label
+        for case in required
+        for label in case["labels"]
+    ]
+    readiness = promotion_readiness([*labels, *manifest["controlLabels"]])
+    assert readiness
+    assert all(row["ready"] for row in readiness)
+
+
+def test_elaborated_oracles_keep_parser_and_lean_authorities_separate() -> None:
+    payload = {
+        "declaration_graph": {
+            "declarations": [
+                {
+                    "declaration": "Pkg.root",
+                    "kind": "theorem",
+                    "surface": {
+                        "status": "complete",
+                        "renderedType": "True",
+                    },
+                    "parserCandidates": {
+                        "items": ["ParserOnly"],
+                        "authority": "lean_parser",
+                    },
+                    "typeDependencies": {
+                        "items": ["True"],
+                        "authority": "lean_environment",
+                    },
+                    "valueDependencies": {
+                        "items": ["Pkg.helper"],
+                        "authority": "lean_environment",
+                    },
+                }
+            ]
+        }
+    }
+    rows = evaluate_oracles(
+        payload,
+        [
+            {
+                "fixture": "elaborated",
+                "signal": "declaration_required_fields",
+                "declaration": "Pkg.root",
+                "requiredFields": ["surface.renderedType"],
+                "expectedFields": {
+                    "kind": "theorem",
+                    "surface.status": "complete",
+                },
+                "expected": True,
+            },
+            {
+                "fixture": "elaborated",
+                "signal": "direct_dependency",
+                "declaration": "Pkg.root",
+                "dependencyKind": "value",
+                "target": "ParserOnly",
+                "authority": "lean_environment",
+                "expected": False,
+            },
+        ],
+    )
+
+    assert all(row.passed for row in rows)
+    assert rows[1].observed["parserCandidateOnly"] is True
+
+
+def test_control_labels_evaluate_separate_machine_families() -> None:
+    results = {
+        "cases": [
+            {
+                "cache": {"applicable": True, "warmHit": True},
+                "process": {"helperLaunchesWarm": 0},
+                "stability": {
+                    "schemaValid": True,
+                    "normalizedBytesEqual": True,
+                    "sizeBudgetsPassed": True,
+                },
+            }
+        ],
+        "runtimeControls": {
+            "cacheInvalidation": [
+                {
+                    "input": "source",
+                    "observedReason": "source_changed",
+                }
+            ],
+            "timeout": {
+                "partialReportPresent": True,
+                "orphanPresent": False,
+                "passed": True,
+            },
+            "cancellation": {"passed": True},
+        },
+    }
+    labels = [
+        {
+            "id": "cache.source",
+            "class": "boundary",
+            "metricFamily": "cache",
+            "signalKind": "cache_invalidation",
+            "rationale": "fixture",
+            "oracle": {
+                "signal": "cache_invalidation_reasons",
+                "expected": {"source": "source_changed"},
+            },
+        },
+        {
+            "id": "process.cleanup",
+            "class": "boundary",
+            "metricFamily": "process",
+            "signalKind": "timeout_control",
+            "rationale": "fixture",
+            "oracle": {
+                "signal": "process_cleanup_passed",
+                "expected": True,
+            },
+        },
+    ]
+
+    assert all(row["passed"] for row in evaluate_control_labels(results, labels))
+
+
+def test_benchmark_script_rejects_missing_candidate_before_measurement() -> None:
+    script = Path(__file__).parents[1] / "scripts" / "ladon_benchmarks.py"
+
+    result = subprocess.run(
+        [sys.executable, str(script), "--required"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 2
+    assert "--candidate" in result.stderr
+
+
+def test_benchmark_stdout_is_machine_json_when_output_is_omitted(
+    capsys,
+    monkeypatch,
+) -> None:
+    module = load_benchmark_script(monkeypatch)
+    results = benchmark_summary_fixture()
+
+    module.emit_results(results, None)
+
+    captured = capsys.readouterr()
+    assert json.loads(captured.out) == results
+    assert captured.err.startswith("benchmark summary:")
+
+
+def test_benchmark_main_routes_gate_logs_away_from_json_stdout(
+    capsys,
+    monkeypatch,
+) -> None:
+    module = load_benchmark_script(monkeypatch)
+    results = benchmark_summary_fixture()
+
+    def fake_run_benchmarks(_candidate, *, required):
+        assert required is True
+        print("gate progress")
+        return results
+
+    monkeypatch.setattr(module, "run_benchmarks", fake_run_benchmarks)
+
+    assert module.main(["--candidate", "worktree", "--required"]) == 0
+    captured = capsys.readouterr()
+    assert json.loads(captured.out) == results
+    assert "gate progress" in captured.err
+    assert "benchmark summary:" in captured.err
+
+
+def benchmark_summary_fixture() -> dict:
+    """Return the smallest result accepted by the compact renderer."""
+
+    return {
+        "metricFamilies": {
+            "correctness": {"failedOracleCount": 0},
+            "coverage": {"hitCount": 1, "expectedCount": 1},
+            "runtime": {
+                "maxColdWallSeconds": 0.1,
+                "maxWarmWallSeconds": 0.05,
+            },
+            "memory": {"maxPeakRssMiB": 12.5},
+            "cache": {"warmHitCount": 1},
+            "stability": {"failedCaseCount": 0},
+        }
+    }
+
+
+def load_benchmark_script(monkeypatch):
+    """Load the script with its sibling helper modules importable."""
+
+    script = Path(__file__).parents[1] / "scripts" / "ladon_benchmarks.py"
+    monkeypatch.syspath_prepend(str(script.parent))
+    spec = importlib.util.spec_from_file_location("ladon_benchmarks", script)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_required_manifest_rejects_local_sibling_and_caller_specific_paths() -> None:
+    manifest = load_benchmark_manifest(HARNESS_ROOT / "manifest-v1.json")
+    broken = {**manifest, "cases": [{**manifest["cases"][0]}]}
+
+    broken["cases"][0]["command"] = [
+        "ladon",
+        "--repo-root",
+        "../quux",
+        "--root",
+        "Quux",
+    ]
+    with pytest.raises(BenchmarkContractError, match="nonportable"):
+        validate_manifest_contract(broken)
+
+    broken["cases"][0]["command"] = [
+        "ladon",
+        "--repo-root",
+        "{fixture}",
+        "--llm",
+    ]
+    with pytest.raises(BenchmarkContractError, match="caller-specific"):
+        validate_manifest_contract(broken)
+
+
+def test_metrics_keep_per_kind_confusion_and_coverage_families_separate() -> None:
+    labels = [
+        {
+            "signalKind": "missing_import",
+            "expectedOutcome": "present",
+        },
+        {
+            "signalKind": "missing_import",
+            "expectedOutcome": "absent",
+        },
+        {
+            "signalKind": "facade",
+            "expectedOutcome": "present",
+        },
+    ]
+
+    metrics = classification_metrics(labels, [True, False, False])
+
+    assert metrics["missing_import"] == {
+        "truePositive": 1,
+        "falsePositive": 1,
+        "falseNegative": 0,
+        "trueNegative": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+    }
+    assert metrics["facade"]["falseNegative"] == 1
+    assert known_case_recall(["Pkg.Missing"], ["Pkg.Missing"])["recall"] == 1.0
+    coverage = extraction_coverage(
+        {"type": ["A.Type"], "value": ["A.value"]},
+        {"type": ["A.Type"], "value": []},
+    )
+    assert coverage["byKind"]["type"]["recall"] == 1.0
+    assert coverage["byKind"]["value"]["recall"] == 0.0
+    assert coverage["coverage"] == 0.5
+
+
+def test_promotion_readiness_requires_positive_negative_and_boundary() -> None:
+    rows = promotion_readiness(
+        [
+            {"promotionFamily": "fan_in", "class": "positive"},
+            {"promotionFamily": "fan_in", "class": "intentional_negative"},
+            {"promotionFamily": "fan_in", "class": "boundary"},
+            {"promotionFamily": "namespace", "class": "positive"},
+        ]
+    )
+
+    assert rows[0]["ready"] is True
+    assert rows[1]["ready"] is False
+    assert rows[1]["missingClasses"] == ["boundary", "intentional_negative"]

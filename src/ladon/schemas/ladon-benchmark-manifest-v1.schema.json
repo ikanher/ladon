@@ -1,0 +1,371 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ladon.dev/schemas/ladon-benchmark-manifest-v1.schema.json",
+  "title": "Ladon portable benchmark manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifactKind",
+    "schemaVersion",
+    "productVersion",
+    "reportVersion",
+    "metricFamilies",
+    "budgets",
+    "cases",
+    "controlLabels",
+    "optionalLiveRuns"
+  ],
+  "properties": {
+    "artifactKind": {
+      "const": "ladon_signal_benchmark_manifest"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "productVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reportVersion": {
+      "const": "ladon-report-v2"
+    },
+    "metricFamilies": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "correctness",
+          "coverage",
+          "runtime",
+          "memory",
+          "cache",
+          "process",
+          "stability"
+        ]
+      }
+    },
+    "budgets": {
+      "$ref": "#/$defs/budgets"
+    },
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/case"
+      }
+    },
+    "controlLabels": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/controlLabel"
+      }
+    },
+    "optionalLiveRuns": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/liveRun"
+      }
+    }
+  },
+  "$defs": {
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "coldWallSeconds",
+        "warmWallSeconds",
+        "peakRssMiB",
+        "jsonBytes",
+        "textBytes",
+        "timeoutCleanupSeconds",
+        "inventoryHelperLaunches"
+      ],
+      "properties": {
+        "coldWallSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "warmWallSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "peakRssMiB": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "jsonBytes": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "textBytes": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "timeoutCleanupSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "inventoryHelperLaunches": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "required",
+        "fixture",
+        "fixtureOwner",
+        "executionMode",
+        "command",
+        "reportVersion",
+        "metrics",
+        "labels",
+        "rationale"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]+$"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "fixture": {
+          "type": "string",
+          "pattern": "^tests/fixtures/"
+        },
+        "fixtureOwner": {
+          "type": "string",
+          "minLength": 1
+        },
+        "executionMode": {
+          "enum": [
+            "installed_cli",
+            "focused_oracle"
+          ]
+        },
+        "command": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "reportVersion": {
+          "const": "ladon-report-v2"
+        },
+        "metrics": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "correctness",
+              "coverage",
+              "runtime",
+              "memory",
+              "cache",
+              "process",
+              "stability"
+            ]
+          }
+        },
+        "labels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/label"
+          }
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "setup": {
+          "enum": [
+            "none",
+            "fake_lake"
+          ]
+        }
+      }
+    },
+    "label": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "class",
+        "metricFamily",
+        "signalKind",
+        "expectedOutcome",
+        "rationale",
+        "oracle"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]+$"
+        },
+        "class": {
+          "enum": [
+            "positive",
+            "intentional_negative",
+            "boundary"
+          ]
+        },
+        "metricFamily": {
+          "enum": [
+            "correctness",
+            "coverage"
+          ]
+        },
+        "signalKind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expectedOutcome": {
+          "enum": [
+            "present",
+            "absent",
+            "exact"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "authority": {
+          "type": "string",
+          "minLength": 1
+        },
+        "promotionFamily": {
+          "type": "string",
+          "minLength": 1
+        },
+        "oracle": {
+          "type": "object",
+          "required": [
+            "signal",
+            "expected"
+          ]
+        }
+      }
+    },
+    "controlLabel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "class",
+        "metricFamily",
+        "signalKind",
+        "expectedOutcome",
+        "rationale",
+        "oracle"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]+$"
+        },
+        "class": {
+          "enum": [
+            "positive",
+            "intentional_negative",
+            "boundary"
+          ]
+        },
+        "metricFamily": {
+          "enum": [
+            "cache",
+            "process",
+            "stability"
+          ]
+        },
+        "signalKind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expectedOutcome": {
+          "enum": [
+            "present",
+            "absent",
+            "exact"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        },
+        "promotionFamily": {
+          "type": "string",
+          "minLength": 1
+        },
+        "oracle": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "signal",
+            "expected"
+          ],
+          "properties": {
+            "signal": {
+              "type": "string",
+              "minLength": 1
+            },
+            "expected": {}
+          }
+        }
+      }
+    },
+    "liveRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "enabledBy",
+        "blocking",
+        "provenance"
+      ],
+      "properties": {
+        "id": {
+          "enum": [
+            "quux",
+            "matrix-factorization",
+            "mathlib"
+          ]
+        },
+        "enabledBy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "blocking": {
+          "const": false
+        },
+        "provenance": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "repository",
+              "revision",
+              "toolchain",
+              "environment"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

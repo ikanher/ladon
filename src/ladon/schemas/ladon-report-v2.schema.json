@@ -1,0 +1,695 @@
+{
+  "$id": "urn:ladon:report:ladon-report-v2",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "definitions": {
+    "diagnostic": {
+      "additionalProperties": false,
+      "properties": {
+        "data": {
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "phase": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "subject": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "severity",
+        "message",
+        "phase",
+        "subject",
+        "data"
+      ],
+      "type": "object"
+    },
+    "extension": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "namespace": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "payload": {},
+        "provenance": {
+          "items": {
+            "$ref": "#/definitions/provenance"
+          },
+          "type": "array"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "skipped",
+            "partial",
+            "failed"
+          ]
+        },
+        "version": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "namespace",
+        "version",
+        "status",
+        "authority",
+        "provenance",
+        "reason",
+        "payload"
+      ],
+      "type": "object"
+    },
+    "boundedStrings": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "partial",
+            "unavailable"
+          ]
+        },
+        "total": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "truncated": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "items",
+        "total",
+        "truncated",
+        "status",
+        "reason",
+        "authority"
+      ],
+      "type": "object"
+    },
+    "elaboratedDeclaration": {
+      "additionalProperties": true,
+      "properties": {
+        "declaration": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "importedStub": {
+          "type": "boolean"
+        },
+        "module": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "parserCandidates": {
+          "$ref": "#/definitions/boundedStrings"
+        },
+        "surface": {
+          "$ref": "#/definitions/elaboratedSurface"
+        },
+        "typeDependencies": {
+          "$ref": "#/definitions/boundedStrings"
+        },
+        "valueDependencies": {
+          "$ref": "#/definitions/boundedStrings"
+        }
+      },
+      "required": [
+        "declaration",
+        "module",
+        "parserCandidates",
+        "typeDependencies",
+        "valueDependencies",
+        "surface",
+        "importedStub"
+      ],
+      "type": "object"
+    },
+    "elaboratedEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "const": "lean_environment"
+        },
+        "kind": {
+          "enum": [
+            "type_dependency",
+            "value_dependency"
+          ]
+        },
+        "source": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "target": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "kind",
+        "authority"
+      ],
+      "type": "object"
+    },
+    "elaboratedSurface": {
+      "additionalProperties": true,
+      "properties": {
+        "backend": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "bodyTruncated": {
+          "type": "boolean"
+        },
+        "declaredAxiom": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "nonclaim": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "renderedType": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "renderedTypeTruncated": {
+          "type": "boolean"
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "partial",
+            "unavailable"
+          ]
+        },
+        "unsafe": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "status",
+        "reason",
+        "renderedType",
+        "renderedTypeTruncated",
+        "bodyTruncated",
+        "declaredAxiom",
+        "unsafe",
+        "backend",
+        "nonclaim"
+      ],
+      "type": "object"
+    },
+    "elaboratedExtension": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/extension"
+        },
+        {
+          "properties": {
+            "authority": {
+              "enum": [
+                "lean-environment-direct",
+                "capability-owner"
+              ]
+            },
+            "namespace": {
+              "const": "elaborated_declarations"
+            },
+            "payload": {
+              "additionalProperties": false,
+              "properties": {
+                "caps": {
+                  "type": "object"
+                },
+                "declarations": {
+                  "items": {
+                    "$ref": "#/definitions/elaboratedDeclaration"
+                  },
+                  "type": "array"
+                },
+                "edges": {
+                  "items": {
+                    "$ref": "#/definitions/elaboratedEdge"
+                  },
+                  "type": "array"
+                },
+                "summary": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "summary",
+                "declarations",
+                "edges",
+                "caps"
+              ],
+              "type": [
+                "object",
+                "null"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "finding": {
+      "additionalProperties": true,
+      "properties": {
+        "authority": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "evidence_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "kind": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        },
+        "severity": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "severity",
+        "subject",
+        "message",
+        "authority",
+        "evidence_count"
+      ],
+      "type": "object"
+    },
+    "phase": {
+      "additionalProperties": false,
+      "properties": {
+        "counters": {
+          "additionalProperties": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "type": "object"
+        },
+        "data": {},
+        "diagnostics": {
+          "items": {
+            "$ref": "#/definitions/diagnostic"
+          },
+          "type": "array"
+        },
+        "elapsed_seconds": {
+          "minimum": 0,
+          "type": "number"
+        },
+        "name": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "provenance": {
+          "items": {
+            "$ref": "#/definitions/provenance"
+          },
+          "type": "array"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "complete",
+            "skipped",
+            "partial",
+            "failed"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "required",
+        "status",
+        "elapsed_seconds",
+        "counters",
+        "reason",
+        "diagnostics",
+        "provenance",
+        "data"
+      ],
+      "type": "object"
+    },
+    "provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "backend": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "authority",
+        "source",
+        "backend",
+        "version"
+      ],
+      "type": "object"
+    }
+  },
+  "properties": {
+    "architecture_policy": {
+      "type": "object"
+    },
+    "declaration_graph": {
+      "type": "object"
+    },
+    "diagnostics": {
+      "items": {
+        "$ref": "#/definitions/diagnostic"
+      },
+      "type": "array"
+    },
+    "extensions": {
+      "additionalProperties": false,
+      "properties": {
+        "atlas": {
+          "$ref": "#/definitions/extension"
+        },
+        "elaborated_declarations": {
+          "$ref": "#/definitions/elaboratedExtension"
+        },
+        "packet_evidence": {
+          "$ref": "#/definitions/extension"
+        },
+        "proof_xray": {
+          "$ref": "#/definitions/extension"
+        }
+      },
+      "required": [
+        "atlas",
+        "elaborated_declarations",
+        "packet_evidence",
+        "proof_xray"
+      ],
+      "type": "object"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/definitions/finding"
+      },
+      "type": "array"
+    },
+    "import_diet": {
+      "type": "object"
+    },
+    "metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis_root": {
+          "type": "string"
+        },
+        "analysis_root_module": {
+          "type": "string"
+        },
+        "extraction_backend": {
+          "type": "string"
+        },
+        "failure_policy": {
+          "type": "object"
+        },
+        "generated_at_utc": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inventory_root": {
+          "type": "string"
+        },
+        "repo_root": {
+          "type": "string"
+        },
+        "report_version": {
+          "const": "ladon-report-v2"
+        },
+        "tool_name": {
+          "const": "ladon"
+        },
+        "tool_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "tool_name",
+        "tool_version",
+        "report_version",
+        "generated_at_utc",
+        "repo_root",
+        "analysis_root",
+        "analysis_root_module",
+        "inventory_root",
+        "extraction_backend"
+      ],
+      "type": "object"
+    },
+    "module_dag": {
+      "type": "object"
+    },
+    "module_readiness": {
+      "type": "object"
+    },
+    "packet_evidence": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "phases": {
+      "additionalProperties": false,
+      "properties": {
+        "architecture_policy": {
+          "$ref": "#/definitions/phase"
+        },
+        "build": {
+          "$ref": "#/definitions/phase"
+        },
+        "declaration_graph": {
+          "$ref": "#/definitions/phase"
+        },
+        "discover": {
+          "$ref": "#/definitions/phase"
+        },
+        "findings": {
+          "$ref": "#/definitions/phase"
+        },
+        "import_diet": {
+          "$ref": "#/definitions/phase"
+        },
+        "indexing": {
+          "$ref": "#/definitions/phase"
+        },
+        "lean_extraction": {
+          "$ref": "#/definitions/phase"
+        },
+        "module_dag": {
+          "$ref": "#/definitions/phase"
+        },
+        "module_readiness": {
+          "$ref": "#/definitions/phase"
+        },
+        "packet_evidence": {
+          "$ref": "#/definitions/phase"
+        },
+        "proof_xray": {
+          "$ref": "#/definitions/phase"
+        },
+        "quality_baseline": {
+          "$ref": "#/definitions/phase"
+        },
+        "refactoring_prescriptions": {
+          "$ref": "#/definitions/phase"
+        },
+        "rendering": {
+          "$ref": "#/definitions/phase"
+        },
+        "review_regions": {
+          "$ref": "#/definitions/phase"
+        },
+        "source_patterns": {
+          "$ref": "#/definitions/phase"
+        }
+      },
+      "required": [
+        "build",
+        "discover",
+        "lean_extraction",
+        "indexing",
+        "module_dag",
+        "declaration_graph",
+        "module_readiness",
+        "architecture_policy",
+        "source_patterns",
+        "import_diet",
+        "proof_xray",
+        "quality_baseline",
+        "findings",
+        "refactoring_prescriptions",
+        "packet_evidence",
+        "review_regions",
+        "rendering"
+      ],
+      "type": "object"
+    },
+    "pipeline": {
+      "additionalProperties": false,
+      "properties": {
+        "timings": {
+          "additionalProperties": {
+            "$ref": "#/definitions/phase"
+          },
+          "type": "object"
+        }
+      },
+      "required": [
+        "timings"
+      ],
+      "type": "object"
+    },
+    "proof_xray": {
+      "type": "object"
+    },
+    "quality_baseline": {
+      "type": "object"
+    },
+    "refactoring_prescriptions": {
+      "type": "object"
+    },
+    "review_regions": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "source_patterns": {
+      "type": "object"
+    },
+    "warnings": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "metadata",
+    "warnings",
+    "diagnostics",
+    "findings",
+    "phases",
+    "extensions",
+    "module_dag",
+    "pipeline"
+  ],
+  "title": "Ladon report v2",
+  "type": "object"
+}

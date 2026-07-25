@@ -62,6 +62,65 @@ def test_proof_family_similarity_ignores_low_overlap_family() -> None:
     assert proof_family_similarity_candidates(declarations, edges, unresolved_profiles) == []
 
 
+def test_coarse_only_similarity_is_explained_and_capped_below_promotion() -> None:
+    declarations = {
+        "A.left_ge_one": LeanDeclaration(
+            name="A.left_ge_one",
+            module="A",
+            references=("LeftOnly",),
+        ),
+        "A.right_ge_one": LeanDeclaration(
+            name="A.right_ge_one",
+            module="A",
+            references=("RightOnly",),
+        ),
+    }
+    unresolved_profiles = {
+        "A.left_ge_one": {"actionable_unknown": 1},
+        "A.right_ge_one": {"actionable_unknown": 1},
+    }
+
+    rows = proof_family_similarity_candidates(
+        declarations,
+        {"A.left_ge_one": [], "A.right_ge_one": []},
+        unresolved_profiles,
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["max_unresolved_profile_overlap"] == 1.0
+    assert rows[0]["max_concrete_identifier_overlap"] == 0.0
+    assert rows[0]["similarity_score"] == 0.5
+    assert rows[0]["coarse_only"] is True
+    assert rows[0]["promoted"] is False
+    assert "capped below" in rows[0]["explanation"]
+
+
+def test_concrete_identifier_overlap_can_support_high_similarity() -> None:
+    declarations = {
+        "A.left_ge_one": LeanDeclaration(
+            name="A.left_ge_one",
+            module="A",
+            references=("Shared.One", "Shared.Two"),
+        ),
+        "A.right_ge_one": LeanDeclaration(
+            name="A.right_ge_one",
+            module="A",
+            references=("_root_.Shared.One", "Shared.Two"),
+        ),
+    }
+
+    rows = proof_family_similarity_candidates(
+        declarations,
+        {"A.left_ge_one": [], "A.right_ge_one": []},
+        {},
+    )
+
+    assert rows[0]["max_reference_overlap"] == 0.0
+    assert rows[0]["max_concrete_identifier_overlap"] == 1.0
+    assert rows[0]["promoted"] is True
+    assert "concrete_normalized_identifiers" in rows[0]["evidence_basis"]
+
+
 def test_text_report_renders_proof_family_similarity_candidates() -> None:
     payload = {
         "metadata": {"repo_root": "/repo", "analysis_root_module": "A"},

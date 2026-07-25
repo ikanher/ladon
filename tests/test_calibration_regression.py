@@ -145,6 +145,48 @@ def test_expectation_suites_by_name_exposes_named_suites() -> None:
     assert suites["root-matrix"] is ROOT_MATRIX_EXPECTATION_SUITES
 
 
+def test_live_cardinality_changes_are_explicit_nonblocking_drift() -> None:
+    rows = evaluate_expectations(
+        sample_payload(),
+        [
+            {
+                "type": "module_count_between",
+                "min": 1,
+                "max": 2,
+                "blocking": False,
+                "evidenceKind": "optional_live_drift",
+            }
+        ],
+        report_name="optional-live",
+    )
+
+    assert rows[0]["observedPassed"] is False
+    assert rows[0]["passed"] is True
+    assert rows[0]["blocking"] is False
+    assert rows[0]["status"] == "drift"
+    assert rows[0]["evidenceKind"] == "optional_live_drift"
+
+
+def test_builtin_live_cardinalities_are_nonblocking() -> None:
+    cardinality_rows = [
+        row
+        for suite in (
+            BUILTIN_EXPECTATION_SUITES,
+            ROOT_MATRIX_EXPECTATION_SUITES,
+        )
+        for expectations in suite.values()
+        for row in expectations
+        if row["type"] in {
+            "module_count_between",
+            "top_module_fan_in",
+            "top_module_fan_out",
+        }
+    ]
+
+    assert cardinality_rows
+    assert all(row["blocking"] is False for row in cardinality_rows)
+
+
 def write_report(path: Path, payload: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload), encoding="utf-8")

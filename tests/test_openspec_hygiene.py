@@ -7,6 +7,10 @@ from ladon.analysis.openspec_hygiene import (
     replace_metadata_status,
     summarize_openspec_hygiene,
 )
+from ladon.analysis.openspec_canonical import (
+    CanonicalGateError,
+    check_legacy_cli_profile,
+)
 
 
 def test_openspec_hygiene_flags_completed_active_drift(tmp_path: Path) -> None:
@@ -61,6 +65,180 @@ def test_replace_metadata_status_preserves_surrounding_metadata(tmp_path: Path) 
 
     assert metadata.read_text(encoding="utf-8") == (
         "schema: spec-driven\nstatus: completed\nlabels:\n  - ladon\n"
+    )
+
+
+def test_canonical_gate_accepts_declared_active_delta_chain(tmp_path: Path) -> None:
+    openspec_root = tmp_path / "openspec"
+    write_archive_ledger(openspec_root)
+    write_delta(
+        openspec_root,
+        "ladon-pipeline-phase-boundaries-timing",
+        "ladon-pipeline",
+        "ADDED",
+        "Ladon SHALL separate pure analysis kernels from side effects",
+    )
+    write_delta(
+        openspec_root,
+        "ladon-clean-core-radon-gate",
+        "ladon-python-quality",
+        "ADDED",
+        "Ladon's clean core SHALL preserve tested module-DAG reporting",
+    )
+    write_delta(
+        openspec_root,
+        "ladon-root-matrix-lean-expansion",
+        "ladon-root-matrix",
+        "ADDED",
+        "Lean-Backed Owner Matrix Entries",
+    )
+    write_delta(
+        openspec_root,
+        "ladon-openspec-state-reconciliation",
+        "ladon-python-quality",
+        "MODIFIED",
+        "Ladon's clean core SHALL preserve tested module-DAG reporting",
+    )
+    write_delta(
+        openspec_root,
+        "ladon-openspec-state-reconciliation",
+        "ladon-root-matrix",
+        "MODIFIED",
+        "Lean-Backed Owner Matrix Entries",
+    )
+
+    state = check_legacy_cli_profile(openspec_root, allow_active_delta=True)
+
+    assert state == "active-delta"
+
+
+def test_canonical_gate_rejects_wrong_archive_order(tmp_path: Path) -> None:
+    openspec_root = tmp_path / "openspec"
+    write_archive_ledger(openspec_root, reverse=True)
+    (openspec_root / "changes" / "ladon-openspec-state-reconciliation").mkdir(parents=True)
+
+    try:
+        check_legacy_cli_profile(openspec_root, allow_active_delta=True)
+    except CanonicalGateError as exc:
+        assert "archive chain must be" in str(exc)
+    else:
+        raise AssertionError("wrong archive order passed")
+
+
+def test_canonical_gate_accepts_negative_removed_flag_scenario(tmp_path: Path) -> None:
+    openspec_root = tmp_path / "openspec"
+    archive = (
+        openspec_root
+        / "changes"
+        / "archive"
+        / "2026-07-25-ladon-openspec-state-reconciliation"
+    )
+    archive.mkdir(parents=True)
+    write_canonical(
+        openspec_root,
+        "ladon-python-quality",
+        "Ladon's clean core SHALL preserve tested module-DAG reporting",
+        "- **WHEN** the smoke runs without `--build`",
+    )
+    write_canonical(
+        openspec_root,
+        "ladon-root-matrix",
+        "Lean-Backed Owner Matrix Entries",
+        "- **THEN** commands SHALL NOT include the removed\n"
+        "  `--skip-build` option",
+    )
+
+    state = check_legacy_cli_profile(openspec_root, require_canonical=True)
+
+    assert state == "canonical"
+
+
+def test_canonical_gate_rejects_positive_removed_flag_scenario(tmp_path: Path) -> None:
+    openspec_root = tmp_path / "openspec"
+    archive = (
+        openspec_root
+        / "changes"
+        / "archive"
+        / "2026-07-25-ladon-openspec-state-reconciliation"
+    )
+    archive.mkdir(parents=True)
+    write_canonical(
+        openspec_root,
+        "ladon-python-quality",
+        "Ladon's clean core SHALL preserve tested module-DAG reporting",
+        "- **WHEN** the smoke runs without `--build`",
+    )
+    write_canonical(
+        openspec_root,
+        "ladon-root-matrix",
+        "Lean-Backed Owner Matrix Entries",
+        "- **THEN** commands SHALL NOT include the removed `--skip-build` option\n"
+        "- **AND** a legacy command includes `--skip-build`",
+    )
+
+    try:
+        check_legacy_cli_profile(openspec_root, require_canonical=True)
+    except CanonicalGateError as exc:
+        assert "positively prescribe --skip-build" in str(exc)
+    else:
+        raise AssertionError("positive removed-flag prescription passed")
+
+
+def write_archive_ledger(openspec_root: Path, *, reverse: bool = False) -> None:
+    import json
+
+    changes = [
+        "ladon-pipeline-phase-boundaries-timing",
+        "ladon-clean-core-radon-gate",
+        "ladon-root-matrix-lean-expansion",
+        "ladon-proof-xray-staging",
+        "ladon-openspec-state-reconciliation",
+    ]
+    if reverse:
+        changes.reverse()
+    path = openspec_root / "reconciliation" / "legacy-state-ledger.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        json.dumps({"archiveBatches": [{"change": change} for change in changes]}),
+        encoding="utf-8",
+    )
+
+
+def write_delta(
+    openspec_root: Path,
+    change: str,
+    capability: str,
+    delta_kind: str,
+    requirement: str,
+) -> None:
+    path = openspec_root / "changes" / change / "specs" / capability / "spec.md"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        f"## {delta_kind} Requirements\n\n"
+        f"### Requirement: {requirement}\n"
+        "The system SHALL preserve this contract.\n\n"
+        "#### Scenario: Contract\n"
+        "- **WHEN** the gate runs\n"
+        "- **THEN** the contract holds\n",
+        encoding="utf-8",
+    )
+
+
+def write_canonical(
+    openspec_root: Path,
+    capability: str,
+    requirement: str,
+    scenario_line: str,
+) -> None:
+    path = openspec_root / "specs" / capability / "spec.md"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        f"# {capability} Specification\n\n"
+        f"### Requirement: {requirement}\n"
+        "The system SHALL preserve this contract.\n\n"
+        "#### Scenario: Contract\n"
+        f"{scenario_line}\n",
+        encoding="utf-8",
     )
 
 

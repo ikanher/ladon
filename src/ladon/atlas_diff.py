@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ladon.artifact_versions import ATLAS_DIFF_SCHEMA, require_atlas_v1
+
 
 @dataclass(frozen=True)
 class AtlasRow:
@@ -29,6 +31,8 @@ class AtlasRow:
 def diff_atlases(before: dict[str, Any], after: dict[str, Any]) -> dict[str, Any]:
     """Return added, removed, and changed normalized atlas rows."""
 
+    require_atlas_v1(before, consumer="atlas diff before-reader")
+    require_atlas_v1(after, consumer="atlas diff after-reader")
     before_rows = atlas_row_map(before)
     after_rows = atlas_row_map(after)
     before_keys = set(before_rows)
@@ -46,7 +50,7 @@ def diff_atlases(before: dict[str, Any], after: dict[str, Any]) -> dict[str, Any
         if before_rows[key].payload != after_rows[key].payload
     ]
     return {
-        "schema": "ladon-atlas-diff-v1",
+        "schema": ATLAS_DIFF_SCHEMA,
         "summary": diff_summary(added, removed, changed),
         "added": added,
         "removed": removed,
@@ -62,6 +66,11 @@ def atlas_row_map(atlas: dict[str, Any]) -> dict[tuple[str, str], AtlasRow]:
     rows.extend(report_rows(nodes.values()))
     rows.extend(evidence_rows(nodes.values()))
     rows.extend(bridge_diagnostic_rows(nodes.values()))
+    rows.extend(
+        workflow_diagnostic_rows(
+            atlas.get("workflowDiagnostics", []),
+        )
+    )
     rows.extend(edge_rows(nodes, atlas.get("edges", [])))
     return {(row.category, row.key): row for row in rows}
 
@@ -134,6 +143,30 @@ def bridge_diagnostic_rows(nodes: Any) -> list[AtlasRow]:
     return rows
 
 
+def workflow_diagnostic_rows(rows: Any) -> list[AtlasRow]:
+    """Return comparable bundle states for entries without reports."""
+
+    if not isinstance(rows, list):
+        return []
+    return [
+        row(
+            "workflow_diagnostics",
+            str(diagnostic.get("entryId", "")),
+            {
+                "authority": diagnostic.get("authority", ""),
+                "bundleStatus": diagnostic.get("bundleStatus", ""),
+                "nonclaim": diagnostic.get("nonclaim", ""),
+                "reason": diagnostic.get("reason", ""),
+                "required": diagnostic.get("required", False),
+                "root": diagnostic.get("root", ""),
+                "state": diagnostic.get("state", ""),
+            },
+        )
+        for diagnostic in rows
+        if isinstance(diagnostic, dict) and diagnostic.get("entryId")
+    ]
+
+
 def edge_rows(nodes: dict[str, dict[str, Any]], edges: list[dict[str, Any]]) -> list[AtlasRow]:
     """Return rows derived from graph edges and endpoint data."""
 
@@ -153,6 +186,14 @@ def edge_rows(nodes: dict[str, dict[str, Any]], edges: list[dict[str, Any]]) -> 
                 rows.append(highlight_row("declaration_highlights", edge["source"], target, edge))
             case "highlights_module":
                 rows.append(highlight_row("module_highlights", edge["source"], target, edge))
+            case (
+                "parser_candidate_dependency"
+                | "type_dependency"
+                | "value_dependency"
+            ):
+                source = nodes.get(edge["source"])
+                if source is not None:
+                    rows.append(dependency_row(source, target, edge))
     return rows
 
 
@@ -212,6 +253,24 @@ def highlight_row(
         category,
         f"{report_label(report_id)}|{metric}|{target['label']}",
         {"rank": data.get("rank", 0), "value": data.get("value", 0)},
+    )
+
+
+def dependency_row(
+    source: dict[str, Any],
+    target: dict[str, Any],
+    edge: dict[str, Any],
+) -> AtlasRow:
+    """Return one authority-preserving declaration dependency row."""
+
+    kind = str(edge["kind"])
+    return row(
+        f"{kind}_edges",
+        f"{source['label']}|{target['label']}",
+        {
+            "kind": kind,
+            "authority": edge.get("data", {}).get("authority", "unknown"),
+        },
     )
 
 

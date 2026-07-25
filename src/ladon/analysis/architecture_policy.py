@@ -20,6 +20,7 @@ from ladon.analysis.architecture_policy_summary import (
     group_membership_counts,
     shared_dependency_summary,
 )
+from ladon.finding_workflow import canonical_row_evidence
 
 
 DEFAULT_MAX_FINDINGS = 30
@@ -46,6 +47,7 @@ def skipped_architecture_policy_report(
         searchedPaths=searched_paths,
         suggestedPolicyCount=len(suggestions),
     )
+    attach_canonical_finding_evidence([finding_row])
     return {
         "artifactKind": "ladon_architecture_policy_report",
         "schemaVersion": 1,
@@ -85,6 +87,7 @@ def summarize_architecture_policy(
     for rule in rules:
         findings.extend(rule_findings(rule, edges, import_sites, membership, module_metadata))
     findings = dedupe_findings(findings)
+    attach_canonical_finding_evidence(findings)
     return {
         "artifactKind": "ladon_architecture_policy_report",
         "schemaVersion": 1,
@@ -123,6 +126,30 @@ def empty_policy_report() -> dict[str, Any]:
         "trustNote": "No architecture policy supplied.",
         "findings": [],
     }
+
+
+def attach_canonical_finding_evidence(
+    findings: list[dict[str, Any]],
+) -> None:
+    """Link policy findings to their exact canonical owner rows."""
+
+    for index, row in enumerate(findings):
+        reference = canonical_row_evidence(
+            "architecture_policy",
+            "findings",
+            index,
+            identity={
+                "kind": row.get("kind"),
+                "subject": row.get("subject"),
+                "policyRule": row.get("policyRule"),
+            },
+            authority="architecture_policy",
+        )
+        existing = row.get("evidenceRefs")
+        row["evidenceRefs"] = [
+            *existing,
+            reference,
+        ] if isinstance(existing, list) else [reference]
 
 
 def normalize_groups(raw_groups: Any) -> dict[str, tuple[str, ...]]:
@@ -215,6 +242,11 @@ def normalized_import_sites(raw_sites: Any) -> dict[tuple[str, str], dict[str, A
                     "sourcePath": str(site.get("sourcePath", "")),
                     "line": site.get("line"),
                     "importText": str(site.get("importText", "")),
+                    "sourceRange": site.get("sourceRange"),
+                    "selectionRange": site.get("selectionRange"),
+                    "contentHash": site.get("contentHash") or site.get("sourceHash"),
+                    "confidence": site.get("confidence"),
+                    "authority": site.get("authority") or "lexical_text",
                 }
     return rows
 
@@ -322,6 +354,11 @@ def direct_import_findings(
                     sourcePath=site.get("sourcePath"),
                     line=site.get("line"),
                     importText=site.get("importText"),
+                    sourceRange=site.get("sourceRange"),
+                    selectionRange=site.get("selectionRange"),
+                    sourceContentHash=site.get("contentHash"),
+                    sourceConfidence=site.get("confidence"),
+                    sourceAuthority=site.get("authority"),
                 )
             )
     return rows[:int(rule.get("maxFindings", DEFAULT_MAX_FINDINGS))]
@@ -604,7 +641,11 @@ def path_import_sites(
         rows.append({
             "sourceModule": source,
             "targetModule": target,
-            **{key: value for key, value in site.items() if value not in {"", None}},
+            **{
+                key: value
+                for key, value in site.items()
+                if value is not None and value != ""
+            },
         })
     return rows
 
@@ -711,6 +752,7 @@ def finding(kind: str, subject: str, severity: str, message: str, **extra: Any) 
         "subject": subject,
         "count": int(extra.pop("pathLength", 1)),
         "message": message,
+        "authority": "architecture_policy",
     }
     row.update({key: value for key, value in extra.items() if present(value)})
     return row

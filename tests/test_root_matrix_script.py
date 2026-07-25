@@ -5,12 +5,20 @@ from pathlib import Path
 
 
 def test_root_matrix_script_dry_run_prints_selected_command(capsys) -> None:
-    status = script_main()(["--dry-run", "--only", "quux-project"])
+    status = script_main()(
+        [
+            "--dry-run",
+            "--repository-root",
+            "quux=/repos/quux",
+            "--only",
+            "quux-project",
+        ]
+    )
 
     captured = capsys.readouterr()
     assert status == 0
     assert "quux-project" in captured.out
-    assert "--repo-root /home/codex/projects/quux" in captured.out
+    assert "--repo-root /repos/quux" in captured.out
 
 
 def script_main():

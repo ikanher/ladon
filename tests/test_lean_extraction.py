@@ -104,31 +104,44 @@ def test_parser_helper_payload_emits_declaration_source_evidence_rows() -> None:
 
     rows = summarize_declaration_graph(declarations)["declarations"]
 
-    assert rows == [
-        {
-            "declaration": "Tiny.localName",
-            "module": "Tiny",
-            "kind": "theorem",
-            "sourcePath": "Tiny.lean",
-            "sourceRange": {
-                "startLine": 3,
-                "startColumn": 1,
-                "endLine": 5,
-                "endColumn": 7,
-            },
-            "selectionRange": {
-                "startLine": 3,
-                "startColumn": 9,
-                "endLine": 3,
-                "endColumn": 18,
-            },
-            "contentHash": "sha256:source",
-            "extractionBackend": "lean_parser_helper",
-            "extractorVersion": "42",
-            "nameResolutionMethod": "parser_namespace_stack",
-            "confidence": "parser_source_range",
-        }
-    ]
+    assert len(rows) == 1
+    row = rows[0]
+    expected = {
+        "declaration": "Tiny.localName",
+        "module": "Tiny",
+        "kind": "theorem",
+        "sourcePath": "Tiny.lean",
+        "sourceRange": {
+            "startLine": 3,
+            "startColumn": 1,
+            "endLine": 5,
+            "endColumn": 7,
+        },
+        "selectionRange": {
+            "startLine": 3,
+            "startColumn": 9,
+            "endLine": 3,
+            "endColumn": 18,
+        },
+        "contentHash": "sha256:source",
+        "extractionBackend": "lean_parser_helper",
+        "extractorVersion": "42",
+        "nameResolutionMethod": "parser_namespace_stack",
+        "confidence": "parser_source_range",
+    }
+    assert {key: row[key] for key in expected} == expected
+    assert_unavailable_elaborated_fields(row)
+
+
+def assert_unavailable_elaborated_fields(row: dict) -> None:
+    """Require explicit absent-state fields on parser-only rows."""
+
+    assert row["parserCandidates"]["status"] == "complete"
+    assert row["parserCandidates"]["items"] == ["Tiny.helper"]
+    assert row["typeDependencies"]["status"] == "unavailable"
+    assert row["valueDependencies"]["status"] == "unavailable"
+    assert row["surface"]["status"] == "unavailable"
+    assert row["importedStub"] is False
 
 
 def test_text_backend_skips_lean_extraction_phase() -> None:

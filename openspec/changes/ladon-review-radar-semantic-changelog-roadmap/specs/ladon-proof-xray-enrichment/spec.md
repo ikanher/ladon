@@ -1,37 +1,33 @@
 ## ADDED Requirements
 
-### Requirement: Optional x-ray enrichment
-The system SHALL treat Proof X-Ray data as optional enrichment for Review Radar
-and semantic changelog outputs.
+### Requirement: Optional x-ray consumer availability
+Review Radar SHALL treat separately owned declaration, witness, and future
+proof-shape data as optional consumer inputs.
 
 #### Scenario: X-ray backend is disabled
 - **WHEN** no elaborated x-ray backend is configured
-- **THEN** Review Radar and semantic changelog outputs remain valid and mark x-ray sections as unavailable
+- **THEN** Review Radar output remains valid and marks x-ray sections as unavailable
 
-#### Scenario: X-ray backend is enabled
-- **WHEN** an elaborated backend supplies theorem surface, tactic skeleton, dependency, axiom, sorry, unsafe, or proof-shape metadata
-- **THEN** the report includes the metadata under a clearly labeled x-ray namespace with backend, tool version, source hash, and confidence fields
+#### Scenario: Direct declaration evidence is available
+- **WHEN** `ladon-elaborated-declaration-surface` supplies statement, dependency, axiom, sorry, or unsafe rows
+- **THEN** Review Radar consumes those rows with their Lean/toolchain provenance and does not define a parallel extractor
 
-### Requirement: X-ray authority labels
-The system SHALL label every x-ray field by extraction authority and SHALL NOT
-merge parser-level observations with Lean-elaborated facts.
+#### Scenario: Quoted witness evidence is available
+- **WHEN** `ladon-proof-xray-staging` supplies a quoted trust-footprint witness row
+- **THEN** Review Radar preserves its backend, authority, source artifact, and theorem-truth nonclaim
 
-#### Scenario: Parser candidate and elaborated dependency differ
-- **WHEN** parser-level reference candidates differ from elaborated dependency metadata
-- **THEN** the report keeps both rows separately and labels the parser row as review context rather than proof dependency evidence
+#### Scenario: Future proof-shape evidence is available
+- **WHEN** `ladon-proof-xray-roadmap` later supplies approved tactic-skeleton or InfoTree evidence
+- **THEN** Review Radar consumes the row under its backend/version/source authority and inspection-only nonclaim
 
-#### Scenario: Axiom footprint is reported
-- **WHEN** the x-ray backend reports axiom, sorry, or unsafe footprint metadata
-- **THEN** the report identifies the backend and source artifact used for that footprint
-
-### Requirement: X-ray nonclaims
-The system SHALL state that x-ray enrichment explains proof shape and authority
-metadata without making Ladon the source of theorem truth.
+### Requirement: X-ray consumer nonclaims
+Review Radar SHALL preserve each provider's authority boundary and SHALL NOT
+make Ladon the source of theorem truth.
 
 #### Scenario: Tactic skeleton is emitted
-- **WHEN** the report includes tactic skeleton or proof-shape rows
+- **WHEN** the report includes separately supplied tactic-skeleton or proof-shape rows
 - **THEN** it describes them as inspection aids and does not claim that Ladon replayed or validated the proof
 
-#### Scenario: Dependency metadata is emitted
-- **WHEN** the report includes dependency names from an elaborated backend
-- **THEN** it marks them as backend-supplied dependency metadata and includes the backend identity
+#### Scenario: Parser and elaborated rows differ
+- **WHEN** parser candidates differ from direct Lean-observed dependency rows
+- **THEN** Review Radar keeps both authority classes separate and does not promote parser context into proof-dependency evidence

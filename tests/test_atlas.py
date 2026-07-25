@@ -3,7 +3,16 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ladon.atlas import atlas_reviewer_cards, build_report_atlas, render_atlas_markdown, render_reviewer_cards_markdown
+import pytest
+
+from ladon.atlas import (
+    atlas_report_view,
+    atlas_reviewer_cards,
+    build_report_atlas,
+    inflate_declaration_evidence,
+    render_atlas_markdown,
+    render_reviewer_cards_markdown,
+)
 
 
 def test_build_report_atlas_creates_review_surface_nodes(tmp_path: Path) -> None:
@@ -45,6 +54,59 @@ def test_build_report_atlas_links_reports_to_review_surface(tmp_path: Path) -> N
     ) in edges
 
 
+def test_atlas_keeps_declaration_dependency_authorities_separate(
+    tmp_path: Path,
+) -> None:
+    report = sample_report()
+    declaration_graph = report["declaration_graph"]
+    declaration_graph["declarations"][0]["surface"] = {
+        "status": "complete",
+        "renderedType": "True → True",
+        "trustFacts": [{"kind": "direct_sorryAx"}],
+    }
+    declaration_graph["declarations"].append(
+        {
+            "declaration": "Quux.Semantics.target",
+            "module": "Quux.Semantics",
+        }
+    )
+    source = "Quux.Semantics.PropagationAlgebra"
+    target = "Quux.Semantics.target"
+    declaration_graph["parser_edges"] = {source: [target]}
+    declaration_graph["elaborated_edges"] = [
+        {
+            "source": source,
+            "target": target,
+            "kind": kind,
+            "authority": "lean_environment",
+        }
+        for kind in ("type_dependency", "value_dependency")
+    ]
+    write_report(tmp_path / "quux" / "owner.json", report)
+
+    atlas = build_report_atlas(tmp_path)
+    relevant = [
+        edge
+        for edge in atlas["edges"]
+        if edge["kind"].endswith("dependency")
+    ]
+
+    assert {
+        (edge["kind"], edge["data"]["authority"])
+        for edge in relevant
+    } == {
+        ("parser_candidate_dependency", "lean_parser"),
+        ("type_dependency", "lean_environment"),
+        ("value_dependency", "lean_environment"),
+    }
+    nodes = {node["id"]: node for node in atlas["nodes"]}
+    source_node = nodes[
+        "declaration:quux:Quux.Semantics.PropagationAlgebra"
+    ]
+    assert source_node["data"]["surface_status"] == "complete"
+    assert source_node["data"]["rendered_type"] == "True → True"
+
+
 def test_build_report_atlas_is_deterministic(tmp_path: Path) -> None:
     write_report(tmp_path / "b" / "two.json", sample_report(root="B.Root"))
     write_report(tmp_path / "a" / "one.json", sample_report(root="A.Root"))
@@ -66,6 +128,90 @@ def test_build_report_atlas_ignores_auxiliary_json(tmp_path: Path) -> None:
     assert [node["id"] for node in atlas["nodes"] if node["kind"] == "report"] == [
         "report:quux/owner.json"
     ]
+
+
+def test_v3_declaration_evidence_is_applied_by_json_pointer() -> None:
+    graph = inflate_declaration_evidence(
+        {
+            "declarations": [
+                {
+                    "declaration": "Pkg.example",
+                    "surface": {"trustFacts": [{"kind": "direct"}]},
+                    "evidenceRef": (
+                        "#/sections/declaration_graph/"
+                        "_declarationEvidence/evidence:shared"
+                    ),
+                }
+            ],
+            "_declarationEvidence": {
+                "evidence:shared": {
+                    "fields": {
+                        "/confidence": "direct",
+                        "/surface/authority": "lean_environment",
+                        "/surface/trustFacts/0/nonclaim": "Direct evidence only.",
+                    }
+                }
+            },
+        }
+    )
+
+    row = graph["declarations"][0]
+    assert row["confidence"] == "direct"
+    assert row["surface"]["authority"] == "lean_environment"
+    assert row["surface"]["trustFacts"][0]["nonclaim"] == "Direct evidence only."
+    assert "fields" not in row
+
+
+def test_atlas_rejects_v3_summary_projection_as_insufficient(
+    tmp_path: Path,
+) -> None:
+    payload = {
+        "metadata": {"report_version": "ladon-report-v3"},
+        "projection": {"name": "summary", "omissions": []},
+        "sections": {"module_dag": {"scalars": {"module_count": 10}}},
+    }
+
+    with pytest.raises(ValueError, match="requires.*review or full"):
+        atlas_report_view(payload, tmp_path / "summary.json")
+
+
+def test_atlas_preserves_total_finding_count_from_review_omissions(
+    tmp_path: Path,
+) -> None:
+    payload = {
+        "metadata": {
+            "report_version": "ladon-report-v3",
+            "analysis_root_module": "Pkg",
+        },
+        "projection": {
+            "name": "review",
+            "omissions": [
+                {
+                    "pointer": "#/sections/findings",
+                    "reason": "projection_collection_limit",
+                    "omitted_count": 3,
+                }
+            ],
+        },
+        "phases": {},
+        "sections": {
+            "module_dag": {
+                "module_count": 1,
+                "module_metadata": {},
+            },
+            "findings": [
+                {"kind": "example", "subject": "one"},
+                {"kind": "example", "subject": "two"},
+            ],
+        },
+    }
+    write_report(tmp_path / "report.json", payload)
+
+    atlas = build_report_atlas(tmp_path)
+    report = next(node for node in atlas["nodes"] if node["kind"] == "report")
+
+    assert report["data"]["finding_count"] == 5
+    assert atlas["summary"]["findings"] == 2
 
 
 def test_render_atlas_markdown_includes_counts_and_reports(tmp_path: Path) -> None:
@@ -139,6 +285,44 @@ def test_atlas_reviewer_cards_include_optional_bridge_data(tmp_path: Path) -> No
         "route_audit_diagnostic_count": 1,
         "trust_rules": ["name-only joins are warning-only"],
     }
+
+
+def test_atlas_and_cards_preserve_finding_evidence_contract(
+    tmp_path: Path,
+) -> None:
+    report = sample_report()
+    report["findings"][0].update(
+        {
+            "id": "ladon.finding.stable",
+            "scope": {"kind": "owner", "fingerprint": "scope-1"},
+            "authority": "lexical_text",
+            "confidence": "direct",
+            "priority": 250,
+            "evidenceRefs": [
+                {
+                    "type": "source",
+                    "path": "Quux/Semantics/Propagation.lean",
+                }
+            ],
+            "nextCommand": {
+                "program": "ladon",
+                "arguments": ["preview", "--root", "Quux.Semantics.Propagation"],
+            },
+            "nonclaim": "Review routing only.",
+        }
+    )
+    write_report(tmp_path / "quux" / "owner.json", report)
+
+    atlas = build_report_atlas(tmp_path)
+    node = next(row for row in atlas["nodes"] if row["kind"] == "finding")
+    assert node["id"].endswith(":ladon.finding.stable")
+    assert node["data"]["authority"] == "lexical_text"
+    assert node["data"]["evidenceRefs"][0]["type"] == "source"
+
+    evidence = atlas_reviewer_cards(atlas)[0]["finding_evidence"][0]
+    assert evidence["id"] == "ladon.finding.stable"
+    assert evidence["confidence"] == "direct"
+    assert evidence["nextCommand"]["program"] == "ladon"
 
 
 def test_render_reviewer_cards_markdown_is_compact(tmp_path: Path) -> None:

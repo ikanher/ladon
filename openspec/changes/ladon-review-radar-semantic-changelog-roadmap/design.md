@@ -53,13 +53,12 @@ attachments drifted, and which roots deserve reviewer attention first.
    That would make the data model harder to stabilize and distract from the
    near-term reviewer contract.
 
-2. Semantic changelog starts with declaration surfaces, not proof terms.
+2. Semantic changelog is owned by the bounded theorem-surface child.
 
-   The first classifier should compare declaration identity, kind, source range,
-   content hash, theorem type text when available, normalized binder/assumption
-   summaries, conclusion summaries, imports, and doc/comment-only changes. It
-   can classify proof-only changes when the declaration/theorem surface is
-   stable but source hash or proof range changes.
+   `ladon-theorem-surface-changelog` consumes the output of
+   `ladon-elaborated-declaration-surface` and owns concrete before/after
+   comparison. This umbrella does not implement the comparator or define a
+   parallel declaration extractor.
 
    Alternative considered: wait for elaborated proof extraction. That would
    delay the most useful review signal even though current parser-backed
@@ -75,12 +74,13 @@ attachments drifted, and which roots deserve reviewer attention first.
    Alternative considered: collapse all evidence into one confidence score. That
    would hide the distinction between attachment confidence and proof authority.
 
-4. Proof X-Ray remains optional enrichment.
+4. Proof X-Ray remains optional, separately owned enrichment.
 
-   Elaborated theorem type, axiom/sorry/unsafe footprint, tactic skeleton,
-   dependency names, and InfoTree/proof-shape rows should enrich review cards
-   only when an explicit backend supplies them. The Review Radar contract must
-   still produce useful cards without these fields.
+   Direct statement/dependency/trust facts come from the alpha declaration
+   surface, quoted witness rows come from `ladon-proof-xray-staging`, and any
+   future tactic-skeleton/InfoTree rows come from `ladon-proof-xray-roadmap`.
+   Review Radar consumes those rows when available and remains valid without
+   them.
 
    Alternative considered: make elaborated extraction mandatory for Review Radar.
    That would increase setup cost and make simple PR review less portable.
@@ -116,16 +116,12 @@ attachments drifted, and which roots deserve reviewer attention first.
 
 ## Migration Plan
 
-1. Create child packets for a report/atlas-backed Review Radar MVP and semantic
-   theorem-surface changelog fixtures.
-2. Add structured diff report schema and Markdown reviewer-card rendering while
-   keeping existing single-run reports unchanged.
-3. Add CLI aliases after the schema stabilizes, preferably accepting both
-   precomputed reports and repo refs.
-4. Add optional x-ray fields only behind explicit backend labels and regression
-   tests.
-5. Archive this umbrella after child packets cover the MVP contracts and the
-   nonclaim wording appears in docs/report examples.
+1. Stabilize `ladon-elaborated-declaration-surface`.
+2. Implement the bounded `ladon-theorem-surface-changelog` consumer.
+3. Propose a separate Review Radar MVP child for report/atlas orchestration,
+   reviewer cards, CLI, and advisory CI rules.
+4. Let that MVP consume optional x-ray rows only from their named owners.
+5. Archive this planning umbrella after those child boundaries are explicit.
 
 Rollback is straightforward because the first implementation should be additive:
 existing `ladon` reports, atlas exports, and ProofIR bridge behavior remain

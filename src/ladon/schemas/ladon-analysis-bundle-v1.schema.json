@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ladon:analysis-bundle:v1",
+  "title": "Ladon deterministic analysis bundle v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifactKind",
+    "schema",
+    "schemaVersion",
+    "name",
+    "runsetFingerprint",
+    "completeness",
+    "entries"
+  ],
+  "properties": {
+    "artifactKind": {"const": "ladon_analysis_bundle"},
+    "schema": {"const": "ladon-analysis-bundle-v1"},
+    "schemaVersion": {"const": 1},
+    "name": {"type": "string", "minLength": 1},
+    "runsetFingerprint": {"$ref": "#/$defs/sha256"},
+    "completeness": {"enum": ["complete", "partial", "interrupted"]},
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/entry"}
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "portablePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "anyOf": [
+          {"pattern": "^/"},
+          {"pattern": "^[A-Za-z]:"},
+          {"pattern": "(^|/)\\.\\.(/|$)"},
+          {"pattern": "\\\\"},
+          {"pattern": "^~"}
+        ]
+      }
+    },
+    "fingerprintOrNull": {
+      "oneOf": [
+        {"$ref": "#/$defs/sha256"},
+        {"type": "null"}
+      ]
+    },
+    "validity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "components",
+        "inputFingerprint",
+        "leanCacheFingerprint",
+        "sourceIndexFingerprint"
+      ],
+      "properties": {
+        "components": {
+          "type": "object",
+          "additionalProperties": {"$ref": "#/$defs/sha256"}
+        },
+        "inputFingerprint": {"$ref": "#/$defs/sha256"},
+        "leanCacheFingerprint": {"$ref": "#/$defs/fingerprintOrNull"},
+        "sourceIndexFingerprint": {"$ref": "#/$defs/fingerprintOrNull"}
+      }
+    },
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bytes", "path", "sha256", "version"],
+      "properties": {
+        "bytes": {"type": "integer", "minimum": 0},
+        "path": {"$ref": "#/$defs/portablePath"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "version": {"enum": ["ladon-report-v2", "ladon-report-v3"]}
+      }
+    },
+    "diagnostic": {
+      "type": "object",
+      "required": ["id", "severity", "message"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["info", "warning", "error"]},
+        "message": {"type": "string"}
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "diagnostics",
+        "entryFingerprint",
+        "id",
+        "phaseSummary",
+        "report",
+        "required",
+        "resourceCounters",
+        "reuse",
+        "root",
+        "runIdentity",
+        "scope",
+        "status",
+        "validity"
+      ],
+      "properties": {
+        "diagnostics": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/diagnostic"}
+        },
+        "entryFingerprint": {"$ref": "#/$defs/sha256"},
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "phaseSummary": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "report": {
+          "oneOf": [
+            {"$ref": "#/$defs/report"},
+            {"type": "null"}
+          ]
+        },
+        "required": {"type": "boolean"},
+        "resourceCounters": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "reuse": {"type": "object"},
+        "root": {"$ref": "#/$defs/portablePath"},
+        "runIdentity": {
+          "type": "string",
+          "pattern": "^run:[a-z0-9][a-z0-9._-]*:[0-9a-f]{24}$"
+        },
+        "scope": {"type": "object"},
+        "status": {
+          "enum": [
+            "complete",
+            "resume-hit",
+            "skipped",
+            "partial",
+            "failed",
+            "interrupted"
+          ]
+        },
+        "validity": {"$ref": "#/$defs/validity"}
+      }
+    }
+  }
+}

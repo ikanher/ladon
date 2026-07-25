@@ -26,3 +26,11 @@ None.
 ## Impact
 
 - Affected code: benchmark fixtures, oracle scripts/tests, docs.
+
+## Reconciliation Disposition
+
+The portable predicate-oracle foundation is shipped. Complete positive and
+intentional-negative coverage for source-pattern and claim-authority
+boundaries, together with metric-family and live-drift policy, is transferred
+to `ladon-signal-benchmark-harness`. This packet is preserved as
+superseded-with-residuals and does not define a second benchmark authority.

@@ -4,6 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from ladon.finding_workflow import (
+    aggregate_value_evidence,
+    canonical_row_evidence,
+)
+
 
 HOTSPOT_THRESHOLD = 5
 BROAD_INVENTORY_THRESHOLD = 20
@@ -53,7 +58,16 @@ def facade_fanout_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
     )
     if facade_count < HOTSPOT_THRESHOLD or not is_hot(fan_out):
         return []
-    facade_signal = component_signal("facade_module_count", "module_inventory", facade_count)
+    facade_signal = component_signal(
+        "facade_module_count",
+        "module_inventory",
+        facade_count,
+        evidence_ref=aggregate_value_evidence(
+            "module_dag",
+            "facade_module_count",
+            authority="module_import_graph",
+        ),
+    )
     return [
         composite_finding(
             "facade_fanout_pressure",
@@ -81,8 +95,26 @@ def root_scope_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
         "chosen_roots",
         root_scope_message(root_scope),
         [
-            component_signal("module_count", "inventory", module_count),
-            component_signal("unreachable_modules", "chosen_roots", unreachable),
+            component_signal(
+                "module_count",
+                "inventory",
+                module_count,
+                evidence_ref=aggregate_value_evidence(
+                    "module_dag",
+                    "module_count",
+                    authority="module_import_graph",
+                ),
+            ),
+            component_signal(
+                "unreachable_modules",
+                "chosen_roots",
+                unreachable,
+                evidence_ref=aggregate_value_evidence(
+                    "module_dag",
+                    "source_modules_not_reachable_from_chosen_roots_count",
+                    authority="module_import_graph",
+                ),
+            ),
         ],
     )
     finding["root_scope"] = root_scope
@@ -174,9 +206,27 @@ def top_root_closure(module_dag: dict[str, Any]) -> dict[str, Any] | None:
     rows = module_dag.get("root_direct_import_closures", [])
     if not rows:
         return None
-    row = max(rows, key=lambda item: int(item.get("reachable_module_count", 0)))
+    index, row = max(
+        enumerate(rows),
+        key=lambda item: int(item[1].get("reachable_module_count", 0)),
+    )
     subject = f"{row.get('root')} -> {row.get('direct_import')}"
-    return component_signal("root_import_closure", subject, row.get("reachable_module_count", 0))
+    return component_signal(
+        "root_import_closure",
+        subject,
+        row.get("reachable_module_count", 0),
+        evidence_ref=canonical_row_evidence(
+            "module_dag",
+            "root_direct_import_closures",
+            index,
+            identity={
+                "root": row.get("root"),
+                "direct_import": row.get("direct_import"),
+                "reachable_module_count": row.get("reachable_module_count"),
+            },
+            authority=str(row.get("authority", "module_import_graph")),
+        ),
+    )
 
 
 def top_metric_row(summary: dict[str, Any], row_key: str, metric: str) -> dict[str, Any] | None:
@@ -185,8 +235,40 @@ def top_metric_row(summary: dict[str, Any], row_key: str, metric: str) -> dict[s
     rows = summary.get(row_key, [])
     if not rows:
         return None
-    row = max(rows, key=lambda item: int(item.get(metric, 0)))
-    return component_signal(metric_name(row_key, metric), row_subject(row), row.get(metric, 0))
+    index, row = max(
+        enumerate(rows),
+        key=lambda item: int(item[1].get(metric, 0)),
+    )
+    section = (
+        "declaration_graph"
+        if row_key == "declaration_name_families"
+        else "module_dag"
+    )
+    subject = row_subject(row)
+    return component_signal(
+        metric_name(row_key, metric),
+        subject,
+        row.get(metric, 0),
+        evidence_ref=canonical_row_evidence(
+            section,
+            row_key,
+            index,
+            identity=metric_row_identity(row, metric),
+            authority=str(row.get("authority", f"{section}_analysis")),
+        ),
+    )
+
+
+def metric_row_identity(
+    row: dict[str, Any],
+    metric: str,
+) -> dict[str, Any]:
+    """Return raw row fields that cross-check a canonical metric pointer."""
+
+    for key in ("module", "declaration", "suffix", "candidate"):
+        if key in row:
+            return {key: row[key], metric: row.get(metric)}
+    return {metric: row.get(metric)}
 
 
 def metric_name(row_key: str, metric: str) -> str:
@@ -226,10 +308,19 @@ def is_hot(signal: dict[str, Any] | None) -> bool:
     return signal is not None and int(signal["value"]) >= HOTSPOT_THRESHOLD
 
 
-def component_signal(metric: str, subject: str, value: Any) -> dict[str, Any]:
+def component_signal(
+    metric: str,
+    subject: str,
+    value: Any,
+    *,
+    evidence_ref: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     """Build a stable component-signal payload."""
 
-    return {"metric": metric, "subject": subject, "value": int(value)}
+    row = {"metric": metric, "subject": subject, "value": int(value)}
+    if evidence_ref is not None:
+        row["evidenceRef"] = evidence_ref
+    return row
 
 
 def composite_finding(
@@ -240,11 +331,27 @@ def composite_finding(
 ) -> dict[str, Any]:
     """Build one composite architecture finding."""
 
-    return {
+    public_signals = [
+        {
+            key: value
+            for key, value in signal.items()
+            if key != "evidenceRef"
+        }
+        for signal in component_signals
+    ]
+    row = {
         "kind": kind,
         "severity": "info",
         "subject": subject,
         "count": sum(int(signal["value"]) for signal in component_signals),
         "message": message,
-        "component_signals": component_signals,
+        "component_signals": public_signals,
     }
+    evidence_refs = [
+        signal["evidenceRef"]
+        for signal in component_signals
+        if isinstance(signal.get("evidenceRef"), dict)
+    ]
+    if evidence_refs:
+        row["evidenceRefs"] = evidence_refs
+    return row

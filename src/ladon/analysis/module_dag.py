@@ -11,6 +11,17 @@ from collections import defaultdict, deque
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+from ladon.analysis.module_dag_inventory import (
+    ModuleInventoryIndex as _ModuleInventoryIndex,
+    build_module_inventory_index as _module_inventory_index,
+    classify_facade_subtype as _facade_subtype,
+    facade_names as _facade_modules,
+    facade_subtype_counts as _facade_subtype_summary,
+    matching_module_names as _modules_matching_filters,
+    top_facade_rows as _top_facade_like_modules,
+    top_fan_in_rows as _top_fan_in,
+    top_fan_out_rows as _top_fan_out,
+)
 from ladon.analysis.module_naming import (
     generated_family_summary,
     generator_family,
@@ -22,6 +33,7 @@ from ladon.ir import LeanModule
 
 MAX_LARGE_MODULE_ROWS = 20
 MAX_SOURCE_SMELL_ROWS = 50
+MAX_TEXT_DECLARATION_ROWS = 10_000
 
 
 def summarize_module_dag(
@@ -46,6 +58,10 @@ def summarize_module_dag(
     missing_import_rows = missing_internal_imports(modules, chosen_roots)
     naming_rows = module_name_smell_rows(modules)
 
+    inventory = _module_inventory_index(modules)
+    metadata = _module_metadata(modules, inventory)
+    root_modules = root_like_modules(reverse_edges)
+    facades = _facade_modules(inventory)
     return {
         "scope": "repo_inventory",
         "method": "repo_wide_module_import_dag",
@@ -58,26 +74,64 @@ def summarize_module_dag(
         "topological_layer_count": len(layer_widths),
         "layer_widths": layer_widths[:80],
         "widest_layers": widest_layers(layer_widths),
-        "top_fan_in": top_fan_in(modules, reverse_edges),
-        "top_fan_out": top_fan_out(modules, edges),
-        "top_handwritten_fan_in": top_fan_in(modules, reverse_edges, excluded_tags=("generated",)),
-        "top_handwritten_fan_out": top_fan_out(modules, edges, excluded_tags=("generated",)),
-        "top_facade_fan_out": top_fan_out(modules, edges, included_roles=("facade",)),
-        "top_implementation_fan_out": top_fan_out(
+        "top_fan_in": _top_fan_in(
+            modules,
+            reverse_edges,
+            inventory,
+            population="all_importers_to_all_targets",
+        ),
+        "top_fan_out": _top_fan_out(modules, edges, inventory),
+        "top_handwritten_fan_in": _top_fan_in(
+            modules,
+            reverse_edges,
+            inventory,
+            excluded_tags=("generated",),
+            excluded_importer_tags=("generated",),
+            population="handwritten_importers_to_handwritten_targets",
+        ),
+        "top_generated_importer_fan_in": _top_fan_in(
+            modules,
+            reverse_edges,
+            inventory,
+            included_importer_tags=("generated",),
+            population="generated_importers_to_all_targets",
+        ),
+        "top_generated_target_fan_in": _top_fan_in(
+            modules,
+            reverse_edges,
+            inventory,
+            included_tags=("generated",),
+            population="all_importers_to_generated_targets",
+        ),
+        "top_handwritten_fan_out": _top_fan_out(
             modules,
             edges,
+            inventory,
+            excluded_tags=("generated",),
+        ),
+        "top_facade_fan_out": _top_fan_out(
+            modules,
+            edges,
+            inventory,
+            included_roles=("facade",),
+        ),
+        "top_implementation_fan_out": _top_fan_out(
+            modules,
+            edges,
+            inventory,
             excluded_tags=("generated",),
             excluded_roles=("facade",),
         ),
-        "root_like_modules": root_like_modules(reverse_edges)[:20],
-        "root_like_module_count": len(root_like_modules(reverse_edges)),
-        "facade_modules": facade_modules(modules)[:20],
-        "facade_module_count": len(facade_modules(modules)),
-        "facade_subtype_summary": facade_subtype_summary(modules),
-        "top_facade_like_modules": top_facade_like_modules(modules),
+        "root_like_modules": root_modules[:20],
+        "root_like_module_count": len(root_modules),
+        "facade_modules": facades[:20],
+        "facade_module_count": len(facades),
+        "facade_subtype_summary": _facade_subtype_summary(inventory),
+        "top_facade_like_modules": _top_facade_like_modules(modules, inventory),
         "root_direct_import_closures": root_direct_import_closures(edges, selected_roots),
         **reachability,
-        "module_metadata": module_metadata(modules),
+        "module_metadata": metadata,
+        "text_declaration_summary": text_declaration_summary(metadata),
         "generated_module_count": module_count_with_tag(modules, "generated"),
         "generated_family_summary": generated_family_summary(modules),
         "module_name_smells": naming_rows[:MAX_SOURCE_SMELL_ROWS],
@@ -109,17 +163,95 @@ def module_edges(modules: Mapping[str, LeanModule]) -> dict[str, list[str]]:
 def module_metadata(modules: Mapping[str, LeanModule]) -> dict[str, dict[str, Any]]:
     """Return source-level module metadata for report filtering and triage."""
 
+    return _module_metadata(modules, _module_inventory_index(modules))
+
+
+def _module_metadata(
+    modules: Mapping[str, LeanModule],
+    inventory: _ModuleInventoryIndex,
+) -> dict[str, dict[str, Any]]:
+    """Build module metadata with inventory classifications already indexed."""
+
+    row_limit = text_declaration_row_limit(modules)
     return {
         name: {
             "path": module.path,
             "lineCount": int(module.line_count),
             "tags": list(module.tags),
-            "roles": list(module_roles(module, modules)),
-            "facadeSubtype": facade_subtype(module, modules),
+            "roles": list(inventory.roles[name]),
+            "facadeSubtype": inventory.facade_subtypes[name],
             "declarationCount": len(module.declarations),
+            "declarationAuthority": (
+                "lexical_text" if module.declaration_evidence else ""
+            ),
+            "textDeclarations": text_declaration_rows(module, row_limit),
+            "textDeclarationOmittedCount": max(
+                0,
+                len(module.declaration_evidence) - row_limit,
+            ),
             "importCount": len(set(module.imports)),
         }
         for name, module in sorted(modules.items())
+    }
+
+
+def text_declaration_row_limit(
+    modules: Mapping[str, LeanModule],
+) -> int:
+    """Bound inventory-wide lexical detail while retaining every module."""
+
+    total = sum(len(module.declaration_evidence) for module in modules.values())
+    if total <= MAX_TEXT_DECLARATION_ROWS:
+        return total
+    return max(1, MAX_TEXT_DECLARATION_ROWS // max(1, len(modules)))
+
+
+def text_declaration_rows(
+    module: LeanModule,
+    limit: int,
+) -> list[dict[str, Any]]:
+    """Return deterministic bounded lexical declaration evidence."""
+
+    return [
+        {
+            "name": row.name,
+            "kind": row.kind,
+            "line": row.line,
+            "column": row.column,
+            "startOffset": row.start_offset,
+            "endOffset": row.end_offset,
+            "authority": row.authority,
+            "confidence": row.confidence,
+            "nonclaim": row.nonclaim,
+        }
+        for row in module.declaration_evidence[:limit]
+    ]
+
+
+def text_declaration_summary(
+    metadata: Mapping[str, Mapping[str, Any]],
+) -> dict[str, Any]:
+    """Report the complete count and bounded evidence-row population."""
+
+    total = sum(
+        int(row.get("declarationCount", 0))
+        for row in metadata.values()
+    )
+    included = sum(
+        len(row.get("textDeclarations", []))
+        for row in metadata.values()
+    )
+    return {
+        "total": total,
+        "included": included,
+        "omitted": max(0, total - included),
+        "truncated": included < total,
+        "limit": MAX_TEXT_DECLARATION_ROWS,
+        "authority": "lexical_text",
+        "nonclaim": (
+            "Counts cover the selected lexical inventory; bounded detail rows "
+            "are not a complete Lean parse or elaboration result."
+        ),
     }
 
 
@@ -258,11 +390,18 @@ def missing_internal_imports(
 ) -> list[dict[str, Any]]:
     """Return imports that look internal but are absent from inventory."""
 
+    project_namespaces = owned_top_namespaces(modules, chosen_roots)
     rows = [
         missing_import_row(module, site)
         for module in sorted(modules.values(), key=lambda item: item.name)
         for site in module.import_sites
-        if site.module not in modules and import_is_inside_scope(module.name, site.module, chosen_roots)
+        if site.module not in modules
+        and import_is_inside_scope(
+            module.name,
+            site.module,
+            chosen_roots,
+            project_namespaces=project_namespaces,
+        )
     ]
     return sorted(rows, key=lambda row: (row["sourceModule"], row["targetModule"], row.get("line") or 0))
 
@@ -276,6 +415,11 @@ def missing_import_row(module: LeanModule, site: Any) -> dict[str, Any]:
         "targetModule": site.module,
         "line": site.line,
         "importText": site.text or "",
+        "authority": "lexical_text",
+        "nonclaim": (
+            "Missing conventional source-path evidence only; not a Lean "
+            "resolver or compilation diagnostic."
+        ),
     }
 
 
@@ -285,12 +429,36 @@ def same_top_namespace(source: str, target: str) -> bool:
     return bool(source and target and source.split(".", 1)[0] == target.split(".", 1)[0])
 
 
-def import_is_inside_scope(source: str, target: str, chosen_roots: Sequence[str]) -> bool:
+def owned_top_namespaces(
+    modules: Mapping[str, LeanModule],
+    chosen_roots: Sequence[str],
+) -> frozenset[str]:
+    """Return discovered/configured top namespaces that the project owns."""
+
+    names = [*modules, *chosen_roots]
+    return frozenset(
+        name.split(".", 1)[0]
+        for name in names
+        if name
+    )
+
+
+def import_is_inside_scope(
+    source: str,
+    target: str,
+    chosen_roots: Sequence[str],
+    *,
+    project_namespaces: frozenset[str] | None = None,
+) -> bool:
     """Return whether a missing import belongs to the selected review scope."""
 
-    roots = [root for root in chosen_roots if root]
-    if roots:
-        return any(target == root or target.startswith(f"{root}.") for root in roots)
+    namespaces = project_namespaces or frozenset(
+        root.split(".", 1)[0]
+        for root in chosen_roots
+        if root
+    )
+    if namespaces and target:
+        return target.split(".", 1)[0] in namespaces
     return same_top_namespace(source, target)
 
 
@@ -304,6 +472,11 @@ def lexical_marker_rows(modules: Mapping[str, LeanModule]) -> list[dict[str, Any
             "kind": marker.kind,
             "line": marker.line,
             "text": marker.text,
+            "authority": "lexical_text",
+            "nonclaim": (
+                "Lexical source marker only; not a Lean-elaborated dependency, "
+                "axiom-footprint result, or theorem verdict."
+            ),
         }
         for module in sorted(modules.values(), key=lambda item: item.name)
         for marker in module.lexical_markers
@@ -499,47 +672,27 @@ def root_like_modules(reverse_edges: Mapping[str, Sequence[str]]) -> list[str]:
 def facade_modules(modules: Mapping[str, LeanModule]) -> list[str]:
     """Return modules classified as facade-like."""
 
-    return sorted(
-        name
-        for name, module in modules.items()
-        if facade_subtype(module, modules)
-    )
+    return _facade_modules(_module_inventory_index(modules))
 
 
 def top_facade_like_modules(modules: Mapping[str, LeanModule]) -> list[dict[str, Any]]:
     """Return facade-like modules with subtype and import breadth."""
 
-    rows = [
-        {
-            "module": module.name,
-            "path": module.path,
-            "fan_out": len(set(module.imports)),
-            "declarationCount": len(module.declarations),
-            "subtype": subtype,
-            "tags": list(module.tags),
-        }
-        for module in modules.values()
-        for subtype in [facade_subtype(module, modules)]
-        if subtype
-    ]
-    return sorted(rows, key=lambda row: (-int(row["fan_out"]), row["module"]))[:20]
+    return _top_facade_like_modules(modules, _module_inventory_index(modules))
 
 
 def facade_subtype(module: LeanModule, modules: Mapping[str, LeanModule]) -> str:
     """Return a generic facade subtype or an empty string."""
 
     import_count = len(set(module.imports))
-    if import_count == 0:
-        return ""
-    if "generated" in module.tags and module.name.rsplit(".", 1)[-1] == "All":
-        return "generated_all"
-    if has_namespace_children(module.name, modules) and import_count >= 5:
-        return "public_root_facade"
-    if not module.declarations:
-        return "pure_barrel"
-    if import_count >= 5:
-        return "mixed_barrel_and_theorems"
-    return ""
+    return _facade_subtype(
+        module,
+        import_count=import_count,
+        has_namespace_children=(
+            import_count >= 5
+            and has_namespace_children(module.name, modules)
+        ),
+    )
 
 
 def has_namespace_children(module: str, modules: Mapping[str, LeanModule]) -> bool:
@@ -552,12 +705,7 @@ def has_namespace_children(module: str, modules: Mapping[str, LeanModule]) -> bo
 def facade_subtype_summary(modules: Mapping[str, LeanModule]) -> dict[str, int]:
     """Count facade-like modules by subtype."""
 
-    counts: dict[str, int] = defaultdict(int)
-    for module in modules.values():
-        subtype = facade_subtype(module, modules)
-        if subtype:
-            counts[subtype] += 1
-    return dict(sorted(counts.items()))
+    return _facade_subtype_summary(_module_inventory_index(modules))
 
 
 def module_roles(module: LeanModule, modules: Mapping[str, LeanModule]) -> tuple[str, ...]:
@@ -627,23 +775,43 @@ def top_fan_in(
     modules: Mapping[str, LeanModule],
     reverse_edges: Mapping[str, Sequence[str]],
     *,
+    included_tags: Sequence[str] = (),
     excluded_tags: Sequence[str] = (),
+    included_importer_tags: Sequence[str] = (),
+    excluded_importer_tags: Sequence[str] = (),
+    population: str = "all_importers_to_all_targets",
 ) -> list[dict[str, Any]]:
     """Return modules most often imported by other discovered modules."""
 
-    return [
-        {
-            "module": name,
-            "path": modules[name].path,
-            "fan_in": len(reverse_edges.get(name, ())),
-            "sample_importers": list(reverse_edges.get(name, ()))[:12],
-        }
-        for name in sorted(
-            modules_matching_filters(modules, excluded_tags=excluded_tags),
-            key=lambda item: (len(reverse_edges.get(item, ())), item),
-            reverse=True,
-        )[:15]
-    ]
+    return _top_fan_in(
+        modules,
+        reverse_edges,
+        _module_inventory_index(modules),
+        included_tags=included_tags,
+        excluded_tags=excluded_tags,
+        included_importer_tags=included_importer_tags,
+        excluded_importer_tags=excluded_importer_tags,
+        population=population,
+    )
+
+
+def fan_in_importers(
+    target: str,
+    modules: Mapping[str, LeanModule],
+    reverse_edges: Mapping[str, Sequence[str]],
+    *,
+    included_tags: Sequence[str],
+    excluded_tags: Sequence[str],
+) -> list[str]:
+    """Return importers accepted by an explicitly named fan-in population."""
+
+    return sorted(
+        importer
+        for importer in reverse_edges.get(target, ())
+        if importer in modules
+        and has_included_tag(modules[importer], included_tags)
+        and not has_excluded_tag(modules[importer], excluded_tags)
+    )
 
 
 def top_fan_out(
@@ -656,49 +824,47 @@ def top_fan_out(
 ) -> list[dict[str, Any]]:
     """Return modules with the broadest direct import surface."""
 
-    return [
-        {
-            "module": name,
-            "path": modules[name].path,
-            "fan_out": len(edges.get(name, ())),
-            "sample_imports": list(edges.get(name, ()))[:12],
-            "roles": list(module_roles(modules[name], modules)),
-        }
-        for name in sorted(
-            modules_matching_filters(
-                modules,
-                excluded_tags=excluded_tags,
-                included_roles=included_roles,
-                excluded_roles=excluded_roles,
-            ),
-            key=lambda item: (len(edges.get(item, ())), item),
-            reverse=True,
-        )[:15]
-    ]
+    return _top_fan_out(
+        modules,
+        edges,
+        _module_inventory_index(modules),
+        excluded_tags=excluded_tags,
+        included_roles=included_roles,
+        excluded_roles=excluded_roles,
+    )
 
 
 def modules_matching_filters(
     modules: Mapping[str, LeanModule],
     *,
+    included_tags: Sequence[str] = (),
     excluded_tags: Sequence[str] = (),
     included_roles: Sequence[str] = (),
     excluded_roles: Sequence[str] = (),
 ) -> list[str]:
     """Return module names accepted by tag and structural-role filters."""
 
-    return [
-        name
-        for name, module in modules.items()
-        if not has_excluded_tag(module, excluded_tags)
-        and has_included_role(module, modules, included_roles)
-        and not has_excluded_role(module, modules, excluded_roles)
-    ]
+    return _modules_matching_filters(
+        _module_inventory_index(modules),
+        included_tags=included_tags,
+        excluded_tags=excluded_tags,
+        included_roles=included_roles,
+        excluded_roles=excluded_roles,
+    )
 
 
 def has_excluded_tag(module: LeanModule, excluded_tags: Sequence[str]) -> bool:
     """Return whether one module has any excluded source-level tag."""
 
     return bool(set(module.tags) & set(excluded_tags))
+
+
+def has_included_tag(module: LeanModule, included_tags: Sequence[str]) -> bool:
+    """Return whether one module passes optional source-tag inclusion."""
+
+    if not included_tags:
+        return True
+    return bool(set(module.tags) & set(included_tags))
 
 
 def has_included_role(

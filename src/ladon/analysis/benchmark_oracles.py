@@ -6,6 +6,20 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
+from ladon.analysis.benchmark_declaration_oracles import (
+    check_declaration_required_fields,
+    check_direct_dependency,
+)
+from ladon.analysis.benchmark_surface_oracles import (
+    check_fan_population_count,
+    check_finding_count,
+    check_lexical_marker,
+    check_missing_internal_import,
+    check_namespace_drift,
+    check_proof_similarity_state,
+    check_text_declaration,
+)
+
 
 Oracle = Mapping[str, Any]
 Payload = Mapping[str, Any]
@@ -13,13 +27,22 @@ ORACLE_SCHEMA_VERSION = "ladon-benchmark-oracle-v1"
 SUPPORTED_SIGNALS = (
     "architecture_pair_count",
     "claim_authority_diagnostic_present",
+    "declaration_required_fields",
+    "direct_dependency",
     "facade_subtype_count",
+    "fan_population_count",
+    "finding_count",
     "generated_duplicate_family",
+    "lexical_marker",
+    "missing_internal_import",
+    "namespace_drift",
     "resolved_edge",
     "shared_dependency_candidate",
     "source_pattern_match_count",
+    "text_declaration",
     "unresolved_class",
     "proof_family_candidate",
+    "proof_similarity_state",
     "root_scope_classification",
     "packet_profile_status",
     "finding_kind_present",
@@ -76,13 +99,22 @@ def oracle_dispatch() -> dict[str, Callable[[Payload, Oracle], tuple[bool, Any]]
     return {
         "architecture_pair_count": check_architecture_pair_count,
         "claim_authority_diagnostic_present": check_claim_authority_diagnostic_present,
+        "declaration_required_fields": check_declaration_required_fields,
+        "direct_dependency": check_direct_dependency,
         "facade_subtype_count": check_facade_subtype_count,
+        "fan_population_count": check_fan_population_count,
+        "finding_count": check_finding_count,
         "generated_duplicate_family": check_generated_duplicate_family,
+        "lexical_marker": check_lexical_marker,
+        "missing_internal_import": check_missing_internal_import,
+        "namespace_drift": check_namespace_drift,
         "resolved_edge": check_resolved_edge,
         "shared_dependency_candidate": check_shared_dependency_candidate,
         "source_pattern_match_count": check_source_pattern_match_count,
+        "text_declaration": check_text_declaration,
         "unresolved_class": check_unresolved_class,
         "proof_family_candidate": check_proof_family_candidate,
+        "proof_similarity_state": check_proof_similarity_state,
         "root_scope_classification": check_root_scope_classification,
         "packet_profile_status": check_packet_profile_status,
         "finding_kind_present": check_finding_kind_present,

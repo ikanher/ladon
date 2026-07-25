@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ladon.finding_workflow import canonical_row_evidence
+
 
 SUPPORTED_KINDS = {"ladon_import_diet_witness", "import_diet_witness"}
 SUPPORTED_SCHEMA_VERSIONS = {1, "1"}
@@ -15,7 +17,10 @@ def summarize_import_diet(module_dag: dict[str, Any], witness: Any) -> dict[str,
     normalized = normalize_import_diet_witness(witness)
     rows = import_diet_rows(module_dag, normalized)
     diagnostics = normalized.get("diagnostics", [])
-    findings = [import_diet_finding(row) for row in rows]
+    findings = [
+        import_diet_finding(row, index)
+        for index, row in enumerate(rows)
+    ]
     findings.extend(diagnostic_findings(diagnostics))
     return {
         "artifactKind": "ladon_import_diet_report",
@@ -135,6 +140,7 @@ def import_diet_rows(module_dag: dict[str, Any], witness: dict[str, Any]) -> lis
                 "toolName": row.get("toolName"),
                 "toolVersion": row.get("toolVersion"),
                 "command": row.get("command"),
+                "contentHash": row.get("contentHash"),
                 "confidence": row.get("confidence", "unknown"),
                 "priority": rank_by_module.get(module, 0),
                 "nonclaim": "Quoted import-minimization evidence only; replay the named Lean/Lake command before removing imports.",
@@ -161,6 +167,8 @@ def stale_row(row: dict[str, Any], reason: str) -> dict[str, Any]:
         "message": reason,
         "toolName": row.get("toolName"),
         "command": row.get("command"),
+        "sourcePath": row.get("sourcePath"),
+        "contentHash": row.get("contentHash"),
         "confidence": "low",
         "nonclaim": "Stale import-diet evidence does not classify imports as removable.",
     })
@@ -189,10 +197,13 @@ def review_rank_by_module(module_dag: dict[str, Any]) -> dict[str, int]:
     return ranks
 
 
-def import_diet_finding(row: dict[str, Any]) -> dict[str, Any]:
+def import_diet_finding(
+    row: dict[str, Any],
+    index: int,
+) -> dict[str, Any]:
     """Convert an import-diet row to a finding."""
 
-    return {
+    finding = {
         "kind": f"import_diet.{row['kind']}",
         "severity": row.get("severity", "info"),
         "subject": row.get("subject", ""),
@@ -200,7 +211,22 @@ def import_diet_finding(row: dict[str, Any]) -> dict[str, Any]:
         "message": row.get("message")
         or f"{row.get('targetModule')} is a quoted redundant-import candidate for {row.get('module')}.",
         "importDietOnly": True,
+        "authority": "external_tool_quoted",
+        "evidenceRefs": [
+            canonical_row_evidence(
+                "import_diet",
+                "rows",
+                index,
+                identity={
+                    "kind": row.get("kind"),
+                    "subject": row.get("subject", ""),
+                },
+                authority=str(row.get("authority", "external_tool_quoted")),
+            )
+        ],
     }
+    copy_finding_source_fields(finding, row)
+    return finding
 
 
 def diagnostic_findings(diagnostics: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -214,9 +240,44 @@ def diagnostic_findings(diagnostics: list[dict[str, Any]]) -> list[dict[str, Any
             "count": 1,
             "message": row.get("message", ""),
             "importDietOnly": True,
+            "evidenceRefs": [
+                canonical_row_evidence(
+                    "import_diet",
+                    "diagnostics",
+                    index,
+                    identity={
+                        "kind": row.get("kind", "import_diet.diagnostic"),
+                        "subject": row.get("subject", "import_diet_witness"),
+                    },
+                    authority="external_tool_quoted",
+                )
+            ],
         }
-        for row in diagnostics
+        for index, row in enumerate(diagnostics)
     ]
+
+
+def copy_finding_source_fields(
+    finding: dict[str, Any],
+    row: dict[str, Any],
+) -> None:
+    """Preserve source attachment metadata supplied by an import-diet row."""
+
+    for key in (
+        "sourcePath",
+        "sourceRange",
+        "selectionRange",
+        "contentHash",
+        "sourceHash",
+        "confidence",
+        "authority",
+        "line",
+        "column",
+        "endLine",
+        "endColumn",
+    ):
+        if key in row:
+            finding[key] = row[key]
 
 
 def import_diet_summary(rows: list[dict[str, Any]], diagnostics: list[dict[str, Any]]) -> dict[str, int]:

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from ladon.analysis import module_dag
 from ladon.analysis.module_dag import summarize_module_dag
+from ladon.extraction import parse_lean_module
 from ladon.ir import LeanImport, LeanLexicalMarker, LeanModule
 
 
@@ -120,6 +122,51 @@ def test_module_dag_reports_generated_metadata_and_handwritten_fan_tables() -> N
     }
 
 
+def test_fan_in_tables_filter_importers_and_targets_by_named_population() -> None:
+    generated_importers = {
+        f"Pkg.Generated.Row{index}": LeanModule(
+            name=f"Pkg.Generated.Row{index}",
+            path=f"Pkg/Generated/Row{index}.lean",
+            imports=("Pkg.Core", "Pkg.Generated.Target"),
+            tags=("generated",),
+        )
+        for index in range(5)
+    }
+    modules = {
+        **generated_importers,
+        "Pkg.Owner": LeanModule(
+            name="Pkg.Owner",
+            path="Pkg/Owner.lean",
+            imports=("Pkg.Core", "Pkg.Generated.Target"),
+        ),
+        "Pkg.Core": LeanModule(name="Pkg.Core", path="Pkg/Core.lean"),
+        "Pkg.Generated.Target": LeanModule(
+            name="Pkg.Generated.Target",
+            path="Pkg/Generated/Target.lean",
+            tags=("generated",),
+        ),
+    }
+
+    summary = summarize_module_dag(modules)
+    generic = rows_by_module(summary["top_fan_in"])
+    handwritten = rows_by_module(summary["top_handwritten_fan_in"])
+    generated_importers_only = rows_by_module(
+        summary["top_generated_importer_fan_in"]
+    )
+    generated_targets = rows_by_module(summary["top_generated_target_fan_in"])
+
+    assert generic["Pkg.Core"]["fan_in"] == 6
+    assert generic["Pkg.Core"]["population"] == "all_importers_to_all_targets"
+    assert handwritten["Pkg.Core"]["fan_in"] == 1
+    assert handwritten["Pkg.Core"]["sample_importers"] == ["Pkg.Owner"]
+    assert handwritten["Pkg.Core"]["population"] == (
+        "handwritten_importers_to_handwritten_targets"
+    )
+    assert "Pkg.Generated.Target" not in handwritten
+    assert generated_importers_only["Pkg.Core"]["fan_in"] == 5
+    assert generated_targets["Pkg.Generated.Target"]["fan_in"] == 6
+
+
 def test_module_dag_reports_module_naming_smells_and_generated_families() -> None:
     modules = {
         "A.GeneratedScalarBw2Eps0p5Gamma0p8.Base": LeanModule(
@@ -236,6 +283,48 @@ def test_module_dag_reports_facade_subtypes_and_generated_duplicate_families() -
     assert summary["duplicate_import_family_summary"][0]["generated"] is True
 
 
+def test_module_dag_indexes_namespace_roles_for_large_inventory(
+    monkeypatch,
+) -> None:
+    child_names = tuple(f"Pkg.Part{index:04d}" for index in range(128))
+    modules = {
+        "Pkg": LeanModule(
+            name="Pkg",
+            path="Pkg.lean",
+            imports=child_names[:5],
+        ),
+        **{
+            name: LeanModule(
+                name=name,
+                path=f"{name.replace('.', '/')}.lean",
+                imports=("Mathlib",),
+            )
+            for name in child_names
+        },
+    }
+
+    def quadratic_namespace_scan(*_args, **_kwargs):
+        raise AssertionError("summary must use the inventory namespace index")
+
+    monkeypatch.setattr(
+        module_dag,
+        "has_namespace_children",
+        quadratic_namespace_scan,
+    )
+
+    summary = summarize_module_dag(modules)
+
+    assert summary["module_count"] == 129
+    assert summary["module_metadata"]["Pkg"]["facadeSubtype"] == (
+        "public_root_facade"
+    )
+    assert summary["facade_subtype_summary"] == {
+        "public_root_facade": 1,
+        "pure_barrel": 128,
+    }
+    assert summary["top_facade_fan_out"][0]["module"] == "Pkg"
+
+
 def test_module_dag_reports_missing_internal_imports_and_lexical_markers() -> None:
     modules = {
         "A.Owner": LeanModule(
@@ -253,11 +342,55 @@ def test_module_dag_reports_missing_internal_imports_and_lexical_markers() -> No
         )
     }
 
-    summary = summarize_module_dag(modules)
+    summary = summarize_module_dag(modules, chosen_roots=("A.Owner",))
 
     assert summary["missing_internal_import_count"] == 1
     assert summary["missing_internal_imports"][0]["targetModule"] == "A.Missing"
+    assert summary["missing_internal_imports"][0]["authority"] == "lexical_text"
     assert summary["lexical_marker_summary"] == {"sorry": 1, "todo": 1}
+    assert all(
+        row["authority"] == "lexical_text"
+        for row in summary["lexical_markers"]
+    )
+
+
+def test_facade_classification_uses_comment_safe_declaration_inventory(
+    tmp_path,
+) -> None:
+    facade_path = tmp_path / "Facade.lean"
+    owner_path = tmp_path / "Owner.lean"
+    core_path = tmp_path / "Core.lean"
+    facade_path.write_text(
+        'import Core\n/- axiom Fake : True -/\n#check "opaque AlsoFake : Nat"\n',
+        encoding="utf-8",
+    )
+    owner_path.write_text(
+        "import Core\nopaque actualOwner : Nat\n",
+        encoding="utf-8",
+    )
+    core_path.write_text("def core : Nat := 1\n", encoding="utf-8")
+    modules = {
+        module.name: module
+        for module in (
+            parse_lean_module(tmp_path, facade_path),
+            parse_lean_module(tmp_path, owner_path),
+            parse_lean_module(tmp_path, core_path),
+        )
+    }
+
+    summary = summarize_module_dag(modules)
+
+    assert summary["module_metadata"]["Facade"]["facadeSubtype"] == "pure_barrel"
+    assert summary["module_metadata"]["Owner"]["facadeSubtype"] == ""
+    declaration = summary["module_metadata"]["Owner"]["textDeclarations"][0]
+    assert declaration["kind"] == "opaque"
+    assert declaration["authority"] == "lexical_text"
+
+
+def rows_by_module(rows: list[dict]) -> dict[str, dict]:
+    """Index one module-metric table for focused assertions."""
+
+    return {row["module"]: row for row in rows}
 
 
 def test_module_dag_reports_cycles_without_claiming_layers() -> None:

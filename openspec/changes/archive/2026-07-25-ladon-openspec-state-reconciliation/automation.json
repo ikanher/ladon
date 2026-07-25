@@ -1,0 +1,11 @@
+{
+  "commands": [
+    "openspec validate ladon-openspec-state-reconciliation --strict",
+    "openspec validate --all --strict --no-interactive",
+    "uv run --locked pytest -q tests/test_openspec_backlog.py tests/test_openspec_hygiene.py",
+    "uv run --locked python scripts/ladon_openspec_backlog.py --openspec-root openspec --check",
+    "uv run --locked python scripts/ladon_openspec_hygiene.py --openspec-root openspec --check",
+    "uv run --locked python scripts/openspec_canonical_gate.py --profile legacy-cli --allow-active-delta",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

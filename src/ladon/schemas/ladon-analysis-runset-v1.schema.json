@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ladon:analysis-runset:v1",
+  "title": "Ladon generic analysis runset v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifactKind",
+    "schemaVersion",
+    "name",
+    "repository",
+    "policy",
+    "resources",
+    "metadata",
+    "entries"
+  ],
+  "properties": {
+    "artifactKind": {"const": "ladon_analysis_runset"},
+    "schemaVersion": {"const": 1},
+    "name": {"type": "string", "minLength": 1},
+    "repository": {"$ref": "#/$defs/portablePath"},
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "concurrency",
+        "stopOnRequiredFailure",
+        "continueOnAdvisoryFailure"
+      ],
+      "properties": {
+        "concurrency": {"const": 1},
+        "stopOnRequiredFailure": {"type": "boolean"},
+        "continueOnAdvisoryFailure": {"type": "boolean"}
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "overallTimeoutSeconds",
+        "maxRssMiB",
+        "maxReportBytes"
+      ],
+      "properties": {
+        "overallTimeoutSeconds": {
+          "type": ["number", "null"],
+          "exclusiveMinimum": 0
+        },
+        "maxRssMiB": {
+          "type": ["integer", "null"],
+          "exclusiveMinimum": 0
+        },
+        "maxReportBytes": {
+          "type": ["integer", "null"],
+          "exclusiveMinimum": 0
+        }
+      }
+    },
+    "metadata": {"type": "object"},
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/entry"}
+    }
+  },
+  "$defs": {
+    "portablePath": {
+      "type": "string",
+      "minLength": 1,
+      "not": {
+        "anyOf": [
+          {"pattern": "^/"},
+          {"pattern": "^[A-Za-z]:"},
+          {"pattern": "(^|/)\\.\\.(/|$)"},
+          {"pattern": "\\\\"},
+          {"pattern": "^~"}
+        ]
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "root",
+        "scope",
+        "backend",
+        "projection",
+        "output",
+        "required",
+        "reportVersion",
+        "options",
+        "dependsOn"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]*$"
+        },
+        "root": {"$ref": "#/$defs/portablePath"},
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind"],
+          "properties": {
+            "kind": {"type": "string", "minLength": 1},
+            "roots": {
+              "type": "array",
+              "items": {"type": "string", "minLength": 1},
+              "uniqueItems": true
+            },
+            "changedPaths": {
+              "type": "array",
+              "items": {"$ref": "#/$defs/portablePath"},
+              "uniqueItems": true
+            },
+            "changedManifest": {"$ref": "#/$defs/portablePath"},
+            "maxModules": {"type": "integer", "minimum": 1},
+            "maxContextModules": {"type": "integer", "minimum": 1},
+            "leanBatchSize": {"type": "integer", "minimum": 2},
+            "resolvedPaths": {
+              "type": "array",
+              "items": {"$ref": "#/$defs/portablePath"},
+              "uniqueItems": true
+            }
+          }
+        },
+        "backend": {"enum": ["text", "lean"]},
+        "projection": {"enum": ["summary", "review", "full"]},
+        "output": {
+          "allOf": [
+            {"$ref": "#/$defs/portablePath"},
+            {"pattern": "\\.json$"}
+          ]
+        },
+        "required": {"type": "boolean"},
+        "reportVersion": {"enum": ["v2", "v3"]},
+        "options": {"$ref": "#/$defs/options"},
+        "dependsOn": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9._-]*$"
+          },
+          "uniqueItems": true
+        }
+      }
+    },
+    "options": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "build": {"type": "boolean"},
+        "buildTimeout": {"type": "number", "exclusiveMinimum": 0},
+        "leanExtractionScope": {"enum": ["root", "inventory"]},
+        "leanCacheDir": {"$ref": "#/$defs/portablePath"},
+        "leanBatchSize": {"type": "integer", "minimum": 2},
+        "leanTimeout": {"type": "number", "exclusiveMinimum": 0},
+        "failOn": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        },
+        "docFiles": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/portablePath"}
+        },
+        "packetDirs": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/portablePath"}
+        },
+        "architecturePolicy": {"$ref": "#/$defs/portablePath"},
+        "sourcePatternPolicy": {"$ref": "#/$defs/portablePath"},
+        "moduleSystemWitness": {"$ref": "#/$defs/portablePath"},
+        "importDietWitness": {"$ref": "#/$defs/portablePath"},
+        "proofXray": {"$ref": "#/$defs/portablePath"},
+        "generatedFamilyPolicy": {"$ref": "#/$defs/portablePath"},
+        "packetProfile": {
+          "enum": [
+            "generic",
+            "review_packet",
+            "witness_bundle",
+            "release_bundle"
+          ]
+        }
+      }
+    }
+  }
+}

@@ -15,6 +15,13 @@ DIRECT_MODULE_DAG = {
                 "sourcePath": "Pkg/Alpha/Owner.lean",
                 "line": 7,
                 "importText": "import Pkg.Beta.Core",
+                "sourceRange": {
+                    "start": {"line": 7, "column": 0},
+                    "end": {"line": 7, "column": 20},
+                },
+                "contentHash": "sha256:owner",
+                "confidence": "parser_source_range",
+                "authority": "lexical_text",
             }
         }
     },
@@ -64,6 +71,10 @@ def test_architecture_policy_records_import_source_location() -> None:
     assert finding["sourcePath"] == "Pkg/Alpha/Owner.lean"
     assert finding["line"] == 7
     assert finding["importText"] == "import Pkg.Beta.Core"
+    assert finding["sourceRange"]["start"]["column"] == 0
+    assert finding["sourceContentHash"] == "sha256:owner"
+    assert finding["sourceConfidence"] == "parser_source_range"
+    assert finding["sourceAuthority"] == "lexical_text"
 
 
 def test_architecture_policy_reports_direct_pair_summary() -> None:

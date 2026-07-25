@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from ladon.finding_workflow import canonical_row_evidence
+
 
 ACTION_MESSAGES = {
     "extract_common_lower_layer": "Extract or clarify a neutral lower layer for shared imports.",
@@ -41,7 +43,10 @@ def summarize_refactoring_prescriptions(
         "schemaVersion": 1,
         "summary": prescription_summary(rows),
         "rows": rows,
-        "findings": [prescription_finding(row) for row in rows[:20]],
+        "findings": [
+            prescription_finding(row, index)
+            for index, row in enumerate(rows[:20])
+        ],
         "trustNote": "Prescriptions are review directions from evidence; Ladon does not rewrite source or prove the refactor is correct.",
     }
 
@@ -189,17 +194,67 @@ def prescription(action: str, subject: str, *, confidence: str, priority: int, e
     }
 
 
-def prescription_finding(row: dict[str, Any]) -> dict[str, Any]:
+def prescription_finding(
+    row: dict[str, Any],
+    index: int,
+) -> dict[str, Any]:
     """Return one prescription as a finding."""
 
-    return {
+    evidence = row.get("evidence")
+    inherited = (
+        list(evidence.get("evidenceRefs", []))
+        if isinstance(evidence, dict)
+        and isinstance(evidence.get("evidenceRefs"), list)
+        else []
+    )
+    finding = {
         "kind": f"refactoring_prescription.{row['action']}",
         "severity": "info",
         "subject": row.get("subject", ""),
         "count": int(row.get("priority", 1) or 1),
         "message": row.get("message", ""),
         "refactoringPrescriptionOnly": True,
+        "evidenceRefs": [
+            *inherited,
+            canonical_row_evidence(
+                "refactoring_prescriptions",
+                "rows",
+                index,
+                identity={
+                    "action": row.get("action"),
+                    "subject": row.get("subject", ""),
+                },
+                authority="refactoring_prescription_analysis",
+            ),
+        ],
     }
+    if isinstance(evidence, dict):
+        copy_finding_source_fields(finding, evidence)
+    return finding
+
+
+def copy_finding_source_fields(
+    finding: dict[str, Any],
+    row: dict[str, Any],
+) -> None:
+    """Preserve source attachment metadata inherited by a prescription."""
+
+    for key in (
+        "sourcePath",
+        "sourceRange",
+        "selectionRange",
+        "contentHash",
+        "sourceHash",
+        "confidence",
+        "authority",
+        "line",
+        "column",
+        "endLine",
+        "endColumn",
+        "pathImportSites",
+    ):
+        if key in row:
+            finding[key] = row[key]
 
 
 def prescription_summary(rows: list[dict[str, Any]]) -> dict[str, int]:

@@ -1,0 +1,225 @@
+{
+  "program": "ladon-alpha-hardening-umbrella",
+  "interfaceInvariant": "One shared public CLI contract across supported public entrypoints, no caller-specific analysis path, and identical behavior for every caller.",
+  "authorityClasses": [
+    {
+      "id": "lexical_text",
+      "owner": "ladon-signal-correctness-hardening",
+      "reportValues": [
+        "lexical_text",
+        "module_import_graph",
+        "source_declaration_inventory",
+        "ladon_derived_heuristic"
+      ],
+      "nonclaim": "Bounded source observation; not Lean parsing, elaboration, compilation, or theorem truth."
+    },
+    {
+      "id": "parser_candidate",
+      "owner": "ladon-lean-extraction-runtime-hardening",
+      "reportValues": [
+        "lean_parser",
+        "parser_observed"
+      ],
+      "nonclaim": "Lean parser-helper candidate; not an elaborated type/value dependency or kernel verdict."
+    },
+    {
+      "id": "lean_elaborated",
+      "owner": "ladon-elaborated-declaration-surface",
+      "reportValues": [
+        "lean_environment",
+        "lean_elaborated",
+        "lean-environment-direct"
+      ],
+      "nonclaim": "Direct bounded elaborated fact with recorded scope; not a transitive footprint or proof-truth claim."
+    },
+    {
+      "id": "quoted_external",
+      "owner": "ladon-report-contract-v2",
+      "reportValues": [
+        "external_tool_quoted",
+        "unknown"
+      ],
+      "nonclaim": "Quoted artifact evidence retains its source authority and is not promoted by Ladon."
+    },
+    {
+      "id": "ladon_report_metadata",
+      "owner": "ladon-report-contract-v2",
+      "reportValues": [
+        "capability-owner",
+        "ladon-analysis"
+      ],
+      "nonclaim": "Report-envelope ownership and Ladon-derived provenance labels are metadata, not stronger source or Lean evidence."
+    }
+  ],
+  "blockerVisibility": "The readiness result emits every child with a blockers array; --require-all-children fails before automation when any array would be non-empty.",
+  "publication": {
+    "technicalReadinessIndependent": true,
+    "status": "blocked",
+    "reason": "No project-owner distribution license has been granted."
+  },
+  "dependencySemantics": {
+    "startAfter": "Work that must finish before implementation of this child starts. A change#milestone reference permits staged overlap after that named milestone.",
+    "integrationDependsOn": "Contracts or artifacts that must exist before this child can integrate its result.",
+    "closeAfter": "Changes that must close before this child may be declared complete.",
+    "childResolution": "A stable change ID resolves to one active packet or one uniquely named dated archive; archived packets satisfy completed-child references only after isolated artifact and canonical-postcondition validation.",
+    "milestoneReference": "A change#milestone edge resolves to the named event at its declared phase. pre-close events permit staged overlap; post-archive events require the owner to close and archive first."
+  },
+  "children": [
+    {
+      "change": "ladon-openspec-state-reconciliation",
+      "capability": "ladon-openspec-state-reconciliation",
+      "startAfter": [],
+      "integrationDependsOn": [],
+      "closeAfter": [],
+      "milestones": [
+        {
+          "name": "canonicalized-legacy-cli-deltas",
+          "phase": "post-archive",
+          "definedBy": "archive ladon-pipeline-phase-boundaries-timing, then ladon-clean-core-radon-gate, ladon-root-matrix-lean-expansion, ladon-proof-xray-staging, and finally ladon-openspec-state-reconciliation from its self-archive handoff",
+          "gates": [
+            "openspec validate --specs --strict --no-interactive",
+            "uv run --locked python scripts/openspec_canonical_gate.py --profile legacy-cli --require-canonical"
+          ]
+        }
+      ],
+      "exitClass": "truthful-legacy-change-inventory"
+    },
+    {
+      "change": "ladon-clean-checkout-and-ci",
+      "capability": "ladon-project-reproducibility",
+      "startAfter": [],
+      "integrationDependsOn": [
+        "ladon-openspec-state-reconciliation"
+      ],
+      "closeAfter": [
+        "ladon-openspec-state-reconciliation",
+        "ladon-report-contract-v2",
+        "ladon-cli-execution-contract",
+        "ladon-signal-correctness-hardening",
+        "ladon-lean-extraction-runtime-hardening",
+        "ladon-elaborated-declaration-surface",
+        "ladon-signal-benchmark-harness"
+      ],
+      "milestones": [
+        {
+          "name": "tracked-source-baseline",
+          "phase": "pre-close",
+          "definedBy": "ladon-clean-checkout-and-ci task 2.4",
+          "gates": [
+            "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --baseline-only"
+          ]
+        },
+        {
+          "name": "final-release-gate",
+          "phase": "pre-close",
+          "definedBy": "ladon-clean-checkout-and-ci tasks 5.5-5.7",
+          "gateRegistry": "ladon-clean-checkout-and-ci#automation"
+        }
+      ],
+      "exitClass": "clean-export-release-gate"
+    },
+    {
+      "change": "ladon-report-contract-v2",
+      "capability": "ladon-report-contract-v2",
+      "startAfter": [],
+      "integrationDependsOn": [
+        "ladon-openspec-state-reconciliation",
+        "ladon-clean-checkout-and-ci#tracked-source-baseline"
+      ],
+      "closeAfter": [
+        "ladon-openspec-state-reconciliation",
+        "ladon-clean-checkout-and-ci#tracked-source-baseline"
+      ],
+      "exitClass": "schema-and-reader-contract"
+    },
+    {
+      "change": "ladon-cli-execution-contract",
+      "capability": "ladon-cli-execution",
+      "startAfter": [],
+      "integrationDependsOn": [
+        "ladon-openspec-state-reconciliation#canonicalized-legacy-cli-deltas",
+        "ladon-report-contract-v2"
+      ],
+      "closeAfter": [
+        "ladon-openspec-state-reconciliation#canonicalized-legacy-cli-deltas",
+        "ladon-report-contract-v2"
+      ],
+      "exitClass": "installed-process-contract"
+    },
+    {
+      "change": "ladon-signal-correctness-hardening",
+      "capability": "ladon-signal-correctness",
+      "startAfter": [],
+      "integrationDependsOn": [
+        "ladon-openspec-state-reconciliation",
+        "ladon-report-contract-v2",
+        "ladon-cli-execution-contract"
+      ],
+      "closeAfter": [
+        "ladon-openspec-state-reconciliation",
+        "ladon-report-contract-v2",
+        "ladon-cli-execution-contract"
+      ],
+      "exitClass": "positive-negative-regressions"
+    },
+    {
+      "change": "ladon-lean-extraction-runtime-hardening",
+      "capability": "ladon-lean-extraction-runtime",
+      "startAfter": [
+        "ladon-cli-execution-contract"
+      ],
+      "integrationDependsOn": [
+        "ladon-report-contract-v2"
+      ],
+      "closeAfter": [
+        "ladon-cli-execution-contract",
+        "ladon-report-contract-v2"
+      ],
+      "exitClass": "bounded-lean-runtime"
+    },
+    {
+      "change": "ladon-elaborated-declaration-surface",
+      "capability": "ladon-elaborated-declaration-surface",
+      "startAfter": [
+        "ladon-lean-extraction-runtime-hardening",
+        "ladon-report-contract-v2"
+      ],
+      "integrationDependsOn": [
+        "ladon-lean-extraction-runtime-hardening",
+        "ladon-report-contract-v2"
+      ],
+      "closeAfter": [
+        "ladon-lean-extraction-runtime-hardening",
+        "ladon-report-contract-v2"
+      ],
+      "exitClass": "bounded-elaborated-surface"
+    },
+    {
+      "change": "ladon-signal-benchmark-harness",
+      "capability": "ladon-signal-benchmark-harness",
+      "startAfter": [
+        "ladon-clean-checkout-and-ci#tracked-source-baseline",
+        "ladon-cli-execution-contract",
+        "ladon-report-contract-v2"
+      ],
+      "integrationDependsOn": [
+        "ladon-signal-correctness-hardening",
+        "ladon-lean-extraction-runtime-hardening",
+        "ladon-elaborated-declaration-surface"
+      ],
+      "closeAfter": [
+        "ladon-signal-correctness-hardening",
+        "ladon-lean-extraction-runtime-hardening",
+        "ladon-elaborated-declaration-surface"
+      ],
+      "exitClass": "portable-product-budgets"
+    }
+  ],
+  "milestoneExit": [
+    "all children complete",
+    "all children strictly valid",
+    "explicit clean-candidate gates pass",
+    "no role-specific CLI or analysis path",
+    "no unplanned default heuristic family"
+  ]
+}

@@ -11,6 +11,8 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping
 
+from ladon.finding_workflow import canonical_row_evidence
+
 
 DEFAULT_MAX_MATCHES = 200
 SEVERITIES = {"info", "warning", "error", "critical"}
@@ -58,8 +60,14 @@ def summarize_source_patterns(
     match_count = sum(int(row["matchCount"]) for row in pattern_summary)
     kind_summary = summary_counts(pattern_summary, "kind")
     severity_summary = summary_counts(pattern_summary, "severity")
-    findings = [match_finding(match) for match in matches]
-    findings.extend(diagnostic_finding(diagnostic) for diagnostic in diagnostics)
+    findings = [
+        match_finding(match, index)
+        for index, match in enumerate(matches)
+    ]
+    findings.extend(
+        diagnostic_finding(diagnostic, index)
+        for index, diagnostic in enumerate(diagnostics)
+    )
     return {
         "artifactKind": "ladon_source_pattern_report",
         "schemaVersion": 1,
@@ -189,7 +197,10 @@ def compile_pattern(pattern: str, *, case_sensitive: bool) -> re.Pattern[str]:
     return re.compile(pattern, flags)
 
 
-def match_finding(match: dict[str, Any]) -> dict[str, Any]:
+def match_finding(
+    match: dict[str, Any],
+    index: int,
+) -> dict[str, Any]:
     """Adapt a source-pattern match to Ladon's shared finding shape."""
 
     detail = match.get("message") or f"{match['patternId']} matched {match['kind']}"
@@ -206,10 +217,28 @@ def match_finding(match: dict[str, Any]) -> dict[str, Any]:
         "line": match["line"],
         "text": match["text"],
         "generated": match["generated"],
+        "authority": "lexical_text",
+        "confidence": "direct_text_match",
+        "evidenceRefs": [
+            canonical_row_evidence(
+                "source_patterns",
+                "matches",
+                index,
+                identity={
+                    "patternId": match["patternId"],
+                    "path": match["path"],
+                    "line": match["line"],
+                },
+                authority="lexical_text",
+            )
+        ],
     }
 
 
-def diagnostic_finding(diagnostic: dict[str, Any]) -> dict[str, Any]:
+def diagnostic_finding(
+    diagnostic: dict[str, Any],
+    index: int,
+) -> dict[str, Any]:
     """Adapt policy diagnostics to the shared finding shape."""
 
     return {
@@ -218,6 +247,18 @@ def diagnostic_finding(diagnostic: dict[str, Any]) -> dict[str, Any]:
         "severity": "error",
         "subject": diagnostic["subject"],
         "message": diagnostic["message"],
+        "evidenceRefs": [
+            canonical_row_evidence(
+                "source_patterns",
+                "diagnostics",
+                index,
+                identity={
+                    "kind": diagnostic.get("kind"),
+                    "subject": diagnostic["subject"],
+                },
+                authority="source_pattern_policy",
+            )
+        ],
     }
 
 

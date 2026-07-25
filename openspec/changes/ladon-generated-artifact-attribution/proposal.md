@@ -26,3 +26,12 @@ None.
 
 - Affected code: extraction tags, module DAG metadata, duplicate import rows,
   report rendering.
+
+## Reconciliation Disposition
+
+The generated-family attribution and duplicate-import requirements are shipped
+and retain this packet as their historical source. The distinct defect where
+generated importers inflate a table labeled handwritten is transferred to
+`ladon-signal-correctness-hardening`, which owns population filters on both
+importers and targets plus corrected labels. This packet is therefore
+superseded-with-residuals rather than treated as the owner of that repair.

@@ -45,9 +45,9 @@ def test_pipeline_json_payload_has_additive_timing_namespace() -> None:
     assert payload["module_dag"]["module_count"] == 3
     assert "pipeline" in payload
     assert "timings" in payload["pipeline"]
-    assert payload["pipeline"]["timings"]["module_dag"]["status"] == "ok"
+    assert payload["pipeline"]["timings"]["module_dag"]["status"] == "complete"
     assert payload["pipeline"]["timings"]["declaration_graph"]["status"] == "skipped"
-    assert payload["pipeline"]["timings"]["architecture_policy"]["status"] == "ok"
+    assert payload["pipeline"]["timings"]["architecture_policy"]["status"] == "complete"
     assert payload["architecture_policy"]["status"] == "skipped_no_policy"
     assert any(
         finding["kind"] == "architecture_policy.skipped_no_policy"
@@ -79,7 +79,7 @@ def test_pipeline_applies_architecture_policy_findings() -> None:
     payload = run_pipeline(context).to_report_payload()
 
     assert payload["architecture_policy"]["policyId"] == "tiny-policy"
-    assert payload["pipeline"]["timings"]["architecture_policy"]["status"] == "ok"
+    assert payload["pipeline"]["timings"]["architecture_policy"]["status"] == "complete"
     assert any(
         finding["kind"] == "architecture_policy.direct_forbidden_import"
         and finding["subject"] == "Tiny -> Tiny.Helper"
@@ -108,7 +108,7 @@ def test_pipeline_applies_source_pattern_policy_findings() -> None:
 
     assert payload["source_patterns"]["policyId"] == "tiny-source-policy"
     assert payload["source_patterns"]["matchCount"] == 1
-    assert payload["pipeline"]["timings"]["source_patterns"]["status"] == "ok"
+    assert payload["pipeline"]["timings"]["source_patterns"]["status"] == "complete"
     assert any(
         finding["kind"] == "source_pattern.match"
         and finding["sourcePath"] == "Tiny/Core.lean"
@@ -167,7 +167,8 @@ def test_pipeline_reports_declaration_graph_when_lean_bundle_has_declarations() 
 
     assert result.timing_by_phase()["declaration_graph"].status == "ok"
     assert payload["declaration_graph"]["edge_count"] == 1
-    assert payload["declaration_graph"]["declarations"][1] == {
+    row = payload["declaration_graph"]["declarations"][1]
+    expected = {
         "declaration": "Tiny.root",
         "module": "Tiny",
         "sourcePath": "Tiny.lean",
@@ -178,7 +179,94 @@ def test_pipeline_reports_declaration_graph_when_lean_bundle_has_declarations() 
         "nameResolutionMethod": "parser_namespace_stack",
         "confidence": "parser_source_range",
     }
+    assert {key: row[key] for key in expected} == expected
+    assert_parser_only_surface_is_unavailable(row)
     assert payload["declaration_graph"]["top_fan_in"][0]["declaration"] == "Tiny.leaf"
+
+
+def test_declaration_population_and_ranking_use_recomputed_owned_edges() -> None:
+    modules = {
+        "Tiny": LeanModule(
+            name="Tiny",
+            path="Tiny.lean",
+            declarations=("Tiny.root", "Tiny.leaf"),
+        ),
+        "Tiny.Generated.Row": LeanModule(
+            name="Tiny.Generated.Row",
+            path="Tiny/Generated/Row.lean",
+            declarations=("Tiny.Generated.Row.value",),
+        ),
+    }
+    declarations = {
+        "Tiny.root": LeanDeclaration(
+            name="Tiny.root",
+            module="Tiny",
+            references=("Tiny.leaf", "Tiny._aux", "Dep.value"),
+        ),
+        "Tiny.leaf": LeanDeclaration(name="Tiny.leaf", module="Tiny"),
+        "Tiny._aux": LeanDeclaration(
+            name="Tiny._aux",
+            module="Tiny",
+            compiler_generated=True,
+            compiler_authority="lean_environment",
+            compiler_toolchain="Lean 4.32.1",
+        ),
+        "Dep.value": LeanDeclaration(
+            name="Dep.value",
+            module="Dep",
+            is_imported_stub=True,
+        ),
+        "Tiny.Generated.Row.value": LeanDeclaration(
+            name="Tiny.Generated.Row.value",
+            module="Tiny.Generated.Row",
+        ),
+    }
+
+    def fake_runner(_context: RunContext, _discovered) -> ExtractionBundle:
+        return ExtractionBundle(modules=modules, declarations=declarations)
+
+    graph = run_pipeline(
+        RunContext(
+            repo_root=FIXTURE_ROOT,
+            requested_root="Tiny.lean",
+            extraction_backend="lean",
+            lean_extractor=fake_runner,
+            generated_family_policy={
+                "schema": "ladon-generated-family-policy-v1",
+                "families": [
+                    {
+                        "id": "fixture.rows",
+                        "pathPatterns": ["Tiny/Generated/*.lean"],
+                    }
+                ],
+            },
+        )
+    ).to_report_payload()["declaration_graph"]
+
+    assert graph["population_calibration"]["counts"] == {
+        "compiler_generated": 1,
+        "imported": 1,
+        "project_generated": 1,
+        "target_owned": 2,
+    }
+    assert graph["chosen_roots"] == ["Tiny.leaf", "Tiny.root"]
+    root = next(
+        row
+        for row in graph["top_target_owned_fan_out"]
+        if row["declaration"] == "Tiny.root"
+    )
+    assert root["fan_out"] == 1
+    assert root["rawMetric"] == 3
+    assert root["exclusions"]["nonTargetOwnedEndpoints"] == 2
+
+
+def assert_parser_only_surface_is_unavailable(row: dict) -> None:
+    """Require explicit unavailable elaborated fields in legacy fake bundles."""
+
+    assert row["parserCandidates"]["status"] == "unavailable"
+    assert row["typeDependencies"]["status"] == "unavailable"
+    assert row["valueDependencies"]["status"] == "unavailable"
+    assert row["surface"]["status"] == "unavailable"
 
 
 def test_text_report_renders_declaration_graph_triage_rows() -> None:

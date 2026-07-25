@@ -1,0 +1,8 @@
+{
+  "commands": [
+    "openspec validate ladon-report-contract-v2 --strict",
+    "uv run --locked pytest -q tests/test_pipeline.py tests/test_render.py tests/test_atlas.py tests/test_atlas_diff.py tests/test_atlas_sqlite.py tests/test_atlas_workflow.py tests/test_proofir_bridge.py",
+    "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --package-resource ladon:schemas/ladon-report-v2.schema.json",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

@@ -5,9 +5,77 @@ import sys
 from pathlib import Path
 
 from ladon.cli import build_parser, main
+from ladon.progress import ResourceLimitExceeded
 
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
+
+
+def json_progress_events(stderr: str) -> list[dict]:
+    """Decode a stderr stream that must contain only progress records."""
+
+    return [json.loads(line) for line in stderr.splitlines()]
+
+
+def embedded_json_progress_events(stderr: str) -> list[dict]:
+    """Decode progress records embedded alongside human diagnostics."""
+
+    return [
+        json.loads(line)
+        for line in stderr.splitlines()
+        if line.startswith("{")
+    ]
+
+
+def assert_progress_event_contract(events: list[dict]) -> None:
+    """Check fields shared by every emitted progress event."""
+
+    assert events
+    assert all(event["schemaVersion"] == 1 for event in events)
+    assert all(event["phase"] for event in events)
+
+
+def assert_serialization_progress_completed(events: list[dict]) -> None:
+    """Check that JSON serialization reports one complete terminal event."""
+
+    serialization = [
+        event
+        for event in events
+        if event["phase"] == "serialization.json"
+        and event["event"] == "finish"
+    ]
+    assert len(serialization) == 1
+    assert serialization[0]["completed"] == serialization[0]["total"]
+    assert serialization[0]["completed"] > 0
+
+
+def assert_retained_partial_discovery(payload: dict) -> None:
+    """Check the retained inventory and required partial disposition."""
+
+    assert payload["phases"]["discover"]["status"] == "partial"
+    assert payload["phases"]["discover"]["required"] is True
+    assert payload["phases"]["discover"]["disposition"] == "required-rejection"
+    assert payload["sections"]["module_dag"]["module_count"] == 2
+
+
+def assert_partial_discovery_diagnostics(stderr: str, output: Path) -> None:
+    """Check controlling diagnostics name the failed module and report."""
+
+    assert "source_index.source_failed" in stderr
+    assert "Broken" in stderr
+    assert str(output) in stderr
+
+
+def assert_partial_progress_terminal_states(stderr: str) -> None:
+    """Check retained downstream work is explicitly labeled partial."""
+
+    terminal = {
+        event["phase"]: event["status"]
+        for event in embedded_json_progress_events(stderr)
+        if event["event"] == "finish"
+    }
+    assert terminal["discover"] == "partial"
+    assert terminal["module_dag"] == "partial"
 
 
 def test_import_ladon_uses_clean_entrypoint() -> None:
@@ -17,6 +85,23 @@ def test_import_ladon_uses_clean_entrypoint() -> None:
 
     assert callable(ladon.main)
     assert "ladon.ladon" not in sys.modules
+
+
+def test_top_level_help_discovers_every_ordinary_command() -> None:
+    help_text = build_parser().format_help()
+
+    for command in (
+        "runset",
+        "preview",
+        "findings",
+        "atlas",
+        "query",
+        "diff",
+        "cards",
+        "workflow",
+    ):
+        assert f"  {command}" in help_text
+    assert "LLM" not in help_text
 
 
 def test_clean_cli_writes_json_and_text_module_dag(tmp_path: Path) -> None:
@@ -58,7 +143,6 @@ def run_tiny_cli(json_path: Path, text_path: Path) -> int:
             str(FIXTURE_ROOT),
             "--root",
             "Tiny.lean",
-            "--skip-build",
             "--output-json",
             str(json_path),
             "--output-text",
@@ -88,6 +172,134 @@ def test_clean_cli_accepts_lean_cache_dir_option(tmp_path: Path) -> None:
     args = build_parser().parse_args(["--lean-cache-dir", str(tmp_path / "cache")])
 
     assert args.lean_cache_dir == str(tmp_path / "cache")
+
+
+def test_explicit_json_progress_stays_on_stderr(capsys) -> None:
+    status = main(
+        [
+            "--repo-root",
+            str(FIXTURE_ROOT),
+            "--root",
+            "Tiny.lean",
+            "--format",
+            "json",
+            "--output",
+            "-",
+            "--progress",
+            "json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert status == 0
+    assert json.loads(captured.out)["metadata"]["analysis_root_module"] == "Tiny"
+    events = json_progress_events(captured.err)
+    assert_progress_event_contract(events)
+    assert_serialization_progress_completed(events)
+
+
+def test_report_size_limit_fails_before_file_publication(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    output = tmp_path / "oversized.json"
+
+    status = main(
+        [
+            "--repo-root",
+            str(FIXTURE_ROOT),
+            "--root",
+            "Tiny.lean",
+            "--format",
+            "json",
+            "--output",
+            str(output),
+            "--max-report-bytes",
+            "1",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert status == 1
+    assert not output.exists()
+    assert "report_bytes limit exceeded" in captured.err
+
+
+def test_overall_limit_writes_schema_valid_retained_partial_report(
+    tmp_path: Path,
+    capsys,
+    monkeypatch,
+) -> None:
+    output = tmp_path / "partial.json"
+
+    def injected_limit(_budget, phase: str) -> None:
+        if phase == "module_dag":
+            raise ResourceLimitExceeded(
+                kind="overall_wall_time",
+                phase=phase,
+                observed=2.0,
+                limit=1.0,
+            )
+
+    monkeypatch.setattr("ladon.progress.RunBudget.check", injected_limit)
+    status = main(
+        [
+            "--repo-root",
+            str(FIXTURE_ROOT),
+            "--root",
+            "Tiny.lean",
+            "--format",
+            "json",
+            "--output",
+            str(output),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert status == 1
+    assert payload["phases"]["module_dag"]["status"] == "failed"
+    assert payload["phases"]["module_dag"]["required"] is True
+    assert payload["sections"]["module_dag"]["completeness"][
+        "metricsSuppressed"
+    ] is True
+    assert "resource.overall_wall_time" in captured.err
+    assert str(output) in captured.err
+
+
+def test_partial_discovery_writes_retained_report_and_controlling_diagnostic(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "A.lean").write_text("def a : Nat := 1\n", encoding="utf-8")
+    (repo / "B.lean").write_text("def b : Nat := 2\n", encoding="utf-8")
+    (repo / "Broken.lean").write_bytes(b"\xff")
+    output = tmp_path / "partial.json"
+
+    status = main(
+        [
+            "--repo-root",
+            str(repo),
+            "--scope",
+            "inventory",
+            "--no-cache",
+            "--format",
+            "json",
+            "--output",
+            str(output),
+            "--progress",
+            "json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert status == 1
+    assert_retained_partial_discovery(payload)
+    assert_partial_discovery_diagnostics(captured.err, output)
+    assert_partial_progress_terminal_states(captured.err)
 
 
 def test_clean_cli_accepts_architecture_policy_json(tmp_path: Path) -> None:

@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "ladon-lean-extraction-runtime-hardening.apply",
+  "goal": "Apply the bounded, cache-correct, Lake-aware Lean extraction runtime packet.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "governance_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "theorem_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.inspect_baseline",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.baseline.inspect"
+      ],
+      "commandRefs": [
+        "openspec status --change ladon-lean-extraction-runtime-hardening --json",
+        "openspec instructions apply --change ladon-lean-extraction-runtime-hardening --json",
+        "git diff -- src/ladon/pipeline.py src/ladon/extraction.py src/ladon/process_supervisor.py src/ladon/lean_extraction.py tests/test_lean_extraction.py tests/test_process_supervisor.py"
+      ]
+    },
+    {
+      "stepId": "step.protocol_runtime",
+      "status": "completed",
+      "prerequisites": [
+        "step.inspect_baseline"
+      ],
+      "evidenceRefs": [
+        "check.runtime.focused"
+      ],
+      "commandRefs": [
+        "uv run --locked pytest -q tests/test_lean_runtime_report.py tests/test_lean_runtime.py tests/test_lean_protocol.py tests/test_process_supervisor.py tests/test_lean_cache.py tests/test_lean_layout.py"
+      ]
+    },
+    {
+      "stepId": "step.cache_discovery",
+      "status": "completed",
+      "prerequisites": [
+        "step.protocol_runtime"
+      ],
+      "evidenceRefs": [
+        "check.runtime.focused",
+        "check.runtime.quality"
+      ],
+      "commandRefs": [
+        "uv run --locked pytest -q tests/test_lean_cache.py tests/test_lean_layout.py",
+        "uv run --locked radon cc -s src/ladon/lean_extraction.py src/ladon/pipeline.py src/ladon/cli.py tests/test_lean_runtime_report.py"
+      ]
+    },
+    {
+      "stepId": "step.integration_gates",
+      "status": "completed",
+      "prerequisites": [
+        "step.cache_discovery"
+      ],
+      "evidenceRefs": [
+        "check.real_lean.required",
+        "check.runtime.benchmark",
+        "check.packet.focused",
+        "check.strict_quality.final",
+        "check.openspec.strict"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/lean_runtime_gate.py --required",
+        "uv run --locked python scripts/lean_runtime_benchmark.py",
+        "uv run --locked pytest -q tests/test_lean_extraction.py tests/test_pipeline.py tests/test_extraction.py tests/test_root_matrix.py",
+        "uv run --locked python scripts/python_quality.py --strict",
+        "openspec validate ladon-lean-extraction-runtime-hardening --strict"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.baseline.inspect",
+      "command": "repository and packet inspection",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.runtime.focused",
+      "command": "uv run --locked pytest -q tests/test_lean_runtime_report.py tests/test_lean_runtime.py tests/test_lean_protocol.py tests/test_process_supervisor.py tests/test_lean_cache.py tests/test_lean_layout.py",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "41 passed"
+    },
+    {
+      "checkId": "check.runtime.quality",
+      "command": "uv run --locked radon cc/mi on touched runtime modules",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "No C-grade complexity or maintainability findings"
+    },
+    {
+      "checkId": "check.real_lean.initial",
+      "command": "uv run --locked python scripts/lean_runtime_gate.py --required",
+      "status": "invalid",
+      "failureClass": "checker_failure",
+      "failureMessage": "Provisioning treated Elan's already-installed exit status as a gate failure."
+    },
+    {
+      "checkId": "check.real_lean.required",
+      "command": "uv run --locked python scripts/lean_runtime_gate.py --required",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "Pinned Lean 4.32.1 root and three-module batch extraction passed."
+    },
+    {
+      "checkId": "check.runtime.benchmark",
+      "command": "uv run --locked python scripts/lean_runtime_benchmark.py",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "Cold 3 misses/1 helper; warm 3 hits/0 helpers; invalidated 2 misses/1 hit."
+    },
+    {
+      "checkId": "check.strict_quality.initial",
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "invalid",
+      "failureClass": "checker_failure",
+      "failureMessage": "Two installed fake Lake fixtures modeled parser batches but not the newly enabled elaborated-helper call."
+    },
+    {
+      "checkId": "check.packet.focused",
+      "command": "uv run --locked pytest -q tests/test_lean_extraction.py tests/test_pipeline.py tests/test_extraction.py tests/test_root_matrix.py",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "35 passed"
+    },
+    {
+      "checkId": "check.strict_quality.final",
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "Radon/vulture/compileall clean; 390 tests passed."
+    },
+    {
+      "checkId": "check.openspec.strict",
+      "command": "openspec validate ladon-lean-extraction-runtime-hardening --strict",
+      "status": "valid",
+      "failureClass": null,
+      "failureMessage": "Change is valid."
+    }
+  ],
+  "blockers": [
+    {
+      "blockerId": "blocker.elan_already_installed",
+      "checkId": "check.real_lean.initial",
+      "status": "resolved",
+      "failureClass": "checker_failure",
+      "nextAction": "Query elan toolchain list and install only when absent."
+    },
+    {
+      "blockerId": "blocker.fake_elaborated_helper",
+      "checkId": "check.strict_quality.initial",
+      "status": "resolved",
+      "failureClass": "checker_failure",
+      "nextAction": "Emit a valid empty elaborated payload for non-batch fake Lake calls."
+    }
+  ],
+  "replayBoundary": {
+    "packetLocalReplay": true,
+    "externalEvidenceIncluded": false,
+    "replayCommand": "uv run --locked python scripts/lean_runtime_gate.py --required"
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not Lean theorem evidence.",
+    "The loop does not rely on chat history as completed-step truth.",
+    "No packet-local replay claim is made until the required real-Lean gate passes."
+  ]
+}
