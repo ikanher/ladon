@@ -4,6 +4,12 @@ import json
 import sys
 from pathlib import Path
 
+from ladon.analysis.generated_family_candidate_profile import (
+    CANDIDATE_PROFILE_SCHEMA,
+    COMMAND_SKELETON_VERSION,
+    DECLARATION_STEM_VERSION,
+    GROUPING_VERSION,
+)
 from ladon.cli import build_parser, main
 from ladon.progress import ResourceLimitExceeded
 
@@ -132,6 +138,198 @@ def test_clean_cli_writes_text_report_sections(tmp_path: Path) -> None:
     assert "Module DAG" in text
     assert "Pipeline Phases" in text
     assert "Declaration Graph" not in text
+
+
+def test_repeatable_emit_uses_one_analysis_and_shared_snapshot(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    json_path = tmp_path / "report.json"
+    text_path = tmp_path / "report.txt"
+    calls = 0
+    from ladon import cli
+
+    original = cli.run_pipeline
+
+    def counted_pipeline(context):
+        nonlocal calls
+        calls += 1
+        return original(context)
+
+    monkeypatch.setattr(cli, "run_pipeline", counted_pipeline)
+    status = main(
+        [
+            "--repo-root",
+            str(FIXTURE_ROOT),
+            "--root",
+            "Tiny.lean",
+            "--emit",
+            f"json={json_path}",
+            "--emit",
+            f"text={text_path}",
+        ]
+    )
+
+    payload = json.loads(json_path.read_text(encoding="utf-8"))
+    text = text_path.read_text(encoding="utf-8")
+    assert status == 0
+    assert calls == 1
+    assert f"Snapshot: {payload['snapshot']['identity']}" in text
+    assert payload["snapshot"]["decision"]["status"] == "stable"
+
+
+def test_emit_preflight_rejects_duplicates_before_analysis(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    monkeypatch.setattr(
+        "ladon.cli.run_pipeline",
+        lambda _context: (_ for _ in ()).throw(
+            AssertionError("analysis must not start")
+        ),
+    )
+
+    status = main(
+        [
+            "--repo-root",
+            str(FIXTURE_ROOT),
+            "--emit",
+            f"json={tmp_path / 'first.json'}",
+            "--emit",
+            f"json={tmp_path / 'second.json'}",
+        ]
+    )
+
+    assert status == 2
+    assert "--emit formats must be unique" in capsys.readouterr().err
+
+
+def test_emit_failure_does_not_reanalyze_or_remove_successful_output(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    json_path = tmp_path / "report.json"
+    text_path = tmp_path / "report.txt"
+    from ladon import cli
+
+    analysis_calls = 0
+    original_pipeline = cli.run_pipeline
+    original_target = cli.emit_report_target
+
+    def counted_pipeline(context):
+        nonlocal analysis_calls
+        analysis_calls += 1
+        return original_pipeline(context)
+
+    def fail_text_target(payload, plan, target, **kwargs):
+        if target.format == "text":
+            raise OSError("injected text destination failure")
+        return original_target(payload, plan, target, **kwargs)
+
+    monkeypatch.setattr(cli, "run_pipeline", counted_pipeline)
+    monkeypatch.setattr(cli, "emit_report_target", fail_text_target)
+    status = main(
+        [
+            "--repo-root",
+            str(FIXTURE_ROOT),
+            "--root",
+            "Tiny.lean",
+            "--emit",
+            f"json={json_path}",
+            "--emit",
+            f"text={text_path}",
+        ]
+    )
+
+    assert status == 1
+    assert analysis_calls == 1
+    assert json_path.is_file()
+    assert not text_path.exists()
+    assert "injected text destination failure" in capsys.readouterr().err
+
+
+def test_cli_loads_strict_generated_candidate_profile_before_analysis(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+) -> None:
+    profile_path = tmp_path / "candidate-profile.json"
+    output = tmp_path / "report.json"
+    profile = explicit_candidate_profile()
+    profile_path.write_text(json.dumps(profile), encoding="utf-8")
+
+    status = main(
+        [
+            "--repo-root",
+            str(FIXTURE_ROOT),
+            "--root",
+            "Tiny.lean",
+            "--generated-family-candidate-profile",
+            str(profile_path),
+            "--format",
+            "json",
+            "--output",
+            str(output),
+        ]
+    )
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert status == 0
+    assert payload["sections"]["module_dag"][
+        "generated_family_candidates"
+    ]["profile"]["profileVersion"] == "portable-numbered-family-v2"
+
+    invalid = dict(profile)
+    invalid["profileVersion"] = "generic-numbered-family-v1"
+    profile_path.write_text(json.dumps(invalid), encoding="utf-8")
+    monkeypatch.setattr(
+        "ladon.cli.run_pipeline",
+        lambda _context: (_ for _ in ()).throw(
+            AssertionError("invalid profile must fail before analysis")
+        ),
+    )
+    invalid_status = main(
+        [
+            "--repo-root",
+            str(FIXTURE_ROOT),
+            "--generated-family-candidate-profile",
+            str(profile_path),
+        ]
+    )
+    assert invalid_status == 2
+    assert "built-in profile identity is reserved" in capsys.readouterr().err
+
+
+def explicit_candidate_profile() -> dict:
+    """Return one strict non-default candidate profile for CLI tests."""
+
+    return {
+        "schema": CANDIDATE_PROFILE_SCHEMA,
+        "profileVersion": "portable-numbered-family-v2",
+        "grouping": {"version": GROUPING_VERSION},
+        "clauses": {
+            "minimumMembers": 3,
+            "minimumDensity": {"numerator": 3, "denominator": 4},
+            "directInternalImportMemberCoverage": {
+                "numerator": 3,
+                "denominator": 5,
+            },
+            "lexicalMemberCoverage": {
+                "numerator": 2,
+                "denominator": 3,
+            },
+            "lexicalFeatures": [
+                COMMAND_SKELETON_VERSION,
+                DECLARATION_STEM_VERSION,
+            ],
+        },
+        "normalizers": {
+            "declarationStem": DECLARATION_STEM_VERSION,
+            "commandSkeleton": COMMAND_SKELETON_VERSION,
+        },
+        "representatives": {"limit": 5},
+    }
 
 
 def run_tiny_cli(json_path: Path, text_path: Path) -> int:

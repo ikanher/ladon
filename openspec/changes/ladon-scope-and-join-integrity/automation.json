@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-scope-and-join-integrity",
+  "commands": [
+    "openspec validate ladon-scope-and-join-integrity --strict",
+    "uv run --locked pytest -q tests/test_scope.py tests/test_scope_runtime.py tests/test_scope_join_integrity.py tests/test_import_boundaries.py tests/test_root_applicability.py tests/test_architecture_correlator.py tests/test_findings.py tests/test_render.py tests/test_report_v3.py",
+    "uv run --locked pytest -q tests/test_clean_cli.py tests/test_installed_cli_contract.py",
+    "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --package-resource ladon:schemas/ladon-report-v3.schema.json",
+    "uv run --locked python scripts/large_inventory_gate.py --candidate worktree --required"
+  ]
+}

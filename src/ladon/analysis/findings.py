@@ -7,6 +7,7 @@ from typing import Any
 
 from ladon.analysis.architecture_correlator import architecture_pressure_findings
 from ladon.analysis.quality_baseline import calibrate_count
+from ladon.analysis.root_applicability import root_views_applicable
 from ladon.finding_workflow import (
     aggregate_value_evidence,
     canonical_row_evidence,
@@ -27,13 +28,12 @@ def summarize_findings(
 
     findings: list[dict[str, Any]] = []
     findings.extend(module_fan_in_findings(module_dag))
-    findings.extend(handwritten_module_fan_in_findings(module_dag))
     findings.extend(target_owned_module_fan_in_findings(module_dag))
     findings.extend(generated_family_pressure_findings(module_dag))
     findings.extend(root_import_closure_findings(module_dag))
     findings.extend(duplicate_import_findings(module_dag))
     findings.extend(module_name_smell_findings(module_dag))
-    findings.extend(large_handwritten_module_findings(module_dag))
+    findings.extend(large_target_owned_module_findings(module_dag))
     if declaration_graph:
         findings.extend(declaration_fan_findings(declaration_graph, "top_fan_in", "fan_in"))
         findings.extend(declaration_fan_findings(declaration_graph, "top_fan_out", "fan_out"))
@@ -83,7 +83,7 @@ def module_fan_in_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def handwritten_module_fan_in_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
-    """Flag high fan-in among modules not tagged as generated."""
+    """Adapt the deprecated non-generated-tag compatibility population."""
 
     rows = [
         finding(
@@ -91,8 +91,9 @@ def handwritten_module_fan_in_findings(module_dag: dict[str, Any]) -> list[dict[
             row["module"],
             int(row["fan_in"]),
             (
-                f"{row['module']} is imported by {row['fan_in']} handwritten "
-                "modules; generated importers and targets are excluded."
+                f"{row['module']} is imported by {row['fan_in']} modules in "
+                "the legacy non-generated-tag population; this is not an "
+                "authorship claim."
             ),
             metric="module_fan_in",
             stable_key=fan_in_stable_key(row),
@@ -128,7 +129,7 @@ def target_owned_module_fan_in_findings(
 
     rows = [
         finding(
-            "handwritten_module_fan_in_hotspot",
+            "target_owned_module_fan_in_hotspot",
             row["module"],
             int(row["fan_in"]),
             (
@@ -290,6 +291,8 @@ def nonnegative_integer(value: Any) -> bool:
 def root_import_closure_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
     """Flag direct root imports with large reachable closures."""
 
+    if not root_views_applicable(module_dag):
+        return []
     rows = [
         finding(
             "root_import_closure_hotspot",
@@ -394,20 +397,25 @@ def module_name_smell_message(row: dict[str, Any]) -> str:
     return f"{row['module']} has module-name review pressure ({reasons}); {action}."
 
 
-def large_handwritten_module_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
-    """Flag very large source files after generated modules are filtered."""
+def large_target_owned_module_findings(
+    module_dag: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Flag very large files in the exact calibrated target-owned population."""
 
     rows = [
         finding(
-            "large_handwritten_module",
+            "large_target_owned_module",
             row["module"],
             int(row["lineCount"]),
-            f"{row['module']} has {row['lineCount']} source lines and is not tagged generated.",
+            (
+                f"{row['module']} has {row['lineCount']} source lines in the "
+                "calibrated target-owned population."
+            ),
             metric="module_line_count",
             evidence_refs=[
                 graph_row_evidence(
                     "module_dag",
-                    "top_large_handwritten_modules",
+                    "top_target_owned_large_modules",
                     index,
                     row,
                     subject_field="module",
@@ -416,7 +424,7 @@ def large_handwritten_module_findings(module_dag: dict[str, Any]) -> list[dict[s
             ],
         )
         for index, row in enumerate(
-            module_dag.get("top_large_handwritten_modules", [])
+            module_dag.get("top_target_owned_large_modules", [])
         )
         if int(row.get("lineCount", 0)) >= LARGE_MODULE_LINE_THRESHOLD
     ]
@@ -672,7 +680,7 @@ def deduplicate_promoted_findings(
 
 
 def promotion_specificity(row: dict[str, Any]) -> int:
-    """Prefer explicit handwritten populations over generic duplicates."""
+    """Prefer exact calibrated populations over compatibility projections."""
 
     population = str(row.get("promotion_population", ""))
     return {

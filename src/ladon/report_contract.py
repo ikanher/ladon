@@ -215,7 +215,7 @@ class PhaseEnvelope:
         _validate_phase_disposition(self.disposition)
         _validate_phase_metrics(self.elapsed_seconds, self.counters)
         _validate_phase_reason(self.name, self.status, self.reason)
-        copy_json(self.data)
+        validate_json_value(self.data)
 
     @classmethod
     def complete(
@@ -409,6 +409,8 @@ class ReportMetadata:
     tool_name: str = "ladon"
     tool_version: str = "0.1.0"
     report_version: str = REPORT_VERSION
+    report_anchor: str | None = None
+    report_anchor_module: str | None = None
 
     def __post_init__(self) -> None:
         if self.report_version != REPORT_VERSION:
@@ -434,16 +436,56 @@ class ReportMetadata:
         }
         if self.failure_policy is not None:
             row["failure_policy"] = copy_json(dict(self.failure_policy))
+        if self.report_anchor is not None:
+            row["report_anchor"] = self.report_anchor
+        if self.report_anchor_module is not None:
+            row["report_anchor_module"] = self.report_anchor_module
         return row
 
 
 def copy_json(value: Any) -> Any:
     """Copy and validate one JSON value."""
 
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return value
     try:
         return json.loads(json.dumps(value, sort_keys=True))
     except (TypeError, ValueError) as exc:
         raise ReportModelError(f"report value is not JSON-serializable: {exc}") from exc
+
+
+def validate_json_value(value: Any) -> None:
+    """Validate JSON-shaped data without allocating a discarded deep copy."""
+
+    _validate_json_value(value, active=set())
+
+
+def _validate_json_value(value: Any, *, active: set[int]) -> None:
+    if value is None or isinstance(value, (bool, int, float, str)):
+        return
+    if isinstance(value, dict):
+        _validate_json_container(value, active=active)
+        if any(not isinstance(key, str) for key in value):
+            copy_json(value)
+            return
+        for item in value.values():
+            _validate_json_value(item, active=active)
+        active.remove(id(value))
+        return
+    if isinstance(value, (list, tuple)):
+        _validate_json_container(value, active=active)
+        for item in value:
+            _validate_json_value(item, active=active)
+        active.remove(id(value))
+        return
+    copy_json(value)
+
+
+def _validate_json_container(value: Any, *, active: set[int]) -> None:
+    identity = id(value)
+    if identity in active:
+        raise ReportModelError("report value is not JSON-serializable: circular reference")
+    active.add(identity)
 
 
 def sorted_diagnostics(rows: Iterable[Diagnostic]) -> list[Diagnostic]:

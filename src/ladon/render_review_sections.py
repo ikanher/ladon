@@ -210,29 +210,53 @@ def source_pattern_match_lines(rows: list[dict[str, Any]]) -> list[str]:
 
 
 def finding_lines(findings: list[dict[str, Any]]) -> list[str]:
-    """Render concise root-focused findings."""
+    """Render severe findings first and account for every selected row."""
 
     visible = visible_findings(findings)
     if not findings:
         return []
+    routed = [
+        finding
+        for finding in findings
+        if finding not in visible
+        and finding.get("kind") in POLICY_DETAIL_FINDING_KINDS
+    ]
+    omitted = len(findings) - len(visible) - len(routed)
     lines = [
         "Findings",
         f"- selected: {len(findings)}",
         f"- displayed: {len(visible)}",
-        f"- omitted: {len(findings) - len(visible)}",
+        f"- rendered in named sections: {len(routed)}",
+        f"- omitted with inspection route: {omitted}",
     ]
     lines.extend(finding_line(finding) for finding in visible)
+    if routed or omitted:
+        lines.append(
+            "- inspection route: follow each JSON finding's evidence "
+            "references and ordinary inspection action"
+        )
     return [*lines, ""]
 
 
 def visible_findings(findings: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Keep detailed policy rows in JSON while avoiding noisy text output."""
+    """Keep every warning/error and non-policy informational finding visible."""
 
-    return [
+    selected = [
         finding
         for finding in findings
-        if finding.get("kind") not in POLICY_DETAIL_FINDING_KINDS
+        if finding.get("severity") in {"error", "warning"}
+        or finding.get("kind") not in POLICY_DETAIL_FINDING_KINDS
     ]
+    priority = {"error": 0, "warning": 1, "info": 2}
+    return sorted(
+        selected,
+        key=lambda row: (
+            priority.get(str(row.get("severity", "info")), 3),
+            str(row.get("kind", "")),
+            str(row.get("subject", "")),
+            str(row.get("id", "")),
+        ),
+    )
 
 
 def finding_line(finding: dict[str, Any]) -> str:

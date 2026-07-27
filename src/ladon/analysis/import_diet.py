@@ -181,7 +181,7 @@ def review_rank_by_module(module_dag: dict[str, Any]) -> dict[str, int]:
     for field, metric in (
         ("top_fan_in", "fan_in"),
         ("top_fan_out", "fan_out"),
-        ("top_handwritten_fan_in", "fan_in"),
+        ("top_target_owned_fan_in", "fan_in"),
         ("top_facade_fan_out", "fan_out"),
     ):
         for row in module_dag.get(field, []):

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
+import ladon.lean_layout as lean_layout
 from ladon.extraction import discover_modules
-from ladon.lean_layout import discover_lean_source_map
+from ladon.lean_layout import discover_lean_source_map, lean_paths_under_root
 
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "lean_runtime"
@@ -88,6 +90,73 @@ def test_default_library_root_excludes_unrelated_nested_lean_trees(
 
     assert set(source_map.modules) == {"Pkg", "Pkg.Core"}
     assert source_map.roots[0].module_roots == ("Pkg",)
+
+
+def test_source_walk_prunes_ignored_trees_but_keeps_near_names(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    (tmp_path / "Main.lean").write_text("def main := 1\n", encoding="utf-8")
+    for directory in (".git", ".lake", "__pycache__", "temp"):
+        path = tmp_path / directory
+        path.mkdir()
+        (path / "Ignored.lean").write_text("def ignored := 1\n", encoding="utf-8")
+    for directory in ("gitdata", "lakehouse", "pycache", "temporary"):
+        path = tmp_path / directory
+        path.mkdir()
+        (path / "Kept.lean").write_text("def kept := 1\n", encoding="utf-8")
+
+    visited: list[Path] = []
+    real_walk = os.walk
+
+    def recording_walk(*args, **kwargs):
+        for row in real_walk(*args, **kwargs):
+            visited.append(Path(row[0]))
+            yield row
+
+    monkeypatch.setattr(lean_layout.os, "walk", recording_walk)
+
+    source_map = discover_lean_source_map(tmp_path)
+
+    assert set(source_map.modules) == {
+        "Main",
+        "gitdata.Kept",
+        "lakehouse.Kept",
+        "pycache.Kept",
+        "temporary.Kept",
+    }
+    assert all(
+        not (
+            set(path.relative_to(tmp_path).parts)
+            & lean_layout.IGNORED_SOURCE_PARTS
+        )
+        for path in visited
+    )
+
+
+def test_source_walk_is_glob_equivalent_and_globally_ordered(
+    tmp_path: Path,
+) -> None:
+    for relative in (
+        "B.lean",
+        "A/Z.lean",
+        "A/A.lean",
+        "C.lean/Nested.lean",
+    ):
+        path = tmp_path / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if path.suffix == ".lean" and relative != "C.lean/Nested.lean":
+            path.write_text("def value := 1\n", encoding="utf-8")
+        else:
+            path.write_text("def nested := 1\n", encoding="utf-8")
+
+    expected = tuple(
+        path
+        for path in sorted(tmp_path.rglob("*.lean"))
+        if not lean_layout.ignored_source_path(path, tmp_path)
+    )
+
+    assert lean_paths_under_root(tmp_path) == expected
 
 
 def test_overlapping_declared_roots_report_ambiguous_module_ownership(

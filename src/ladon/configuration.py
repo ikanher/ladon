@@ -4,12 +4,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
 from ladon.analysis.population_calibration import (
     PolicyValidationError,
     parse_generated_family_policy,
+)
+from ladon.resource_policy import (
+    ResourceThresholdPolicyError,
+    normalize_resource_thresholds,
 )
 
 
@@ -34,10 +39,28 @@ ARCHITECTURE_RULE_KINDS = {
     "forbid_direct_imports",
     "forbid_transitive_imports",
 }
+_POLICY_FINGERPRINT_FIELDS = (
+    "status",
+    "source",
+    "path",
+    "schema",
+    "profileVersion",
+    "sha256",
+    "resourceThresholds",
+)
 
 
 class ConfigurationError(ValueError):
     """A readable Ladon policy violates its invocation-time schema."""
+
+
+@dataclass(frozen=True)
+class ResolvedPolicyInput:
+    """One policy object captured before analysis begins."""
+
+    identity: Mapping[str, Any]
+    payload: Mapping[str, Any] | None
+    path: Path | None
 
 
 def validate_policy_configuration(
@@ -70,7 +93,42 @@ def resolve_policy_configuration(
     """Resolve and fingerprint policy inputs without running analysis."""
 
     return {
-        "architecture": resolved_policy_identity(
+        name: dict(resolved.identity)
+        for name, resolved in resolve_policy_inputs(
+            repo_root,
+            architecture_policy=architecture_policy,
+            source_pattern_policy=source_pattern_policy,
+            generated_family_policy=generated_family_policy,
+            architecture_inline=architecture_inline,
+            source_pattern_inline=source_pattern_inline,
+            generated_family_inline=generated_family_inline,
+        ).items()
+    }
+
+
+def resolve_policy_inputs(
+    repo_root: Path,
+    *,
+    architecture_policy: Path | None = None,
+    source_pattern_policy: Path | None = None,
+    generated_family_policy: Path | None = None,
+    architecture_inline: Mapping[str, Any] | None = None,
+    source_pattern_inline: Mapping[str, Any] | None = None,
+    generated_family_inline: Mapping[str, Any] | None = None,
+) -> dict[str, ResolvedPolicyInput]:
+    """Capture validated policy objects and identities in one filesystem read."""
+
+    source_pattern = resolved_policy_input(
+        repo_root,
+        explicit=source_pattern_policy,
+        inline=source_pattern_inline,
+        candidates=SOURCE_PATTERN_POLICY_CANDIDATES,
+        label="source-pattern policy",
+        validator=validate_source_pattern_policy,
+    )
+    source_pattern = _with_resource_threshold_identity(source_pattern)
+    return {
+        "architecture": resolved_policy_input(
             repo_root,
             explicit=architecture_policy,
             inline=architecture_inline,
@@ -78,7 +136,7 @@ def resolve_policy_configuration(
             label="architecture policy",
             validator=validate_architecture_policy,
         ),
-        "generatedFamily": resolved_policy_identity(
+        "generatedFamily": resolved_policy_input(
             repo_root,
             explicit=generated_family_policy,
             inline=generated_family_inline,
@@ -86,14 +144,7 @@ def resolve_policy_configuration(
             label="generated-family policy",
             validator=validate_generated_family_policy,
         ),
-        "sourcePattern": resolved_policy_identity(
-            repo_root,
-            explicit=source_pattern_policy,
-            inline=source_pattern_inline,
-            candidates=SOURCE_PATTERN_POLICY_CANDIDATES,
-            label="source-pattern policy",
-            validator=validate_source_pattern_policy,
-        ),
+        "sourcePattern": source_pattern,
     }
 
 
@@ -105,12 +156,27 @@ def policy_fingerprint_options(
     return {
         "policies": {
             name: {
-                "status": row.get("status"),
-                "sha256": row.get("sha256"),
+                key: row.get(key)
+                for key in _POLICY_FINGERPRINT_FIELDS
+                if key in row
             }
             for name, row in sorted(policies.items())
         }
     }
+
+
+def _with_resource_threshold_identity(
+    resolved: ResolvedPolicyInput,
+) -> ResolvedPolicyInput:
+    thresholds = normalize_resource_thresholds(resolved.payload)
+    return ResolvedPolicyInput(
+        identity={
+            **dict(resolved.identity),
+            "resourceThresholds": [row.to_dict() for row in thresholds],
+        },
+        payload=resolved.payload,
+        path=resolved.path,
+    )
 
 
 def resolved_policy_identity(
@@ -123,6 +189,29 @@ def resolved_policy_identity(
     validator: Callable[[dict[str, Any]], None],
 ) -> dict[str, Any]:
     """Return one validated policy identity without embedding policy content."""
+
+    return dict(
+        resolved_policy_input(
+            repo_root,
+            explicit=explicit,
+            inline=inline,
+            candidates=candidates,
+            label=label,
+            validator=validator,
+        ).identity
+    )
+
+
+def resolved_policy_input(
+    repo_root: Path,
+    *,
+    explicit: Path | None,
+    inline: Mapping[str, Any] | None,
+    candidates: tuple[str, ...],
+    label: str,
+    validator: Callable[[dict[str, Any]], None],
+) -> ResolvedPolicyInput:
+    """Capture one validated policy payload together with its identity."""
 
     selected = None if inline is not None else selected_policy_path(
         repo_root,
@@ -139,13 +228,17 @@ def resolved_policy_identity(
         else "none"
     )
     if inline is None and selected is None:
-        return {
-            "status": "absent",
-            "source": source,
-            "path": None,
-            "schema": None,
-            "sha256": None,
-        }
+        return ResolvedPolicyInput(
+            identity={
+                "status": "absent",
+                "source": source,
+                "path": None,
+                "schema": None,
+                "sha256": None,
+            },
+            payload=None,
+            path=None,
+        )
     payload = (
         dict(inline)
         if inline is not None
@@ -162,13 +255,18 @@ def resolved_policy_identity(
         separators=(",", ":"),
         sort_keys=True,
     ).encode("utf-8")
-    return {
-        "status": "selected",
-        "source": source,
-        "path": policy_display_path(repo_root, selected),
-        "schema": payload.get("schema"),
-        "sha256": f"sha256:{hashlib.sha256(encoded).hexdigest()}",
-    }
+    captured_payload = json.loads(encoded)
+    return ResolvedPolicyInput(
+        identity={
+            "status": "selected",
+            "source": source,
+            "path": policy_display_path(repo_root, selected),
+            "schema": payload.get("schema"),
+            "sha256": f"sha256:{hashlib.sha256(encoded).hexdigest()}",
+        },
+        payload=captured_payload,
+        path=selected,
+    )
 
 
 def load_policy_object(path: Path | None, label: str) -> dict[str, Any]:
@@ -277,3 +375,7 @@ def validate_source_pattern_policy(payload: dict[str, Any]) -> None:
             raise ConfigurationError(
                 f"patterns[{index}].pattern must be non-empty"
             )
+    try:
+        normalize_resource_thresholds(payload)
+    except ResourceThresholdPolicyError as exc:
+        raise ConfigurationError(str(exc)) from exc

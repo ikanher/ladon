@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+import tempfile
 from dataclasses import dataclass
 from io import TextIOBase
 from pathlib import Path
@@ -68,6 +69,7 @@ def output_plan(args: Any) -> OutputPlan:
 
     legacy_json = getattr(args, "legacy_json", None)
     legacy_text = getattr(args, "legacy_text", None)
+    emit_values = tuple(getattr(args, "emit", ()) or ())
     output_format = getattr(args, "output_format", None)
     destination = getattr(args, "output", None)
     requested_report_version = getattr(args, "report_version", None)
@@ -76,23 +78,94 @@ def output_plan(args: Any) -> OutputPlan:
     )
     projection = getattr(args, "projection", "review")
     if legacy_json or legacy_text:
-        if output_format is not None or destination is not None:
-            raise InvocationError(
-                "legacy --json/--text options cannot be mixed with --format or --output"
-            )
-        targets = legacy_targets(legacy_json, legacy_text)
-        validate_report_version(
-            report_version,
-            targets,
-            legacy=True,
+        return legacy_output_plan(
+            legacy_json=legacy_json,
+            legacy_text=legacy_text,
+            emit_values=emit_values,
+            output_format=output_format,
+            destination=destination,
+            report_version=report_version,
             projection=projection,
         )
-        return OutputPlan(
-            targets,
+    if emit_values:
+        return emit_output_plan(
+            emit_values,
             report_version,
             projection=projection,
-            legacy=True,
+            output_format=output_format,
+            destination=destination,
         )
+    return single_output_plan(
+        output_format,
+        destination,
+        report_version,
+        projection=projection,
+    )
+
+
+def legacy_output_plan(
+    *,
+    legacy_json: str | None,
+    legacy_text: str | None,
+    emit_values: Sequence[str],
+    output_format: str | None,
+    destination: str | None,
+    report_version: str,
+    projection: str,
+) -> OutputPlan:
+    """Validate and build the bounded compatibility output plan."""
+
+    if emit_values or output_format is not None or destination is not None:
+        raise InvocationError(
+            "legacy --json/--text options cannot be mixed with --emit, "
+            "--format, or --output"
+        )
+    targets = legacy_targets(legacy_json, legacy_text)
+    validate_report_version(
+        report_version,
+        targets,
+        legacy=True,
+        projection=projection,
+    )
+    return OutputPlan(
+        targets,
+        report_version,
+        projection=projection,
+        legacy=True,
+    )
+
+
+def emit_output_plan(
+    emit_values: Sequence[str],
+    report_version: str,
+    *,
+    projection: str,
+    output_format: str | None,
+    destination: str | None,
+) -> OutputPlan:
+    """Validate canonical multi-output syntax before analysis."""
+
+    if output_format is not None or destination is not None:
+        raise InvocationError("--emit cannot be mixed with --format or --output")
+    targets = canonical_emit_targets(emit_values)
+    validate_report_version(
+        report_version,
+        targets,
+        legacy=False,
+        projection=projection,
+    )
+    return OutputPlan(targets, report_version, projection=projection)
+
+
+def single_output_plan(
+    output_format: str | None,
+    destination: str | None,
+    report_version: str,
+    *,
+    projection: str,
+) -> OutputPlan:
+    """Build the canonical one-representation compatibility plan."""
+
     targets = (OutputTarget(output_format or "text", destination or "-"),)
     validate_report_version(
         report_version,
@@ -101,6 +174,49 @@ def output_plan(args: Any) -> OutputPlan:
         projection=projection,
     )
     return OutputPlan(targets, report_version, projection=projection)
+
+
+def canonical_emit_targets(values: Sequence[str]) -> tuple[OutputTarget, ...]:
+    """Parse and validate repeatable canonical ``FORMAT=PATH`` destinations."""
+
+    targets = tuple(parse_emit_target(value) for value in values)
+    formats = [target.format for target in targets]
+    destinations = [
+        normalized_destination(target.destination) for target in targets
+    ]
+    if len(set(formats)) != len(formats):
+        raise InvocationError("--emit formats must be unique")
+    if sum(target.destination == "-" for target in targets) > 1:
+        raise InvocationError("--emit permits at most one stdout destination")
+    if len(set(destinations)) != len(destinations):
+        raise InvocationError("--emit destinations must be unique")
+    return targets
+
+
+def parse_emit_target(value: str) -> OutputTarget:
+    """Parse one canonical output target without accepting implicit defaults."""
+
+    selected_format, separator, destination = value.partition("=")
+    if separator != "=" or selected_format not in {"json", "text"}:
+        raise InvocationError(
+            "--emit expects FORMAT=PATH with FORMAT equal to json or text"
+        )
+    if not destination:
+        raise InvocationError("--emit destination must be non-empty")
+    return OutputTarget(selected_format, destination)
+
+
+def normalized_destination(destination: str) -> str:
+    """Resolve existing parent aliases without requiring the output leaf."""
+
+    if destination == "-":
+        return destination
+    try:
+        return os.path.normcase(str(Path(destination).resolve(strict=False)))
+    except (OSError, RuntimeError) as exc:
+        raise InvocationError(
+            f"--emit destination cannot be resolved safely: {destination}"
+        ) from exc
 
 
 def legacy_targets(
@@ -119,7 +235,15 @@ def legacy_targets(
     )
     if any(target.destination == "-" for target in targets):
         raise InvocationError("legacy --json/--text destinations must be regular file paths")
-    if len({target.destination for target in targets}) != len(targets):
+    if (
+        len(
+            {
+                normalized_destination(target.destination)
+                for target in targets
+            }
+        )
+        != len(targets)
+    ):
         raise InvocationError("legacy JSON and text outputs must use distinct file paths")
     return targets
 
@@ -192,10 +316,24 @@ def write_output_plan(
 
 
 def write_output_file(path: Path, content: str) -> None:
-    """Create a report parent and write one UTF-8 representation."""
+    """Atomically replace one UTF-8 report destination."""
 
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
+    descriptor, temporary = tempfile.mkstemp(
+        dir=path.parent,
+        prefix=f".{path.name}.",
+        suffix=".tmp",
+    )
+    temporary_path = Path(temporary)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            stream.write(content)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary_path, path)
+    except Exception:
+        temporary_path.unlink(missing_ok=True)
+        raise
 
 
 def parse_failure_selectors(values: Iterable[str]) -> tuple[FailureSelector, ...]:

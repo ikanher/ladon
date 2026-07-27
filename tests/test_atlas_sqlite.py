@@ -5,13 +5,18 @@ import sqlite3
 from pathlib import Path
 
 from ladon.atlas import build_report_atlas
-from ladon.atlas_sqlite import run_canned_query, write_atlas_sqlite
+from ladon.atlas_sqlite import (
+    run_canned_query,
+    run_coverage_aware_query,
+    write_atlas_sqlite,
+)
 
 
 QUERY_TABLES = (
     "nodes",
     "edges",
     "reports",
+    "collection_coverage",
     "findings",
     "review_regions",
     "signals",
@@ -54,6 +59,7 @@ def assert_optional_table_counts(counts: dict[str, int]) -> None:
     assert counts["packet_evidence"] == 2
     assert counts["bridge_joins"] == 0
     assert counts["bridge_diagnostics"] == 0
+    assert counts["collection_coverage"] == 8
 
 
 def table_counts(db_path: Path) -> dict[str, int]:
@@ -185,6 +191,143 @@ def test_atlas_sqlite_declaration_dependencies_keep_kind_and_authority(
             ("value_dependency", "lean_environment"),
         )
     ]
+
+
+def test_coverage_aware_query_labels_visible_subset_results(
+    tmp_path: Path,
+) -> None:
+    db_path = write_sample_db(tmp_path)
+
+    payload = run_coverage_aware_query(db_path, "hotspots")
+
+    assert payload["status"] == "non_exhaustive"
+    assert payload["exhaustive"] is False
+    assert payload["rows"][0]["subject"] == "Shared.Hotspot"
+    assert "repository-wide absence" in payload["nonclaim"]
+    assert {
+        row["completeness"] for row in payload["requiredCoverage"]
+    } == {"unavailable"}
+
+
+def test_exhaustive_query_refuses_incomplete_required_collections(
+    tmp_path: Path,
+) -> None:
+    db_path = write_sample_db(tmp_path)
+
+    payload = run_coverage_aware_query(
+        db_path,
+        "declaration_dependencies",
+        exhaustive=True,
+    )
+
+    assert payload["status"] == "unavailable"
+    assert payload["rows"] == []
+    assert payload["diagnostics"][0]["collections"] == [
+        "declaration_graph.declarations"
+    ]
+    assert "not evidence" in payload["nonclaim"]
+
+
+def test_exhaustive_query_succeeds_with_exact_complete_coverage(
+    tmp_path: Path,
+) -> None:
+    db_path = tmp_path / "complete.sqlite"
+    write_atlas_sqlite(complete_hotspot_atlas(), db_path)
+
+    payload = run_coverage_aware_query(
+        db_path,
+        "hotspots",
+        exhaustive=True,
+    )
+
+    assert payload["status"] == "complete"
+    assert payload["exhaustive"] is True
+    assert payload["rows"] == [
+        {
+            "subject": "Pkg.hotspot",
+            "kind": "declaration_fan_in_hotspot",
+            "report_count": 1,
+            "total_count": 7,
+        }
+    ]
+    assert payload["diagnostics"] == []
+    assert payload["nonclaim"] is None
+    assert [
+        (
+            row["collectionId"],
+            row["completeness"],
+            row["totalKnown"],
+        )
+        for row in payload["requiredCoverage"]
+    ] == [("report.findings", "complete", True)]
+
+
+def complete_hotspot_atlas() -> dict:
+    """Return one atlas whose hotspot population has exact authority."""
+
+    report_id = "report:complete.json"
+    finding_id = "finding:complete.json:hotspot"
+    return {
+        "schema": "ladon-report-atlas-v1",
+        "summary": {},
+        "nodes": [
+            {
+                "id": report_id,
+                "kind": "report",
+                "label": "complete.json",
+                "data": {
+                    "analysis_root_module": "Pkg",
+                    "finding_count": 1,
+                    "coverage": {
+                        "schema": "ladon-collection-coverage-v1",
+                        "collections": {
+                            "report.findings": exact_finding_coverage()
+                        },
+                    },
+                },
+            },
+            {
+                "id": finding_id,
+                "kind": "finding",
+                "label": "declaration_fan_in_hotspot: Pkg.hotspot",
+                "data": {
+                    "kind": "declaration_fan_in_hotspot",
+                    "subject": "Pkg.hotspot",
+                    "count": 7,
+                },
+            },
+        ],
+        "edges": [
+            {
+                "source": report_id,
+                "target": finding_id,
+                "kind": "has_finding",
+                "data": {},
+            }
+        ],
+    }
+
+
+def exact_finding_coverage() -> dict:
+    """Return exact coverage for the one visible hotspot fixture row."""
+
+    return {
+        "id": "report.findings",
+        "pointer": "#/sections/findings",
+        "visible": 1,
+        "observedLowerBound": 1,
+        "totalKnown": True,
+        "total": 1,
+        "omitted": 0,
+        "completeness": "complete",
+        "population": "selected findings",
+        "scope": "Pkg",
+        "authority": "ladon_analysis",
+        "sourceFingerprint": "sha256:source",
+        "scopeFingerprint": "sha256:scope",
+        "analysisFingerprint": "sha256:analysis",
+        "causes": [],
+    }
 
 
 def write_sample_db(tmp_path: Path) -> Path:

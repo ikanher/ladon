@@ -302,6 +302,21 @@ def classify_population(
     """Assign exactly one primary population or fail closed as unclassified."""
 
     roots = _normalized_source_roots(target_source_roots)
+    return _classify_population_with_roots(
+        candidate,
+        roots=roots,
+        policy=policy,
+    )
+
+
+def _classify_population_with_roots(
+    candidate: PopulationCandidate,
+    *,
+    roots: tuple[str, ...],
+    policy: GeneratedFamilyPolicy | None,
+) -> PopulationClassification:
+    """Classify one row after shared source roots have been normalized."""
+
     matches, family = _matched_family(candidate, policy)
     common = _common_classification_fields(candidate, policy, matches, family)
     target_owned = _target_owned(candidate.source_path, roots)
@@ -339,10 +354,11 @@ def classify_populations(
     """Classify unique rows in deterministic identifier order."""
 
     _require_unique_candidate_ids(candidates)
+    roots = _normalized_source_roots(target_source_roots)
     return tuple(
-        classify_population(
+        _classify_population_with_roots(
             candidate,
-            target_source_roots=target_source_roots,
+            roots=roots,
             policy=policy,
         )
         for candidate in sorted(candidates, key=lambda row: row.identifier)

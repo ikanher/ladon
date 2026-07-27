@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-generated-family-candidate-detection",
+  "commands": [
+    "openspec validate ladon-generated-family-candidate-detection --strict",
+    "uv run --locked pytest -q tests/test_generated_family_candidate_adapters.py tests/test_generated_family_candidate_predicates.py tests/test_generated_family_candidate_profile.py tests/test_generated_family_candidates.py tests/test_generated_family_promotion.py tests/test_generated_family_report_projection.py tests/test_lexical_command_skeleton_boundaries.py tests/test_population_calibration.py tests/test_render.py",
+    "uv run --locked pytest -q tests/test_clean_cli.py tests/test_installed_cli_contract.py",
+    "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --package-resource ladon:schemas/ladon-report-v3.schema.json",
+    "uv run --locked python scripts/large_inventory_gate.py --candidate worktree --required"
+  ]
+}

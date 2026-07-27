@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -66,6 +67,42 @@ CANNED_QUERIES = {
     """,
 }
 
+ATLAS_QUERY_RESULT_SCHEMA = "ladon-atlas-query-result-v1"
+
+
+@dataclass(frozen=True)
+class QueryRequirement:
+    """Coverage contract for one installed canned query."""
+
+    collections: tuple[str, ...]
+    subset_safe: bool
+
+
+QUERY_REQUIREMENTS = {
+    "hotspots": QueryRequirement(("report.findings",), True),
+    "recurring_declarations": QueryRequirement(
+        ("declaration_graph.declarations",),
+        True,
+    ),
+    "declaration_dependencies": QueryRequirement(
+        ("declaration_graph.declarations",),
+        True,
+    ),
+    "review_region_pressure": QueryRequirement(
+        ("report.review_regions",),
+        True,
+    ),
+    "proof_family_pressure": QueryRequirement(
+        ("report.findings", "report.review_regions"),
+        True,
+    ),
+    "packet_evidence_gaps": QueryRequirement(
+        ("report.packet_evidence",),
+        True,
+    ),
+    "low_confidence_joins": QueryRequirement((), True),
+}
+
 
 def write_atlas_sqlite(
     atlas: dict[str, Any],
@@ -111,6 +148,19 @@ def create_schema(connection: sqlite3.Connection) -> None:
             declaration_count INTEGER NOT NULL,
             finding_count INTEGER NOT NULL,
             review_region_count INTEGER NOT NULL
+        );
+        CREATE TABLE collection_coverage (
+            report_id TEXT NOT NULL,
+            collection_id TEXT NOT NULL,
+            completeness TEXT NOT NULL,
+            total_known INTEGER NOT NULL,
+            population TEXT NOT NULL,
+            scope TEXT NOT NULL,
+            authority TEXT NOT NULL,
+            analysis_fingerprint TEXT,
+            source_fingerprint TEXT,
+            coverage_json TEXT NOT NULL,
+            PRIMARY KEY(report_id, collection_id)
         );
         CREATE TABLE packet_evidence (
             report_id TEXT PRIMARY KEY,
@@ -192,6 +242,7 @@ def insert_atlas(
     insert_nodes(connection, nodes.values())
     insert_edges(connection, edges)
     insert_reports(connection, nodes.values())
+    insert_collection_coverage(connection, nodes.values())
     insert_packet_evidence(connection, nodes.values())
     insert_bridge_reports(connection, bridge_reports)
     insert_joined_rows(connection, nodes, edges)
@@ -258,6 +309,69 @@ def insert_reports(connection: sqlite3.Connection, nodes: Any) -> None:
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
         """,
         rows,
+    )
+
+
+def insert_collection_coverage(
+    connection: sqlite3.Connection,
+    nodes: Any,
+) -> None:
+    """Persist per-report collection authority for query-time decisions."""
+
+    rows = [
+        _collection_coverage_sql_row(node["id"], identity, coverage)
+        for node in nodes
+        if node.get("kind") == "report"
+        for identity, coverage in _coverage_rows(node).items()
+    ]
+    connection.executemany(
+        """
+        INSERT INTO collection_coverage(
+            report_id, collection_id, completeness, total_known,
+            population, scope, authority, analysis_fingerprint,
+            source_fingerprint, coverage_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        rows,
+    )
+
+
+def _coverage_rows(node: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Return typed registry rows embedded in one report atlas node."""
+
+    registry = node.get("data", {}).get("coverage", {})
+    collections = (
+        registry.get("collections")
+        if isinstance(registry, dict)
+        else None
+    )
+    if not isinstance(collections, dict):
+        return {}
+    return {
+        str(identity): row
+        for identity, row in collections.items()
+        if isinstance(row, dict)
+    }
+
+
+def _collection_coverage_sql_row(
+    report_id: str,
+    identity: str,
+    coverage: dict[str, Any],
+) -> tuple[Any, ...]:
+    """Normalize one canonical coverage row for SQLite."""
+
+    return (
+        report_id,
+        identity,
+        str(coverage.get("completeness", "unavailable")),
+        int(coverage.get("totalKnown") is True),
+        str(coverage.get("population", "")),
+        str(coverage.get("scope", "")),
+        str(coverage.get("authority", "")),
+        coverage.get("analysisFingerprint"),
+        coverage.get("sourceFingerprint"),
+        json.dumps(coverage, sort_keys=True, separators=(",", ":")),
     )
 
 
@@ -555,3 +669,209 @@ def run_canned_query(db_path: Path, query_name: str) -> list[dict[str, Any]]:
         connection.row_factory = sqlite3.Row
         rows = connection.execute(CANNED_QUERIES[query_name]).fetchall()
     return [dict(row) for row in rows]
+
+
+def run_coverage_aware_query(
+    db_path: Path,
+    query_name: str,
+    *,
+    exhaustive: bool = False,
+) -> dict[str, Any]:
+    """Run a canned query with explicit completeness and subset semantics."""
+
+    requirement = _query_requirement(query_name)
+    with sqlite3.connect(db_path) as connection:
+        connection.row_factory = sqlite3.Row
+        coverage = _required_query_coverage(connection, requirement)
+        incomplete = [
+            row
+            for row in coverage
+            if not _coverage_row_is_complete(row)
+        ]
+        if exhaustive and incomplete:
+            return _unavailable_query_result(
+                query_name,
+                coverage,
+                incomplete,
+            )
+        rows = [
+            dict(row)
+            for row in connection.execute(CANNED_QUERIES[query_name])
+        ]
+    return _available_query_result(
+        query_name,
+        rows,
+        coverage,
+        incomplete,
+        exhaustive=exhaustive,
+        subset_safe=requirement.subset_safe,
+    )
+
+
+def _query_requirement(query_name: str) -> QueryRequirement:
+    """Return one registered query contract or reject an unknown name."""
+
+    if query_name not in CANNED_QUERIES:
+        known = ", ".join(sorted(CANNED_QUERIES))
+        raise ValueError(
+            f"unknown atlas query {query_name!r}; expected one of: {known}"
+        )
+    return QUERY_REQUIREMENTS[query_name]
+
+
+def _required_query_coverage(
+    connection: sqlite3.Connection,
+    requirement: QueryRequirement,
+) -> list[dict[str, Any]]:
+    """Load coverage rows for every report/collection required by a query."""
+
+    rows: list[dict[str, Any]] = []
+    for identity in requirement.collections:
+        query_rows = connection.execute(
+            """
+            SELECT report_id, collection_id, completeness, total_known,
+                   population, scope, authority, analysis_fingerprint,
+                   source_fingerprint, coverage_json
+            FROM collection_coverage
+            WHERE collection_id = ?
+            ORDER BY report_id ASC
+            """,
+            (identity,),
+        ).fetchall()
+        rows.extend(_coverage_query_row(identity, row) for row in query_rows)
+        rows.extend(
+            _missing_coverage_rows(connection, identity, query_rows)
+        )
+    return sorted(
+        rows,
+        key=lambda row: (row["reportId"], row["collectionId"]),
+    )
+
+
+def _coverage_query_row(
+    identity: str,
+    row: sqlite3.Row,
+) -> dict[str, Any]:
+    """Adapt one persisted coverage row to query-result metadata."""
+
+    return {
+        "reportId": str(row["report_id"]),
+        "collectionId": identity,
+        "completeness": str(row["completeness"]),
+        "totalKnown": bool(row["total_known"]),
+        "population": str(row["population"]),
+        "scope": str(row["scope"]),
+        "authority": str(row["authority"]),
+        "analysisFingerprint": row["analysis_fingerprint"],
+        "sourceFingerprint": row["source_fingerprint"],
+        "coverage": json.loads(str(row["coverage_json"])),
+    }
+
+
+def _missing_coverage_rows(
+    connection: sqlite3.Connection,
+    identity: str,
+    present: list[sqlite3.Row],
+) -> list[dict[str, Any]]:
+    """Represent missing per-report coverage as unavailable, never empty."""
+
+    present_reports = {str(row["report_id"]) for row in present}
+    report_ids = [
+        str(row[0])
+        for row in connection.execute(
+            "SELECT id FROM reports ORDER BY id ASC"
+        )
+    ]
+    if not report_ids and not present_reports:
+        report_ids = ["atlas:unscoped"]
+    return [
+        {
+            "reportId": report_id,
+            "collectionId": identity,
+            "completeness": "unavailable",
+            "totalKnown": False,
+            "population": "unknown",
+            "scope": "unknown",
+            "authority": "missing_collection_coverage",
+            "analysisFingerprint": None,
+            "sourceFingerprint": None,
+            "coverage": None,
+        }
+        for report_id in report_ids
+        if report_id not in present_reports
+    ]
+
+
+def _coverage_row_is_complete(row: dict[str, Any]) -> bool:
+    """Return whether one required source population is exhaustive."""
+
+    return (
+        row.get("totalKnown") is True
+        and row.get("completeness") == "complete"
+    )
+
+
+def _unavailable_query_result(
+    query_name: str,
+    coverage: list[dict[str, Any]],
+    incomplete: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Return a structured refusal for an unsupported exhaustive claim."""
+
+    return {
+        "schema": ATLAS_QUERY_RESULT_SCHEMA,
+        "query": query_name,
+        "status": "unavailable",
+        "exhaustive": False,
+        "rows": [],
+        "requiredCoverage": coverage,
+        "diagnostics": [
+            {
+                "id": "atlas.query.incomplete_authority",
+                "message": (
+                    "Exhaustive query unavailable because required source "
+                    "collections are incomplete."
+                ),
+                "collections": sorted(
+                    {
+                        str(row["collectionId"])
+                        for row in incomplete
+                    }
+                ),
+            }
+        ],
+        "nonclaim": (
+            "An empty row list is not evidence that the requested relationship "
+            "is absent."
+        ),
+    }
+
+
+def _available_query_result(
+    query_name: str,
+    rows: list[dict[str, Any]],
+    coverage: list[dict[str, Any]],
+    incomplete: list[dict[str, Any]],
+    *,
+    exhaustive: bool,
+    subset_safe: bool,
+) -> dict[str, Any]:
+    """Return complete or explicitly visible-subset query results."""
+
+    non_exhaustive = bool(incomplete) or not exhaustive
+    status = "non_exhaustive" if non_exhaustive else "complete"
+    return {
+        "schema": ATLAS_QUERY_RESULT_SCHEMA,
+        "query": query_name,
+        "status": status,
+        "exhaustive": not non_exhaustive,
+        "rows": rows if subset_safe or not incomplete else [],
+        "requiredCoverage": coverage,
+        "diagnostics": [],
+        "nonclaim": (
+            "Rows are sound only for visible source collections and do not "
+            "establish repository-wide absence or exhaustive totals."
+            if non_exhaustive
+            else None
+        ),
+    }

@@ -18,6 +18,15 @@ CHANGED_SET_MANIFEST_SCHEMA = "ladon-changed-set-v1"
 
 
 @dataclass(frozen=True)
+class CapturedChangedSetManifest:
+    """One immutable changed-set document captured from a physical path."""
+
+    content: bytes | None
+    status: str
+    error: str | None = None
+
+
+@dataclass(frozen=True)
 class ChangedSetManifest:
     """Normalized manifest paths, caller authority, and input diagnostics."""
 
@@ -26,8 +35,25 @@ class ChangedSetManifest:
     diagnostics: tuple[Mapping[str, Any], ...]
 
 
+ChangedSetManifestSource = (
+    CapturedChangedSetManifest | str | Path | Mapping[str, Any]
+)
+
+
+def capture_changed_set_manifest(path: str | Path) -> CapturedChangedSetManifest:
+    """Read one physical manifest once for later immutable consumption."""
+
+    source = Path(path)
+    try:
+        return CapturedChangedSetManifest(source.read_bytes(), "present")
+    except FileNotFoundError as exc:
+        return CapturedChangedSetManifest(None, "absent", str(exc))
+    except OSError as exc:
+        return CapturedChangedSetManifest(None, "unreadable", str(exc))
+
+
 def read_changed_set_manifest(
-    source: str | Path | Mapping[str, Any],
+    source: ChangedSetManifestSource,
 ) -> ChangedSetManifest:
     """Read one versioned manifest without consulting repository state."""
 
@@ -47,8 +73,17 @@ def read_changed_set_manifest(
 
 
 def _manifest_document(
-    source: str | Path | Mapping[str, Any],
+    source: ChangedSetManifestSource,
 ) -> tuple[dict[str, Any], bytes, list[dict[str, Any]]]:
+    if isinstance(source, CapturedChangedSetManifest):
+        if source.content is None:
+            return {}, b"", [
+                _diagnostic(
+                    "scope.changed_manifest_invalid",
+                    f"Cannot read changed-set manifest: {source.error}",
+                )
+            ]
+        return _decode_manifest_bytes(source.content)
     try:
         if isinstance(source, Mapping):
             payload = dict(source)
@@ -59,9 +94,7 @@ def _manifest_document(
                 allow_nan=False,
             ).encode("utf-8")
         else:
-            encoded = Path(source).read_bytes()
-            decoded = json.loads(encoded)
-            payload = decoded if isinstance(decoded, dict) else {}
+            return _decode_manifest_bytes(Path(source).read_bytes())
     except (OSError, TypeError, ValueError) as exc:
         return {}, b"", [
             _diagnostic(
@@ -69,6 +102,24 @@ def _manifest_document(
                 f"Cannot read changed-set manifest: {exc}",
             )
         ]
+    return payload, encoded, []
+
+
+def _decode_manifest_bytes(
+    encoded: bytes,
+) -> tuple[dict[str, Any], bytes, list[dict[str, Any]]]:
+    """Decode captured bytes without reopening their physical source."""
+
+    try:
+        decoded = json.loads(encoded)
+    except (TypeError, ValueError) as exc:
+        return {}, b"", [
+            _diagnostic(
+                "scope.changed_manifest_invalid",
+                f"Cannot read changed-set manifest: {exc}",
+            )
+        ]
+    payload = decoded if isinstance(decoded, dict) else {}
     return payload, encoded, []
 
 

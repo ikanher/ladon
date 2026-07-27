@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
+from ladon.changed_set import ChangedSetManifestSource
 from ladon.extraction import ModuleDiscovery
 from ladon.scope import ScopePlan, ScopePlanningError, plan_scope
 from ladon.source_index import SourceIndex, SourceIndexResult, build_source_index
@@ -80,8 +81,9 @@ def resolve_analysis_scope(
     *,
     scope_kind: str,
     roots: Sequence[str] = (),
+    navigation_roots: Sequence[str] = (),
     changed_paths: Sequence[str | Path] = (),
-    changed_manifest: str | Path | Mapping[str, Any] | None = None,
+    changed_manifest: ChangedSetManifestSource | None = None,
     max_modules: int | None = None,
     max_context_modules: int | None = None,
     lean_batch_size: int = 8,
@@ -108,6 +110,7 @@ def resolve_analysis_scope(
         indexed.index,
         kind=scope_kind,
         roots=requested_roots,
+        navigation_roots=navigation_roots,
         changed_paths=changed_paths,
         changed_manifest=changed_manifest,
         max_modules=max_modules,
@@ -115,7 +118,7 @@ def resolve_analysis_scope(
         lean_batch_size=lean_batch_size,
     )
     require_valid_scope(plan)
-    analysis_root_module = analysis_root_name(
+    report_anchor_module = analysis_root_name(
         indexed.index,
         plan,
         scope_kind=scope_kind,
@@ -124,7 +127,7 @@ def resolve_analysis_scope(
     discovery = discovery_from_scope(
         indexed.index,
         plan,
-        analysis_root_module=analysis_root_module,
+        analysis_root_module=report_anchor_module,
     )
     return ResolvedAnalysisScope(indexed, plan, discovery)
 
@@ -134,7 +137,12 @@ def requested_scope_roots(
     scope_kind: str,
     roots: Sequence[str],
 ) -> tuple[str, ...]:
-    """Normalize explicit roots or resolve the ordinary owner default."""
+    """Normalize legacy roots or resolve the ordinary owner default.
+
+    For inventory scope, explicit values remain accepted through this
+    compatibility entry point and are normalized into navigation roots by the
+    scope planner. They never select or narrow the inventory population.
+    """
 
     requested = tuple(str(root) for root in roots)
     if requested or scope_kind not in {"owner", "closure"}:
@@ -162,22 +170,17 @@ def analysis_root_name(
     scope_kind: str,
     requested_roots: Sequence[str],
 ) -> str:
-    """Return the deterministic report anchor for the selected population."""
+    """Return the internal report anchor used by the discovery contract.
 
-    rooted_scopes = {"namespace", "changed-set", "inventory"}
-    resolved = (
-        ()
-        if scope_kind in rooted_scopes
-        else resolve_root_modules(
-            index,
-            requested_roots,
-            allow_empty=False,
-        )
-    )
-    chosen = resolved or plan.primary_modules or plan.resolved_roots
-    if not chosen:
+    This compatibility value selects a concrete file for extraction/output
+    plumbing.  Report adaptation must derive analysis-root claims from the
+    plan's resolved selection or navigation roots instead.
+    """
+
+    del index, scope_kind, requested_roots
+    if plan.report_anchor is None:
         raise ScopePlanningError("analysis scope selects no root module")
-    return sorted(chosen)[0]
+    return plan.report_anchor
 
 
 def resolve_root_modules(
@@ -226,7 +229,9 @@ def discovery_from_scope(
         if name in selected
     }
     if analysis_root_module not in modules:
-        modules[analysis_root_module] = index.modules[analysis_root_module]
+        raise ScopePlanningError(
+            "scope report anchor is outside the selected module population"
+        )
     path = index.repo_root / index.paths[analysis_root_module]
     source_roots = tuple(
         str(row.get("path", ""))

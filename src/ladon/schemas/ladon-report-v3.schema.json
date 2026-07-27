@@ -127,14 +127,187 @@
         "payloadView": {"type": ["object", "null"]}
       }
     },
+    "coverageCause": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id", "detail", "controllingCap"],
+      "properties": {
+        "kind": {
+          "enum": [
+            "extraction",
+            "analysis",
+            "projection",
+            "drift",
+            "compatibility"
+          ]
+        },
+        "id": {"type": "string", "minLength": 1},
+        "detail": {"type": "string", "minLength": 1},
+        "controllingCap": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        }
+      }
+    },
+    "collectionCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {"totalKnown": {"const": true}},
+            "required": ["totalKnown"]
+          },
+          "then": {
+            "properties": {
+              "total": {"type": "integer", "minimum": 0},
+              "omitted": {"type": "integer", "minimum": 0}
+            }
+          },
+          "else": {
+            "properties": {
+              "total": {"type": "null"},
+              "omitted": {"type": "null"},
+              "completeness": {
+                "enum": ["partial", "unavailable", "unstable"]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"completeness": {"const": "complete"}},
+            "required": ["completeness"]
+          },
+          "then": {
+            "properties": {
+              "totalKnown": {"const": true},
+              "omitted": {"const": 0},
+              "causes": {"maxItems": 0}
+            }
+          },
+          "else": {
+            "properties": {
+              "causes": {"minItems": 1}
+            }
+          }
+        }
+      ],
+      "required": [
+        "id",
+        "pointer",
+        "visible",
+        "observedLowerBound",
+        "totalKnown",
+        "total",
+        "omitted",
+        "completeness",
+        "population",
+        "scope",
+        "authority",
+        "sourceFingerprint",
+        "scopeFingerprint",
+        "analysisFingerprint",
+        "causes"
+      ],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "pointer": {"type": "string", "pattern": "^#/"},
+        "visible": {"type": "integer", "minimum": 0},
+        "observedLowerBound": {"type": "integer", "minimum": 0},
+        "totalKnown": {"type": "boolean"},
+        "total": {"type": ["integer", "null"], "minimum": 0},
+        "omitted": {"type": ["integer", "null"], "minimum": 0},
+        "completeness": {
+          "enum": ["complete", "partial", "unavailable", "unstable"]
+        },
+        "population": {"type": "string", "minLength": 1},
+        "scope": {"type": "string", "minLength": 1},
+        "authority": {"type": "string", "minLength": 1},
+        "sourceFingerprint": {"type": ["string", "null"]},
+        "scopeFingerprint": {"type": ["string", "null"]},
+        "analysisFingerprint": {"type": ["string", "null"]},
+        "causes": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/coverageCause"}
+        }
+      }
+    },
+    "coverageRegistry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "collections"],
+      "properties": {
+        "schema": {"const": "ladon-collection-coverage-v1"},
+        "collections": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/collectionCoverage"
+          }
+        }
+      }
+    },
+    "snapshotIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "identity", "sourceIndexFingerprint", "decision"],
+      "properties": {
+        "schema": {"const": "ladon-analysis-snapshot-v1"},
+        "identity": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "sourceIndexFingerprint": {"type": "string", "minLength": 1},
+        "decision": {
+          "anyOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/snapshotDecision"}
+          ]
+        }
+      }
+    },
+    "snapshotDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "diagnostic", "mismatches", "nonclaim"],
+      "properties": {
+        "status": {"enum": ["stable", "changed"]},
+        "diagnostic": {
+          "type": ["string", "null"],
+          "enum": [null, "source_changed_during_analysis"]
+        },
+        "mismatches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "required": ["path", "expected", "actual", "collectionRefs"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "collectionRefs": {
+                "type": "array",
+                "items": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        },
+        "nonclaim": {"type": "string", "minLength": 1}
+      }
+    },
     "omission": {
       "type": "object",
       "additionalProperties": false,
       "required": ["pointer", "reason", "omitted_count"],
       "properties": {
         "pointer": {"type": "string", "pattern": "^#/sections/"},
-        "reason": {"const": "projection_collection_limit"},
-        "omitted_count": {"type": "integer", "minimum": 1}
+        "reason": {
+          "enum": [
+            "projection_collection_limit",
+            "projection_evidence_unavailable"
+          ]
+        },
+        "omitted_count": {"type": "integer", "minimum": 1},
+        "coverageRef": {"type": ["string", "null"]}
       }
     }
   },
@@ -174,6 +347,8 @@
         "analysis_root": {"type": "string"},
         "analysis_root_module": {"type": "string"},
         "inventory_root": {"type": "string"},
+        "report_anchor": {"type": "string"},
+        "report_anchor_module": {"type": "string"},
         "extraction_backend": {"type": "string"}
       }
     },
@@ -218,6 +393,17 @@
             "max_collection_items": {
               "type": ["integer", "null"],
               "minimum": 1
+            },
+            "max_unstratified_collection_items": {
+              "type": ["integer", "null"],
+              "minimum": 1
+            },
+            "max_items_per_present_stratum": {
+              "type": ["integer", "null"],
+              "minimum": 1
+            },
+            "selection_policy": {
+              "enum": ["per_present_stratum", "unbounded"]
             }
           }
         }
@@ -230,6 +416,13 @@
     "diagnostics": {
       "type": "array",
       "items": {"$ref": "#/$defs/diagnostic"}
+    },
+    "coverage": {"$ref": "#/$defs/coverageRegistry"},
+    "snapshot": {
+      "anyOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/snapshotIdentity"}
+      ]
     },
     "phases": {
       "type": "object",

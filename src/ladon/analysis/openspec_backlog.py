@@ -272,7 +272,6 @@ def packet_coverage_findings(
     """Return coverage findings for one ledger packet."""
 
     change_id = str(row["id"])
-    disposition = str(row.get("disposition") or "")
     evidence = row.get("requirementEvidence")
     if not isinstance(evidence, list) or not evidence:
         return [ledger_finding("unowned_requirement", f"{change_id}: no requirement evidence")]

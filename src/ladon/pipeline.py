@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from ladon.configuration import resolve_policy_configuration
 from ladon.extraction import ModuleDiscovery
 from ladon.ir import LeanDeclaration, LeanModule
 from ladon.pipeline_calibration import (
@@ -39,6 +40,7 @@ from ladon.pipeline_extraction import (
     add_index_counters,
     analysis_module_roots,
     coerce_extraction_bundle,
+    candidate_profile_policy_identity,
     count_declarations,
     declaration_name_variants,
     declaration_roots_for_modules,
@@ -99,6 +101,8 @@ from ladon.pipeline_partial import (
     retained_limit_modules,
 )
 from ladon.progress import ResourceLimitExceeded
+from ladon.snapshot import SnapshotDecision
+from ladon.snapshot_registry import current_repository_snapshot
 
 
 __all__ = [
@@ -210,7 +214,13 @@ def run_pipeline(context: RunContext) -> PipelineResult:
             declarations,
             modules,
         )
-        enrich_audit_and_declaration_populations(dag, declaration_graph)
+        enrich_audit_and_declaration_populations(
+            dag,
+            declaration_graph,
+            context.source_index,
+            context.policy_payloads.get("sourcePattern"),
+            context.policy_inputs.get("sourcePattern"),
+        )
         module_readiness = run_module_readiness_phase(
             context,
             dag,
@@ -252,6 +262,7 @@ def run_pipeline(context: RunContext) -> PipelineResult:
             findings,
             packet_evidence,
         )
+        finalize_snapshot_decision(context)
         result = pipeline_result(
             context,
             discovery,
@@ -289,3 +300,117 @@ def run_pipeline(context: RunContext) -> PipelineResult:
             packet_evidence=packet_evidence,
             review_regions=review_regions,
         )
+
+
+def finalize_snapshot_decision(context: RunContext) -> None:
+    """Compare every registered source/configuration input after final reads."""
+
+    captured = context.analysis_snapshot
+    source_index = context.source_index
+    if captured is None or source_index is None:
+        context.snapshot_decision = None
+        return
+    try:
+        if context.snapshot_verification_hook is not None:
+            context.snapshot_verification_hook(context)
+        policies = current_policy_inputs(context)
+        current = current_repository_snapshot(
+            context.repo_root,
+            captured,
+            source_index_options=source_index.options,
+            policies=policies,
+            file_inputs=context.snapshot_file_inputs.values(),
+            directory_inputs=context.snapshot_directory_inputs.values(),
+        )
+        decision = captured.compare(current.entries)
+        decision = include_read_mismatches(
+            decision,
+            context.snapshot_read_mismatches,
+        )
+    except Exception as exc:
+        decision = failed_snapshot_verification(exc)
+    context.snapshot_decision = decision
+    if decision.status == "changed":
+        context.warnings.append(
+            "source_changed_during_analysis: final registered state differs "
+            "from the captured analysis snapshot"
+        )
+
+
+def include_read_mismatches(
+    decision: SnapshotDecision,
+    mismatches: list[Any],
+) -> SnapshotDecision:
+    """Preserve observed mixed reads even if final bytes were restored."""
+
+    if not mismatches:
+        return decision
+    combined = [*decision.mismatches, *mismatches]
+    unique = {
+        (
+            str(row.get("path", "")),
+            str(row.get("expected")),
+            str(row.get("actual")),
+        ): dict(row)
+        for row in combined
+    }
+    return SnapshotDecision(
+        status="changed",
+        mismatches=tuple(unique[key] for key in sorted(unique)),
+    )
+
+
+def current_policy_inputs(
+    context: RunContext,
+) -> dict[str, dict[str, Any]]:
+    """Re-resolve policy identities for the final registered-state check."""
+
+    try:
+        rows = resolve_policy_configuration(
+            context.repo_root,
+            architecture_policy=context.architecture_policy_path,
+            source_pattern_policy=context.source_pattern_policy_path,
+            generated_family_policy=context.generated_family_policy_path,
+            architecture_inline=context.architecture_policy,
+            source_pattern_inline=context.source_pattern_policy,
+            generated_family_inline=context.generated_family_policy,
+        )
+        rows["generatedFamilyCandidateProfile"] = (
+            candidate_profile_policy_identity(
+                context,
+                reload_explicit=True,
+            )
+        )
+        return rows
+    except Exception as exc:
+        rows = {
+            name: dict(row)
+            for name, row in context.policy_inputs.items()
+        }
+        rows["verification"] = {
+            "status": "unreadable",
+            "errorType": type(exc).__name__,
+            "message": "policy state could not be revalidated",
+        }
+        return rows
+
+
+def failed_snapshot_verification(exc: Exception) -> SnapshotDecision:
+    """Turn final-verifier failure into one shared changed decision."""
+
+    return SnapshotDecision(
+        status="changed",
+        mismatches=(
+            {
+                "path": ".ladon-snapshot/final-verification",
+                "expected": "registered repository state",
+                "actual": type(exc).__name__,
+                "collectionRefs": [
+                    "module_dag.modules",
+                    "declaration_graph.declarations",
+                    "report.findings",
+                    "report.review_regions",
+                ],
+            },
+        ),
+    )

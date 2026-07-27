@@ -7,6 +7,7 @@ used only when no usable declaration exists.
 
 from __future__ import annotations
 
+import os
 import re
 import tomllib
 from dataclasses import dataclass
@@ -283,7 +284,7 @@ def modules_from_roots(
         if not root.path.is_dir():
             diagnostics.append(layout_diagnostic(root.path, "declared source root is absent"))
             continue
-        for path in sorted(root.path.rglob("*.lean")):
+        for path in lean_paths_under_root(root.path):
             if ignored_source_path(path, root.path):
                 continue
             name = module_name_under_root(root.path, path)
@@ -295,6 +296,35 @@ def modules_from_roots(
                 continue
             modules[name] = path
     return dict(sorted(modules.items())), diagnostics
+
+
+def lean_paths_under_root(source_root: Path) -> tuple[Path, ...]:
+    """Return globally ordered Lean paths without entering ignored trees."""
+
+    paths: list[Path] = []
+    for directory, dirnames, filenames in os.walk(
+        source_root,
+        topdown=True,
+        onerror=_raise_walk_error,
+        followlinks=False,
+    ):
+        dirnames[:] = sorted(
+            name for name in dirnames if name not in IGNORED_SOURCE_PARTS
+        )
+        parent = Path(directory)
+        paths.extend(
+            parent / name for name in dirnames if name.endswith(".lean")
+        )
+        paths.extend(
+            parent / name for name in sorted(filenames) if name.endswith(".lean")
+        )
+    return tuple(sorted(paths))
+
+
+def _raise_walk_error(error: OSError) -> None:
+    """Preserve source-discovery failures instead of hiding unreadable trees."""
+
+    raise error
 
 
 def selected_by_module_roots(

@@ -5,6 +5,8 @@ from __future__ import annotations
 from math import ceil
 from typing import Any, Iterable
 
+from ladon.analysis.root_applicability import root_views_applicable
+
 
 BASELINE_METHOD = "project_local_metric_distribution"
 
@@ -192,6 +194,8 @@ def graph_nodes(edges: dict[str, list[str]]) -> list[str]:
 def root_import_closure_values(module_dag: dict[str, Any]) -> list[int]:
     """Return direct root-import closure sizes."""
 
+    if not root_views_applicable(module_dag):
+        return []
     return row_counts(module_dag.get("root_direct_import_closures", []), "reachable_module_count")
 
 

@@ -315,7 +315,7 @@ def invalidation_reason(
         return "cold_miss"
     if prior.get("fingerprintVersion") != CACHE_FINGERPRINT_VERSION:
         return "fingerprint_version_changed"
-    for field, reason in INVALIDATION_FIELDS:
-        if prior.get(field) != current.get(field):
+    for field_name, reason in INVALIDATION_FIELDS:
+        if prior.get(field_name) != current.get(field_name):
             return reason
     return "cache_entry_missing_or_invalid"

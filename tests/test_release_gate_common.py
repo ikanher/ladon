@@ -127,11 +127,17 @@ def test_directory_candidate_omits_local_state(tmp_path: Path) -> None:
     (repository / "temp" / "local.txt").write_text("local\n", encoding="utf-8")
     (repository / ".codex").mkdir()
     (repository / ".codex" / "host.txt").write_text("host\n", encoding="utf-8")
+    (repository / "tests" / ".lake").mkdir()
+    (repository / "tests" / ".lake" / "stale.olean").write_text(
+        "stale\n",
+        encoding="utf-8",
+    )
 
     with common.materialize_candidate(str(repository), repository) as candidate:
         assert candidate.kind == "directory"
         assert not (candidate.root / "temp").exists()
         assert not (candidate.root / ".codex").exists()
+        assert not (candidate.root / "tests" / ".lake").exists()
 
 
 def test_collection_comparison_root_follows_explicit_candidate_kind(
@@ -353,7 +359,9 @@ def test_full_clean_gate_runs_one_installed_resource_check(
     candidate_root.mkdir()
     runtime_root.mkdir()
     installed_resources: list[tuple[str, ...]] = []
-    noop = lambda *_args, **_kwargs: None
+
+    def noop(*_args, **_kwargs) -> None:
+        return None
 
     monkeypatch.setattr(clean_checkout_gate, "project_root", lambda: tmp_path)
     monkeypatch.setattr(

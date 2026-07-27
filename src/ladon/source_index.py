@@ -15,12 +15,16 @@ from typing import Any, Callable, Mapping
 
 from ladon.extraction import parse_lean_module
 from ladon.lean_layout import LeanSourceMap, discover_lean_source_map
+from ladon.lexical_command_skeleton import (
+    command_skeleton_evidence_complete,
+)
 from ladon.source_index_cache import (
     SourceIndexCache,
     SourceIndexCacheLookup,
     default_source_index_cache_dir,
     manifest_digest,
 )
+from ladon.source_index_audit import audit_command_evidence_complete
 from ladon.source_index_models import (
     SOURCE_FAILURE_DIAGNOSTIC,
     SOURCE_INDEX_FINGERPRINT_VERSION,
@@ -33,7 +37,7 @@ from ladon.source_index_models import (
 )
 
 
-SOURCE_INDEX_ALGORITHM_VERSION = 2
+SOURCE_INDEX_ALGORITHM_VERSION = 5
 SOURCE_INDEX_STABILIZATION_ATTEMPTS = 3
 LAYOUT_STATE_FILES = ("lakefile.toml", "lakefile.lean", "lake-manifest.json")
 
@@ -136,6 +140,28 @@ def build_source_index(
     return SourceIndexResult(stable.index, outcome)
 
 
+def capture_source_index_manifest(
+    repo_root: Path,
+    *,
+    options: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Capture current source/layout bytes without constructing index rows."""
+
+    root = repo_root.resolve()
+    if not root.is_dir():
+        raise SourceIndexError(f"source-index repository does not exist: {root}")
+    normalized_options, options_reason = _normalize_options(options or {})
+    if options_reason is not None:
+        raise SourceIndexError(
+            "source-index options cannot be fingerprinted for verification"
+        )
+    return _fingerprint_manifest(
+        root,
+        discover_lean_source_map(root),
+        normalized_options,
+    )
+
+
 def _construct_stable_index(
     repo_root: Path,
     layout: LeanSourceMap,
@@ -166,9 +192,7 @@ def _construct_stable_index(
             )
         except _SourceInventoryDrift as exc:
             if attempt + 1 == SOURCE_INDEX_STABILIZATION_ATTEMPTS:
-                raise SourceIndexError(
-                    unstable_module_message(exc.module)
-                ) from exc
+                raise SourceIndexError(unstable_module_message(exc.module)) from exc
             current_layout = source_map or discover_lean_source_map(repo_root)
             current_manifest = _fingerprint_manifest(
                 repo_root,
@@ -316,7 +340,7 @@ def _decode_cached_index(
         )
     except (SourceIndexError, TypeError, ValueError):
         return None
-    return cached if cached.index_status == "complete" else None
+    return cached if _cache_evidence_complete(cached) else None
 
 
 def _hit_outcome(
@@ -363,7 +387,17 @@ def _decode_previous_index(
         )
     except (SourceIndexError, TypeError, ValueError):
         return None
-    return previous if previous.index_status == "complete" else None
+    return previous if _cache_evidence_complete(previous) else None
+
+
+def _cache_evidence_complete(index: SourceIndex) -> bool:
+    """Require every current-fingerprint additive producer before reuse."""
+
+    return index.index_status == "complete" and all(
+        command_skeleton_evidence_complete(entry.module)
+        and audit_command_evidence_complete(entry.module)
+        for entry in index.entries
+    )
 
 
 def _completed_outcome(
@@ -420,10 +454,7 @@ def _construct_index(
     roots = tuple(root.to_dict(repo_root) for root in layout.roots)
     diagnostics = _ordered_diagnostics(
         (
-            *(
-                _normalize_diagnostic(row, repo_root)
-                for row in layout.diagnostics
-            ),
+            *(_normalize_diagnostic(row, repo_root) for row in layout.diagnostics),
             *built.diagnostics,
         )
     )
@@ -436,9 +467,7 @@ def _construct_index(
             source_roots=roots,
             entries=built.entries,
             options=dict(options),
-            index_status=(
-                "partial" if built.failed_entries else "complete"
-            ),
+            index_status=("partial" if built.failed_entries else "complete"),
             diagnostics=diagnostics,
         ),
         built.reused_entries,
@@ -515,10 +544,7 @@ def _reusable_entry_map(
         options,
     ):
         return {}
-    return {
-        entry.name: entry
-        for entry in reusable.entries
-    }
+    return {entry.name: entry for entry in reusable.entries}
 
 
 def _source_entry(
@@ -571,9 +597,7 @@ def _source_entry(
             "parse_error",
             exc,
         )
-    return _SourceEntryAttempt(
-        SourceIndexEntry(module, digest, len(source_bytes))
-    )
+    return _SourceEntryAttempt(SourceIndexEntry(module, digest, len(source_bytes)))
 
 
 def _failed_source_attempt(
@@ -596,8 +620,7 @@ def _failed_source_attempt(
             "cause": cause,
             "detail": detail,
             "message": (
-                f"Skipped Lean source module {module} at {path}: "
-                f"{cause} ({detail})."
+                f"Skipped Lean source module {module} at {path}: {cause} ({detail})."
             ),
         },
     )
@@ -610,11 +633,7 @@ def _failure_detail(exc: Exception, repo_root: Path) -> str:
         errno = exc.errno if exc.errno is not None else "unknown"
         return f"{type(exc).__name__}(errno={errno})"
     message = " ".join(str(exc).split()).replace(str(repo_root), ".")
-    return (
-        f"{type(exc).__name__}: {message}"
-        if message
-        else type(exc).__name__
-    )
+    return f"{type(exc).__name__}: {message}" if message else type(exc).__name__
 
 
 def _entry_matches_state(
@@ -773,8 +792,7 @@ def _entry_reuse_compatible(
         and prior.get("fingerprintVersion")
         == current_manifest.get("fingerprintVersion")
         and prior.get("indexSchema") == current_manifest.get("indexSchema")
-        and prior.get("algorithmVersion")
-        == current_manifest.get("algorithmVersion")
+        and prior.get("algorithmVersion") == current_manifest.get("algorithmVersion")
     )
 
 

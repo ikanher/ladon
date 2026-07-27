@@ -1,21 +1,21 @@
-"""Graph phases, audit enrichment, and population calibration."""
+"""Stable facade and phase orchestration for calibrated analysis.
+
+Module evidence, lexical audits, module populations, and declaration
+populations are independent implementation boundaries.  This module preserves
+the established import surface and keeps phase ordering explicit.
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any, Mapping
 
-from ladon.audit_enrichment import apply_audit_query
-from ladon.analysis.audit_surface import extract_audit_surface
+from ladon.analysis.architecture_registrations import (
+    attach_architecture_producer_registrations,
+)
+from ladon.analysis.audit_roles import finalize_audit_roles
 from ladon.analysis.declaration_graph import summarize_declaration_graph
 from ladon.analysis.findings import summarize_findings
-from ladon.analysis.module_dag import summarize_module_dag
-from ladon.analysis.population_calibration import (
-    PopulationCandidate,
-    aggregate_generated_families,
-    classify_populations,
-    summarize_populations,
-)
 from ladon.analysis.quality_baseline import summarize_quality_baseline
 from ladon.analysis.refactoring_prescriptions import (
     summarize_refactoring_prescriptions,
@@ -23,14 +23,58 @@ from ladon.analysis.refactoring_prescriptions import (
 from ladon.analysis.review_regions import summarize_review_regions
 from ladon.analysis.witness_packet import summarize_packet_evidence
 from ladon.extraction import ModuleDiscovery
-from ladon.ir import LeanAuditQuery, LeanDeclaration, LeanModule
+from ladon.ir import LeanDeclaration, LeanModule
+from ladon.pipeline_audit_calibration import (
+    attach_audit_query_results,
+    attach_audit_surfaces,
+    enrich_audit_and_declaration_populations,
+    enrich_audit_command,
+)
+from ladon.pipeline_declaration_calibration import (
+    attach_declaration_populations,
+    calibrated_declaration_ranking,
+    calibrated_declaration_row,
+    declaration_population,
+    normalized_declaration_edges,
+    reverse_declaration_relationships,
+)
 from ladon.pipeline_extraction import (
     analysis_module_roots,
     declaration_roots_for_modules,
     reference_inventory_names,
 )
+from ladon.pipeline_integrity import attach_integrity_surfaces
+from ladon.pipeline_inspection_navigation import (
+    attach_inspection_navigation,
+)
 from ladon.pipeline_models import RunContext
-from ladon.pipeline_optional import resolve_generated_family_policy
+from ladon.pipeline_module_evidence import (
+    attach_boundary_membership_evidence,
+    boundary_membership_rows,
+    boundary_targets,
+    discovery_phase_reason,
+    rewrite_boundary_membership_refs,
+    rewrite_inventory_reference,
+    root_view_configuration,
+    scope_source_fingerprint,
+    selected_import_coverage,
+    selected_module_dag,
+    source_index_summary,
+)
+from ladon.pipeline_population_calibration import (
+    attach_audit_populations,
+    attach_module_populations,
+    legacy_population_field,
+    module_population_candidate,
+    target_owned_fan_in_rows,
+    target_owned_fan_out_rows,
+    target_owned_large_module_rows,
+    target_source_roots,
+)
+from ladon.pipeline_snapshot import (
+    capture_registered_directory,
+    read_registered_text,
+)
 
 
 def run_module_dag_phase(
@@ -41,29 +85,18 @@ def run_module_dag_phase(
     """Summarize the module DAG for the selected analysis root."""
 
     with context.phase("module_dag") as counters:
-        dag = summarize_module_dag(
-            modules,
-            chosen_roots=analysis_module_roots(context, discovery),
-        )
-        if context.scope_plan is not None:
-            dag["analysis_scope"] = context.scope_plan.to_payload()
-        dag["source_index"] = {
-            "inventoryModuleCount": context.inventory_module_count,
-            "indexedModuleCount": context.indexed_module_count,
-            "selectedModuleCount": len(modules),
-            "status": context.source_index_status,
-            "cache": dict(context.source_index_cache or {}),
-            "diagnostics": [
-                dict(row) for row in context.source_index_diagnostics
-            ],
-        }
+        plan = context.scope_plan
+        dag = selected_module_dag(context, modules, discovery)
+        if plan is not None:
+            dag["analysis_scope"] = plan.to_payload()
+        dag["source_index"] = source_index_summary(context, len(modules))
+        attach_boundary_membership_evidence(dag, context.source_index)
+        attach_inspection_navigation(dag, modules, context.source_index)
         attach_audit_surfaces(context, dag, modules)
+        finalize_audit_roles(dag)
         attach_module_populations(context, dag, modules)
-        dag["scope"] = (
-            context.scope_plan.scope_kind
-            if context.scope_plan is not None
-            else "inventory"
-        )
+        attach_integrity_surfaces(context, dag, discovery)
+        dag["scope"] = plan.scope_kind if plan is not None else "inventory"
         dag["method"] = "selected_module_import_dag"
         counters["edges"] = int(dag["edge_count"])
         if context.source_index_status == "partial":
@@ -76,476 +109,6 @@ def run_module_dag_phase(
             }
             context.mark_phase_partial("module_dag", reason)
     return dag
-
-
-def discovery_phase_reason(context: RunContext) -> str:
-    """Return the recorded discovery reason for downstream partial labels."""
-
-    timing = next(
-        (
-            row
-            for row in reversed(context.timings)
-            if row.name == "discover"
-        ),
-        None,
-    )
-    return (
-        timing.reason
-        if timing is not None and timing.reason
-        else "source discovery retained a partial readable population"
-    )
-
-
-def attach_audit_surfaces(
-    context: RunContext,
-    dag: dict[str, Any],
-    modules: Mapping[str, LeanModule],
-) -> None:
-    """Attach lexical audit commands and resource directives to their owners."""
-
-    rows: list[dict[str, Any]] = []
-    metadata = dag.get("module_metadata", {})
-    for module in modules.values():
-        path = context.repo_root / module.path
-        try:
-            text = path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
-            continue
-        surface = extract_audit_surface(
-            module.name,
-            module.path,
-            text,
-            declaration_count=len(module.declarations),
-        )
-        if not surface.commands and not surface.resource_directives:
-            continue
-        row = surface.to_dict()
-        attach_audit_query_results(row, context.lean_audit_queries)
-        rows.append(row)
-        module_row = metadata.get(module.name)
-        if isinstance(module_row, dict):
-            module_row["commandOnly"] = surface.command_only
-            module_row["auditCommandCount"] = len(surface.commands)
-            module_row["resourceDirectiveCount"] = len(
-                surface.resource_directives
-            )
-    dag["audit_surfaces"] = rows
-    dag["audit_summary"] = {
-        "modules": len(rows),
-        "commandOnlyModules": sum(
-            1 for row in rows if bool(row.get("commandOnly"))
-        ),
-        "auditCommands": sum(
-            int(row.get("summary", {}).get("auditCommands", 0))
-            for row in rows
-        ),
-        "resourceDirectives": sum(
-            int(row.get("summary", {}).get("resourceDirectives", 0))
-            for row in rows
-        ),
-        "backend": "text",
-        "authority": "lexical_text",
-    }
-
-
-def attach_audit_query_results(
-    surface: dict[str, Any],
-    queries: Mapping[str, LeanAuditQuery],
-) -> None:
-    """Join helper results to stable lexical command identifiers."""
-
-    for command in surface.get("auditCommands", []):
-        if isinstance(command, dict):
-            apply_audit_query(
-                command,
-                queries.get(str(command.get("id", ""))),
-            )
-
-
-def attach_module_populations(
-    context: RunContext,
-    dag: dict[str, Any],
-    modules: Mapping[str, LeanModule],
-) -> None:
-    """Classify selected modules and expose authored-by-default graph rows."""
-
-    policy, source = resolve_generated_family_policy(context)
-    roots = target_source_roots(context)
-    candidates = tuple(
-        module_population_candidate(context.repo_root, module)
-        for module in modules.values()
-    )
-    classifications = classify_populations(
-        candidates,
-        target_source_roots=roots,
-        policy=policy,
-    )
-    by_module = {
-        candidate.module: classification
-        for candidate, classification in zip(candidates, classifications)
-    }
-    metadata = dag.get("module_metadata", {})
-    for module, classification in by_module.items():
-        row = metadata.get(module)
-        if isinstance(row, dict):
-            row["population"] = classification.population
-            row["populationEvidence"] = classification.to_dict()
-    attach_audit_populations(dag, by_module)
-    summary = summarize_populations(
-        classifications,
-        selected_population="target_owned",
-    )
-    dag["population_calibration"] = {
-        "policy": policy.to_dict() if policy is not None else None,
-        "policySource": source,
-        "targetSourceRoots": list(roots),
-        "rows": [
-            {
-                "module": candidate.module,
-                "path": candidate.source_path,
-                **classification.to_dict(),
-            }
-            for candidate, classification in zip(candidates, classifications)
-        ],
-        "summary": summary.to_dict(),
-        "generatedFamilies": [
-            row.to_dict()
-            for row in aggregate_generated_families(
-                candidates,
-                classifications,
-            )
-        ],
-        "nonclaim": (
-            "Population labels describe ownership and generation provenance, "
-            "not proof correctness, theorem truth, or generator freshness."
-        ),
-    }
-    dag["top_target_owned_fan_in"] = target_owned_fan_in_rows(
-        modules,
-        by_module,
-    )
-
-
-def attach_audit_populations(
-    dag: dict[str, Any],
-    classifications: Mapping[str, Any],
-) -> None:
-    """Thread containing-owner populations without promoting findings."""
-
-    for surface in dag.get("audit_surfaces", []):
-        if not isinstance(surface, dict):
-            continue
-        module = str(surface.get("module", ""))
-        classification = classifications.get(module)
-        population = getattr(classification, "population", "unclassified")
-        surface["population"] = population
-        for command in surface.get("auditCommands", []):
-            if isinstance(command, dict):
-                command["containingOwner"] = module
-                command["containingPopulation"] = population
-        for directive in surface.get("resourceDirectives", []):
-            if isinstance(directive, dict):
-                directive["population"] = population
-
-
-def module_population_candidate(
-    repo_root: Path,
-    module: LeanModule,
-) -> PopulationCandidate:
-    """Adapt one indexed module into the calibration boundary."""
-
-    path = repo_root / module.path
-    try:
-        source_size = path.stat().st_size
-    except OSError:
-        source_size = 0
-    return PopulationCandidate(
-        identifier=f"module:{module.name}",
-        kind="module",
-        module=module.name,
-        source_path=module.path,
-        source_authority="lexical_text",
-        source_size_bytes=source_size,
-        declaration_count=len(module.declarations),
-        imports=module.imports,
-    )
-
-
-def target_source_roots(context: RunContext) -> tuple[str, ...]:
-    """Return declared target roots from the explicit inventory boundary."""
-
-    if context.scope_plan is None:
-        return (".",)
-    roots = tuple(
-        str(row.get("path", "."))
-        for row in context.scope_plan.inventory_boundary
-    )
-    return roots or (".",)
-
-
-def target_owned_fan_in_rows(
-    modules: Mapping[str, LeanModule],
-    classifications: Mapping[str, Any],
-) -> list[dict[str, Any]]:
-    """Return calibrated target-owned importer/target pressure."""
-
-    target_owned = {
-        module
-        for module, row in classifications.items()
-        if row.population == "target_owned"
-    }
-    rows: list[dict[str, Any]] = []
-    for target in sorted(target_owned):
-        all_importers = sorted(
-            module.name
-            for module in modules.values()
-            if target in module.imports
-        )
-        selected = [
-            importer for importer in all_importers if importer in target_owned
-        ]
-        rows.append(
-            {
-                "module": target,
-                "path": modules[target].path,
-                "fan_in": len(selected),
-                "sample_importers": selected[:12],
-                "population": (
-                    "target_owned_importers_to_target_owned_targets"
-                ),
-                "numerator": len(selected),
-                "denominator": len(all_importers),
-                "exclusions": {
-                    "nonTargetOwnedImporters": len(all_importers)
-                    - len(selected)
-                },
-                "authority": "module_import_graph_and_population_policy",
-            }
-        )
-    return sorted(
-        rows,
-        key=lambda row: (int(row["fan_in"]), str(row["module"])),
-        reverse=True,
-    )[:15]
-
-
-def enrich_audit_and_declaration_populations(
-    dag: dict[str, Any],
-    declaration_graph: dict[str, Any] | None,
-) -> None:
-    """Join optional Lean declaration identity and calibrated ownership."""
-
-    if declaration_graph is None:
-        return
-    declarations = [
-        row
-        for row in declaration_graph.get("declarations", [])
-        if isinstance(row, dict)
-    ]
-    by_name = {
-        str(row.get("declaration")): row
-        for row in declarations
-        if row.get("declaration")
-    }
-    attach_declaration_populations(dag, declaration_graph, declarations)
-    for surface in dag.get("audit_surfaces", []):
-        if not isinstance(surface, dict):
-            continue
-        for command in surface.get("auditCommands", []):
-            if isinstance(command, dict):
-                enrich_audit_command(command, by_name)
-
-
-def enrich_audit_command(
-    command: dict[str, Any],
-    by_name: Mapping[str, dict[str, Any]],
-) -> None:
-    """Attach exact identity candidates without claiming command resolution."""
-
-    subject = str(command.get("subject", "")).strip()
-    referenced = str(
-        command.get("referencedDeclaration") or subject
-    ).strip()
-    declaration = by_name.get(referenced)
-    if declaration is None:
-        if command.get("queryResult") is None:
-            command["resultStatus"] = "unavailable"
-            command["resultReason"] = (
-                "No command-specific Lean resolution result was captured; "
-                "lexical subjects are not resolved by suffix matching."
-            )
-        return
-    command["referencedDeclaration"] = declaration.get("declaration")
-    command["referencedOwner"] = declaration.get("module")
-    command["referencedPopulation"] = declaration.get("population")
-    command["referencedBackend"] = declaration.get("extractionBackend")
-    if command.get("queryResult") is None:
-        command["resultStatus"] = "unavailable"
-        command["resultReason"] = (
-            "An exact extracted declaration identity exists, but no "
-            "command-specific Lean resolution or query result was captured."
-        )
-
-
-def attach_declaration_populations(
-    dag: dict[str, Any],
-    declaration_graph: dict[str, Any],
-    declarations: list[dict[str, Any]],
-) -> None:
-    """Classify declaration rows from module and Lean generation evidence."""
-
-    module_rows = dag.get("population_calibration", {}).get("rows", [])
-    module_populations = {
-        str(row.get("module")): str(row.get("population", "unclassified"))
-        for row in module_rows
-        if isinstance(row, dict)
-    }
-    counts: dict[str, int] = {}
-    by_declaration: dict[str, str] = {}
-    for row in declarations:
-        population, authority = declaration_population(
-            row,
-            module_populations,
-        )
-        row["population"] = population
-        row["populationAuthority"] = authority
-        counts[population] = counts.get(population, 0) + 1
-        by_declaration[str(row.get("declaration", ""))] = population
-    declaration_graph["population_calibration"] = {
-        "selectedPopulation": "target_owned",
-        "rawCount": len(declarations),
-        "counts": dict(sorted(counts.items())),
-        "exclusions": {
-            population: count
-            for population, count in sorted(counts.items())
-            if population != "target_owned"
-        },
-        "nonclaim": (
-            "Declaration populations preserve extraction authority and do not "
-            "state proof correctness or theorem truth."
-        ),
-    }
-    edges = declaration_graph.get("edges", {})
-    declaration_graph["top_target_owned_fan_in"] = (
-        calibrated_declaration_ranking(edges, by_declaration, "fan_in")
-    )
-    declaration_graph["top_target_owned_fan_out"] = (
-        calibrated_declaration_ranking(edges, by_declaration, "fan_out")
-    )
-
-
-def calibrated_declaration_ranking(
-    raw_edges: Any,
-    populations: Mapping[str, str],
-    metric: str,
-) -> list[dict[str, Any]]:
-    """Rank an independently recomputed target-owned declaration subgraph."""
-
-    edges = normalized_declaration_edges(raw_edges)
-    if metric == "fan_in":
-        relationships = reverse_declaration_relationships(edges)
-    elif metric == "fan_out":
-        relationships = edges
-    else:
-        raise ValueError(f"unsupported declaration metric: {metric}")
-    rows = [
-        calibrated_declaration_row(
-            declaration,
-            targets,
-            populations,
-            metric,
-        )
-        for declaration, targets in relationships.items()
-        if populations.get(declaration) == "target_owned"
-    ]
-    return sorted(
-        rows,
-        key=lambda row: (
-            -int(row[metric]),
-            str(row["declaration"]),
-        ),
-    )[:15]
-
-
-def normalized_declaration_edges(raw: Any) -> dict[str, tuple[str, ...]]:
-    """Return only string-to-string declaration relationships."""
-
-    if not isinstance(raw, Mapping):
-        return {}
-    return {
-        str(source): tuple(
-            sorted(
-                str(target)
-                for target in targets
-                if isinstance(target, str)
-            )
-        )
-        for source, targets in raw.items()
-        if isinstance(source, str) and isinstance(targets, Sequence)
-    }
-
-
-def reverse_declaration_relationships(
-    edges: Mapping[str, Sequence[str]],
-) -> dict[str, tuple[str, ...]]:
-    """Reverse declaration relationships while retaining zero-degree rows."""
-
-    reverse: dict[str, list[str]] = {
-        declaration: [] for declaration in edges
-    }
-    for source, targets in edges.items():
-        for target in targets:
-            reverse.setdefault(target, []).append(source)
-    return {
-        declaration: tuple(sorted(sources))
-        for declaration, sources in reverse.items()
-    }
-
-
-def calibrated_declaration_row(
-    declaration: str,
-    relationships: Sequence[str],
-    populations: Mapping[str, str],
-    metric: str,
-) -> dict[str, Any]:
-    """Expose selected and raw populations without carrying raw inflation."""
-
-    selected = [
-        target
-        for target in relationships
-        if populations.get(target) == "target_owned"
-    ]
-    denominator = len(relationships)
-    return {
-        "declaration": declaration,
-        metric: len(selected),
-        "rawMetric": denominator,
-        "population": "target_owned_to_target_owned",
-        "numerator": len(selected),
-        "denominator": denominator,
-        "exclusions": {
-            "nonTargetOwnedEndpoints": denominator - len(selected)
-        },
-        "authority": "parser_candidate_graph_and_population_policy",
-    }
-
-
-def declaration_population(
-    row: Mapping[str, Any],
-    module_populations: Mapping[str, str],
-) -> tuple[str, str]:
-    """Apply imported/compiler evidence before containing-module ownership."""
-
-    if bool(row.get("importedStub")):
-        return "imported", "lean_imported_stub"
-    if bool(row.get("compilerGenerated")):
-        authority = str(row.get("compilerAuthority") or "unclassified")
-        if authority == "lean_environment" and row.get("compilerToolchain"):
-            return "compiler_generated", authority
-        return "unclassified", "incomplete_compiler_generation_evidence"
-    module = str(row.get("module", ""))
-    population = module_populations.get(module, "unclassified")
-    return population, "containing_module_population"
 
 
 def run_declaration_graph_phase(
@@ -566,9 +129,7 @@ def run_declaration_graph_phase(
                 ),
                 known_reference_names=reference_inventory_names(modules),
             )
-            counters["declarations"] = int(
-                declaration_graph["declaration_count"]
-            )
+            counters["declarations"] = int(declaration_graph["declaration_count"])
             counters["edges"] = int(declaration_graph["edge_count"])
             return declaration_graph
     context.record_skipped("declaration_graph", "no declaration IR available")
@@ -619,6 +180,12 @@ def run_findings_phase(
         ):
             if report is not None:
                 findings.extend(report["findings"])
+        attach_architecture_producer_registrations(
+            context,
+            dag,
+            findings,
+            declaration_graph,
+        )
         counters["findings"] = len(findings)
         return findings
 
@@ -643,9 +210,7 @@ def run_refactoring_prescription_phase(
         )
         findings.extend(refactoring_prescriptions["findings"])
         context.set_phase_counter("findings", "findings", len(findings))
-        counters["prescriptions"] = len(
-            refactoring_prescriptions["rows"]
-        )
+        counters["prescriptions"] = len(refactoring_prescriptions["rows"])
         return refactoring_prescriptions
 
 
@@ -654,14 +219,20 @@ def run_packet_evidence_phase(
 ) -> list[dict[str, Any]]:
     """Summarize optional OpenSpec/proof packet evidence directories."""
 
-    if context.packet_dirs:
+    packet_dirs = (
+        context.captured_packet_dirs
+        if context.captured_packet_dirs is not None
+        else context.packet_dirs
+    )
+    if packet_dirs:
         with context.phase("packet_evidence") as counters:
             packet_evidence = [
-                summarize_packet_evidence(
+                _summarize_registered_packet(
+                    context,
                     packet_dir,
-                    profile=context.packet_profile,
+                    index=index,
                 )
-                for packet_dir in context.packet_dirs
+                for index, packet_dir in enumerate(packet_dirs)
             ]
             counters["packet_dirs"] = len(packet_evidence)
             return packet_evidence
@@ -670,6 +241,45 @@ def run_packet_evidence_phase(
         "no packet directories requested",
     )
     return []
+
+
+def _summarize_registered_packet(
+    context: RunContext,
+    packet_dir: Path,
+    *,
+    index: int,
+) -> dict[str, Any]:
+    """Summarize one packet from a captured inventory and registered text."""
+
+    collection_refs = (
+        "report.packet_evidence",
+        "report.review_regions",
+    )
+    inventory = capture_registered_directory(
+        context,
+        packet_dir,
+        namespace=f"packet-{index}",
+        collection_refs=collection_refs,
+    )
+    return summarize_packet_evidence(
+        packet_dir,
+        profile=(
+            context.captured_packet_profile
+            if context.captured_packet_profile is not None
+            else context.packet_profile
+        ),
+        captured_files=list(inventory.files),
+        packet_exists=inventory.exists,
+        text_reader=lambda path: read_registered_text(
+            context,
+            path,
+            kind="evidence",
+            collection_refs=collection_refs,
+            namespace="packet-evidence",
+            errors="ignore",
+            register_unreadable=True,
+        ),
+    )
 
 
 def run_review_regions_phase(
@@ -690,3 +300,43 @@ def run_review_regions_phase(
         )
         counters["regions"] = len(review_regions)
         return review_regions
+
+
+__all__ = [
+    "attach_audit_populations",
+    "attach_audit_query_results",
+    "attach_audit_surfaces",
+    "attach_boundary_membership_evidence",
+    "attach_declaration_populations",
+    "attach_module_populations",
+    "boundary_membership_rows",
+    "boundary_targets",
+    "calibrated_declaration_ranking",
+    "calibrated_declaration_row",
+    "declaration_population",
+    "discovery_phase_reason",
+    "enrich_audit_and_declaration_populations",
+    "enrich_audit_command",
+    "legacy_population_field",
+    "module_population_candidate",
+    "normalized_declaration_edges",
+    "reverse_declaration_relationships",
+    "rewrite_boundary_membership_refs",
+    "rewrite_inventory_reference",
+    "root_view_configuration",
+    "run_declaration_graph_phase",
+    "run_findings_phase",
+    "run_module_dag_phase",
+    "run_packet_evidence_phase",
+    "run_quality_baseline_phase",
+    "run_refactoring_prescription_phase",
+    "run_review_regions_phase",
+    "scope_source_fingerprint",
+    "selected_import_coverage",
+    "selected_module_dag",
+    "source_index_summary",
+    "target_owned_fan_in_rows",
+    "target_owned_fan_out_rows",
+    "target_owned_large_module_rows",
+    "target_source_roots",
+]

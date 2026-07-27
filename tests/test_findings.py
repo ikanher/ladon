@@ -76,10 +76,10 @@ def test_findings_ignore_below_threshold_rows() -> None:
     assert summarize_findings({}, declaration_graph) == []
 
 
-def test_findings_flag_duplicate_imports_and_large_handwritten_modules() -> None:
+def test_findings_flag_duplicate_imports_and_large_target_owned_modules() -> None:
     module_dag = {
         "top_fan_in": [],
-        "top_handwritten_fan_in": [],
+        "top_target_owned_fan_in": [],
         "root_direct_import_closures": [],
         "duplicate_imports": [
             {
@@ -96,10 +96,11 @@ def test_findings_flag_duplicate_imports_and_large_handwritten_modules() -> None
                 "suggestedAction": "move generated parameters into a manifest",
             }
         ],
-        "top_large_handwritten_modules": [
+        "top_target_owned_large_modules": [
             {
                 "module": "A.Owner",
                 "lineCount": 3000,
+                "population": "target_owned",
             }
         ],
     }
@@ -109,7 +110,7 @@ def test_findings_flag_duplicate_imports_and_large_handwritten_modules() -> None
     assert [finding["kind"] for finding in findings] == [
         "duplicate_import_target",
         "module_name_smell",
-        "large_handwritten_module",
+        "large_target_owned_module",
     ]
     assert "lines 1, 2" in findings[0]["message"]
     assert "generated_encoded_parameters" in findings[1]["message"]
@@ -169,13 +170,17 @@ def duplicate_fan_findings() -> tuple[list[dict], dict]:
                 "authority": "module_import_graph",
             }
         ],
-        "top_handwritten_fan_in": [
+        "top_target_owned_fan_in": [
             {
                 "module": "A.Core",
                 "fan_in": 5,
                 "sample_importers": importers,
-                "population": "handwritten_importers_to_handwritten_targets",
-                "authority": "module_import_graph",
+                "population": (
+                    "target_owned_importers_to_target_owned_targets"
+                ),
+                "authority": (
+                    "module_import_graph_and_population_policy"
+                ),
             }
         ],
     }
@@ -187,19 +192,21 @@ def test_equivalent_fan_promotions_are_promoted_once() -> None:
     findings, module_dag = duplicate_fan_findings()
 
     assert len(findings) == 1
-    assert findings[0]["kind"] == "handwritten_module_fan_in_hotspot"
+    assert findings[0]["kind"] == "target_owned_module_fan_in_hotspot"
     assert findings[0]["promotion_population"] == (
-        "handwritten_importers_to_handwritten_targets"
+        "target_owned_importers_to_target_owned_targets"
     )
     assert len(module_dag["top_fan_in"]) == 1
-    assert len(module_dag["top_handwritten_fan_in"]) == 1
+    assert len(module_dag["top_target_owned_fan_in"]) == 1
 
 
 def test_fan_promotion_exposes_stable_threshold_and_authority_metadata() -> None:
     finding = duplicate_fan_findings()[0][0]
 
     assert finding["promotion_threshold"] == 5
-    assert finding["authority"] == "module_import_graph"
+    assert finding["authority"] == (
+        "module_import_graph_and_population_policy"
+    )
     assert finding["metric"] == "module_fan_in"
     assert finding["stable_key"].startswith("module_fan_in:A.Core:5:")
     assert finding["id"].startswith("ladon.finding.")

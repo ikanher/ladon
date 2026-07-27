@@ -1,10 +1,32 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
 from ladon.analysis.audit_surface import extract_audit_surface
+from ladon.extraction import parse_lean_module
+
+
+def indexed_audit_surface(source: str, *, declaration_count: int):
+    """Adapt resource rows from the same canonical module used by reports."""
+
+    repo_root = Path("/repository")
+    source_path = repo_root / "Pkg" / "Owner.lean"
+    module = parse_lean_module(
+        repo_root,
+        source_path,
+        resolved_name="Pkg.Owner",
+        source_text=source,
+    )
+    return module, extract_audit_surface(
+        module.name,
+        module.path,
+        source,
+        declaration_count=declaration_count,
+        resource_settings=module.resource_settings,
+    )
 
 
 def test_extracts_stable_bounded_audit_commands() -> None:
@@ -112,9 +134,7 @@ def test_resource_directives_preserve_value_scope_and_nonclaims() -> None:
         "set_option maxRecDepth 4096\n"
     )
 
-    surface = extract_audit_surface(
-        "Pkg.Owner",
-        "Pkg/Owner.lean",
+    _, surface = indexed_audit_surface(
         source,
         declaration_count=1,
     )
@@ -155,9 +175,7 @@ def test_unsupported_resource_expression_is_explicitly_unparsed() -> None:
         'def text := "set_option maxHeartbeats 0"\n'
     )
 
-    surface = extract_audit_surface(
-        "Pkg.Owner",
-        "Pkg/Owner.lean",
+    _, surface = indexed_audit_surface(
         source,
         declaration_count=2,
     )
@@ -168,8 +186,63 @@ def test_unsupported_resource_expression_is_explicitly_unparsed() -> None:
     assert row.numeric_value is None
     assert row.normalized_meaning is None
     assert row.lexical_scope == "command_local"
-    assert row.status == "unparsed"
+    assert row.status == "unresolved"
     assert row.diagnostics[0].code == "audit.resource_value_unparsed"
+
+
+def test_resource_adapter_matches_canonical_boundary_and_huge_values() -> None:
+    boundary = "9" * 256
+    truncated = "9" * 257
+    huge = "9" * 5_000
+    source = (
+        "set_option maxHeartbeats 0\n"
+        f"set_option maxRecDepth {boundary}\n"
+        f"set_option maxRecDepth {truncated}\n"
+        f"set_option maxRecDepth {huge}\n"
+    )
+
+    module, surface = indexed_audit_surface(source, declaration_count=0)
+    canonical = module.resource_settings
+    adapted = surface.resource_directives
+
+    assert [
+        (
+            row.identifier,
+            row.raw_value,
+            row.numeric_value,
+            row.normalized_meaning,
+            row.lexical_scope,
+            row.status,
+        )
+        for row in adapted
+    ] == [
+        (
+            row.identifier,
+            row.raw_value,
+            row.numeric_value,
+            row.normalized_meaning,
+            row.lexical_scope,
+            row.status,
+        )
+        for row in canonical
+    ]
+    assert (
+        adapted[0].numeric_value,
+        adapted[0].normalized_meaning,
+        adapted[0].status,
+    ) == (0, "unlimited", "parsed")
+    assert adapted[1].numeric_value == int(boundary)
+    assert adapted[1].status == "parsed"
+    assert all(
+        (
+            row.raw_value == boundary,
+            row.numeric_value,
+            row.normalized_meaning,
+            row.status,
+        )
+        == (True, None, None, "unresolved")
+        for row in adapted[2:]
+    )
 
 
 def test_repeated_subjects_keep_distinct_source_anchored_identities() -> None:

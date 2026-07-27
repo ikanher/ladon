@@ -8,6 +8,7 @@ from typing import Any, Mapping
 import pytest
 from jsonschema import Draft202012Validator
 
+from ladon.inspection_report_adapter import report_dataset
 from ladon.pipeline import RunContext, run_pipeline
 from ladon.report_contract import (
     ExtensionEnvelope,
@@ -150,6 +151,20 @@ def v3_validator() -> Draft202012Validator:
     return Draft202012Validator(schema)
 
 
+def pre_integrity_v3_payload(projection: str) -> dict[str, Any]:
+    """Return the original v3 shape before additive integrity envelopes."""
+
+    payload = build_report_v3(
+        canonical_model(),
+        projection=projection,
+    ).to_dict()
+    payload.pop("coverage")
+    payload.pop("snapshot")
+    for omission in payload["projection"]["omissions"]:
+        omission.pop("coverageRef", None)
+    return payload
+
+
 @pytest.mark.parametrize("projection", ["summary", "review", "full"])
 def test_packaged_schema_validates_every_projection(projection: str) -> None:
     report = build_report_v3(
@@ -166,6 +181,31 @@ def test_packaged_schema_validates_every_projection(projection: str) -> None:
     assert report.payload["projection"]["name"] == projection
 
 
+@pytest.mark.parametrize("projection", ["summary", "review", "full"])
+def test_schema_accepts_pre_integrity_v3_payload(projection: str) -> None:
+    payload = pre_integrity_v3_payload(projection)
+
+    v3_validator().validate(payload)
+
+    assert "coverage" not in payload
+    assert "snapshot" not in payload
+    assert all(
+        "coverageRef" not in omission
+        for omission in payload["projection"]["omissions"]
+    )
+
+
+def test_pre_integrity_v3_reader_keeps_missing_coverage_unknown() -> None:
+    dataset = report_dataset(pre_integrity_v3_payload("full"), "modules")
+
+    assert dataset.rows
+    assert dataset.coverage["totalKnown"] is False
+    assert dataset.coverage["total"] is None
+    assert dataset.coverage["omitted"] is None
+    assert dataset.coverage["completeness"] == "partial"
+    assert dataset.artifact.source_fingerprint is None
+
+
 def test_payloads_have_one_owner_and_envelopes_only_reference_them() -> None:
     report = build_report_v3(model_with_large_payload(), projection="full")
     payload = report.to_dict()
@@ -173,9 +213,7 @@ def test_payloads_have_one_owner_and_envelopes_only_reference_them() -> None:
 
     assert content.count(b"module-payload-owned-once") == 1
     assert content.count(b"extension-payload-owned-once") == 1
-    assert payload["phases"]["module_dag"]["payloadRef"] == (
-        "#/sections/module_dag"
-    )
+    assert payload["phases"]["module_dag"]["payloadRef"] == ("#/sections/module_dag")
     assert payload["pipeline"]["timings"]["module_dag"]["payloadRef"] == (
         "#/sections/module_dag"
     )
@@ -199,8 +237,7 @@ def test_every_payload_reference_resolves_in_each_projection(
 
     assert references
     assert all(
-        resolve_json_pointer(payload, reference) is not None
-        for reference in references
+        resolve_json_pointer(payload, reference) is not None for reference in references
     )
     elaborated = payload["extensions"]["elaborated_declarations"]
     assert elaborated["payloadRef"] == "#/sections/declaration_graph"
@@ -227,9 +264,9 @@ def test_projection_sizes_order_and_share_analysis_fingerprint() -> None:
     }
 
     assert sizes["summary"] < sizes["review"] < sizes["full"]
-    assert {
-        report.analysis_fingerprint for report in reports.values()
-    } == {reports["full"].analysis_fingerprint}
+    assert {report.analysis_fingerprint for report in reports.values()} == {
+        reports["full"].analysis_fingerprint
+    }
     assert reports["summary"].payload["projection"]["omissions"]
     assert reports["review"].payload["projection"]["omissions"]
     assert reports["full"].payload["projection"]["omissions"] == []
@@ -312,15 +349,11 @@ def test_analysis_fingerprint_does_not_normalize_user_cache_names() -> None:
     source = model.phases["module_dag"]
     first_data = {
         **dict(source.data or {}),
-        "module_metadata": {
-            "Pkg.Cache": {"path": "one.lean", "lineCount": 1}
-        },
+        "module_metadata": {"Pkg.Cache": {"path": "one.lean", "lineCount": 1}},
     }
     second_data = {
         **dict(source.data or {}),
-        "module_metadata": {
-            "Pkg.Cache": {"path": "two.lean", "lineCount": 999}
-        },
+        "module_metadata": {"Pkg.Cache": {"path": "two.lean", "lineCount": 999}},
     }
     first_phases = {
         **model.phases,
@@ -377,13 +410,11 @@ def test_v2_schema_reader_and_serializer_remain_available() -> None:
 
     assert payload["metadata"]["report_version"] == REPORT_VERSION
     assert serialized.warnings
-    assert all(
-        "disposition" not in phase
-        for phase in payload["phases"].values()
-    )
+    assert all("disposition" not in phase for phase in payload["phases"].values())
     assert "data" in payload["phases"]["module_dag"]
-    assert payload["pipeline"]["timings"]["module_dag"]["data"] == (
-        payload["phases"]["module_dag"]["data"]
+    assert (
+        payload["pipeline"]["timings"]["module_dag"]["data"]
+        == (payload["phases"]["module_dag"]["data"])
     )
 
 
@@ -414,7 +445,7 @@ def resolve_json_pointer(payload: Mapping[str, Any], pointer: str) -> Any:
     value: Any = payload
     for token in pointer.removeprefix("#/").split("/"):
         key = token.replace("~1", "/").replace("~0", "~")
-        value = value[key]
+        value = value[int(key)] if isinstance(value, list) else value[key]
     return value
 
 

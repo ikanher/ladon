@@ -7,6 +7,8 @@ from typing import Any, Callable
 
 
 CheckPredicate = Callable[[list[Path]], bool]
+TextReader = Callable[[Path], str | None]
+OWNER_REFERENCE_SCAN_LIMIT = 64
 
 METADATA_NAMES = {
     "manifest.json",
@@ -44,14 +46,30 @@ PROFILE_REQUIRED_CHECKS = {
 }
 
 
-def summarize_packet_evidence(packet_dir: Path, *, profile: str = "generic") -> dict[str, Any]:
+def summarize_packet_evidence(
+    packet_dir: Path,
+    *,
+    profile: str = "generic",
+    captured_files: list[Path] | None = None,
+    packet_exists: bool | None = None,
+    text_reader: TextReader | None = None,
+) -> dict[str, Any]:
     """Return a generic evidence-completeness summary for one packet."""
 
     ensure_known_profile(profile)
-    if not packet_dir.is_dir():
+    exists = packet_dir.is_dir() if packet_exists is None else packet_exists
+    if not exists:
         return missing_packet_summary(packet_dir, profile=profile)
-    files = packet_files(packet_dir)
-    checks = evidence_checks(packet_dir, files)
+    files = (
+        packet_files(packet_dir)
+        if captured_files is None
+        else list(captured_files)
+    )
+    checks = evidence_checks(
+        packet_dir,
+        files,
+        text_reader=text_reader,
+    )
     score = sum(1 for check in checks if check["passed"])
     return {
         "packet_dir": str(packet_dir),
@@ -115,14 +133,24 @@ def packet_files(packet_dir: Path) -> list[Path]:
     return sorted(path.relative_to(packet_dir) for path in packet_dir.rglob("*") if path.is_file())
 
 
-def evidence_checks(packet_dir: Path, files: list[Path]) -> list[dict[str, Any]]:
+def evidence_checks(
+    packet_dir: Path,
+    files: list[Path],
+    *,
+    text_reader: TextReader | None = None,
+) -> list[dict[str, Any]]:
     """Run all evidence checks against packet files."""
 
     return [
         {
             "name": name,
             "passed": predicate(files),
-            "examples": matching_examples(packet_dir, files, name),
+            "examples": matching_examples(
+                packet_dir,
+                files,
+                name,
+                text_reader=text_reader,
+            ),
         }
         for name, predicate in check_definitions()
     ]
@@ -141,18 +169,43 @@ def check_definitions() -> list[tuple[str, CheckPredicate]]:
     ]
 
 
-def matching_examples(packet_dir: Path, files: list[Path], check_name: str) -> list[str]:
+def matching_examples(
+    packet_dir: Path,
+    files: list[Path],
+    check_name: str,
+    *,
+    text_reader: TextReader | None = None,
+) -> list[str]:
     """Return up to three example files supporting a check."""
 
-    examples = [
-        str(path)
-        for path in files
-        if example_matches(packet_dir, path, check_name)
-    ]
-    return examples[:3]
+    examples: list[str] = []
+    scanned_text_files = 0
+    for path in files:
+        if check_name == "owner_references" and (
+            path.suffix.lower() in {".md", ".txt", ".tex"}
+        ):
+            if scanned_text_files >= OWNER_REFERENCE_SCAN_LIMIT:
+                break
+            scanned_text_files += 1
+        if example_matches(
+            packet_dir,
+            path,
+            check_name,
+            text_reader=text_reader,
+        ):
+            examples.append(str(path))
+            if len(examples) == 3:
+                break
+    return examples
 
 
-def example_matches(packet_dir: Path, path: Path, check_name: str) -> bool:
+def example_matches(
+    packet_dir: Path,
+    path: Path,
+    check_name: str,
+    *,
+    text_reader: TextReader | None = None,
+) -> bool:
     """Return whether one relative path is an example for a named check."""
 
     return {
@@ -161,7 +214,10 @@ def example_matches(packet_dir: Path, path: Path, check_name: str) -> bool:
         "checker_script": is_checker_script,
         "tests": is_test_file,
         "verification_commands": is_verification_command_file,
-        "owner_references": lambda item: has_owner_markers(packet_dir / item),
+        "owner_references": lambda item: has_owner_markers(
+            packet_dir / item,
+            text_reader=text_reader,
+        ),
     }[check_name](path)
 
 
@@ -210,14 +266,24 @@ def is_verification_command_file(path: Path) -> bool:
     return path.name in COMMAND_NAMES or path.name.startswith("VERIFY_")
 
 
-def has_owner_markers(path: Path) -> bool:
+def has_owner_markers(
+    path: Path,
+    *,
+    text_reader: TextReader | None = None,
+) -> bool:
     """Return whether a text file mentions source/proof-owner concepts."""
 
     if path.suffix.lower() not in {".md", ".txt", ".tex"}:
         return False
     try:
-        text = path.read_text(encoding="utf-8", errors="ignore")
+        text = (
+            path.read_text(encoding="utf-8", errors="ignore")
+            if text_reader is None
+            else text_reader(path)
+        )
     except OSError:
+        return False
+    if text is None:
         return False
     return any(marker in text for marker in OWNER_MARKERS)
 

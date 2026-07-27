@@ -41,6 +41,7 @@ COPY_IGNORED_NAMES = frozenset(
         ".codex",
         ".git",
         ".idea",
+        ".lake",
         ".mypy_cache",
         ".pytest_cache",
         ".ruff_cache",

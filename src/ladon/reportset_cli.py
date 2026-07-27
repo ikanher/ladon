@@ -18,7 +18,11 @@ from ladon.atlas import (
     render_reviewer_cards_markdown,
 )
 from ladon.atlas_diff import diff_atlases, load_atlas, render_atlas_diff_markdown
-from ladon.atlas_sqlite import CANNED_QUERIES, run_canned_query, write_atlas_sqlite
+from ladon.atlas_sqlite import (
+    CANNED_QUERIES,
+    run_coverage_aware_query,
+    write_atlas_sqlite,
+)
 from ladon.atlas_workflow import (
     build_atlas_workflow,
     render_atlas_workflow_markdown,
@@ -34,6 +38,21 @@ from ladon.finding_workflow import (
     load_finding_report,
     parse_finding_filter,
 )
+from ladon.inspection_adapters import load_inspection_dataset
+from ladon.inspection_models import (
+    INSPECTION_NOUNS,
+    InspectionCompatibilityError,
+    InspectionInvocationError,
+    InspectionNotFoundError,
+)
+from ladon.inspection_query import (
+    DEFAULT_INSPECTION_LIMIT,
+    FILTERS_BY_NOUN,
+    inspect_dataset,
+    parse_inspection_filter,
+    positive_inspection_limit,
+)
+from ladon.inspection_render import render_inspection_text
 from ladon.scope import SUPPORTED_SCOPE_KINDS, ScopePlanningError
 from ladon.scope_runtime import resolve_analysis_scope
 from ladon.runset_bundle_reader import bundle_report_set
@@ -42,7 +61,16 @@ from ladon.progress import RunLimits
 
 
 REPORTSET_COMMANDS = frozenset(
-    {"atlas", "query", "diff", "cards", "workflow", "findings", "preview"}
+    {
+        "atlas",
+        "query",
+        "diff",
+        "cards",
+        "workflow",
+        "findings",
+        "inspect",
+        "preview",
+    }
 )
 
 
@@ -55,9 +83,16 @@ def reportset_main(argv: Sequence[str]) -> int:
         payload, text = execute_reportset(args)
         write_selected_output(args, payload, text)
         return EXIT_SUCCESS
-    except (ConfigurationError, ScopePlanningError) as exc:
+    except (
+        ConfigurationError,
+        InspectionInvocationError,
+        ScopePlanningError,
+    ) as exc:
         print(f"ladon: invalid invocation: {exc}", file=sys.stderr)
         return EXIT_INVOCATION
+    except (InspectionCompatibilityError, InspectionNotFoundError) as exc:
+        print(f"ladon: inspection failed [{exc.code}]: {exc}", file=sys.stderr)
+        return EXIT_OPERATIONAL
     except Exception as exc:
         print(f"ladon: report-set operation failed: {exc}", file=sys.stderr)
         return EXIT_OPERATIONAL
@@ -77,6 +112,7 @@ def build_reportset_parser() -> argparse.ArgumentParser:
     add_cards_parser(subparsers)
     add_workflow_parser(subparsers)
     add_findings_parser(subparsers)
+    add_inspect_parser(subparsers)
     add_preview_parser(subparsers)
     return parser
 
@@ -104,6 +140,14 @@ def add_query_parser(subparsers: Any) -> None:
     parser = subparsers.add_parser("query", help="Run a canned atlas query.")
     parser.add_argument("--db", required=True)
     parser.add_argument("--query", required=True, choices=sorted(CANNED_QUERIES))
+    parser.add_argument(
+        "--exhaustive",
+        action="store_true",
+        help=(
+            "Require complete authority for every source collection needed "
+            "by this query; otherwise return an unavailable diagnostic."
+        ),
+    )
     add_common_output(parser)
 
 
@@ -142,6 +186,62 @@ def add_findings_parser(subparsers: Any) -> None:
         default=[],
         type=finding_filter_argument,
         metavar="FIELD=VALUE",
+    )
+    add_common_output(parser)
+
+
+def add_inspect_parser(subparsers: Any) -> None:
+    """Register caller-neutral, artifact-only inspection."""
+
+    filters = "\n".join(
+        f"  {noun}: {', '.join(sorted(fields))}"
+        for noun, fields in FILTERS_BY_NOUN.items()
+    )
+    parser = subparsers.add_parser(
+        "inspect",
+        help="Inspect canonical rows from one existing report or source index.",
+        description=(
+            "Inspect canonical analysis rows without rerunning discovery, "
+            "Lake, Lean, VCS, an initializer, or a build."
+        ),
+        epilog=(
+            "Repeatable filters by noun:\n"
+            f"{filters}\n\n"
+            "Cursors are opaque and bind the artifact fingerprint, normalized "
+            "query, page size, and last stable ordering key. Lexical evidence "
+            "does not imply elaboration, proof success, or theorem quality."
+        ),
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("noun", choices=INSPECTION_NOUNS)
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--report", help="Canonical Ladon report JSON.")
+    source.add_argument(
+        "--source-index",
+        help="Compatible canonical Ladon source-index JSON.",
+    )
+    parser.add_argument(
+        "--filter",
+        action="append",
+        default=[],
+        type=inspection_filter_argument,
+        metavar="FIELD=VALUE",
+        help="Finite noun-specific exact filter; repeat to combine predicates.",
+    )
+    parser.add_argument("--id", dest="inspection_id", help="Exact stable row ID.")
+    parser.add_argument("--cursor", help="Opaque next-page cursor.")
+    parser.add_argument(
+        "--limit",
+        type=inspection_limit_argument,
+        default=DEFAULT_INSPECTION_LIMIT,
+        help="Rows per page (1-500; cursor-bound).",
+    )
+    parser.add_argument(
+        "--repo-root",
+        help=(
+            "Explicitly bind source-index inspection to current repository "
+            "source/configuration fingerprints."
+        ),
     )
     add_common_output(parser)
 
@@ -213,14 +313,36 @@ def finding_filter_argument(value: str) -> tuple[str, str]:
         raise argparse.ArgumentTypeError(str(exc)) from exc
 
 
+def inspection_filter_argument(value: str) -> tuple[str, str]:
+    """Expose finite inspection-filter syntax as an argparse error."""
+
+    try:
+        return parse_inspection_filter(value)
+    except InspectionInvocationError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+
+
+def inspection_limit_argument(value: str) -> int:
+    """Expose the bounded inspection page size as an argparse error."""
+
+    try:
+        return positive_inspection_limit(value)
+    except InspectionInvocationError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from exc
+
+
 def execute_reportset(args: argparse.Namespace) -> tuple[Any, str]:
     """Delegate a parsed operation to the existing owning library."""
 
     if args.command == "atlas":
         return execute_atlas(args)
     if args.command == "query":
-        rows = run_canned_query(Path(args.db), args.query)
-        return rows, tabular_text(rows)
+        payload = run_coverage_aware_query(
+            Path(args.db),
+            args.query,
+            exhaustive=args.exhaustive,
+        )
+        return payload, render_query_result_text(payload)
     if args.command == "diff":
         payload = diff_atlases(
             load_atlas(Path(args.before)),
@@ -236,6 +358,8 @@ def execute_reportset(args: argparse.Namespace) -> tuple[Any, str]:
         )
     if args.command == "findings":
         return execute_findings(args)
+    if args.command == "inspect":
+        return execute_inspect(args)
     if args.command == "preview":
         return execute_preview(args)
     return execute_workflow(args)
@@ -290,6 +414,27 @@ def execute_findings(args: argparse.Namespace) -> tuple[dict[str, Any], str]:
         filters=args.filter,
     )
     return payload, render_findings_text(payload)
+
+
+def execute_inspect(args: argparse.Namespace) -> tuple[dict[str, Any], str]:
+    """Inspect one immutable artifact through the shared page model."""
+
+    artifact_path = Path(args.report or args.source_index)
+    artifact_kind = "report" if args.report else "source-index"
+    dataset = load_inspection_dataset(
+        artifact_path,
+        args.noun,
+        artifact_kind=artifact_kind,
+        repo_root=Path(args.repo_root) if args.repo_root else None,
+    )
+    page = inspect_dataset(
+        dataset,
+        filters=args.filter,
+        identifier=args.inspection_id,
+        cursor=args.cursor,
+        limit=args.limit,
+    )
+    return page.to_dict(), render_inspection_text(page)
 
 
 def execute_preview(args: argparse.Namespace) -> tuple[dict[str, Any], str]:
@@ -505,3 +650,19 @@ def tabular_text(rows: list[dict[str, Any]]) -> str:
         for row in rows
     )
     return "\n".join(lines) + "\n"
+
+
+def render_query_result_text(payload: dict[str, Any]) -> str:
+    """Render query status before bounded rows so absence is never ambiguous."""
+
+    lines = [
+        f"Query: {payload.get('query', '')}",
+        f"Status: {payload.get('status', '')}",
+        f"Exhaustive: {str(payload.get('exhaustive') is True).lower()}",
+    ]
+    nonclaim = payload.get("nonclaim")
+    if nonclaim:
+        lines.append(f"Nonclaim: {nonclaim}")
+    rows = payload.get("rows")
+    table = tabular_text(rows if isinstance(rows, list) else [])
+    return "\n".join(lines) + "\n\n" + table

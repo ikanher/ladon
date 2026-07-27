@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-report-coverage-and-snapshot-integrity",
+  "commands": [
+    "openspec validate ladon-report-coverage-and-snapshot-integrity --strict",
+    "uv run --locked pytest -q tests/test_coverage.py tests/test_report_coverage.py tests/test_report_coverage_adapter.py tests/test_report_v3.py tests/test_report_v3_raw_projection.py tests/test_report_projection_route_integrity.py tests/test_render.py tests/test_atlas.py tests/test_atlas_sqlite.py tests/test_reportset_cli.py tests/test_review_regions.py tests/test_multi_render_integrity.py tests/test_pipeline_snapshot.py tests/test_snapshot.py tests/test_changed_manifest_snapshot.py tests/test_cli_execution.py",
+    "uv run --locked pytest -q tests/test_clean_cli.py tests/test_installed_cli_contract.py tests/test_installed_inspection_contract.py",
+    "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --package-resource ladon:schemas/ladon-report-v3.schema.json",
+    "uv run --locked python scripts/large_inventory_gate.py --candidate worktree --required"
+  ]
+}

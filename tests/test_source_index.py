@@ -338,8 +338,7 @@ def test_multiple_source_failures_have_stable_module_order(
 
     assert list(result.index.modules) == ["Pkg"]
     assert [
-        (row["module"], row["path"], row["cause"])
-        for row in source_failures(result)
+        (row["module"], row["path"], row["cause"]) for row in source_failures(result)
     ] == [
         ("Pkg.Core", "Pkg/Core.lean", "invalid_utf8"),
         ("Pkg.Feature", "Pkg/Feature.lean", "parse_error"),
@@ -395,23 +394,35 @@ def test_parser_failure_retries_without_committing_partial_cache(
 def test_default_source_index_cache_dir_uses_platform_conventions(
     tmp_path: Path,
 ) -> None:
-    assert default_source_index_cache_dir(
-        environ={"XDG_CACHE_HOME": str(tmp_path / "xdg")},
-        platform="linux",
-        home=tmp_path / "home",
-    ) == tmp_path / "xdg" / "ladon" / "source-index"
-    assert default_source_index_cache_dir(
-        environ={},
-        platform="linux",
-        home=tmp_path / "home",
-    ) == tmp_path / "home" / ".cache" / "ladon" / "source-index"
-    assert default_source_index_cache_dir(
-        environ={},
-        platform="darwin",
-        home=tmp_path / "home",
-    ) == tmp_path / "home" / "Library" / "Caches" / "ladon" / "source-index"
-    assert default_source_index_cache_dir(
-        environ={"LOCALAPPDATA": str(tmp_path / "local")},
-        platform="win32",
-        home=tmp_path / "home",
-    ) == tmp_path / "local" / "ladon" / "source-index"
+    assert (
+        default_source_index_cache_dir(
+            environ={"XDG_CACHE_HOME": str(tmp_path / "xdg")},
+            platform="linux",
+            home=tmp_path / "home",
+        )
+        == tmp_path / "xdg" / "ladon" / "source-index"
+    )
+    assert (
+        default_source_index_cache_dir(
+            environ={},
+            platform="linux",
+            home=tmp_path / "home",
+        )
+        == tmp_path / "home" / ".cache" / "ladon" / "source-index"
+    )
+    assert (
+        default_source_index_cache_dir(
+            environ={},
+            platform="darwin",
+            home=tmp_path / "home",
+        )
+        == tmp_path / "home" / "Library" / "Caches" / "ladon" / "source-index"
+    )
+    assert (
+        default_source_index_cache_dir(
+            environ={"LOCALAPPDATA": str(tmp_path / "local")},
+            platform="win32",
+            home=tmp_path / "home",
+        )
+        == tmp_path / "local" / "ladon" / "source-index"
+    )

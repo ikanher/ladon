@@ -55,7 +55,10 @@ def assert_text_signal_rendering(
         "inventory",
     )
     assert text.returncode == 0
-    assert "Top Handwritten-Importer to Handwritten-Target Fan-In" in text.stdout
+    assert (
+        "Top Target-Owned Importer to Target-Owned Target Fan-In"
+        in text.stdout
+    )
     assert "Top Generated-Importer Fan-In Contributions" in text.stdout
     assert "population=generated_importers_to_all_targets" in text.stdout
     assert "authority=module_import_graph" in text.stdout
@@ -227,16 +230,18 @@ def assert_missing_import_signal(dag: dict) -> None:
 
 
 def assert_fan_population_signals(dag: dict) -> None:
-    """Assert generic, handwritten, and generated importer populations."""
+    """Assert exact ownership and lexical generated-tag populations."""
 
     generic = rows_by_module(dag["top_fan_in"])
-    handwritten = rows_by_module(dag["top_handwritten_fan_in"])
+    target_owned = rows_by_module(dag["top_target_owned_fan_in"])
     generated = rows_by_module(dag["top_generated_importer_fan_in"])
     assert generic["Pkg.CoreMixed"]["fan_in"] == 6
-    assert handwritten["Pkg.CoreMixed"]["fan_in"] == 1
+    # A generated-looking path is advisory evidence, not configured generated
+    # provenance, so all six source-root members remain target-owned.
+    assert target_owned["Pkg.CoreMixed"]["fan_in"] == 6
     assert generated["Pkg.CoreMixed"]["fan_in"] == 5
     assert generic["Pkg.CoreShared"]["fan_in"] == 5
-    assert handwritten["Pkg.CoreShared"]["fan_in"] == 5
+    assert target_owned["Pkg.CoreShared"]["fan_in"] == 5
 
 
 def assert_declaration_inventory_signal(dag: dict) -> None:
@@ -285,7 +290,7 @@ def assert_deduplicated_fan_finding(payload: dict) -> None:
     ]
     assert len(shared_findings) == 1
     finding = shared_findings[0]
-    assert finding["kind"] == "handwritten_module_fan_in_hotspot"
+    assert finding["kind"] == "target_owned_module_fan_in_hotspot"
     assert finding["promotion_population"] == (
         "target_owned_importers_to_target_owned_targets"
     )

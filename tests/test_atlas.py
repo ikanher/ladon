@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -52,6 +53,62 @@ def test_build_report_atlas_links_reports_to_review_surface(tmp_path: Path) -> N
         "has_review_region",
         "region:quux/owner.json:import_context_region",
     ) in edges
+
+
+def test_atlas_suppresses_root_edge_when_reachability_is_not_applicable(
+    tmp_path: Path,
+) -> None:
+    report = sample_report("Pkg.Anchor")
+    report["metadata"]["report_anchor_module"] = "Pkg.Anchor"
+    report["module_dag"]["root_reachability"] = {
+        "status": "not_applicable",
+        "roots": [],
+    }
+    write_report(tmp_path / "pkg" / "inventory.json", report)
+
+    atlas = build_report_atlas(tmp_path)
+    edges = [
+        row
+        for row in atlas["edges"]
+        if row["source"] == "report:pkg/inventory.json"
+        and row["kind"] == "analyzes_root"
+    ]
+    report_node = next(
+        row
+        for row in atlas["nodes"]
+        if row["id"] == "report:pkg/inventory.json"
+    )
+
+    assert edges == []
+    assert report_node["data"]["analysis_root_module"] == "Pkg.Anchor"
+    assert report_node["data"]["report_anchor_module"] == "Pkg.Anchor"
+
+
+def test_atlas_uses_applicability_roots_instead_of_report_anchor(
+    tmp_path: Path,
+) -> None:
+    report = sample_report("Pkg.Anchor")
+    report["metadata"]["analysis_root_module"] = "Pkg.Navigation"
+    report["metadata"]["report_anchor_module"] = "Pkg.Anchor"
+    report["module_dag"]["root_reachability"] = {
+        "status": "auxiliary",
+        "roots": ["Pkg.Navigation", "Pkg.Other"],
+    }
+    write_report(tmp_path / "pkg" / "inventory.json", report)
+
+    atlas = build_report_atlas(tmp_path)
+    targets = {
+        row["target"]
+        for row in atlas["edges"]
+        if row["source"] == "report:pkg/inventory.json"
+        and row["kind"] == "analyzes_root"
+    }
+
+    assert targets == {
+        "module:pkg:Pkg.Navigation",
+        "module:pkg:Pkg.Other",
+    }
+    assert "module:pkg:Pkg.Anchor" not in targets
 
 
 def test_atlas_keeps_declaration_dependency_authorities_separate(
@@ -175,7 +232,35 @@ def test_atlas_rejects_v3_summary_projection_as_insufficient(
         atlas_report_view(payload, tmp_path / "summary.json")
 
 
-def test_atlas_preserves_total_finding_count_from_review_omissions(
+@pytest.mark.parametrize(
+    "report_version",
+    [None, "ladon-report-v2"],
+)
+def test_legacy_atlas_view_marks_collection_totals_unknown(
+    tmp_path: Path,
+    report_version: str | None,
+) -> None:
+    payload = sample_report()
+    if report_version is not None:
+        payload["metadata"]["report_version"] = report_version
+    view = atlas_report_view(payload, tmp_path / "legacy.json")
+    coverage = view["coverage"]["collections"]
+
+    assert set(coverage) == {
+        "declaration_graph.declarations",
+        "report.findings",
+        "report.packet_evidence",
+        "report.review_regions",
+    }
+    assert coverage["report.findings"]["visible"] == 1
+    assert coverage["report.findings"]["totalKnown"] is False
+    assert coverage["report.findings"]["total"] is None
+    assert coverage["report.findings"]["omitted"] is None
+    assert coverage["report.findings"]["completeness"] == "unavailable"
+    assert coverage["report.findings"]["causes"][0]["id"] == ("coverage.legacy_missing")
+
+
+def test_atlas_does_not_infer_total_from_legacy_v3_omissions(
     tmp_path: Path,
 ) -> None:
     payload = {
@@ -210,8 +295,170 @@ def test_atlas_preserves_total_finding_count_from_review_omissions(
     atlas = build_report_atlas(tmp_path)
     report = next(node for node in atlas["nodes"] if node["kind"] == "report")
 
-    assert report["data"]["finding_count"] == 5
+    assert report["data"]["finding_count"] == 2
+    assert report["data"]["finding_visible_count"] == 2
+    assert report["data"]["finding_total_count"] is None
+    assert report["data"]["finding_total_known"] is False
+    assert (
+        report["data"]["coverage"]["collections"]["report.findings"]["completeness"]
+        == "unavailable"
+    )
     assert atlas["summary"]["findings"] == 2
+
+
+def _assert_atlas_integrity_view(
+    view: dict[str, Any],
+    payload: dict[str, Any],
+    finding_coverage: dict[str, Any],
+) -> None:
+    assert view["coverage"]["collections"]["report.findings"] == finding_coverage
+    assert view["analysis_fingerprint"] == "sha256:analysis"
+    assert view["source_fingerprint"] == "sha256:source"
+    assert view["snapshot"] == payload["snapshot"]
+
+
+def _assert_atlas_integrity_report(report: dict[str, Any]) -> None:
+    assert report["data"]["finding_count"] == 5
+    assert report["data"]["finding_visible_count"] == 2
+    assert report["data"]["finding_total_count"] == 5
+    assert report["data"]["finding_total_known"] is True
+    assert report["data"]["finding_coverage_ref"] == "report.findings"
+    assert report["data"]["analysis_fingerprint"] == "sha256:analysis"
+    assert report["data"]["source_fingerprint"] == "sha256:source"
+
+
+def test_atlas_retains_v3_coverage_and_fingerprints(
+    tmp_path: Path,
+) -> None:
+    finding_coverage = {
+        "id": "report.findings",
+        "pointer": "#/sections/findings",
+        "visible": 2,
+        "observedLowerBound": 5,
+        "totalKnown": True,
+        "total": 5,
+        "omitted": 3,
+        "completeness": "partial",
+        "population": "selected findings",
+        "scope": "Pkg",
+        "authority": "ladon_analysis",
+        "sourceFingerprint": "sha256:source",
+        "scopeFingerprint": "sha256:scope",
+        "analysisFingerprint": "sha256:analysis",
+        "causes": [
+            {
+                "kind": "projection",
+                "id": "projection.review_collection_limit",
+                "detail": "review projection exposes 2 of 5 findings",
+                "controllingCap": 2,
+            }
+        ],
+    }
+    payload = {
+        "metadata": {
+            "report_version": "ladon-report-v3",
+            "analysis_root_module": "Pkg",
+        },
+        "projection": {
+            "name": "review",
+            "analysis_fingerprint": "sha256:analysis",
+            "omissions": [],
+        },
+        "snapshot": {
+            "schema": "ladon-analysis-snapshot-v1",
+            "identity": "sha256:snapshot",
+            "sourceIndexFingerprint": "sha256:source",
+        },
+        "coverage": {
+            "schema": "ladon-collection-coverage-v1",
+            "collections": {"report.findings": finding_coverage},
+        },
+        "phases": {},
+        "sections": {
+            "module_dag": {
+                "module_count": 1,
+                "module_metadata": {},
+            },
+            "findings": [
+                {"kind": "example", "subject": "one"},
+                {"kind": "example", "subject": "two"},
+            ],
+        },
+    }
+    report_path = tmp_path / "report.json"
+    write_report(report_path, payload)
+
+    view = atlas_report_view(payload, report_path)
+    atlas = build_report_atlas(tmp_path)
+    report = next(node for node in atlas["nodes"] if node["kind"] == "report")
+
+    _assert_atlas_integrity_view(view, payload, finding_coverage)
+    _assert_atlas_integrity_report(report)
+
+
+def test_atlas_rejects_incompatible_collection_fingerprints(
+    tmp_path: Path,
+) -> None:
+    payload = {
+        "metadata": {
+            "report_version": "ladon-report-v3",
+            "analysis_root_module": "Pkg",
+        },
+        "projection": {
+            "name": "review",
+            "analysis_fingerprint": "sha256:analysis",
+            "omissions": [],
+        },
+        "coverage": {
+            "schema": "ladon-collection-coverage-v1",
+            "collections": {
+                "report.findings": exact_coverage_row(
+                    "report.findings",
+                    "#/sections/findings",
+                    "sha256:source-a",
+                ),
+                "report.review_regions": exact_coverage_row(
+                    "report.review_regions",
+                    "#/sections/review_regions",
+                    "sha256:source-b",
+                ),
+            },
+        },
+        "sections": {
+            "module_dag": {"module_count": 0, "module_metadata": {}},
+            "findings": [],
+            "review_regions": [],
+        },
+    }
+
+    with pytest.raises(ValueError, match="incompatible source fingerprint"):
+        atlas_report_view(payload, tmp_path / "incompatible.json")
+
+
+def exact_coverage_row(
+    identity: str,
+    pointer: str,
+    source_fingerprint: str,
+) -> dict[str, Any]:
+    """Return one complete empty collection with explicit identity."""
+
+    return {
+        "id": identity,
+        "pointer": pointer,
+        "visible": 0,
+        "observedLowerBound": 0,
+        "totalKnown": True,
+        "total": 0,
+        "omitted": 0,
+        "completeness": "complete",
+        "population": "fixture",
+        "scope": "Pkg",
+        "authority": "fixture",
+        "sourceFingerprint": source_fingerprint,
+        "scopeFingerprint": "sha256:scope",
+        "analysisFingerprint": "sha256:analysis",
+        "causes": [],
+    }
 
 
 def test_render_atlas_markdown_includes_counts_and_reports(tmp_path: Path) -> None:

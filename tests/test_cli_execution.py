@@ -24,12 +24,72 @@ def cli_args(**overrides):
     values = {
         "legacy_json": None,
         "legacy_text": None,
+        "emit": [],
         "output_format": None,
         "output": None,
         "report_version": "v2",
     }
     values.update(overrides)
     return Namespace(**values)
+
+
+def test_repeatable_emit_builds_one_validated_multi_output_plan() -> None:
+    plan = output_plan(
+        cli_args(
+            emit=["json=report.json", "text=report.txt"],
+            report_version=None,
+        )
+    )
+
+    assert [(row.format, row.destination) for row in plan.targets] == [
+        ("json", "report.json"),
+        ("text", "report.txt"),
+    ]
+    assert plan.report_version == "v3"
+
+
+@pytest.mark.parametrize(
+    "values, message",
+    [
+        (["json=a", "json=b"], "formats must be unique"),
+        (["json=a", "text=a"], "destinations must be unique"),
+        (["json=-", "text=-"], "at most one stdout"),
+        (["yaml=a"], "FORMAT=PATH"),
+        (["json="], "destination must be non-empty"),
+    ],
+)
+def test_repeatable_emit_rejects_ambiguous_targets(
+    values: list[str],
+    message: str,
+) -> None:
+    with pytest.raises(InvocationError, match=message):
+        output_plan(cli_args(emit=values))
+
+
+def test_repeatable_emit_rejects_symlinked_destination_alias(
+    tmp_path: Path,
+) -> None:
+    physical = tmp_path / "physical"
+    physical.mkdir()
+    alias = tmp_path / "alias"
+    alias.symlink_to(physical, target_is_directory=True)
+
+    with pytest.raises(InvocationError, match="destinations must be unique"):
+        output_plan(
+            cli_args(
+                emit=[
+                    f"json={physical / 'report'}",
+                    f"text={alias / 'report'}",
+                ]
+            )
+        )
+
+
+def test_repeatable_emit_rejects_single_and_legacy_output_spelling() -> None:
+    with pytest.raises(InvocationError, match="--format or --output"):
+        output_plan(cli_args(emit=["json=a"], output_format="json"))
+    with pytest.raises(InvocationError, match="legacy"):
+        output_plan(cli_args(emit=["json=a"], legacy_text="old.txt"))
 
 
 def test_default_output_is_one_text_representation_on_stdout() -> None:

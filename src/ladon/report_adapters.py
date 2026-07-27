@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 from typing import Any, Iterable, Mapping
 
+from ladon.coverage import CoverageRegistry, legacy_unknown_coverage
 from ladon.report_contract import (
     EXTENSION_NAMES,
     PHASE_DATA_TYPES,
@@ -24,6 +25,7 @@ from ladon.report_contract import (
     default_phase_disposition,
 )
 from ladon.report_model import ReportV2
+from ladon.snapshot import AnalysisSnapshot, SnapshotDecision
 
 
 def build_report_v2(
@@ -33,14 +35,26 @@ def build_report_v2(
     phase_data: Mapping[str, Any],
     findings: Iterable[Mapping[str, Any]],
     warnings: Iterable[str] = (),
+    coverage: CoverageRegistry | None = None,
+    snapshot: AnalysisSnapshot | None = None,
+    snapshot_decision: SnapshotDecision | None = None,
+    copy_phase_data: bool = True,
+    required_phases: Iterable[str] = (),
 ) -> ReportV2:
     """Adapt pipeline-owned values into a typed canonical report."""
 
     typed_findings = tuple(Finding.from_mapping(row) for row in findings)
+    required = frozenset(required_phases)
     data = dict(phase_data)
     data["findings"] = [row.to_dict() for row in typed_findings]
     phases = {
-        name: _adapt_phase(name, phase_records.get(name), data.get(name))
+        name: _adapt_phase(
+            name,
+            phase_records.get(name),
+            data.get(name),
+            copy_data=copy_phase_data,
+            required=name in required,
+        )
         for name in PHASE_NAMES
     }
     diagnostics = tuple(
@@ -56,6 +70,9 @@ def build_report_v2(
         diagnostics=diagnostics,
         warnings=tuple(str(warning) for warning in warnings),
         extensions=_extensions_from_phases(phases),
+        coverage=coverage if coverage is not None else CoverageRegistry(),
+        snapshot=snapshot,
+        snapshot_decision=snapshot_decision,
     )
 
 
@@ -86,9 +103,7 @@ def supported_report_view(
         return coerce_report_v2(payload).to_dict()
     if version == V1_REPORT_VERSION:
         return copy_json(dict(payload))
-    raise UnsupportedReportVersionError(
-        unsupported_version_message(consumer, version)
-    )
+    raise UnsupportedReportVersionError(unsupported_version_message(consumer, version))
 
 
 def report_version(payload: Mapping[str, Any]) -> str:
@@ -168,15 +183,28 @@ def _preserve_report_representation(
     return report if isinstance(original, ReportV2) else report.to_dict()
 
 
-def _adapt_phase(name: str, timing: Any, data: Any) -> PhaseEnvelope:
+def _adapt_phase(
+    name: str,
+    timing: Any,
+    data: Any,
+    *,
+    copy_data: bool,
+    required: bool = False,
+) -> PhaseEnvelope:
     """Adapt one timing/data pair and fail invalid data structurally."""
 
     values = _timing_values(timing)
+    if required:
+        values["required"] = True
     status = _normalized_status(values["status"], name, data)
     reason = _normalized_reason(status, values["reason"], name)
     invalid = _invalid_phase_payload(name, data)
     if invalid:
         return _failed_adapter_phase(name, values, invalid)
+    if copy_data:
+        adapted_data = copy_json(data)
+    else:
+        adapted_data = data
     return PhaseEnvelope(
         name=name,
         status=status,
@@ -191,7 +219,7 @@ def _adapt_phase(name: str, timing: Any, data: Any) -> PhaseEnvelope:
             data,
         ),
         provenance=_phase_provenance(name),
-        data=copy_json(data),
+        data=adapted_data,
     )
 
 
@@ -203,17 +231,11 @@ def _timing_values(timing: Any) -> dict[str, Any]:
         "reason": _timing_value(timing, "reason", None),
         "required": bool(_timing_value(timing, "required", False)),
         "disposition": _timing_value(timing, "disposition", None),
-        "elapsed_seconds": float(
-            _timing_value(timing, "elapsed_seconds", 0.0) or 0.0
-        ),
-        "counters": _integer_counters(
-            _timing_value(timing, "counters", {}) or {}
-        ),
+        "elapsed_seconds": float(_timing_value(timing, "elapsed_seconds", 0.0) or 0.0),
+        "counters": _integer_counters(_timing_value(timing, "counters", {}) or {}),
         "diagnostics": [
             dict(row)
-            for row in _mapping_rows(
-                _timing_value(timing, "diagnostics", []) or []
-            )
+            for row in _mapping_rows(_timing_value(timing, "diagnostics", []) or [])
         ],
     }
 
@@ -291,13 +313,12 @@ def _report_from_v2_mapping(payload: Mapping[str, Any]) -> ReportV2:
             _diagnostic_from_mapping(row)
             for row in _mapping_rows(payload.get("diagnostics", []))
         ),
-        warnings=tuple(
-            str(row) for row in _list_value(payload.get("warnings", []))
-        ),
+        warnings=tuple(str(row) for row in _list_value(payload.get("warnings", []))),
         extensions={
             name: _extension_from_mapping(name, _mapping_get(raw_extensions, name))
             for name in EXTENSION_NAMES
         },
+        coverage=_legacy_coverage_registry(payload),
     )
 
 
@@ -318,10 +339,90 @@ def _report_from_v1_mapping(payload: Mapping[str, Any]) -> ReportV2:
         phase_records=timings,
         phase_data=phase_data,
         findings=_mapping_rows(payload.get("findings", [])),
-        warnings=(
-            str(row) for row in _list_value(payload.get("warnings", []))
+        warnings=(str(row) for row in _list_value(payload.get("warnings", []))),
+        coverage=_legacy_coverage_registry(payload),
+    )
+
+
+def _legacy_coverage_registry(
+    payload: Mapping[str, Any],
+) -> CoverageRegistry:
+    """Represent absent v1/v2 collection coverage as explicitly unknown."""
+
+    scope = _legacy_scope(payload)
+    rows = (
+        (
+            "report.findings",
+            "#/sections/findings",
+            payload.get("findings"),
+            "selected findings",
+            "ladon_analysis",
+        ),
+        (
+            "report.review_regions",
+            "#/sections/review_regions",
+            payload.get("review_regions"),
+            "selected review regions",
+            "ladon_report_adapter",
+        ),
+        (
+            "report.packet_evidence",
+            "#/sections/packet_evidence",
+            payload.get("packet_evidence"),
+            "selected packet evidence",
+            "ladon_report_adapter",
+        ),
+        (
+            "declaration_graph.declarations",
+            "#/sections/declaration_graph/declarations",
+            _nested_value(payload.get("declaration_graph"), "declarations"),
+            "selected declarations",
+            "legacy_report",
         ),
     )
+    registry = CoverageRegistry()
+    for identity, pointer, value, population, authority in rows:
+        registry = registry.register(
+            legacy_unknown_coverage(
+                identity=identity,
+                pointer=pointer,
+                visible=_collection_size(value),
+                population=population,
+                scope=scope,
+                authority=authority,
+            )
+        )
+    return registry
+
+
+def _legacy_scope(payload: Mapping[str, Any]) -> str:
+    """Return the best bounded scope label available in a legacy report."""
+
+    metadata = payload.get("metadata")
+    if isinstance(metadata, Mapping):
+        for key in (
+            "analysis_root_module",
+            "analysis_root",
+            "report_anchor_module",
+            "report_anchor",
+            "repo_root",
+        ):
+            value = metadata.get(key)
+            if value:
+                return str(value)
+    return "legacy-report-unknown-scope"
+
+
+def _nested_value(raw: Any, key: str) -> Any:
+    """Read one optional mapping member without inventing a collection."""
+
+    return raw.get(key) if isinstance(raw, Mapping) else None
+
+
+def _collection_size(raw: Any) -> int:
+    """Count visible legacy members while leaving their total unknown."""
+
+    return len(raw) if isinstance(raw, (list, Mapping)) else 0
 
 
 def _metadata_from_mapping(raw: Any) -> ReportMetadata:
@@ -335,6 +436,16 @@ def _metadata_from_mapping(raw: Any) -> ReportMetadata:
         analysis_root_module=str(metadata.get("analysis_root_module", "")),
         inventory_root=str(metadata.get("inventory_root", "")),
         extraction_backend=str(metadata.get("extraction_backend", "unknown")),
+        report_anchor=(
+            str(metadata["report_anchor"])
+            if metadata.get("report_anchor") is not None
+            else None
+        ),
+        report_anchor_module=(
+            str(metadata["report_anchor_module"])
+            if metadata.get("report_anchor_module") is not None
+            else None
+        ),
         generated_at_utc=(
             str(metadata["generated_at_utc"])
             if metadata.get("generated_at_utc") is not None
@@ -357,9 +468,7 @@ def _phase_from_mapping(name: str, raw: Any) -> PhaseEnvelope:
         status=str(raw.get("status", "skipped")),
         required=bool(raw.get("required", False)),
         disposition=(
-            str(raw["disposition"])
-            if raw.get("disposition") is not None
-            else None
+            str(raw["disposition"]) if raw.get("disposition") is not None else None
         ),
         elapsed_seconds=float(raw.get("elapsed_seconds", 0.0)),
         counters=_integer_counters(raw.get("counters", {})),
@@ -526,10 +635,7 @@ def _diagnostic_from_owner_mapping(
     """Adapt a concrete owner's diagnostic without changing authority."""
 
     identifier = str(
-        row.get("id")
-        or row.get("ruleId")
-        or row.get("kind")
-        or f"{phase}.diagnostic"
+        row.get("id") or row.get("ruleId") or row.get("kind") or f"{phase}.diagnostic"
     )
     severity = str(row.get("severity") or row.get("level") or "warning")
     if severity not in {"info", "warning", "error"}:

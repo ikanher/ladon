@@ -9,6 +9,8 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any, Callable, Iterator, Mapping
 
+from ladon.changed_set import CapturedChangedSetManifest
+from ladon.coverage import mark_coverage_unstable
 from ladon.extraction import ModuleDiscovery
 from ladon.finding_workflow import enrich_findings
 from ladon.ir import ExtractionBundle, LeanAuditQuery, LeanModule
@@ -22,6 +24,7 @@ from ladon.progress import (
     ResourceLimitExceeded,
     RunBudget,
 )
+from ladon.report_coverage import build_report_coverage
 from ladon.report_v2 import (
     ReportMetadata,
     ReportV2,
@@ -29,6 +32,12 @@ from ladon.report_v2 import (
 )
 from ladon.report_contract import default_phase_disposition
 from ladon.scope import ScopePlan
+from ladon.snapshot import AnalysisSnapshot, SnapshotDecision
+from ladon.snapshot_registry import (
+    SnapshotDirectoryRegistration,
+    SnapshotFileRegistration,
+)
+from ladon.source_index_models import SourceIndex
 
 
 REQUIRED_PHASES = (
@@ -106,16 +115,21 @@ class RunContext:
     source_pattern_policy: dict[str, Any] | None = None
     generated_family_policy_path: Path | None = None
     generated_family_policy: dict[str, Any] | None = None
+    generated_family_candidate_profile_path: Path | None = None
+    generated_family_candidate_profile: Any | None = None
     module_system_witness_path: Path | None = None
     module_system_witness: dict[str, Any] | None = None
     import_diet_witness_path: Path | None = None
     import_diet_witness: dict[str, Any] | None = None
     proof_xray_path: Path | None = None
     proof_xray: dict[str, Any] | None = None
-    lean_extractor: Callable[
-        ["RunContext", ModuleDiscovery],
-        ExtractionBundle | dict[str, LeanModule],
-    ] | None = None
+    lean_extractor: (
+        Callable[
+            ["RunContext", ModuleDiscovery],
+            ExtractionBundle | dict[str, LeanModule],
+        ]
+        | None
+    ) = None
     generated_at_utc: str | None = None
     warnings: list[str] = field(default_factory=list)
     timings: list[PhaseTiming] = field(default_factory=list)
@@ -126,12 +140,31 @@ class RunContext:
     cancel_event: threading.Event = field(default_factory=threading.Event)
     limit_failure: dict[str, Any] | None = None
     scope_plan: ScopePlan | None = None
+    source_index: SourceIndex | None = None
+    captured_changed_manifest: CapturedChangedSetManifest | None = None
+    analysis_snapshot: AnalysisSnapshot | None = None
+    snapshot_decision: SnapshotDecision | None = None
+    snapshot_verification_hook: Callable[["RunContext"], None] | None = None
+    snapshot_read_hook: Callable[["RunContext", LeanModule], None] | None = None
+    snapshot_read_mismatches: list[Mapping[str, Any]] = field(default_factory=list)
+    snapshot_file_inputs: dict[str, SnapshotFileRegistration] = field(
+        default_factory=dict
+    )
+    snapshot_directory_inputs: dict[
+        str,
+        SnapshotDirectoryRegistration,
+    ] = field(default_factory=dict)
     source_index_cache: dict[str, Any] | None = None
     inventory_module_count: int = 0
     indexed_module_count: int = 0
     source_index_status: str = "complete"
     source_index_diagnostics: tuple[Mapping[str, Any], ...] = ()
     policy_inputs: dict[str, dict[str, Any]] = field(default_factory=dict)
+    policy_payloads: dict[str, dict[str, Any]] = field(default_factory=dict)
+    policy_paths: dict[str, Path] = field(default_factory=dict)
+    inline_evidence_payloads: dict[str, bytes] = field(default_factory=dict)
+    captured_packet_dirs: tuple[Path, ...] | None = None
+    captured_packet_profile: str | None = None
     retained_discovery: ModuleDiscovery | None = None
     retained_modules: dict[str, LeanModule] = field(default_factory=dict)
     _active_progress: PhaseProgress | None = field(
@@ -291,9 +324,7 @@ def progress_cache_counters(counters: Mapping[str, int]) -> dict[str, int]:
     """Return cache-related counters for terminal progress events."""
 
     return {
-        key: int(value)
-        for key, value in sorted(counters.items())
-        if "cache" in key
+        key: int(value) for key, value in sorted(counters.items()) if "cache" in key
     }
 
 
@@ -326,31 +357,137 @@ class PipelineResult:
 
         return self.to_report_model().to_dict()
 
-    def to_report_model(self) -> ReportV2:
-        """Adapt all analysis phase boundaries into the typed v2 model."""
+    def to_report_model(
+        self,
+        *,
+        copy_phase_data: bool = True,
+    ) -> ReportV2:
+        """Adapt analysis phases, detached unless one-shot rendering owns them."""
 
+        phase_records = self.timing_by_phase()
+        phase_data = report_phase_data(self)
+        analysis_roots = report_analysis_roots(
+            self.context,
+            self.discovery,
+        )
+        analysis_root_module = analysis_roots[0] if analysis_roots else ""
+        analysis_root = report_module_path(
+            self.discovery,
+            analysis_root_module,
+        )
+        distinct_report_anchor = (
+            analysis_root_module != self.discovery.report_anchor_module
+        )
+        findings = enrich_findings(
+            self.findings,
+            analysis_root_module=analysis_root_module,
+            inventory_root=self.discovery.inventory_root,
+            module_dag=self.module_dag,
+            scope=self.context.scope_plan,
+        )
         metadata = ReportMetadata(
             repo_root=str(self.discovery.repo_root),
-            analysis_root=str(self.discovery.analysis_root_file),
-            analysis_root_module=self.discovery.analysis_root_module,
+            analysis_root=analysis_root,
+            analysis_root_module=analysis_root_module,
             inventory_root=self.discovery.inventory_root,
             extraction_backend=self.context.extraction_backend,
+            report_anchor=(
+                str(self.discovery.report_anchor_file)
+                if distinct_report_anchor
+                else None
+            ),
+            report_anchor_module=(
+                self.discovery.report_anchor_module if distinct_report_anchor else None
+            ),
             generated_at_utc=self.context.generated_at_utc,
         )
+        plan = self.context.scope_plan
+        coverage = build_report_coverage(
+            self.context.source_index,
+            phase_records,
+            phase_data,
+            findings,
+            scope=_coverage_scope(self.context, metadata),
+            scope_fingerprint=plan.fingerprint if plan is not None else None,
+            module_dag_is_full_inventory=_full_inventory_analysis(plan),
+        )
+        if (
+            self.context.snapshot_decision is not None
+            and self.context.snapshot_decision.status == "changed"
+        ):
+            coverage = mark_coverage_unstable(coverage)
         report = build_report_v2(
             metadata=metadata,
-            phase_records=self.timing_by_phase(),
-            phase_data=report_phase_data(self),
-            findings=enrich_findings(
-                self.findings,
-                analysis_root_module=self.discovery.analysis_root_module,
-                inventory_root=self.discovery.inventory_root,
-                module_dag=self.module_dag,
-                scope=getattr(self.context, "scope_plan", None),
-            ),
+            phase_records=phase_records,
+            phase_data=phase_data,
+            findings=findings,
             warnings=self.context.warnings,
+            coverage=coverage,
+            snapshot=self.context.analysis_snapshot,
+            snapshot_decision=self.context.snapshot_decision,
+            copy_phase_data=copy_phase_data,
+            required_phases=CORE_REQUIRED_PHASES,
         )
         return require_core_report_phases(report)
+
+
+def report_analysis_roots(
+    context: RunContext,
+    discovery: ModuleDiscovery,
+) -> tuple[str, ...]:
+    """Return actual selection/navigation roots represented by the report."""
+
+    plan = context.scope_plan
+    if plan is None:
+        return (discovery.analysis_root_module,)
+    roots = (
+        plan.resolved_navigation_roots
+        if plan.scope_kind == "inventory"
+        else (plan.resolved_selection_roots or plan.resolved_roots)
+    )
+    selected = set(discovery.modules)
+    return tuple(root for root in sorted(set(roots)) if root in selected)
+
+
+def report_module_path(
+    discovery: ModuleDiscovery,
+    module_name: str,
+) -> str:
+    """Return an actual root's source path or empty for a rootless report."""
+
+    if not module_name:
+        return ""
+    if module_name == discovery.report_anchor_module:
+        return str(discovery.report_anchor_file)
+    module = discovery.modules.get(module_name)
+    if module is None:
+        return ""
+    path = Path(module.path)
+    return str(path if path.is_absolute() else discovery.repo_root / path)
+
+
+def _coverage_scope(
+    context: RunContext,
+    metadata: ReportMetadata,
+) -> str:
+    """Return a stable human-readable population scope for report coverage."""
+
+    plan = context.scope_plan
+    if plan is None:
+        return context.analysis_scope
+    anchor = metadata.analysis_root_module or metadata.inventory_root
+    return f"{plan.scope_kind}:{anchor}"
+
+
+def _full_inventory_analysis(plan: ScopePlan | None) -> bool:
+    """Return whether the selected module population is the requested inventory."""
+
+    return bool(
+        plan is not None
+        and plan.scope_kind == "inventory"
+        and plan.omitted_primary_count == 0
+        and plan.omitted_context_count == 0
+    )
 
 
 def require_core_report_phases(report: ReportV2) -> ReportV2:
@@ -358,13 +495,14 @@ def require_core_report_phases(report: ReportV2) -> ReportV2:
 
     phases = dict(report.phases)
     for name in CORE_REQUIRED_PHASES:
+        phase = phases[name]
+        disposition = default_phase_disposition(phase.status, True)
+        if phase.required and phase.disposition == disposition:
+            continue
         phases[name] = replace(
-            phases[name],
+            phase,
             required=True,
-            disposition=default_phase_disposition(
-                phases[name].status,
-                True,
-            ),
+            disposition=disposition,
         )
     return replace(report, phases=phases)
 

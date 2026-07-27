@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from dataclasses import replace
 from pathlib import Path
+from typing import Any, Mapping
 
 import pytest
 from jsonschema import Draft202012Validator
@@ -24,10 +25,12 @@ from ladon.ir import (
 from ladon.pipeline import RunContext, run_pipeline
 from ladon.proofir_bridge import build_bridge_report
 from ladon.render import render_text
+from ladon.report_v3 import build_report_v3
 from ladon.report_v2 import (
     Diagnostic,
     PhaseEnvelope,
     REPORT_VERSION,
+    ReportModelError,
     UnsupportedReportVersionError,
     canonical_json_bytes,
     coerce_report_v2,
@@ -227,14 +230,8 @@ def test_emitted_report_matrix_is_schema_valid_and_normalized_deterministic(
             ),
         ]
 
-    first = [
-        run_pipeline(context).to_report_payload()
-        for context in contexts()
-    ]
-    second = [
-        run_pipeline(context).to_report_payload()
-        for context in contexts()
-    ]
+    first = [run_pipeline(context).to_report_payload() for context in contexts()]
+    second = [run_pipeline(context).to_report_payload() for context in contexts()]
 
     for left, right in zip(first, second, strict=True):
         validate_emitted_v2(left)
@@ -311,9 +308,112 @@ def test_elaborated_extension_is_schema_valid_bounded_and_text_equivalent() -> N
     )
     assert root["surface"]["renderedType"] in render_text(first)
     assert {
-        (row["kind"], row["authority"])
-        for row in extension["payload"]["edges"]
+        (row["kind"], row["authority"]) for row in extension["payload"]["edges"]
     } == {("value_dependency", "lean_environment")}
+
+
+def test_v2_omits_additive_v3_rows_while_v3_retains_them() -> None:
+    result = run_pipeline(
+        RunContext(repo_root=FIXTURE_ROOT, requested_root="Tiny.lean")
+    )
+    model = result.to_report_model()
+    v2 = model.to_dict()
+    v3 = build_report_v3(model, projection="full").to_dict()
+
+    for dag in (
+        v2["module_dag"],
+        v2["phases"]["module_dag"]["data"],
+        v2["pipeline"]["timings"]["module_dag"]["data"],
+    ):
+        assert_v2_additive_fields_omitted(dag)
+    assert_v3_additive_fields_retained(v3["sections"]["module_dag"])
+
+
+def test_v2_omits_v3_audit_candidate_payloads(tmp_path: Path) -> None:
+    package = tmp_path / "Pkg"
+    package.mkdir()
+    (package / "Owner.lean").write_text(
+        "namespace Pkg.Owner\n"
+        "theorem target : True := by trivial\n"
+        "end Pkg.Owner\n",
+        encoding="utf-8",
+    )
+    (package / "Audit.lean").write_text(
+        "import Pkg.Owner\n#print axioms Pkg.Owner.target\n",
+        encoding="utf-8",
+    )
+    model = run_pipeline(
+        RunContext(
+            repo_root=tmp_path,
+            requested_root="Pkg/Audit.lean",
+            source_cache_enabled=False,
+        )
+    ).to_report_model()
+    v2 = model.to_dict()
+    v3_dag = build_report_v3(model, projection="full").to_dict()["sections"][
+        "module_dag"
+    ]
+    forbidden_dag_fields = {
+        "auditProducerRegistrations",
+        "resourceProducerRegistrations",
+        "audit_command_coverage",
+        "resource_review_coverage",
+    }
+    forbidden_command_fields = {
+        "candidateMatches",
+        "candidateCoverage",
+        "candidateDeclarationId",
+        "candidateReferencedDeclaration",
+        "candidateReferencedOwner",
+        "candidateAuthority",
+        "candidateSourceIndexFingerprint",
+        "candidateNonclaim",
+    }
+
+    for dag in (
+        v2["module_dag"],
+        v2["phases"]["module_dag"]["data"],
+        v2["pipeline"]["timings"]["module_dag"]["data"],
+    ):
+        command = dag["audit_surfaces"][0]["auditCommands"][0]
+        assert forbidden_dag_fields.isdisjoint(dag)
+        assert forbidden_command_fields.isdisjoint(command)
+        assert command["candidateStatus"] == "lexical_candidate"
+        assert command["candidateMatchCount"] == 1
+
+    candidate = v3_dag["audit_surfaces"][0]["auditCommands"][0][
+        "candidateMatches"
+    ][0]
+    assert candidate["canonicalRef"].startswith("source-index:declaration:")
+    assert "auditProducerRegistrations" in v3_dag
+
+
+def assert_v2_additive_fields_omitted(dag: Mapping[str, Any]) -> None:
+    """Protect the frozen v2 module-DAG wire."""
+
+    assert "declaration_source_shape_coverage" not in dag
+    integrity = dag["declaration_integrity"]
+    assert "sourceShapeSimilarityCandidates" not in integrity
+    assert (
+        "declaration_integrity.source_shape_similarities" not in integrity["coverage"]
+    )
+    assert "inspection_navigation" not in dag
+    assert "inspection_option_coverage" not in dag
+    assert "inspection_proof_mechanism_coverage" not in dag
+    assert "resource_directive_coverage" not in dag
+    assert "text_declaration_coverage" not in dag
+
+
+def assert_v3_additive_fields_retained(v3_dag: Mapping[str, Any]) -> None:
+    """Require current v3 reports to retain additive inspection evidence."""
+
+    assert "declaration_source_shape_coverage" in v3_dag
+    assert "sourceShapeSimilarityCandidates" in v3_dag["declaration_integrity"]
+    assert "inspection_navigation" in v3_dag
+    assert "inspection_option_coverage" in v3_dag
+    assert "inspection_proof_mechanism_coverage" in v3_dag
+    assert "resource_directive_coverage" in v3_dag
+    assert "text_declaration_coverage" in v3_dag
 
 
 def test_unavailable_elaboration_emits_schema_valid_skipped_extension() -> None:
@@ -373,6 +473,37 @@ def test_phase_requiredness_and_cli_metadata_round_trip() -> None:
     validate_emitted_v2(payload)
 
 
+def test_phase_replacement_preserves_valid_data_and_rejects_changed_data() -> None:
+    phase = PhaseEnvelope.complete("module_dag", data={"rows": [1, 2]})
+
+    replaced = replace(phase, required=True)
+
+    assert replaced.data is phase.data
+    with pytest.raises(ReportModelError, match="JSON-serializable"):
+        replace(phase, data={"bad": object()})
+
+
+def test_phase_constructor_rejects_spoofed_validation_identity() -> None:
+    invalid_data = {"bad": object()}
+
+    with pytest.raises(TypeError, match="_validated_data_identity"):
+        PhaseEnvelope(  # type: ignore[call-arg]
+            name="module_dag",
+            status="complete",
+            data=invalid_data,
+            _validated_data_identity=id(invalid_data),
+        )
+
+
+def test_phase_replacement_revalidates_mutated_shared_data() -> None:
+    shared_data = {"rows": [1, 2]}
+    phase = PhaseEnvelope.complete("module_dag", data=shared_data)
+    shared_data["bad"] = object()
+
+    with pytest.raises(ReportModelError, match="JSON-serializable"):
+        replace(phase, required=True)
+
+
 def test_all_public_v2_mapping_adapters_preserve_frozen_schema() -> None:
     payload = canonical_payload()
     view = supported_report_view(payload, consumer="test")
@@ -389,10 +520,7 @@ def test_all_public_v2_mapping_adapters_preserve_frozen_schema() -> None:
     for candidate in (view, required, updated, replaced):
         assert isinstance(candidate, dict)
         validator().validate(candidate)
-        assert all(
-            "disposition" not in phase
-            for phase in candidate["phases"].values()
-        )
+        assert all("disposition" not in phase for phase in candidate["phases"].values())
         assert all(
             "disposition" not in phase
             for phase in candidate["pipeline"]["timings"].values()
@@ -471,7 +599,9 @@ def test_text_uses_typed_findings_and_reports_omitted_rows() -> None:
 
     assert "- selected: 2" in text
     assert "- displayed: 1" in text
-    assert "- omitted: 1" in text
+    assert "- rendered in named sections: 1" in text
+    assert "- omitted with inspection route: 0" in text
+    assert "inspection route:" in text
     assert "id=finding:generic.review:" in text
     assert "evidence=2 authority=ladon-analysis" in text
     assert "build: skipped" in text
@@ -484,7 +614,9 @@ def test_v1_serializer_is_bounded_and_warns_about_information_loss() -> None:
     assert "phases" not in result.payload
     assert "extensions" not in result.payload
     assert result.warnings
-    assert "information" not in result.warnings[0].lower() or "loses" in result.warnings[0]
+    assert (
+        "information" not in result.warnings[0].lower() or "loses" in result.warnings[0]
+    )
 
 
 def test_deterministic_bytes_serialize_existing_payload_without_analysis() -> None:

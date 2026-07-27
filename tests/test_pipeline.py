@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ladon.extraction import discover_modules
+from ladon.analysis.generated_family_candidate_profile import (
+    COMMAND_SKELETON_VERSION,
+)
+from ladon.extraction import discover_modules, parse_lean_module
 from ladon.pipeline import (
     REQUIRED_PHASES,
     RunContext,
@@ -14,6 +17,70 @@ from ladon.render import render_text
 
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
+
+
+def _write_command_skeleton_family(repo: Path) -> None:
+    """Write a declaration-free numbered family for the ordinary text route."""
+
+    rows = repo / "Neutral" / "Rows"
+    rows.mkdir(parents=True)
+    data = repo / "Neutral" / "Data.lean"
+    data.parent.mkdir(parents=True, exist_ok=True)
+    data.write_text("#check Nat\n", encoding="utf-8")
+    for index in range(5):
+        source = "import Neutral.Data\n#check Nat\n" if index < 4 else "#check Bool\n"
+        (rows / f"Cell{index}.lean").write_text(source, encoding="utf-8")
+
+
+def _selected_candidate_feature(
+    analysis: dict,
+    candidate: dict,
+) -> dict:
+    partition = next(
+        row for row in analysis["partitions"] if row["id"] == candidate["partitionId"]
+    )
+    return next(
+        row
+        for row in partition["features"]
+        if row["id"] == candidate["lexicalFeatureId"]
+    )
+
+
+def _assert_command_skeleton_candidate(
+    analysis: dict,
+    candidate: dict,
+) -> None:
+    selected = _selected_candidate_feature(analysis, candidate)
+    assert len(analysis["candidates"]) == 1
+    assert [row["module"] for row in candidate["members"]] == [
+        f"Neutral.Rows.Cell{index}" for index in range(5)
+    ]
+    assert all(not row["declarationStems"] for row in candidate["members"])
+    assert selected["kind"] == "command_skeleton"
+    assert selected["version"] == COMMAND_SKELETON_VERSION
+    assert selected["memberCount"] == 4
+
+
+def _assert_command_skeleton_clauses(candidate: dict) -> None:
+    clauses = {row["id"]: row for row in candidate["clauses"]}
+    imports = clauses["common_direct_internal_import"]["operands"]
+    lexical = clauses["common_lexical_witness"]["operands"]
+    assert (
+        imports["observedNumerator"],
+        imports["observedDenominator"],
+    ) == (4, 5)
+    assert (
+        lexical["observedNumerator"],
+        lexical["observedDenominator"],
+    ) == (4, 5)
+
+
+def _assert_source_index_has_skeletons(context: RunContext) -> None:
+    assert context.source_index is not None
+    assert all(
+        context.source_index.modules[f"Neutral.Rows.Cell{index}"].command_skeletons
+        for index in range(5)
+    )
 
 
 def test_pipeline_records_required_phase_timings() -> None:
@@ -30,6 +97,24 @@ def test_pipeline_records_required_phase_timings() -> None:
     assert timings["lean_extraction"].status == "skipped"
     assert timings["declaration_graph"].status == "skipped"
     assert timings["findings"].status == "ok"
+
+
+def test_text_pipeline_detects_declaration_free_command_skeleton_family(
+    tmp_path: Path,
+) -> None:
+    _write_command_skeleton_family(tmp_path)
+    context = RunContext(
+        repo_root=tmp_path,
+        analysis_scope="inventory",
+        source_cache_enabled=False,
+    )
+
+    payload = run_pipeline(context).to_report_payload()
+    analysis = payload["module_dag"]["generated_family_candidates"]
+    candidate = analysis["candidates"][0]
+    _assert_command_skeleton_candidate(analysis, candidate)
+    _assert_command_skeleton_clauses(candidate)
+    _assert_source_index_has_skeletons(context)
 
 
 def test_pipeline_json_payload_has_additive_timing_namespace() -> None:
@@ -117,7 +202,9 @@ def test_pipeline_applies_source_pattern_policy_findings() -> None:
 
 
 def test_pipeline_skips_source_patterns_without_policy() -> None:
-    payload = run_pipeline(RunContext(repo_root=FIXTURE_ROOT, requested_root="Tiny.lean")).to_report_payload()
+    payload = run_pipeline(
+        RunContext(repo_root=FIXTURE_ROOT, requested_root="Tiny.lean")
+    ).to_report_payload()
 
     assert "source_patterns" not in payload
     assert payload["pipeline"]["timings"]["source_patterns"]["status"] == "skipped"
@@ -134,7 +221,9 @@ def test_current_extraction_modules_adapt_to_stable_ir() -> None:
 
 def test_pipeline_reports_declaration_graph_when_lean_bundle_has_declarations() -> None:
     modules = {
-        "Tiny": LeanModule(name="Tiny", path="Tiny.lean", declarations=("Tiny.root", "Tiny.leaf"))
+        "Tiny": LeanModule(
+            name="Tiny", path="Tiny.lean", declarations=("Tiny.root", "Tiny.leaf")
+        )
     }
     declarations = {
         "Tiny.root": LeanDeclaration(
@@ -376,6 +465,40 @@ def test_merge_module_inventory_prefers_helper_rows() -> None:
 
     assert merged["Tiny"].imports == ("Tiny.Core",)
     assert "Tiny.Helper" in merged
+
+
+def test_merge_module_inventory_preserves_text_navigation_rows(
+    tmp_path: Path,
+) -> None:
+    from ladon.pipeline import merge_module_inventory
+
+    path = tmp_path / "Pkg.lean"
+    path.write_text(
+        """\
+namespace Pkg
+set_option maxHeartbeats 0 in
+@[simp] theorem routed : True := by simp
+end Pkg
+""",
+        encoding="utf-8",
+    )
+    text_module = parse_lean_module(tmp_path, path)
+    helper_module = LeanModule(
+        name="Pkg",
+        path="Pkg.lean",
+        declarations=("Pkg.routed",),
+    )
+
+    merged = merge_module_inventory(
+        {"Pkg": text_module},
+        {"Pkg": helper_module},
+    )["Pkg"]
+
+    assert merged.scope_context_commands == text_module.scope_context_commands
+    assert merged.scope_contexts == text_module.scope_contexts
+    assert merged.option_rows == text_module.option_rows
+    assert merged.resource_settings == text_module.resource_settings
+    assert merged.proof_mechanisms == text_module.proof_mechanisms
 
 
 def test_pipeline_passes_text_declaration_inventory_to_declaration_graph() -> None:

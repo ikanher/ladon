@@ -8,9 +8,15 @@ implementation dependencies by following outgoing edges.
 from __future__ import annotations
 
 from collections import defaultdict, deque
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
+from ladon.analysis.import_boundaries import (
+    classify_import_boundaries,
+    import_is_inside_scope,
+    owned_top_namespaces,
+    same_top_namespace as same_top_namespace,  # noqa: F401
+)
 from ladon.analysis.module_dag_inventory import (
     ModuleInventoryIndex as _ModuleInventoryIndex,
     build_module_inventory_index as _module_inventory_index,
@@ -28,6 +34,8 @@ from ladon.analysis.module_naming import (
     module_name_smell_rows,
     module_name_smell_summary,
 )
+from ladon.analysis.root_applicability import root_applicability
+from ladon.coverage import CollectionCoverage
 from ladon.ir import LeanModule
 
 
@@ -40,6 +48,14 @@ def summarize_module_dag(
     modules: Mapping[str, LeanModule],
     *,
     chosen_roots: Sequence[str] = (),
+    full_inventory_modules: Iterable[str] | None = None,
+    full_inventory_fingerprint: str | None = None,
+    scope_source_fingerprint: str | None = None,
+    scope_fingerprint: str | None = None,
+    selected_import_coverage: CollectionCoverage | None = None,
+    root_view_auxiliary: bool = False,
+    root_view_population: str = "selected_module_import_graph",
+    root_view_reason: str | None = None,
 ) -> dict[str, Any]:
     """Summarize a Lean module import graph without filesystem side effects."""
 
@@ -52,10 +68,29 @@ def summarize_module_dag(
     ranks = module_ranks(module_names, edges) if acyclic else {}
     layer_widths = summarize_layers(ranks)
     selected_roots = known_roots(chosen_roots, modules)
-    reachability = reachability_summary(modules, edges, reverse_edges, selected_roots)
+    reachability = reachability_summary(modules, edges, selected_roots)
+    reachability_applicability = root_applicability(
+        selected_roots,
+        population=root_view_population,
+        auxiliary=root_view_auxiliary,
+        reason=root_view_reason,
+    )
     duplicate_rows = duplicate_imports(modules)
     lexical_rows = lexical_marker_rows(modules)
-    missing_import_rows = missing_internal_imports(modules, chosen_roots)
+    boundaries = classify_import_boundaries(
+        modules,
+        chosen_roots=chosen_roots,
+        full_inventory_modules=full_inventory_modules,
+        full_inventory_fingerprint=full_inventory_fingerprint,
+        scope_source_fingerprint=scope_source_fingerprint,
+        scope_fingerprint=scope_fingerprint,
+        selected_import_coverage=selected_import_coverage,
+    )
+    missing_import_rows = (
+        boundaries.missing_internal_imports()
+        if full_inventory_modules is not None
+        else missing_internal_imports(modules, chosen_roots)
+    )
     naming_rows = module_name_smell_rows(modules)
 
     inventory = _module_inventory_index(modules)
@@ -128,7 +163,10 @@ def summarize_module_dag(
         "facade_module_count": len(facades),
         "facade_subtype_summary": _facade_subtype_summary(inventory),
         "top_facade_like_modules": _top_facade_like_modules(modules, inventory),
-        "root_direct_import_closures": root_direct_import_closures(edges, selected_roots),
+        "root_direct_import_closures": root_direct_import_closures(
+            edges, selected_roots
+        ),
+        "root_reachability": reachability_applicability,
         **reachability,
         "module_metadata": metadata,
         "text_declaration_summary": text_declaration_summary(metadata),
@@ -138,12 +176,20 @@ def summarize_module_dag(
         "module_name_smell_count": len(naming_rows),
         "module_name_smell_summary": module_name_smell_summary(naming_rows),
         "top_large_modules": top_large_modules(modules),
-        "top_large_handwritten_modules": top_large_modules(modules, excluded_tags=("generated",)),
+        "top_large_handwritten_modules": top_large_modules(
+            modules, excluded_tags=("generated",)
+        ),
         "duplicate_imports": duplicate_rows,
         "duplicate_import_count": len(duplicate_rows),
-        "duplicate_import_family_summary": duplicate_import_family_summary(duplicate_rows),
+        "duplicate_import_family_summary": duplicate_import_family_summary(
+            duplicate_rows
+        ),
         "missing_internal_imports": missing_import_rows[:MAX_SOURCE_SMELL_ROWS],
         "missing_internal_import_count": len(missing_import_rows),
+        "import_boundaries": boundaries.row_dicts(),
+        "import_boundary_count": len(boundaries.rows),
+        "import_boundary_summary": boundaries.counts(),
+        "import_boundary_coverage": boundaries.coverage.to_dict(),
         "lexical_markers": lexical_rows[:MAX_SOURCE_SMELL_ROWS],
         "lexical_marker_summary": lexical_marker_summary(lexical_rows),
         "import_sites": import_sites(modules, edges),
@@ -214,12 +260,25 @@ def text_declaration_rows(
 
     return [
         {
+            "id": row.identifier,
             "name": row.name,
             "kind": row.kind,
             "line": row.line,
             "column": row.column,
             "startOffset": row.start_offset,
             "endOffset": row.end_offset,
+            "sourceRange": row.source_range,
+            "namespaceStack": list(row.namespace_stack),
+            "sectionStack": list(row.section_stack),
+            "modifiers": list(row.modifiers),
+            "privacy": row.privacy,
+            "locality": row.locality,
+            "candidateName": row.candidate_name,
+            "candidateStatus": row.candidate_status,
+            "blockStartOffset": row.block_start_offset,
+            "blockEndOffset": row.block_end_offset,
+            "normalizedBlockSha256": row.normalized_block_sha256,
+            "blockNormalizationVersion": row.block_normalization_version,
             "authority": row.authority,
             "confidence": row.confidence,
             "nonclaim": row.nonclaim,
@@ -233,14 +292,8 @@ def text_declaration_summary(
 ) -> dict[str, Any]:
     """Report the complete count and bounded evidence-row population."""
 
-    total = sum(
-        int(row.get("declarationCount", 0))
-        for row in metadata.values()
-    )
-    included = sum(
-        len(row.get("textDeclarations", []))
-        for row in metadata.values()
-    )
+    total = sum(int(row.get("declarationCount", 0)) for row in metadata.values())
+    included = sum(len(row.get("textDeclarations", [])) for row in metadata.values())
     return {
         "total": total,
         "included": included,
@@ -295,7 +348,9 @@ def duplicate_imports(modules: Mapping[str, LeanModule]) -> list[dict[str, Any]]
         for module in sorted(modules.values(), key=lambda item: item.name)
         for target, sites in duplicate_import_sites(module).items()
     ]
-    return sorted(rows, key=lambda row: (-int(row["count"]), row["module"], row["target"]))
+    return sorted(
+        rows, key=lambda row: (-int(row["count"]), row["module"], row["target"])
+    )
 
 
 def duplicate_import_row(
@@ -318,12 +373,18 @@ def duplicate_import_row(
     }
 
 
-def duplicate_import_family_summary(rows: Sequence[dict[str, Any]]) -> list[dict[str, Any]]:
+def duplicate_import_family_summary(
+    rows: Sequence[dict[str, Any]],
+) -> list[dict[str, Any]]:
     """Group duplicate import rows by generated family and target."""
 
     grouped: dict[tuple[str, str, bool], list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
-        key = (str(row.get("generatorFamily", "")), str(row.get("target", "")), bool(row.get("generated", False)))
+        key = (
+            str(row.get("generatorFamily", "")),
+            str(row.get("target", "")),
+            bool(row.get("generated", False)),
+        )
         grouped[key].append(row)
     return [
         {
@@ -345,18 +406,16 @@ def duplicate_import_sites(module: LeanModule) -> dict[str, list[dict[str, Any]]
 
     grouped: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for site in module.import_sites:
-        grouped[site.module].append({
-            "line": site.line,
-            "importText": site.text or "",
-        })
+        grouped[site.module].append(
+            {
+                "line": site.line,
+                "importText": site.text or "",
+            }
+        )
     if not grouped:
         for target in module.imports:
             grouped[target].append({"line": None, "importText": ""})
-    return {
-        target: sites
-        for target, sites in grouped.items()
-        if len(sites) > 1
-    }
+    return {target: sites for target, sites in grouped.items() if len(sites) > 1}
 
 
 def import_sites(
@@ -403,7 +462,14 @@ def missing_internal_imports(
             project_namespaces=project_namespaces,
         )
     ]
-    return sorted(rows, key=lambda row: (row["sourceModule"], row["targetModule"], row.get("line") or 0))
+    return sorted(
+        rows,
+        key=lambda row: (
+            row["sourceModule"],
+            row["targetModule"],
+            row.get("line") or 0,
+        ),
+    )
 
 
 def missing_import_row(module: LeanModule, site: Any) -> dict[str, Any]:
@@ -421,45 +487,6 @@ def missing_import_row(module: LeanModule, site: Any) -> dict[str, Any]:
             "resolver or compilation diagnostic."
         ),
     }
-
-
-def same_top_namespace(source: str, target: str) -> bool:
-    """Return whether two modules share a plausible project namespace."""
-
-    return bool(source and target and source.split(".", 1)[0] == target.split(".", 1)[0])
-
-
-def owned_top_namespaces(
-    modules: Mapping[str, LeanModule],
-    chosen_roots: Sequence[str],
-) -> frozenset[str]:
-    """Return discovered/configured top namespaces that the project owns."""
-
-    names = [*modules, *chosen_roots]
-    return frozenset(
-        name.split(".", 1)[0]
-        for name in names
-        if name
-    )
-
-
-def import_is_inside_scope(
-    source: str,
-    target: str,
-    chosen_roots: Sequence[str],
-    *,
-    project_namespaces: frozenset[str] | None = None,
-) -> bool:
-    """Return whether a missing import belongs to the selected review scope."""
-
-    namespaces = project_namespaces or frozenset(
-        root.split(".", 1)[0]
-        for root in chosen_roots
-        if root
-    )
-    if namespaces and target:
-        return target.split(".", 1)[0] in namespaces
-    return same_top_namespace(source, target)
 
 
 def lexical_marker_rows(modules: Mapping[str, LeanModule]) -> list[dict[str, Any]]:
@@ -504,7 +531,9 @@ def cyclic_module_components(
         for component in components
         if len(component) > 1 or component_has_self_edge(component, edges)
     ]
-    return sorted(cyclic, key=lambda component: (len(component), component[0]), reverse=True)
+    return sorted(
+        cyclic, key=lambda component: (len(component), component[0]), reverse=True
+    )
 
 
 def component_has_self_edge(
@@ -521,7 +550,9 @@ def cycle_summary(cyclic_components: Sequence[Sequence[str]]) -> dict[str, Any]:
 
     return {
         "cyclic_component_count": len(cyclic_components),
-        "largest_cyclic_component_size": len(cyclic_components[0]) if cyclic_components else 0,
+        "largest_cyclic_component_size": len(cyclic_components[0])
+        if cyclic_components
+        else 0,
         "top_cyclic_components": [
             {"size": len(component), "sample_modules": list(component)[:12]}
             for component in cyclic_components[:10]
@@ -551,13 +582,16 @@ def known_roots(
 def reachability_summary(
     modules: Mapping[str, LeanModule],
     edges: Mapping[str, Sequence[str]],
-    reverse_edges: Mapping[str, Sequence[str]],
     chosen_roots: Sequence[str],
 ) -> dict[str, Any]:
     """Summarize modules not reached by following import edges from roots."""
 
-    roots = tuple(chosen_roots) or tuple(root_like_modules(reverse_edges))
-    unreachable = sorted(name for name in modules if name not in reachable_modules(edges, roots))
+    roots = tuple(chosen_roots)
+    if not roots:
+        return {}
+    unreachable = sorted(
+        name for name in modules if name not in reachable_modules(edges, roots)
+    )
     return {
         "chosen_roots": list(chosen_roots),
         "source_modules_not_reachable_from_chosen_roots": unreachable[:50],
@@ -689,8 +723,7 @@ def facade_subtype(module: LeanModule, modules: Mapping[str, LeanModule]) -> str
         module,
         import_count=import_count,
         has_namespace_children=(
-            import_count >= 5
-            and has_namespace_children(module.name, modules)
+            import_count >= 5 and has_namespace_children(module.name, modules)
         ),
     )
 
@@ -708,7 +741,9 @@ def facade_subtype_summary(modules: Mapping[str, LeanModule]) -> dict[str, int]:
     return _facade_subtype_summary(_module_inventory_index(modules))
 
 
-def module_roles(module: LeanModule, modules: Mapping[str, LeanModule]) -> tuple[str, ...]:
+def module_roles(
+    module: LeanModule, modules: Mapping[str, LeanModule]
+) -> tuple[str, ...]:
     """Return structural roles inferred from module inventory."""
 
     roles: list[str] = []
@@ -751,7 +786,11 @@ def root_direct_import_closures(
     ]
     return sorted(
         rows,
-        key=lambda row: (-row["reachable_module_count"], row["root"], row["direct_import"]),
+        key=lambda row: (
+            -row["reachable_module_count"],
+            row["root"],
+            row["direct_import"],
+        ),
     )[:30]
 
 
@@ -889,7 +928,9 @@ def has_excluded_role(
     return bool(set(module_roles(module, modules)) & set(excluded_roles))
 
 
-def tarjan_scc(nodes: Sequence[str], edges: Mapping[str, Sequence[str]]) -> list[list[str]]:
+def tarjan_scc(
+    nodes: Sequence[str], edges: Mapping[str, Sequence[str]]
+) -> list[list[str]]:
     """Compute strongly connected components for import-cycle detection."""
 
     index = 0

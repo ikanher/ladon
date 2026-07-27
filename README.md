@@ -41,6 +41,19 @@ uv run --locked ladon --repo-root /path/to/lean/project --root Some/Owner.lean \
   --format json --output /tmp/ladon-report.json
 ```
 
+One analysis can render both ordinary representations from the same immutable
+snapshot decision:
+
+```bash
+uv run --locked ladon --repo-root /path/to/lean/project --root Some/Owner.lean \
+  --emit json=/tmp/ladon-report.json \
+  --emit text=/tmp/ladon-report.txt
+```
+
+`--emit` is repeatable and cannot be mixed with `--format`, `--output`, or the
+deprecated `--json`/`--text` file flags. Formats and normalized destinations
+must be unique, and at most one destination may be `-`.
+
 Lean-backed root declaration graph:
 
 ```bash
@@ -78,6 +91,58 @@ families such as samplers, kernels, bridges, or generated modules; the target
 project supplies those names and exclusions.
 See `docs/policies/architecture-policy.example.json` for a generic starting
 point.
+
+Artifact inspection is an ordinary, bounded CLI operation. It reads exactly
+one existing report or compatible source-index JSON and does not implicitly
+run discovery, Lake, Lean, version control, an initializer, or a build:
+
+```bash
+uv run --locked ladon inspect declarations \
+  --report /tmp/ladon-report.json \
+  --filter kind=theorem --filter module=Some.Owner \
+  --limit 50 --format json
+```
+
+The supported nouns are `modules`, `declarations`, `imports`, `audits`,
+`options`, `resources`, and `proof-mechanisms`. Use `--id` for exact stable-ID
+lookup. A list page returns an opaque `nextCursor`; pass it back with the same
+artifact, filters, and `--limit` to retrieve the next disjoint page. Cursors
+bind the immutable artifact fingerprint, normalized query, page size, and last
+stable ordering key. Each row includes its canonical artifact pointer, source
+anchor or absence reason, authority, population, source fingerprint, and
+collection coverage reference. Unknown totals remain unknown rather than
+being presented as complete empty results.
+
+Current v3 reports retain at most 10,000 option rows and 10,000
+proof-mechanism rows before report projection. Coverage records the full
+observed total and the internal omission when indexing was complete; a partial
+source index keeps the total unknown. Review and summary projections may apply
+additional explicit bounds. Older compatible reports that do not carry a noun
+return an unavailable diagnostic rather than reconstructing source evidence.
+
+`--repo-root` is optional and valid only with `--source-index`. Supplying it
+explicitly asks Ladon to compare the artifact's source/configuration
+fingerprint with the live repository and reject stale evidence. Without it,
+inspection is artifact-only and checkout-independent. Run
+`ladon inspect --help` for the finite filter vocabulary of each noun.
+
+Lexical declaration, option, resource, audit, and proof-mechanism rows are
+navigation evidence. Token occurrence is not an elaborated tactic invocation,
+dependency, rewrite direction, simplifier use, proof-success result, or
+theorem-quality verdict; optional Lean-backed enrichments retain a separate
+authority row.
+
+Generated-family candidate detection uses the frozen, caller-neutral
+`generic-numbered-family-v1` conjunction. Candidate status is advisory and
+does not change configured project-generated or Lean compiler-generated
+provenance. `target_owned` is a separate ownership population, not provenance.
+A non-default profile can be supplied with
+`--generated-family-candidate-profile PATH`; it must use the strict separately
+versioned schema, is fingerprinted into the analysis snapshot, and is rejected
+before analysis if it disguises itself as the built-in profile. Explicit
+profiles may select the supported
+`parent-final-segment-decimal-suffix-width-v1` grouping to keep padded and
+unpadded decimal families in separate partitions.
 
 If `--architecture-policy` is omitted, Ladon looks for these repo-local files:
 
@@ -151,8 +216,8 @@ Supported today:
 - source-level module metadata, including line counts and generic generated-code
   tags inferred from common file/path/comment conventions;
 - generated-aware fan-in/fan-out, facade/barrel fan-out, implementation fan-out,
-  and largest-handwritten-module report rows so generated modules and public
-  barrels do not hide owner-file architecture pressure;
+  and exact target-owned fan/large-module report rows so generated modules and
+  public barrels do not hide owner-file architecture pressure;
 - facade-like module subtype rows for pure barrels, generated `All` barrels,
   public root facades, and mixed barrel/theorem modules;
 - lightweight lexical and import-target smell rows for anchored
@@ -172,8 +237,8 @@ Supported today:
 - additive `declaration_graph.declarations` rows with source path/range/hash,
   extraction backend/version, name-resolution method, and confidence when the
   Lean helper supplies that evidence;
-- root-focused findings for module fan-in, handwritten module fan-in, root
-  import closure, duplicate imports, large handwritten modules, declaration
+- root-focused findings for module fan-in, target-owned module fan-in, root
+  import closure, duplicate imports, large target-owned modules, declaration
   fan-in/fan-out, and unresolved-reference hotspots;
 - unresolved-reference classification into local/field, external, parser-noise,
   known-inventory, and actionable-unknown classes;
@@ -206,6 +271,10 @@ Atlas workflow:
   an optional earlier atlas, and optional ProofIR bridge reports. It summarizes
   changed rows, recurring hotspots, review-priority roots, low-confidence joins,
   and incomplete or stale evidence.
+- installed `ladon query` results carry a versioned envelope. Useful positive
+  results over incomplete inputs are labeled `non_exhaustive` with inherited
+  collection coverage; `--exhaustive` instead returns a structured unavailable
+  diagnostic when any required source table lacks complete authority.
 
 Unsupported legacy flags fail explicitly rather than emitting partial reports.
 

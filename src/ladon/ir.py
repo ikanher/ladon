@@ -3,7 +3,32 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from ladon.analysis.audit_surface import AuditCommand
+
+
+def _source_range(
+    line: int,
+    column: int,
+    start_offset: int,
+    end_offset: int,
+) -> dict[str, dict[str, int]]:
+    """Build a same-line-or-spanning half-open lexical range envelope."""
+
+    return {
+        "start": {
+            "line": line,
+            "column": column,
+            "offset": start_offset,
+        },
+        "end": {
+            "line": line,
+            "column": column + end_offset - start_offset,
+            "offset": end_offset,
+        },
+    }
 
 
 @dataclass(frozen=True)
@@ -24,9 +49,107 @@ class LeanLexicalMarker:
     text: str
 
 
+LEXICAL_SCOPE_NONCLAIM = (
+    "Lexical scope navigation only; not Lean name resolution, binder "
+    "availability, instance selection, notation resolution, or effective "
+    "elaboration context."
+)
+LEXICAL_OPTION_NONCLAIM = (
+    "Configured lexical option only; not measured runtime, resource "
+    "consumption, proof failure, proof success, or theorem quality."
+)
+LEXICAL_MECHANISM_NONCLAIM = (
+    "Lexical token occurrence only; not an elaborated tactic invocation, "
+    "theorem dependency, rewrite direction, simplifier use, proof success, "
+    "or theorem quality."
+)
+
+
+@dataclass(frozen=True)
+class LeanCommandSkeleton:
+    """One versioned module-level lexical command-shape digest."""
+
+    identifier: str
+    module: str
+    path: str
+    value: str
+    token_count: int
+    normalization_version: str
+    status: str = "observed"
+    authority: str = "lexical_text"
+    nonclaim: str = (
+        "Lexical command-shape similarity only; not parsed Lean syntax, "
+        "proof equivalence, proof success, or generated provenance."
+    )
+
+
+@dataclass(frozen=True)
+class LeanLexicalContextCommand:
+    """One safely recognized lexical context command.
+
+    The bounded value is retained for navigation.  Its presence does not
+    establish how Lean resolves or applies that command during elaboration.
+    """
+
+    identifier: str
+    kind: str
+    module: str
+    path: str
+    value: str
+    line: int
+    column: int
+    start_offset: int
+    end_offset: int
+    status: str = "parsed"
+    reason: str | None = None
+    authority: str = "lexical_text"
+    nonclaim: str = LEXICAL_SCOPE_NONCLAIM
+    value_total_characters: int = 0
+    value_truncated: bool = False
+
+    @property
+    def source_range(self) -> dict[str, dict[str, int]]:
+        """Return the exact half-open source range of the command."""
+
+        return _source_range(
+            self.line,
+            self.column,
+            self.start_offset,
+            self.end_offset,
+        )
+
+
+@dataclass(frozen=True)
+class LeanLexicalScopeContext:
+    """One interned, bounded snapshot of safely tracked lexical context."""
+
+    identifier: str
+    module: str
+    path: str
+    status: str
+    reason: str | None = None
+    namespace_stack: tuple[str, ...] = ()
+    section_stack: tuple[str, ...] = ()
+    variables: tuple[str, ...] = ()
+    omissions: tuple[str, ...] = ()
+    local_notations: tuple[str, ...] = ()
+    local_instances: tuple[str, ...] = ()
+    opened_scopes: tuple[str, ...] = ()
+    exports: tuple[str, ...] = ()
+    source_refs: tuple[str, ...] = ()
+    omitted_count: int = 0
+    authority: str = "lexical_text"
+    nonclaim: str = LEXICAL_SCOPE_NONCLAIM
+
+
 @dataclass(frozen=True)
 class LeanTextDeclaration:
-    """Offset-backed declaration candidate from the bounded text scanner."""
+    """Offset-backed declaration candidate from the bounded text scanner.
+
+    Candidate names and hashes are lexical navigation evidence.  They are
+    deliberately distinct from the Lean-confirmed identities carried by
+    :class:`LeanDeclaration`.
+    """
 
     name: str
     kind: str
@@ -34,12 +157,153 @@ class LeanTextDeclaration:
     column: int
     start_offset: int
     end_offset: int
+    identifier: str = ""
+    namespace_stack: tuple[str, ...] = ()
+    section_stack: tuple[str, ...] = ()
+    modifiers: tuple[str, ...] = ()
+    privacy: str = "unknown"
+    locality: str = "unknown"
+    candidate_name: str | None = None
+    candidate_status: str = "scope_unavailable"
+    block_start_offset: int | None = None
+    block_end_offset: int | None = None
+    normalized_block_sha256: str | None = None
+    block_normalization_version: str | None = None
+    normalized_source_shape_sha256: str | None = None
+    source_shape_normalization_version: str | None = None
     authority: str = "lexical_text"
     confidence: str = "bounded_lexical_scan"
     nonclaim: str = (
-        "Text evidence only; not a complete Lean parse, elaboration result, "
-        "dependency fact, or theorem verdict."
+        "Lexical declaration candidate only; not a Lean-resolved identity, "
+        "not a complete Lean parse, elaboration result, dependency fact, theorem "
+        "equivalence, or theorem verdict."
     )
+    scope_context_id: str | None = None
+    scope_context_status: str = "unavailable"
+
+    @property
+    def source_range(self) -> dict[str, dict[str, int]]:
+        """Return the half-open source range of the written declaration name."""
+
+        return {
+            "start": {
+                "line": self.line,
+                "column": self.column,
+                "offset": self.start_offset,
+            },
+            "end": {
+                "line": self.line,
+                "column": self.column + self.end_offset - self.start_offset,
+                "offset": self.end_offset,
+            },
+        }
+
+
+@dataclass(frozen=True)
+class LeanOptionOccurrence:
+    """One bounded, comment/string-safe lexical ``set_option`` occurrence."""
+
+    identifier: str
+    module: str
+    path: str
+    option: str
+    option_class: str
+    raw_value: str
+    raw_value_total_characters: int
+    raw_value_truncated: bool
+    lexical_scope: str
+    line: int
+    column: int
+    start_offset: int
+    end_offset: int
+    status: str
+    reason: str | None = None
+    declaration_id: str | None = None
+    declaration_candidate: str | None = None
+    scope_context_id: str | None = None
+    authority: str = "lexical_text"
+    nonclaim: str = LEXICAL_OPTION_NONCLAIM
+
+    @property
+    def source_range(self) -> dict[str, dict[str, int]]:
+        """Return the exact half-open source range of the option command."""
+
+        return _source_range(
+            self.line,
+            self.column,
+            self.start_offset,
+            self.end_offset,
+        )
+
+
+@dataclass(frozen=True)
+class LeanResourceSetting:
+    """Normalized resource subset of one lexical option occurrence."""
+
+    identifier: str
+    option_row_id: str
+    module: str
+    path: str
+    option: str
+    raw_value: str
+    numeric_value: int | None
+    normalized_meaning: str | None
+    lexical_scope: str
+    line: int
+    column: int
+    start_offset: int
+    end_offset: int
+    status: str
+    reason: str | None = None
+    declaration_id: str | None = None
+    declaration_candidate: str | None = None
+    scope_context_id: str | None = None
+    authority: str = "lexical_text"
+    nonclaim: str = LEXICAL_OPTION_NONCLAIM
+
+    @property
+    def source_range(self) -> dict[str, dict[str, int]]:
+        """Return the exact half-open source range of the option command."""
+
+        return _source_range(
+            self.line,
+            self.column,
+            self.start_offset,
+            self.end_offset,
+        )
+
+
+@dataclass(frozen=True)
+class LeanProofMechanismOccurrence:
+    """One lexical tactic-token or attribute occurrence in a declaration."""
+
+    identifier: str
+    module: str
+    path: str
+    mechanism: str
+    kind: str
+    line: int
+    column: int
+    start_offset: int
+    end_offset: int
+    declaration_id: str
+    declaration_candidate: str
+    attribute: str | None = None
+    scope_context_id: str | None = None
+    status: str = "observed"
+    authority: str = "lexical_text"
+    nonclaim: str = LEXICAL_MECHANISM_NONCLAIM
+
+    @property
+    def source_range(self) -> dict[str, dict[str, int]]:
+        """Return the exact half-open source range of the lexical token."""
+
+        return _source_range(
+            self.line,
+            self.column,
+            self.start_offset,
+            self.end_offset,
+        )
 
 
 @dataclass(frozen=True)
@@ -160,6 +424,15 @@ class LeanModule:
     lexical_markers: tuple[LeanLexicalMarker, ...] = ()
     declarations: tuple[str, ...] = ()
     declaration_evidence: tuple[LeanTextDeclaration, ...] = ()
+    scope_context_commands: tuple[LeanLexicalContextCommand, ...] = ()
+    scope_contexts: tuple[LeanLexicalScopeContext, ...] = ()
+    option_rows: tuple[LeanOptionOccurrence, ...] = ()
+    resource_settings: tuple[LeanResourceSetting, ...] = ()
+    proof_mechanisms: tuple[LeanProofMechanismOccurrence, ...] = ()
+    audit_commands: tuple[AuditCommand, ...] = ()
+    audit_commands_complete: bool = True
+    command_skeletons: tuple[LeanCommandSkeleton, ...] = ()
+    command_skeletons_complete: bool = True
 
 
 @dataclass(frozen=True)

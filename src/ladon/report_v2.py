@@ -1,5 +1,6 @@
 """Public facade for Ladon's typed report-v2 contract."""
 
+from ladon.coverage import CollectionCoverage, CoverageCause, CoverageRegistry
 from ladon.report_adapters import (
     build_report_v2,
     coerce_report_v2,
@@ -37,6 +38,7 @@ from ladon.report_serialization import (
     serialize_report_bytes,
     serialize_v1_json,
 )
+from ladon.snapshot import AnalysisSnapshot, SnapshotDecision
 
 
 __all__ = [
@@ -48,6 +50,9 @@ __all__ = [
     "SECTION_PHASES",
     "V1_REPORT_VERSION",
     "Diagnostic",
+    "CollectionCoverage",
+    "CoverageCause",
+    "CoverageRegistry",
     "ExtensionEnvelope",
     "Finding",
     "PhaseEnvelope",
@@ -55,6 +60,8 @@ __all__ = [
     "ReportMetadata",
     "ReportModelError",
     "ReportV2",
+    "AnalysisSnapshot",
+    "SnapshotDecision",
     "SerializationResult",
     "SerializedReportBytes",
     "UnsupportedReportVersionError",

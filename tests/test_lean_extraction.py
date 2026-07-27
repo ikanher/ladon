@@ -159,14 +159,6 @@ def test_lean_backend_records_extraction_phase_with_fake_runner() -> None:
             declarations=("Tiny.localName",),
         )
     }
-    discovery = ModuleDiscovery(
-        repo_root=FIXTURE_ROOT,
-        analysis_root_file=FIXTURE_ROOT / "Tiny.lean",
-        analysis_root_module="Tiny",
-        inventory_root="Tiny",
-        modules=modules,
-    )
-
     def fake_runner(context: RunContext, discovered: ModuleDiscovery) -> dict[str, LeanModule]:
         assert discovered.analysis_root_module == "Tiny"
         return modules

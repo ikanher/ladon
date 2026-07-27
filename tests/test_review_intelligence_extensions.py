@@ -42,8 +42,16 @@ def tiny_dag() -> dict:
             {"module": "Pkg", "path": "Pkg.lean", "fan_out": 2, "declarationCount": 0, "subtype": "public_root_facade", "tags": []},
             {"module": "Pkg.Generated.All", "path": "Pkg/Generated/All.lean", "fan_out": 1, "declarationCount": 0, "subtype": "generated_all", "tags": ["generated"]},
         ],
-        "top_handwritten_fan_in": [
-            {"module": "Pkg.Core", "path": "Pkg/Core.lean", "fan_in": 8, "sample_importers": ["Pkg", "Pkg.Helper"]},
+        "top_target_owned_fan_in": [
+            {
+                "module": "Pkg.Core",
+                "path": "Pkg/Core.lean",
+                "fan_in": 8,
+                "sample_importers": ["Pkg", "Pkg.Helper"],
+                "population": (
+                    "target_owned_importers_to_target_owned_targets"
+                ),
+            },
         ],
         "top_fan_in": [],
         "top_fan_out": [],

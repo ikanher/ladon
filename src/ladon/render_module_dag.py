@@ -4,13 +4,22 @@ from __future__ import annotations
 
 from typing import Any
 
+from ladon.analysis.root_applicability import root_views_applicable
+from ladon.render_generated_family_candidates import (
+    generated_family_candidate_lines,
+)
+
 
 def module_dag_detail_lines(dag: dict[str, Any]) -> list[str]:
     """Render grouped module-DAG detail sections."""
 
     lines: list[str] = []
-    lines.extend(module_fan_lines("Top Module Fan-In", dag.get("top_fan_in", []), "fan_in"))
-    lines.extend(module_fan_lines("Top Module Fan-Out", dag.get("top_fan_out", []), "fan_out"))
+    lines.extend(
+        module_fan_lines("Top Module Fan-In", dag.get("top_fan_in", []), "fan_in")
+    )
+    lines.extend(
+        module_fan_lines("Top Module Fan-Out", dag.get("top_fan_out", []), "fan_out")
+    )
     lines.extend(
         module_fan_lines(
             "Top Target-Owned Importer to Target-Owned Target Fan-In",
@@ -34,13 +43,6 @@ def module_dag_detail_lines(dag: dict[str, Any]) -> list[str]:
     )
     lines.extend(
         module_fan_lines(
-            "Top Handwritten-Importer to Handwritten-Target Fan-In",
-            dag.get("top_handwritten_fan_in", []),
-            "fan_in",
-        )
-    )
-    lines.extend(
-        module_fan_lines(
             "Top Generated-Importer Fan-In Contributions",
             dag.get("top_generated_importer_fan_in", []),
             "fan_in",
@@ -55,23 +57,116 @@ def module_dag_detail_lines(dag: dict[str, Any]) -> list[str]:
     )
     lines.extend(
         module_fan_lines(
-            "Top Handwritten Module Fan-Out",
-            dag.get("top_handwritten_fan_out", []),
+            "Top Target-Owned Importer to Target-Owned Target Fan-Out",
+            dag.get("top_target_owned_fan_out", []),
             "fan_out",
         )
     )
-    lines.extend(large_module_lines(dag.get("top_large_handwritten_modules", [])))
+    lines.extend(large_module_lines(dag.get("top_target_owned_large_modules", [])))
     lines.extend(module_name_smell_lines(dag))
     lines.extend(generated_family_lines(dag.get("generated_family_summary", [])))
+    lines.extend(generated_family_candidate_lines(dag))
+    lines.extend(declaration_integrity_lines(dag))
     lines.extend(duplicate_import_lines(dag.get("duplicate_imports", [])))
     lines.extend(duplicate_family_lines(dag.get("duplicate_import_family_summary", [])))
     lines.extend(facade_subtype_lines(dag))
+    lines.extend(import_boundary_lines(dag))
     lines.extend(missing_internal_import_lines(dag.get("missing_internal_imports", [])))
     lines.extend(lexical_marker_lines(dag))
+    lines.extend(root_applicability_lines(dag))
     lines.extend(root_import_closure_lines(dag.get("root_direct_import_closures", [])))
     lines.extend(named_module_lines("Facade Modules", dag.get("facade_modules", [])))
     lines.extend(unreachable_module_lines(dag))
     return lines
+
+
+def declaration_integrity_lines(dag: dict[str, Any]) -> list[str]:
+    """Render bounded lexical collision and exact-duplicate candidates."""
+
+    integrity = dag.get("declaration_integrity")
+    if not isinstance(integrity, dict):
+        return []
+    collections = (
+        (
+            "Lexical Name Collisions",
+            "collisionCandidates",
+            "declaration_integrity.collision_candidates",
+        ),
+        (
+            "Exact Declaration-Block Duplicates",
+            "exactBlockDuplicateCandidates",
+            "declaration_integrity.exact_block_duplicates",
+        ),
+        (
+            "Exact Source-File Duplicates",
+            "exactFileDuplicateCandidates",
+            "declaration_integrity.exact_file_duplicates",
+        ),
+        (
+            "Lexical Declaration Source-Shape Similarities",
+            "sourceShapeSimilarityCandidates",
+            "declaration_integrity.source_shape_similarities",
+        ),
+    )
+    lines = ["Declaration Integrity Candidates"]
+    for title, key, coverage_id in collections:
+        lines.extend(
+            _declaration_integrity_collection_lines(
+                title,
+                integrity.get(key),
+                integrity.get("coverage"),
+                coverage_id,
+            )
+        )
+    return [*lines, ""]
+
+
+def _declaration_integrity_collection_lines(
+    title: str,
+    raw_rows: Any,
+    raw_coverage: Any,
+    coverage_id: str,
+) -> list[str]:
+    """Render one bounded integrity partition with honest total wording."""
+
+    rows = raw_rows if isinstance(raw_rows, list) else []
+    coverage = raw_coverage.get(coverage_id) if isinstance(raw_coverage, dict) else None
+    if not rows and not isinstance(coverage, dict):
+        return [f"- {title}: unavailable"]
+    count = _coverage_count_label(coverage, len(rows))
+    lines = [f"- {title}: {count}"]
+    lines.extend(_declaration_integrity_group_line(row) for row in rows[:5])
+    return lines
+
+
+def _coverage_count_label(coverage: Any, visible: int) -> str:
+    """Render a known total or an observed lower bound."""
+
+    if isinstance(coverage, dict) and coverage.get("totalKnown") is True:
+        return f"{coverage.get('total', visible)} total"
+    observed = (
+        coverage.get("observedLowerBound", visible)
+        if isinstance(coverage, dict)
+        else visible
+    )
+    return f"at least {observed} observed (total unknown)"
+
+
+def _declaration_integrity_group_line(row: Any) -> str:
+    """Render one lexical/hash candidate without implying Lean resolution."""
+
+    if not isinstance(row, dict):
+        return "- malformed candidate row"
+    context = row.get("selectedContext")
+    status = (
+        context.get("status", "not_applicable")
+        if isinstance(context, dict)
+        else "not_applicable"
+    )
+    return (
+        f"  - {row.get('id', '')}: members={row.get('memberCount', 0)} "
+        f"authority={row.get('authority', '')} selected-context={status}"
+    )
 
 
 def scope_lines(dag: dict[str, Any]) -> list[str]:
@@ -119,9 +214,7 @@ def population_lines(dag: dict[str, Any]) -> list[str]:
             f"{summary.get('numerator', 0)}/{summary.get('denominator', 0)}"
         ),
     ]
-    lines.extend(
-        f"- {name}: {count}" for name, count in sorted(counts.items())
-    )
+    lines.extend(f"- {name}: {count}" for name, count in sorted(counts.items()))
     families = calibration.get("generatedFamilies", [])
     lines.append(f"- generated families: {len(families)}")
     return [*lines, ""]
@@ -223,12 +316,12 @@ def _resource_directive_line(row: dict[str, Any]) -> str:
 
 
 def large_module_lines(rows: list[dict[str, Any]]) -> list[str]:
-    """Render largest non-generated source files."""
+    """Render largest calibrated target-owned source files."""
 
     visible = [row for row in rows if row.get("lineCount", 0) > 0][:5]
     if not visible:
         return []
-    lines = ["Largest Handwritten Modules"]
+    lines = ["Largest Target-Owned Modules"]
     lines.extend(f"- {row['module']}: {row['lineCount']} lines" for row in visible)
     return [*lines, ""]
 
@@ -272,8 +365,7 @@ def generated_family_line(row: dict[str, Any]) -> str:
 
     reasons = row.get("reasonSummary", {})
     reason_text = ",".join(
-        f"{kind}={count}"
-        for kind, count in sorted(reasons.items())[:4]
+        f"{kind}={count}" for kind, count in sorted(reasons.items())[:4]
     )
     suffix = f" reasons={reason_text}" if reason_text else ""
     return (
@@ -298,7 +390,9 @@ def duplicate_import_line(row: dict[str, Any]) -> str:
     lines = row.get("lines", [])
     line_suffix = f" lines={','.join(str(line) for line in lines[:5])}" if lines else ""
     action = row.get("suggestedAction", "deduplicate the import target")
-    return f"- {row['module']} -> {row['target']}: {row['count']}{line_suffix}; {action}"
+    return (
+        f"- {row['module']} -> {row['target']}: {row['count']}{line_suffix}; {action}"
+    )
 
 
 def duplicate_family_lines(rows: list[dict[str, Any]]) -> list[str]:
@@ -309,7 +403,7 @@ def duplicate_family_lines(rows: list[dict[str, Any]]) -> list[str]:
     lines = ["Duplicate Import Families"]
     lines.extend(
         (
-            f"- {row.get('generatorFamily') or '(handwritten)'} -> {row['target']}: "
+            f"- {row.get('generatorFamily') or '(non-generated-tag)'} -> {row['target']}: "
             f"{row['duplicateModuleCount']} modules generated={row.get('generated', False)}"
         )
         for row in rows[:5]
@@ -346,6 +440,53 @@ def missing_internal_import_lines(rows: list[dict[str, Any]]) -> list[str]:
     return [*lines, ""]
 
 
+def import_boundary_lines(dag: dict[str, Any]) -> list[str]:
+    """Render selected-slice import classes without calling boundaries missing."""
+
+    summary = dag.get("import_boundary_summary")
+    rows = dag.get("import_boundaries")
+    if not isinstance(summary, dict) or not isinstance(rows, list):
+        return []
+    visible = _visible_import_boundaries(rows)
+    if not visible:
+        return []
+    return [
+        "Import Boundaries",
+        *_import_boundary_summary_lines(summary),
+        *(_import_boundary_row_line(row) for row in visible),
+        "",
+    ]
+
+
+def _visible_import_boundaries(rows: list[Any]) -> list[dict[str, Any]]:
+    """Return the bounded non-internal boundary population."""
+
+    return [
+        row
+        for row in rows
+        if isinstance(row, dict) and row.get("classification") != "selected_internal"
+    ][:5]
+
+
+def _import_boundary_summary_lines(summary: dict[str, Any]) -> list[str]:
+    """Render positive class totals in deterministic class order."""
+
+    return [
+        f"- {name}: {count}"
+        for name, count in sorted(summary.items())
+        if int(count) > 0
+    ]
+
+
+def _import_boundary_row_line(row: dict[str, Any]) -> str:
+    """Render one classified boundary edge."""
+
+    return (
+        f"- {row['sourcePath']}:{row.get('line') or ''} imports "
+        f"{row['targetModule']} ({row['classification']})"
+    )
+
+
 def lexical_marker_lines(dag: dict[str, Any]) -> list[str]:
     """Render lexical marker summary and samples."""
 
@@ -355,10 +496,7 @@ def lexical_marker_lines(dag: dict[str, Any]) -> list[str]:
     if not summary:
         return [*lines, "- none", ""]
     lines.extend(f"- {kind}: {count}" for kind, count in sorted(summary.items()))
-    lines.extend(
-        f"- {row['path']}:{row['line']} {row['kind']}"
-        for row in rows[:5]
-    )
+    lines.extend(f"- {row['path']}:{row['line']} {row['kind']}" for row in rows[:5])
     return [*lines, ""]
 
 
@@ -374,10 +512,7 @@ def module_fan_lines(
         return []
     lines = [title]
     lines.extend(
-        (
-            f"- {row['module']}: {row[metric]}"
-            f"{fan_population_suffix(row)}"
-        )
+        (f"- {row['module']}: {row[metric]}{fan_population_suffix(row)}")
         for row in visible
     )
     return [*lines, ""]
@@ -415,9 +550,31 @@ def root_import_closure_lines(rows: list[dict[str, Any]]) -> list[str]:
     return [*lines, ""]
 
 
+def root_applicability_lines(dag: dict[str, Any]) -> list[str]:
+    """Render explicit rootless or auxiliary navigation-view status."""
+
+    envelope = dag.get("root_reachability")
+    if not isinstance(envelope, dict):
+        return []
+    status = str(envelope.get("status", ""))
+    if status == "applicable":
+        return []
+    reason = str(envelope.get("reason") or "not recorded")
+    title = (
+        "Auxiliary Root Reachability" if status == "auxiliary" else "Root Reachability"
+    )
+    roots = ", ".join(str(row) for row in envelope.get("roots", []))
+    details = f"- status: {status}; reason: {reason}"
+    if roots:
+        details = f"{details}; roots: {roots}"
+    return [title, details, ""]
+
+
 def unreachable_module_lines(dag: dict[str, Any]) -> list[str]:
     """Render modules outside chosen-root reachability, if any."""
 
+    if not root_views_applicable(dag):
+        return []
     count = int(dag.get("source_modules_not_reachable_from_chosen_roots_count", 0))
     modules = dag.get("source_modules_not_reachable_from_chosen_roots", [])
     if count == 0:

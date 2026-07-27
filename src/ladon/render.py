@@ -5,8 +5,12 @@ repositories or run analysis. Cohesive section renderers live in neighboring
 modules while this module preserves the established import surface.
 """
 
+# This facade deliberately re-exports established renderer helpers.
+# ruff: noqa: F401
+
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -101,7 +105,8 @@ def render_text(payload: dict[str, Any] | ReportV2) -> str:
     lines = [
         "Ladon Report",
         f"Root: {metadata['repo_root']}",
-        f"Analysis root: {metadata['analysis_root_module']}",
+        *report_root_header_lines(metadata, dag),
+        *snapshot_header_lines(payload.get("snapshot")),
         "",
         "Module DAG",
         f"- modules: {dag['module_count']}",
@@ -137,6 +142,73 @@ def render_text(payload: dict[str, Any] | ReportV2) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
+def report_root_header_lines(
+    metadata: Mapping[str, Any],
+    module_dag: Mapping[str, Any],
+) -> list[str]:
+    """Render roots and report anchoring without conflating their roles."""
+
+    envelope = module_dag.get("root_reachability")
+    status = envelope.get("status") if isinstance(envelope, Mapping) else None
+    analysis_root = str(metadata.get("analysis_root_module", ""))
+    roots = reported_root_names(envelope, analysis_root)
+    report_anchor = report_anchor_name(metadata, status, analysis_root)
+    if status == "not_applicable":
+        return [f"Report anchor: {report_anchor}"] if report_anchor else []
+    if status == "auxiliary":
+        lines = root_label_lines("Navigation root", roots)
+    else:
+        lines = root_label_lines("Analysis root", roots)
+    if report_anchor and report_anchor not in roots:
+        lines.append(f"Report anchor: {report_anchor}")
+    return lines
+
+
+def reported_root_names(
+    envelope: Any,
+    analysis_root: str,
+) -> tuple[str, ...]:
+    """Return normalized envelope roots or one legacy metadata root."""
+
+    raw_roots = envelope.get("roots") if isinstance(envelope, Mapping) else None
+    if isinstance(raw_roots, list):
+        return tuple(
+            sorted(
+                {
+                    root
+                    for root in raw_roots
+                    if isinstance(root, str) and root
+                }
+            )
+        )
+    if isinstance(envelope, Mapping):
+        return ()
+    return (analysis_root,) if analysis_root else ()
+
+
+def report_anchor_name(
+    metadata: Mapping[str, Any],
+    status: Any,
+    analysis_root: str,
+) -> str:
+    """Return an explicit anchor, adapting old rootless metadata if needed."""
+
+    anchor = metadata.get("report_anchor_module")
+    if anchor:
+        return str(anchor)
+    return analysis_root if status == "not_applicable" else ""
+
+
+def root_label_lines(label: str, roots: tuple[str, ...]) -> list[str]:
+    """Render a singular or plural root label for one bounded root set."""
+
+    if not roots:
+        return []
+    if len(roots) == 1:
+        return [f"{label}: {roots[0]}"]
+    return [f"{label}s: {', '.join(roots)}"]
+
+
 def _text_report_payload(report: ReportV2) -> dict[str, Any]:
     """Expose only fields consumed by text rendering without copying sections."""
 
@@ -160,6 +232,22 @@ def _text_report_payload(report: ReportV2) -> dict[str, Any]:
                 for name in sorted(report.phases)
             }
         },
+        "coverage": report.coverage.to_dict(),
+        "snapshot": (
+            {
+                "identity": report.snapshot.identity,
+                "sourceIndexFingerprint": (
+                    report.snapshot.source_index_fingerprint
+                ),
+                "decision": (
+                    report.snapshot_decision.to_dict()
+                    if report.snapshot_decision is not None
+                    else None
+                ),
+            }
+            if report.snapshot is not None
+            else None
+        ),
     }
     for section, phase_name in SECTION_PHASES.items():
         data = report.phases[phase_name].data
@@ -168,6 +256,23 @@ def _text_report_payload(report: ReportV2) -> dict[str, Any]:
         elif data is not None:
             payload[section] = data
     return payload
+
+
+def snapshot_header_lines(snapshot: Any) -> list[str]:
+    """Render the immutable analysis identity and shared drift decision."""
+
+    if not isinstance(snapshot, dict):
+        return []
+    decision = snapshot.get("decision")
+    status = (
+        str(decision.get("status"))
+        if isinstance(decision, dict)
+        else "unverified"
+    )
+    return [
+        f"Snapshot: {snapshot.get('identity', '')}",
+        f"Snapshot state: {status}",
+    ]
 
 
 def _text_phase_timing(phase) -> dict[str, Any]:

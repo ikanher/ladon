@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-analysis-inspection-surface",
+  "commands": [
+    "openspec validate ladon-analysis-inspection-surface --strict",
+    "uv run --locked pytest -q tests/test_inspection_surface.py tests/test_inspection_report_proof.py tests/test_inspection_pagination_coverage.py tests/test_source_index_lexical_navigation.py tests/test_source_index_cache_inspection.py tests/test_source_index_audit_command_cache.py tests/test_report_inspection_integration.py",
+    "uv run --locked pytest -q tests/test_installed_inspection_contract.py tests/test_clean_cli.py",
+    "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --package-resource ladon:schemas/ladon-report-v3.schema.json",
+    "uv run --locked python scripts/large_inventory_gate.py --candidate worktree --required"
+  ]
+}

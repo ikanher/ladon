@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-declaration-and-audit-integrity",
+  "commands": [
+    "openspec validate ladon-declaration-and-audit-integrity --strict",
+    "uv run --locked pytest -q tests/test_extraction.py tests/test_source_index.py tests/test_source_index_lexical_navigation.py tests/test_source_index_audit_command_cache.py tests/test_declaration_audit_integrity.py tests/test_declaration_integrity.py tests/test_audit_surface.py tests/test_audit_enrichment.py tests/test_audit_roles.py tests/test_audit_registrations.py tests/test_module_dag.py tests/test_report_v3.py tests/test_render.py",
+    "uv run --locked pytest -q tests/test_clean_cli.py tests/test_installed_cli_contract.py",
+    "uv run --locked python scripts/clean_checkout_gate.py --candidate worktree --package-resource ladon:schemas/ladon-report-v3.schema.json",
+    "uv run --locked python scripts/large_inventory_gate.py --candidate worktree --required"
+  ]
+}

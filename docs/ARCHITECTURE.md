@@ -50,7 +50,13 @@ is not listed as supported here, do not describe it as implemented.
 15. `atlas`, `atlas_diff`, `atlas_sqlite`, and `atlas_workflow`: derive
     reviewer-routing graphs, diffs, canned queries, cards, and workflow
     summaries from Ladon report JSON plus optional bridge reports.
-16. `quality`: enforce radon/vulture gates for active Python code.
+16. `inspection_*`, `source_index`, and `pipeline_inspection_navigation`:
+    expose the ordinary `ladon inspect <noun>` CLI over immutable report or
+    source-index evidence. Current v3 reports retain bounded lexical
+    declaration, audit, option, resource, and proof-mechanism navigation rows
+    with registered exact/unknown coverage; these rows do not upgrade lexical
+    tokens to elaborated Lean facts.
+17. `quality`: enforce radon/vulture gates for active Python code.
 
 Unsupported until rebuilt with tests:
 
@@ -285,10 +291,10 @@ Why this seam now:
 triage items. It currently reports:
 
 - module fan-in hotspots;
-- handwritten module fan-in hotspots;
+- target-owned module fan-in hotspots;
 - root direct-import closure hotspots;
 - duplicate import targets;
-- large handwritten modules;
+- large target-owned modules;
 - declaration fan-in/fan-out hotspots;
 - declaration name family hotspots;
 - unresolved reference hotspots;

@@ -145,7 +145,7 @@ def facade_rows(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
     rows = []
     for row in module_dag.get("top_facade_like_modules", [])[:10]:
         subtype = str(row.get("subtype", ""))
-        if subtype == "generated_all":
+        if subtype in {"generated_all", "command_only_audit_facade"}:
             continue
         rows.append(readiness_row(
             "public_facade_pressure",
@@ -164,7 +164,7 @@ def implementation_pressure_rows(module_dag: dict[str, Any]) -> list[dict[str, A
     """Return readiness rows for implementation modules acting like API."""
 
     rows = []
-    for row in module_dag.get("top_handwritten_fan_in", [])[:8]:
+    for row in module_dag.get("top_target_owned_fan_in", [])[:8]:
         fan_in = int(row.get("fan_in", 0))
         if fan_in < 5:
             continue
@@ -172,7 +172,9 @@ def implementation_pressure_rows(module_dag: dict[str, Any]) -> list[dict[str, A
             "implementation_public_pressure",
             row["module"],
             "info",
-            "Handwritten implementation module has high fan-in; review whether a public facade or common layer should own this surface.",
+            "Target-owned implementation module has high target-owned fan-in; "
+            "review whether a public facade or common layer should own this "
+            "surface.",
             sourcePath=row.get("path"),
             fanIn=fan_in,
             sampleImporters=row.get("sample_importers", []),

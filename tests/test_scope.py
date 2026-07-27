@@ -73,6 +73,93 @@ def test_owner_closure_namespace_and_inventory_populations(tmp_path: Path) -> No
     assert_scope_variants(closure, namespace, inventory, index)
 
 
+def test_inventory_navigation_roots_do_not_change_selection_or_anchor(
+    tmp_path: Path,
+) -> None:
+    _, index = indexed_project(tmp_path)
+
+    rootless = plan_scope(index, kind="inventory")
+    compatibility = plan_scope(
+        index,
+        kind="inventory",
+        roots=("Pkg.Other",),
+    )
+    explicit = plan_scope(
+        index,
+        kind="inventory",
+        navigation_roots=("Pkg.Other",),
+    )
+
+    assert {
+        "primary": compatibility.primary_modules,
+        "context": compatibility.context_modules,
+        "selectionRequested": compatibility.requested_selection_roots,
+        "selectionResolved": compatibility.resolved_selection_roots,
+        "navigationRequested": compatibility.requested_navigation_roots,
+        "navigationResolved": compatibility.resolved_navigation_roots,
+        "anchor": compatibility.report_anchor,
+        "requestedRoots": compatibility.requested_roots,
+        "resolvedRoots": compatibility.resolved_roots,
+        "fingerprint": compatibility.fingerprint,
+    } == {
+        "primary": rootless.primary_modules,
+        "context": (),
+        "selectionRequested": (),
+        "selectionResolved": (),
+        "navigationRequested": ("Pkg.Other",),
+        "navigationResolved": ("Pkg.Other",),
+        "anchor": rootless.report_anchor,
+        "requestedRoots": ("Pkg.Other",),
+        "resolvedRoots": (),
+        "fingerprint": explicit.fingerprint,
+    }
+    assert rootless.report_anchor == "Pkg"
+    assert compatibility.fingerprint != rootless.fingerprint
+
+    payload = compatibility.to_payload()
+    assert {
+        "selectionRoots": payload["selectionRoots"],
+        "navigationRoots": payload["navigationRoots"],
+        "reportAnchor": payload["reportAnchor"],
+    } == {
+        "selectionRoots": {"requested": [], "resolved": []},
+        "navigationRoots": {
+            "requested": ["Pkg.Other"],
+            "resolved": ["Pkg.Other"],
+            "role": "auxiliary_inventory_view",
+            "status": "resolved",
+        },
+        "reportAnchor": "Pkg",
+    }
+    assert not any(
+        row.identifier == "scope.inventory_roots_ignored"
+        for row in compatibility.diagnostics
+    )
+
+
+def test_unresolved_inventory_navigation_root_has_no_substitute(
+    tmp_path: Path,
+) -> None:
+    _, index = indexed_project(tmp_path)
+
+    plan = plan_scope(
+        index,
+        kind="inventory",
+        navigation_roots=("Pkg.Absent",),
+    )
+
+    assert set(plan.primary_modules) == set(index.modules)
+    assert plan.resolved_navigation_roots == ()
+    assert plan.report_anchor == "Pkg"
+    assert plan.completeness == "invalid"
+    assert plan.to_payload()["navigationRoots"]["status"] == "unresolved"
+    assert any(
+        row.identifier == "scope.root_unresolved"
+        and row.subject == "Pkg.Absent"
+        for row in plan.diagnostics
+    )
+
+
 def test_multi_root_is_order_independent_and_retains_attribution(
     tmp_path: Path,
 ) -> None:

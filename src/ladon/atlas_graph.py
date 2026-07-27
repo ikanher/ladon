@@ -104,6 +104,17 @@ def add_report_payload(
     regions = payload.get("review_regions", [])
     warnings = payload.get("warnings", [])
     projection = payload.get("projection", {})
+    coverage = payload.get("coverage", {})
+    finding_coverage = atlas_collection_coverage(
+        coverage,
+        "report.findings",
+    )
+    region_coverage = atlas_collection_coverage(
+        coverage,
+        "report.review_regions",
+    )
+    finding_visible = collection_size(findings)
+    region_visible = collection_size(regions)
     selected_modules = int(module_dag.get("module_count", 0))
     source_index = module_dag.get("source_index", {})
     inventory_modules = (
@@ -118,6 +129,10 @@ def add_report_payload(
         relative_path,
         {
             "analysis_root_module": metadata.get("analysis_root_module", ""),
+            "report_anchor_module": metadata.get(
+                "report_anchor_module",
+                "",
+            ),
             "module_count": selected_modules,
             "selected_module_count": selected_modules,
             "inventory_module_count": inventory_modules,
@@ -129,16 +144,29 @@ def add_report_payload(
                 findings,
                 projection,
                 "#/sections/findings",
+                finding_coverage,
             ),
+            "finding_visible_count": finding_visible,
+            "finding_total_count": known_coverage_total(finding_coverage),
+            "finding_total_known": coverage_total_known(finding_coverage),
+            "finding_coverage_ref": finding_coverage.get("id"),
             "review_region_count": projected_collection_count(
                 regions,
                 projection,
                 "#/sections/review_regions",
+                region_coverage,
             ),
+            "review_region_visible_count": region_visible,
+            "review_region_total_count": known_coverage_total(region_coverage),
+            "review_region_total_known": coverage_total_known(region_coverage),
+            "review_region_coverage_ref": region_coverage.get("id"),
             "extraction_backend": metadata.get(
                 "extraction_backend",
                 "unknown",
             ),
+            "analysis_fingerprint": payload.get("analysis_fingerprint"),
+            "source_fingerprint": payload.get("source_fingerprint"),
+            "coverage": detached_workflow_value(coverage),
             "declaration_evidence": declaration_evidence_summary(
                 declaration_rows
             ),
@@ -147,7 +175,14 @@ def add_report_payload(
             "warnings": warnings[:3],
         },
     )
-    add_root_module(nodes, edges, report_id, repo_key, metadata)
+    add_root_module(
+        nodes,
+        edges,
+        report_id,
+        repo_key,
+        metadata,
+        module_dag,
+    )
     add_module_highlights(nodes, edges, report_id, repo_key, module_dag)
     add_declaration_highlights(
         nodes,
@@ -170,21 +205,69 @@ def projected_collection_count(
     visible_rows: Any,
     projection: Any,
     pointer: str,
+    coverage: Any = None,
 ) -> int:
-    """Recover a projected collection total from its exact omission row."""
+    """Return an exact total when known, otherwise the visible lower bound.
 
-    visible = len(visible_rows) if isinstance(visible_rows, list) else 0
-    if not isinstance(projection, dict):
-        return visible
-    omissions = projection.get("omissions", [])
-    if not isinstance(omissions, list):
-        return visible
-    omitted = sum(
-        int(row.get("omitted_count", 0))
-        for row in omissions
-        if isinstance(row, dict) and row.get("pointer") == pointer
+    The integer return type is retained for atlas-v1 compatibility. Callers
+    distinguish an exact total from a visible-only count through the adjacent
+    ``*_total_known`` and ``*_total_count`` report-node fields. Legacy omission
+    rows are not population authority and therefore cannot turn the visible
+    lower bound into an exact total.
+    """
+
+    visible = collection_size(visible_rows)
+    if isinstance(coverage, Mapping):
+        total = known_coverage_total(coverage)
+        return total if total is not None else visible
+    # Retain the historical call signature while treating missing coverage as
+    # unknown. Neither projection metadata nor its pointer proves population.
+    _ = projection, pointer
+    return visible
+
+
+def atlas_collection_coverage(
+    registry: Any,
+    identity: str,
+) -> dict[str, Any]:
+    """Return one normalized coverage row from an atlas reader view."""
+
+    collections = (
+        registry.get("collections")
+        if isinstance(registry, Mapping)
+        else None
     )
-    return visible + omitted
+    row = (
+        collections.get(identity)
+        if isinstance(collections, Mapping)
+        else None
+    )
+    return dict(row) if isinstance(row, Mapping) else {}
+
+
+def coverage_total_known(coverage: Any) -> bool:
+    """Return whether a coverage row carries a validated exact total."""
+
+    return known_coverage_total(coverage) is not None
+
+
+def known_coverage_total(coverage: Any) -> int | None:
+    """Return one exact nonnegative coverage total, or explicit unknown."""
+
+    if not isinstance(coverage, Mapping):
+        return None
+    if coverage.get("totalKnown") is not True:
+        return None
+    total = coverage.get("total")
+    if isinstance(total, bool) or not isinstance(total, int) or total < 0:
+        return None
+    return total
+
+
+def collection_size(value: Any) -> int:
+    """Count visible array or object members for compatibility displays."""
+
+    return len(value) if isinstance(value, (list, Mapping)) else 0
 
 
 def declaration_evidence_summary(rows: Any) -> dict[str, Any]:
@@ -266,15 +349,44 @@ def add_root_module(
     report_id: str,
     repo_key: str,
     metadata: dict[str, Any],
+    module_dag: Mapping[str, Any] | None = None,
 ) -> None:
-    """Link a report to its analysis root module when present."""
+    """Link a report only to evidenced selection/navigation roots.
 
+    Omitting ``module_dag`` retains the legacy metadata-only call contract.
+    New report ingestion always supplies the applicability envelope.
+    """
+
+    for root in report_analysis_roots(metadata, module_dag or {}):
+        root_id = module_node_id(repo_key, root)
+        add_node(nodes, root_id, "module", root, {"repo_key": repo_key})
+        edges.append(edge(report_id, root_id, "analyzes_root"))
+
+
+def report_analysis_roots(
+    metadata: Mapping[str, Any],
+    module_dag: Mapping[str, Any],
+) -> tuple[str, ...]:
+    """Return roots proven by applicability, with a legacy-only fallback."""
+
+    envelope = module_dag.get("root_reachability")
+    if isinstance(envelope, Mapping):
+        if envelope.get("status") not in {"applicable", "auxiliary"}:
+            return ()
+        raw_roots = envelope.get("roots")
+        if not isinstance(raw_roots, list):
+            return ()
+        return tuple(
+            sorted(
+                {
+                    root
+                    for root in raw_roots
+                    if isinstance(root, str) and root
+                }
+            )
+        )
     root = metadata.get("analysis_root_module")
-    if not root:
-        return
-    root_id = module_node_id(repo_key, str(root))
-    add_node(nodes, root_id, "module", str(root), {"repo_key": repo_key})
-    edges.append(edge(report_id, root_id, "analyzes_root"))
+    return (str(root),) if root else ()
 
 
 def add_module_highlights(

@@ -29,7 +29,19 @@ from ladon.report_contract import (
     sorted_diagnostics,
     sorted_provenance,
 )
+from ladon.report_declaration_compaction import (
+    compact_declaration_collections,
+)
 from ladon.report_model import ReportV2
+from ladon.report_projection import project_sections
+from ladon.report_projection_coverage import (
+    bind_analysis_fingerprint,
+    coverage_linked_omissions,
+    project_coverage,
+    rebind_review_region_coverage,
+    register_projection_strata,
+    synchronize_review_region_coverage,
+)
 
 
 REPORT_V3_VERSION = "ladon-report-v3"
@@ -37,9 +49,7 @@ PROJECTION_NAMES = ("summary", "review", "full")
 DEFAULT_SUMMARY_ITEM_LIMIT = 20
 DEFAULT_REVIEW_ITEM_LIMIT = 100
 _SERIALIZATION_CHUNK_BYTES = 64 * 1024
-_DECLARATION_EVIDENCE_KEYS = frozenset(
-    {"authority", "confidence", "nonclaim", "nonclaims"}
-)
+_ANALYSIS_FINGERPRINT_ALGORITHM = "ladon-report-v3-raw-sections-v1"
 _VOLATILE_CACHE_PATHS = frozenset(
     {
         ("sections", "discover", "cache"),
@@ -81,19 +91,6 @@ _VOLATILE_RUNTIME_PATHS = frozenset(
             "crossed",
             "observed",
         ),
-    }
-)
-_RECORD_SHAPE_KEYS = frozenset(
-    {
-        "artifactKind",
-        "declaration",
-        "id",
-        "kind",
-        "module",
-        "name",
-        "schemaVersion",
-        "status",
-        "summary",
     }
 )
 
@@ -165,19 +162,45 @@ def build_report_v3(
     full_sections, raw_sections = _canonical_phase_sections(canonical)
     extension_rows = _extension_rows(canonical, full_sections, raw_sections)
     phase_rows = _phase_rows(canonical, diagnostic_refs, full_sections)
+    canonical_coverage = canonical.coverage.to_dict()
+    snapshot = _snapshot_identity(canonical)
     fingerprint = _analysis_fingerprint(
         canonical,
         diagnostics=diagnostics,
         phases=phase_rows,
         extensions=extension_rows,
         sections=full_sections,
+        coverage=canonical_coverage,
+        snapshot=snapshot,
     )
-    sections, omissions, item_limit = _project_sections(
+    projected_sections, omissions, item_limit, strata = project_sections(
         full_sections,
         projection=projection,
         summary_item_limit=summary_item_limit,
         review_item_limit=review_item_limit,
     )
+    sections = compact_declaration_collections(
+        projected_sections,
+        pointer="#/sections",
+    )
+    bound_coverage = rebind_review_region_coverage(
+        bind_analysis_fingerprint(canonical.coverage, fingerprint),
+        sections,
+    )
+    coverage = project_coverage(
+        bound_coverage,
+        sections=sections,
+        projection=projection,
+        item_limit=item_limit,
+    )
+    coverage = register_projection_strata(
+        coverage,
+        strata,
+        projection=projection,
+        item_limit=item_limit,
+    )
+    sections = synchronize_review_region_coverage(sections, coverage)
+    omissions = coverage_linked_omissions(omissions, coverage)
     payload = {
         "metadata": _v3_metadata(canonical),
         "projection": {
@@ -186,10 +209,12 @@ def build_report_v3(
             "analysis_fingerprint": fingerprint,
             "included_sections": sorted(sections),
             "omissions": omissions,
-            "limits": {"max_collection_items": item_limit},
+            "limits": _projection_limits(projection, item_limit),
         },
         "warnings": list(canonical.warnings),
         "diagnostics": diagnostics,
+        "coverage": coverage.to_dict(),
+        "snapshot": snapshot,
         "phases": phase_rows,
         "extensions": extension_rows,
         "pipeline": {"timings": _timing_rows(canonical, full_sections)},
@@ -202,6 +227,27 @@ def build_report_v3(
     )
 
 
+def _projection_limits(
+    projection: str,
+    item_limit: int | None,
+) -> dict[str, Any]:
+    """Describe global and stratum-aware projection bounds truthfully."""
+
+    if projection == "full":
+        return {
+            "max_collection_items": None,
+            "max_unstratified_collection_items": None,
+            "max_items_per_present_stratum": None,
+            "selection_policy": "unbounded",
+        }
+    return {
+        "max_collection_items": None,
+        "max_unstratified_collection_items": item_limit,
+        "max_items_per_present_stratum": item_limit,
+        "selection_policy": "per_present_stratum",
+    }
+
+
 def _require_preserved_dispositions(
     report: Mapping[str, Any] | ReportV2,
 ) -> None:
@@ -211,9 +257,7 @@ def _require_preserved_dispositions(
         return
     phases = report.get("phases", {})
     if not isinstance(phases, Mapping):
-        raise ReportModelError(
-            "report v3 projection requires typed phase dispositions"
-        )
+        raise ReportModelError("report v3 projection requires typed phase dispositions")
     missing = [
         name
         for name in PHASE_NAMES
@@ -371,6 +415,23 @@ def _v3_metadata(report: ReportV2) -> dict[str, Any]:
     return metadata
 
 
+def _snapshot_identity(report: ReportV2) -> dict[str, Any] | None:
+    """Expose snapshot identity without duplicating its manifest in each report."""
+
+    if report.snapshot is None:
+        return None
+    return {
+        "schema": report.snapshot.schema,
+        "identity": report.snapshot.identity,
+        "sourceIndexFingerprint": report.snapshot.source_index_fingerprint,
+        "decision": (
+            report.snapshot_decision.to_dict()
+            if report.snapshot_decision is not None
+            else None
+        ),
+    }
+
+
 # Diagnostics have one canonical table; phase rows only carry references.
 def _canonical_diagnostics(
     report: ReportV2,
@@ -404,7 +465,7 @@ def _register_diagnostic(
 def _canonical_phase_sections(
     report: ReportV2,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Create one canonical owner for every non-null phase payload."""
+    """Create one raw canonical owner for every non-null phase payload."""
 
     sections: dict[str, Any] = {}
     raw_sections: dict[str, Any] = {}
@@ -423,10 +484,7 @@ def _canonical_phase_sections(
         else:
             data = phase.data
         raw_sections[name] = data
-        sections[name] = _compact_declaration_collections(
-            data,
-            pointer=f"#/sections/{_pointer_token(name)}",
-        )
+        sections[name] = data
     return sections, raw_sections
 
 
@@ -464,9 +522,7 @@ def _phase_row(
         "counters": dict(sorted(phase.counters.items())),
         "reason": phase.reason,
         "diagnosticRefs": list(diagnostic_refs),
-        "provenance": [
-            row.to_dict() for row in sorted_provenance(phase.provenance)
-        ],
+        "provenance": [row.to_dict() for row in sorted_provenance(phase.provenance)],
         "payloadRef": payload_ref,
     }
 
@@ -541,10 +597,7 @@ def _extension_payload_reference(
             elaborated["capsRef"] = _section_ref(caps_section)
         return _section_ref("declaration_graph"), elaborated
     section_name = f"extension.{extension.namespace}"
-    sections[section_name] = _compact_declaration_collections(
-        extension.payload,
-        pointer=_section_ref(section_name),
-    )
+    sections[section_name] = extension.payload
     return _section_ref(section_name), None
 
 
@@ -575,300 +628,6 @@ def _elaborated_declaration_view(
     }
 
 
-def _compact_declaration_collections(value: Any, *, pointer: str) -> Any:
-    """Move repeated declaration evidence into shared, referenced dictionaries."""
-
-    if isinstance(value, list):
-        return [
-            _compact_declaration_collections(
-                item,
-                pointer=f"{pointer}/{index}",
-            )
-            for index, item in enumerate(value)
-        ]
-    if not isinstance(value, Mapping):
-        return copy_json(value)
-    compacted: dict[str, Any] = {}
-    for key in sorted(value):
-        item = value[key]
-        child_pointer = f"{pointer}/{_pointer_token(key)}"
-        if key == "declarations" and _is_mapping_list(item):
-            rows, evidence = _compact_declaration_rows(
-                item,
-                evidence_pointer=f"{pointer}/_declarationEvidence",
-            )
-            compacted[key] = rows
-            if evidence:
-                if "_declarationEvidence" in value:
-                    raise ReportModelError(
-                        "source payload uses reserved _declarationEvidence key"
-                    )
-                compacted["_declarationEvidence"] = evidence
-            continue
-        compacted[key] = _compact_declaration_collections(
-            item,
-            pointer=child_pointer,
-        )
-    return compacted
-
-
-def _compact_declaration_rows(
-    rows: list[Any],
-    *,
-    evidence_pointer: str,
-) -> tuple[list[dict[str, Any]], dict[str, Any]]:
-    """Strip repeated evidence keys from rows and deduplicate their dictionaries."""
-
-    compacted_rows: list[dict[str, Any]] = []
-    evidence_table: dict[str, Any] = {}
-    for raw_row in rows:
-        row, fields = _strip_declaration_evidence(raw_row)
-        if fields:
-            evidence_id = f"evidence:{_json_digest(fields)}"
-            evidence_table.setdefault(evidence_id, {"fields": fields})
-            row["evidenceRef"] = (
-                f"{evidence_pointer}/{_pointer_token(evidence_id)}"
-            )
-        compacted_rows.append(row)
-    return compacted_rows, {
-        key: evidence_table[key] for key in sorted(evidence_table)
-    }
-
-
-def _strip_declaration_evidence(
-    row: Mapping[str, Any],
-) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Return one compact row and a path-indexed evidence dictionary."""
-
-    fields: dict[str, Any] = {}
-
-    def visit(value: Any, path: str) -> Any:
-        if isinstance(value, list):
-            return [visit(item, f"{path}/{index}") for index, item in enumerate(value)]
-        if not isinstance(value, Mapping):
-            return copy_json(value)
-        result: dict[str, Any] = {}
-        for key in sorted(value):
-            item = value[key]
-            item_path = f"{path}/{_pointer_token(key)}"
-            if key in _DECLARATION_EVIDENCE_KEYS:
-                fields[item_path] = copy_json(item)
-            else:
-                result[key] = visit(item, item_path)
-        return result
-
-    return visit(row, ""), fields
-
-
-# Projections bound owner collections and record every omitted population.
-def _project_sections(
-    sections: Mapping[str, Any],
-    *,
-    projection: str,
-    summary_item_limit: int,
-    review_item_limit: int,
-) -> tuple[dict[str, Any], list[dict[str, Any]], int | None]:
-    """Materialize one explicit projection and its omission ledger."""
-
-    omissions: list[dict[str, Any]] = []
-    projected: dict[str, Any] = {}
-    for name in sorted(sections):
-        pointer = _section_ref(name)
-        if projection == "full":
-            projected[name] = sections[name]
-        elif projection == "review":
-            projected[name] = _bounded_value(
-                sections[name],
-                limit=review_item_limit,
-                pointer=pointer,
-                omissions=omissions,
-            )
-        else:
-            projected[name] = _summary_value(
-                sections[name],
-                limit=summary_item_limit,
-                pointer=pointer,
-                omissions=omissions,
-                preserve_rows=name == "findings",
-            )
-    item_limit = {
-        "summary": summary_item_limit,
-        "review": review_item_limit,
-        "full": None,
-    }[projection]
-    omissions.sort(key=lambda row: (row["pointer"], row["reason"]))
-    return projected, omissions, item_limit
-
-
-def _bounded_value(
-    value: Any,
-    *,
-    limit: int,
-    pointer: str,
-    omissions: list[dict[str, Any]],
-) -> Any:
-    """Recursively copy a review value with deterministic collection bounds."""
-
-    if isinstance(value, list):
-        selected = value[:limit]
-        if len(value) > limit:
-            _record_omission(omissions, pointer, len(value) - limit)
-        return [
-            _bounded_value(
-                item,
-                limit=limit,
-                pointer=f"{pointer}/{index}",
-                omissions=omissions,
-            )
-            for index, item in enumerate(selected)
-        ]
-    if not isinstance(value, Mapping):
-        return copy_json(value)
-    if _is_compact_declaration_container(value):
-        return _bounded_declaration_container(
-            value,
-            limit=limit,
-            pointer=pointer,
-            omissions=omissions,
-        )
-    keys = sorted(value)
-    bound_mapping = len(keys) > limit and not _looks_like_record(value)
-    selected_keys = keys[:limit] if bound_mapping else keys
-    if bound_mapping:
-        _record_omission(omissions, pointer, len(keys) - limit)
-    return {
-        key: _bounded_value(
-            value[key],
-            limit=limit,
-            pointer=f"{pointer}/{_pointer_token(key)}",
-            omissions=omissions,
-        )
-        for key in selected_keys
-    }
-
-
-def _bounded_declaration_container(
-    value: Mapping[str, Any],
-    *,
-    limit: int,
-    pointer: str,
-    omissions: list[dict[str, Any]],
-) -> dict[str, Any]:
-    """Bound declaration rows while retaining every referenced evidence entry."""
-
-    rows = value["declarations"]
-    selected_rows = _bounded_value(
-        rows,
-        limit=limit,
-        pointer=f"{pointer}/declarations",
-        omissions=omissions,
-    )
-    references = {
-        str(row["evidenceRef"]).rsplit("/", maxsplit=1)[-1]
-        .replace("~1", "/")
-        .replace("~0", "~")
-        for row in selected_rows
-        if isinstance(row, Mapping) and isinstance(row.get("evidenceRef"), str)
-    }
-    evidence = value["_declarationEvidence"]
-    selected_evidence = {
-        key: _bounded_value(
-            evidence[key],
-            limit=limit,
-            pointer=(
-                f"{pointer}/_declarationEvidence/{_pointer_token(key)}"
-            ),
-            omissions=omissions,
-        )
-        for key in sorted(references)
-        if key in evidence
-    }
-    omitted_evidence = len(evidence) - len(selected_evidence)
-    if omitted_evidence:
-        _record_omission(
-            omissions,
-            f"{pointer}/_declarationEvidence",
-            omitted_evidence,
-        )
-    result = {
-        key: _bounded_value(
-            item,
-            limit=limit,
-            pointer=f"{pointer}/{_pointer_token(key)}",
-            omissions=omissions,
-        )
-        for key, item in sorted(value.items())
-        if key not in {"declarations", "_declarationEvidence"}
-    }
-    result["declarations"] = selected_rows
-    result["_declarationEvidence"] = selected_evidence
-    return result
-
-
-def _summary_value(
-    value: Any,
-    *,
-    limit: int,
-    pointer: str,
-    omissions: list[dict[str, Any]],
-    preserve_rows: bool,
-) -> Any:
-    """Return a bounded section summary with explicit collection counts."""
-
-    if preserve_rows:
-        return _bounded_value(
-            value,
-            limit=limit,
-            pointer=pointer,
-            omissions=omissions,
-        )
-    if isinstance(value, list):
-        if value:
-            _record_omission(omissions, pointer, len(value))
-        return {"kind": "array", "count": len(value)}
-    if not isinstance(value, Mapping):
-        return copy_json(value)
-    scalars: dict[str, Any] = {}
-    collections: dict[str, dict[str, Any]] = {}
-    for key in sorted(value):
-        item = value[key]
-        if isinstance(item, Mapping):
-            collections[key] = {"kind": "object", "count": len(item)}
-            if item:
-                _record_omission(
-                    omissions,
-                    f"{pointer}/{_pointer_token(key)}",
-                    len(item),
-                )
-        elif isinstance(item, list):
-            collections[key] = {"kind": "array", "count": len(item)}
-            if item:
-                _record_omission(
-                    omissions,
-                    f"{pointer}/{_pointer_token(key)}",
-                    len(item),
-                )
-        else:
-            scalars[key] = copy_json(item)
-    return {"scalars": scalars, "collections": collections}
-
-
-def _record_omission(
-    omissions: list[dict[str, Any]],
-    pointer: str,
-    omitted_count: int,
-) -> None:
-    """Append one deterministic projection omission."""
-
-    omissions.append(
-        {
-            "pointer": pointer,
-            "reason": "projection_collection_limit",
-            "omitted_count": omitted_count,
-        }
-    )
-
-
 # The semantic fingerprint excludes only registered runtime/cache volatility.
 def _analysis_fingerprint(
     report: ReportV2,
@@ -877,18 +636,29 @@ def _analysis_fingerprint(
     phases: Mapping[str, Any],
     extensions: Mapping[str, Any],
     sections: Mapping[str, Any],
+    coverage: Mapping[str, Any],
+    snapshot: Mapping[str, Any] | None,
 ) -> str:
     """Hash normalized analysis content independently of projection and timing."""
 
     metadata = _v3_metadata(report)
     metadata["generated_at_utc"] = None
+    normalized_coverage = copy_json(dict(coverage))
+    collections = normalized_coverage.get("collections", {})
+    if isinstance(collections, Mapping):
+        for row in collections.values():
+            if isinstance(row, dict):
+                row["analysisFingerprint"] = None
     normalized_phases = copy_json(dict(phases))
     for phase in normalized_phases.values():
         phase["elapsed_seconds"] = 0.0
     content = {
+        "fingerprintAlgorithm": _ANALYSIS_FINGERPRINT_ALGORITHM,
         "metadata": metadata,
         "warnings": list(report.warnings),
         "diagnostics": diagnostics,
+        "coverage": normalized_coverage,
+        "snapshot": snapshot,
         "phases": normalized_phases,
         "extensions": extensions,
         "sections": sections,
@@ -921,27 +691,6 @@ def _pointer_token(value: str) -> str:
     """Escape one RFC 6901 JSON Pointer token."""
 
     return value.replace("~", "~0").replace("/", "~1")
-
-
-def _is_mapping_list(value: Any) -> bool:
-    """Return whether a value is a declaration-row-shaped list."""
-
-    return isinstance(value, list) and all(isinstance(row, Mapping) for row in value)
-
-
-def _is_compact_declaration_container(value: Mapping[str, Any]) -> bool:
-    """Return whether a mapping owns compact rows and their evidence table."""
-
-    return (
-        isinstance(value.get("declarations"), list)
-        and isinstance(value.get("_declarationEvidence"), Mapping)
-    )
-
-
-def _looks_like_record(value: Mapping[str, Any]) -> bool:
-    """Distinguish fixed-shape rows from key-indexed collection mappings."""
-
-    return bool(set(value) & _RECORD_SHAPE_KEYS)
 
 
 def _enforce_byte_limit(actual: int, limit: int | None) -> None:
@@ -1005,10 +754,16 @@ def _iter_fingerprint_bytes(
     """Yield canonical JSON while normalizing registered volatile runtimes."""
 
     normalized = _normalized_fingerprint_value(value, path=path)
-    yield from _iter_buffered_json_bytes(
+    encoded = json.dumps(
         normalized,
-        trailing_newline=False,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
     )
+    for start in range(0, len(encoded), _SERIALIZATION_CHUNK_BYTES):
+        yield encoded[start : start + _SERIALIZATION_CHUNK_BYTES].encode(
+            "utf-8"
+        )
 
 
 def _normalized_fingerprint_value(
@@ -1016,56 +771,112 @@ def _normalized_fingerprint_value(
     *,
     path: tuple[str, ...],
 ) -> Any:
-    """Copy analysis content while replacing only registered volatile fields."""
+    """Shallow-copy only branches containing registered volatile fields."""
+
+    if path:
+        return _normalized_fingerprint_branch(value, path)
+    normalized = _replace_fingerprint_paths(
+        value,
+        _VOLATILE_CACHE_PATHS,
+        True,
+    )
+    normalized = _replace_fingerprint_paths(
+        normalized,
+        _VOLATILE_RUNTIME_PATHS,
+        0.0,
+    )
+    return _normalize_phase_cache_counters(normalized)
+
+
+def _replace_fingerprint_paths(
+    value: Any,
+    paths: frozenset[tuple[str, ...]],
+    replacement: Any,
+) -> Any:
+    """Replace a family of registered paths through shallow branch copies."""
+
+    normalized = value
+    for path in paths:
+        normalized = _replace_fingerprint_path(
+            normalized,
+            path,
+            replacement,
+        )
+    return normalized
+
+
+def _normalize_phase_cache_counters(value: Any) -> Any:
+    """Replace registered cache counters in every phase mapping."""
+
+    phases = value.get("phases") if isinstance(value, Mapping) else None
+    if not isinstance(phases, Mapping):
+        return value
+    normalized = value
+    for phase_name, phase in phases.items():
+        normalized = _normalize_one_phase_cache_counters(
+            normalized,
+            phase_name=phase_name,
+            phase=phase,
+        )
+    return normalized
+
+
+def _normalize_one_phase_cache_counters(
+    value: Any,
+    *,
+    phase_name: Any,
+    phase: Any,
+) -> Any:
+    """Replace registered cache counters for one well-formed phase."""
+
+    if not isinstance(phase_name, str) or not isinstance(phase, Mapping):
+        return value
+    counters = phase.get("counters")
+    if not isinstance(counters, Mapping):
+        return value
+    normalized = value
+    for counter in _VOLATILE_CACHE_COUNTERS & counters.keys():
+        normalized = _replace_fingerprint_path(
+            normalized,
+            ("phases", phase_name, "counters", counter),
+            0,
+        )
+    return normalized
+
+
+def _normalized_fingerprint_branch(
+    value: Any,
+    path: tuple[str, ...],
+) -> Any:
+    """Retain the private path-aware helper contract for focused callers."""
 
     if path in _VOLATILE_CACHE_PATHS:
         return True
-    if isinstance(value, Mapping):
-        normalized: dict[str, Any] = {}
-        for key, item in value.items():
-            if not isinstance(key, str):
-                raise ReportModelError("report-v3 object keys must be strings")
-            child, item_path = _normalized_fingerprint_item(item, path, key)
-            normalized[key] = _normalized_fingerprint_value(
-                child,
-                path=item_path,
-            )
-        return normalized
-    if isinstance(value, list):
-        return [
-            _normalized_fingerprint_value(
-                item,
-                path=(*path, str(index)),
-            )
-            for index, item in enumerate(value)
-        ]
+    if path in _VOLATILE_RUNTIME_PATHS:
+        return 0.0
     return value
 
 
-def _normalized_fingerprint_item(
-    item: Any,
+def _replace_fingerprint_path(
+    value: Any,
     path: tuple[str, ...],
-    key: str,
-) -> tuple[Any, tuple[str, ...]]:
-    """Normalize one registered volatile field and return its child path."""
+    replacement: Any,
+) -> Any:
+    """Copy mappings along one existing path and replace its terminal value."""
 
-    item_path = (*path, key)
-    if item_path in _VOLATILE_RUNTIME_PATHS:
-        return 0.0, item_path
-    if _volatile_cache_counter(path, key):
-        return 0, item_path
-    return item, item_path
-
-
-def _volatile_cache_counter(path: tuple[str, ...], key: str) -> bool:
-    """Return whether one registered phase counter records cache execution."""
-
-    return (
-        len(path) == 3
-        and path[0] == "phases"
-        and path[2] == "counters"
-        and key in _VOLATILE_CACHE_COUNTERS
+    if not path:
+        return replacement
+    if not isinstance(value, Mapping) or path[0] not in value:
+        return value
+    child = value[path[0]]
+    updated = _replace_fingerprint_path(
+        child,
+        path[1:],
+        replacement,
     )
+    if updated is child:
+        return value
+    return {**value, path[0]: updated}
 
 
 __all__ = [

@@ -88,7 +88,10 @@ def module_smell_prescriptions(module_dag: dict[str, Any], findings: list[dict[s
     for row in module_dag.get("duplicate_import_family_summary", [])[:10]:
         rows.append(prescription(
             "clean_generator_output" if row.get("generated") else "run_import_diet",
-            f"{row.get('generatorFamily') or '(handwritten)'} -> {row.get('target')}",
+            (
+                f"{row.get('generatorFamily') or '(non-generated-tag)'} -> "
+                f"{row.get('target')}"
+            ),
             confidence="medium",
             priority=35,
             evidence=row,
@@ -103,7 +106,7 @@ def module_smell_prescriptions(module_dag: dict[str, Any], findings: list[dict[s
                 evidence=row,
             ))
     for finding in findings:
-        if finding.get("kind") == "large_handwritten_module":
+        if finding.get("kind") == "large_target_owned_module":
             rows.append(prescription(
                 "split_large_owner",
                 finding.get("subject", ""),

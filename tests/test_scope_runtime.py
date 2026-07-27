@@ -11,6 +11,7 @@ from ladon.scope import ScopePlanningError
 from ladon.scope_runtime import resolve_analysis_scope
 from ladon.cli import main
 from ladon.pipeline import RunContext, run_pipeline
+from ladon.pipeline_extraction import analysis_module_roots
 from ladon.report_v3 import build_report_v3
 from ladon.reportset_cli import positive_number_argument
 
@@ -149,6 +150,60 @@ def test_inventory_scope_needs_no_unique_top_level_root(tmp_path: Path) -> None:
     assert resolved.scope_plan.primary_modules == ("A", "B")
     assert resolved.discovery.analysis_root_module == "A"
     assert set(resolved.discovery.modules) == {"A", "B"}
+    assert resolved.scope_plan.report_anchor == "A"
+    assert resolved.scope_plan.resolved_navigation_roots == ()
+    assert (
+        resolved.scope_plan.to_payload()["navigationRoots"]["status"]
+        == "not_requested"
+    )
+    context = RunContext(repo_root=repo)
+    context.scope_plan = resolved.scope_plan
+    assert analysis_module_roots(context, resolved.discovery) == ()
+
+
+def test_explicit_inventory_navigation_root_is_auxiliary(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "A.lean").write_text("def a : Nat := 1\n", encoding="utf-8")
+    (repo / "B.lean").write_text("def b : Nat := 2\n", encoding="utf-8")
+
+    resolved = resolve_analysis_scope(
+        repo,
+        scope_kind="inventory",
+        navigation_roots=("B",),
+        use_cache=False,
+    )
+    context = RunContext(repo_root=repo)
+    context.scope_plan = resolved.scope_plan
+
+    assert resolved.scope_plan.primary_modules == ("A", "B")
+    assert resolved.scope_plan.requested_selection_roots == ()
+    assert resolved.scope_plan.resolved_selection_roots == ()
+    assert resolved.scope_plan.requested_navigation_roots == ("B",)
+    assert resolved.scope_plan.resolved_navigation_roots == ("B",)
+    assert resolved.discovery.analysis_root_module == "A"
+    assert analysis_module_roots(context, resolved.discovery) == ("B",)
+
+
+def test_unresolved_inventory_navigation_root_is_not_replaced(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "A.lean").write_text("def a : Nat := 1\n", encoding="utf-8")
+
+    with pytest.raises(
+        ScopePlanningError,
+        match="does not resolve through the source index",
+    ):
+        resolve_analysis_scope(
+            repo,
+            scope_kind="inventory",
+            navigation_roots=("Missing",),
+            use_cache=False,
+        )
 
 
 def test_pipeline_uses_every_explicit_multi_root_for_dag_reachability(

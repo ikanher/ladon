@@ -16,12 +16,14 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import PurePosixPath
-from typing import Any, Iterable
+from typing import Any, Sequence
 
-from ladon.extraction import mask_lean_comments_and_strings
+from ladon.ir import LeanResourceSetting
+from ladon.lexical_mask import mask_lean_source
 
 
 MAX_SUBJECT_CHARACTERS = 256
+MAX_SUBJECT_CONTINUATION_LINES = 4
 LEXICAL_AUTHORITY = "lexical_text"
 CHECK_NONCLAIM = (
     "Lexical #check intent only; not name resolution, elaboration, proof "
@@ -41,19 +43,21 @@ RESULT_UNAVAILABLE_NONCLAIM = (
 )
 
 _CHECK_RE = re.compile(
-    r"(?m)^[ \t]*(?P<keyword>#check)(?=[ \t]|$)(?P<subject>[^\n]*)"
+    r"(?m)^[ \t]*(?P<keyword>#check)(?=[ \t]|$)(?P<tail>[^\n]*)"
 )
 _PRINT_AXIOMS_RE = re.compile(
     r"(?m)^[ \t]*(?P<keyword>#print[ \t]+axioms)(?=[ \t]|$)"
-    r"(?P<subject>[^\n]*)"
+    r"(?P<tail>[^\n]*)"
 )
-_RESOURCE_RE = re.compile(
-    r"(?m)^[ \t]*(?P<keyword>set_option)[ \t]+"
-    r"(?P<option>maxHeartbeats|maxRecDepth)(?=[ \t]|$)"
-    r"(?P<body>[^\n]*)"
+_BARE_SUBJECT_RE = re.compile(
+    r"(?:_root_\.)?[^\W\d][\w']*(?:\.[^\W\d][\w']*)*",
+    re.UNICODE,
 )
-_IN_TOKEN_RE = re.compile(r"(?:^|\s)in(?:\s|$)")
-_NUMERIC_RE = re.compile(r"[0-9]+")
+_CONTINUATION_BOUNDARY_RE = re.compile(
+    r"(?:#check|#print|set_option|import|namespace|section|end|mutual|"
+    r"theorem|lemma|def|abbrev|instance|structure|class|inductive|"
+    r"opaque|axiom|constant)\b"
+)
 
 
 @dataclass(frozen=True)
@@ -101,6 +105,15 @@ class AuditDiagnostic:
 
 
 @dataclass(frozen=True)
+class _AuditSubject:
+    """One bounded subject parse and its command-range endpoint."""
+
+    text: str
+    end_offset: int
+    diagnostic: AuditDiagnostic | None
+
+
+@dataclass(frozen=True)
 class AuditCommand:
     """A bounded lexical ``#check`` or ``#print axioms`` command."""
 
@@ -145,6 +158,18 @@ class AuditCommand:
             "referencedOwner": self.referenced_owner,
             "referencedPopulation": None,
             "referencedBackend": None,
+            "candidateStatus": "unavailable",
+            "candidateMatchCount": 0,
+            "candidateMatches": [],
+            "candidateDeclarationId": None,
+            "candidateReferencedDeclaration": None,
+            "candidateReferencedOwner": None,
+            "candidateAuthority": None,
+            "candidateSourceIndexFingerprint": None,
+            "candidateCoverage": None,
+            "candidateNonclaim": (
+                "No lexical source-index candidate join has been attached."
+            ),
             "resultStatus": self.result_status,
             "resultBackend": None,
             "resultAuthority": self.result_authority,
@@ -232,44 +257,64 @@ def extract_audit_surface(
     *,
     declaration_count: int,
     subject_limit: int = MAX_SUBJECT_CHARACTERS,
+    resource_settings: Sequence[LeanResourceSetting] = (),
 ) -> AuditSurface:
-    """Extract bounded audit facts without invoking Lean."""
+    """Extract audit commands and adapt canonical indexed resource settings."""
+
+    normalized_module = _normalized_module(module)
+    normalized_path = _normalized_relative_path(path)
+    commands = scan_audit_commands(
+        normalized_module,
+        normalized_path,
+        text,
+        mask_lean_source(text).lexical,
+        subject_limit=subject_limit,
+    )
+    return audit_surface_from_index(
+        normalized_module,
+        normalized_path,
+        declaration_count=declaration_count,
+        audit_commands=commands,
+        resource_settings=resource_settings,
+    )
+
+
+def audit_surface_from_index(
+    module: str,
+    path: str,
+    *,
+    declaration_count: int,
+    audit_commands: Sequence[AuditCommand] = (),
+    resource_settings: Sequence[LeanResourceSetting] = (),
+) -> AuditSurface:
+    """Adapt canonical source-index rows without reopening or rescanning source."""
 
     normalized_module = _normalized_module(module)
     normalized_path = _normalized_relative_path(path)
     if declaration_count < 0:
         raise ValueError("declaration_count must be non-negative")
-    if subject_limit < 1:
-        raise ValueError("subject_limit must be positive")
-    if not audit_surface_candidate(text):
-        return AuditSurface(
-            module=normalized_module,
-            path=normalized_path,
-            declaration_count=declaration_count,
-            command_only=False,
-            commands=(),
-            resource_directives=(),
-        )
-    masked = mask_lean_comments_and_strings(text)
     commands = tuple(
         sorted(
-            _audit_commands(
-                normalized_module,
-                normalized_path,
-                text,
-                masked,
-                subject_limit,
+            (
+                _validated_audit_command(
+                    command,
+                    module=normalized_module,
+                    path=normalized_path,
+                )
+                for command in audit_commands
             ),
             key=_row_sort_key,
         )
     )
     directives = tuple(
         sorted(
-            _resource_directives(
-                normalized_module,
-                normalized_path,
-                text,
-                masked,
+            (
+                _resource_directive(
+                    setting,
+                    module=normalized_module,
+                    path=normalized_path,
+                )
+                for setting in resource_settings
             ),
             key=_row_sort_key,
         )
@@ -287,23 +332,25 @@ def extract_audit_surface(
 def audit_surface_candidate(text: str) -> bool:
     """Cheaply exclude sources that cannot contain a supported audit surface."""
 
-    return (
-        "#check" in text
-        or "#print" in text
-        or "maxHeartbeats" in text
-        or "maxRecDepth" in text
-    )
+    return "#check" in text or "#print" in text
 
 
-def _audit_commands(
+def scan_audit_commands(
     module: str,
     path: str,
     text: str,
     masked: str,
-    subject_limit: int,
-) -> Iterable[AuditCommand]:
-    """Yield supported commands in stable source order."""
+    *,
+    subject_limit: int = MAX_SUBJECT_CHARACTERS,
+) -> tuple[AuditCommand, ...]:
+    """Scan one already-masked source into canonical audit-command rows."""
 
+    normalized_module = _normalized_module(module)
+    normalized_path = _normalized_relative_path(path)
+    if len(masked) != len(text):
+        raise ValueError("audit-command source mask must preserve byte offsets")
+    if subject_limit < 1:
+        raise ValueError("subject_limit must be positive")
     matches = [
         ("check", match, CHECK_NONCLAIM)
         for match in _CHECK_RE.finditer(masked)
@@ -312,10 +359,10 @@ def _audit_commands(
         ("print_axioms", match, AXIOM_NONCLAIM)
         for match in _PRINT_AXIOMS_RE.finditer(masked)
     )
-    for kind, match, nonclaim in sorted(matches, key=lambda row: row[1].start()):
-        yield _audit_command(
-            module,
-            path,
+    return tuple(
+        _audit_command(
+            normalized_module,
+            normalized_path,
             text,
             masked,
             kind,
@@ -323,6 +370,24 @@ def _audit_commands(
             nonclaim,
             subject_limit,
         )
+        for kind, match, nonclaim in sorted(
+            matches,
+            key=lambda row: row[1].start(),
+        )
+    )
+
+
+def _validated_audit_command(
+    command: AuditCommand,
+    *,
+    module: str,
+    path: str,
+) -> AuditCommand:
+    """Reject canonical rows attached to a different module or source path."""
+
+    if command.module != module or command.path != path:
+        raise ValueError("canonical audit command does not belong to the audit surface")
+    return command
 
 
 def _audit_command(
@@ -337,16 +402,12 @@ def _audit_command(
 ) -> AuditCommand:
     """Build one typed command from an offset-preserving match."""
 
-    full_subject = _visible_text(
-        text,
-        masked,
-        match.start("subject"),
-        match.end("subject"),
-    )
+    parsed = _command_subject(text, masked, match)
+    full_subject = parsed.text
     subject, truncated = _bounded_text(full_subject, subject_limit)
-    diagnostic = _subject_diagnostic(full_subject)
+    diagnostic = parsed.diagnostic
     start = match.start("keyword")
-    end = _visible_end(masked, start, match.end())
+    end = parsed.end_offset
     source_range = _source_range(masked, start, end)
     identifier = _stable_id(
         "audit",
@@ -380,73 +441,178 @@ def _audit_command(
     )
 
 
-def _resource_directives(
-    module: str,
-    path: str,
+def _command_subject(
     text: str,
     masked: str,
-) -> Iterable[ResourceDirective]:
-    """Yield supported numeric or explicitly unparsed option directives."""
+    match: re.Match[str],
+) -> _AuditSubject:
+    """Parse a same-line or one-line bare declaration subject."""
 
-    for match in _RESOURCE_RE.finditer(masked):
-        option = match.group("option")
-        body = _visible_text(text, masked, match.start("body"), match.end("body"))
-        raw_value, lexical_scope = _directive_value_and_scope(body)
-        numeric_value = (
-            int(raw_value) if _NUMERIC_RE.fullmatch(raw_value) else None
+    tail_start = match.start("tail")
+    tail_end = match.end("tail")
+    same_line = _visible_text(text, masked, tail_start, tail_end)
+    if same_line:
+        return _classified_subject(
+            same_line,
+            _visible_end(masked, match.start("keyword"), tail_end),
+            multiline=False,
         )
-        diagnostic = _resource_diagnostic(option, raw_value)
-        start = match.start("keyword")
-        end = _visible_end(masked, start, match.end())
-        source_range = _source_range(masked, start, end)
-        yield ResourceDirective(
-            identifier=_stable_id(
-                "resource",
-                {
-                    "module": module,
-                    "option": option,
-                    "line": source_range.start.line,
-                    "column": source_range.start.column,
-                    "rawValue": raw_value,
-                },
+    continuation = _continuation_range(text, masked, tail_end)
+    if continuation is None:
+        return _AuditSubject(
+            text="",
+            end_offset=_original_visible_end(
+                text,
+                match.start("keyword"),
+                tail_end,
             ),
-            option=option,
-            module=module,
-            path=path,
-            source_range=source_range,
-            raw_value=raw_value,
-            numeric_value=numeric_value,
-            normalized_meaning=_resource_meaning(option, numeric_value),
-            lexical_scope=lexical_scope,
-            status="unparsed" if diagnostic else "complete",
-            diagnostics=(diagnostic,) if diagnostic else (),
+            diagnostic=_missing_subject_diagnostic(),
         )
+    continuation_start, continuation_end = continuation
+    subject = _visible_text(
+        text,
+        masked,
+        continuation_start,
+        continuation_end,
+    )
+    if _BARE_SUBJECT_RE.fullmatch(subject):
+        return _AuditSubject(
+            text=subject,
+            end_offset=_visible_end(
+                masked,
+                continuation_start,
+                continuation_end,
+            ),
+            diagnostic=None,
+        )
+    return _AuditSubject(
+        text=subject,
+        end_offset=_original_visible_end(
+            text,
+            match.start("keyword"),
+            continuation_end,
+        ),
+        diagnostic=_unsupported_subject_diagnostic(multiline=True),
+    )
 
 
-def _directive_value_and_scope(body: str) -> tuple[str, str]:
-    """Separate a bounded option value from an optional ``in`` scope."""
+def _classified_subject(
+    subject: str,
+    end_offset: int,
+    *,
+    multiline: bool,
+) -> _AuditSubject:
+    """Classify one non-empty normalized subject conservatively."""
 
-    scope_match = _IN_TOKEN_RE.search(body)
-    if scope_match is None:
-        return body.strip(), "module"
-    return body[:scope_match.start()].strip(), "command_local"
+    diagnostic = (
+        None
+        if _BARE_SUBJECT_RE.fullmatch(subject)
+        else _unsupported_subject_diagnostic(multiline=multiline)
+    )
+    return _AuditSubject(subject, end_offset, diagnostic)
 
 
-def _resource_meaning(option: str, value: int | None) -> str | None:
-    """Normalize only meanings established by the supported lexical contract."""
+def _continuation_range(
+    text: str,
+    masked: str,
+    line_end: int,
+) -> tuple[int, int] | None:
+    """Return one bounded continuation envelope without crossing a command."""
 
-    if value is None:
+    if line_end >= len(masked) or masked[line_end] != "\n":
         return None
-    if option == "maxHeartbeats" and value == 0:
-        return "unlimited"
-    return "finite"
+    start = line_end + 1
+    first_end = _line_end(masked, start)
+    first_visible = masked[start:first_end].strip()
+    if _CONTINUATION_BOUNDARY_RE.match(first_visible):
+        return None
+    if not first_visible:
+        return (
+            (start, first_end)
+            if text[start:first_end].strip()
+            else None
+        )
+    if _BARE_SUBJECT_RE.fullmatch(first_visible):
+        return start, first_end
+    return start, _unsupported_continuation_end(masked, start)
 
 
-def _subject_diagnostic(subject: str) -> AuditDiagnostic | None:
+def _unsupported_continuation_end(masked: str, start: int) -> int:
+    """Bound an unsupported multiline expression for source navigation."""
+
+    end = _line_end(masked, start)
+    cursor = end + int(end < len(masked) and masked[end] == "\n")
+    lines = 1
+    while cursor < len(masked) and lines < MAX_SUBJECT_CONTINUATION_LINES:
+        candidate_end = _line_end(masked, cursor)
+        line = masked[cursor:candidate_end]
+        visible = line.strip()
+        if visible and (
+            not line[:1].isspace()
+            or _CONTINUATION_BOUNDARY_RE.match(visible)
+        ):
+            break
+        end = candidate_end
+        cursor = candidate_end + int(
+            candidate_end < len(masked)
+            and masked[candidate_end] == "\n"
+        )
+        lines += 1
+    return end
+
+
+def _line_end(text: str, start: int) -> int:
+    """Return the exclusive end of the physical line at ``start``."""
+
+    end = text.find("\n", start)
+    return len(text) if end < 0 else end
+
+
+def _resource_directive(
+    setting: LeanResourceSetting,
+    *,
+    module: str,
+    path: str,
+) -> ResourceDirective:
+    """Adapt one canonical source-index row without reparsing its source."""
+
+    if setting.module != module or setting.path != path:
+        raise ValueError(
+            "canonical resource setting does not belong to the audit surface"
+        )
+    source_range = SourceRange(
+        start=SourcePosition(
+            line=setting.line,
+            column=setting.column,
+            offset=setting.start_offset,
+        ),
+        end=SourcePosition(
+            line=setting.line,
+            column=setting.column + setting.end_offset - setting.start_offset,
+            offset=setting.end_offset,
+        ),
+    )
+    diagnostic = _resource_diagnostic(setting)
+    return ResourceDirective(
+        identifier=setting.identifier,
+        option=setting.option,
+        module=setting.module,
+        path=setting.path,
+        source_range=source_range,
+        raw_value=setting.raw_value,
+        numeric_value=setting.numeric_value,
+        normalized_meaning=setting.normalized_meaning,
+        lexical_scope=setting.lexical_scope,
+        status=setting.status,
+        diagnostics=(diagnostic,) if diagnostic else (),
+        authority=setting.authority,
+        nonclaim=setting.nonclaim,
+    )
+
+
+def _missing_subject_diagnostic() -> AuditDiagnostic:
     """Explain why a detected command has no safely extracted subject."""
 
-    if subject:
-        return None
     return AuditDiagnostic(
         code="audit.subject_unparsed",
         message=(
@@ -456,20 +622,34 @@ def _subject_diagnostic(subject: str) -> AuditDiagnostic | None:
     )
 
 
-def _resource_diagnostic(
-    option: str,
-    raw_value: str,
-) -> AuditDiagnostic | None:
-    """Return a fail-closed diagnostic for unsupported option expressions."""
+def _unsupported_subject_diagnostic(
+    *,
+    multiline: bool,
+) -> AuditDiagnostic:
+    """Return a structured reason for a non-bare subject expression."""
 
-    if _NUMERIC_RE.fullmatch(raw_value):
+    placement = "multiline " if multiline else ""
+    return AuditDiagnostic(
+        code="audit.subject_syntax_unsupported",
+        message=(
+            f"The bounded lexical scanner retained the {placement}command "
+            "range but supports only one bare declaration subject"
+        ),
+    )
+
+
+def _resource_diagnostic(
+    setting: LeanResourceSetting,
+) -> AuditDiagnostic | None:
+    """Adapt the canonical fail-closed normalization reason."""
+
+    if setting.status == "parsed":
         return None
     return AuditDiagnostic(
         code="audit.resource_value_unparsed",
         message=(
-            f"{option} requires one literal non-negative integer in the "
-            "bounded lexical surface; the value was retained without "
-            "normalization"
+            setting.reason
+            or f"{setting.option} resource normalization is unavailable"
         ),
     )
 
@@ -493,6 +673,14 @@ def _visible_end(masked: str, start: int, end: int) -> int:
     """Return an exclusive range end with masked trailing trivia removed."""
 
     while end > start and masked[end - 1].isspace():
+        end -= 1
+    return end
+
+
+def _original_visible_end(text: str, start: int, end: int) -> int:
+    """Trim source whitespace while retaining unsupported literal syntax."""
+
+    while end > start and text[end - 1].isspace():
         end -= 1
     return end
 

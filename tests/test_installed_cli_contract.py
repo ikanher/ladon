@@ -25,6 +25,10 @@ from installed_signal_contract import (
     assert_installed_text_signal_contract,
     fake_batch_lake_script,
 )
+from installed_query_contract import (
+    assert_installed_exhaustive_query_contract,
+    assert_installed_query_help_contract,
+)
 
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
@@ -632,7 +636,10 @@ def test_installed_runset_to_complete_reportset_workflow(
     assert json.loads(atlas_path.read_text(encoding="utf-8"))["schema"] == (
         "ladon-report-atlas-v1"
     )
-    assert isinstance(json.loads(query_path.read_text(encoding="utf-8")), list)
+    query = json.loads(query_path.read_text(encoding="utf-8"))
+    assert query["schema"] == "ladon-atlas-query-result-v1"
+    assert query["status"] in {"complete", "non_exhaustive"}
+    assert isinstance(query["rows"], list)
     assert json.loads(diff_path.read_text(encoding="utf-8"))["schema"] == (
         "ladon-atlas-diff-v1"
     )
@@ -643,6 +650,19 @@ def test_installed_runset_to_complete_reportset_workflow(
     assert generated_cards.read_text(encoding="utf-8").startswith(
         "# Ladon Atlas Reviewer Cards"
     )
+
+
+def test_installed_query_exhaustive_accepts_exact_complete_coverage(
+    tmp_path: Path,
+) -> None:
+    assert_installed_exhaustive_query_contract(
+        analyzer_command(),
+        tmp_path,
+    )
+
+
+def test_installed_query_help_documents_exhaustive_authority() -> None:
+    assert_installed_query_help_contract(analyzer_command())
 
 
 # Preview and findings exercise the ordinary inspection surface.

@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "ladon.mf-detection-integrity.2026-07-26",
+  "goal": "Apply the Matrix-Factorization detection-integrity umbrella and its five child changes through portable acceptance gates.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "governance_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "theorem_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.packet_setup",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "check.packet_integrity",
+        "check.packet_hygiene"
+      ],
+      "commandRefs": [
+        "openspec validate --all --strict",
+        "uv run --locked python scripts/ladon_openspec_backlog.py --check",
+        "uv run --locked python scripts/ladon_openspec_hygiene.py --check"
+      ]
+    },
+    {
+      "stepId": "step.coverage_foundation",
+      "status": "completed",
+      "prerequisites": [
+        "step.packet_setup"
+      ],
+      "evidenceRefs": [
+        "check.coverage_foundation",
+        "check.python_quality",
+        "check.installed_distribution"
+      ],
+      "commandRefs": [
+        "uv run --locked pytest -q tests/test_coverage.py tests/test_snapshot.py tests/test_source_index_coverage.py tests/test_report_coverage.py tests/test_report_coverage_adapter.py tests/test_atlas.py",
+        "uv run --locked python scripts/python_quality.py --strict",
+        "uv run --locked python scripts/installed_distribution_smoke.py --candidate /home/codex/projects/ladon --package-resource ladon:schemas/ladon-report-v2.schema.json --package-resource ladon:schemas/ladon-report-v3.schema.json --package-resource ladon:schemas/ladon-benchmark-manifest-v1.schema.json"
+      ]
+    },
+    {
+      "stepId": "step.scope_and_join",
+      "status": "completed",
+      "prerequisites": [
+        "step.coverage_foundation"
+      ],
+      "evidenceRefs": [
+        "check.full_python",
+        "check.python_312",
+        "check.mf_observation"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/python_quality.py --strict",
+        "PYTHONDONTWRITEBYTECODE=1 uv run --isolated --locked --python 3.12 pytest -q -p no:cacheprovider"
+      ]
+    },
+    {
+      "stepId": "step.declaration_and_audit",
+      "status": "completed",
+      "prerequisites": [
+        "step.scope_and_join"
+      ],
+      "evidenceRefs": [
+        "check.full_python",
+        "check.installed_distribution",
+        "check.mf_observation"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/python_quality.py --strict",
+        "uv run --locked python scripts/installed_distribution_smoke.py --candidate /home/codex/projects/ladon --package-resource ladon:schemas/ladon-report-v3.schema.json"
+      ]
+    },
+    {
+      "stepId": "step.generated_candidates",
+      "status": "completed",
+      "prerequisites": [
+        "step.declaration_and_audit"
+      ],
+      "evidenceRefs": [
+        "check.full_python",
+        "check.large_inventory",
+        "check.mf_observation"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/python_quality.py --strict",
+        "uv run --locked python scripts/large_inventory_gate.py --candidate /home/codex/projects/ladon --samples 3 --output /tmp/ladon-mf-umbrella-large-inventory-final-profiled.json"
+      ]
+    },
+    {
+      "stepId": "step.analysis_inspection",
+      "status": "completed",
+      "prerequisites": [
+        "step.generated_candidates"
+      ],
+      "evidenceRefs": [
+        "check.full_python",
+        "check.installed_distribution",
+        "check.authority_routes"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/python_quality.py --strict",
+        "uv run --locked python scripts/installed_distribution_smoke.py --candidate /home/codex/projects/ladon"
+      ]
+    },
+    {
+      "stepId": "step.snapshot_and_regions",
+      "status": "completed",
+      "prerequisites": [
+        "step.analysis_inspection"
+      ],
+      "evidenceRefs": [
+        "check.authority_routes",
+        "check.large_inventory",
+        "check.mf_observation"
+      ],
+      "commandRefs": [
+        "uv run --locked pytest -q tests/test_report_projection_route_integrity.py",
+        "uv run --locked python scripts/large_inventory_gate.py --candidate /home/codex/projects/ladon --samples 3 --output /tmp/ladon-mf-umbrella-large-inventory-final-profiled.json"
+      ]
+    },
+    {
+      "stepId": "step.acceptance",
+      "status": "completed",
+      "prerequisites": [
+        "step.snapshot_and_regions"
+      ],
+      "evidenceRefs": [
+        "check.full_python",
+        "check.python_312",
+        "check.installed_distribution",
+        "check.large_inventory",
+        "check.mf_observation",
+        "check.packet_integrity",
+        "check.packet_hygiene"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/python_quality.py --strict",
+        "PYTHONDONTWRITEBYTECODE=1 uv run --isolated --locked --python 3.12 pytest -q -p no:cacheprovider",
+        "openspec validate --all --strict"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.packet_integrity",
+      "command": "openspec validate --all --strict",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null,
+      "evidenceSummary": "All six active packet changes and the complete 104-change OpenSpec inventory validated strictly."
+    },
+    {
+      "checkId": "check.packet_hygiene",
+      "command": "uv run --locked python scripts/ladon_openspec_backlog.py --check && uv run --locked python scripts/ladon_openspec_hygiene.py --check && parse dependency ledger && compare all five standalone/umbrella specs && git diff --check",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null,
+      "evidenceSummary": "Backlog findings and hygiene drift were zero; the ledger parsed; all five specs matched; tracked diff and explicit untracked trailing-whitespace checks were clean."
+    },
+    {
+      "checkId": "check.coverage_foundation",
+      "command": "uv run --locked pytest -q tests/test_coverage.py tests/test_snapshot.py tests/test_source_index_coverage.py tests/test_report_coverage.py tests/test_report_coverage_adapter.py tests/test_atlas.py",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null
+    },
+    {
+      "checkId": "check.authority_routes",
+      "command": "uv run --locked pytest -q tests/test_report_projection_route_integrity.py",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null,
+      "evidenceSummary": "Sixteen adversarial stable-identity, fail-closed, bounded-closure, generated-member, and import-boundary route tests passed."
+    },
+    {
+      "checkId": "check.python_quality",
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null,
+      "evidenceSummary": "Strict radon/vulture and compile checks passed; 971 tests passed under Python 3.11."
+    },
+    {
+      "checkId": "check.full_python",
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null,
+      "evidenceSummary": "The complete final source state passed all 971 tests."
+    },
+    {
+      "checkId": "check.python_312",
+      "command": "PYTHONDONTWRITEBYTECODE=1 uv run --isolated --locked --python 3.12 pytest -q -p no:cacheprovider",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null,
+      "evidenceSummary": "All 971 tests passed in an isolated Python 3.12 environment; the sole warning is the existing Python 3.14 tarfile deprecation."
+    },
+    {
+      "checkId": "check.installed_distribution",
+      "command": "uv run --locked python scripts/installed_distribution_smoke.py --candidate /home/codex/projects/ladon --package-resource ladon:schemas/ladon-report-v2.schema.json --package-resource ladon:schemas/ladon-report-v3.schema.json --package-resource ladon:schemas/ladon-benchmark-manifest-v1.schema.json",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null,
+      "evidenceSummary": "A fresh sdist and wheel built outside the checkout; installation, metadata, entry points, 30 installed-CLI tests, portable analysis, and all requested resources passed."
+    },
+    {
+      "checkId": "check.large_inventory",
+      "command": "uv run --locked python scripts/large_inventory_gate.py --candidate /home/codex/projects/ladon --samples 3 --output /tmp/ladon-mf-umbrella-large-inventory-final-profiled.json",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null,
+      "evidenceSummary": "Artifact 367f2793b834c880e691798b82198f894b0365e83d196ab2861b3fbcd836aa29 passed all 36 supported product checks, six-run determinism, and cold-rebuild/warm-hit contracts; reference-job labeling was false only because this host is Ubuntu 24.10 with 12 CPUs rather than Ubuntu 24.04 with 4 CPUs."
+    },
+    {
+      "checkId": "check.mf_observation",
+      "command": "uv run --locked ladon --repo-root /home/codex/projects/lean/matrix-factorization --root Mf --scope inventory --cache-dir /tmp/ladon-mf-navigation-e2e.y9yiEo/cache --extraction-backend text --report-version v3 --projection review --progress json --emit json=/tmp/ladon-mf-navigation-e2e.y9yiEo/report-review-final-profiled-exact.json --emit text=/tmp/ladon-mf-navigation-e2e.y9yiEo/report-review-final-profiled-exact.txt",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": null,
+      "evidenceSummary": "The target revision, toolchain, 1,550-record status hash, 2,658-file Mf manifest, and Ladon source fingerprint matched before/after. The schema, snapshot, all seven inspection nouns, canonical and coverage routes, eight-signal audit region, 313 audit candidate rows, and 34-mechanism proof surface validated. A yappi-guided inverse join and ignored-tree pruning reduced exact warm wall time from 31.25 to 14.32 seconds without changing substantive report fields."
+    }
+  ],
+  "blockers": [],
+  "replayBoundary": {
+    "packetLocalReplay": false,
+    "externalEvidenceIncluded": true
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not Lean theorem or kernel evidence.",
+    "The loop must not rely on chat history as completed-step truth.",
+    "Matrix-Factorization remains optional observational evidence and is not portable CI authority.",
+    "The live target changed outside the final observation window; only matching within-run identities support the read-only claim.",
+    "The local host is not the declared large-inventory reference job."
+  ]
+}

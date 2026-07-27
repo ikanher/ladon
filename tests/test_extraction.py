@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 from pathlib import Path
 
 import ladon.extraction as extraction
@@ -10,6 +11,10 @@ from ladon.extraction import (
     parse_import_sites,
     parse_lean_module,
     parse_text_declarations,
+)
+from ladon.lexical_declarations import (
+    normalize_declaration_block,
+    normalize_declaration_source_shape,
 )
 
 
@@ -117,15 +122,15 @@ theorem kept : True := by trivial
 """,
         encoding="utf-8",
     )
-    original = extraction.mask_lean_comments_and_strings
+    original = extraction.mask_lean_source
     calls = 0
 
-    def counted(text: str) -> str:
+    def counted(text: str) -> extraction.LeanSourceMasks:
         nonlocal calls
         calls += 1
         return original(text)
 
-    monkeypatch.setattr(extraction, "mask_lean_comments_and_strings", counted)
+    monkeypatch.setattr(extraction, "mask_lean_source", counted)
 
     parsed = parse_lean_module(tmp_path, root)
 
@@ -134,11 +139,15 @@ theorem kept : True := by trivial
     assert parsed.declarations == ("kept",)
 
 
-def test_parse_lean_module_tags_generated_files_from_generic_conventions(tmp_path: Path) -> None:
+def test_parse_lean_module_tags_generated_files_from_generic_conventions(
+    tmp_path: Path,
+) -> None:
     generated = tmp_path / "GeneratedRoute.lean"
     handwritten = tmp_path / "Owner.lean"
     generated.write_text("def generatedValue : Nat := 1\n", encoding="utf-8")
-    handwritten.write_text("-- owner module\ndef ownerValue : Nat := 1\n", encoding="utf-8")
+    handwritten.write_text(
+        "-- owner module\ndef ownerValue : Nat := 1\n", encoding="utf-8"
+    )
 
     generated_module = parse_lean_module(tmp_path, generated)
     handwritten_module = parse_lean_module(tmp_path, handwritten)
@@ -147,7 +156,9 @@ def test_parse_lean_module_tags_generated_files_from_generic_conventions(tmp_pat
     assert handwritten_module.tags == ()
 
 
-def test_parse_lean_module_records_lexical_markers_without_comment_trust_false_positives(tmp_path: Path) -> None:
+def test_parse_lean_module_records_lexical_markers_without_comment_trust_false_positives(
+    tmp_path: Path,
+) -> None:
     module = tmp_path / "Owner.lean"
     module.write_text(
         """
@@ -166,6 +177,37 @@ theorem owner : True := by
         ("todo", 2),
         ("axiom", 4),
         ("admit", 6),
+    ]
+
+
+def test_trailing_mask_trim_preserves_final_block_and_comment_markers(
+    tmp_path: Path,
+) -> None:
+    text = """\
+import Owner.Core
+theorem final_owner : True := by trivial
+-- TODO: trailing review note
+-- theorem comment_only : False := by contradiction
+
+"""
+    path = tmp_path / "Owner.lean"
+    path.write_text(text, encoding="utf-8")
+
+    parsed = parse_lean_module(tmp_path, path)
+    declaration = parsed.declaration_evidence[0]
+    block = text[declaration.block_start_offset :]
+
+    assert parsed.imports == ("Owner.Core",)
+    assert parsed.declarations == ("final_owner",)
+    assert declaration.block_end_offset == len(text)
+    assert declaration.normalized_block_sha256 == hashlib.sha256(
+        normalize_declaration_block(block).encode("utf-8")
+    ).hexdigest()
+    assert declaration.normalized_source_shape_sha256 == hashlib.sha256(
+        normalize_declaration_source_shape(block).encode("utf-8")
+    ).hexdigest()
+    assert [(row.kind, row.line) for row in parsed.lexical_markers] == [
+        ("todo", 3)
     ]
 
 
@@ -200,7 +242,7 @@ syntax "custom" : term
     assert parsed.declarations == tuple(row.name for row in rows)
     assert all(row.authority == "lexical_text" for row in rows)
     assert all("not a complete Lean parse" in row.nonclaim for row in rows)
-    assert text[rows[0].start_offset:rows[0].end_offset] == "quoted"
+    assert text[rows[0].start_offset : rows[0].end_offset] == "quoted"
 
 
 def test_discover_modules_accepts_directory_root(tmp_path: Path) -> None:

@@ -27,6 +27,10 @@ from ladon.cli_execution import (
     validate_output_destinations,
     write_output_file,
 )
+from ladon.analysis.generated_family_candidate_profile import (
+    CandidateProfileError,
+    load_explicit_candidate_profile,
+)
 from ladon.configuration import ConfigurationError, validate_policy_configuration
 from ladon.analysis.population_calibration import PolicyValidationError
 from ladon.pipeline import (
@@ -48,6 +52,7 @@ from ladon.progress import (
     RunLimits,
 )
 from ladon.render import render_text
+from ladon.render_v3 import render_report_v3_text
 from ladon.report_contract import default_phase_disposition
 from ladon.report_v2 import (
     Diagnostic,
@@ -61,6 +66,8 @@ from ladon.report_v2 import (
 )
 from ladon.report_v3 import (
     PROJECTION_NAMES,
+    ReportV3,
+    build_report_v3,
     serialize_report_v3_bytes,
     write_report_v3_file,
 )
@@ -84,6 +91,7 @@ PUBLIC_COMMAND_HELP = """\
 commands:
   runset    Execute a versioned set of ordinary analyses.
   preview   Resolve roots, scope, policies, and costs without target execution.
+  inspect   Inspect canonical rows from one existing report or source index.
   findings  List, filter, or inspect findings from one existing report.
   atlas     Build an atlas from reports or a runset bundle.
   query     Run a canned query against an atlas SQLite database.
@@ -155,8 +163,13 @@ def build_parser() -> argparse.ArgumentParser:
             "backend loads target environments and is unsafe for untrusted repositories."
         ),
     )
-    parser.add_argument("--lean-extraction-scope", choices=["root", "inventory"], default="root")
-    parser.add_argument("--lean-cache-dir", help="Optional cache directory for Lean helper JSON payloads")
+    parser.add_argument(
+        "--lean-extraction-scope", choices=["root", "inventory"], default="root"
+    )
+    parser.add_argument(
+        "--lean-cache-dir",
+        help="Optional cache directory for Lean helper JSON payloads",
+    )
     parser.add_argument(
         "--lean-batch-size",
         type=inventory_batch_size,
@@ -197,6 +210,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--format", dest="output_format", choices=["text", "json"])
     parser.add_argument("--output", help="Report path, or - for standard output.")
+    parser.add_argument(
+        "--emit",
+        action="append",
+        default=[],
+        metavar="FORMAT=PATH",
+        help="Add an output destination; repeat for multiple report formats.",
+    )
     parser.add_argument(
         "--report-version",
         choices=["v3", "v2", "v1"],
@@ -239,6 +259,13 @@ def build_parser() -> argparse.ArgumentParser:
         help=(
             "Optional versioned JSON policy defining project-generated source "
             "families and quoted provenance."
+        ),
+    )
+    parser.add_argument(
+        "--generated-family-candidate-profile",
+        help=(
+            "Optional strict versioned profile for advisory generated-family "
+            "candidate detection."
         ),
     )
     parser.add_argument(
@@ -349,6 +376,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return execute(args)
     except (
         ConfigurationError,
+        CandidateProfileError,
         InvocationError,
         PolicyValidationError,
         ScopePlanningError,
@@ -359,8 +387,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 128 + exc.signum
     except ResourceLimitExceeded as exc:
         print(
-            f"ladon: operational failure {exc.phase}: "
-            f"resource.{exc.kind}: {exc}",
+            f"ladon: operational failure {exc.phase}: resource.{exc.kind}: {exc}",
             file=sys.stderr,
         )
         return EXIT_OPERATIONAL
@@ -377,7 +404,7 @@ def execute(args: argparse.Namespace) -> int:
     repo_root = common_preflight(args, plan)
     context = run_context(args, repo_root)
     result, build = run_requested_analysis(args, context)
-    report = result.to_report_model()
+    report = result.to_report_model(copy_phase_data=False)
     if build is not None:
         report = coerce_report_v2(
             replace_report_phase(report, build_phase_envelope(build))
@@ -473,6 +500,10 @@ def run_context(args: argparse.Namespace, repo_root: Path) -> RunContext:
         architecture_policy_path=optional_path(args.architecture_policy),
         source_pattern_policy_path=optional_path(args.source_pattern_policy),
         generated_family_policy_path=optional_path(args.generated_family_policy),
+        generated_family_candidate_profile_path=optional_path(
+            args.generated_family_candidate_profile
+        ),
+        generated_family_candidate_profile=load_candidate_profile(args),
         module_system_witness_path=optional_path(args.module_system_witness),
         import_diet_witness_path=optional_path(args.import_diet_witness),
         proof_xray_path=optional_path(args.proof_xray),
@@ -488,6 +519,13 @@ def run_context(args: argparse.Namespace, repo_root: Path) -> RunContext:
         ),
         budget=RunBudget(limits),
     )
+
+
+def load_candidate_profile(args: argparse.Namespace):
+    """Load an explicit strict candidate profile before repository analysis."""
+
+    path = optional_path(args.generated_family_candidate_profile)
+    return load_explicit_candidate_profile(path) if path is not None else None
 
 
 def run_requested_analysis(
@@ -538,11 +576,7 @@ def resource_limited_build_phase(context: RunContext) -> BuildPhase:
 
     failure = context.limit_failure or {}
     timing = next(
-        (
-            row
-            for row in reversed(context.timings)
-            if row.name == "build"
-        ),
+        (row for row in reversed(context.timings) if row.name == "build"),
         None,
     )
     return BuildPhase(
@@ -649,6 +683,8 @@ def apply_phase_dispositions(
                 disposition = "strict-rejection"
             elif (name, phase.status) in selected:
                 disposition = "selector-rejection"
+        if phase.disposition == disposition:
+            continue
         phases[name] = replace(phase, disposition=disposition)
     return replace(report, phases=phases)
 
@@ -668,6 +704,11 @@ def emit_report(
 ) -> tuple[str, ...]:
     """Render selected representations and return compatibility warnings."""
 
+    render_artifact: ReportV2 | ReportV3 = (
+        build_report_v3(payload, projection=plan.projection)
+        if plan.report_version == "v3"
+        else payload
+    )
     warnings: list[str] = []
     for target in plan.targets:
         pulse = (
@@ -682,7 +723,7 @@ def emit_report(
             pulse.start()
         try:
             selected_warnings, byte_count = emit_report_target(
-                payload,
+                render_artifact,
                 plan,
                 target,
                 budget=budget,
@@ -711,7 +752,7 @@ def emit_report(
 
 
 def emit_report_target(
-    payload: ReportV2,
+    payload: ReportV2 | ReportV3,
     plan,
     target,
     *,
@@ -728,7 +769,11 @@ def emit_report_target(
             budget,
             progress_callback=progress_callback,
         )
-    text = render_text(payload)
+    text = (
+        render_report_v3_text(payload)
+        if isinstance(payload, ReportV3)
+        else render_text(payload)
+    )
     byte_count = len(text.encode("utf-8"))
     if progress_callback is not None:
         progress_callback(byte_count)
@@ -739,7 +784,7 @@ def emit_report_target(
 
 
 def emit_json_report(
-    payload: ReportV2,
+    payload: ReportV2 | ReportV3,
     plan,
     destination: str,
     budget: RunBudget | None,
@@ -754,14 +799,12 @@ def emit_json_report(
             written = write_report_v3_file(
                 payload,
                 destination,
-                projection=plan.projection,
                 max_bytes=max_bytes,
                 progress_callback=progress_callback,
             )
             return (), written.byte_count
         serialized_v3 = serialize_report_v3_bytes(
             payload,
-            projection=plan.projection,
             max_bytes=max_bytes,
             progress_callback=progress_callback,
         )
@@ -802,15 +845,12 @@ def emit_diagnostics(
 
     if legacy:
         print(
-            "ladon: --json/--text file flags are deprecated; "
-            "use --format and --output",
+            "ladon: --json/--text file flags are deprecated; use --format and --output",
             file=sys.stderr,
         )
     for warning in warnings:
         print(f"ladon: {warning}", file=sys.stderr)
-    for selector in dict.fromkeys(
-        row["selector"] for row in policy["matches"]
-    ):
+    for selector in dict.fromkeys(row["selector"] for row in policy["matches"]):
         print(f"ladon: failure policy matched {selector}", file=sys.stderr)
 
 
@@ -841,22 +881,18 @@ def emit_operational_diagnostic(
         return
     phase = controlling_incomplete_phase(payload)
     if phase is None:
-        print("ladon: operational analysis failure; inspect the report", file=sys.stderr)
+        print(
+            "ladon: operational analysis failure; inspect the report", file=sys.stderr
+        )
         return
     first = controlling_phase_diagnostic(phase)
     identifier = (
-        first.identifier
-        if first is not None
-        else f"phase.{phase.name}.{phase.status}"
+        first.identifier if first is not None else f"phase.{phase.name}.{phase.status}"
     )
     reason = phase.reason or (
         first.message if first is not None else "required phase did not complete"
     )
-    subject = (
-        f" subject={first.subject}"
-        if first is not None and first.subject
-        else ""
-    )
+    subject = f" subject={first.subject}" if first is not None and first.subject else ""
     destinations = ", ".join(
         "stdout" if target.destination == "-" else target.destination
         for target in plan.targets
@@ -978,8 +1014,7 @@ def skip_build_requested(arguments: Sequence[str]) -> bool:
     """Detect the removed no-op flag for an actionable exit-2 migration."""
 
     return any(
-        argument == "--skip-build"
-        or argument.startswith("--skip-build=")
+        argument == "--skip-build" or argument.startswith("--skip-build=")
         for argument in arguments
     )
 

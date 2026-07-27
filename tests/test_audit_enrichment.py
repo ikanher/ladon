@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -138,10 +139,13 @@ def test_failed_helper_preserves_timeout_and_lexical_identity() -> None:
 
 
 @pytest.mark.skipif(shutil.which("lake") is None, reason="lake is unavailable")
-def test_real_helper_supplies_exact_check_and_axiom_results() -> None:
-    source_path = REAL_FIXTURE / "LadonDeclarationFixture.lean"
+def test_real_helper_supplies_exact_check_and_axiom_results(
+    tmp_path: Path,
+) -> None:
+    fixture = built_real_fixture(tmp_path)
+    source_path = fixture / "LadonDeclarationFixture.lean"
     payload = run_elaborated_helper(
-        REAL_FIXTURE,
+        fixture,
         source_path,
         "LadonDeclarationFixture",
     )
@@ -168,3 +172,24 @@ def test_real_helper_supplies_exact_check_and_axiom_results() -> None:
         "LadonDeclarationFixture.directAxiomReference"
     )
     assert "LadonDeclarationFixture.axiomKind" in axioms.axioms.items
+
+
+def built_real_fixture(tmp_path: Path) -> Path:
+    """Copy and explicitly build the Lean fixture without checkout-local state."""
+
+    fixture = tmp_path / "lean_declarations"
+    shutil.copytree(
+        REAL_FIXTURE,
+        fixture,
+        ignore=shutil.ignore_patterns(".lake"),
+    )
+    process = subprocess.run(
+        ["lake", "build"],
+        cwd=fixture,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert process.returncode == 0, process.stderr or process.stdout
+    return fixture

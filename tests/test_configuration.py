@@ -7,6 +7,7 @@ import pytest
 
 from ladon.configuration import (
     ConfigurationError,
+    policy_fingerprint_options,
     resolve_policy_configuration,
     validate_policy_configuration,
 )
@@ -145,4 +146,88 @@ def test_invalid_generated_policy_fails_preflight(tmp_path: Path) -> None:
             architecture_policy=None,
             source_pattern_policy=None,
             generated_family_policy=policy,
+        )
+
+
+def test_finite_resource_policy_is_normalized_into_fingerprint(
+    tmp_path: Path,
+) -> None:
+    policy = tmp_path / "resource-policy.json"
+    policy.write_text(
+        json.dumps(
+            {
+                "patterns": [],
+                "resourceThresholds": [
+                    {
+                        "id": "deep-recursion",
+                        "option": "maxRecDepth",
+                        "minimumValue": 100,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    resolved = resolve_policy_configuration(
+        tmp_path,
+        source_pattern_policy=policy,
+    )
+    identity = resolved["sourcePattern"]
+    fingerprint = policy_fingerprint_options(resolved)
+
+    assert identity["status"] == "selected"
+    assert identity["source"] == "explicit"
+    assert identity["resourceThresholds"] == [
+        {
+            "id": "deep-recursion",
+            "option": "maxRecDepth",
+            "minimumValue": 100,
+        }
+    ]
+    assert fingerprint["policies"]["sourcePattern"] == identity
+
+
+@pytest.mark.parametrize(
+    ("threshold", "message"),
+    [
+        (
+            {
+                "id": "zero-depth",
+                "option": "maxRecDepth",
+                "minimumValue": 0,
+            },
+            "minimumValue must be a positive integer",
+        ),
+        (
+            {
+                "id": "unsupported",
+                "option": "timeout",
+                "minimumValue": 1,
+            },
+            "option must be one of",
+        ),
+    ],
+)
+def test_invalid_finite_resource_policy_fails_preflight(
+    tmp_path: Path,
+    threshold: dict,
+    message: str,
+) -> None:
+    policy = tmp_path / "resource-policy.json"
+    policy.write_text(
+        json.dumps(
+            {
+                "patterns": [],
+                "resourceThresholds": [threshold],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ConfigurationError, match=message):
+        validate_policy_configuration(
+            tmp_path,
+            architecture_policy=None,
+            source_pattern_policy=policy,
         )
