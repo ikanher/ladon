@@ -31,6 +31,8 @@ See [Portable signal benchmarks](docs/BENCHMARKS.md) for the installed-CLI
 correctness, coverage, resource, cache, process, and report-stability gate.
 See [Report contract v3](docs/REPORT_CONTRACT_V3.md) for canonical payload
 ownership, projections, fingerprints, and bounded JSON serialization.
+See [Theorem capsules](docs/THEOREM_CAPSULES.md) for exact theorem planning,
+module-prefix packaging, clean-room Lean replay, and the guarantee boundary.
 
 ## Usage
 
@@ -71,6 +73,23 @@ cache stores helper JSON payloads by source/helper content for repeated root
 runs; it is not a sound incremental cache for indirect import changes. Loading
 target modules can execute imported initializers, so the Lean backend is not a
 safe way to analyze an untrusted repository.
+
+Theorem extraction is an explicit Lean-backed CLI workflow:
+
+```bash
+uv run --locked ladon theorem extract Fully.Qualified.theorem \
+  --repo-root /path/to/lean/project \
+  --output /tmp/theorem-capsule \
+  --verify
+```
+
+`ladon theorem plan`, `materialize`, and `replay` expose the same phases
+separately. Planning requires pinned, compiled target state and is read-only with
+respect to the checkout. Materialization writes outside the checkout. Replay
+validates and rebuilds a fresh capsule copy, then compares the exact theorem's
+toolchain-scoped structural and trust evidence. A verified capsule remains a
+locked/rebuildable module-prefix package; it is not claimed to be globally
+minimal, offline-vendored, system-hermetic, or independently proved by Ladon.
 
 ```bash
 cd <target-repo>
@@ -234,6 +253,12 @@ Supported today:
   prescription rows that route review while leaving Lean/Lake and named
   external tools authoritative;
 - pure declaration graph analysis through `ladon.analysis.declaration_graph`;
+- exact fully qualified theorem-capsule planning with an uncapped
+  repository-dependency protocol and explicit external frontier;
+- deterministic module-prefix capsule directories/archives with complete file
+  inventory, stale-input rejection, and safe transactional publication;
+- fresh-copy Lean replay with exact theorem/type/value/dependency/trust comparison
+  and a bounded machine-readable receipt;
 - additive `declaration_graph.declarations` rows with source path/range/hash,
   extraction backend/version, name-resolution method, and confidence when the
   Lean helper supplies that evidence;
@@ -250,7 +275,8 @@ Supported today:
 Not yet reintroduced:
 
 - export-surface freshness checks;
-- elaborated proof dependency extraction.
+- general report-facing transitive proof dependency extraction; theorem capsules
+  use a separate exact target protocol rather than the bounded declaration report.
 
 Optional bridge:
 

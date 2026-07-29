@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-theorem-capsule-planning",
+  "commands": [
+    "openspec validate ladon-theorem-capsule-planning --strict",
+    "uv run --locked pytest -q tests/test_theorem_capsule_planning.py tests/test_elaborated_extraction.py tests/test_declaration_surface.py tests/test_module_dag.py tests/test_snapshot.py",
+    "uv run --locked pytest -q tests/test_clean_cli.py tests/test_installed_cli_contract.py",
+    "uv run --locked python scripts/theorem_capsule_gate.py --phase planning --candidate worktree --required",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

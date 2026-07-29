@@ -89,6 +89,7 @@ UNSUPPORTED_OPTIONS = {
 }
 PUBLIC_COMMAND_HELP = """\
 commands:
+  theorem   Plan, materialize, and independently replay theorem capsules.
   runset    Execute a versioned set of ordinary analyses.
   preview   Resolve roots, scope, policies, and costs without target execution.
   inspect   Inspect canonical rows from one existing report or source index.
@@ -321,6 +322,10 @@ def selected_roots(args: argparse.Namespace) -> tuple[str, ...]:
 def delegated_command(arguments: Sequence[str]) -> int | None:
     """Dispatch an installed subcommand before parsing analysis options."""
 
+    if arguments and arguments[0] == "theorem":
+        from ladon.theorem_cli import theorem_main
+
+        return theorem_main(arguments[1:])
     if arguments and arguments[0] == "runset":
         from ladon.runset_cli import runset_main
 

@@ -12,6 +12,7 @@ import pytest
 
 from ladon.process_supervisor import (
     ProcessCancelled,
+    run_bounded_target_process,
     run_streaming_target_process,
     run_target_process,
 )
@@ -91,6 +92,84 @@ def test_target_process_drains_large_stdout_and_stderr(tmp_path: Path) -> None:
 
     assert len(result.stdout) == size
     assert len(result.stderr) == size
+
+
+def test_bounded_target_process_stops_oversized_output(tmp_path: Path) -> None:
+    result = run_bounded_target_process(
+        [
+            sys.executable,
+            "-c",
+            "import sys, time; "
+            "sys.stdout.write('x' * 2000000); sys.stdout.flush(); time.sleep(60)",
+        ],
+        cwd=tmp_path,
+        timeout_seconds=3,
+        max_output_bytes=4096,
+        terminate_grace_seconds=0.1,
+    )
+
+    assert result.output_limited is True
+    assert result.succeeded is False
+    assert len(result.stdout.encode()) <= 4096
+
+
+def test_bounded_target_process_classifies_fast_oversized_output(
+    tmp_path: Path,
+) -> None:
+    result = run_bounded_target_process(
+        [
+            sys.executable,
+            "-c",
+            "import sys; sys.stdout.write('o' * 5000); "
+            "sys.stderr.write('e' * 5000)",
+        ],
+        cwd=tmp_path,
+        timeout_seconds=3,
+        max_output_bytes=4096,
+    )
+
+    assert result.output_limited is True
+    assert len(result.stdout.encode()) + len(result.stderr.encode()) <= 4096
+
+
+def test_bounded_target_process_uses_explicit_environment(tmp_path: Path) -> None:
+    result = run_bounded_target_process(
+        [
+            sys.executable,
+            "-c",
+            "import os; print(os.environ.get('CAPSULE_TEST', 'missing'))",
+        ],
+        cwd=tmp_path,
+        timeout_seconds=3,
+        max_output_bytes=4096,
+        env={"CAPSULE_TEST": "present"},
+    )
+
+    assert result.succeeded is True
+    assert result.stdout == "present\n"
+
+
+@pytest.mark.skipif(not Path("/proc").is_dir(), reason="RSS enforcement needs /proc")
+def test_bounded_target_process_stops_process_tree_over_rss_limit(
+    tmp_path: Path,
+) -> None:
+    result = run_bounded_target_process(
+        [
+            sys.executable,
+            "-c",
+            "import time; payload = bytearray(64 * 1024 * 1024); time.sleep(60)",
+        ],
+        cwd=tmp_path,
+        timeout_seconds=3,
+        max_output_bytes=4096,
+        max_rss_bytes=16 * 1024 * 1024,
+        terminate_grace_seconds=0.1,
+    )
+
+    assert result.memory_limited is True
+    assert result.succeeded is False
+    assert result.peak_rss_bytes is not None
+    assert result.peak_rss_bytes > 16 * 1024 * 1024
 
 
 def test_streaming_process_cancellation_reaps_group(tmp_path: Path) -> None:

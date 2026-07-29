@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-theorem-capsule-materialization",
+  "commands": [
+    "openspec validate ladon-theorem-capsule-materialization --strict",
+    "uv run --locked pytest -q tests/test_theorem_capsule_materialization.py tests/test_theorem_capsule_planning.py tests/test_snapshot.py",
+    "uv run --locked pytest -q tests/test_clean_cli.py tests/test_installed_cli_contract.py",
+    "uv run --locked python scripts/theorem_capsule_gate.py --phase materialization --candidate worktree --required",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

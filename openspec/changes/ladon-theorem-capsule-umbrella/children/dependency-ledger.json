@@ -1,0 +1,107 @@
+{
+  "program": "ladon-theorem-capsule-umbrella",
+  "interfaceInvariant": "Theorem planning, materialization, replay, and combined extraction are ordinary public CLI behavior shared by people, scripts, editors, and models; no caller-specific command, default, threshold, or hidden evidence path is permitted.",
+  "guaranteeInvariant": "V1 capsules are closure-complete, locked/rebuildable module-prefix packages only after exact planning, safe materialization, and successful clean-room Lean replay. Global minimality, declaration-minimality, offline vendoring, system hermeticity, and independent Ladon proof authority are explicit nonclaims.",
+  "closureInvariant": "Semantic declaration closure and module/build closure are separate typed graphs. Bounded report projections, lexical names, copied bytes, or successful materialization alone cannot establish capsule completeness or verification.",
+  "dependencySemantics": {
+    "startAfter": "Every listed standalone change must complete before implementation of this child begins.",
+    "integrationDependsOn": "Existing owner changes whose established contracts and artifacts this child reuses; capability identities are recorded separately in existingOwners.",
+    "enables": "Later child changes allowed to start after this child's portable exit class passes."
+  },
+  "existingOwners": [
+    {
+      "ownedConcern": "lexical declaration source and exact parser command boundaries",
+      "ownerChange": "ladon-declaration-table-source-evidence-contract",
+      "capability": "ladon-declaration-source-evidence"
+    },
+    {
+      "ownedConcern": "Lean-confirmed declaration identity and direct dependency evidence",
+      "ownerChange": "ladon-elaborated-declaration-surface",
+      "capability": "ladon-elaborated-declaration-surface"
+    },
+    {
+      "ownedConcern": "module population, identity, and canonical import graph",
+      "ownerChange": "ladon-analysis-root-and-scope-contract",
+      "capability": "ladon-analysis-root-and-scope-contract"
+    },
+    {
+      "ownedConcern": "input fingerprints, report coverage, and source drift",
+      "ownerChange": "ladon-report-coverage-and-snapshot-integrity",
+      "capability": "ladon-report-coverage-and-snapshot-integrity"
+    },
+    {
+      "ownedConcern": "Lean helper supervision and process-tree limits",
+      "ownerChange": "ladon-lean-extraction-runtime-hardening",
+      "capability": "ladon-lean-extraction-runtime-hardening"
+    },
+    {
+      "ownedConcern": "installed process, stream, representation, and exit behavior",
+      "ownerChange": "ladon-cli-execution-contract",
+      "capability": "ladon-cli-execution"
+    },
+    {
+      "ownedConcern": "portable installed-candidate and adversarial fixture authority",
+      "ownerChange": "ladon-portable-benchmark-fixtures-and-signal-oracles",
+      "capability": "ladon-portable-benchmark-fixtures-and-signal-oracles"
+    }
+  ],
+  "children": [
+    {
+      "change": "ladon-theorem-capsule-planning",
+      "startAfter": [],
+      "integrationDependsOn": [
+        "ladon-declaration-table-source-evidence-contract",
+        "ladon-elaborated-declaration-surface",
+        "ladon-analysis-root-and-scope-contract",
+        "ladon-report-coverage-and-snapshot-integrity",
+        "ladon-lean-extraction-runtime-hardening",
+        "ladon-cli-execution-contract"
+      ],
+      "enables": [
+        "ladon-theorem-capsule-materialization"
+      ],
+      "exitClass": "lean-authoritative-complete-drift-bound-theorem-plan"
+    },
+    {
+      "change": "ladon-theorem-capsule-materialization",
+      "startAfter": [
+        "ladon-theorem-capsule-planning"
+      ],
+      "integrationDependsOn": [
+        "ladon-theorem-capsule-planning"
+      ],
+      "enables": [
+        "ladon-theorem-capsule-replay"
+      ],
+      "exitClass": "deterministic-path-safe-fully-inventoried-module-prefix-capsule"
+    },
+    {
+      "change": "ladon-theorem-capsule-replay",
+      "startAfter": [
+        "ladon-theorem-capsule-materialization"
+      ],
+      "integrationDependsOn": [
+        "ladon-theorem-capsule-materialization",
+        "ladon-lean-extraction-runtime-hardening",
+        "ladon-cli-execution-contract"
+      ],
+      "enables": [],
+      "exitClass": "checkout-independent-pinned-lean-replay-with-structural-receipt"
+    }
+  ],
+  "retainedExternalLanes": [
+    "declaration-level capsule slicing and deterministic irreducibility minimization",
+    "offline external dependency vendoring",
+    "system-hermetic native and operating-system dependency packaging",
+    "ladon-proof-xray-roadmap",
+    "ladon-theorem-surface-changelog"
+  ],
+  "milestoneExit": [
+    "all three child capability specs and their portable positive and negative gates pass",
+    "installed caller-neutral phase and combined CLI contracts pass",
+    "the semantic stream is complete independently of report presentation bounds",
+    "the capsule is fully inventoried and deterministic without target writes",
+    "Lean verifies the exact theorem while the original checkout is unavailable",
+    "no minimality, offline, hermeticity, axiom-freedom, or independent proof-authority overclaim"
+  ]
+}

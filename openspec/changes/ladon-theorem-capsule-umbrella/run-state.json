@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "runstate.ladon-theorem-capsule-umbrella.apply",
+  "goal": "Implement and verify exact theorem planning, deterministic capsule materialization, and checkout-independent Lean replay.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "governance_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "theorem_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.inspect",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "Matrix-Factorization source layout: 2,905 modules and 117,277 lexical theorem rows in the report-facing index",
+        "Baseline Mf.DP.rCoeff_zero plan: 92.68s and 8,508,140 KiB peak RSS"
+      ],
+      "commandRefs": [
+        "read-only Matrix-Factorization inventory and theorem selection"
+      ]
+    },
+    {
+      "stepId": "step.planning",
+      "status": "completed",
+      "prerequisites": [
+        "step.inspect"
+      ],
+      "evidenceRefs": [
+        "portable exact-name plan with more than 64 semantic nodes",
+        "versioned helper completion checksum validated independently in Python",
+        "streaming locator avoids report-facing declaration-index retention"
+      ],
+      "commandRefs": [
+        "ladon theorem plan CapsuleFixture.chosen",
+        "ladon theorem plan Mf.DP.rCoeff_zero"
+      ]
+    },
+    {
+      "stepId": "step.materialization",
+      "status": "completed",
+      "prerequisites": [
+        "step.planning"
+      ],
+      "evidenceRefs": [
+        "deterministic directory and archive fixtures",
+        "multi-source-root fixture",
+        "Matrix-Factorization 12-file capsule materialized in 0.46s at 37,136 KiB peak RSS"
+      ],
+      "commandRefs": [
+        "ladon theorem materialize --plan <plan> --output <capsule>"
+      ]
+    },
+    {
+      "stepId": "step.replay",
+      "status": "completed",
+      "prerequisites": [
+        "step.materialization"
+      ],
+      "evidenceRefs": [
+        "portable capsule verified after original checkout rename",
+        "repeat replay produced stable receipt identity",
+        "installed-wheel phase gate replay passed"
+      ],
+      "commandRefs": [
+        "ladon theorem replay <capsule>",
+        "ladon theorem extract CapsuleFixture.chosen --verify"
+      ]
+    },
+    {
+      "stepId": "step.full_gate",
+      "status": "completed",
+      "prerequisites": [
+        "step.replay"
+      ],
+      "evidenceRefs": [
+        "strict Python quality: 1,010 tests passed; radon/vulture and compileall clean",
+        "strict OpenSpec validation: 108 items passed",
+        "installed candidate wheel theorem capsule gate: PASS",
+        "child and umbrella capability specs are byte-identical"
+      ],
+      "commandRefs": [
+        "uv run --locked python scripts/python_quality.py --strict",
+        "uv run --locked python scripts/theorem_capsule_gate.py --phase all --candidate /home/codex/projects/ladon --required",
+        "openspec validate --all --strict",
+        "git diff --check"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.python-quality",
+      "status": "passed",
+      "evidence": "1,010 tests passed in 92.08s; strict radon/vulture and compileall clean"
+    },
+    {
+      "checkId": "check.installed-wheel",
+      "status": "passed",
+      "evidence": "fresh wheel install planned, materialized, and verified the portable capsule"
+    },
+    {
+      "checkId": "check.openspec",
+      "status": "passed",
+      "evidence": "umbrella, children, and global 108-item inventory validated strictly"
+    },
+    {
+      "checkId": "check.matrix-factorization",
+      "status": "passed",
+      "evidence": "Mf.DP.rCoeff_zero planned in 13.10s and materialized in 0.46s; eligible with 12 repository files, 5 external imports, and 15 locked packages"
+    }
+  ],
+  "blockers": [],
+  "replayBoundary": {
+    "packetLocalReplay": true,
+    "externalEvidenceIncluded": true
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not theorem evidence.",
+    "The loop must not rely on chat history as completed-step truth.",
+    "A materialized capsule is not verified until independent Lean replay succeeds."
+  ]
+}

@@ -11,12 +11,15 @@ import os
 import queue
 import signal
 import subprocess
+import tempfile
 import threading
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from time import monotonic
-from typing import Callable, IO, Iterator, Sequence
+from typing import Callable, IO, Iterator, Mapping, Sequence
+
+from ladon.progress import process_tree_rss_bytes
 
 
 TERMINATE_GRACE_SECONDS = 2.0
@@ -44,12 +47,20 @@ class ProcessResult:
     stderr: str
     elapsed_seconds: float
     timed_out: bool = False
+    output_limited: bool = False
+    memory_limited: bool = False
+    peak_rss_bytes: int | None = None
 
     @property
     def succeeded(self) -> bool:
         """Whether the command completed normally with status zero."""
 
-        return not self.timed_out and self.returncode == 0
+        return (
+            not self.timed_out
+            and not self.output_limited
+            and not self.memory_limited
+            and self.returncode == 0
+        )
 
 
 def run_target_process(
@@ -59,6 +70,7 @@ def run_target_process(
     timeout_seconds: float,
     cancel_event: threading.Event | None = None,
     terminate_grace_seconds: float = TERMINATE_GRACE_SECONDS,
+    env: Mapping[str, str] | None = None,
 ) -> ProcessResult:
     """Run one cancellable command with whole-process-group cleanup."""
 
@@ -74,6 +86,7 @@ def run_target_process(
         stderr=subprocess.PIPE,
         text=True,
         start_new_session=True,
+        env=dict(env) if env is not None else None,
     )
     try:
         with termination_signal_handler():
@@ -108,6 +121,184 @@ def run_target_process(
         stdout,
         stderr,
         monotonic() - started,
+    )
+
+
+def run_bounded_target_process(
+    command: Sequence[str],
+    *,
+    cwd: Path,
+    timeout_seconds: float,
+    max_output_bytes: int,
+    cancel_event: threading.Event | None = None,
+    terminate_grace_seconds: float = TERMINATE_GRACE_SECONDS,
+    env: Mapping[str, str] | None = None,
+    max_rss_bytes: int | None = None,
+) -> ProcessResult:
+    """Run a process group with file-backed, size-limited captured output."""
+
+    if timeout_seconds <= 0:
+        raise ValueError("target-process timeout must be greater than zero")
+    if max_output_bytes <= 0:
+        raise ValueError("target-process output limit must be greater than zero")
+    if max_rss_bytes is not None and max_rss_bytes <= 0:
+        raise ValueError("target-process RSS limit must be greater than zero")
+    normalized = tuple(str(part) for part in command)
+    raise_if_cancelled(cancel_event)
+    started = monotonic()
+    with tempfile.TemporaryFile() as stdout_file:
+        with tempfile.TemporaryFile() as stderr_file:
+            process = subprocess.Popen(
+                normalized,
+                cwd=cwd,
+                stdout=stdout_file,
+                stderr=stderr_file,
+                start_new_session=True,
+                env=dict(env) if env is not None else None,
+            )
+            timed_out, output_limited, memory_limited, peak_rss_bytes = (
+                _supervise_file_backed_process(
+                    process,
+                    stdout_file,
+                    stderr_file,
+                    timeout_seconds=timeout_seconds,
+                    max_output_bytes=max_output_bytes,
+                    started=started,
+                    cancel_event=cancel_event,
+                    terminate_grace_seconds=terminate_grace_seconds,
+                    max_rss_bytes=max_rss_bytes,
+                )
+            )
+            stdout, stderr = _read_bounded_outputs(
+                stdout_file,
+                stderr_file,
+                max_output_bytes,
+            )
+    return ProcessResult(
+        normalized,
+        process.returncode if process.returncode is not None else -signal.SIGKILL,
+        stdout,
+        stderr,
+        monotonic() - started,
+        timed_out=timed_out,
+        output_limited=output_limited,
+        memory_limited=memory_limited,
+        peak_rss_bytes=peak_rss_bytes,
+    )
+
+
+def _supervise_file_backed_process(
+    process: subprocess.Popen[bytes],
+    stdout_file: IO[bytes],
+    stderr_file: IO[bytes],
+    *,
+    timeout_seconds: float,
+    max_output_bytes: int,
+    started: float,
+    cancel_event: threading.Event | None,
+    terminate_grace_seconds: float,
+    max_rss_bytes: int | None,
+) -> tuple[bool, bool, bool, int | None]:
+    try:
+        with termination_signal_handler():
+            limits = _wait_for_file_backed_process(
+                process,
+                stdout_file,
+                stderr_file,
+                timeout_seconds=timeout_seconds,
+                max_output_bytes=max_output_bytes,
+                max_rss_bytes=max_rss_bytes,
+                started=started,
+                cancel_event=cancel_event,
+            )
+    except BaseException:
+        _terminate_file_backed_process(process, terminate_grace_seconds)
+        raise
+    timed_out, output_limited, memory_limited, peak_rss_bytes = limits
+    if _captured_size(stdout_file, stderr_file) > max_output_bytes:
+        output_limited = True
+    if timed_out or output_limited or memory_limited:
+        _terminate_file_backed_process(process, terminate_grace_seconds)
+    else:
+        process.wait()
+    return timed_out, output_limited, memory_limited, peak_rss_bytes
+
+
+def _wait_for_file_backed_process(
+    process: subprocess.Popen[bytes],
+    stdout_file: IO[bytes],
+    stderr_file: IO[bytes],
+    *,
+    timeout_seconds: float,
+    max_output_bytes: int,
+    max_rss_bytes: int | None,
+    started: float,
+    cancel_event: threading.Event | None,
+) -> tuple[bool, bool, bool, int | None]:
+    """Poll one process until completion or the first configured limit."""
+
+    peak_rss_bytes: int | None = None
+    while process.poll() is None:
+        raise_if_cancelled(cancel_event)
+        timed_out = monotonic() - started >= timeout_seconds
+        output_limited = _captured_size(stdout_file, stderr_file) > max_output_bytes
+        memory_limited, peak_rss_bytes = _sample_rss_limit(
+            process.pid,
+            max_rss_bytes,
+            peak_rss_bytes,
+        )
+        if timed_out or output_limited or memory_limited:
+            return timed_out, output_limited, memory_limited, peak_rss_bytes
+        threading.Event().wait(0.05)
+    return False, False, False, peak_rss_bytes
+
+
+def _sample_rss_limit(
+    pid: int,
+    max_rss_bytes: int | None,
+    peak_rss_bytes: int | None,
+) -> tuple[bool, int | None]:
+    """Sample a supported process-tree RSS limit and preserve its peak."""
+
+    if max_rss_bytes is None:
+        return False, peak_rss_bytes
+    rss = process_tree_rss_bytes(pid)
+    if rss is None:
+        return False, peak_rss_bytes
+    peak = max(peak_rss_bytes or 0, rss)
+    return rss > max_rss_bytes, peak
+
+
+def _captured_size(stdout_file: IO[bytes], stderr_file: IO[bytes]) -> int:
+    return stdout_file.tell() + stderr_file.tell()
+
+
+def _terminate_file_backed_process(
+    process: subprocess.Popen[bytes],
+    terminate_grace_seconds: float,
+) -> None:
+    signal_process_group(process, signal.SIGTERM)
+    try:
+        process.wait(timeout=max(0.0, terminate_grace_seconds))
+    except subprocess.TimeoutExpired:
+        signal_process_group(process, signal.SIGKILL)
+        process.wait()
+
+
+def _read_bounded_outputs(
+    stdout_file: IO[bytes],
+    stderr_file: IO[bytes],
+    limit: int,
+) -> tuple[str, str]:
+    """Read at most ``limit`` combined bytes from the two captured streams."""
+
+    stdout_file.seek(0)
+    stdout_bytes = stdout_file.read(limit)
+    stderr_file.seek(0)
+    stderr_bytes = stderr_file.read(max(0, limit - len(stdout_bytes)))
+    return (
+        stdout_bytes.decode("utf-8", errors="replace"),
+        stderr_bytes.decode("utf-8", errors="replace"),
     )
 
 
