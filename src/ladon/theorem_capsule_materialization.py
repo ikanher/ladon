@@ -9,6 +9,7 @@ import stat
 import tarfile
 import tempfile
 import unicodedata
+import zipfile
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
 
@@ -28,7 +29,7 @@ from ladon.theorem_capsule_models import (
 
 MANIFEST_NAME = "capsule.json"
 PLAN_NAME = "plan.json"
-ARCHIVE_SUFFIXES = (".tar", ".tar.gz", ".tgz")
+ARCHIVE_SUFFIXES = (".tar", ".tar.gz", ".tgz", ".zip")
 NORMALIZED_FILE_MODE = 0o644
 
 
@@ -36,12 +37,11 @@ def materialize_theorem_capsule(
     plan: TheoremPlan,
     output: Path,
 ) -> CapsuleManifest:
-    """Publish one validated capsule directory or reproducible tar archive."""
+    """Publish one validated capsule directory or reproducible archive."""
 
     if not plan.eligible:
         kinds = ", ".join(
-            str(row.get("kind"))
-            for row in _rows(plan.payload.get("unsupportedFacets"))
+            str(row.get("kind")) for row in _rows(plan.payload.get("unsupportedFacets"))
         )
         raise CapsuleContentError(
             f"plan is ineligible for locked/rebuildable materialization: {kinds}"
@@ -105,9 +105,7 @@ def _safe_destination(repo_root: Path, output: Path) -> Path:
 def _validate_plan_inputs(plan: TheoremPlan, repo_root: Path) -> None:
     current = discover_capsule_layout(repo_root)
     if current.fingerprint != plan.repository["layoutFingerprint"]:
-        raise CapsuleContentError(
-            "repository module layout changed; create a new plan"
-        )
+        raise CapsuleContentError("repository module layout changed; create a new plan")
     seen_paths: set[str] = set()
     collision_keys: set[str] = set()
     for row in (*plan.files, *plan.configuration_files):
@@ -328,6 +326,9 @@ def _write_reproducible_archive(
     temporary: Path,
     destination: Path,
 ) -> None:
+    if str(destination).endswith(".zip"):
+        _write_zip(stage, temporary)
+        return
     if str(destination).endswith((".tar.gz", ".tgz")):
         with temporary.open("wb") as output:
             with gzip.GzipFile(
@@ -340,6 +341,31 @@ def _write_reproducible_archive(
         return
     with temporary.open("wb") as output:
         _write_tar(stage, output)
+
+
+def _write_zip(stage: Path, output: Path) -> None:
+    with zipfile.ZipFile(
+        output,
+        mode="w",
+        compression=zipfile.ZIP_DEFLATED,
+        compresslevel=9,
+    ) as archive:
+        paths = (item for item in stage.rglob("*") if item.is_file())
+        for path in sorted(
+            paths,
+            key=lambda item: item.relative_to(stage).as_posix(),
+        ):
+            relative = path.relative_to(stage).as_posix()
+            info = zipfile.ZipInfo(relative, date_time=(1980, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.create_system = 3
+            info.external_attr = (stat.S_IFREG | NORMALIZED_FILE_MODE) << 16
+            archive.writestr(
+                info,
+                path.read_bytes(),
+                compress_type=zipfile.ZIP_DEFLATED,
+                compresslevel=9,
+            )
 
 
 def _write_tar(stage: Path, output: Any) -> None:
@@ -365,7 +391,9 @@ def _bytes_reader(content: bytes):
 
 
 def _rows(value: Any) -> tuple[Mapping[str, Any], ...]:
-    if not isinstance(value, list) or any(not isinstance(row, Mapping) for row in value):
+    if not isinstance(value, list) or any(
+        not isinstance(row, Mapping) for row in value
+    ):
         raise CapsuleContentError("plan row collection is malformed")
     return tuple(value)
 

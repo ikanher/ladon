@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import shutil
+import stat
 import subprocess
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -16,9 +18,7 @@ from ladon.theorem_cli import theorem_main
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "theorem_capsule"
-MULTI_ROOT_FIXTURE = (
-    Path(__file__).parent / "fixtures" / "theorem_capsule_multi_root"
-)
+MULTI_ROOT_FIXTURE = Path(__file__).parent / "fixtures" / "theorem_capsule_multi_root"
 
 
 @pytest.fixture
@@ -125,10 +125,7 @@ def test_replay_detects_structural_identity_change(
     _, capsule = capsule_fixture
 
     def changed_helper(plan, *_args, **_kwargs):
-        nodes = [
-            dict(row)
-            for row in plan.payload["semanticGraph"]["nodes"]
-        ]
+        nodes = [dict(row) for row in plan.payload["semanticGraph"]["nodes"]]
         target = next(row for row in nodes if row["name"] == plan.target["name"])
         target["typeFingerprint"] = "changed-structural-fingerprint"
         return {
@@ -191,6 +188,38 @@ def test_replay_supported_tar_archive(
     receipt = replay_theorem_capsule(archive)
 
     assert receipt["status"] == "verified"
+
+
+def test_replay_supported_zip_archive(
+    tmp_path: Path,
+) -> None:
+    repository = tmp_path / "repository"
+    shutil.copytree(FIXTURE, repository)
+    subprocess.run(["lake", "build"], cwd=repository, check=True, capture_output=True)
+    plan = plan_theorem_capsule(repository, "CapsuleFixture.chosen")
+    archive = tmp_path / "capsule.zip"
+    materialize_theorem_capsule(plan, archive)
+    repository.rename(tmp_path / "repository-unavailable")
+
+    receipt = replay_theorem_capsule(archive)
+
+    assert receipt["status"] == "verified"
+
+
+def test_replay_rejects_zip_symlink_before_extraction(
+    tmp_path: Path,
+) -> None:
+    archive_path = tmp_path / "capsule.zip"
+    with zipfile.ZipFile(archive_path, mode="w") as archive:
+        member = zipfile.ZipInfo("linked-input")
+        member.create_system = 3
+        member.external_attr = (stat.S_IFLNK | 0o777) << 16
+        archive.writestr(member, "lean-toolchain")
+
+    receipt = replay_theorem_capsule(archive_path)
+
+    assert receipt["status"] == "content-invalid"
+    assert "unsupported entry" in receipt["stages"][0]["diagnostic"]
 
 
 def test_replay_verifies_multiple_source_roots_without_checkout(

@@ -9,6 +9,7 @@ import stat
 import tarfile
 import tempfile
 import unicodedata
+import zipfile
 from pathlib import Path, PurePosixPath
 from typing import Any, Mapping
 
@@ -133,6 +134,13 @@ def _capsule_source(capsule: Path, temporary: Path) -> Path:
 
 
 def _extract_safe_archive(archive_path: Path, destination: Path) -> None:
+    if zipfile.is_zipfile(archive_path):
+        _extract_safe_zip(archive_path, destination)
+        return
+    _extract_safe_tar(archive_path, destination)
+
+
+def _extract_safe_tar(archive_path: Path, destination: Path) -> None:
     seen: set[str] = set()
     collision_keys: set[str] = set()
     try:
@@ -157,6 +165,41 @@ def _extract_safe_archive(archive_path: Path, destination: Path) -> None:
             output = destination / relative
             output.parent.mkdir(parents=True, exist_ok=True)
             output.write_bytes(stream.read())
+            output.chmod(0o644)
+
+
+def _extract_safe_zip(archive_path: Path, destination: Path) -> None:
+    seen: set[str] = set()
+    collision_keys: set[str] = set()
+    try:
+        archive = zipfile.ZipFile(archive_path, mode="r")
+    except (zipfile.BadZipFile, zipfile.LargeZipFile, OSError) as exc:
+        raise CapsuleContentError(f"capsule archive is unreadable: {exc}") from exc
+    with archive:
+        for member in archive.infolist():
+            if member.is_dir():
+                continue
+            if member.flag_bits & 0x1:
+                raise CapsuleContentError(
+                    f"capsule archive contains an encrypted entry: {member.filename}"
+                )
+            mode = member.external_attr >> 16
+            file_type = stat.S_IFMT(mode)
+            if file_type not in {0, stat.S_IFREG}:
+                raise CapsuleContentError(
+                    f"capsule archive contains an unsupported entry: {member.filename}"
+                )
+            relative = _safe_relative(member.filename)
+            _reject_archive_collision(relative, seen, collision_keys)
+            try:
+                content = archive.read(member)
+            except (RuntimeError, zipfile.BadZipFile, OSError) as exc:
+                raise CapsuleContentError(
+                    f"capsule archive entry is unreadable: {relative}"
+                ) from exc
+            output = destination / relative
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_bytes(content)
             output.chmod(0o644)
 
 
@@ -251,10 +294,7 @@ def _validate_manifest_plan_agreement(
         raise CapsuleContentError("capsule semantic closure identity disagrees")
     if manifest.payload.get("status") != "materialized_unverified":
         raise CapsuleContentError("capsule status is not replayable")
-    inventory = {
-        str(row.get("path")): row
-        for row in manifest.files
-    }
+    inventory = {str(row.get("path")): row for row in manifest.files}
     _validate_planned_inventory_row(
         inventory,
         PLAN_NAME,
@@ -432,8 +472,7 @@ def _locked_external_imports(plan: TheoremPlan) -> tuple[str, ...]:
         sorted(
             str(row["module"])
             for row in rows
-            if isinstance(row, Mapping)
-            and row.get("kind") == "locked_external_import"
+            if isinstance(row, Mapping) and row.get("kind") == "locked_external_import"
         )
     )
 
@@ -482,7 +521,13 @@ def _classify_build_failure(
     if status == STATUS_RESOURCE_LIMIT:
         return status
     text = f"{result.stderr}\n{result.stdout}".lower()
-    dependency_markers = ("package", "clone", "manifest", "dependency", "unknown module")
+    dependency_markers = (
+        "package",
+        "clone",
+        "manifest",
+        "dependency",
+        "unknown module",
+    )
     if locked_external and (
         network == "deny" or any(marker in text for marker in dependency_markers)
     ):
@@ -502,8 +547,7 @@ def _run_replay_helper(
         modules_file.write_text(
             "\n".join(
                 sorted(
-                    str(row["module"])
-                    for row in plan.payload["buildGraph"]["modules"]
+                    str(row["module"]) for row in plan.payload["buildGraph"]["modules"]
                 )
             )
             + "\n",

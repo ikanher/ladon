@@ -7,6 +7,7 @@ section LocalContext
 
 local notation "theBase" => base
 
+/-- The selected theorem has a documentation range preceding its command. -/
 theorem chosen : theBase = 1 ∧ chain70 = 0 ∧ Even 0 := by
   constructor
   · rfl

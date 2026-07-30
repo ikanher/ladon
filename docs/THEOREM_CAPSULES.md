@@ -54,8 +54,8 @@ ladon theorem extract Fully.Qualified.theorem \
 ```
 
 Use `--network allow` during replay only when locked external Lake packages must
-be acquired. The default is `--network deny`. A `.tar`, `.tar.gz`, or `.tgz`
-output path requests a reproducible archive instead of a directory.
+be acquired. The default is `--network deny`. A `.zip`, `.tar`, `.tar.gz`, or
+`.tgz` output path requests a reproducible archive instead of a directory.
 
 ## What is planned
 

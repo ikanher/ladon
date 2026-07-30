@@ -290,7 +290,18 @@ def _validate_source_agreement(
 ) -> None:
     target_range = payload.get("targetRange")
     start = target_range.get("start") if isinstance(target_range, Mapping) else None
-    if isinstance(start, Mapping) and start.get("line") != declaration.line:
+    finish = (
+        target_range.get("finish")
+        if isinstance(target_range, Mapping)
+        else None
+    )
+    start_line = start.get("line") if isinstance(start, Mapping) else None
+    finish_line = finish.get("line") if isinstance(finish, Mapping) else None
+    if (
+        not isinstance(start_line, int)
+        or not isinstance(finish_line, int)
+        or not start_line <= declaration.line <= finish_line
+    ):
         raise CapsuleOperationalError(
             "Lean theorem range disagrees with the lexical source command"
         )

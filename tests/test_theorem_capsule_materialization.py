@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -18,9 +19,7 @@ from ladon.theorem_capsule_planning import plan_theorem_capsule
 
 
 FIXTURE = Path(__file__).parent / "fixtures" / "theorem_capsule"
-MULTI_ROOT_FIXTURE = (
-    Path(__file__).parent / "fixtures" / "theorem_capsule_multi_root"
-)
+MULTI_ROOT_FIXTURE = Path(__file__).parent / "fixtures" / "theorem_capsule_multi_root"
 
 
 @pytest.fixture
@@ -71,7 +70,9 @@ def assert_materialized_inputs(
     assert (output / "CapsuleFixture" / "Large.lean").is_file()
     assert (output / "lean-toolchain").is_file()
     assert (output / "lakefile.toml").is_file()
-    assert json.loads((output / "plan.json").read_text())["planIdentity"] == plan.identity
+    assert (
+        json.loads((output / "plan.json").read_text())["planIdentity"] == plan.identity
+    )
 
 
 def test_materialization_is_deterministic(
@@ -101,6 +102,25 @@ def test_reproducible_tar_output(
     materialize_theorem_capsule(plan, second)
 
     assert first.read_bytes() == second.read_bytes()
+
+
+def test_reproducible_zip_output(
+    planned_repository: tuple[Path, TheoremPlan],
+    tmp_path: Path,
+) -> None:
+    _, plan = planned_repository
+    first = tmp_path / "first.zip"
+    second = tmp_path / "second.zip"
+
+    first_manifest = materialize_theorem_capsule(plan, first)
+    second_manifest = materialize_theorem_capsule(plan, second)
+
+    assert first.read_bytes() == second.read_bytes()
+    assert first_manifest.to_bytes() == second_manifest.to_bytes()
+    assert first_manifest.payload["outputKind"] == "archive"
+    with zipfile.ZipFile(first) as archive:
+        assert archive.namelist() == sorted(archive.namelist())
+        assert "capsule.json" in archive.namelist()
 
 
 def test_materialization_preserves_multiple_declared_source_roots(

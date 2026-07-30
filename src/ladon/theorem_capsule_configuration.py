@@ -19,7 +19,6 @@ CONFIGURATION_NAMES = (
 )
 NATIVE_FACET_KEYS = {
     "extern_lib",
-    "lean_exe",
     "moreLinkArgs",
     "weakLinkArgs",
 }
