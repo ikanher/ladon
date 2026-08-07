@@ -5,8 +5,9 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.cli_execution import EXIT_INVOCATION, EXIT_OPERATIONAL, EXIT_SUCCESS
 from ladon.theorem_capsule_models import (
@@ -87,6 +88,27 @@ def build_theorem_parser() -> argparse.ArgumentParser:
         help="Whether verification may acquire locked external packages.",
     )
     _add_timeout(extract)
+    lineage = commands.add_parser(
+        "lineage",
+        help="Query exact compiled theorem dependencies from the project-local SQLite index.",
+    )
+    lineage.add_argument("theorem", help="Fully qualified Lean theorem name.")
+    _add_repository_options(lineage)
+    lineage.add_argument("--index", help="Override the project-local proof-search SQLite index.")
+    lineage.add_argument("--view", choices=("graph", "routes", "spines", "tree", "bottlenecks"), default="routes")
+    lineage.add_argument("--from", dest="boundary", choices=("trust", "project", "external", "package", "declaration"), default="trust")
+    lineage.add_argument("--root", dest="roots", action="append", default=[])
+    lineage.add_argument("--edge-kind", choices=("all", "type", "value"), default="all")
+    lineage.add_argument("--include-generated", action="store_true", default=True)
+    lineage.add_argument("--exclude-generated", dest="include_generated", action="store_false")
+    lineage.add_argument("--max-depth", type=_positive_integer, default=32)
+    lineage.add_argument("--max-nodes", type=_positive_integer, default=1000)
+    lineage.add_argument("--max-edges", type=_positive_integer, default=4000)
+    lineage.add_argument("--max-routes", type=_positive_integer, default=20)
+    lineage.add_argument("--refresh", choices=("missing", "stale", "always", "never"), default="missing")
+    lineage.add_argument("--max-output-bytes", type=_positive_integer)
+    _add_result_options(lineage, default_output="-")
+    _add_timeout(lineage)
     return parser
 
 
@@ -146,6 +168,9 @@ def theorem_main(argv: Sequence[str]) -> int:
     except OSError as exc:
         print(f"ladon theorem: filesystem failure: {exc}", file=sys.stderr)
         return EXIT_OPERATIONAL
+    except (RuntimeError, ValueError) as exc:
+        print(f"ladon theorem: operational failure: {exc}", file=sys.stderr)
+        return EXIT_OPERATIONAL
 
 
 def _dispatch(args: argparse.Namespace) -> int:
@@ -170,6 +195,10 @@ def _dispatch(args: argparse.Namespace) -> int:
         return _replay_command(args)
     if args.theorem_command == "extract":
         return _extract_command(args)
+    if args.theorem_command == "lineage":
+        from ladon.theorem_lineage_cli import run_lineage_command
+
+        return run_lineage_command(args)
     raise CapsuleInvocationError(
         f"unsupported theorem operation {args.theorem_command!r}"
     )
