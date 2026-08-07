@@ -1,0 +1,163 @@
+{
+  "program": "ladon-lean-proof-discovery-umbrella",
+  "interfaceInvariant": "Proof discovery is ordinary public Ladon CLI behavior shared by people, scripts, editors, and models; no caller-specific command, default, threshold, or hidden evidence path is permitted.",
+  "authorityInvariant": "The persistent local index provides navigation, filtering, and joins. Its alpha SQLite backend and tables are private implementation details. Lean elaboration and supervised application checks remain authoritative for type compatibility, substitutions, obligations, and route viability.",
+  "evidenceInvariant": "Every result preserves scope, freshness, provenance, omissions, bounds, and rejected routes. Empty or bounded output cannot establish repository-wide absence.",
+  "dependencySemantics": {
+    "startAfter": "Every listed standalone change must complete its portable exit class before implementation of this child begins.",
+    "integrationDependsOn": "Existing owner changes whose established contracts and artifacts this child reuses; capability identities are recorded separately in existingOwners.",
+    "enables": "Later child changes allowed to start after this child's portable exit class passes."
+  },
+  "existingOwners": [
+    {
+      "ownedConcern": "canonical module population, identity, and import graph",
+      "ownerChange": "ladon-analysis-root-and-scope-contract",
+      "capability": "ladon-analysis-root-and-scope-contract"
+    },
+    {
+      "ownedConcern": "lexical declaration source and exact parser boundaries",
+      "ownerChange": "ladon-declaration-table-source-evidence-contract",
+      "capability": "ladon-declaration-source-evidence"
+    },
+    {
+      "ownedConcern": "Lean-confirmed declaration identity and dependency evidence",
+      "ownerChange": "ladon-elaborated-declaration-surface",
+      "capability": "ladon-elaborated-declaration-surface"
+    },
+    {
+      "ownedConcern": "input fingerprints, report coverage, and source drift",
+      "ownerChange": "ladon-report-coverage-and-snapshot-integrity",
+      "capability": "ladon-report-coverage-and-snapshot-integrity"
+    },
+    {
+      "ownedConcern": "Lean helper supervision and process-tree limits",
+      "ownerChange": "ladon-lean-extraction-runtime-hardening",
+      "capability": "ladon-lean-extraction-runtime-hardening"
+    },
+    {
+      "ownedConcern": "installed process, stream, representation, and exit behavior",
+      "ownerChange": "ladon-cli-execution-contract",
+      "capability": "ladon-cli-execution"
+    },
+    {
+      "ownedConcern": "source-first review-packet evidence contracts",
+      "ownerChange": "ladon-witness-packet-evidence-gate",
+      "capability": "ladon-witness-packet-evidence"
+    },
+    {
+      "ownedConcern": "revision-aware theorem-surface comparison",
+      "ownerChange": "ladon-theorem-surface-changelog",
+      "capability": "ladon-theorem-surface-changelog"
+    }
+  ],
+  "children": [
+    {
+      "change": "ladon-proof-discovery-cli-contract",
+      "startAfter": [],
+      "integrationDependsOn": ["ladon-cli-execution-contract"],
+      "enables": [
+        "ladon-type-and-semantic-declaration-search",
+        "ladon-premise-difference-and-adapter-routing",
+        "ladon-declaration-consumers-and-constructor-coverage",
+        "ladon-goal-capture-and-application-probes",
+        "ladon-proof-frontier-review-output"
+      ],
+      "exitClass": "installed-caller-neutral-versioned-proof-discovery-cli"
+    },
+    {
+      "change": "ladon-lean-proof-search-index-and-scope",
+      "startAfter": [],
+      "integrationDependsOn": [
+        "ladon-analysis-root-and-scope-contract",
+        "ladon-declaration-table-source-evidence-contract",
+        "ladon-elaborated-declaration-surface",
+        "ladon-report-coverage-and-snapshot-integrity"
+      ],
+      "enables": ["ladon-type-and-semantic-declaration-search"],
+      "exitClass": "transactional-freshness-aware-explicitly-scoped-local-index"
+    },
+    {
+      "change": "ladon-type-and-semantic-declaration-search",
+      "startAfter": ["ladon-lean-proof-search-index-and-scope"],
+      "integrationDependsOn": [
+        "ladon-proof-discovery-cli-contract",
+        "ladon-elaborated-declaration-surface",
+        "ladon-lean-extraction-runtime-hardening"
+      ],
+      "enables": ["ladon-premise-difference-and-adapter-routing"],
+      "exitClass": "bounded-lean-authoritative-type-and-semantic-candidate-search"
+    },
+    {
+      "change": "ladon-premise-difference-and-adapter-routing",
+      "startAfter": ["ladon-type-and-semantic-declaration-search"],
+      "integrationDependsOn": [
+        "ladon-proof-discovery-cli-contract",
+        "ladon-lean-extraction-runtime-hardening"
+      ],
+      "enables": [
+        "ladon-declaration-consumers-and-constructor-coverage",
+        "ladon-proof-representation-and-scale-awareness"
+      ],
+      "exitClass": "lean-checked-premise-differences-and-replayable-route-cards"
+    },
+    {
+      "change": "ladon-declaration-consumers-and-constructor-coverage",
+      "startAfter": ["ladon-premise-difference-and-adapter-routing"],
+      "integrationDependsOn": [
+        "ladon-elaborated-declaration-surface",
+        "ladon-proof-discovery-cli-contract"
+      ],
+      "enables": [
+        "ladon-goal-capture-and-application-probes",
+        "ladon-proof-frontier-review-output"
+      ],
+      "exitClass": "scope-honest-reverse-consumers-and-instantiated-field-coverage"
+    },
+    {
+      "change": "ladon-proof-representation-and-scale-awareness",
+      "startAfter": ["ladon-premise-difference-and-adapter-routing"],
+      "integrationDependsOn": ["ladon-proof-discovery-cli-contract"],
+      "enables": ["ladon-proof-frontier-review-output"],
+      "exitClass": "policy-sourced-lean-checked-representation-and-scale-diagnostics"
+    },
+    {
+      "change": "ladon-goal-capture-and-application-probes",
+      "startAfter": ["ladon-declaration-consumers-and-constructor-coverage"],
+      "integrationDependsOn": [
+        "ladon-proof-discovery-cli-contract",
+        "ladon-lean-extraction-runtime-hardening"
+      ],
+      "enables": ["ladon-proof-frontier-review-output"],
+      "exitClass": "source-faithful-goal-capture-and-isolated-lean-application-probes"
+    },
+    {
+      "change": "ladon-proof-frontier-review-output",
+      "startAfter": [
+        "ladon-declaration-consumers-and-constructor-coverage",
+        "ladon-proof-representation-and-scale-awareness",
+        "ladon-goal-capture-and-application-probes"
+      ],
+      "integrationDependsOn": [
+        "ladon-proof-discovery-cli-contract",
+        "ladon-witness-packet-evidence-gate",
+        "ladon-theorem-surface-changelog"
+      ],
+      "enables": [],
+      "exitClass": "bounded-source-first-revision-aware-proof-frontier"
+    }
+  ],
+  "acceptanceScenarios": [
+    "type-directed candidate discovery",
+    "missing-premise and adapter analysis",
+    "reverse declaration consumers",
+    "instantiated constructor field coverage",
+    "captured-goal scratch application",
+    "representation, scale, and range-aware routing"
+  ],
+  "retainedExternalLanes": [
+    "automatic theorem proving or proof repair",
+    "tactic synthesis and InfoTree mining owned by ladon-proof-xray-roadmap",
+    "repository-specific theorem recommendations",
+    "an independent proof checker"
+  ]
+}

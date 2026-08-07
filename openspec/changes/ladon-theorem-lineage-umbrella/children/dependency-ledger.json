@@ -1,0 +1,101 @@
+{
+  "program": "ladon-theorem-lineage-umbrella",
+  "interfaceInvariant": "Theorem lineage is ordinary public Ladon CLI behavior shared by people, scripts, editors, and models; no caller-specific command, default, threshold, or evidence path is permitted.",
+  "authorityInvariant": "Only a complete compatible theorem-capsule semanticGraph with lean_environment authority establishes actual compiled-proof lineage. The SQLite database persists and queries that evidence but does not elaborate or independently prove it.",
+  "databaseInvariant": "All lineage rows live in the existing repository-local proof-search SQLite database or its explicit --index override. The alpha schema is private, constrained, indexed in both traversal directions, freshness-scoped, and transactionally replaceable.",
+  "algorithmInvariant": "SQLite owns closure selection, reachability, filtering, minimum-depth selection, representative routes, source joins, and relational projections. Pure algorithms are limited to bounded SCC-condensed dominators and reference-preserving tree unfolding.",
+  "nonclaimInvariant": "Lineage describes dependencies of one compiled theorem value and its type. It does not enumerate possible alternative proofs, establish a unique proof tree, explain the mathematics, or act as an independent proof checker.",
+  "dependencySemantics": {
+    "startAfter": "The named child begins only after every listed standalone child passes its portable exit class.",
+    "integrationDependsOn": "Existing owner changes whose established authority or lifecycle this child reuses.",
+    "enables": "Later child changes allowed to start after this child's portable exit class passes."
+  },
+  "existingOwners": [
+    {
+      "ownedConcern": "complete exact theorem identity and semantic dependency stream",
+      "ownerChange": "ladon-theorem-capsule-planning",
+      "capability": "ladon-theorem-capsule-planning"
+    },
+    {
+      "ownedConcern": "repository-local SQLite lifecycle, schema checks, freshness, and size cap",
+      "ownerChange": "ladon-lean-proof-search-index-and-scope",
+      "capability": "ladon-lean-proof-search-index-and-scope"
+    },
+    {
+      "ownedConcern": "declaration source ranges and project/module ownership",
+      "ownerChange": "ladon-declaration-table-source-evidence-contract",
+      "capability": "ladon-declaration-source-evidence"
+    },
+    {
+      "ownedConcern": "Lean helper supervision, timeouts, signals, and process-tree limits",
+      "ownerChange": "ladon-lean-extraction-runtime-hardening",
+      "capability": "ladon-lean-extraction-runtime-hardening"
+    },
+    {
+      "ownedConcern": "installed process, stream, representation, and exit behavior",
+      "ownerChange": "ladon-cli-execution-contract",
+      "capability": "ladon-cli-execution"
+    }
+  ],
+  "children": [
+    {
+      "change": "ladon-theorem-lineage-db-schema-and-ingestion",
+      "startAfter": [],
+      "integrationDependsOn": [
+        "ladon-theorem-capsule-planning",
+        "ladon-lean-proof-search-index-and-scope",
+        "ladon-declaration-table-source-evidence-contract"
+      ],
+      "enables": ["ladon-theorem-lineage-sql-queries"],
+      "exitClass": "constrained-transactional-fresh-lean-lineage-storage"
+    },
+    {
+      "change": "ladon-theorem-lineage-sql-queries",
+      "startAfter": ["ladon-theorem-lineage-db-schema-and-ingestion"],
+      "integrationDependsOn": ["ladon-lean-proof-search-index-and-scope"],
+      "enables": ["ladon-theorem-lineage-projections-and-bottlenecks"],
+      "exitClass": "bounded-indexed-deterministic-sql-lineage-traversal"
+    },
+    {
+      "change": "ladon-theorem-lineage-projections-and-bottlenecks",
+      "startAfter": ["ladon-theorem-lineage-sql-queries"],
+      "integrationDependsOn": [],
+      "enables": ["ladon-theorem-lineage-cli-and-renderers"],
+      "exitClass": "bounded-source-linked-spines-bottlenecks-and-dag-unfolding"
+    },
+    {
+      "change": "ladon-theorem-lineage-cli-and-renderers",
+      "startAfter": ["ladon-theorem-lineage-projections-and-bottlenecks"],
+      "integrationDependsOn": [
+        "ladon-cli-execution-contract",
+        "ladon-lean-extraction-runtime-hardening"
+      ],
+      "enables": ["ladon-theorem-lineage-integration-and-calibration"],
+      "exitClass": "installed-database-first-caller-neutral-theorem-lineage-cli"
+    },
+    {
+      "change": "ladon-theorem-lineage-integration-and-calibration",
+      "startAfter": ["ladon-theorem-lineage-cli-and-renderers"],
+      "integrationDependsOn": [],
+      "enables": [],
+      "exitClass": "portable-and-fingerprinted-real-repository-lineage-acceptance"
+    }
+  ],
+  "acceptanceScenarios": [
+    "fresh complete theorem plan ingested transactionally",
+    "indexed trust-to-theorem shortest spines",
+    "type/value and project/external/generated boundary filters",
+    "shared-node tree references and SCC termination",
+    "mandatory bottleneck validation",
+    "fresh database hit without Lean execution",
+    "missing closure supervised refresh",
+    "Quux and Matrix-Factorization fingerprinted calibration"
+  ],
+  "retainedExternalLanes": [
+    "possible alternative proof search owned by proof-discovery work",
+    "natural-language proof explanation",
+    "automatic theorem proving or proof repair",
+    "graph database or language server",
+    "independent proof checking"
+  ]
+}

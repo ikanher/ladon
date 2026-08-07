@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "runstate.ladon-theorem-lineage-umbrella.apply",
+  "goal": "Implement and verify the five database-first theorem-lineage capabilities governed by the umbrella.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "database_constraint_failure",
+    "query_plan_regression",
+    "authority_violation",
+    "stale_or_partial_evidence",
+    "path_or_output_limit",
+    "lean_helper_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.packet_design",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "five standalone child proposals, designs, specs, and recipe task lists",
+        "umbrella dependency ledger and byte-identical child capability specs",
+        "existing Quux plan observation: 1,252 nodes, 60,409 edges, Classical.choice and propext trust frontier"
+      ],
+      "commandRefs": [
+        "openspec validate ladon-theorem-lineage-umbrella --strict"
+      ]
+    },
+    {
+      "stepId": "step.database_storage",
+      "status": "pending",
+      "prerequisites": ["step.packet_design"],
+      "evidenceRefs": [],
+      "commandRefs": []
+    },
+    {
+      "stepId": "step.sql_queries",
+      "status": "pending",
+      "prerequisites": ["step.database_storage"],
+      "evidenceRefs": [],
+      "commandRefs": []
+    },
+    {
+      "stepId": "step.projections",
+      "status": "pending",
+      "prerequisites": ["step.sql_queries"],
+      "evidenceRefs": [],
+      "commandRefs": []
+    },
+    {
+      "stepId": "step.installed_cli",
+      "status": "pending",
+      "prerequisites": ["step.projections"],
+      "evidenceRefs": [],
+      "commandRefs": []
+    },
+    {
+      "stepId": "step.integration_calibration",
+      "status": "pending",
+      "prerequisites": ["step.installed_cli"],
+      "evidenceRefs": [],
+      "commandRefs": []
+    },
+    {
+      "stepId": "step.full_gate",
+      "status": "pending",
+      "prerequisites": ["step.integration_calibration"],
+      "evidenceRefs": [],
+      "commandRefs": []
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.openspec-strict",
+      "status": "passed",
+      "evidence": "Umbrella and all five standalone child changes pass strict OpenSpec validation."
+    },
+    {
+      "checkId": "check.spec-identity",
+      "status": "passed",
+      "evidence": "Each standalone child capability spec is byte-identical to its umbrella copy."
+    },
+    {
+      "checkId": "check.governance-json",
+      "status": "passed",
+      "evidence": "Dependency ledger, automation manifest, and run-state parse as JSON."
+    }
+  ],
+  "blockers": [],
+  "replayBoundary": {
+    "packetLocalReplay": true,
+    "externalEvidenceIncluded": false
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not theorem evidence.",
+    "SQLite queries do not elaborate Lean or independently verify proofs.",
+    "Lineage routes are dependencies of one compiled proof, not all possible proofs.",
+    "Quux and Matrix-Factorization observations do not replace portable acceptance fixtures."
+  ]
+}

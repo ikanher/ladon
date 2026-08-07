@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "engineering_run_state",
+  "runId": "runstate.ladon-lean-proof-discovery-umbrella.apply",
+  "goal": "Implement and verify the eight proof-discovery capabilities governed by the umbrella.",
+  "controlStateSource": "external_persistent_json",
+  "failureTaxonomy": [
+    "artifact_drift",
+    "schema_invalid",
+    "authority_violation",
+    "partial_evidence_overclaim",
+    "environment_missing",
+    "checker_failure",
+    "lean_helper_failure",
+    "harness_timeout"
+  ],
+  "steps": [
+    {
+      "stepId": "step.packet_design",
+      "status": "completed",
+      "prerequisites": [],
+      "evidenceRefs": [
+        "TODO.md improvement suggestions",
+        "eight standalone child proposals, designs, specs, and task lists",
+        "umbrella dependency ledger and byte-identical capability specs"
+      ],
+      "commandRefs": [
+        "openspec status --change ladon-lean-proof-discovery-umbrella",
+        "openspec validate ladon-lean-proof-discovery-umbrella --strict"
+      ]
+    },
+    {
+      "stepId": "step.interface_and_index",
+      "status": "pending",
+      "prerequisites": ["step.packet_design"],
+      "evidenceRefs": [
+        "proof-search SQLite v1 materialized for Ladon and Matrix-Factorization",
+        "Matrix-Factorization: 3,742 modules, 150,399 declarations, 302,407,680 bytes, 52.34s internal cold build, 123,184 KiB peak RSS",
+        "16 required B-tree indexes, FTS5 query surface, 6 required foreign keys, integrity checks, and configured size/value/query constraints",
+        "three-case rg comparison: DB internal queries 0.97-1.43ms; installed CLI medians 138-140ms; staged rg medians 22-37ms with 36-253 file results"
+      ],
+      "commandRefs": [
+        "ladon proof-search index build --repo-root <repo>",
+        "ladon proof-search index status --repo-root <repo>",
+        "ladon proof-search index query --repo-root <repo> --text <query>"
+      ]
+    },
+    {
+      "stepId": "step.search_and_routes",
+      "status": "pending",
+      "prerequisites": ["step.interface_and_index"],
+      "evidenceRefs": [],
+      "commandRefs": []
+    },
+    {
+      "stepId": "step.proof_surface_expansion",
+      "status": "pending",
+      "prerequisites": ["step.search_and_routes"],
+      "evidenceRefs": [],
+      "commandRefs": []
+    },
+    {
+      "stepId": "step.integrated_frontier",
+      "status": "pending",
+      "prerequisites": ["step.proof_surface_expansion"],
+      "evidenceRefs": [],
+      "commandRefs": []
+    },
+    {
+      "stepId": "step.full_gate",
+      "status": "pending",
+      "prerequisites": ["step.integrated_frontier"],
+      "evidenceRefs": [],
+      "commandRefs": []
+    }
+  ],
+  "checks": [
+    {
+      "checkId": "check.proof-search-index-focused",
+      "status": "passed",
+      "evidence": "78 focused index and CLI tests passed; changed modules remain A/B maintainability with no high-confidence vulture findings"
+    },
+    {
+      "checkId": "check.proof-search-index-schema",
+      "status": "passed",
+      "evidence": "required index names and ordered columns, FTS5 surface, foreign keys, integrity, size refusal, and prior-generation preservation passed"
+    },
+    {
+      "checkId": "check.full-python-suite",
+      "status": "failed",
+      "evidence": "1,022 tests passed; only tests/test_python_quality.py failed because pre-existing theorem_capsule_planning.py and theorem_capsule_replay.py have C-grade maintainability"
+    }
+  ],
+  "blockers": [
+    {
+      "id": "baseline.theorem-capsule-maintainability",
+      "scope": "full strict Python quality gate",
+      "reason": "Untouched theorem_capsule_planning.py and theorem_capsule_replay.py currently fail the repository-wide C-grade maintainability threshold."
+    }
+  ],
+  "replayBoundary": {
+    "packetLocalReplay": true,
+    "externalEvidenceIncluded": false
+  },
+  "finalization": {
+    "allowPush": false,
+    "allowReviewPacket": false,
+    "allowBaselinePromotion": false
+  },
+  "nonClaims": [
+    "This run-state is workflow evidence, not theorem evidence.",
+    "The persistent local index and its private alpha SQLite backend are not substitutes for Lean elaboration or application checking.",
+    "The umbrella does not promise automatic theorem proving or proof repair.",
+    "Matrix-Factorization observations do not replace portable acceptance fixtures."
+  ]
+}
