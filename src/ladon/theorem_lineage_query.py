@@ -211,7 +211,37 @@ def _node_rows(
         return []
     placeholders = ",".join("?" for _ in names)
     rows = connection.execute(
-        f"SELECT name, owner_module AS ownerModule, kind, project_owned AS projectOwned, external_frontier AS externalFrontier, source_path AS sourcePath, source_line AS sourceLine, source_column AS sourceColumn, source_status AS sourceStatus FROM lineage_nodes WHERE closure_id = ? AND name IN ({placeholders}) ORDER BY name",
+        f"""
+        SELECT n.name, n.owner_module AS ownerModule, n.kind,
+               n.project_owned AS projectOwned,
+               n.external_frontier AS externalFrontier,
+               COALESCE(n.source_path, (
+                   SELECT d.path FROM declarations d
+                   WHERE d.candidate_name = n.name AND d.module = n.owner_module
+                   ORDER BY d.id LIMIT 1
+               )) AS sourcePath,
+               COALESCE(n.source_line, (
+                   SELECT d.line FROM declarations d
+                   WHERE d.candidate_name = n.name AND d.module = n.owner_module
+                   ORDER BY d.id LIMIT 1
+               )) AS sourceLine,
+               COALESCE(n.source_column, (
+                   SELECT d.column_number FROM declarations d
+                   WHERE d.candidate_name = n.name AND d.module = n.owner_module
+                   ORDER BY d.id LIMIT 1
+               )) AS sourceColumn,
+               CASE
+                   WHEN n.source_path IS NOT NULL THEN n.source_status
+                   WHEN n.project_owned = 1 AND EXISTS (
+                       SELECT 1 FROM declarations d
+                       WHERE d.candidate_name = n.name AND d.module = n.owner_module
+                   ) THEN 'indexed_lexical_source'
+                   ELSE n.source_status
+               END AS sourceStatus
+        FROM lineage_nodes n
+        WHERE n.closure_id = ? AND n.name IN ({placeholders})
+        ORDER BY n.name
+        """,
         [closure_id, *names],
     ).fetchall()
     result = [dict(row) for row in rows]

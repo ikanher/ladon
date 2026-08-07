@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from ladon.proof_search_schema import PROOF_SEARCH_SCHEMA_GENERATION
+from ladon.theorem_capsule_models import canonical_json_bytes, sha256_bytes
 
 
 class TheoremLineageError(RuntimeError):
@@ -116,7 +117,7 @@ def _normalize_graph_components(
 
 
 def _closure_fingerprint(graph: Mapping[str, Any], body: Mapping[str, Any]) -> str:
-    computed = _digest(body)
+    computed = sha256_bytes(canonical_json_bytes(body))
     declared = str(graph.get("closureFingerprint") or "")
     if declared and declared != computed:
         raise TheoremLineageError("semantic closure fingerprint disagrees with graph")

@@ -117,3 +117,30 @@ def test_edge_cap_is_reported_without_unbounded_route_output() -> None:
     )
     assert result["truncated"] is True
     assert result["bounds"]["maxEdges"] == 1
+
+
+def test_project_lineage_nodes_use_indexed_source_anchors() -> None:
+    connection, identity = lineage_database()
+    connection.execute(
+        "INSERT INTO modules VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        ("Demo", "Demo.lean", "Demo", 0, "hash", 1, 1, "lexical-fallback"),
+    )
+    connection.execute(
+        """
+        INSERT INTO declarations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            "demo-target", "Demo.target", "Demo.target", "Demo", "theorem", "Demo", "Demo",
+            "Demo.lean", 42, 7, 0, 1, None, ": True", 6, 0,
+            "lexical-signature", "lexical_text", "public", "global", None,
+        ),
+    )
+
+    result = query_lineage(
+        connection, identity, LineageQuery(theorem="Demo.target", boundary="project")
+    )
+
+    target = next(row for row in result["nodes"] if row["name"] == "Demo.target")
+    assert target["sourcePath"] == "Demo.lean"
+    assert target["sourceLine"] == 42
+    assert target["sourceStatus"] == "indexed_lexical_source"

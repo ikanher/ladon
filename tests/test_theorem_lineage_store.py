@@ -6,6 +6,7 @@ from typing import Any
 import pytest
 
 from ladon.proof_search_schema import create_proof_search_schema
+from ladon.theorem_capsule_models import canonical_json_bytes, sha256_bytes
 from ladon.theorem_lineage_store import (
     LineageIdentity,
     TheoremLineageError,
@@ -44,6 +45,18 @@ def test_normalize_complete_plan_materializes_external_frontier_and_trust() -> N
         {"kind": "axiom_reference", "scope": "value", "target": "Classical.choice"},
     )
     assert len(bundle.scc_members) == 3
+
+
+def test_normalize_accepts_planner_canonical_closure_fingerprint() -> None:
+    plan = sample_plan()
+    graph = plan["semanticGraph"]
+    graph["closureFingerprint"] = sha256_bytes(
+        canonical_json_bytes({"nodes": graph["nodes"], "edges": graph["edges"]})
+    )
+
+    bundle = normalize_lineage_plan(plan)
+
+    assert bundle.closure_fingerprint == graph["closureFingerprint"]
 
 
 def test_normalize_rejects_dangling_source_and_conflicting_duplicate() -> None:
