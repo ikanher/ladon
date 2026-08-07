@@ -45,6 +45,50 @@ when JSON is the sole representation; neither older writer selects a different
 analysis. Text renders directly from the typed analysis model and does not
 construct canonical JSON bytes.
 
+## Proof-search index
+
+Proof-navigation indexing is an explicit ordinary CLI operation:
+
+```bash
+ladon proof-search index build --repo-root /path/to/project \
+  --format json --output -
+ladon proof-search index status --repo-root /path/to/project
+ladon proof-search index query --repo-root /path/to/project \
+  --text integrable --scope closure --root Project.Owner --limit 20
+```
+
+Without `--index PATH`, an explicit build writes the generated database to
+`<repo>/.ladon/index/proof-search.sqlite`. Ladon does not edit ignore files;
+projects should ignore `.ladon/index/`. An external path supports read-only
+checkouts and CI. Status and query operations never build the project or run
+Lean. Version one labels its declaration and import rows as lexical navigation
+evidence and exposes unavailable Lean-backed populations rather than treating
+them as empty. Results use `--format text|json` and `--output PATH|-`; bounded
+queries always report scope, omissions, generation identity, and truncation.
+Builds are published atomically only after SQLite integrity and foreign-key
+checks pass. `--max-index-mib` sets the database ceiling and defaults to 512;
+the previous generation remains intact if the new build exceeds it. Stored
+lexical signatures are capped at 16 KiB and query limits are capped at 1,000.
+
+## Theorem lineage
+
+Use the project-local index for exact compiled dependency lineage:
+
+```bash
+ladon theorem lineage Fully.Qualified.theorem --repo-root /path/to/project \
+  --refresh missing --view routes --from trust --format json --output -
+```
+
+The default `missing` policy plans and ingests only an absent closure. `never`
+forbids Lean refresh, while `stale` and `always` permit it. The bounded views
+are `routes`, `graph`, `tree` (a DAG unfolding with shared references), and
+`bottlenecks`; `spines` is a routes alias. Filters include trust/project,
+external/package/declaration roots, type/value/all edges, generated-node policy,
+and finite depth/node/edge/route/output caps. Results identify freshness,
+authority, closure identity, omissions, and truncation. They describe
+dependencies of one compiled proof term; they do not enumerate all proofs,
+alternative proofs, or a natural-language proof.
+
 ## Build and execution security
 
 Target building is opt-in:

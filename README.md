@@ -74,6 +74,31 @@ runs; it is not a sound incremental cache for indirect import changes. Loading
 target modules can execute imported initializers, so the Lean backend is not a
 safe way to analyze an untrusted repository.
 
+Build the repository-local proof-navigation index explicitly:
+
+```bash
+uv run --locked ladon proof-search index build \
+  --repo-root /path/to/lean/project \
+  --format json --output -
+
+uv run --locked ladon proof-search index query \
+  --repo-root /path/to/lean/project \
+  --text integrable --scope repository --limit 20
+```
+
+The default database is `.ladon/index/proof-search.sqlite`. The directory is
+disposable generated state and should be ignored by version control. Use
+`--index PATH` for a read-only checkout or CI-owned location. Version one
+contains project-owned lexical declaration and import navigation with explicit
+coverage gaps for elaborated binders, structure fields, and declaration
+dependencies. It does not invoke Lean, build the target, or promote indexed
+text to a type match or proof fact. `index status` verifies current source,
+configuration, toolchain, helper, and schema identity; pass
+`--no-verify-sources` only for a cheap stored-metadata inspection.
+Builds default to a 512 MiB hard database ceiling, configurable with
+`--max-index-mib`. Lexical signatures are capped at 16 KiB with per-row
+truncation evidence, and queries cannot return more than 1,000 rows.
+
 Theorem extraction is an explicit Lean-backed CLI workflow:
 
 ```bash
@@ -90,6 +115,23 @@ validates and rebuilds a fresh capsule copy, then compares the exact theorem's
 toolchain-scoped structural and trust evidence. A verified capsule remains a
 locked/rebuildable module-prefix package; it is not claimed to be globally
 minimal, offline-vendored, system-hermetic, or independently proved by Ladon.
+
+Exact theorem lineage is queried from the same repository-local SQLite index:
+
+```bash
+uv run --locked ladon theorem lineage Fully.Qualified.theorem \
+  --repo-root /path/to/lean/project --refresh missing \
+  --view routes --from trust --format text --output -
+```
+
+Build or inspect the base index with `ladon proof-search index build|status`.
+Warm closures are reused without starting Lean; use `--refresh never` to forbid
+refresh, or `stale`/`always` to permit a supervised theorem plan. Views are
+bounded (`routes`, `graph`, `tree`, `bottlenecks`) and support trust/project/
+external/package/declaration roots, typed edges, generated-node policy, and
+depth/node/edge/route caps. The result is dependency lineage for one compiled
+proof term, not a list of all possible proofs, a proof alternative, or a
+natural-language proof.
 
 ```bash
 cd <target-repo>
