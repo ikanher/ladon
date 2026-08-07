@@ -90,6 +90,7 @@ UNSUPPORTED_OPTIONS = {
 PUBLIC_COMMAND_HELP = """\
 commands:
   theorem   Plan, materialize, and independently replay theorem capsules.
+  proof-search  Build and query local Lean proof-navigation evidence.
   runset    Execute a versioned set of ordinary analyses.
   preview   Resolve roots, scope, policies, and costs without target execution.
   inspect   Inspect canonical rows from one existing report or source index.
@@ -326,6 +327,10 @@ def delegated_command(arguments: Sequence[str]) -> int | None:
         from ladon.theorem_cli import theorem_main
 
         return theorem_main(arguments[1:])
+    if arguments and arguments[0] == "proof-search":
+        from ladon.proof_search_cli import proof_search_main
+
+        return proof_search_main(arguments[1:])
     if arguments and arguments[0] == "runset":
         from ladon.runset_cli import runset_main
 
