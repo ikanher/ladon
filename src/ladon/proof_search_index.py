@@ -175,25 +175,29 @@ def build_proof_search_index(
     if max_index_bytes < 64 * 1024:
         raise ProofSearchIndexError("maximum index size must be at least 64 KiB")
     started = time.monotonic()
-    snapshot = capture_repository_snapshot(repo_root)
-    destination = _resolved_index_path(snapshot.repo_root, index_path)
+    root = repo_root.resolve()
+    destination = _resolved_index_path(root, index_path)
     destination.parent.mkdir(parents=True, exist_ok=True)
-    temporary = _temporary_database_path(destination)
-    counts: dict[str, int]
+    lock = _acquire_build_lock(destination)
     try:
-        counts = _write_database(
-            temporary,
-            snapshot,
-            max_index_bytes=max_index_bytes,
-        )
-        if temporary.stat().st_size > max_index_bytes:
-            raise ProofSearchIndexError(
-                f"index exceeds configured limit of {max_index_bytes} bytes"
+        snapshot = capture_repository_snapshot(root)
+        temporary = _temporary_database_path(destination)
+        try:
+            counts = _write_database(
+                temporary,
+                snapshot,
+                max_index_bytes=max_index_bytes,
             )
-        _durable_replace(temporary, destination)
-    except Exception:
-        temporary.unlink(missing_ok=True)
-        raise
+            if temporary.stat().st_size > max_index_bytes:
+                raise ProofSearchIndexError(
+                    f"index exceeds configured limit of {max_index_bytes} bytes"
+                )
+            _durable_replace(temporary, destination)
+        except Exception:
+            temporary.unlink(missing_ok=True)
+            raise
+    finally:
+        lock.unlink(missing_ok=True)
     visible = _version_control_visible(snapshot.repo_root, destination)
     elapsed = time.monotonic() - started
     payload = _build_result_payload(
@@ -241,6 +245,7 @@ def inspect_proof_search_index(
         "operation": "status",
         "status": "available",
         "indexPath": str(database),
+        "buildLock": _build_lock_status(database),
         "repository": str(root),
         "indexSchema": metadata.get("indexSchema"),
         "schemaVersion": _integer_metadata(metadata, "schemaVersion"),
@@ -906,11 +911,69 @@ def _temporary_database_path(destination: Path) -> Path:
 
     descriptor, raw_path = tempfile.mkstemp(
         dir=destination.parent,
-        prefix=f".{destination.name}.",
+        prefix=f".{destination.name}.{os.getpid()}.",
         suffix=".tmp",
     )
     os.close(descriptor)
     return Path(raw_path)
+
+
+def _acquire_build_lock(destination: Path) -> Path:
+    """Create a project-local writer lock or identify its live owner."""
+
+    lock = destination.with_name(f"{destination.name}.lock")
+    payload = json.dumps({"pid": os.getpid(), "destination": str(destination)})
+    try:
+        descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError:
+        owner = _lock_owner(lock)
+        if owner is not None and _pid_is_live(owner):
+            raise ProofSearchIndexError(
+                f"proof-search index build already active for {destination} (pid {owner})"
+            )
+        lock.unlink(missing_ok=True)
+        return _acquire_build_lock(destination)
+    with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+        stream.write(payload)
+        stream.flush()
+        os.fsync(stream.fileno())
+    return lock
+
+
+def _build_lock_status(destination: Path) -> dict[str, Any]:
+    """Describe the project-local writer lock without changing it."""
+
+    lock = destination.with_name(f"{destination.name}.lock")
+    owner = _lock_owner(lock)
+    if owner is None:
+        return {"path": str(lock), "status": "absent"}
+    return {
+        "path": str(lock),
+        "pid": owner,
+        "status": "active" if _pid_is_live(owner) else "stale",
+    }
+
+
+def _lock_owner(lock: Path) -> int | None:
+    """Read a best-effort PID from an existing lock record."""
+
+    try:
+        value = json.loads(lock.read_text(encoding="utf-8")).get("pid")
+        return int(value) if isinstance(value, int) and value > 0 else None
+    except (OSError, ValueError, json.JSONDecodeError):
+        return None
+
+
+def _pid_is_live(pid: int) -> bool:
+    """Return whether a local process currently owns a lock PID."""
+
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
 
 
 def _durable_replace(temporary: Path, destination: Path) -> None:

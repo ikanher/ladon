@@ -14,12 +14,15 @@ than Lean-confirmed names, type matches, or proof facts.
 
 ## Constraints and access paths
 
-Every build is written to a same-directory temporary database and published by
-atomic replacement only after `PRAGMA integrity_check` and
-`PRAGMA foreign_key_check` pass. The default maximum database size is 512 MiB;
-`--max-index-mib` changes it. Lexical signatures retain at most 16 KiB and
-record any truncation as omission evidence. Query output is capped at 1,000
-rows.
+Every build is written to a same-directory, PID-scoped temporary database and
+published by atomic replacement only after `PRAGMA integrity_check` and
+`PRAGMA foreign_key_check` pass. A sibling `proof-search.sqlite.lock` records
+the active builder PID; a second builder fails fast rather than racing to
+publish. A stale lock is reclaimed only when its PID is no longer live. The
+canonical reusable database remains `.ladon/index/proof-search.sqlite`. The
+default maximum database size is 512 MiB; `--max-index-mib` changes it. Lexical
+signatures retain at most 16 KiB and record any truncation as omission evidence.
+Query output is capped at 1,000 rows.
 
 The schema currently requires 16 named B-tree indexes:
 

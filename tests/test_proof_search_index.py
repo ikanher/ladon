@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from pathlib import Path
 
@@ -147,6 +148,29 @@ def test_size_limit_refuses_publish_and_preserves_previous_generation(
         raise AssertionError("constrained build unexpectedly succeeded")
 
     assert database.read_bytes() == previous
+
+
+def test_live_project_local_build_lock_reports_owner_pid(tmp_path: Path) -> None:
+    repo = sample_repository(tmp_path)
+    build_proof_search_index(repo)
+    database = default_proof_search_index_path(repo)
+    lock = database.with_name(f"{database.name}.lock")
+    lock.write_text(json.dumps({"pid": os.getpid()}), encoding="utf-8")
+
+    status = inspect_proof_search_index(repo)
+    assert status["buildLock"] == {
+        "path": str(lock),
+        "pid": os.getpid(),
+        "status": "active",
+    }
+
+    try:
+        build_proof_search_index(repo)
+    except ProofSearchIndexError as exc:
+        assert str(os.getpid()) in str(exc)
+        assert "already active" in str(exc)
+    else:
+        raise AssertionError("concurrent index build unexpectedly started")
 
 
 def test_explicit_external_index_retains_repository_identity(tmp_path: Path) -> None:
