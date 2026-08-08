@@ -479,96 +479,10 @@ def _insert_proofir_catalog(
     )
     artifact_ids: dict[str, str] = {}
     for artifact in snapshot.proofir_artifacts:
-        artifact_id = _stable_digest(
-            {"generation": generation_id, **artifact.identity_payload()}
-        )
+        artifact_id = _insert_catalog_artifact(connection, generation_id, artifact)
         artifact_ids[artifact.relative_path] = artifact_id
-        connection.execute(
-            """
-            INSERT INTO proofir_artifacts(
-                artifact_id, generation_id, path, sha256, byte_size,
-                artifact_kind, schema_version, state, metadata_json, diagnostic
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                artifact_id,
-                generation_id,
-                artifact.relative_path,
-                artifact.sha256,
-                artifact.byte_size,
-                artifact.artifact_kind,
-                artifact.schema_version,
-                artifact.state,
-                artifact.metadata_json,
-                artifact.diagnostic,
-            ),
-        )
-        if artifact.state != "cataloged":
-            connection.execute(
-                """
-                INSERT INTO proofir_diagnostics(
-                    diagnostic_id, generation_id, artifact_id, kind,
-                    subject, reason, details_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    _stable_digest({"artifact": artifact_id, "reason": artifact.state}),
-                    generation_id,
-                    artifact_id,
-                    "proofir_catalog",
-                    artifact.relative_path,
-                    artifact.state,
-                    json.dumps(
-                        {"artifactKind": artifact.artifact_kind, "diagnostic": artifact.diagnostic},
-                        sort_keys=True,
-                        separators=(",", ":"),
-                    ),
-                ),
-            )
-        elif artifact.diagnostic:
-            connection.execute(
-                """
-                INSERT INTO proofir_diagnostics(
-                    diagnostic_id, generation_id, artifact_id, kind,
-                    subject, reason, details_json
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    _stable_digest({"artifact": artifact_id, "reason": "truncated"}),
-                    generation_id,
-                    artifact_id,
-                    "proofir_catalog",
-                    artifact.relative_path,
-                    "truncated",
-                    json.dumps({"diagnostic": artifact.diagnostic}, separators=(",", ":")),
-                ),
-            )
-    relation_count = 0
-    for source_path, target_path, kind, details_json in snapshot.proofir_config.relationships:
-        source_id = artifact_ids.get(source_path)
-        target_id = artifact_ids.get(target_path)
-        if source_id is None or target_id is None:
-            raise ProofSearchIndexError(
-                f"ProofIR relationship references uncataloged artifact: {source_path} -> {target_path}"
-            )
-        relation_id = _stable_digest(
-            {
-                "generation": generation_id,
-                "source": source_id,
-                "target": target_id,
-                "kind": kind,
-            }
-        )
-        connection.execute(
-            """
-            INSERT INTO proofir_relations(
-                relation_id, generation_id, source_artifact_id,
-                target_artifact_id, kind, details_json
-            ) VALUES (?, ?, ?, ?, ?, ?)
-            """,
-            (relation_id, generation_id, source_id, target_id, kind, details_json),
-        )
-        relation_count += 1
+        _insert_catalog_diagnostic(connection, generation_id, artifact, artifact_id)
+    relation_count = _insert_catalog_relations(connection, generation_id, snapshot.proofir_config.relationships, artifact_ids)
     semantic_counts = insert_surface_and_replay_evidence(
         connection, generation_id, snapshot.proofir_artifacts, artifact_ids
     )
@@ -589,6 +503,35 @@ def _insert_proofir_catalog(
         **dag_counts,
         **attachment_counts,
     }
+
+
+def _insert_catalog_artifact(connection: sqlite3.Connection, generation_id: str, artifact: CatalogArtifact) -> str:
+    artifact_id = _stable_digest({"generation": generation_id, **artifact.identity_payload()})
+    connection.execute("INSERT INTO proofir_artifacts(artifact_id,generation_id,path,sha256,byte_size,artifact_kind,schema_version,state,metadata_json,diagnostic) VALUES(?,?,?,?,?,?,?,?,?,?)",
+        (artifact_id, generation_id, artifact.relative_path, artifact.sha256, artifact.byte_size, artifact.artifact_kind, artifact.schema_version, artifact.state, artifact.metadata_json, artifact.diagnostic))
+    return artifact_id
+
+
+def _insert_catalog_diagnostic(connection: sqlite3.Connection, generation_id: str, artifact: CatalogArtifact, artifact_id: str) -> None:
+    if artifact.state == "cataloged" and not artifact.diagnostic:
+        return
+    reason = artifact.state if artifact.state != "cataloged" else "truncated"
+    details = {"artifactKind": artifact.artifact_kind, "diagnostic": artifact.diagnostic}
+    connection.execute("INSERT INTO proofir_diagnostics(diagnostic_id,generation_id,artifact_id,kind,subject,reason,details_json) VALUES(?,?,?,?,?,?,?)",
+        (_stable_digest({"artifact": artifact_id, "reason": reason}), generation_id, artifact_id, "proofir_catalog", artifact.relative_path, reason, json.dumps(details, sort_keys=True, separators=(",", ":"))))
+
+
+def _insert_catalog_relations(connection: sqlite3.Connection, generation_id: str, relationships: tuple[tuple[str, str, str, str], ...], artifact_ids: dict[str, str]) -> int:
+    count = 0
+    for source_path, target_path, kind, details_json in relationships:
+        source_id, target_id = artifact_ids.get(source_path), artifact_ids.get(target_path)
+        if source_id is None or target_id is None:
+            raise ProofSearchIndexError(f"ProofIR relationship references uncataloged artifact: {source_path} -> {target_path}")
+        relation_id = _stable_digest({"generation": generation_id, "source": source_id, "target": target_id, "kind": kind})
+        connection.execute("INSERT INTO proofir_relations(relation_id,generation_id,source_artifact_id,target_artifact_id,kind,details_json) VALUES(?,?,?,?,?,?)",
+            (relation_id, generation_id, source_id, target_id, kind, details_json))
+        count += 1
+    return count
 
 
 def _insert_source(

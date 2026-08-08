@@ -100,37 +100,47 @@ def load_proofir_config(repo_root: Path) -> ProofIRConfig:
         raise ProofIRCatalogError(f"invalid ProofIR configuration: {path}") from exc
     if not isinstance(payload, dict):
         raise ProofIRCatalogError("ProofIR configuration must be a JSON object")
-    raw_patterns = payload.get("artifacts", [])
-    if not isinstance(raw_patterns, list) or not all(
-        isinstance(pattern, str) and pattern for pattern in raw_patterns
-    ):
+    patterns = _config_patterns(payload)
+    limits = _config_limits(payload)
+    relationships = _config_relationships(payload)
+    return ProofIRConfig(True, patterns, tuple(sorted(limits.items())), tuple(sorted(relationships)))
+
+
+def _config_patterns(payload: dict[str, Any]) -> tuple[str, ...]:
+    raw = payload.get("artifacts", [])
+    if not isinstance(raw, list) or not all(isinstance(pattern, str) and pattern for pattern in raw):
         raise ProofIRCatalogError("ProofIR configuration artifacts must be non-empty strings")
-    patterns = tuple(sorted(set(raw_patterns)))
+    patterns = tuple(sorted(set(raw)))
     if any(Path(pattern).is_absolute() for pattern in patterns):
         raise ProofIRCatalogError("ProofIR artifact paths must be repository-relative")
-    raw_limits = payload.get("limits", {})
-    if not isinstance(raw_limits, dict):
+    return patterns
+
+
+def _config_limits(payload: dict[str, Any]) -> dict[str, int]:
+    raw = payload.get("limits", {})
+    if not isinstance(raw, dict):
         raise ProofIRCatalogError("ProofIR configuration limits must be an object")
     limits = dict(DEFAULT_LIMITS)
-    for key, value in raw_limits.items():
+    for key, value in raw.items():
         if key not in limits or not isinstance(value, int) or value < 1:
             raise ProofIRCatalogError(f"invalid ProofIR limit: {key}")
         limits[key] = value
-    raw_relationships = payload.get("relationships", [])
-    if not isinstance(raw_relationships, list):
+    return limits
+
+
+def _config_relationships(payload: dict[str, Any]) -> tuple[tuple[str, str, str, str], ...]:
+    raw = payload.get("relationships", [])
+    if not isinstance(raw, list):
         raise ProofIRCatalogError("ProofIR configuration relationships must be an array")
-    relationships: list[tuple[str, str, str, str]] = []
-    for row in raw_relationships:
+    rows = []
+    for row in raw:
         if not isinstance(row, dict):
             raise ProofIRCatalogError("ProofIR relationships must be objects")
-        source = row.get("source")
-        target = row.get("target")
-        kind = row.get("kind")
+        source, target, kind = row.get("source"), row.get("target"), row.get("kind")
         if not all(isinstance(value, str) and value for value in (source, target, kind)):
             raise ProofIRCatalogError("ProofIR relationships require source, target, and kind")
-        details = json.dumps(row.get("details", {}), sort_keys=True, separators=(",", ":"))
-        relationships.append((source, target, kind, details))
-    return ProofIRConfig(True, patterns, tuple(sorted(limits.items())), tuple(sorted(relationships)))
+        rows.append((source, target, kind, json.dumps(row.get("details", {}), sort_keys=True, separators=(",", ":"))))
+    return tuple(sorted(rows))
 
 
 def discover_catalog_artifacts(
@@ -144,39 +154,38 @@ def discover_catalog_artifacts(
     if not config.configured:
         return config, ()
     limit_map = config.limit_map
-    paths: set[Path] = set()
-    for pattern in config.patterns:
-        matches = list(root.glob(pattern))
-        if not matches and not any(character in pattern for character in "*?["):
-            matches = [root / pattern]
-        for path in matches:
-            resolved = path.resolve()
-            if not resolved.is_relative_to(root):
-                raise ProofIRCatalogError(
-                    f"ProofIR artifact path escapes repository: {pattern}"
-                )
-            if resolved.is_file():
-                paths.add(resolved)
+    paths = _expand_paths(root, config.patterns)
     if len(paths) > limit_map["maxFiles"]:
         raise ProofIRCatalogError(
             f"ProofIR file-count limit exceeded: {len(paths)} > {limit_map['maxFiles']}"
         )
-    artifacts: list[CatalogArtifact] = []
-    total_bytes = 0
-    for path in sorted(paths):
+    return config, tuple(_read_artifacts(root, sorted(paths), limit_map))
+
+
+def _expand_paths(root: Path, patterns: tuple[str, ...]) -> set[Path]:
+    paths: set[Path] = set()
+    for pattern in patterns:
+        matches = list(root.glob(pattern)) or ([root / pattern] if not any(character in pattern for character in "*?[") else [])
+        for path in matches:
+            resolved = path.resolve()
+            if not resolved.is_relative_to(root):
+                raise ProofIRCatalogError(f"ProofIR artifact path escapes repository: {pattern}")
+            if resolved.is_file():
+                paths.add(resolved)
+    return paths
+
+
+def _read_artifacts(root: Path, paths: list[Path], limits: dict[str, int]) -> list[CatalogArtifact]:
+    artifacts, total_bytes = [], 0
+    for path in paths:
         raw = path.read_bytes()
-        size = len(raw)
-        if size > limit_map["maxArtifactBytes"]:
-            raise ProofIRCatalogError(
-                f"ProofIR artifact byte limit exceeded: {path.relative_to(root)}"
-            )
-        total_bytes += size
-        if total_bytes > limit_map["maxTotalBytes"]:
-            raise ProofIRCatalogError(
-                f"ProofIR total byte limit exceeded: {total_bytes} > {limit_map['maxTotalBytes']}"
-            )
-        artifacts.append(_inspect_artifact(root, path, raw, limit_map["maxMetadataBytes"]))
-    return config, tuple(artifacts)
+        if len(raw) > limits["maxArtifactBytes"]:
+            raise ProofIRCatalogError(f"ProofIR artifact byte limit exceeded: {path.relative_to(root)}")
+        total_bytes += len(raw)
+        if total_bytes > limits["maxTotalBytes"]:
+            raise ProofIRCatalogError(f"ProofIR total byte limit exceeded: {total_bytes} > {limits['maxTotalBytes']}")
+        artifacts.append(_inspect_artifact(root, path, raw, limits["maxMetadataBytes"]))
+    return artifacts
 
 
 def _inspect_artifact(

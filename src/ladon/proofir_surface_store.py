@@ -29,20 +29,7 @@ def insert_surface_and_replay_evidence(
     """Insert all admitted surface/claim/replay rows for one generation."""
 
     counts = {"surfaces": 0, "claims": 0, "surfaceClaims": 0, "replayRuns": 0, "replaySurfaces": 0}
-    payloads: dict[str, dict[str, Any]] = {}
-    for artifact in artifacts:
-        if artifact.state != "cataloged":
-            continue
-        payload = _read_payload(artifact)
-        if payload is None:
-            continue
-        if artifact.artifact_kind in {EXPECTED_INDEX_KIND, SURFACE_BUNDLE_KIND}:
-            inserted = _insert_surface_index(
-                connection, artifact_ids[artifact.relative_path], payload
-            )
-            for key, value in inserted.items():
-                counts[key] += value
-            payloads[artifact.relative_path] = payload
+    payloads = _insert_surface_artifacts(connection, artifacts, artifact_ids, counts)
     for artifact in artifacts:
         if artifact.state != "cataloged" or artifact.artifact_kind != REPLAY_KIND:
             continue
@@ -63,6 +50,20 @@ def insert_surface_and_replay_evidence(
     return counts
 
 
+def _insert_surface_artifacts(connection: sqlite3.Connection, artifacts: tuple[CatalogArtifact, ...], artifact_ids: Mapping[str, str], counts: dict[str, int]) -> dict[str, dict[str, Any]]:
+    payloads: dict[str, dict[str, Any]] = {}
+    for artifact in artifacts:
+        if artifact.state != "cataloged" or artifact.artifact_kind not in {EXPECTED_INDEX_KIND, SURFACE_BUNDLE_KIND}:
+            continue
+        payload = _read_payload(artifact)
+        if payload is None:
+            continue
+        for key, value in _insert_surface_index(connection, artifact_ids[artifact.relative_path], payload).items():
+            counts[key] += value
+        payloads[artifact.relative_path] = payload
+    return payloads
+
+
 def _read_payload(artifact: CatalogArtifact) -> dict[str, Any] | None:
     raw = artifact.path.read_bytes()
     if hashlib.sha256(raw).hexdigest() != artifact.sha256:
@@ -80,42 +81,7 @@ def _insert_surface_index(
     if normalized is None:
         return {"surfaces": 0, "claims": 0, "surfaceClaims": 0, "replayRuns": 0, "replaySurfaces": 0}
     counts = {"surfaces": 0, "claims": 0, "surfaceClaims": 0, "replayRuns": 0, "replaySurfaces": 0}
-    surface_rows: dict[str, str] = {}
-    for raw_surface in normalized.get("surfaces", []):
-        if not isinstance(raw_surface, dict):
-            continue
-        surface_id = str(raw_surface.get("surfaceId", ""))
-        if not surface_id:
-            continue
-        row_id = _id("surface", artifact_id, surface_id)
-        surface_rows[surface_id] = row_id
-        connection.execute(
-            """
-            INSERT INTO proofir_surfaces(
-                surface_row_id, artifact_id, surface_id, claim_id,
-                declaration_name, source_path, source_range_json, content_hash,
-                status, authority_json, proof_trust, replay_boundary_json,
-                extractor_guarantee, metadata_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                row_id,
-                artifact_id,
-                surface_id,
-                str(raw_surface.get("claimId", "")) or None,
-                str(raw_surface.get("declarationName", "")),
-                str(raw_surface.get("sourcePath", "")),
-                _json(raw_surface.get("sourceRange", {})),
-                str(raw_surface.get("contentHash", "")) or None,
-                str(raw_surface.get("status", "")),
-                _json(raw_surface.get("authority", [])),
-                str(raw_surface.get("proofTrust", "")),
-                _json(raw_surface.get("replayBoundary", {})),
-                str(raw_surface.get("extractorGuarantee", "")),
-                _metadata(raw_surface),
-            ),
-        )
-        counts["surfaces"] += 1
+    surface_rows = _insert_surfaces(connection, artifact_id, normalized.get("surfaces", []), counts)
     for raw_claim in normalized.get("claims", []):
         if not isinstance(raw_claim, dict):
             continue
@@ -158,6 +124,20 @@ def _insert_surface_index(
     return counts
 
 
+def _insert_surfaces(connection: sqlite3.Connection, artifact_id: str, rows: Any, counts: dict[str, int]) -> dict[str, str]:
+    surface_rows: dict[str, str] = {}
+    for raw_surface in rows:
+        if not isinstance(raw_surface, dict) or not raw_surface.get("surfaceId"):
+            continue
+        surface_id = str(raw_surface["surfaceId"])
+        row_id = _id("surface", artifact_id, surface_id)
+        surface_rows[surface_id] = row_id
+        connection.execute("INSERT INTO proofir_surfaces(surface_row_id,artifact_id,surface_id,claim_id,declaration_name,source_path,source_range_json,content_hash,status,authority_json,proof_trust,replay_boundary_json,extractor_guarantee,metadata_json) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (row_id, artifact_id, surface_id, str(raw_surface.get("claimId", "")) or None, str(raw_surface.get("declarationName", "")), str(raw_surface.get("sourcePath", "")), _json(raw_surface.get("sourceRange", {})), str(raw_surface.get("contentHash", "")) or None, str(raw_surface.get("status", "")), _json(raw_surface.get("authority", [])), str(raw_surface.get("proofTrust", "")), _json(raw_surface.get("replayBoundary", {})), str(raw_surface.get("extractorGuarantee", "")), _metadata(raw_surface)))
+        counts["surfaces"] += 1
+    return surface_rows
+
+
 def _insert_replay(
     connection: sqlite3.Connection,
     artifact: CatalogArtifact,
@@ -169,67 +149,42 @@ def _insert_replay(
 ) -> dict[str, int]:
     provenance_id = str(payload.get("provenanceId", artifact.relative_path))
     replay_id = _id("replay", artifact_id, provenance_id)
-    connection.execute(
-        """
-        INSERT INTO proofir_replay_runs(
-            replay_id, artifact_id, provenance_id, module, command_json,
-            return_code, repository_json, source_json, guarantee,
-            authority_json, metadata_json
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (
-            replay_id,
-            artifact_id,
-            provenance_id,
-            str(payload.get("module", "")),
-            _json(payload.get("command", [])),
-            _integer(payload.get("returncode", -1), default=-1),
-            _json(payload.get("repository", {})),
-            _json(payload.get("source", {})),
-            str(payload.get("guarantee", "")),
-            _json(payload.get("authorityInterpretation", {})),
-            _metadata(payload),
-        ),
-    )
+    _insert_replay_run(connection, replay_id, artifact_id, provenance_id, payload)
     counts = {"surfaces": 0, "claims": 0, "surfaceClaims": 0, "replayRuns": 1, "replaySurfaces": 0}
+    counts["replaySurfaces"] = _insert_replay_bundle(connection, replay_id, artifact_id, provenance_id, artifacts, artifact_ids, payloads, payload)
+    return counts
+
+
+def _insert_replay_run(connection: sqlite3.Connection, replay_id: str, artifact_id: str, provenance_id: str, payload: dict[str, Any]) -> None:
+    connection.execute("INSERT INTO proofir_replay_runs(replay_id,artifact_id,provenance_id,module,command_json,return_code,repository_json,source_json,guarantee,authority_json,metadata_json) VALUES(?,?,?,?,?,?,?,?,?,?,?)",
+        (replay_id, artifact_id, provenance_id, str(payload.get("module", "")), _json(payload.get("command", [])), _integer(payload.get("returncode", -1), default=-1), _json(payload.get("repository", {})), _json(payload.get("source", {})), str(payload.get("guarantee", "")), _json(payload.get("authorityInterpretation", {})), _metadata(payload)))
+
+
+def _insert_replay_bundle(connection: sqlite3.Connection, replay_id: str, artifact_id: str, provenance_id: str, artifacts: tuple[CatalogArtifact, ...], artifact_ids: Mapping[str, str], payloads: Mapping[str, dict[str, Any]], payload: dict[str, Any]) -> int:
     bundle = payload.get("surfaceBundle")
     if not isinstance(bundle, dict):
-        return counts
+        return 0
     bundle_path = str(bundle.get("path", ""))
-    bundle_hash = str(bundle.get("contentHash", ""))
-    bundle_artifact = next(
-        (
-            candidate
-            for candidate in artifacts
-            if candidate.relative_path == bundle_path
-            and candidate.artifact_kind == SURFACE_BUNDLE_KIND
-        ),
-        None,
-    )
+    bundle_artifact = next((candidate for candidate in artifacts if candidate.relative_path == bundle_path and candidate.artifact_kind == SURFACE_BUNDLE_KIND), None)
     if bundle_artifact is None:
-        return counts
+        return 0
     bundle_id = artifact_ids[bundle_artifact.relative_path]
-    exact = bundle_artifact.sha256 == bundle_hash.removeprefix("sha256:")
-    bundle_payload = payloads.get(bundle_artifact.relative_path)
-    known_surfaces = {
-        str(row.get("surfaceId", ""))
-        for row in (bundle_payload or {}).get("surfaces", [])
-        if isinstance(row, dict)
-    }
+    exact = bundle_artifact.sha256 == str(bundle.get("contentHash", "")).removeprefix("sha256:")
     if exact:
-        relation_id = _id("relation", artifact_id, bundle_id, "replays")
-        connection.execute(
-            "INSERT OR IGNORE INTO proofir_relations(relation_id, generation_id, source_artifact_id, target_artifact_id, kind, details_json) VALUES (?, ?, ?, ?, ?, ?)",
-            (relation_id, str(_generation(connection)), artifact_id, bundle_id, "replays", _json({"provenanceId": provenance_id})),
-        )
+        connection.execute("INSERT OR IGNORE INTO proofir_relations(relation_id,generation_id,source_artifact_id,target_artifact_id,kind,details_json) VALUES(?,?,?,?,?,?)",
+            (_id("relation", artifact_id, bundle_id, "replays"), _generation(connection), artifact_id, bundle_id, "replays", _json({"provenanceId": provenance_id})))
+    known = {str(row.get("surfaceId", "")) for row in (payloads.get(bundle_artifact.relative_path) or {}).get("surfaces", []) if isinstance(row, dict)}
+    return _insert_replay_surfaces(connection, replay_id, bundle_id, exact, known, payload)
+
+
+def _insert_replay_surfaces(connection: sqlite3.Connection, replay_id: str, bundle_id: str, exact: bool, known: set[str], payload: dict[str, Any]) -> int:
+    count = 0
     for surface_id in _replay_surface_ids(payload):
-        status = "related" if exact and surface_id in known_surfaces else ("stale" if not exact else "foreign")
-        connection.execute(
-            "INSERT INTO proofir_replay_surfaces(replay_id, bundle_artifact_id, surface_id, status, diagnostic) VALUES (?, ?, ?, ?, ?)",
-            (replay_id, bundle_id, surface_id, status, None if status == "related" else status),
-        )
-        counts["replaySurfaces"] += 1
-    return counts
+        status = "related" if exact and surface_id in known else ("stale" if not exact else "foreign")
+        connection.execute("INSERT INTO proofir_replay_surfaces(replay_id,bundle_artifact_id,surface_id,status,diagnostic) VALUES(?,?,?,?,?)",
+            (replay_id, bundle_id, surface_id, status, None if status == "related" else status))
+        count += 1
+    return count
 
 
 def _generation(connection: sqlite3.Connection) -> str:

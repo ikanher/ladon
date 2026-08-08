@@ -20,45 +20,62 @@ def insert_dag_evidence(connection: sqlite3.Connection, generation_id: str,
     counts = {"dags": 0, "dagNodes": 0, "dagEdges": 0, "dagAuthorities": 0, "dagWitnesses": 0, "dagOmissions": 0}
     dag_rows: dict[str, tuple[str, str]] = {}
     for artifact in artifacts:
-        if artifact.state != "cataloged" or artifact.artifact_kind != DAG_KIND:
-            continue
-        try:
-            payload = json.loads(artifact.path.read_text(encoding="utf-8"))
-            dag_id, nodes, edges = normalize_dag(payload)
-        except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
-            counts["dagOmissions"] += 1
-            continue
-        connection.execute("INSERT INTO proofir_dags(dag_id,generation_id,artifact_id,schema_version,status,metadata_json) VALUES(?,?,?,?,?,?)",
-            (dag_id, generation_id, artifact_ids[artifact.relative_path], int(payload.get("schemaVersion", 2)), "cataloged", _metadata(payload)))
-        dag_rows[dag_id] = (artifact.relative_path, artifact.sha256)
-        counts["dags"] += 1
-        for ordinal, node in enumerate(nodes):
-            node_id, kind, status, authority, description, caveat, metadata = node
-            connection.execute("INSERT INTO proofir_dag_nodes(node_id,dag_id,node_kind,status,authority,ordinal,description,caveat,metadata_json) VALUES(?,?,?,?,?,?,?,?,?)",
-                (node_id, dag_id, kind, status, authority, ordinal, description, caveat, metadata))
-            for auth in _authorities(authority):
-                connection.execute("INSERT INTO proofir_dag_node_authority(dag_id,node_id,authority) VALUES(?,?,?)", (dag_id,node_id,auth))
-                counts["dagAuthorities"] += 1
-            counts["dagNodes"] += 1
-        for ordinal, edge in enumerate(edges):
-            source, target, kind, obligation_id, metadata = edge
-            connection.execute("INSERT INTO proofir_dag_edges(dag_id,source_node_id,target_node_id,kind,obligation_id,ordinal,metadata_json) VALUES(?,?,?,?,?,?,?)",
-                (dag_id, source, target, kind, obligation_id, ordinal, metadata))
-            counts["dagEdges"] += 1
+        if artifact.state == "cataloged" and artifact.artifact_kind == DAG_KIND:
+            if _insert_one_dag(connection, generation_id, artifact, artifact_ids, counts, dag_rows):
+                counts["dags"] += 1
     for artifact in artifacts:
-        if artifact.state != "cataloged" or artifact.artifact_kind != WITNESS_KIND:
-            continue
-        payload = _load(artifact)
-        target = str(payload.get("dagId") or payload.get("obligationDagId") or "")
-        dag = dag_rows.get(target)
-        status = "unmatched"
-        if dag is not None:
-            named_hash = str(payload.get("dagHash") or payload.get("contentHash") or "").removeprefix("sha256:")
-            status = "related" if not named_hash or named_hash == dag[1] else "stale"
-            connection.execute("INSERT INTO proofir_dag_witnesses(dag_id,witness_artifact_id,status,guarantee,details_json) VALUES(?,?,?,?,?)",
-                (target, artifact_ids[artifact.relative_path], status, str(payload.get("guarantee", "")), _metadata(payload)))
-            counts["dagWitnesses"] += 1
+        if artifact.state == "cataloged" and artifact.artifact_kind == WITNESS_KIND:
+            counts["dagWitnesses"] += _insert_one_witness(connection, artifact, artifact_ids, dag_rows)
     return counts
+
+
+def _insert_one_dag(connection: sqlite3.Connection, generation_id: str, artifact: CatalogArtifact,
+                    artifact_ids: Mapping[str, str], counts: dict[str, int], dag_rows: dict[str, tuple[str, str]]) -> bool:
+    try:
+        payload = json.loads(artifact.path.read_text(encoding="utf-8"))
+        dag_id, nodes, edges = normalize_dag(payload)
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+        counts["dagOmissions"] += 1
+        return False
+    connection.execute("INSERT INTO proofir_dags(dag_id,generation_id,artifact_id,schema_version,status,metadata_json) VALUES(?,?,?,?,?,?)",
+        (dag_id, generation_id, artifact_ids[artifact.relative_path], int(payload.get("schemaVersion", 2)), "cataloged", _metadata(payload)))
+    dag_rows[dag_id] = (artifact.relative_path, artifact.sha256)
+    _insert_nodes(connection, dag_id, nodes, counts)
+    _insert_edges(connection, dag_id, edges, counts)
+    return True
+
+
+def _insert_nodes(connection: sqlite3.Connection, dag_id: str, nodes: list[tuple[str,str,str,str,str,str,str]], counts: dict[str, int]) -> None:
+    for ordinal, node in enumerate(nodes):
+        node_id, kind, status, authority, description, caveat, metadata = node
+        connection.execute("INSERT INTO proofir_dag_nodes(node_id,dag_id,node_kind,status,authority,ordinal,description,caveat,metadata_json) VALUES(?,?,?,?,?,?,?,?,?)",
+            (node_id, dag_id, kind, status, authority, ordinal, description, caveat, metadata))
+        authorities = _authorities(authority)
+        connection.executemany("INSERT INTO proofir_dag_node_authority(dag_id,node_id,authority) VALUES(?,?,?)",
+            ((dag_id, node_id, auth) for auth in authorities))
+        counts["dagAuthorities"] += len(authorities)
+        counts["dagNodes"] += 1
+
+
+def _insert_edges(connection: sqlite3.Connection, dag_id: str, edges: list[tuple[str,str,str,str,str]], counts: dict[str, int]) -> None:
+    for ordinal, edge in enumerate(edges):
+        source, target, kind, obligation_id, metadata = edge
+        connection.execute("INSERT INTO proofir_dag_edges(dag_id,source_node_id,target_node_id,kind,obligation_id,ordinal,metadata_json) VALUES(?,?,?,?,?,?,?)",
+            (dag_id, source, target, kind, obligation_id, ordinal, metadata))
+        counts["dagEdges"] += 1
+
+
+def _insert_one_witness(connection: sqlite3.Connection, artifact: CatalogArtifact, artifact_ids: Mapping[str, str], dag_rows: Mapping[str, tuple[str, str]]) -> int:
+    payload = _load(artifact)
+    target = str(payload.get("dagId") or payload.get("obligationDagId") or "")
+    dag = dag_rows.get(target)
+    if dag is None:
+        return 0
+    named_hash = str(payload.get("dagHash") or payload.get("contentHash") or "").removeprefix("sha256:")
+    status = "related" if not named_hash or named_hash == dag[1] else "stale"
+    connection.execute("INSERT INTO proofir_dag_witnesses(dag_id,witness_artifact_id,status,guarantee,details_json) VALUES(?,?,?,?,?)",
+        (target, artifact_ids[artifact.relative_path], status, str(payload.get("guarantee", "")), _metadata(payload)))
+    return 1
 
 
 def normalize_dag(payload: Any) -> tuple[str, list[tuple[str,str,str,str,str,str,str]], list[tuple[str,str,str,str,str]]]:
@@ -67,6 +84,17 @@ def normalize_dag(payload: Any) -> tuple[str, list[tuple[str,str,str,str,str,str
     dag_id = str(payload.get("dagId") or payload.get("id") or "")
     if not dag_id:
         raise ValueError("missing dagId")
+    nodes, seen = _normalize_nodes(payload)
+    if len(nodes) > MAX_NODES:
+        raise ValueError("node limit exceeded")
+    known = set(seen)
+    edges = _normalize_edges(payload, known)
+    if len(edges) > MAX_EDGES:
+        raise ValueError("edge limit exceeded")
+    return dag_id, nodes, edges
+
+
+def _normalize_nodes(payload: dict[str, Any]) -> tuple[list[tuple[str,str,str,str,str,str,str]], dict[str, tuple[str,str,str]]]:
     nodes: list[tuple[str,str,str,str,str,str,str]] = []
     seen: dict[str, tuple[str,str,str]] = {}
     for key, kind in (("importedFacts", "imported_fact"), ("obligations", "obligation"), ("producedFacts", "produced_fact")):
@@ -74,33 +102,39 @@ def normalize_dag(payload: Any) -> tuple[str, list[tuple[str,str,str,str,str,str
         if not isinstance(rows, list):
             raise ValueError(f"{key} must be a list")
         for row in rows:
-            if not isinstance(row, dict):
-                raise ValueError("node must be an object")
-            node_id = str(row.get("id") or row.get("nodeId") or row.get("obligationId") or "")
-            if not node_id:
-                raise ValueError("node missing id")
-            signature = (kind, str(row.get("status", "")), _authority(row.get("authority")))
-            if node_id in seen and seen[node_id] != signature:
-                raise ValueError(f"conflicting duplicate node: {node_id}")
-            if node_id in seen:
-                continue
-            seen[node_id] = signature
-            nodes.append((node_id, kind, signature[1], signature[2], str(row.get("description", "")), str(row.get("caveat", "")), _metadata(row)))
-    if len(nodes) > MAX_NODES:
-        raise ValueError("node limit exceeded")
-    known = set(seen)
-    edges: list[tuple[str,str,str,str,str]] = []
-    for row in payload.get("edges", []):
-        if not isinstance(row, dict):
-            raise ValueError("edge must be an object")
-        source = str(row.get("source") or row.get("sourceId") or "")
-        target = str(row.get("target") or row.get("targetId") or "")
-        if source not in known or target not in known:
-            raise ValueError(f"missing edge endpoint: {source}->{target}")
-        edges.append((source, target, str(row.get("kind", "uses")), str(row.get("obligationId") or row.get("obligation_id") or source), _metadata(row)))
-    if len(edges) > MAX_EDGES:
-        raise ValueError("edge limit exceeded")
-    return dag_id, nodes, edges
+            node = _normalize_node(row, kind, seen)
+            if node is not None:
+                nodes.append(node)
+    return nodes, seen
+
+
+def _normalize_node(row: Any, kind: str, seen: dict[str, tuple[str,str,str]]) -> tuple[str,str,str,str,str,str,str] | None:
+    if not isinstance(row, dict):
+        raise ValueError("node must be an object")
+    node_id = str(row.get("id") or row.get("nodeId") or row.get("obligationId") or "")
+    if not node_id:
+        raise ValueError("node missing id")
+    signature = (kind, str(row.get("status", "")), _authority(row.get("authority")))
+    if node_id in seen and seen[node_id] != signature:
+        raise ValueError(f"conflicting duplicate node: {node_id}")
+    if node_id in seen:
+        return None
+    seen[node_id] = signature
+    return (node_id, kind, signature[1], signature[2], str(row.get("description", "")), str(row.get("caveat", "")), _metadata(row))
+
+
+def _normalize_edges(payload: dict[str, Any], known: set[str]) -> list[tuple[str,str,str,str,str]]:
+    return [edge for row in payload.get("edges", []) if (edge := _normalize_edge(row, known)) is not None]
+
+
+def _normalize_edge(row: Any, known: set[str]) -> tuple[str, str, str, str, str] | None:
+    if not isinstance(row, dict):
+        raise ValueError("edge must be an object")
+    source = str(row.get("source") or row.get("sourceId") or "")
+    target = str(row.get("target") or row.get("targetId") or "")
+    if source not in known or target not in known:
+        raise ValueError(f"missing edge endpoint: {source}->{target}")
+    return (source, target, str(row.get("kind", "uses")), str(row.get("obligationId") or row.get("obligation_id") or source), _metadata(row))
 
 
 def query_dag_routes(connection: sqlite3.Connection, dag_id: str, start: str, end: str | None = None,
