@@ -138,20 +138,118 @@ def _normalize_edge(row: Any, known: set[str]) -> tuple[str, str, str, str, str]
 
 
 def query_dag_routes(connection: sqlite3.Connection, dag_id: str, start: str, end: str | None = None,
-                     *, reverse: bool = False, max_depth: int = 64, max_routes: int = 32) -> dict[str, Any]:
+                     *, reverse: bool = False, max_depth: int = 64, max_routes: int = 32,
+                     max_output_bytes: int = 1_000_000) -> dict[str, Any]:
+    """Return endpoint-correct bounded paths plus a compatibility node projection."""
+    _validate_route_bounds(max_depth, max_routes, max_output_bytes)
     direction = "target_node_id" if reverse else "source_node_id"
     other = "source_node_id" if reverse else "target_node_id"
-    sql = f"""WITH RECURSIVE walk(node_id, depth, path) AS (
-      SELECT ?, 0, '|' || ? || '|'
+    sql = f"""WITH RECURSIVE walk(node_id, depth, node_path, edge_path, visited) AS (
+      SELECT ?, 0, ?, '', ?
       UNION ALL
-      SELECT e.{other}, walk.depth + 1, walk.path || e.{other} || '|'
+      SELECT e.{other}, walk.depth + 1,
+             walk.node_path || ? || e.{other},
+             CASE WHEN walk.edge_path = '' THEN e.source_node_id || ? || e.target_node_id || ? || e.kind || ? || e.obligation_id
+                  ELSE walk.edge_path || ? || e.source_node_id || ? || e.target_node_id || ? || e.kind || ? || e.obligation_id END,
+             walk.visited || e.{other} || ?
       FROM walk JOIN proofir_dag_edges e ON e.dag_id = ? AND e.{direction} = walk.node_id
-      WHERE walk.depth < ? AND instr(walk.path, '|' || e.{other} || '|') = 0
-    ) SELECT w.node_id,w.depth,n.node_kind,n.status,n.authority,n.description FROM walk w
-      JOIN proofir_dag_nodes n ON n.dag_id = ? AND n.node_id = w.node_id
-      ORDER BY w.depth,w.node_id LIMIT ?"""
-    rows = [dict(zip(("nodeId","depth","kind","status","authority","description"), row)) for row in connection.execute(sql, (start,start,dag_id,max_depth,dag_id,max_routes))]
-    return {"schema": "ladon-proofir-dag-route-v1", "dagId": dag_id, "start": start, "end": end, "reverse": reverse, "routes": rows, "truncated": len(rows) >= max_routes}
+      WHERE walk.depth < ? AND instr(walk.visited, ? || e.{other} || ?) = 0
+    ) SELECT node_id, depth, node_path, edge_path FROM walk
+      WHERE (? IS NULL OR node_id = ?) ORDER BY depth, node_path LIMIT ?"""
+    separator = "\x1f"
+    edge_separator = "\x1e"
+    rows = connection.execute(
+        sql,
+        (start, start, f"{separator}{start}{separator}", separator,
+         separator, separator, separator, edge_separator,
+         separator, separator, separator, separator,
+         dag_id, max_depth, separator, separator, end, end, max_routes + 1),
+    ).fetchall()
+    truncated = len(rows) > max_routes
+    selected = rows[:max_routes]
+    paths = _materialize_paths(connection, dag_id, selected, reverse=reverse)
+    result: dict[str, Any] = {
+        "schema": "ladon-proofir-obligation-routes-v1",
+        "dagId": dag_id,
+        "start": start,
+        "end": end,
+        "reverse": reverse,
+        "minimumDepth": min((path["depth"] for path in paths), default=None),
+        "reachable": bool(paths),
+        "paths": paths,
+        "selectedSubgraph": _selected_subgraph(paths),
+        "transitions": _transitions(paths),
+        "diagnostics": [],
+        "coverage": {"matched": len(rows), "returned": len(paths), "cap": max_routes},
+        "truncated": truncated,
+        "nonclaims": ["ProofIR obligation routes are not Lean declaration dependencies or proof-term verification."],
+    }
+    # Keep the original flat field for current callers while new callers use paths.
+    result["routes"] = paths[0]["nodes"] if end is not None and paths else _legacy_nodes(connection, dag_id, selected)
+    _enforce_output_bytes(result, max_output_bytes)
+    return result
+
+
+def _validate_route_bounds(max_depth: int, max_routes: int, max_output_bytes: int) -> None:
+    if min(max_depth, max_routes, max_output_bytes) < 1:
+        raise ValueError("route bounds must be positive")
+
+
+def _materialize_paths(connection: sqlite3.Connection, dag_id: str, rows: list[tuple[Any, ...]], *, reverse: bool) -> list[dict[str, Any]]:
+    paths = []
+    for index, (_, depth, node_path, edge_path) in enumerate(rows, start=1):
+        node_ids = tuple(node_path.split("\x1f"))
+        edge_ids = tuple(edge_path.split("\x1e")) if edge_path else ()
+        nodes = _node_rows(connection, dag_id, node_ids)
+        edges = _edge_rows(connection, dag_id, edge_ids, reverse=reverse)
+        paths.append({"pathId": f"path-{index:04d}", "depth": depth, "nodes": nodes, "edges": edges})
+    return paths
+
+
+def _node_rows(connection: sqlite3.Connection, dag_id: str, node_ids: tuple[str, ...]) -> list[dict[str, Any]]:
+    result = []
+    for node_id in node_ids:
+        row = connection.execute("SELECT node_id,node_kind,status,authority,description FROM proofir_dag_nodes WHERE dag_id=? AND node_id=?", (dag_id, node_id)).fetchone()
+        if row:
+            result.append({"nodeId": row[0], "kind": row[1], "status": row[2], "authority": row[3], "description": row[4]})
+    return result
+
+
+def _edge_rows(connection: sqlite3.Connection, dag_id: str, edge_ids: tuple[str, ...], *, reverse: bool) -> list[dict[str, Any]]:
+    result = []
+    for encoded in edge_ids:
+        source, target, kind, obligation = encoded.split("\x1f", 3)
+        result.append({"sourceNodeId": source, "targetNodeId": target, "kind": kind, "obligationId": obligation, "direction": "reverse" if reverse else "forward"})
+    return result
+
+
+def _selected_subgraph(paths: list[dict[str, Any]]) -> dict[str, list[dict[str, Any]]]:
+    nodes = {row["nodeId"]: row for path in paths for row in path["nodes"]}
+    edges = {(row["sourceNodeId"], row["targetNodeId"], row["kind"], row["obligationId"]): row for path in paths for row in path["edges"]}
+    return {"nodes": [nodes[key] for key in sorted(nodes)], "edges": [edges[key] for key in sorted(edges)]}
+
+
+def _transitions(paths: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    transitions = []
+    for path in paths:
+        previous = None
+        for node in path["nodes"]:
+            current = (node["status"], node["authority"])
+            if previous is not None and current != previous:
+                transitions.append({"pathId": path["pathId"], "from": previous, "to": current, "nodeId": node["nodeId"]})
+            previous = current
+    return transitions
+
+
+def _legacy_nodes(connection: sqlite3.Connection, dag_id: str, rows: list[tuple[Any, ...]]) -> list[dict[str, Any]]:
+    ids = tuple(dict.fromkeys(node for row in rows for node in row[2].split("\x1f")))
+    return _node_rows(connection, dag_id, ids)
+
+
+def _enforce_output_bytes(result: dict[str, Any], limit: int) -> None:
+    encoded = json.dumps(result, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    if len(encoded) > limit:
+        raise ValueError(f"route output exceeds byte limit: {len(encoded)} > {limit}")
 
 
 def _load(artifact: CatalogArtifact) -> dict[str, Any]:

@@ -70,6 +70,23 @@ checks pass. `--max-index-mib` sets the database ceiling and defaults to 512;
 the previous generation remains intact if the new build exceeds it. Stored
 lexical signatures are capped at 16 KiB and query limits are capped at 1,000.
 
+### Stored ProofIR evidence
+
+After an index build, ordinary read-only queries inspect project-local ProofIR
+evidence without invoking Lean or replay tools:
+
+```bash
+ladon proof-search evidence theorem Quux.Problems.Example --repo-root /path/to/project --format json
+ladon proof-search evidence artifact proofir/surface.json --repo-root /path/to/project --format text
+ladon proof-search evidence route route-id --dag dag.id --start fact.id --end claim.id --repo-root /path/to/project --format json
+ladon proof-search evidence triage all --repo-root /path/to/project --format json
+```
+
+The theorem result keeps Lean attachment, quoted surfaces/claims, replay,
+obligation context, lineage, diagnostics, coverage, and nonclaims separate.
+Missing, stale, ambiguous, unsupported, and unconfigured evidence are not
+collapsed into theorem failure. Use the explicit index build command to refresh.
+
 ## Theorem lineage
 
 Use the project-local index for exact compiled dependency lineage:

@@ -1,0 +1,62 @@
+{
+  "program": "ladon-proofir-theorem-evidence-dossier-umbrella",
+  "interfaceInvariant": "ProofIR evidence is ordinary Ladon CLI behavior shared by humans and tools; no LLM-specific command or hidden evidence path is permitted.",
+  "databaseInvariant": "Every query reads the existing project-local proof-search SQLite database and uses its generation, freshness, constraint, lock, and atomic replacement lifecycle.",
+  "authorityInvariant": "Lean declarations and lineage, ProofIR claims and DAGs, replay observations, checker witnesses, attachments, and diagnostics remain separate evidence facts.",
+  "coverageInvariant": "Absence is claimed only for an inspected configured population; unconfigured, unavailable, stale, ambiguous, unsupported, malformed, and context-only evidence stay distinct.",
+  "dependencySemantics": {
+    "startAfter": "All listed child exit classes must pass before this child begins.",
+    "integrationDependsOn": "Already-owned contracts reused without changing their capability identity.",
+    "enables": "Children allowed to begin after this portable exit class passes."
+  },
+  "existingOwners": [
+    {"ownerChange": "ladon-proofir-evidence-graph-umbrella", "ownedConcern": "ProofIR catalog, normalization, DAG, attachment, and CLI storage substrate"},
+    {"ownerChange": "ladon-theorem-lineage-umbrella", "ownedConcern": "Lean theorem lineage storage and bounded SQL queries"},
+    {"ownerChange": "ladon-cli-execution-contract", "ownedConcern": "installed process, stream, output, signal, and exit behavior"}
+  ],
+  "children": [
+    {
+      "change": "ladon-proofir-theorem-dossier-query",
+      "startAfter": [],
+      "integrationDependsOn": ["ladon-proofir-evidence-graph-umbrella", "ladon-theorem-lineage-umbrella"],
+      "enables": ["ladon-proofir-negative-evidence-and-coverage"],
+      "exitClass": "bounded-authority-separated-theorem-dossier"
+    },
+    {
+      "change": "ladon-proofir-obligation-route-paths-and-trees",
+      "startAfter": [],
+      "integrationDependsOn": ["ladon-proofir-evidence-graph-umbrella"],
+      "enables": ["ladon-proofir-negative-evidence-and-coverage", "ladon-proofir-repository-triage-queries"],
+      "exitClass": "endpoint-correct-bounded-obligation-paths-and-trees"
+    },
+    {
+      "change": "ladon-proofir-negative-evidence-and-coverage",
+      "startAfter": ["ladon-proofir-theorem-dossier-query", "ladon-proofir-obligation-route-paths-and-trees"],
+      "integrationDependsOn": ["ladon-proofir-evidence-graph-umbrella"],
+      "enables": ["ladon-proofir-repository-triage-queries"],
+      "exitClass": "open-world-generation-scoped-negative-evidence"
+    },
+    {
+      "change": "ladon-proofir-repository-triage-queries",
+      "startAfter": ["ladon-proofir-obligation-route-paths-and-trees", "ladon-proofir-negative-evidence-and-coverage"],
+      "integrationDependsOn": ["ladon-proofir-evidence-graph-umbrella"],
+      "enables": ["ladon-proofir-evidence-cli-rendering-and-calibration"],
+      "exitClass": "bounded-actionable-proofir-evidence-health-triage"
+    },
+    {
+      "change": "ladon-proofir-evidence-cli-rendering-and-calibration",
+      "startAfter": ["ladon-proofir-theorem-dossier-query", "ladon-proofir-obligation-route-paths-and-trees", "ladon-proofir-negative-evidence-and-coverage", "ladon-proofir-repository-triage-queries"],
+      "integrationDependsOn": ["ladon-cli-execution-contract"],
+      "enables": [],
+      "exitClass": "installed-read-only-calibrated-proofir-evidence-workflow"
+    }
+  ],
+  "acceptanceScenarios": [
+    "one exact theorem query returns separate declaration, ProofIR, replay, route, lineage, diagnostic, and coverage sections",
+    "the exact CDC theorem remains context-only without an explicit theorem surface",
+    "route results terminate at the requested endpoint and preserve authority transitions",
+    "unconfigured and unavailable evidence never become observed absence",
+    "repository triage finds stale and ambiguous evidence without fuzzy ownership",
+    "installed text and JSON outputs carry equivalent semantics and invoke no external tools"
+  ]
+}

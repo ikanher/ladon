@@ -23,8 +23,9 @@ from ladon.proof_search_index import (
     query_proof_search_index,
     default_proof_search_index_path,
 )
-from ladon.proofir_queries import query_artifact_evidence, query_theorem_evidence
+from ladon.proofir_queries import query_artifact_evidence, query_theorem_dossier
 from ladon.proofir_dag_store import query_dag_routes
+from ladon.proofir_triage import query_proofir_triage
 
 
 def build_proof_search_parser() -> argparse.ArgumentParser:
@@ -73,8 +74,10 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     evidence = operations.add_parser("evidence", help="Query stored ProofIR evidence.")
     _add_repository_options(evidence)
     _add_output_options(evidence)
-    evidence.add_argument("kind", choices=("theorem", "artifact", "dag"))
+    evidence.add_argument("kind", choices=("theorem", "artifact", "route", "dag", "triage"))
     evidence.add_argument("name")
+    evidence.add_argument("--dag")
+    evidence.add_argument("--start")
     evidence.add_argument("--end")
     evidence.add_argument("--reverse", action="store_true")
     evidence.add_argument("--limit", type=_bounded_limit, default=100)
@@ -115,39 +118,43 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
 
     repo_root = Path(args.repo_root)
     index_path = Path(args.index_path) if args.index_path else None
-    if getattr(args, "index_operation", None) == "build":
-        return build_proof_search_index(
-            repo_root,
-            index_path=index_path,
-            max_index_bytes=args.max_index_mib * 1024 * 1024,
-        ).payload
-    if getattr(args, "index_operation", None) == "status":
-        return inspect_proof_search_index(
-            repo_root,
-            index_path=index_path,
-            verify_sources=not args.no_verify_sources,
-        )
-    if getattr(args, "index_operation", None) == "query":
-        return query_proof_search_index(
-            repo_root,
-            index_path=index_path,
-            text=args.text,
-            scope=args.scope,
-            roots=tuple(args.root),
-            limit=args.limit,
-        )
+    if getattr(args, "index_operation", None):
+        return _dispatch_index(args, repo_root, index_path)
     if args.proof_search_operation == "evidence":
-        path = index_path or default_proof_search_index_path(repo_root)
-        with __import__("sqlite3").connect(f"file:{path}?mode=ro", uri=True) as connection:
-            connection.row_factory = __import__("sqlite3").Row
-            if args.kind == "theorem":
-                return query_theorem_evidence(connection, args.name, args.limit)
-            if args.kind == "artifact":
-                return query_artifact_evidence(connection, args.name, args.limit)
-            return query_dag_routes(connection, args.name.split(":", 1)[0], args.name.split(":", 1)[-1], args.end, reverse=args.reverse, max_routes=args.limit)
+        return _dispatch_evidence(args, repo_root, index_path)
     raise ProofSearchIndexError(
         f"unsupported proof-search operation {getattr(args, 'index_operation', args.proof_search_operation)!r}"
     )
+
+
+def _dispatch_index(args: argparse.Namespace, repo_root: Path, index_path: Path | None) -> Mapping[str, Any]:
+    if args.index_operation == "build":
+        return build_proof_search_index(repo_root, index_path=index_path, max_index_bytes=args.max_index_mib * 1024 * 1024).payload
+    if args.index_operation == "status":
+        return inspect_proof_search_index(repo_root, index_path=index_path, verify_sources=not args.no_verify_sources)
+    return query_proof_search_index(repo_root, index_path=index_path, text=args.text, scope=args.scope, roots=tuple(args.root), limit=args.limit)
+
+
+def _dispatch_evidence(args: argparse.Namespace, repo_root: Path, index_path: Path | None) -> Mapping[str, Any]:
+    import sqlite3
+    path = index_path or default_proof_search_index_path(repo_root)
+    with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
+        connection.row_factory = sqlite3.Row
+        if args.kind == "theorem":
+            return query_theorem_dossier(connection, args.name)
+        if args.kind == "artifact":
+            return query_artifact_evidence(connection, args.name, args.limit)
+        if args.kind == "triage":
+            return query_proofir_triage(connection, limit=args.limit)
+        return _dispatch_route(connection, args)
+
+
+def _dispatch_route(connection: Any, args: argparse.Namespace) -> Mapping[str, Any]:
+    dag_id = args.dag or args.name.split(":", 1)[0]
+    start = args.start or (args.name.split(":", 1)[-1] if ":" in args.name else None)
+    if not start:
+        raise ProofSearchIndexError("route evidence requires --start")
+    return query_dag_routes(connection, dag_id, start, args.end, reverse=args.reverse, max_routes=args.limit)
 
 
 def _add_repository_options(parser: argparse.ArgumentParser) -> None:
@@ -196,39 +203,89 @@ def _write_payload(
 
 
 def _render_text(payload: Mapping[str, Any]) -> str:
+    lines = _render_header(payload)
+    lines.extend(_render_core_rows(payload))
+    lines.extend(_render_evidence_sections(payload))
+    lines.extend(_render_warnings(payload))
+    return "\n".join(lines) + "\n"
+
+
+def _render_header(payload: Mapping[str, Any]) -> list[str]:
     operation = str(payload.get("operation", "index"))
-    lines = [
-        f"proof-search index {operation}: {payload.get('status', 'unknown')}",
-        f"path: {payload.get('indexPath', 'unavailable')}",
-    ]
-    for key, label in (
-        ("generationIdentity", "generation"),
-        ("freshness", "freshness"),
-        ("evidenceStatus", "evidence"),
-        ("databaseBytes", "bytes"),
-        ("elapsedSeconds", "elapsed_seconds"),
-    ):
+    lines = [f"proof-search index {operation}: {payload.get('status', 'unknown')}", f"path: {payload.get('indexPath', 'unavailable')}"]
+    for key, label in (("generationIdentity", "generation"), ("freshness", "freshness"), ("evidenceStatus", "evidence"), ("databaseBytes", "bytes"), ("elapsedSeconds", "elapsed_seconds")):
         if payload.get(key) is not None:
             lines.append(f"{label}: {payload[key]}")
     counts = payload.get("counts")
     if isinstance(counts, Mapping):
-        rendered = ", ".join(f"{key}={counts[key]}" for key in sorted(counts))
-        lines.append(f"counts: {rendered}")
+        lines.append("counts: " + ", ".join(f"{key}={counts[key]}" for key in sorted(counts)))
+    return lines
+
+
+def _render_core_rows(payload: Mapping[str, Any]) -> list[str]:
+    lines: list[str] = []
     rows = payload.get("rows")
     if isinstance(rows, list):
         lines.extend(_render_query_rows(rows))
         lines.append(f"returned: {payload.get('returned', len(rows))}")
         lines.append(f"truncated: {str(bool(payload.get('truncated'))).lower()}")
-    warnings = payload.get("warnings")
-    if isinstance(warnings, list):
-        lines.extend(
-            f"warning: {row.get('message', row)}"
-            for row in warnings
-            if isinstance(row, Mapping)
-        )
+    return lines
+
+
+def _render_evidence_sections(payload: Mapping[str, Any]) -> list[str]:
+    lines = _render_tabular_sections(payload)
+    lines.extend(_render_paths(payload))
+    lines.extend(_render_coverage(payload))
+    return lines
+
+
+def _render_tabular_sections(payload: Mapping[str, Any]) -> list[str]:
+    lines: list[str] = []
+    for section in ("surfaces", "claims", "replay", "diagnostics"):
+        value = payload.get(section)
+        lines.extend(_render_one_section(section, value))
+    return lines
+
+
+def _render_one_section(section: str, value: Any) -> list[str]:
+    if not isinstance(value, Mapping):
+        return []
+    lines = [f"{section}: returned={value.get('returned', 0)} matched={value.get('matched', 0)} truncated={str(bool(value.get('truncated'))).lower()}"]
+    for item in value.get("rows", []):
+        if isinstance(item, Mapping):
+            identity = item.get("surfaceId") or item.get("claimId") or item.get("replayId") or item.get("diagnosticId") or "<unknown>"
+            lines.append(f"- {identity} [{item.get('status', item.get('surfaceStatus', item.get('reason', 'observed')))}]")
+    return lines
+
+
+def _render_paths(payload: Mapping[str, Any]) -> list[str]:
+    lines: list[str] = []
+    paths = payload.get("paths")
+    if isinstance(paths, list):
+        lines.append(f"paths: returned={len(paths)} minimum_depth={payload.get('minimumDepth')}")
+        for path in paths:
+            if isinstance(path, Mapping):
+                names = " -> ".join(str(node.get("nodeId")) for node in path.get("nodes", []) if isinstance(node, Mapping))
+                lines.append(f"- {path.get('pathId', '?')} depth={path.get('depth', '?')}: {names}")
+    return lines
+
+
+def _render_coverage(payload: Mapping[str, Any]) -> list[str]:
+    lines: list[str] = []
+    coverage = payload.get("coverage")
+    if isinstance(coverage, Mapping):
+        lines.append(f"coverage: {json.dumps(coverage, sort_keys=True, ensure_ascii=False)}")
+    nonclaims = payload.get("nonclaims")
+    if isinstance(nonclaims, list):
+        lines.extend(f"nonclaim: {item}" for item in nonclaims)
+    return lines
+
+
+def _render_warnings(payload: Mapping[str, Any]) -> list[str]:
+    lines = [f"warning: {row.get('message', row)}" for row in payload.get("warnings", []) if isinstance(row, Mapping)]
     if payload.get("reason"):
         lines.append(f"reason: {payload['reason']}")
-    return "\n".join(lines) + "\n"
+    return lines
 
 
 def _render_query_rows(rows: list[Any]) -> list[str]:

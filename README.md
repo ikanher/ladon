@@ -99,6 +99,21 @@ Builds default to a 512 MiB hard database ceiling, configurable with
 `--max-index-mib`. Lexical signatures are capped at 16 KiB with per-row
 truncation evidence, and queries cannot return more than 1,000 rows.
 
+Stored ProofIR evidence is queried through the same ordinary CLI and the same
+project-local database:
+
+```bash
+uv run --locked ladon proof-search evidence theorem Theorem.Name \
+  --repo-root /path/to/lean/project --format json
+uv run --locked ladon proof-search evidence triage all \
+  --repo-root /path/to/lean/project --format json
+```
+
+The theorem dossier keeps Lean declarations, ProofIR surfaces and claims,
+replay observations, obligation routes, lineage, diagnostics, coverage, and
+nonclaims in separate sections. Warm evidence queries are read-only and never
+refresh the index or run external tools implicitly.
+
 Theorem extraction is an explicit Lean-backed CLI workflow:
 
 ```bash

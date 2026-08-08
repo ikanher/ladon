@@ -36,6 +36,12 @@ is not listed as supported here, do not describe it as implemented.
     declaration evidence. Accepted inputs are `proofir_bridge_index` and
     Quux-style `proof_ir_lean_surface_bundle`; raw ProofIR dialects remain out
     of core.
+The project-local proof-search SQLite index also stores normalized ProofIR
+catalog artifacts, surfaces, claims, replay provenance, obligation DAGs,
+checker relations, and conservative declaration attachments. Query projections
+keep those authorities separate: replay does not prove a claim, an obligation
+route is not a Lean dependency edge, and missing configured evidence is
+reported with explicit coverage rather than inferred absence.
 13. `proof_surface_witness`: normalizes optional quoted proof-surface witness
     artifacts for frozen spec stubs, proof endpoints, no-drift gates, source
     pins, axiom audits, and proof-hole quarantine. The witness is route
