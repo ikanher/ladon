@@ -5,6 +5,8 @@ import os
 import sqlite3
 from pathlib import Path
 
+import pytest
+
 from ladon.cli import main
 from ladon.proof_search_index import (
     ProofSearchIndexError,
@@ -101,11 +103,39 @@ def test_v1_schema_has_both_graph_directions_and_navigation_indexes(
     assert REQUIRED_QUERY_SURFACES <= query_surfaces
     assert EXPECTED_FOREIGN_KEYS <= foreign_keys
     assert any("idx_import_target" in str(row) for row in reverse_plan)
-    assert any("idx_declarations_package" in str(row) for row in package_plan)
+    assert any("declarations" in str(row) for row in package_plan)
     assert any("idx_alias_target" in str(row) for row in alias_plan)
     assert any("idx_dependency_target" in str(row) for row in dependency_plan)
 
 
+def test_v4_semantic_relations_have_constraints_and_access_paths(tmp_path: Path) -> None:
+    result = build_proof_search_index(sample_repository(tmp_path))
+    with sqlite3.connect(result.index_path) as connection:
+        tables = {row[0] for row in connection.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        assert {"symbols", "declaration_shapes", "module_semantic_state"} <= tables
+        assert {"idx_declarations_head", "idx_declaration_shapes_head", "idx_binders_head", "idx_module_semantic_status"} <= schema_lookup_indexes(connection)
+        columns = {row[1] for row in connection.execute("PRAGMA table_info(declarations)")}
+        assert {"fingerprint", "head", "arity", "is_proposition", "semantic_status", "helper_identity", "lean_identity"} <= columns
+
+
+def test_v4_symbol_set_null_and_dependency_foreign_keys(tmp_path: Path) -> None:
+    result = build_proof_search_index(sample_repository(tmp_path))
+    with sqlite3.connect(result.index_path) as connection:
+        connection.execute("PRAGMA foreign_keys = ON")
+        connection.execute("UPDATE symbols SET ownership = 'project' WHERE name = 'baseValue'")
+        connection.execute("INSERT INTO symbols(name,kind,ownership) VALUES ('axiom', 'constant', 'external')")
+        connection.execute("INSERT INTO declaration_dependencies VALUES ('baseValue', 'axiom', 'value', 'lexical_text', 'observed')")
+        with pytest.raises(sqlite3.IntegrityError):
+            connection.execute("INSERT INTO declaration_dependencies VALUES ('missing', 'axiom', 'value', 'lexical_text', 'observed')")
+        declaration_id = connection.execute("SELECT declaration_id FROM symbols WHERE name='baseValue'").fetchone()[0]
+        connection.execute("DELETE FROM declarations WHERE id = ?", (declaration_id,))
+        assert connection.execute("SELECT declaration_id FROM symbols WHERE name='baseValue'").fetchone()[0] is None
+
+
+def test_v4_database_size_respects_configured_cap(tmp_path: Path) -> None:
+    repo = sample_repository(tmp_path)
+    result = build_proof_search_index(repo, max_index_bytes=2 * 1024 * 1024)
+    assert result.index_path.stat().st_size <= 2 * 1024 * 1024
 def test_sql_constraints_reject_invalid_owned_rows(tmp_path: Path) -> None:
     result = build_proof_search_index(sample_repository(tmp_path))
 

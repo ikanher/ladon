@@ -8,14 +8,21 @@ from __future__ import annotations
 
 import sqlite3
 
-PROOF_SEARCH_INDEX_SCHEMA = "ladon-proof-search-index-v3"
-PROOF_SEARCH_INDEX_SCHEMA_VERSION = 3
-PROOF_SEARCH_SCHEMA_GENERATION = "sqlite-v3-fts1-lineage1-proofir1"
-PROOF_SEARCH_HELPER_IDENTITY = "lexical-navigation-v1;theorem-lineage-v1;proofir-catalog-v1"
+PROOF_SEARCH_INDEX_SCHEMA = "ladon-proof-search-index-v4"
+PROOF_SEARCH_INDEX_SCHEMA_VERSION = 4
+PROOF_SEARCH_SCHEMA_GENERATION = "sqlite-v4-name2-fts2-lineage1-proofir1"
+PROOF_SEARCH_HELPER_IDENTITY = "lexical-navigation-v2;theorem-lineage-v1;proofir-catalog-v1"
 
 REQUIRED_LOOKUP_INDEX_COLUMNS = {
     "idx_alias_target": ("target", "source", "kind"),
     "idx_declarations_candidate_name": ("candidate_name", "name"),
+    "idx_declarations_name_casefold": ("name_casefold", "name", "module"),
+    "idx_declarations_head": ("head", "arity", "name"),
+    "idx_declaration_shapes_head": ("symbol_head", "arity", "coarse_key", "declaration_id"),
+    "idx_binders_head": ("head", "is_premise", "declaration_id", "ordinal"),
+    "idx_structures_module_status": ("module", "authority", "declaration_id"),
+    "idx_structure_fields_status": ("status", "name", "structure_id", "ordinal"),
+    "idx_module_semantic_status": ("status", "reason", "module"),
     "idx_declarations_kind": ("kind", "candidate_name"),
     "idx_declarations_module": ("module", "candidate_name"),
     "idx_declarations_namespace": ("namespace", "candidate_name"),
@@ -67,6 +74,12 @@ EXPECTED_FOREIGN_KEYS = frozenset(
     {
         ("module_imports", "source", "modules", "name"),
         ("declarations", "module", "modules", "name"),
+        ("symbols", "declaration_id", "declarations", "id"),
+        ("declaration_dependencies", "source", "symbols", "name"),
+        ("declaration_dependencies", "target", "symbols", "name"),
+        ("declaration_shapes", "declaration_id", "declarations", "id"),
+        ("declaration_shapes", "symbol_head", "symbols", "name"),
+        ("module_semantic_state", "module", "modules", "name"),
         ("binders", "declaration_id", "declarations", "id"),
         ("structures", "declaration_id", "declarations", "id"),
         ("structures", "module", "modules", "name"),
@@ -161,6 +174,8 @@ def create_proof_search_schema(connection: sqlite3.Connection) -> None:
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             candidate_name TEXT,
+            name_casefold TEXT NOT NULL DEFAULT '',
+            name_segments TEXT NOT NULL DEFAULT '',
             namespace TEXT NOT NULL,
             kind TEXT NOT NULL,
             module TEXT NOT NULL,
@@ -181,6 +196,16 @@ def create_proof_search_schema(connection: sqlite3.Connection) -> None:
             privacy TEXT NOT NULL,
             locality TEXT NOT NULL,
             structure_name TEXT,
+            doc_text TEXT NOT NULL DEFAULT '',
+            rendered_type TEXT NOT NULL DEFAULT '',
+            conclusion_text TEXT NOT NULL DEFAULT '',
+            fingerprint TEXT NOT NULL DEFAULT '',
+            head TEXT NOT NULL DEFAULT '',
+            arity INTEGER NOT NULL DEFAULT 0 CHECK(arity >= 0),
+            is_proposition INTEGER NOT NULL DEFAULT 0 CHECK(is_proposition IN (0, 1)),
+            semantic_status TEXT NOT NULL DEFAULT 'unavailable',
+            helper_identity TEXT NOT NULL DEFAULT '',
+            lean_identity TEXT NOT NULL DEFAULT '',
             FOREIGN KEY(module) REFERENCES modules(name) ON DELETE CASCADE
         );
 
@@ -192,6 +217,7 @@ def create_proof_search_schema(connection: sqlite3.Connection) -> None:
             type_text TEXT NOT NULL,
             is_premise INTEGER NOT NULL CHECK(is_premise IN (0, 1)),
             authority TEXT NOT NULL,
+            head TEXT NOT NULL DEFAULT '',
             PRIMARY KEY(declaration_id, ordinal),
             FOREIGN KEY(declaration_id) REFERENCES declarations(id) ON DELETE CASCADE
         );
@@ -202,7 +228,46 @@ def create_proof_search_schema(connection: sqlite3.Connection) -> None:
             kind TEXT NOT NULL,
             authority TEXT NOT NULL,
             status TEXT NOT NULL,
-            PRIMARY KEY(source, target, kind, authority)
+            PRIMARY KEY(source, target, kind, authority),
+            FOREIGN KEY(source) REFERENCES symbols(name) ON DELETE CASCADE,
+            FOREIGN KEY(target) REFERENCES symbols(name) ON DELETE CASCADE
+        ) WITHOUT ROWID;
+
+        CREATE TABLE symbols (
+            name TEXT PRIMARY KEY,
+            declaration_id TEXT UNIQUE,
+            kind TEXT NOT NULL,
+            ownership TEXT NOT NULL,
+            FOREIGN KEY(declaration_id) REFERENCES declarations(id) ON DELETE SET NULL
+        );
+
+        CREATE TABLE declaration_shapes (
+            declaration_id TEXT PRIMARY KEY,
+            role TEXT NOT NULL,
+            key_version TEXT NOT NULL,
+            symbol_head TEXT,
+            arity INTEGER NOT NULL CHECK(arity >= 0),
+            shape_hash TEXT NOT NULL,
+            coarse_key TEXT NOT NULL,
+            authority TEXT NOT NULL,
+            status TEXT NOT NULL,
+            FOREIGN KEY(declaration_id) REFERENCES declarations(id) ON DELETE CASCADE,
+            FOREIGN KEY(symbol_head) REFERENCES symbols(name) ON DELETE SET NULL
+        );
+
+        CREATE TABLE module_semantic_state (
+            module TEXT PRIMARY KEY,
+            source_fingerprint TEXT NOT NULL,
+            compiled_fingerprint TEXT NOT NULL,
+            import_fingerprint TEXT NOT NULL,
+            surface_fingerprint TEXT NOT NULL,
+            helper_identity TEXT NOT NULL,
+            lean_identity TEXT NOT NULL,
+            status TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            declaration_count INTEGER NOT NULL CHECK(declaration_count >= 0),
+            dependency_count INTEGER NOT NULL CHECK(dependency_count >= 0),
+            FOREIGN KEY(module) REFERENCES modules(name) ON DELETE CASCADE
         );
 
         CREATE TABLE structures (
@@ -536,6 +601,13 @@ def create_proof_search_schema(connection: sqlite3.Connection) -> None:
 
         CREATE VIRTUAL TABLE declaration_search USING fts5(
             candidate_name,
+            name_segments,
+            namespace,
+            module,
+            package,
+            doc_text,
+            rendered_type,
+            conclusion_text,
             type_text,
             content='declarations',
             content_rowid='rowid',
@@ -561,6 +633,20 @@ def create_proof_search_schema(connection: sqlite3.Connection) -> None:
 
         CREATE INDEX idx_declarations_candidate_name
             ON declarations(candidate_name, name);
+        CREATE INDEX idx_declarations_name_casefold
+            ON declarations(name_casefold, name, module);
+        CREATE INDEX idx_declarations_head
+            ON declarations(head, arity, name);
+        CREATE INDEX idx_declaration_shapes_head
+            ON declaration_shapes(symbol_head, arity, coarse_key, declaration_id);
+        CREATE INDEX idx_binders_head
+            ON binders(head, is_premise, declaration_id, ordinal);
+        CREATE INDEX idx_structures_module_status
+            ON structures(module, authority, declaration_id);
+        CREATE INDEX idx_structure_fields_status
+            ON structure_fields(status, name, structure_id, ordinal);
+        CREATE INDEX idx_module_semantic_status
+            ON module_semantic_state(status, reason, module);
         CREATE INDEX idx_declarations_kind
             ON declarations(kind, candidate_name);
         CREATE INDEX idx_declarations_module
@@ -692,6 +778,9 @@ def schema_foreign_keys(
         "declarations",
         "binders",
         "declaration_dependencies",
+        "symbols",
+        "declaration_shapes",
+        "module_semantic_state",
         "structures",
         "structure_fields",
         "aliases",

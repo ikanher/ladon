@@ -7,6 +7,12 @@ import sqlite3
 from dataclasses import dataclass, field
 from typing import Any, Iterable, Mapping
 
+from ladon.proof_search_name_query import (
+    is_exact_name_query,
+    name_casefold,
+    semantic_name_segments_v1,
+)
+
 
 _TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9_']*")
 _CAMEL_BOUNDARY_RE = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
@@ -28,6 +34,8 @@ def query_database(
     scope: str,
     roots: tuple[str, ...],
     limit: int,
+    query_mode: str = "all",
+    exclusions: tuple[str, ...] = (),
 ) -> tuple[list[dict[str, Any]], bool, int | None, list[dict[str, str]]]:
     """Resolve scope and run one deterministic declaration query."""
 
@@ -39,6 +47,8 @@ def query_database(
         scope=scope,
         roots=roots,
         limit=limit,
+        query_mode=query_mode,
+        exclusions=exclusions,
     )
     return rows, truncated, len(modules) if modules is not None else None, omissions
 
@@ -50,14 +60,20 @@ def resolve_scope_modules(
 ) -> tuple[frozenset[str] | None, list[dict[str, str]]]:
     """Resolve one explicit scope to a finite module set where required."""
 
-    if scope in {"repository", "project", "namespace", "file"}:
+    if scope in {"repository", "project", "namespace"}:
         return None, []
     if scope == "external":
         return frozenset(), [_external_omission()]
     if not roots:
         raise ValueError(f"scope {scope!r} requires at least one --root")
     known = _known_modules(connection)
-    omissions = _missing_root_omissions(roots, known)
+    omissions = (
+        _missing_file_omissions(roots, _known_module_paths(connection))
+        if scope == "file"
+        else _missing_root_omissions(roots, known)
+    )
+    if scope == "file":
+        return None, omissions
     selected_roots = frozenset(set(roots) & known)
     return _expanded_modules(connection, scope, selected_roots), omissions
 
@@ -89,13 +105,16 @@ def _query_declarations(
     scope: str,
     roots: tuple[str, ...],
     limit: int,
+    query_mode: str,
+    exclusions: tuple[str, ...],
 ) -> tuple[list[dict[str, Any]], bool]:
     """Build and execute a parameterized bounded declaration query."""
 
     if modules is not None and not modules:
         return [], False
     query = _DeclarationQuery()
-    _add_text_filter(query, text)
+    _add_text_filter(query, text, query_mode=query_mode)
+    _add_exclusions(query, exclusions)
     _add_module_filter(query, modules)
     _add_named_scope_filter(query, scope, roots)
     query.values.append(limit + 1)
@@ -103,16 +122,34 @@ def _query_declarations(
     return [_query_row(row) for row in rows[:limit]], len(rows) > limit
 
 
-def _add_text_filter(query: _DeclarationQuery, text: str | None) -> None:
+def _add_text_filter(
+    query: _DeclarationQuery,
+    text: str | None,
+    *,
+    query_mode: str,
+) -> None:
     """Prefer the FTS surface and retain a symbol-only fallback."""
 
     if not text:
         return
-    tokens = sorted(_semantic_tokens(text))
+    if query_mode not in {"all", "any", "phrase"}:
+        raise ValueError("query mode must be all, any, or phrase")
+    tokens = sorted(_semantic_tokens(semantic_name_segments_v1(text)))
     if tokens:
-        query.table += " JOIN declaration_search ON declaration_search.rowid = d.rowid"
-        query.clauses.append("declaration_search MATCH ?")
-        query.values.append(" AND ".join(f'"{token}"*' for token in tokens))
+        operator = " OR " if query_mode == "any" else " AND "
+        expression = (
+            f'"{semantic_name_segments_v1(text)}"'
+            if query_mode == "phrase"
+            else operator.join(f'"{token}"*' for token in tokens)
+        )
+        exact_clause = "d.name_casefold = ?" if is_exact_name_query(text) else "0"
+        query.clauses.append(
+            "(" + exact_clause + " OR d.rowid IN ("
+            "SELECT rowid FROM declaration_search WHERE declaration_search MATCH ?))"
+        )
+        if is_exact_name_query(text):
+            query.values.append(name_casefold(text))
+        query.values.append(expression)
         return
     query.clauses.append(
         "(d.candidate_name LIKE ? ESCAPE '\\' OR d.name LIKE ? ESCAPE '\\' "
@@ -120,6 +157,14 @@ def _add_text_filter(query: _DeclarationQuery, text: str | None) -> None:
     )
     pattern = f"%{_escape_like(text)}%"
     query.values.extend((pattern, pattern, pattern))
+
+
+def _add_exclusions(query: _DeclarationQuery, exclusions: tuple[str, ...]) -> None:
+    """Apply explicit folded-name exclusions before ranking."""
+
+    for exclusion in exclusions:
+        query.clauses.append("d.name_casefold NOT LIKE ? ESCAPE '\\'")
+        query.values.append(f"%{_escape_like(name_casefold(exclusion))}%")
 
 
 def _add_module_filter(
@@ -239,6 +284,17 @@ def _known_modules(connection: sqlite3.Connection) -> frozenset[str]:
     return frozenset(str(row[0]) for row in connection.execute("SELECT name FROM modules"))
 
 
+def _known_module_paths(connection: sqlite3.Connection) -> frozenset[str]:
+    return frozenset(
+        str(row[0])
+        for row in connection.execute(
+            "SELECT m.path FROM modules AS m "
+            "LEFT JOIN declarations AS d ON d.path = m.path "
+            "GROUP BY m.path HAVING COUNT(d.id) > 0"
+        )
+    )
+
+
 def _module_edges(connection: sqlite3.Connection) -> dict[str, frozenset[str]]:
     edges: dict[str, set[str]] = {}
     for source, target in connection.execute("SELECT source, target FROM module_imports"):
@@ -276,6 +332,16 @@ def _missing_root_omissions(
 ) -> list[dict[str, str]]:
     return [
         {"kind": "module", "subject": name, "reason": "root_not_indexed"}
+        for name in sorted(set(roots) - known)
+    ]
+
+
+def _missing_file_omissions(
+    roots: Iterable[str],
+    known: frozenset[str],
+) -> list[dict[str, str]]:
+    return [
+        {"kind": "file", "subject": name, "reason": "source_not_indexed"}
         for name in sorted(set(roots) - known)
     ]
 

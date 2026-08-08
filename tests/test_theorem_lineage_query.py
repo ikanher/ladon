@@ -127,12 +127,17 @@ def test_project_lineage_nodes_use_indexed_source_anchors() -> None:
     )
     connection.execute(
         """
-        INSERT INTO declarations VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO declarations(
+                id, name, candidate_name, name_casefold, name_segments, namespace, kind,
+                module, package, path, line, column_number, start_offset, end_offset,
+                block_sha256, type_text, type_text_bytes, type_text_truncated, type_status,
+                authority, privacy, locality, structure_name, doc_text, rendered_type,
+                conclusion_text
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
-            "demo-target", "Demo.target", "Demo.target", "Demo", "theorem", "Demo", "Demo",
-            "Demo.lean", 42, 7, 0, 1, None, ": True", 6, 0,
-            "lexical-signature", "lexical_text", "public", "global", None,
+                "demo-target", "Demo.target", "Demo.target", "demo.target", "demo target", "Demo", "theorem", "Demo", "Demo",
+                "Demo.lean", 42, 7, 0, 1, None, ": True", 6, 0, "lexical-signature", "lexical_text", "public", "global", None, "", ": True", ": True",
         ),
     )
 

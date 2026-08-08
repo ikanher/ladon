@@ -102,11 +102,47 @@ def _surfaces(connection: sqlite3.Connection, theorem: str, declaration_ids: set
 
 
 def _claims(connection: sqlite3.Connection, surfaces: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:
+    selected = surfaces[:limit]
+    if not selected:
+        return []
+    rows = _claim_rows(connection, selected, limit)
+    return _claim_projection(rows, selected)[:limit]
+
+
+def _claim_rows(
+    connection: sqlite3.Connection,
+    selected: list[dict[str, Any]],
+    limit: int,
+) -> list[sqlite3.Row]:
+    artifacts = tuple(sorted({str(surface["artifactId"]) for surface in selected}))
+    surface_rows = tuple(sorted({str(surface["surfaceRowId"]) for surface in selected}))
+    claim_ids = tuple(sorted({str(surface["claimId"]) for surface in selected if surface.get("claimId")}))
+    artifact_marks = ",".join("?" for _ in artifacts)
+    surface_marks = ",".join("?" for _ in surface_rows)
+    claim_marks = ",".join("?" for _ in claim_ids) or "NULL"
+    return connection.execute(
+        "SELECT c.claim_row_id,c.claim_id,c.status,c.authority_json,c.scope,c.proof_trust,"
+        "c.replay_boundary_json,c.extractor_guarantee,sc.surface_row_id "
+        "FROM proofir_claims c LEFT JOIN proofir_surface_claims sc "
+        "ON sc.claim_row_id=c.claim_row_id "
+        f"WHERE c.artifact_id IN ({artifact_marks}) AND "
+        f"(c.claim_id IN ({claim_marks}) OR sc.surface_row_id IN ({surface_marks})) "
+        "ORDER BY c.claim_id LIMIT ?",
+        (*artifacts, *claim_ids, *surface_rows, limit + 1),
+    ).fetchall()
+
+
+def _claim_projection(
+    rows: list[sqlite3.Row],
+    selected: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    surface_by_row = {str(surface["surfaceRowId"]): surface for surface in selected}
+    surface_by_claim = {str(surface["claimId"]): surface for surface in selected if surface.get("claimId")}
     result = []
-    for surface in surfaces[:limit]:
-        rows = connection.execute("SELECT c.claim_row_id,c.claim_id,c.status,c.authority_json,c.scope,c.proof_trust,c.replay_boundary_json,c.extractor_guarantee FROM proofir_claims c WHERE c.artifact_id=? AND (c.claim_id=? OR EXISTS (SELECT 1 FROM proofir_surface_claims sc WHERE sc.claim_row_id=c.claim_row_id AND sc.surface_row_id=?)) ORDER BY c.claim_id LIMIT ?", (surface["artifactId"], surface["claimId"] or "", surface["surfaceRowId"], limit + 1)).fetchall()
-        result.extend({"claimRowId": row[0], "claimId": row[1], "status": row[2], "authority": _parse_json(row[3]), "scope": row[4], "proofTrust": row[5], "replayBoundary": _parse_json(row[6]), "extractorGuarantee": row[7], "surfaceId": surface["surfaceId"]} for row in rows)
-    return _dedupe(result, "claimRowId")[:limit]
+    for row in rows:
+        surface = surface_by_row.get(str(row[8])) or surface_by_claim.get(str(row[1]))
+        result.append({"claimRowId": row[0], "claimId": row[1], "status": row[2], "authority": _parse_json(row[3]), "scope": row[4], "proofTrust": row[5], "replayBoundary": _parse_json(row[6]), "extractorGuarantee": row[7], "surfaceId": surface["surfaceId"] if surface else None})
+    return _dedupe(result, "claimRowId")
 
 
 def _replay(connection: sqlite3.Connection, surfaces: list[dict[str, Any]], limit: int) -> list[dict[str, Any]]:

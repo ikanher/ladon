@@ -377,6 +377,22 @@ Near-term work:
 
 ## Internal Python quality audits of Ladon
 
+### Proof-search semantic commands
+
+The installed CLI exposes bounded, ordinary-user commands:
+
+```bash
+ladon proof-search index build --repo-root . --mode lexical
+ladon proof-search search name --repo-root . --text fixedIndex
+ladon proof-search search type --repo-root . --pattern 'Nat → Nat'
+ladon proof-search explain --repo-root . --goal 'P' --candidate 'lemma'
+ladon proof-search consumers --repo-root . --declaration target
+ladon proof-search constructor --repo-root . --structure Record
+```
+
+JSON results preserve freshness, authority, bounds, omissions, and nonclaims;
+lexical/SQLite shortlist rows are never presented as Lean verification.
+
 Run the project-local quality command from this repository:
 
 ```bash

@@ -67,6 +67,20 @@ the shortest route from existing declarations to a target field.
 
 - Add fuzzy search over declaration names, docstrings, namespaces, and elaborated
   signatures in one command.
+- Normalize identifier queries consistently with the index. A fresh 2026-08-08
+  index returned zero rows for the exact mixed-case names
+  `fixedIndexPathExpression`, `scaleIndexedProducerAtIndex`, and
+  `firstPrinciplesFixedStep_private_and_randomRowStationary_scaleIndexed`, but
+  returned the expected declarations and signatures when the same query text
+  was lowercased. Exact Lean names should be case-insensitive by default, or a
+  zero-result query should automatically retry with the index normalization
+  and report that rewrite.
+- The same fresh generation returned zero rows for the exact structure name
+  `DPAdamFixedBetaFirstPrinciplesPrivacyData` during stopped-region assembly,
+  while a broad `trajectoryApproxDP` query returned many unrelated modules plus
+  the desired terminal consumers. Structure declarations, nested namespace
+  ownership, and exact-name retries should be first-class results so a simple
+  missing `open` diagnosis does not require falling back to raw source search.
 - Tokenize Lean names by semantic segments so searches for `all row corrector
   integrable` can find declarations such as
   `canonicalCorrector_release_integrable_all_state`.
@@ -127,12 +141,12 @@ the shortest route from existing declarations to a target field.
 - Provide an explicit omission row when a requested file root exists on disk but
   has no indexed module/declaration rows. A successful empty result currently
   looks indistinguishable from "the file contains no matching declaration."
-- Concrete 2026-08-08 reproduction: after a successful fresh rebuild, a
-  file-scoped query rooted at the compiled but untracked owner
-  `Mf/Optimization/SDE/DPAdamFixedBetaFirstPrinciplesPathBounds.lean` returned
-  zero rows, `freshness: unchecked`, and an empty omissions list. Status still
-  reported the generation as fresh. Distinguish source-tree freshness from
-  indexed-declaration coverage and report this case directly.
+- Corrected 2026-08-08 diagnosis: the apparently omitted untracked convergence
+  owner was present after a fresh rebuild. Lowercased exact-name queries found
+  declarations through line 1459, including newly added definitions and
+  theorems. The misleading empty results came from query case normalization,
+  not an extraction cutoff. Keep the requested-root omission diagnostics, but
+  use a known lowercased exact identifier when testing untracked coverage.
 - Materialize a versioned SQLite index containing:
   - fully qualified declaration names and kinds;
   - elaborated types and binder metadata;

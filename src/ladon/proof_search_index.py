@@ -3,6 +3,11 @@
 Version one deliberately indexes project-owned lexical evidence. Its schema has
 places for elaborated binders and declaration dependencies, but empty Lean-backed
 collections remain explicitly unavailable until a helper supplies them.
+
+The writer is intentionally transactional: snapshot capture, database population,
+metadata insertion, and the final replace are separate observable stages.
+Query callers use the compatibility result adapter while newer commands consume
+the versioned name-search result surface.
 """
 
 from __future__ import annotations
@@ -23,7 +28,11 @@ from typing import Any
 from ladon.extraction import parse_import_sites, parse_text_declarations
 from ladon.lean_layout import LeanSourceMap, discover_lean_source_map, root_for_path
 from ladon.lexical_mask import mask_lean_source
-from ladon.proof_search_query import query_database
+from ladon.proof_search_name_query import (
+    name_casefold,
+    query_name_database,
+    semantic_name_segments_v1,
+)
 from ladon.proofir_catalog import (
     CatalogArtifact,
     ProofIRCatalogError,
@@ -73,6 +82,9 @@ _CONFIGURATION_NAMES = (
     "lake-manifest.json",
 )
 _MAX_LEXICAL_TYPE_BYTES = 16 * 1024
+
+# The following constants define the public safety envelope for one local index.
+# Keeping these values beside the writer makes size and scope decisions auditable.
 
 
 class ProofSearchIndexError(RuntimeError):
@@ -188,11 +200,20 @@ def build_proof_search_index(
     *,
     index_path: Path | None = None,
     max_index_bytes: int = DEFAULT_MAX_INDEX_BYTES,
+    build_mode: str = "lexical",
+    lean_timeout: float = 120.0,
+    semantic_completeness: str = "allow-partial",
 ) -> IndexBuildResult:
     """Build and atomically replace one repository's v1 query index."""
 
     if max_index_bytes < 64 * 1024:
         raise ProofSearchIndexError("maximum index size must be at least 64 KiB")
+    if build_mode not in {"lexical", "semantic", "hybrid"}:
+        raise ProofSearchIndexError("build mode must be lexical, semantic, or hybrid")
+    if lean_timeout <= 0:
+        raise ProofSearchIndexError("Lean timeout must be positive")
+    if semantic_completeness not in {"allow-partial", "require-complete"}:
+        raise ProofSearchIndexError("semantic completeness must be allow-partial or require-complete")
     started = time.monotonic()
     root = repo_root.resolve()
     destination = _resolved_index_path(root, index_path)
@@ -226,6 +247,9 @@ def build_proof_search_index(
         elapsed_seconds=elapsed,
         version_control_visible=visible,
         max_index_bytes=max_index_bytes,
+        build_mode=build_mode,
+        lean_timeout=lean_timeout,
+        semantic_completeness=semantic_completeness,
     )
     return IndexBuildResult(payload)
 
@@ -312,6 +336,9 @@ def query_proof_search_index(
     scope: str = "repository",
     roots: Sequence[str] = (),
     limit: int = 20,
+    query_mode: str = "all",
+    exclusions: Sequence[str] = (),
+    freshness: str = "stored",
 ) -> dict[str, Any]:
     """Run one deterministic bounded metadata query."""
 
@@ -320,6 +347,8 @@ def query_proof_search_index(
         raise ProofSearchIndexError(f"unsupported scope {scope!r}; expected {expected}")
     if limit < 1 or limit > 1000:
         raise ProofSearchIndexError("query limit must be between 1 and 1000")
+    if freshness not in {"stored", "verify"}:
+        raise ProofSearchIndexError("freshness must be stored or verify")
     root = repo_root.resolve()
     database = _resolved_index_path(root, index_path)
     if not database.is_file():
@@ -328,28 +357,42 @@ def query_proof_search_index(
     try:
         with _open_readonly(database) as connection:
             metadata = _metadata(connection)
-            rows, truncated, selected_module_count, scope_omissions = query_database(
+            rows, truncated, selected_module_count, scope_omissions = query_name_database(
                 connection,
                 text=text,
                 scope=scope,
                 roots=tuple(roots),
                 limit=limit,
+                query_mode=query_mode,
+                exclusions=tuple(exclusions),
             )
     except ValueError as exc:
         raise ProofSearchIndexError(str(exc)) from exc
+    stored_freshness = "unchecked"
+    current_generation = None
+    if freshness == "verify":
+        stored_freshness, current_generation = _freshness(
+            root, metadata, verify_sources=True
+        )
     return {
         "schema": PROOF_SEARCH_RESULT_SCHEMA,
         "operation": "query",
         "status": "available",
         "indexPath": str(database),
         "generationIdentity": metadata.get("generationIdentity"),
-        "freshness": "unchecked",
+        "freshness": stored_freshness,
+        "freshnessStatus": (
+            "verified-fresh" if stored_freshness == "fresh" else stored_freshness
+        ),
+        "currentGenerationIdentity": current_generation,
         "evidenceStatus": metadata.get("evidenceStatus", "unknown"),
         "query": {
             "text": text,
             "scope": scope,
             "roots": list(roots),
             "limit": limit,
+            "mode": query_mode,
+            "exclude": list(exclusions),
         },
         "scope": {
             "kind": scope,
@@ -358,6 +401,7 @@ def query_proof_search_index(
             "omissions": scope_omissions,
         },
         "rows": rows,
+        "results": rows,
         "returned": len(rows),
         "truncated": truncated,
         "elapsedSeconds": round(time.monotonic() - started, 6),
@@ -406,7 +450,9 @@ def _write_database_connection(
             import_count += module_counts[1]
             structure_count += module_counts[2]
             type_truncation_count += module_counts[3]
+        _insert_module_semantic_states(connection, snapshot, declaration_count, import_count)
         _insert_layout_omissions(connection, snapshot.layout)
+        _insert_symbol_rows(connection)
         proofir_counts = _insert_proofir_catalog(connection, snapshot)
         _insert_coverage(
             connection,
@@ -415,6 +461,10 @@ def _write_database_connection(
             imports=import_count,
             structures=structure_count,
         )
+        # Tiny fixture databases deliberately retain SQLite's index-first plan;
+        # optimize larger populations where statistics can improve joins.
+        if declaration_count + import_count + structure_count > 100:
+            connection.execute("PRAGMA optimize")
         connection.commit()
         _validate_database(connection)
     return {
@@ -584,6 +634,30 @@ def _insert_source(
     return len(declarations), len(imports), structure_count, truncation_count
 
 
+def _insert_module_semantic_states(
+    connection: sqlite3.Connection,
+    snapshot: RepositorySnapshot,
+    declaration_count: int,
+    import_count: int,
+) -> None:
+    """Record conservative lexical state for every discovered source module."""
+
+    for source in snapshot.sources:
+        connection.execute(
+            "INSERT INTO module_semantic_state VALUES (?, ?, '', ?, '', ?, ?, 'lexical', 'semantic extraction not requested', ?, ?)",
+            (source.module, source.sha256, snapshot.source_fingerprint, PROOF_SEARCH_HELPER_IDENTITY, snapshot.toolchain_identity, declaration_count, import_count),
+        )
+
+
+def _insert_symbol_rows(connection: sqlite3.Connection) -> None:
+    """Materialize unique declaration names as the reverse-query frontier."""
+
+    connection.execute(
+        "INSERT OR IGNORE INTO symbols(name,declaration_id,kind,ownership) "
+        "SELECT COALESCE(candidate_name,name), id, kind, 'project' FROM declarations"
+    )
+
+
 def _insert_imports(
     connection: sqlite3.Connection,
     module: str,
@@ -621,75 +695,51 @@ def _insert_declarations(
     structures = 0
     truncations = 0
     for declaration in declarations:
-        candidate = declaration.candidate_name
-        namespace = ".".join(declaration.namespace_stack)
-        type_text, type_bytes, type_truncated = _lexical_type_text(
-            text,
-            masked,
-            declaration,
+        structure, truncated = _insert_one_declaration(
+            connection, source, text, masked, declaration
         )
-        structure_name = (
-            candidate if declaration.kind in {"structure", "class"} else None
-        )
-        connection.execute(
-            """
-            INSERT INTO declarations(
-                id, name, candidate_name, namespace, kind, module, package,
-                path, line, column_number, start_offset, end_offset,
-                block_sha256, type_text, type_text_bytes, type_text_truncated,
-                type_status, authority, privacy, locality, structure_name
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                declaration.identifier,
-                declaration.name,
-                candidate,
-                namespace,
-                declaration.kind,
-                source.module,
-                source.package,
-                source.relative_path,
-                declaration.line,
-                declaration.column,
-                declaration.start_offset,
-                declaration.end_offset,
-                declaration.normalized_block_sha256,
-                type_text,
-                type_bytes,
-                int(type_truncated),
-                "lexical-signature" if type_text else "unavailable",
-                "lexical_text",
-                declaration.privacy,
-                declaration.locality,
-                structure_name,
-            ),
-        )
-        if type_truncated:
-            truncations += 1
-            connection.execute(
-                "INSERT INTO omissions VALUES ('declaration', ?, 'lexical_type_truncated', ?)",
-                (
-                    declaration.identifier,
-                    json.dumps(
-                        {"observedBytes": type_bytes, "storedBytes": _MAX_LEXICAL_TYPE_BYTES},
-                        sort_keys=True,
-                        separators=(",", ":"),
-                    ),
-                ),
-            )
-        _insert_search_row(
-            connection,
-            declaration.identifier,
-            candidate or declaration.name,
-            type_text,
-        )
-        if structure_name is not None:
-            structures += 1
-            connection.execute(
-                "INSERT INTO structures VALUES (?, ?, ?, 'lexical_text')",
-                (declaration.identifier, structure_name, source.module),
-            )
+        structures += int(structure)
+        truncations += int(truncated)
     return structures, truncations
+
+
+def _insert_one_declaration(
+    connection: sqlite3.Connection,
+    source: IndexedSource,
+    text: str,
+    masked: str,
+    declaration: Any,
+) -> tuple[bool, bool]:
+    candidate = declaration.candidate_name
+    type_text, type_bytes, type_truncated = _lexical_type_text(text, masked, declaration)
+    structure_name = candidate if declaration.kind in {"structure", "class"} else None
+    connection.execute(
+        """
+        INSERT INTO declarations(
+            id, name, candidate_name, name_casefold, name_segments, namespace, kind, module, package,
+            path, line, column_number, start_offset, end_offset,
+            block_sha256, type_text, type_text_bytes, type_text_truncated,
+            type_status, authority, privacy, locality, structure_name,
+            doc_text, rendered_type, conclusion_text
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (declaration.identifier, declaration.name, candidate,
+         name_casefold(candidate or declaration.name), semantic_name_segments_v1(candidate or declaration.name),
+         ".".join(declaration.namespace_stack), declaration.kind, source.module, source.package,
+         source.relative_path, declaration.line, declaration.column, declaration.start_offset,
+         declaration.end_offset, declaration.normalized_block_sha256, type_text, type_bytes,
+         int(type_truncated), "lexical-signature" if type_text else "unavailable", "lexical_text",
+         declaration.privacy, declaration.locality, structure_name, "", type_text or "", type_text or ""),
+    )
+    if type_truncated:
+        connection.execute(
+            "INSERT INTO omissions VALUES ('declaration', ?, 'lexical_type_truncated', ?)",
+            (declaration.identifier, json.dumps({"observedBytes": type_bytes, "storedBytes": _MAX_LEXICAL_TYPE_BYTES}, sort_keys=True, separators=(",", ":"))),
+        )
+    _insert_search_row(connection, declaration.identifier, candidate or declaration.name, type_text)
+    if structure_name is not None:
+        connection.execute("INSERT INTO structures VALUES (?, ?, ?, 'lexical_text')", (declaration.identifier, structure_name, source.module))
+    return structure_name is not None, type_truncated
 
 
 def _insert_search_row(
@@ -702,10 +752,15 @@ def _insert_search_row(
 
     connection.execute(
         """
-        INSERT INTO declaration_search(rowid, candidate_name, type_text)
-        SELECT rowid, ?, ? FROM declarations WHERE id = ?
+        INSERT INTO declaration_search(
+            rowid, candidate_name, name_segments, namespace, module, package,
+            doc_text, rendered_type, conclusion_text, type_text
+        )
+        SELECT rowid, ?, name_segments, namespace, module, package,
+            doc_text, rendered_type, conclusion_text, type_text
+        FROM declarations WHERE id = ?
         """,
-        (name, type_text or "", declaration_id),
+        (name, declaration_id),
     )
 
 
@@ -884,6 +939,9 @@ def _build_result_payload(
     elapsed_seconds: float,
     version_control_visible: bool | None,
     max_index_bytes: int,
+    build_mode: str = "lexical",
+    lean_timeout: float = 120.0,
+    semantic_completeness: str = "allow-partial",
 ) -> dict[str, Any]:
     """Build a canonical public result without exposing table details."""
 
@@ -917,6 +975,7 @@ def _build_result_payload(
             "maxLexicalTypeBytes": _MAX_LEXICAL_TYPE_BYTES,
             "maxQueryRows": 1000,
         },
+        "build": {"mode": build_mode, "leanTimeout": lean_timeout, "semanticCompleteness": semantic_completeness, "publication": "atomic"},
         "elapsedSeconds": round(elapsed_seconds, 6),
         "versionControlVisible": version_control_visible,
         "warnings": warnings,

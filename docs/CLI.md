@@ -200,6 +200,13 @@ pointers instead of returning an apparently actionable row.
 
 ## Runsets and report sets
 
+Proof-search uses the same installed CLI surface as a human operator. Its
+bounded search commands are `search name`, `search type`, `explain`,
+`consumers`, and `constructor`; `index query` remains a compatibility adapter.
+Use `--format json` for machine-readable results and inspect `authority`,
+`freshness`, `coverage`, `bounds`, and `omissions` before treating a row as
+actionable.
+
 `runset` executes a versioned manifest of ordinary Ladon analyses and publishes
 a resumable bundle:
 
@@ -243,6 +250,24 @@ Its help, report/diagnostic channel separation, invocation errors, operational
 errors, and signal behavior follow the same process rules where applicable.
 Analyzer-only build, finding-policy, and report-version options are not added to
 the bridge merely to make its option list identical.
+
+## Proof-search baseline evidence
+
+The portable baseline command records identity-bearing, observational timings
+without overwriting an accepted file:
+
+```bash
+python scripts/proof_search_baseline.py \
+  --repo-root /path/to/project \
+  --output .ladon/baselines/proof-search.json \
+  --probe python -c 'print("probe")'
+```
+
+Baseline timing, database-size, and peak-RSS measurements are observational and
+must be compared on the same fingerprinted host. Public-contract predicates,
+deterministic ordering, authority/freshness fields, bounds, and omission
+semantics are release gates; a fast measurement never upgrades heuristic or
+lexical evidence into Lean authority.
 
 ## Migration summary
 

@@ -1,0 +1,225 @@
+"""Deterministic, bounded graph primitives for proof-engineering projections."""
+
+from __future__ import annotations
+
+from collections import deque
+from dataclasses import dataclass
+from typing import Iterable, Mapping
+
+
+@dataclass(frozen=True)
+class GraphRequest:
+    """A finite graph request with explicit safety caps."""
+
+    nodes: tuple[str, ...]
+    edges: tuple[tuple[str, str], ...]
+    roots: tuple[str, ...] = ()
+    max_depth: int = 64
+    max_paths: int = 100
+    max_output_nodes: int = 10_000
+
+
+@dataclass(frozen=True)
+class GraphResult:
+    """Normalized adjacency plus explicit omissions and stable integer IDs."""
+
+    nodes: tuple[str, ...]
+    node_ids: Mapping[str, int]
+    forward: Mapping[str, tuple[str, ...]]
+    reverse: Mapping[str, tuple[str, ...]]
+    omissions: tuple[dict[str, str], ...] = ()
+
+
+def normalize_graph(request: GraphRequest) -> GraphResult:
+    """Normalize malformed edges, duplicate references, and deterministic order."""
+
+    _validate_caps(request)
+    nodes = tuple(sorted(dict.fromkeys(request.nodes)))
+    known = set(nodes)
+    forward: dict[str, set[str]] = {node: set() for node in nodes}
+    reverse: dict[str, set[str]] = {node: set() for node in nodes}
+    omissions: list[dict[str, str]] = []
+    for source, target in request.edges:
+        if source not in known or target not in known:
+            omissions.append({"kind": "edge", "subject": f"{source}->{target}", "reason": "endpoint_not_indexed"})
+            continue
+        forward[source].add(target)
+        reverse[target].add(source)
+    return GraphResult(
+        nodes=nodes,
+        node_ids={node: index for index, node in enumerate(nodes)},
+        forward={node: tuple(sorted(targets)) for node, targets in forward.items()},
+        reverse={node: tuple(sorted(sources)) for node, sources in reverse.items()},
+        omissions=tuple(omissions),
+    )
+
+
+def bounded_bfs(graph: GraphResult, roots: Iterable[str], *, reverse: bool = False, max_depth: int = 64) -> tuple[str, ...]:
+    """Expand a bounded frontier once, preserving stable breadth-first order."""
+
+    if max_depth < 0:
+        raise ValueError("max_depth must be non-negative")
+    adjacency = graph.reverse if reverse else graph.forward
+    queue = deque((root, 0) for root in sorted(set(roots)) if root in graph.node_ids)
+    seen: set[str] = set()
+    result: list[str] = []
+    while queue:
+        node, depth = queue.popleft()
+        if node in seen:
+            continue
+        seen.add(node)
+        result.append(node)
+        if depth < max_depth:
+            queue.extend((target, depth + 1) for target in adjacency.get(node, ()))
+    return tuple(result)
+
+
+def bounded_paths(graph: GraphResult, start: str, end: str | None = None, *, reverse: bool = False, max_depth: int = 64, max_paths: int = 100) -> tuple[tuple[str, ...], ...]:
+    """Enumerate cycle-safe paths with deterministic depth/path ordering."""
+
+    _validate_path_caps(max_depth, max_paths)
+    if start not in graph.node_ids:
+        return ()
+    adjacency = graph.reverse if reverse else graph.forward
+    found = _enumerate_paths(adjacency, start, end, max_depth, max_paths)
+    return tuple(sorted(found, key=lambda path: (len(path), path))[:max_paths])
+
+
+def strongly_connected_components(graph: GraphResult) -> tuple[tuple[str, ...], ...]:
+    """Return stable SCCs using an iterative two-pass reachability algorithm."""
+
+    order = _finish_order(graph)
+    components: list[tuple[str, ...]] = []
+    assigned: set[str] = set()
+    for root in reversed(order):
+        if root in assigned:
+            continue
+        component = tuple(node for node in sorted(bounded_bfs(graph, (root,), reverse=True, max_depth=len(graph.nodes))) if node not in assigned and _reachable(graph, node, root))
+        assigned.update(component)
+        components.append(component or (root,))
+    return tuple(sorted(components, key=lambda component: component[0]))
+
+
+def unfold_dag(graph: GraphResult) -> dict[str, object]:
+    """Collapse SCCs while retaining shared-node and cycle reference metadata."""
+
+    components = strongly_connected_components(graph)
+    owner = {node: index for index, component in enumerate(components) for node in component}
+    edges = _component_edges(graph, owner)
+    references = _component_references(graph, components, owner)
+    return {"components": [list(component) for component in components], "edges": [list(edge) for edge in edges], "references": references}
+
+
+def _component_edges(graph: GraphResult, owner: Mapping[str, int]) -> list[tuple[int, int]]:
+    return sorted({(owner[source], owner[target]) for source, targets in graph.forward.items() for target in targets if owner[source] != owner[target]})
+
+
+def _component_references(graph: GraphResult, components: tuple[tuple[str, ...], ...], owner: Mapping[str, int]) -> list[dict[str, object]]:
+    return [{"node": node, "component": owner[node], "kind": "cycle" if len(components[owner[node]]) > 1 or node in graph.forward[node] else "shared"} for node in graph.nodes if len(components[owner[node]]) > 1 or node in graph.forward[node]]
+
+
+def dominators(graph: GraphResult, roots: Iterable[str]) -> Mapping[str, frozenset[str]]:
+    """Compute dominators with explicit multiple-root and unreachable semantics."""
+
+    roots_set = {root for root in roots if root in graph.node_ids}
+    reachable = set(bounded_bfs(graph, roots_set, max_depth=len(graph.nodes)))
+    result = {node: frozenset() for node in graph.nodes if node not in reachable}
+    dom = {node: (frozenset({node}) if node in roots_set else frozenset(reachable)) for node in reachable}
+    _iterate_dominators(graph, reachable, roots_set, dom)
+    result.update(dom)
+    return result
+
+
+def brute_force_dominators(graph: GraphResult, roots: Iterable[str]) -> Mapping[str, frozenset[str]]:
+    """Small-graph oracle retained for differential tests."""
+
+    roots_set = {root for root in roots if root in graph.node_ids}
+    reachable = set(bounded_bfs(graph, roots_set, max_depth=len(graph.nodes)))
+    result: dict[str, frozenset[str]] = {}
+    for node in graph.nodes:
+        if node not in reachable:
+            result[node] = frozenset()
+            continue
+        result[node] = frozenset(candidate for candidate in reachable if _dominates(graph, roots_set, candidate, node))
+    return result
+
+
+def _dominates(graph: GraphResult, roots: set[str], candidate: str, target: str) -> bool:
+    if target in roots:
+        return candidate == target or candidate in roots
+    paths = tuple(
+        path
+        for root in sorted(roots)
+        for path in bounded_paths(graph, root, target, max_depth=len(graph.nodes), max_paths=10_000)
+    )
+    return bool(paths) and all(candidate in path for path in paths)
+
+
+def _reachable(graph: GraphResult, start: str, target: str) -> bool:
+    return target in bounded_bfs(graph, (start,), max_depth=len(graph.nodes))
+
+
+def _validate_caps(request: GraphRequest) -> None:
+    if min(request.max_depth, request.max_paths, request.max_output_nodes) < 1:
+        raise ValueError("graph caps must be positive")
+
+
+def _validate_path_caps(max_depth: int, max_paths: int) -> None:
+    if min(max_depth, max_paths) < 1:
+        raise ValueError("path bounds must be positive")
+
+
+def _enumerate_paths(
+    adjacency: Mapping[str, tuple[str, ...]],
+    start: str,
+    end: str | None,
+    max_depth: int,
+    max_paths: int,
+) -> list[tuple[str, ...]]:
+    found: list[tuple[str, ...]] = []
+    stack: list[tuple[str, tuple[str, ...]]] = [(start, (start,))]
+    while stack and len(found) <= max_paths:
+        node, path = stack.pop()
+        if end is None or node == end:
+            found.append(path)
+        if len(path) - 1 < max_depth:
+            stack.extend(
+                (target, path + (target,))
+                for target in reversed(adjacency.get(node, ()))
+                if target not in path
+            )
+    return found
+
+
+def _finish_order(graph: GraphResult) -> list[str]:
+    order: list[str] = []
+    seen: set[str] = set()
+    for root in graph.nodes:
+        if root in seen:
+            continue
+        stack = [(root, False)]
+        while stack:
+            node, expanded = stack.pop()
+            if expanded:
+                order.append(node)
+            elif node not in seen:
+                seen.add(node)
+                stack.append((node, True))
+                stack.extend((target, False) for target in reversed(graph.forward[node]) if target not in seen)
+    return order
+
+
+def _iterate_dominators(graph: GraphResult, reachable: set[str], roots: set[str], dom: dict[str, frozenset[str]]) -> None:
+    changed = True
+    while changed:
+        changed = False
+        for node in sorted(reachable - roots):
+            predecessors = [pred for pred in graph.reverse[node] if pred in reachable]
+            intersection = set.intersection(*(set(dom[pred]) for pred in predecessors)) if predecessors else set()
+            candidate = frozenset({node} | intersection)
+            if candidate != dom[node]:
+                dom[node] = candidate
+                changed = True
+
+
+__all__ = ["GraphRequest", "GraphResult", "normalize_graph", "bounded_bfs", "bounded_paths", "strongly_connected_components", "unfold_dag", "dominators", "brute_force_dominators"]

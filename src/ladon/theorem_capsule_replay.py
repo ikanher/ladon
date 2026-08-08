@@ -16,24 +16,23 @@ from typing import Any, Mapping
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
 from ladon.theorem_capsule_models import (
     NONCLAIMS,
-    PLAN_PROTOCOL,
     CapsuleContentError,
     CapsuleInvocationError,
     CapsuleManifest,
     CapsuleOperationalError,
     TheoremPlan,
-    canonical_json_bytes,
     replay_receipt,
     sha256_bytes,
 )
 from ladon.theorem_capsule_planning import (
     DEFAULT_CAPSULE_HELPER,
-    HELPER_VERSION,
-    helper_closure_checksum,
-    normalize_helper_nodes,
     parse_helper_payload,
-    semantic_edges,
-    trust_frontier,
+)
+from ladon.theorem_capsule_replay_validation import (
+    compare_replayed_evidence,
+    isolation_evidence,
+    validate_capsule_content,
+    validate_replay_helper_payload,
 )
 
 
@@ -96,11 +95,11 @@ def _replay_validated(
 ) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="ladon-capsule-source-") as source_temp:
         source = _capsule_source(capsule, Path(source_temp))
-        manifest, plan = _validate_capsule_content(source)
+        manifest, plan = validate_capsule_content(source)
         with tempfile.TemporaryDirectory(prefix="ladon-capsule-replay-") as replay_temp:
             replay_root = Path(replay_temp) / "repository"
             shutil.copytree(source, replay_root)
-            isolation = _isolation_evidence(plan, replay_root)
+            isolation = isolation_evidence(plan, replay_root)
             if not isolation["passed"]:
                 return _receipt(
                     manifest,
@@ -224,133 +223,6 @@ def _reject_archive_collision(
     collision_keys.add(key)
 
 
-def _validate_capsule_content(
-    root: Path,
-) -> tuple[CapsuleManifest, TheoremPlan]:
-    manifest = CapsuleManifest.load(root / MANIFEST_NAME)
-    expected = {MANIFEST_NAME}
-    for row in manifest.files:
-        relative = _safe_relative(str(row.get("path", "")))
-        expected.add(relative)
-        _validate_inventory_file(root, relative, row)
-    actual = _regular_capsule_files(root)
-    if actual != expected:
-        missing = sorted(expected - actual)
-        extra = sorted(actual - expected)
-        raise CapsuleContentError(
-            f"capsule inventory mismatch; missing={missing[:5]} extra={extra[:5]}"
-        )
-    plan = TheoremPlan.load(root / PLAN_NAME)
-    _validate_manifest_plan_agreement(manifest, plan)
-    return manifest, plan
-
-
-def _regular_capsule_files(root: Path) -> set[str]:
-    actual: set[str] = set()
-    for path in root.rglob("*"):
-        metadata = path.lstat()
-        if stat.S_ISDIR(metadata.st_mode):
-            continue
-        relative = path.relative_to(root).as_posix()
-        if not stat.S_ISREG(metadata.st_mode) or path.is_symlink():
-            raise CapsuleContentError(
-                f"capsule contains an unsupported filesystem entry: {relative}"
-            )
-        actual.add(relative)
-    return actual
-
-
-def _validate_inventory_file(
-    root: Path,
-    relative: str,
-    row: Mapping[str, Any],
-) -> None:
-    path = root / relative
-    try:
-        metadata = path.lstat()
-    except OSError as exc:
-        raise CapsuleContentError(f"capsule file is missing: {relative}") from exc
-    if not stat.S_ISREG(metadata.st_mode) or path.is_symlink():
-        raise CapsuleContentError(f"capsule entry is not a regular file: {relative}")
-    content = path.read_bytes()
-    if sha256_bytes(content) != row.get("sha256"):
-        raise CapsuleContentError(f"capsule file hash mismatch: {relative}")
-    if len(content) != row.get("bytes"):
-        raise CapsuleContentError(f"capsule file size mismatch: {relative}")
-    if row.get("mode") != "0644" or stat.S_IMODE(metadata.st_mode) != 0o644:
-        raise CapsuleContentError(f"capsule file mode mismatch: {relative}")
-
-
-def _validate_manifest_plan_agreement(
-    manifest: CapsuleManifest,
-    plan: TheoremPlan,
-) -> None:
-    if manifest.payload.get("planIdentity") != plan.identity:
-        raise CapsuleContentError("capsule and embedded plan identities disagree")
-    if manifest.target != plan.target:
-        raise CapsuleContentError("capsule and embedded plan targets disagree")
-    closure = plan.payload["semanticGraph"]["closureFingerprint"]
-    if manifest.payload.get("semanticClosureIdentity") != closure:
-        raise CapsuleContentError("capsule semantic closure identity disagrees")
-    if manifest.payload.get("status") != "materialized_unverified":
-        raise CapsuleContentError("capsule status is not replayable")
-    inventory = {str(row.get("path")): row for row in manifest.files}
-    _validate_planned_inventory_row(
-        inventory,
-        PLAN_NAME,
-        sha256_bytes(plan.to_bytes()),
-        "plan",
-    )
-    for row in plan.configuration_files:
-        _validate_planned_inventory_row(
-            inventory,
-            str(row["path"]),
-            str(row["sha256"]),
-            str(row["role"]),
-        )
-    for row in plan.files:
-        _validate_planned_inventory_row(
-            inventory,
-            str(row["path"]),
-            str(row["materializedSha256"]),
-            str(row["role"]),
-        )
-
-
-def _validate_planned_inventory_row(
-    inventory: Mapping[str, Mapping[str, Any]],
-    path: str,
-    sha256: str,
-    role: str,
-) -> None:
-    row = inventory.get(path)
-    if row is None:
-        raise CapsuleContentError(f"planned capsule input is missing: {path}")
-    if row.get("sha256") != sha256 or row.get("role") != role:
-        raise CapsuleContentError(
-            f"capsule inventory disagrees with its source plan: {path}"
-        )
-
-
-def _isolation_evidence(
-    plan: TheoremPlan,
-    replay_root: Path,
-) -> dict[str, Any]:
-    original = Path(str(plan.repository["root"]))
-    passed = (
-        replay_root.resolve() != original.resolve()
-        and not replay_root.resolve().is_relative_to(original.resolve())
-        and not original.resolve().is_relative_to(replay_root.resolve())
-    )
-    return {
-        "level": "fresh_copy_sanitized_environment",
-        "passed": passed,
-        "originalCheckoutReferencedByCommand": False,
-        "originalCheckoutReferencedByEnvironment": False,
-        "replayRootRole": "fresh_temporary_repository",
-    }
-
-
 def _execute_replay(
     manifest: CapsuleManifest,
     plan: TheoremPlan,
@@ -431,7 +303,7 @@ def _execute_replay(
             isolation,
             comparisons={},
         )
-    comparisons = _compare_replayed_evidence(plan, helper["payload"])
+    comparisons = compare_replayed_evidence(plan, helper["payload"])
     status = STATUS_VERIFIED if comparisons["matched"] else STATUS_IDENTITY_MISMATCH
     return _receipt(
         manifest,
@@ -582,7 +454,7 @@ def _run_replay_helper(
         return {"status": failure, "row": row, "payload": None}
     try:
         payload = parse_helper_payload(result.stdout)
-        _validate_replay_helper_payload(payload)
+        validate_replay_helper_payload(payload)
     except (CapsuleContentError, CapsuleOperationalError, ValueError) as exc:
         row["diagnostic"] = str(exc)
         return {
@@ -591,69 +463,6 @@ def _run_replay_helper(
             "payload": None,
         }
     return {"status": None, "row": row, "payload": payload}
-
-
-def _validate_replay_helper_payload(payload: Mapping[str, Any]) -> None:
-    if payload.get("helperVersion") != HELPER_VERSION:
-        raise CapsuleContentError("replay helper version is incompatible")
-    if payload.get("protocolVersion") != PLAN_PROTOCOL:
-        raise CapsuleContentError("replay helper protocol is incompatible")
-    if payload.get("status") != "complete" or payload.get("complete") is not True:
-        raise CapsuleContentError(
-            f"replay helper did not confirm theorem: {payload.get('status')}"
-        )
-    nodes = payload.get("nodes")
-    end = payload.get("endRecord")
-    if not isinstance(nodes, list) or not isinstance(end, Mapping):
-        raise CapsuleContentError("replay helper completion record is malformed")
-    if end.get("kind") != "end" or end.get("nodeCount") != len(nodes):
-        raise CapsuleContentError("replay helper dependency stream is incomplete")
-    if end.get("checksum") != helper_closure_checksum(nodes):
-        raise CapsuleContentError("replay helper dependency checksum disagrees")
-
-
-def _compare_replayed_evidence(
-    plan: TheoremPlan,
-    payload: Mapping[str, Any],
-) -> dict[str, Any]:
-    nodes = normalize_helper_nodes(payload)
-    edges = semantic_edges(nodes)
-    closure = sha256_bytes(canonical_json_bytes({"nodes": nodes, "edges": edges}))
-    replay_trust = list(trust_frontier(nodes))
-    expected_graph = plan.payload["semanticGraph"]
-    expected_target = plan.target
-    replay_target = next(
-        (row for row in nodes if row["name"] == expected_target["name"]),
-        None,
-    )
-    checks = {
-        "exactName": payload.get("target") == expected_target["name"],
-        "declarationKind": bool(
-            replay_target and replay_target.get("kind") == expected_target["kind"]
-        ),
-        "leanVersion": payload.get("leanVersion")
-        == plan.payload["toolchain"]["leanVersion"],
-        "typeFingerprint": bool(
-            replay_target
-            and replay_target.get("typeFingerprint")
-            == expected_target["typeFingerprint"]
-        ),
-        "valueFingerprint": bool(
-            replay_target
-            and replay_target.get("valueFingerprint")
-            == expected_target.get("valueFingerprint")
-        ),
-        "semanticClosure": closure == expected_graph["closureFingerprint"],
-        "trustFrontier": replay_trust == expected_graph["trustFrontier"],
-    }
-    return {
-        "matched": all(checks.values()),
-        "checks": checks,
-        "expectedSemanticClosure": expected_graph["closureFingerprint"],
-        "replayedSemanticClosure": closure,
-        "expectedTrustFrontier": expected_graph["trustFrontier"],
-        "replayedTrustFrontier": replay_trust,
-    }
 
 
 def _process_stage_row(

@@ -8,6 +8,7 @@ import sqlite3
 from typing import Any, Mapping
 
 from ladon.proofir_catalog import CatalogArtifact
+from ladon.bounded_graph import GraphRequest, normalize_graph
 
 DAG_KIND = "proof_ir_v2_obligation_dag"
 WITNESS_KIND = "proof_ir_v2_obligation_dag_check_witness"
@@ -196,23 +197,37 @@ def _validate_route_bounds(max_depth: int, max_routes: int, max_output_bytes: in
 
 
 def _materialize_paths(connection: sqlite3.Connection, dag_id: str, rows: list[tuple[Any, ...]], *, reverse: bool) -> list[dict[str, Any]]:
+    all_node_ids = tuple(dict.fromkeys(node_id for _, _, node_path, _ in rows for node_id in node_path.split("\x1f")))
+    graph_edges = tuple(
+        (source, target)
+        for _, _, node_path, _ in rows
+        for source, target in zip(node_path.split("\x1f"), node_path.split("\x1f")[1:])
+    )
+    normalized = normalize_graph(GraphRequest(nodes=all_node_ids, edges=graph_edges))
+    node_map = _node_rows(connection, dag_id, normalized.nodes)
     paths = []
     for index, (_, depth, node_path, edge_path) in enumerate(rows, start=1):
         node_ids = tuple(node_path.split("\x1f"))
         edge_ids = tuple(edge_path.split("\x1e")) if edge_path else ()
-        nodes = _node_rows(connection, dag_id, node_ids)
+        nodes = [node_map[node_id] for node_id in node_ids if node_id in node_map]
         edges = _edge_rows(connection, dag_id, edge_ids, reverse=reverse)
         paths.append({"pathId": f"path-{index:04d}", "depth": depth, "nodes": nodes, "edges": edges})
     return paths
 
 
-def _node_rows(connection: sqlite3.Connection, dag_id: str, node_ids: tuple[str, ...]) -> list[dict[str, Any]]:
-    result = []
-    for node_id in node_ids:
-        row = connection.execute("SELECT node_id,node_kind,status,authority,description FROM proofir_dag_nodes WHERE dag_id=? AND node_id=?", (dag_id, node_id)).fetchone()
-        if row:
-            result.append({"nodeId": row[0], "kind": row[1], "status": row[2], "authority": row[3], "description": row[4]})
-    return result
+def _node_rows(connection: sqlite3.Connection, dag_id: str, node_ids: tuple[str, ...]) -> dict[str, dict[str, Any]]:
+    if not node_ids:
+        return {}
+    placeholders = ",".join("?" for _ in node_ids)
+    rows = connection.execute(
+        f"SELECT node_id,node_kind,status,authority,description FROM proofir_dag_nodes "
+        f"WHERE dag_id=? AND node_id IN ({placeholders})",
+        (dag_id, *node_ids),
+    ).fetchall()
+    return {
+        str(row[0]): {"nodeId": row[0], "kind": row[1], "status": row[2], "authority": row[3], "description": row[4]}
+        for row in rows
+    }
 
 
 def _edge_rows(connection: sqlite3.Connection, dag_id: str, edge_ids: tuple[str, ...], *, reverse: bool) -> list[dict[str, Any]]:
@@ -243,7 +258,8 @@ def _transitions(paths: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 def _legacy_nodes(connection: sqlite3.Connection, dag_id: str, rows: list[tuple[Any, ...]]) -> list[dict[str, Any]]:
     ids = tuple(dict.fromkeys(node for row in rows for node in row[2].split("\x1f")))
-    return _node_rows(connection, dag_id, ids)
+    node_map = _node_rows(connection, dag_id, ids)
+    return [node_map[node_id] for node_id in ids if node_id in node_map]
 
 
 def _enforce_output_bytes(result: dict[str, Any], limit: int) -> None:

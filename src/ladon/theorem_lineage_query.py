@@ -76,7 +76,7 @@ def query_lineage(
         }
     closure_id = str(status["closureId"])
     walk_rows = _walk_rows(connection, closure_id, query)
-    routes, route_truncated = _route_rows(connection, closure_id, query)
+    routes, route_truncated = _route_rows_from_walk(connection, closure_id, query, walk_rows)
     edge_count = sum(len(route["edges"]) for route in routes)
     edge_truncated = edge_count > query.max_edges
     if edge_truncated:
@@ -153,9 +153,21 @@ def _route_rows(
     query: LineageQuery,
 ) -> tuple[list[dict[str, Any]], bool]:
     rows = _walk_rows(connection, closure_id, query)
+    return _route_rows_from_walk(connection, closure_id, query, rows)
+
+
+def _route_rows_from_walk(
+    connection: sqlite3.Connection,
+    closure_id: str,
+    query: LineageQuery,
+    rows: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], bool]:
+    boundary_nodes = _boundary_nodes(connection, closure_id, query, {
+        str(row["node"]) for row in rows if row["node"] != query.theorem
+    })
     routes = []
     for row in rows:
-        if row["node"] == query.theorem or not _is_boundary_node(connection, closure_id, row["node"], query):
+        if row["node"] == query.theorem or row["node"] not in boundary_nodes:
             continue
         nodes = str(row["path"]).strip("|").split("|")
         edges = str(row["edge_kinds"]).split(",") if row["edge_kinds"] else []
@@ -173,6 +185,50 @@ def _route_rows(
         )
     routes.sort(key=lambda item: (item["root"], item["depth"], item["edges"], item["nodes"]))
     return routes[: query.max_routes + 1], len(routes) > query.max_routes
+
+
+def _boundary_nodes(
+    connection: sqlite3.Connection,
+    closure_id: str,
+    query: LineageQuery,
+    names: set[str],
+) -> set[str]:
+    if not names:
+        return set()
+    if query.boundary == "declaration":
+        return names & set(query.roots)
+    placeholders = ",".join("?" for _ in names)
+    if query.boundary == "trust":
+        return _trust_boundary_nodes(connection, closure_id, names, placeholders)
+    rows = _lineage_boundary_rows(connection, closure_id, names, placeholders)
+    return _filter_boundary_rows(rows, query)
+
+
+def _filter_boundary_rows(rows: list[sqlite3.Row], query: LineageQuery) -> set[str]:
+    if query.boundary == "project":
+        return {str(row[0]) for row in rows if row[1]}
+    if query.boundary == "external":
+        return {str(row[0]) for row in rows if row[2]}
+    return _package_boundary_nodes(rows, query.roots)
+
+
+def _package_boundary_nodes(rows: list[sqlite3.Row], roots: tuple[str, ...]) -> set[str]:
+    return {str(row[0]) for row in rows if any(str(row[3]) == root or str(row[3]).startswith(f"{root}.") for root in roots)}
+
+
+def _trust_boundary_nodes(connection: sqlite3.Connection, closure_id: str, names: set[str], placeholders: str) -> set[str]:
+    rows = connection.execute(
+        f"SELECT target FROM lineage_trust WHERE closure_id = ? AND target IN ({placeholders})",
+        (closure_id, *sorted(names)),
+    ).fetchall()
+    return {str(row[0]) for row in rows}
+
+
+def _lineage_boundary_rows(connection: sqlite3.Connection, closure_id: str, names: set[str], placeholders: str) -> list[sqlite3.Row]:
+    return connection.execute(
+        f"SELECT name,project_owned,external_frontier,owner_module FROM lineage_nodes WHERE closure_id = ? AND name IN ({placeholders})",
+        (closure_id, *sorted(names)),
+    ).fetchall()
 
 
 def _is_boundary_node(

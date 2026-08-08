@@ -51,3 +51,15 @@ def test_unattached_and_duplicate_names_do_not_get_inferred(tmp_path: Path) -> N
     assert dossier["declaration"]["candidates"] == []
     assert dossier["surfaces"]["rows"] == []
     assert "context-only" not in dossier["attachments"]
+
+
+def test_claim_materialization_is_set_oriented(tmp_path: Path) -> None:
+    repo, _ = _repo(tmp_path)
+    result = build_proof_search_index(repo)
+    statements: list[str] = []
+    with sqlite3.connect(result.index_path) as db:
+        db.row_factory = sqlite3.Row
+        db.set_trace_callback(statements.append)
+        query_theorem_dossier(db, "exact_root")
+    claim_selects = [sql for sql in statements if "SELECT c.claim_row_id" in sql]
+    assert len(claim_selects) == 1
