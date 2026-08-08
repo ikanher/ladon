@@ -77,6 +77,20 @@ the shortest route from existing declarations to a target field.
   corollaries, generic authorities, and compatibility aliases.
 - Integrate local failed-route evidence so rejected theorem routes are not
   repeatedly suggested without an explanation of what changed.
+- Make token/ranking behavior stable under query refinement. In a fresh
+  matrix-factorization index, the broad query `ActualFixedStepPoissonLedger
+  PathBounds` returned the exact structure, while the exact follow-up query
+  `PartialPathBounds` returned no rows even though a prior broader query had
+  returned that declaration. Exact identifier fragments should be monotone:
+  adding precision must not make a known exact-name candidate disappear.
+- Document whether multi-token queries are AND, OR, phrase, or ranked-bag
+  searches. The query `martingale bias energy lane integrable all row` returned
+  no rows, while exact underscore queries found the martingale and bias owners.
+  Agents cannot choose good query refinements without explicit semantics.
+- Use one stable JSON collection key. Current query output stores candidates in
+  `rows`; examples and ordinary expectations often suggest `results`. A compact
+  schema reference or `jq` example would prevent successful searches from being
+  mistaken for empty searches.
 
 ## P1: Proof Adapter Suggestions
 
@@ -106,6 +120,19 @@ the shortest route from existing declarations to a target field.
 
 ## P1: Lean-Aware Local Index
 
+- Discover repository-owned `.lean` files from the source tree even when they
+  are new, untracked, or not yet imported by a registered facade/module. Mark
+  them as source-only candidates rather than omitting them. Active proof owners
+  are often queried before their first consumer import exists.
+- Provide an explicit omission row when a requested file root exists on disk but
+  has no indexed module/declaration rows. A successful empty result currently
+  looks indistinguishable from "the file contains no matching declaration."
+- Concrete 2026-08-08 reproduction: after a successful fresh rebuild, a
+  file-scoped query rooted at the compiled but untracked owner
+  `Mf/Optimization/SDE/DPAdamFixedBetaFirstPrinciplesPathBounds.lean` returned
+  zero rows, `freshness: unchecked`, and an empty omissions list. Status still
+  reported the generation as fresh. Distinguish source-tree freshness from
+  indexed-declaration coverage and report this case directly.
 - Materialize a versioned SQLite index containing:
   - fully qualified declaration names and kinds;
   - elaborated types and binder metadata;
@@ -118,6 +145,11 @@ the shortest route from existing declarations to a target field.
   fingerprints changed.
 - Mark index freshness honestly when indirect imports changed or when only a
   lexical fallback is available.
+- Propagate verified freshness into query output. Immediately after a successful
+  fresh build/status check, query responses still report `freshness:
+  unchecked`; callers must manually correlate generation identities. Return
+  `verified-fresh` when the query process has checked the same generation, or
+  include the last verified status timestamp and identity explicitly.
 - Expose the index through both CLI queries and a small JSON protocol suitable
   for coding agents and editor integrations.
 

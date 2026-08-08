@@ -24,6 +24,16 @@ from ladon.extraction import parse_import_sites, parse_text_declarations
 from ladon.lean_layout import LeanSourceMap, discover_lean_source_map, root_for_path
 from ladon.lexical_mask import mask_lean_source
 from ladon.proof_search_query import query_database
+from ladon.proofir_catalog import (
+    CatalogArtifact,
+    ProofIRCatalogError,
+    ProofIRConfig,
+    catalog_generation_identity,
+    discover_catalog_artifacts,
+)
+from ladon.proofir_surface_store import insert_surface_and_replay_evidence
+from ladon.proofir_dag_store import insert_dag_evidence
+from ladon.proofir_attachments import attach_surfaces
 from ladon.proof_search_schema import (
     EXPECTED_FOREIGN_KEYS,
     PROOF_SEARCH_HELPER_IDENTITY,
@@ -105,6 +115,8 @@ class RepositorySnapshot:
     configuration_fingerprint: str
     source_fingerprint: str
     generation_identity: str
+    proofir_config: ProofIRConfig
+    proofir_artifacts: tuple[CatalogArtifact, ...]
 
 
 @dataclass(frozen=True)
@@ -138,7 +150,11 @@ def capture_repository_snapshot(repo_root: Path) -> RepositorySnapshot:
         for module, path in sorted(layout.modules.items())
     )
     toolchain = _toolchain_identity(root)
-    configuration = _configuration_fingerprint(root)
+    try:
+        proofir_config, proofir_artifacts = discover_catalog_artifacts(root)
+    except ProofIRCatalogError as exc:
+        raise ProofSearchIndexError(str(exc)) from exc
+    configuration = _configuration_fingerprint(root, proofir_config, proofir_artifacts)
     source_fingerprint = _stable_digest(
         [source.identity_payload() for source in sources]
     )
@@ -149,6 +165,7 @@ def capture_repository_snapshot(repo_root: Path) -> RepositorySnapshot:
             "helper": PROOF_SEARCH_HELPER_IDENTITY,
             "toolchain": toolchain,
             "configuration": configuration,
+            "proofir": catalog_generation_identity(proofir_config, proofir_artifacts),
             "layout": layout.status,
             "sources": source_fingerprint,
         }
@@ -161,6 +178,8 @@ def capture_repository_snapshot(repo_root: Path) -> RepositorySnapshot:
         configuration_fingerprint=configuration,
         source_fingerprint=source_fingerprint,
         generation_identity=generation,
+        proofir_config=proofir_config,
+        proofir_artifacts=proofir_artifacts,
     )
 
 
@@ -388,6 +407,7 @@ def _write_database_connection(
             structure_count += module_counts[2]
             type_truncation_count += module_counts[3]
         _insert_layout_omissions(connection, snapshot.layout)
+        proofir_counts = _insert_proofir_catalog(connection, snapshot)
         _insert_coverage(
             connection,
             modules=len(snapshot.sources),
@@ -412,6 +432,162 @@ def _write_database_connection(
         "lineageSccMembers": 0,
         "lineageOmissions": 0,
         "typeTextTruncations": type_truncation_count,
+        "proofirArtifacts": proofir_counts["artifacts"],
+        "proofirRelations": proofir_counts["relations"],
+        "proofirDiagnostics": proofir_counts["diagnostics"],
+        "proofirSurfaces": proofir_counts["surfaces"],
+        "proofirClaims": proofir_counts["claims"],
+        "proofirSurfaceClaims": proofir_counts["surfaceClaims"],
+        "proofirReplayRuns": proofir_counts["replayRuns"],
+        "proofirReplaySurfaces": proofir_counts["replaySurfaces"],
+        "proofirDags": proofir_counts["dags"],
+        "proofirDagNodes": proofir_counts["dagNodes"],
+        "proofirDagEdges": proofir_counts["dagEdges"],
+        "proofirDagAuthorities": proofir_counts["dagAuthorities"],
+        "proofirDagWitnesses": proofir_counts["dagWitnesses"],
+        "proofirDagOmissions": proofir_counts["dagOmissions"],
+        "proofirAttachmentCandidates": proofir_counts["attachmentCandidates"],
+        "proofirAttachments": proofir_counts["attachments"],
+    }
+
+
+def _insert_proofir_catalog(
+    connection: sqlite3.Connection,
+    snapshot: RepositorySnapshot,
+) -> dict[str, int]:
+    """Insert one configured ProofIR catalog generation."""
+
+    generation_id = snapshot.generation_identity
+    config_json = json.dumps(
+        snapshot.proofir_config.identity_payload(),
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    connection.execute(
+        """
+        INSERT INTO proofir_generations(
+            generation_id, config_json, artifact_count, total_bytes, active, status
+        ) VALUES (?, ?, ?, ?, 1, ?)
+        """,
+        (
+            generation_id,
+            config_json,
+            len(snapshot.proofir_artifacts),
+            sum(artifact.byte_size for artifact in snapshot.proofir_artifacts),
+            "configured" if snapshot.proofir_config.configured else "not-configured",
+        ),
+    )
+    artifact_ids: dict[str, str] = {}
+    for artifact in snapshot.proofir_artifacts:
+        artifact_id = _stable_digest(
+            {"generation": generation_id, **artifact.identity_payload()}
+        )
+        artifact_ids[artifact.relative_path] = artifact_id
+        connection.execute(
+            """
+            INSERT INTO proofir_artifacts(
+                artifact_id, generation_id, path, sha256, byte_size,
+                artifact_kind, schema_version, state, metadata_json, diagnostic
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                artifact_id,
+                generation_id,
+                artifact.relative_path,
+                artifact.sha256,
+                artifact.byte_size,
+                artifact.artifact_kind,
+                artifact.schema_version,
+                artifact.state,
+                artifact.metadata_json,
+                artifact.diagnostic,
+            ),
+        )
+        if artifact.state != "cataloged":
+            connection.execute(
+                """
+                INSERT INTO proofir_diagnostics(
+                    diagnostic_id, generation_id, artifact_id, kind,
+                    subject, reason, details_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    _stable_digest({"artifact": artifact_id, "reason": artifact.state}),
+                    generation_id,
+                    artifact_id,
+                    "proofir_catalog",
+                    artifact.relative_path,
+                    artifact.state,
+                    json.dumps(
+                        {"artifactKind": artifact.artifact_kind, "diagnostic": artifact.diagnostic},
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ),
+                ),
+            )
+        elif artifact.diagnostic:
+            connection.execute(
+                """
+                INSERT INTO proofir_diagnostics(
+                    diagnostic_id, generation_id, artifact_id, kind,
+                    subject, reason, details_json
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    _stable_digest({"artifact": artifact_id, "reason": "truncated"}),
+                    generation_id,
+                    artifact_id,
+                    "proofir_catalog",
+                    artifact.relative_path,
+                    "truncated",
+                    json.dumps({"diagnostic": artifact.diagnostic}, separators=(",", ":")),
+                ),
+            )
+    relation_count = 0
+    for source_path, target_path, kind, details_json in snapshot.proofir_config.relationships:
+        source_id = artifact_ids.get(source_path)
+        target_id = artifact_ids.get(target_path)
+        if source_id is None or target_id is None:
+            raise ProofSearchIndexError(
+                f"ProofIR relationship references uncataloged artifact: {source_path} -> {target_path}"
+            )
+        relation_id = _stable_digest(
+            {
+                "generation": generation_id,
+                "source": source_id,
+                "target": target_id,
+                "kind": kind,
+            }
+        )
+        connection.execute(
+            """
+            INSERT INTO proofir_relations(
+                relation_id, generation_id, source_artifact_id,
+                target_artifact_id, kind, details_json
+            ) VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (relation_id, generation_id, source_id, target_id, kind, details_json),
+        )
+        relation_count += 1
+    semantic_counts = insert_surface_and_replay_evidence(
+        connection, generation_id, snapshot.proofir_artifacts, artifact_ids
+    )
+    dag_counts = insert_dag_evidence(
+        connection, generation_id, snapshot.proofir_artifacts, artifact_ids
+    )
+    attachment_counts = attach_surfaces(connection)
+    return {
+        "artifacts": len(snapshot.proofir_artifacts),
+        "relations": relation_count,
+        "diagnostics": int(
+            sum(
+                artifact.state != "cataloged" or bool(artifact.diagnostic)
+                for artifact in snapshot.proofir_artifacts
+            )
+        ),
+        **semantic_counts,
+        **dag_counts,
+        **attachment_counts,
     }
 
 
@@ -639,6 +815,9 @@ def _insert_metadata(
         "evidenceStatus": "lexical-fallback",
         "maxIndexBytes": str(max_index_bytes),
         "maxLexicalTypeBytes": str(_MAX_LEXICAL_TYPE_BYTES),
+        "proofirConfigured": str(snapshot.proofir_config.configured).lower(),
+        "proofirArtifactCount": str(len(snapshot.proofir_artifacts)),
+        "proofirGenerationId": snapshot.generation_identity,
     }
     connection.executemany(
         "INSERT INTO metadata(key, value) VALUES (?, ?)",
@@ -846,6 +1025,23 @@ def _database_counts(connection: sqlite3.Connection) -> dict[str, int]:
         "lineage_trust",
         "lineage_scc_members",
         "lineage_omissions",
+        "proofir_generations",
+        "proofir_artifacts",
+        "proofir_relations",
+        "proofir_diagnostics",
+        "proofir_surfaces",
+        "proofir_claims",
+        "proofir_surface_claims",
+        "proofir_replay_runs",
+        "proofir_replay_surfaces",
+        "proofir_dags",
+        "proofir_dag_nodes",
+        "proofir_dag_edges",
+        "proofir_dag_node_authority",
+        "proofir_dag_witnesses",
+        "proofir_dag_omissions",
+        "proofir_attachment_candidates",
+        "proofir_attachments",
     )
     return {
         table: int(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
@@ -998,14 +1194,27 @@ def _toolchain_identity(repo_root: Path) -> str:
     return path.read_text(encoding="utf-8").strip() or "unavailable:empty-lean-toolchain"
 
 
-def _configuration_fingerprint(repo_root: Path) -> str:
-    """Hash supported Lake/toolchain configuration files."""
+def _configuration_fingerprint(
+    repo_root: Path,
+    proofir_config: Any | None = None,
+    proofir_artifacts: tuple[CatalogArtifact, ...] = (),
+) -> str:
+    """Hash supported Lake/toolchain and configured ProofIR inputs."""
 
     rows = []
     for name in _CONFIGURATION_NAMES:
         path = repo_root / name
         if path.is_file():
             rows.append({"path": name, "sha256": _file_sha256(path)})
+    if proofir_config is not None:
+        rows.append(
+            {
+                "path": ".ladon/proofir.json",
+                "proofir": catalog_generation_identity(
+                    proofir_config, proofir_artifacts
+                ),
+            }
+        )
     return _stable_digest(rows)
 
 

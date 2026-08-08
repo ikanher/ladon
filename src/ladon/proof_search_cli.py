@@ -21,7 +21,10 @@ from ladon.proof_search_index import (
     build_proof_search_index,
     inspect_proof_search_index,
     query_proof_search_index,
+    default_proof_search_index_path,
 )
+from ladon.proofir_queries import query_artifact_evidence, query_theorem_evidence
+from ladon.proofir_dag_store import query_dag_routes
 
 
 def build_proof_search_parser() -> argparse.ArgumentParser:
@@ -67,6 +70,14 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
         default="repository",
         help="Explicit candidate population; repository is the default.",
     )
+    evidence = operations.add_parser("evidence", help="Query stored ProofIR evidence.")
+    _add_repository_options(evidence)
+    _add_output_options(evidence)
+    evidence.add_argument("kind", choices=("theorem", "artifact", "dag"))
+    evidence.add_argument("name")
+    evidence.add_argument("--end")
+    evidence.add_argument("--reverse", action="store_true")
+    evidence.add_argument("--limit", type=_bounded_limit, default=100)
     query.add_argument(
         "--root",
         action="append",
@@ -104,19 +115,19 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
 
     repo_root = Path(args.repo_root)
     index_path = Path(args.index_path) if args.index_path else None
-    if args.index_operation == "build":
+    if getattr(args, "index_operation", None) == "build":
         return build_proof_search_index(
             repo_root,
             index_path=index_path,
             max_index_bytes=args.max_index_mib * 1024 * 1024,
         ).payload
-    if args.index_operation == "status":
+    if getattr(args, "index_operation", None) == "status":
         return inspect_proof_search_index(
             repo_root,
             index_path=index_path,
             verify_sources=not args.no_verify_sources,
         )
-    if args.index_operation == "query":
+    if getattr(args, "index_operation", None) == "query":
         return query_proof_search_index(
             repo_root,
             index_path=index_path,
@@ -125,8 +136,17 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
             roots=tuple(args.root),
             limit=args.limit,
         )
+    if args.proof_search_operation == "evidence":
+        path = index_path or default_proof_search_index_path(repo_root)
+        with __import__("sqlite3").connect(f"file:{path}?mode=ro", uri=True) as connection:
+            connection.row_factory = __import__("sqlite3").Row
+            if args.kind == "theorem":
+                return query_theorem_evidence(connection, args.name, args.limit)
+            if args.kind == "artifact":
+                return query_artifact_evidence(connection, args.name, args.limit)
+            return query_dag_routes(connection, args.name.split(":", 1)[0], args.name.split(":", 1)[-1], args.end, reverse=args.reverse, max_routes=args.limit)
     raise ProofSearchIndexError(
-        f"unsupported index operation {args.index_operation!r}"
+        f"unsupported proof-search operation {getattr(args, 'index_operation', args.proof_search_operation)!r}"
     )
 
 

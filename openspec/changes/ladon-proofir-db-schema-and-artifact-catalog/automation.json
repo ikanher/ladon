@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-proofir-db-schema-and-artifact-catalog",
+  "commands": [
+    "openspec validate ladon-proofir-db-schema-and-artifact-catalog --strict",
+    "uv run pytest tests/test_proofir_catalog_schema.py tests/test_proofir_catalog.py -q",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

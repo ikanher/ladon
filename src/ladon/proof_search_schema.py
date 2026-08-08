@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import sqlite3
 
-PROOF_SEARCH_INDEX_SCHEMA = "ladon-proof-search-index-v2"
-PROOF_SEARCH_INDEX_SCHEMA_VERSION = 2
-PROOF_SEARCH_SCHEMA_GENERATION = "sqlite-v2-fts1-lineage1"
-PROOF_SEARCH_HELPER_IDENTITY = "lexical-navigation-v1;theorem-lineage-v1"
+PROOF_SEARCH_INDEX_SCHEMA = "ladon-proof-search-index-v3"
+PROOF_SEARCH_INDEX_SCHEMA_VERSION = 3
+PROOF_SEARCH_SCHEMA_GENERATION = "sqlite-v3-fts1-lineage1-proofir1"
+PROOF_SEARCH_HELPER_IDENTITY = "lexical-navigation-v1;theorem-lineage-v1;proofir-catalog-v1"
 
 REQUIRED_LOOKUP_INDEX_COLUMNS = {
     "idx_alias_target": ("target", "source", "kind"),
@@ -38,6 +38,28 @@ REQUIRED_LOOKUP_INDEX_COLUMNS = {
     "idx_lineage_edges_reverse": ("closure_id", "target", "kind", "source"),
     "idx_lineage_trust_target": ("closure_id", "target", "scope", "kind"),
     "idx_lineage_scc_member": ("closure_id", "member", "component_id"),
+    "idx_proofir_generation_active": ("active", "generation_id"),
+    "idx_proofir_artifact_kind": ("artifact_kind", "schema_version", "path"),
+    "idx_proofir_artifact_path_hash": ("path", "sha256", "artifact_kind"),
+    "idx_proofir_artifact_generation_state": ("generation_id", "state", "path"),
+    "idx_proofir_relation_source": ("source_artifact_id", "kind", "target_artifact_id"),
+    "idx_proofir_relation_target": ("target_artifact_id", "kind", "source_artifact_id"),
+    "idx_proofir_diagnostic_reason": ("reason", "kind", "subject"),
+    "idx_proofir_surface_id": ("artifact_id", "surface_id", "declaration_name"),
+    "idx_proofir_claim_id": ("artifact_id", "claim_id"),
+    "idx_proofir_surface_declaration": ("declaration_name", "source_path", "surface_id"),
+    "idx_proofir_surface_source": ("source_path", "content_hash", "surface_id"),
+    "idx_proofir_replay_bundle": ("bundle_artifact_id", "surface_id", "replay_id"),
+    "idx_proofir_replay_surface": ("surface_id", "replay_id", "status"),
+    "idx_proofir_dag_generation": ("generation_id", "dag_id", "artifact_id"),
+    "idx_proofir_dag_node_identity": ("dag_id", "node_kind", "node_id"),
+    "idx_proofir_dag_node_status": ("dag_id", "status", "authority"),
+    "idx_proofir_dag_edge_forward": ("dag_id", "source_node_id", "kind", "target_node_id"),
+    "idx_proofir_dag_edge_reverse": ("dag_id", "target_node_id", "kind", "source_node_id"),
+    "idx_proofir_dag_checker_target": ("dag_id", "witness_artifact_id", "status"),
+    "idx_proofir_attachment_surface": ("surface_row_id", "confidence", "method"),
+    "idx_proofir_attachment_declaration": ("declaration_id", "surface_row_id"),
+    "idx_proofir_attachment_selected": ("surface_row_id", "freshness", "confidence"),
 }
 REQUIRED_LOOKUP_INDEXES = frozenset(REQUIRED_LOOKUP_INDEX_COLUMNS)
 REQUIRED_QUERY_SURFACES = frozenset({"declaration_search"})
@@ -58,6 +80,35 @@ EXPECTED_FOREIGN_KEYS = frozenset(
         ("lineage_scc_members", "closure_id", "lineage_closures", "closure_id"),
         ("lineage_scc_members", "member", "lineage_nodes", "name"),
         ("lineage_omissions", "closure_id", "lineage_closures", "closure_id"),
+        ("proofir_artifacts", "generation_id", "proofir_generations", "generation_id"),
+        ("proofir_relations", "generation_id", "proofir_generations", "generation_id"),
+        ("proofir_relations", "source_artifact_id", "proofir_artifacts", "artifact_id"),
+        ("proofir_relations", "target_artifact_id", "proofir_artifacts", "artifact_id"),
+        ("proofir_diagnostics", "generation_id", "proofir_generations", "generation_id"),
+        ("proofir_diagnostics", "artifact_id", "proofir_artifacts", "artifact_id"),
+        ("proofir_surfaces", "artifact_id", "proofir_artifacts", "artifact_id"),
+        ("proofir_claims", "artifact_id", "proofir_artifacts", "artifact_id"),
+        ("proofir_surface_claims", "artifact_id", "proofir_artifacts", "artifact_id"),
+        ("proofir_surface_claims", "surface_row_id", "proofir_surfaces", "surface_row_id"),
+        ("proofir_surface_claims", "claim_row_id", "proofir_claims", "claim_row_id"),
+        ("proofir_replay_runs", "artifact_id", "proofir_artifacts", "artifact_id"),
+        ("proofir_replay_surfaces", "replay_id", "proofir_replay_runs", "replay_id"),
+        ("proofir_replay_surfaces", "bundle_artifact_id", "proofir_artifacts", "artifact_id"),
+        ("proofir_dags", "generation_id", "proofir_generations", "generation_id"),
+        ("proofir_dags", "artifact_id", "proofir_artifacts", "artifact_id"),
+        ("proofir_dag_nodes", "dag_id", "proofir_dags", "dag_id"),
+        ("proofir_dag_edges", "dag_id", "proofir_dags", "dag_id"),
+        ("proofir_dag_edges", "source_node_id", "proofir_dag_nodes", "node_id"),
+        ("proofir_dag_edges", "target_node_id", "proofir_dag_nodes", "node_id"),
+        ("proofir_dag_node_authority", "dag_id", "proofir_dags", "dag_id"),
+        ("proofir_dag_node_authority", "node_id", "proofir_dag_nodes", "node_id"),
+        ("proofir_dag_witnesses", "dag_id", "proofir_dags", "dag_id"),
+        ("proofir_dag_witnesses", "witness_artifact_id", "proofir_artifacts", "artifact_id"),
+        ("proofir_dag_omissions", "dag_id", "proofir_dags", "dag_id"),
+        ("proofir_attachment_candidates", "surface_row_id", "proofir_surfaces", "surface_row_id"),
+        ("proofir_attachment_candidates", "declaration_id", "declarations", "id"),
+        ("proofir_attachments", "surface_row_id", "proofir_surfaces", "surface_row_id"),
+        ("proofir_attachments", "declaration_id", "declarations", "id"),
     }
 )
 
@@ -271,6 +322,218 @@ def create_proof_search_schema(connection: sqlite3.Connection) -> None:
             FOREIGN KEY(closure_id) REFERENCES lineage_closures(closure_id) ON DELETE CASCADE
         );
 
+        CREATE TABLE proofir_generations (
+            generation_id TEXT PRIMARY KEY,
+            config_json TEXT NOT NULL,
+            artifact_count INTEGER NOT NULL CHECK(artifact_count >= 0),
+            total_bytes INTEGER NOT NULL CHECK(total_bytes >= 0),
+            active INTEGER NOT NULL CHECK(active IN (0, 1)),
+            status TEXT NOT NULL CHECK(status IN ('configured', 'not-configured'))
+        );
+
+        CREATE TABLE proofir_artifacts (
+            artifact_id TEXT PRIMARY KEY,
+            generation_id TEXT NOT NULL,
+            path TEXT NOT NULL,
+            sha256 TEXT NOT NULL,
+            byte_size INTEGER NOT NULL CHECK(byte_size >= 0),
+            artifact_kind TEXT NOT NULL,
+            schema_version TEXT NOT NULL,
+            state TEXT NOT NULL CHECK(state IN ('cataloged', 'unsupported', 'malformed')),
+            metadata_json TEXT NOT NULL,
+            diagnostic TEXT,
+            UNIQUE(generation_id, path, sha256),
+            FOREIGN KEY(generation_id) REFERENCES proofir_generations(generation_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_relations (
+            relation_id TEXT PRIMARY KEY,
+            generation_id TEXT NOT NULL,
+            source_artifact_id TEXT NOT NULL,
+            target_artifact_id TEXT NOT NULL,
+            kind TEXT NOT NULL,
+            details_json TEXT NOT NULL,
+            UNIQUE(generation_id, source_artifact_id, target_artifact_id, kind),
+            FOREIGN KEY(generation_id) REFERENCES proofir_generations(generation_id) ON DELETE CASCADE,
+            FOREIGN KEY(source_artifact_id) REFERENCES proofir_artifacts(artifact_id) ON DELETE CASCADE,
+            FOREIGN KEY(target_artifact_id) REFERENCES proofir_artifacts(artifact_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_diagnostics (
+            diagnostic_id TEXT PRIMARY KEY,
+            generation_id TEXT NOT NULL,
+            artifact_id TEXT,
+            kind TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            details_json TEXT NOT NULL,
+            FOREIGN KEY(generation_id) REFERENCES proofir_generations(generation_id) ON DELETE CASCADE,
+            FOREIGN KEY(artifact_id) REFERENCES proofir_artifacts(artifact_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_surfaces (
+            surface_row_id TEXT PRIMARY KEY,
+            artifact_id TEXT NOT NULL,
+            surface_id TEXT NOT NULL,
+            claim_id TEXT,
+            declaration_name TEXT NOT NULL,
+            source_path TEXT NOT NULL,
+            source_range_json TEXT NOT NULL,
+            content_hash TEXT,
+            status TEXT NOT NULL,
+            authority_json TEXT NOT NULL,
+            proof_trust TEXT NOT NULL,
+            replay_boundary_json TEXT NOT NULL,
+            extractor_guarantee TEXT NOT NULL,
+            metadata_json TEXT NOT NULL,
+            UNIQUE(artifact_id, surface_id),
+            FOREIGN KEY(artifact_id) REFERENCES proofir_artifacts(artifact_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_claims (
+            claim_row_id TEXT PRIMARY KEY,
+            artifact_id TEXT NOT NULL,
+            claim_id TEXT NOT NULL,
+            status TEXT NOT NULL,
+            authority_json TEXT NOT NULL,
+            scope TEXT NOT NULL,
+            proof_trust TEXT NOT NULL,
+            replay_boundary_json TEXT NOT NULL,
+            extractor_guarantee TEXT NOT NULL,
+            metadata_json TEXT NOT NULL,
+            UNIQUE(artifact_id, claim_id),
+            FOREIGN KEY(artifact_id) REFERENCES proofir_artifacts(artifact_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_surface_claims (
+            artifact_id TEXT NOT NULL,
+            surface_row_id TEXT NOT NULL,
+            claim_row_id TEXT NOT NULL,
+            PRIMARY KEY(artifact_id, surface_row_id, claim_row_id),
+            FOREIGN KEY(artifact_id) REFERENCES proofir_artifacts(artifact_id) ON DELETE CASCADE,
+            FOREIGN KEY(surface_row_id) REFERENCES proofir_surfaces(surface_row_id) ON DELETE CASCADE,
+            FOREIGN KEY(claim_row_id) REFERENCES proofir_claims(claim_row_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_replay_runs (
+            replay_id TEXT PRIMARY KEY,
+            artifact_id TEXT NOT NULL UNIQUE,
+            provenance_id TEXT NOT NULL,
+            module TEXT NOT NULL,
+            command_json TEXT NOT NULL,
+            return_code INTEGER NOT NULL,
+            repository_json TEXT NOT NULL,
+            source_json TEXT NOT NULL,
+            guarantee TEXT NOT NULL,
+            authority_json TEXT NOT NULL,
+            metadata_json TEXT NOT NULL,
+            FOREIGN KEY(artifact_id) REFERENCES proofir_artifacts(artifact_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_replay_surfaces (
+            replay_id TEXT NOT NULL,
+            bundle_artifact_id TEXT NOT NULL,
+            surface_id TEXT NOT NULL,
+            status TEXT NOT NULL CHECK(status IN ('related', 'stale', 'foreign', 'not_observed')),
+            diagnostic TEXT,
+            PRIMARY KEY(replay_id, bundle_artifact_id, surface_id),
+            FOREIGN KEY(replay_id) REFERENCES proofir_replay_runs(replay_id) ON DELETE CASCADE,
+            FOREIGN KEY(bundle_artifact_id) REFERENCES proofir_artifacts(artifact_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_dags (
+            dag_id TEXT PRIMARY KEY,
+            generation_id TEXT NOT NULL,
+            artifact_id TEXT NOT NULL UNIQUE,
+            schema_version INTEGER NOT NULL CHECK(schema_version >= 1),
+            status TEXT NOT NULL CHECK(status IN ('cataloged', 'malformed', 'unsupported')),
+            metadata_json TEXT NOT NULL,
+            FOREIGN KEY(generation_id) REFERENCES proofir_generations(generation_id) ON DELETE CASCADE,
+            FOREIGN KEY(artifact_id) REFERENCES proofir_artifacts(artifact_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_dag_nodes (
+            node_id TEXT NOT NULL,
+            dag_id TEXT NOT NULL,
+            node_kind TEXT NOT NULL CHECK(node_kind IN ('imported_fact', 'obligation', 'produced_fact')),
+            status TEXT NOT NULL,
+            authority TEXT NOT NULL,
+            ordinal INTEGER NOT NULL CHECK(ordinal >= 0),
+            description TEXT NOT NULL,
+            caveat TEXT NOT NULL,
+            metadata_json TEXT NOT NULL,
+            PRIMARY KEY(dag_id, node_id),
+            UNIQUE(node_id),
+            FOREIGN KEY(dag_id) REFERENCES proofir_dags(dag_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_dag_edges (
+            dag_id TEXT NOT NULL,
+            source_node_id TEXT NOT NULL,
+            target_node_id TEXT NOT NULL,
+            kind TEXT NOT NULL CHECK(kind IN ('uses', 'produces')),
+            obligation_id TEXT NOT NULL,
+            ordinal INTEGER NOT NULL CHECK(ordinal >= 0),
+            metadata_json TEXT NOT NULL,
+            PRIMARY KEY(dag_id, source_node_id, target_node_id, kind),
+            FOREIGN KEY(dag_id) REFERENCES proofir_dags(dag_id) ON DELETE CASCADE,
+            FOREIGN KEY(source_node_id) REFERENCES proofir_dag_nodes(node_id) ON DELETE CASCADE,
+            FOREIGN KEY(target_node_id) REFERENCES proofir_dag_nodes(node_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_dag_node_authority (
+            dag_id TEXT NOT NULL,
+            node_id TEXT NOT NULL,
+            authority TEXT NOT NULL,
+            PRIMARY KEY(dag_id, node_id, authority),
+            FOREIGN KEY(dag_id) REFERENCES proofir_dags(dag_id) ON DELETE CASCADE,
+            FOREIGN KEY(node_id) REFERENCES proofir_dag_nodes(node_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_dag_witnesses (
+            dag_id TEXT NOT NULL,
+            witness_artifact_id TEXT NOT NULL,
+            status TEXT NOT NULL CHECK(status IN ('related', 'stale', 'unmatched')),
+            guarantee TEXT NOT NULL,
+            details_json TEXT NOT NULL,
+            PRIMARY KEY(dag_id, witness_artifact_id),
+            FOREIGN KEY(dag_id) REFERENCES proofir_dags(dag_id) ON DELETE CASCADE,
+            FOREIGN KEY(witness_artifact_id) REFERENCES proofir_artifacts(artifact_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_dag_omissions (
+            dag_id TEXT NOT NULL,
+            subject TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            details_json TEXT NOT NULL,
+            PRIMARY KEY(dag_id, subject, reason),
+            FOREIGN KEY(dag_id) REFERENCES proofir_dags(dag_id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_attachment_candidates (
+            candidate_id TEXT PRIMARY KEY,
+            surface_row_id TEXT NOT NULL,
+            declaration_id TEXT NOT NULL,
+            method TEXT NOT NULL,
+            confidence TEXT NOT NULL,
+            freshness TEXT NOT NULL,
+            rejection_reason TEXT,
+            details_json TEXT NOT NULL,
+            FOREIGN KEY(surface_row_id) REFERENCES proofir_surfaces(surface_row_id) ON DELETE CASCADE,
+            FOREIGN KEY(declaration_id) REFERENCES declarations(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE proofir_attachments (
+            surface_row_id TEXT PRIMARY KEY,
+            declaration_id TEXT NOT NULL,
+            method TEXT NOT NULL,
+            confidence TEXT NOT NULL,
+            freshness TEXT NOT NULL,
+            details_json TEXT NOT NULL,
+            FOREIGN KEY(surface_row_id) REFERENCES proofir_surfaces(surface_row_id) ON DELETE CASCADE,
+            FOREIGN KEY(declaration_id) REFERENCES declarations(id) ON DELETE CASCADE
+        );
+
         CREATE VIRTUAL TABLE declaration_search USING fts5(
             candidate_name,
             type_text,
@@ -344,6 +607,43 @@ def create_proof_search_schema(connection: sqlite3.Connection) -> None:
             ON lineage_trust(closure_id, target, scope, kind);
         CREATE INDEX idx_lineage_scc_member
             ON lineage_scc_members(closure_id, member, component_id);
+        CREATE INDEX idx_proofir_generation_active
+            ON proofir_generations(active, generation_id);
+        CREATE UNIQUE INDEX idx_proofir_generation_active_unique
+            ON proofir_generations(active) WHERE active = 1;
+        CREATE INDEX idx_proofir_artifact_kind
+            ON proofir_artifacts(artifact_kind, schema_version, path);
+        CREATE INDEX idx_proofir_artifact_path_hash
+            ON proofir_artifacts(path, sha256, artifact_kind);
+        CREATE INDEX idx_proofir_artifact_generation_state
+            ON proofir_artifacts(generation_id, state, path);
+        CREATE INDEX idx_proofir_relation_source
+            ON proofir_relations(source_artifact_id, kind, target_artifact_id);
+        CREATE INDEX idx_proofir_relation_target
+            ON proofir_relations(target_artifact_id, kind, source_artifact_id);
+        CREATE INDEX idx_proofir_diagnostic_reason
+            ON proofir_diagnostics(reason, kind, subject);
+        CREATE INDEX idx_proofir_surface_id
+            ON proofir_surfaces(artifact_id, surface_id, declaration_name);
+        CREATE INDEX idx_proofir_claim_id
+            ON proofir_claims(artifact_id, claim_id);
+        CREATE INDEX idx_proofir_surface_declaration
+            ON proofir_surfaces(declaration_name, source_path, surface_id);
+        CREATE INDEX idx_proofir_surface_source
+            ON proofir_surfaces(source_path, content_hash, surface_id);
+        CREATE INDEX idx_proofir_replay_bundle
+            ON proofir_replay_surfaces(bundle_artifact_id, surface_id, replay_id);
+        CREATE INDEX idx_proofir_replay_surface
+            ON proofir_replay_surfaces(surface_id, replay_id, status);
+        CREATE INDEX idx_proofir_dag_generation ON proofir_dags(generation_id, dag_id, artifact_id);
+        CREATE INDEX idx_proofir_dag_node_identity ON proofir_dag_nodes(dag_id, node_kind, node_id);
+        CREATE INDEX idx_proofir_dag_node_status ON proofir_dag_nodes(dag_id, status, authority);
+        CREATE INDEX idx_proofir_dag_edge_forward ON proofir_dag_edges(dag_id, source_node_id, kind, target_node_id);
+        CREATE INDEX idx_proofir_dag_edge_reverse ON proofir_dag_edges(dag_id, target_node_id, kind, source_node_id);
+        CREATE INDEX idx_proofir_dag_checker_target ON proofir_dag_witnesses(dag_id, witness_artifact_id, status);
+        CREATE INDEX idx_proofir_attachment_surface ON proofir_attachment_candidates(surface_row_id, confidence, method);
+        CREATE INDEX idx_proofir_attachment_declaration ON proofir_attachment_candidates(declaration_id, surface_row_id);
+        CREATE INDEX idx_proofir_attachment_selected ON proofir_attachments(surface_row_id, freshness, confidence);
         """
     )
 
@@ -403,6 +703,23 @@ def schema_foreign_keys(
         "lineage_trust",
         "lineage_scc_members",
         "lineage_omissions",
+        "proofir_generations",
+        "proofir_artifacts",
+        "proofir_relations",
+        "proofir_diagnostics",
+        "proofir_surfaces",
+        "proofir_claims",
+        "proofir_surface_claims",
+        "proofir_replay_runs",
+        "proofir_replay_surfaces",
+        "proofir_dags",
+        "proofir_dag_nodes",
+        "proofir_dag_edges",
+        "proofir_dag_node_authority",
+        "proofir_dag_witnesses",
+        "proofir_dag_omissions",
+        "proofir_attachment_candidates",
+        "proofir_attachments",
     )
     rows = []
     for table in tables:

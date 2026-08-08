@@ -50,6 +50,22 @@ def test_v2_index_builds_repository_local_lexical_navigation(tmp_path: Path) -> 
         "lineageSccMembers": 0,
         "lineageOmissions": 0,
         "typeTextTruncations": 0,
+        "proofirArtifacts": 0,
+        "proofirRelations": 0,
+        "proofirDiagnostics": 0,
+        "proofirSurfaces": 0,
+        "proofirClaims": 0,
+        "proofirSurfaceClaims": 0,
+        "proofirReplayRuns": 0,
+        "proofirReplaySurfaces": 0,
+        "proofirDags": 0,
+        "proofirDagNodes": 0,
+        "proofirDagEdges": 0,
+        "proofirDagAuthorities": 0,
+        "proofirDagWitnesses": 0,
+        "proofirDagOmissions": 0,
+        "proofirAttachmentCandidates": 0,
+        "proofirAttachments": 0,
     }
 
 

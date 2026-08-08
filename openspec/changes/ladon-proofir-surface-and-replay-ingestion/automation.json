@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-proofir-surface-and-replay-ingestion",
+  "commands": [
+    "openspec validate ladon-proofir-surface-and-replay-ingestion --strict",
+    "uv run pytest tests/test_proofir_surface_store.py tests/test_proofir_replay_store.py tests/test_proofir_bridge.py -q",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

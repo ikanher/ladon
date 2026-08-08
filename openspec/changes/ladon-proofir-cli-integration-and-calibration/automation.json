@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-proofir-cli-integration-and-calibration",
+  "commands": [
+    "openspec validate ladon-proofir-cli-integration-and-calibration --strict",
+    "uv run pytest tests/test_proofir_cli.py tests/test_proofir_integration.py -q",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

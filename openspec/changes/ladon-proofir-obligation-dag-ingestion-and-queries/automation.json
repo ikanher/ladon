@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-proofir-obligation-dag-ingestion-and-queries",
+  "commands": [
+    "openspec validate ladon-proofir-obligation-dag-ingestion-and-queries --strict",
+    "uv run pytest tests/test_proofir_dag_store.py tests/test_proofir_dag_query.py -q",
+    "uv run --locked python scripts/python_quality.py --strict"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "program": "ladon-proofir-evidence-graph-umbrella",
+  "interfaceInvariant": "ProofIR evidence is ordinary public Ladon CLI behavior shared by people, scripts, editors, and models; no caller-specific command, default, threshold, or hidden evidence path is permitted.",
+  "databaseInvariant": "All normalized rows use the existing repository-local proof-search SQLite database, its index override, PID lock, constraints, size limits, freshness identities, and atomic replacement lifecycle.",
+  "authorityInvariant": "Catalog identity, quoted surface claims, replay runs, checker witnesses, ProofIR obligation status, declaration attachments, and Lean lineage remain separate evidence facts; none is promoted to another authority.",
+  "coverageInvariant": "Configured catalog coverage and supported semantic coverage are reported separately. Unsupported, absent, stale, malformed, ambiguous, and bounded evidence cannot establish repository-wide absence or theorem truth.",
+  "dependencySemantics": {
+    "startAfter": "Every listed standalone change must complete its portable exit class before implementation of this child begins.",
+    "integrationDependsOn": "Existing owner changes whose established contracts and artifacts this child reuses; capability identities are recorded separately in existingOwners.",
+    "enables": "Later child changes allowed to start after this child's portable exit class passes."
+  },
+  "existingOwners": [
+    {
+      "ownedConcern": "project-local proof-search schema, index lifecycle, locks, freshness, constraints, and query indexes",
+      "ownerChange": "ladon-theorem-lineage-db-schema-and-ingestion",
+      "capability": "ladon-theorem-lineage-db-schema-and-ingestion"
+    },
+    {
+      "ownedConcern": "bounded SQL-first theorem lineage queries",
+      "ownerChange": "ladon-theorem-lineage-sql-queries",
+      "capability": "ladon-theorem-lineage-sql-queries"
+    },
+    {
+      "ownedConcern": "compact ProofIR input normalization and bridge authority rules",
+      "ownerChange": "ladon-proofir-bridge-evidence-contract-hardening",
+      "capability": "ladon-proofir-bridge-evidence-contract-hardening"
+    },
+    {
+      "ownedConcern": "Quux Lean surface bundle and source-anchor adapters",
+      "ownerChange": "ladon-proofir-quux-input-normalization-roadmap",
+      "capability": "ladon-proofir-quux-input-normalization"
+    },
+    {
+      "ownedConcern": "installed process, stream, signal, representation, and exit behavior",
+      "ownerChange": "ladon-cli-execution-contract",
+      "capability": "ladon-cli-execution"
+    }
+  ],
+  "children": [
+    {
+      "change": "ladon-proofir-db-schema-and-artifact-catalog",
+      "startAfter": [],
+      "integrationDependsOn": ["ladon-theorem-lineage-db-schema-and-ingestion", "ladon-proofir-bridge-evidence-contract-hardening"],
+      "enables": ["ladon-proofir-surface-and-replay-ingestion", "ladon-proofir-obligation-dag-ingestion-and-queries"],
+      "exitClass": "transactional-configured-proofir-artifact-catalog"
+    },
+    {
+      "change": "ladon-proofir-surface-and-replay-ingestion",
+      "startAfter": ["ladon-proofir-db-schema-and-artifact-catalog"],
+      "integrationDependsOn": ["ladon-proofir-quux-input-normalization-roadmap"],
+      "enables": ["ladon-proofir-obligation-dag-ingestion-and-queries", "ladon-proofir-declaration-lineage-attachments"],
+      "exitClass": "source-anchored-surface-and-separate-replay-evidence"
+    },
+    {
+      "change": "ladon-proofir-obligation-dag-ingestion-and-queries",
+      "startAfter": ["ladon-proofir-db-schema-and-artifact-catalog", "ladon-proofir-surface-and-replay-ingestion"],
+      "integrationDependsOn": ["ladon-theorem-lineage-sql-queries"],
+      "enables": ["ladon-proofir-declaration-lineage-attachments", "ladon-proofir-cli-integration-and-calibration"],
+      "exitClass": "bounded-authority-preserving-proofir-dag-sql-routes"
+    },
+    {
+      "change": "ladon-proofir-declaration-lineage-attachments",
+      "startAfter": ["ladon-proofir-surface-and-replay-ingestion", "ladon-proofir-obligation-dag-ingestion-and-queries"],
+      "integrationDependsOn": ["ladon-theorem-lineage-db-schema-and-ingestion", "ladon-theorem-lineage-sql-queries"],
+      "enables": ["ladon-proofir-cli-integration-and-calibration"],
+      "exitClass": "unique-source-compatible-nonpromoting-lineage-attachments"
+    },
+    {
+      "change": "ladon-proofir-cli-integration-and-calibration",
+      "startAfter": ["ladon-proofir-db-schema-and-artifact-catalog", "ladon-proofir-surface-and-replay-ingestion", "ladon-proofir-obligation-dag-ingestion-and-queries", "ladon-proofir-declaration-lineage-attachments"],
+      "integrationDependsOn": ["ladon-cli-execution-contract"],
+      "enables": [],
+      "exitClass": "installed-generation-safe-calibrated-proofir-evidence-workflow"
+    }
+  ],
+  "acceptanceScenarios": [
+    "surface and exact replay provenance remain separate queryable facts",
+    "missing replay provenance is not replay failure",
+    "paper-conditional and Lean-premise CDC routes preserve authority transitions",
+    "duplicate declaration candidates require compatible source evidence",
+    "the exact CDC theorem remains unattached without explicit theorem identity",
+    "two unchanged base-index builds reproduce configured ProofIR evidence"
+  ],
+  "retainedExternalLanes": [
+    "arbitrary ProofIR dialect semantics",
+    "proof-term transport or theorem checking",
+    "automatic execution of replay/checker/generator commands",
+    "alternative-proof discovery",
+    "graph visualization and exhaustive path enumeration"
+  ]
+}
