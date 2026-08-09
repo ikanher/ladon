@@ -1,0 +1,59 @@
+{
+  "program": "ladon-proofir-evidence-semantics-v3-umbrella",
+  "sourceEvidence": "Expert ProofIR assessment supplied 2026-08-09 plus current Ladon ProofIR catalog, bridge, SQLite, dossier, and graph implementations; user authorized a clean native-v3 break on 2026-08-09",
+  "canonicalArtifactInvariant": "Versioned content-addressed ProofIR artifacts are authoritative; every SQLite database and review view is a rebuildable bounded projection.",
+  "authorityInvariant": "Assertions, source attachment, successful processes, and producer labels never become theorem truth; semantic acceptance is an exact checker observation over an exact subject and environment.",
+  "interfaceInvariant": "Humans, scripts, editors, and models use the same ordinary Ladon CLI and versioned results; no caller-specific evidence command exists.",
+  "tddInvariant": "Every child begins with failing conformance fixtures, property tests, query-plan predicates, or resource regressions before production edits.",
+  "quuxInvariant": "Quux is a separated research playground. Ladon and ProofIR must not inspect, import, execute, calibrate against, vendor, link, build against, package, or require Quux. Algorithms must be independently implemented behind Ladon-owned interfaces and tested with owned portable fixtures.",
+  "children": [
+    {
+      "change": "proofir-content-environment-and-subject-identity",
+      "startAfter": [],
+      "enables": ["proofir-observation-authority-and-coverage-core", "proofir-attachment-and-link-observations", "proofir-v3-native-schema-and-canonicalization", "proofir-derivation-hypergraph-semantics"],
+      "exitClass": "stable-content-environment-and-typed-subject-identities"
+    },
+    {
+      "change": "proofir-observation-authority-and-coverage-core",
+      "startAfter": ["proofir-content-environment-and-subject-identity"],
+      "enables": ["proofir-attachment-and-link-observations", "proofir-v3-native-schema-and-canonicalization", "proofir-derivation-hypergraph-semantics"],
+      "exitClass": "typed-subject-scoped-authority-and-coverage"
+    },
+    {
+      "change": "proofir-attachment-and-link-observations",
+      "startAfter": ["proofir-content-environment-and-subject-identity", "proofir-observation-authority-and-coverage-core"],
+      "enables": ["proofir-v3-sqlite-projection"],
+      "exitClass": "unified-attributable-attachment-without-quux-dependency"
+    },
+    {
+      "change": "proofir-v3-native-schema-and-canonicalization",
+      "startAfter": ["proofir-content-environment-and-subject-identity", "proofir-observation-authority-and-coverage-core"],
+      "enables": ["proofir-derivation-hypergraph-semantics", "proofir-v3-sqlite-projection"],
+      "exitClass": "closed-native-v3-schema-canonicalization-and-diagnostics"
+    },
+    {
+      "change": "proofir-derivation-hypergraph-semantics",
+      "startAfter": ["proofir-content-environment-and-subject-identity", "proofir-observation-authority-and-coverage-core", "proofir-v3-native-schema-and-canonicalization"],
+      "enables": ["proofir-v3-sqlite-projection"],
+      "exitClass": "validated-and-or-hypergraph-and-bounded-slices"
+    },
+    {
+      "change": "proofir-v3-sqlite-projection",
+      "startAfter": ["proofir-attachment-and-link-observations", "proofir-v3-native-schema-and-canonicalization", "proofir-derivation-hypergraph-semantics"],
+      "enables": ["proofir-v3-ladon-integration-and-release"],
+      "exitClass": "provenance-complete-query-aligned-disposable-v3-projection"
+    },
+    {
+      "change": "proofir-v3-ladon-integration-and-release",
+      "startAfter": ["proofir-v3-sqlite-projection"],
+      "enables": ["proofir-v3-rust-reference-core"],
+      "exitClass": "installed-documented-calibrated-v3-release"
+    },
+    {
+      "change": "proofir-v3-rust-reference-core",
+      "startAfter": ["proofir-v3-ladon-integration-and-release"],
+      "enables": [],
+      "exitClass": "cross-language-conformance-parity-without-lean-or-quux-reimplementation"
+    }
+  ]
+}

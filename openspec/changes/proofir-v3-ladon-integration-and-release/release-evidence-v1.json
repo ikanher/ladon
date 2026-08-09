@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "release": "proofir-v3-alpha",
+  "observedOn": "2026-08-09",
+  "status": "ready",
+  "taskSummary": {
+    "complete": 13,
+    "total": 13,
+    "remaining": []
+  },
+  "requirements": [
+    {
+      "requirement": "caller-neutral-v3-cli-integration",
+      "status": "green",
+      "tests": [
+        "tests/test_proofir_v3_installed_workflow_contract.py",
+        "tests/test_proof_search_installed_v3_contract.py",
+        "tests/test_proofir_evidence_cli.py"
+      ],
+      "evidence": "The installed ordinary Ladon CLI covers native artifact operations, indexing, dossiers, coverage, derivation slices, alternatives, and diagnostics."
+    },
+    {
+      "requirement": "explicit-clean-break",
+      "status": "green",
+      "tests": [
+        "tests/test_proofir_clean_break.py",
+        "tests/test_proofir_catalog_schema.py",
+        "tests/test_proofir_v3_installed_workflow_contract.py"
+      ],
+      "evidence": "Former artifact kinds are rejected before projection and produce no native semantic row. The converter command is absent."
+    },
+    {
+      "requirement": "explicit-lean-execution",
+      "status": "green",
+      "tests": [
+        "tests/test_proofir_program_controls.py",
+        "tests/test_proof_search_operational_contract.py",
+        "tests/test_proof_search_cancellation_contract.py",
+        "tests/test_semantic_candidate_worker_v3_contract.py",
+        "tests/test_semantic_candidate_lean_integration.py",
+        "tests/test_semantic_candidate_residual_integration.py",
+        "tests/test_semantic_candidate_security_contract.py"
+      ],
+      "evidence": "Stored and lexical queries do not launch Lean. The explicit bounded checker emits exact environment, subject, substitution, residual-premise, context, and supervisor-owned check-run references; incomplete applications remain attempt-logs."
+    },
+    {
+      "requirement": "operational-contracts",
+      "status": "green",
+      "tests": [
+        "tests/test_proofir_v3_terminal_contract.py",
+        "tests/test_proofir_v3_result_schema_contract.py",
+        "tests/test_proof_search_progress_contract.py",
+        "tests/test_proof_search_cancellation_contract.py",
+        "tests/test_proof_search_operational_contract.py"
+      ],
+      "docs": ["docs/proofir-v3-cli-contract.json", "docs/CLI.md"],
+      "evidence": "Changed commands have versioned result, progress, and terminal schemas; bounded inputs/outputs; stable exits; atomic output; and interruption cleanup."
+    },
+    {
+      "requirement": "portable-and-external-calibration",
+      "status": "green",
+      "tests": [
+        "tests/test_proofir_calibration.py",
+        "tests/test_proofir_quux_boundary.py",
+        "tests/test_quux_runtime_separation.py",
+        "tests/test_quux_benchmark_separation.py"
+      ],
+      "docs": ["docs/proofir-v3-sqlite-baseline.md"],
+      "evidence": "Fresh read-only Matrix-Factorization calibration records quality, omissions, query plans, timings, peak RSS, database size, and integrity. Quux is an absolute separated-project boundary and was not accessed or executed."
+    },
+    {
+      "requirement": "complete-legacy-removal",
+      "status": "green",
+      "tests": [
+        "tests/test_proofir_clean_break.py",
+        "tests/test_proofir_sqlite_native_contract.py",
+        "tests/test_proofir_quux_boundary.py"
+      ],
+      "evidence": "Release gates reject legacy routes and require only native-v3 ProofIR tables and projections."
+    }
+  ],
+  "gates": {
+    "strictQuality": {
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "status": "green",
+      "observed": "radon/vulture clean; compileall clean; 1351 tests passed"
+    },
+    "installedCli": {
+      "command": "uv run pytest -q tests/test_proofir_v3_installed_cli.py tests/test_proofir_v3_installed_workflow_contract.py tests/test_proof_search_installed_v3_contract.py tests/test_installed_theorem_cli_contract.py tests/test_installed_cli_contract.py tests/test_installed_inspection_contract.py",
+      "status": "green",
+      "observed": "46 tests passed"
+    },
+    "openspec": {
+      "command": "openspec validate proofir-v3-ladon-integration-and-release --strict && openspec validate ladon-proofir-evidence-semantics-v3-umbrella --strict",
+      "status": "green"
+    }
+  },
+  "calibration": {
+    "matrixFactorization": "docs/proofir-v3-sqlite-baseline.md",
+    "quux": "forbidden separated research playground"
+  },
+  "releaseBlockers": [],
+  "deferred": [
+    "Rust parity and release work is held by user direction and is not claimed by this evidence ledger."
+  ],
+  "nonclaims": [
+    "Passing portable and integration gates does not establish theorem truth.",
+    "Lexical search misses do not establish semantic absence.",
+    "Ready status applies to the Python ProofIR-v3 Ladon integration child; it does not claim Rust parity or theorem truth."
+  ]
+}

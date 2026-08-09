@@ -1,0 +1,80 @@
+{
+  "program": "ladon-first-hand-proof-search-hardening-umbrella",
+  "sourceEvidence": "FIRST-HAND-REPORT.md plus the 2026-08-08 populated SQLite index and query-plan audit",
+  "databaseInvariant": "Each Lean repository owns one disposable project-local SQLite evidence database; physical indexes follow measured production SQL and mutable publication refreshes budgets, integrity, foreign keys, statistics, and access-path gates before commit.",
+  "authorityInvariant": "SQLite lexical and stored semantic rows remain bounded evidence; only the pinned Lean environment may assert theorem applicability or dependency truth, and ProofIR remains quoted evidence.",
+  "interfaceInvariant": "Humans, scripts, editors, and models use the same ordinary Ladon CLI and versioned results; no caller-specific command or hidden evidence surface exists.",
+  "tddInvariant": "Every corrective child begins with a portable failing result, populated query-plan predicate, or captured resource regression before production code changes.",
+  "existingOwners": [
+    {"ownerChange": "ladon-sqlite-proof-engineering-umbrella", "ownedConcern": "proof-search SQLite and public proof-engineering operations"},
+    {"ownerChange": "ladon-theorem-lineage-umbrella", "ownedConcern": "compiled theorem closure storage, queries, projections, and CLI"},
+    {"ownerChange": "ladon-proofir-evidence-graph-umbrella", "ownedConcern": "ProofIR catalog, attachment, DAG, replay, dossier, and triage evidence"},
+    {"ownerChange": "ladon-cli-execution-contract", "ownedConcern": "installed streams, exits, signals, progress, and output behavior"},
+    {"ownerChange": "ladon-large-repository-review-loop-umbrella", "ownedConcern": "large owner/report projection and calibration"}
+  ],
+  "children": [
+    {
+      "change": "ladon-first-hand-proof-search-baselines",
+      "startAfter": [],
+      "integrationDependsOn": ["ladon-sqlite-proof-engineering-umbrella", "ladon-theorem-lineage-umbrella", "ladon-proofir-evidence-graph-umbrella"],
+      "enables": ["ladon-lineage-query-plan-and-warm-summary", "ladon-lineage-storage-budget-and-publication", "ladon-sqlite-schema-rightsizing-and-accounting", "ladon-proofir-query-access-paths", "ladon-coverage-sensitive-consumers-and-constructors", "ladon-binder-aware-proof-difference", "ladon-proof-search-ranking-and-owner-projection"],
+      "exitClass": "reproducible-first-hand-contract-plan-size-and-quality-baseline"
+    },
+    {
+      "change": "ladon-lineage-query-plan-and-warm-summary",
+      "startAfter": ["ladon-first-hand-proof-search-baselines"],
+      "integrationDependsOn": ["ladon-theorem-lineage-umbrella"],
+      "enables": ["ladon-lineage-storage-budget-and-publication", "ladon-sqlite-schema-rightsizing-and-accounting"],
+      "exitClass": "direction-correct-indexed-bounded-warm-lineage"
+    },
+    {
+      "change": "ladon-lineage-storage-budget-and-publication",
+      "startAfter": ["ladon-first-hand-proof-search-baselines", "ladon-lineage-query-plan-and-warm-summary"],
+      "integrationDependsOn": ["ladon-cli-execution-contract", "ladon-theorem-lineage-umbrella"],
+      "enables": ["ladon-proof-search-operational-release"],
+      "exitClass": "budgeted-transactional-statistics-current-terminal-lineage-publication"
+    },
+    {
+      "change": "ladon-sqlite-schema-rightsizing-and-accounting",
+      "startAfter": ["ladon-first-hand-proof-search-baselines", "ladon-lineage-query-plan-and-warm-summary"],
+      "integrationDependsOn": ["ladon-sqlite-proof-engineering-umbrella", "ladon-theorem-lineage-umbrella"],
+      "enables": ["ladon-proofir-query-access-paths", "ladon-coverage-sensitive-consumers-and-constructors", "ladon-binder-aware-proof-difference"],
+      "exitClass": "query-aligned-nonredundant-accounted-disposable-sqlite-schema"
+    },
+    {
+      "change": "ladon-proofir-query-access-paths",
+      "startAfter": ["ladon-first-hand-proof-search-baselines", "ladon-sqlite-schema-rightsizing-and-accounting"],
+      "integrationDependsOn": ["ladon-proofir-evidence-graph-umbrella"],
+      "enables": ["ladon-coverage-sensitive-consumers-and-constructors", "ladon-proof-search-operational-release"],
+      "exitClass": "populated-plan-validated-proofir-and-foreign-key-access-paths"
+    },
+    {
+      "change": "ladon-coverage-sensitive-consumers-and-constructors",
+      "startAfter": ["ladon-first-hand-proof-search-baselines", "ladon-sqlite-schema-rightsizing-and-accounting", "ladon-proofir-query-access-paths"],
+      "integrationDependsOn": ["ladon-sqlite-proof-engineering-umbrella"],
+      "enables": ["ladon-proof-search-operational-release"],
+      "exitClass": "coverage-honest-indexed-consumers-and-structure-fields"
+    },
+    {
+      "change": "ladon-binder-aware-proof-difference",
+      "startAfter": ["ladon-first-hand-proof-search-baselines", "ladon-sqlite-schema-rightsizing-and-accounting"],
+      "integrationDependsOn": ["ladon-sqlite-proof-engineering-umbrella"],
+      "enables": ["ladon-proof-search-operational-release"],
+      "exitClass": "conservative-binder-aware-residual-proof-difference"
+    },
+    {
+      "change": "ladon-proof-search-ranking-and-owner-projection",
+      "startAfter": ["ladon-first-hand-proof-search-baselines"],
+      "integrationDependsOn": ["ladon-sqlite-proof-engineering-umbrella", "ladon-large-repository-review-loop-umbrella"],
+      "enables": ["ladon-proof-search-operational-release"],
+      "exitClass": "inspectable-concentrated-ranking-and-bounded-owner-projection"
+    },
+    {
+      "change": "ladon-proof-search-operational-release",
+      "startAfter": ["ladon-first-hand-proof-search-baselines", "ladon-lineage-query-plan-and-warm-summary", "ladon-lineage-storage-budget-and-publication", "ladon-sqlite-schema-rightsizing-and-accounting", "ladon-proofir-query-access-paths", "ladon-coverage-sensitive-consumers-and-constructors", "ladon-binder-aware-proof-difference", "ladon-proof-search-ranking-and-owner-projection"],
+      "integrationDependsOn": ["ladon-cli-execution-contract"],
+      "enables": [],
+      "exitClass": "installed-documented-calibrated-first-hand-proof-search-hardening-release"
+    }
+  ]
+}
