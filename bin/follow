@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd -- "$script_dir/.." && pwd)"
+board_dir="$repo_root/.codex/state/ultra-code"
+board_tool="${ULTRA_CODE_BB_TOOL:-$repo_root/../codex-skills/ultra-code/scripts/ultra_code_bb.py}"
+
+board_db=""
+forwarded=()
+explicit_since=0
+while (($#)); do
+    case "$1" in
+        --db)
+            if (($# < 2)); then
+                echo "bin/follow: --db requires a path" >&2
+                exit 2
+            fi
+            board_db="$2"
+            shift 2
+            ;;
+        --since)
+            if (($# < 2)); then
+                echo "bin/follow: --since requires a post ID" >&2
+                exit 2
+            fi
+            explicit_since=1
+            forwarded+=("$1" "$2")
+            shift 2
+            ;;
+        *)
+            forwarded+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [[ -z "$board_db" ]]; then
+    if [[ ! -d "$board_dir" ]]; then
+        echo "bin/follow: no board directory: $board_dir" >&2
+        exit 2
+    fi
+    board_db="$({
+        find "$board_dir" -maxdepth 1 -type f -name '*.sqlite3' \
+            -printf '%T@ %p\n'
+    } | sort -nr | sed -n '1s/^[^ ]* //p')"
+fi
+
+if [[ -z "$board_db" || ! -f "$board_db" ]]; then
+    echo "bin/follow: no bulletin-board database found" >&2
+    exit 2
+fi
+if [[ ! -f "$board_tool" ]]; then
+    echo "bin/follow: board tool not found: $board_tool" >&2
+    echo "Set ULTRA_CODE_BB_TOOL to its ultra_code_bb.py path." >&2
+    exit 2
+fi
+
+if ((explicit_since == 0)); then
+    # Show enough recent context to make an already-active board immediately useful.
+    # The underlying follower's default of zero starts at the oldest post, which can
+    # bury current replies behind hundreds of historical messages.
+    latest_post="$(python - "$board_db" <<'PY'
+import sqlite3
+import sys
+
+with sqlite3.connect(sys.argv[1]) as connection:
+    row = connection.execute("SELECT COALESCE(MAX(post_id), 0) FROM posts").fetchone()
+print(max(0, int(row[0]) - 30))
+PY
+)"
+    forwarded=("--since" "$latest_post" "${forwarded[@]}")
+fi
+
+echo "Following board: $board_db" >&2
+echo "Showing the latest 30 posts, then waiting for live activity (Ctrl-C to stop)." >&2
+exec env PYTHONUNBUFFERED=1 python "$board_tool" follow --db "$board_db" "${forwarded[@]}"
