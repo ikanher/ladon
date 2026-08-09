@@ -8,9 +8,10 @@ later packets.
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 from ladon.analysis.audit_surface import scan_audit_commands
 from ladon.ir import LeanImport, LeanLexicalMarker, LeanModule, LeanTextDeclaration
@@ -23,10 +24,11 @@ from ladon.lean_layout import (
 from ladon.lexical_declarations import scan_text_declarations
 from ladon.lexical_mask import (
     LeanSourceMasks,
+)
+from ladon.lexical_mask import (
     mask_lean_source as _mask_lean_source,
 )
 from ladon.lexical_navigation import scan_lexical_navigation
-
 
 IMPORT_MODULE_RE = re.compile(r"^[A-Za-z0-9_.]+$")
 GENERATED_COMMENT_RE = re.compile(
@@ -45,7 +47,7 @@ class ModuleDiscovery:
     extraction/output plumbing.  In rootless inventory scope that anchor is
     not an analysis-root claim; report adaptation exposes it separately.
     `inventory_root` is the top-level namespace/file prefix scanned for the
-    module DAG, for example `Quux` or `Mf`.
+    module DAG, for example `ExampleProject` or `Mf`.
     """
 
     repo_root: Path
@@ -87,8 +89,8 @@ def root_candidates(repo_root: Path, raw_root: str) -> list[Path]:
     """Return accepted file candidates for a CLI root value.
 
     The clean core accepts both repo-relative paths such as
-    `Quux/Semantics/Propagation.lean` and module names such as
-    `Quux.Semantics.Propagation`.
+    `ExampleProject/Semantics/Propagation.lean` and module names such as
+    `ExampleProject.Semantics.Propagation`.
     """
 
     raw_path = Path(raw_root)

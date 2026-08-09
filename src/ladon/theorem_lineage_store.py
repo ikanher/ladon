@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import time
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -222,6 +223,14 @@ def ingest_theorem_lineage(
         }
     )
     unsupported = json.dumps(list(bundle.unsupported_facets), sort_keys=True)
+    started = time.monotonic()
+    before_pages = _page_snapshot(connection)
+    before_objects = _object_bytes(connection)
+    preflight = {
+        "estimatedRows": len(bundle.nodes) + len(bundle.edges) + len(bundle.trust) + len(bundle.scc_members) + len(bundle.omissions),
+        "estimatedBytes": _estimate_bundle_bytes(bundle),
+        "authority": "advisory",
+    }
     connection.execute("BEGIN IMMEDIATE")
     try:
         connection.execute(
@@ -307,16 +316,16 @@ def ingest_theorem_lineage(
                 for row in bundle.omissions
             ),
         )
-        if max_bytes is not None:
-            page_size = int(connection.execute("PRAGMA page_size").fetchone()[0])
-            page_count = int(connection.execute("PRAGMA page_count").fetchone()[0])
-            if page_size * page_count > max_bytes:
-                raise TheoremLineageError("lineage ingestion exceeds configured size limit")
+        _refresh_lineage_statistics(connection)
+        _validate_lineage_access_paths(connection)
+        _enforce_lineage_budget(connection, max_bytes)
         _check_connection(connection)
         connection.commit()
     except Exception:
         connection.rollback()
         raise
+    after_pages = _page_snapshot(connection)
+    after_objects = _object_bytes(connection)
     return {
         "closureId": closure_id,
         "theorem": bundle.target_name,
@@ -324,7 +333,75 @@ def ingest_theorem_lineage(
         "edgeCount": len(bundle.edges),
         "authority": "lean_environment",
         "status": "complete",
+        "storage": {
+            "before": before_pages,
+            "after": after_pages,
+            "marginalBytes": after_pages["allocatedBytes"] - before_pages["allocatedBytes"],
+            "marginalObjects": {
+                key: after_objects.get(key, 0) - before_objects.get(key, 0)
+                for key in sorted(set(before_objects) | set(after_objects))
+                if after_objects.get(key, 0) != before_objects.get(key, 0)
+            },
+        },
+        "statistics": {"refreshed": True, "tables": ["lineage_edges", "lineage_nodes", "lineage_trust", "lineage_scc_members", "lineage_omissions"]},
+        "preflight": preflight,
+        "elapsedSeconds": round(time.monotonic() - started, 6),
     }
+
+
+def _page_snapshot(connection: sqlite3.Connection) -> dict[str, int]:
+    page_size = int(connection.execute("PRAGMA page_size").fetchone()[0])
+    page_count = int(connection.execute("PRAGMA page_count").fetchone()[0])
+    return {"pageSize": page_size, "pageCount": page_count, "allocatedBytes": page_size * page_count}
+
+
+def _estimate_bundle_bytes(bundle: Any) -> int:
+    """Conservative advisory estimate; allocated bytes remain authoritative."""
+    return (len(bundle.nodes) * 256) + (len(bundle.edges) * 128) + ((len(bundle.trust) + len(bundle.scc_members) + len(bundle.omissions)) * 96)
+
+
+def _object_bytes(connection: sqlite3.Connection) -> dict[str, int]:
+    try:
+        rows = connection.execute("SELECT name,SUM(pgsize) FROM dbstat GROUP BY name").fetchall()
+    except sqlite3.Error:
+        return {}
+    return {str(name): int(size or 0) for name, size in rows}
+
+
+def _refresh_lineage_statistics(connection: sqlite3.Connection) -> None:
+    for table in ("lineage_closures", "lineage_nodes", "lineage_edges", "lineage_trust", "lineage_scc_members", "lineage_omissions"):
+        connection.execute(f"ANALYZE {table}")
+
+
+def _enforce_lineage_budget(connection: sqlite3.Connection, max_bytes: int | None) -> None:
+    if max_bytes is None:
+        return
+    connection.execute(
+        "INSERT OR REPLACE INTO metadata(key,value) VALUES ('completeDatabaseMaxBytes',?)",
+        (str(max_bytes),),
+    )
+    connection.execute(
+        "INSERT OR REPLACE INTO metadata(key,value) VALUES ('completeDatabaseBudgetPolicy','lineage-cli')"
+    )
+    if _page_snapshot(connection)["allocatedBytes"] > max_bytes:
+        raise TheoremLineageError("lineage ingestion exceeds configured size limit")
+
+
+def _validate_lineage_access_paths(connection: sqlite3.Connection) -> None:
+    forward = connection.execute(
+        "EXPLAIN QUERY PLAN SELECT target FROM lineage_edges WHERE closure_id=? AND source=?",
+        ("<closure>", "<source>"),
+    ).fetchall()
+    reverse = connection.execute(
+        "EXPLAIN QUERY PLAN SELECT source FROM lineage_edges WHERE closure_id=? AND target=?",
+        ("<closure>", "<target>"),
+    ).fetchall()
+    forward_text = " ".join(str(tuple(row)) for row in forward)
+    reverse_text = " ".join(str(tuple(row)) for row in reverse)
+    if "lineage_edges" not in forward_text or "source=?" not in forward_text:
+        raise TheoremLineageError("lineage forward access path is unavailable")
+    if "lineage_edges" not in reverse_text or "target=?" not in reverse_text:
+        raise TheoremLineageError("lineage reverse access path is unavailable")
 
 
 def inspect_lineage_closure(

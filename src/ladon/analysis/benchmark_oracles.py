@@ -316,7 +316,7 @@ def claim_authority_diagnostics(payload: Payload) -> list[dict[str, Any]]:
         rows = payload.get(key, {}).get("diagnostics", [])
         if isinstance(rows, list):
             diagnostics.extend(row for row in rows if isinstance(row, dict))
-    bridge = payload.get("proofir_bridge", {})
+    bridge = payload.get("external_evidence", {})
     if isinstance(bridge, dict):
         rows = bridge.get("routeAuthorityAudit", {}).get("diagnostics", [])
         if isinstance(rows, list):

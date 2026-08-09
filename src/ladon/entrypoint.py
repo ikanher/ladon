@@ -14,9 +14,17 @@ def main(argv: Sequence[str] | None = None) -> int:
         from ladon.proof_search_cli import proof_search_main
 
         return proof_search_main(arguments[1:])
+    if arguments and arguments[0] == "proofir":
+        from ladon.proofir_v3_cli import proofir_v3_main
+
+        return proofir_v3_main(arguments[1:])
     from ladon.cli import main as analyzer_main
 
     return analyzer_main(arguments)
 
 
 __all__ = ["main"]
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

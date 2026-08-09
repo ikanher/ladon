@@ -15,7 +15,6 @@ from jsonschema import Draft202012Validator
 
 from ladon.installed_contract import (
     assert_analyzer_process_contract,
-    assert_bridge_process_contract,
     invoke,
 )
 from ladon.report_v2 import load_report_schema
@@ -49,10 +48,6 @@ def test_installed_analyzer_process_contract() -> None:
         fixture_root=FIXTURE_ROOT,
         fixture_target="Tiny.lean",
     )
-
-
-def test_installed_bridge_process_contract() -> None:
-    assert_bridge_process_contract(bridge_command())
 
 
 def test_installed_legacy_dual_files_and_conflict(tmp_path: Path) -> None:
@@ -904,17 +899,6 @@ def analyzer_command() -> list[str]:
     """Return the installed analyzer selected by the distribution smoke."""
 
     return [os.environ.get("LADON_CONSOLE", str(Path(sys.executable).with_name("ladon")))]
-
-
-def bridge_command() -> list[str]:
-    """Return the installed bridge selected by the distribution smoke."""
-
-    return [
-        os.environ.get(
-            "LADON_PROOFIR_BRIDGE_CONSOLE",
-            str(Path(sys.executable).with_name("ladon-proofir-bridge")),
-        )
-    ]
 
 
 def run_analyzer(*extra: str) -> subprocess.CompletedProcess[str]:

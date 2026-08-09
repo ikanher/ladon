@@ -9,9 +9,10 @@ import os
 import shutil
 import tempfile
 from collections import Counter
+from collections.abc import Mapping
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Mapping
+from typing import Any
 
 from lean_runtime_gate import (
     fixture_root,
@@ -20,7 +21,6 @@ from lean_runtime_gate import (
 )
 from release_gate_runtime import run_checked, uv_executable
 from release_gate_types import GateError
-
 
 DEFAULT_OUTPUT = (
     project_root()
@@ -32,15 +32,10 @@ DEFAULT_OUTPUT = (
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """Build the benchmark output and optional Quux metadata interface."""
+    """Build the synthetic runtime benchmark command."""
 
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument(
-        "--quux-elapsed-seconds",
-        type=float,
-        help="Optional externally measured Quux timing, recorded separately.",
-    )
     return parser
 
 
@@ -131,23 +126,7 @@ def mutate_imported_source(fixture: Path) -> None:
     )
 
 
-def quux_result(elapsed_seconds: float | None) -> dict[str, Any]:
-    """Keep optional Quux timing distinct from synthetic acceptance."""
-
-    if elapsed_seconds is None:
-        return {
-            "status": "not_run",
-            "elapsedSeconds": None,
-            "reason": "optional external Quux timing was not supplied",
-        }
-    return {
-        "status": "recorded_external",
-        "elapsedSeconds": elapsed_seconds,
-        "reason": "caller-supplied optional timing; not synthetic gate evidence",
-    }
-
-
-def run_benchmark(quux_elapsed_seconds: float | None) -> dict[str, Any]:
+def run_benchmark() -> dict[str, Any]:
     """Build a temporary fixture copy and measure all synthetic scenarios."""
 
     environment = dict(os.environ)
@@ -197,7 +176,6 @@ def run_benchmark(quux_elapsed_seconds: float | None) -> dict[str, Any]:
             .strip(),
             "batchSize": 8,
             "scenarios": results,
-            "quux": quux_result(quux_elapsed_seconds),
             "nonclaim": (
                 "Synthetic timings characterize this fixture and host only; "
                 "they are not a general performance guarantee."
@@ -210,7 +188,7 @@ def main(argv: list[str] | None = None) -> int:
 
     args = build_parser().parse_args(argv)
     try:
-        payload = run_benchmark(args.quux_elapsed_seconds)
+        payload = run_benchmark()
     except GateError as exc:
         print(f"lean runtime benchmark: FAIL: {exc}")
         return 1

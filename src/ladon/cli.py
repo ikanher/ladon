@@ -91,6 +91,7 @@ PUBLIC_COMMAND_HELP = """\
 commands:
   theorem   Plan, materialize, and independently replay theorem capsules.
   proof-search  Build and query local Lean proof-navigation evidence.
+  proofir       Validate, canonicalize, or inspect ProofIR artifacts.
   runset    Execute a versioned set of ordinary analyses.
   preview   Resolve roots, scope, policies, and costs without target execution.
   inspect   Inspect canonical rows from one existing report or source index.

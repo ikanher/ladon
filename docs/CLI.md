@@ -76,9 +76,11 @@ After an index build, ordinary read-only queries inspect project-local ProofIR
 evidence without invoking Lean or replay tools:
 
 ```bash
-ladon proof-search evidence theorem Quux.Problems.Example --repo-root /path/to/project --format json
-ladon proof-search evidence artifact proofir/surface.json --repo-root /path/to/project --format text
-ladon proof-search evidence route route-id --dag dag.id --start fact.id --end claim.id --repo-root /path/to/project --format json
+ladon proof-search evidence theorem Example.Project.goal --repo-root /path/to/project --format json
+ladon proof-search evidence artifact proofir.derivation --repo-root /path/to/project --format text
+ladon proof-search evidence route sha256:<artifact-id> --start statement:premise --end statement:goal --repo-root /path/to/project --format json
+ladon proof-search evidence slice sha256:<artifact-id> --end statement:goal --repo-root /path/to/project --format json
+ladon proof-search evidence alternatives sha256:<artifact-id> --end statement:goal --repo-root /path/to/project --format json
 ladon proof-search evidence triage all --repo-root /path/to/project --format json
 ```
 
@@ -243,13 +245,70 @@ under `workflowDiagnostics`; it does not synthesize a report or analysis
 evidence. The `workflow` command routes those rows through its matching
 `workflowDiagnostics` and `incompleteOrStaleEvidence` sections.
 
-## Auxiliary ProofIR bridge
+## Native ProofIR v3
 
-`ladon-proofir-bridge` remains a supported general-purpose auxiliary command.
-Its help, report/diagnostic channel separation, invocation errors, operational
-errors, and signal behavior follow the same process rules where applicable.
-Analyzer-only build, finding-policy, and report-version options are not added to
-the bridge merely to make its option list identical.
+Validate producer output before indexing:
+
+```bash
+ladon proofir validate ARTIFACT.json
+ladon proofir canonicalize ARTIFACT.json --out ARTIFACT.canonical.json
+ladon proofir inspect ARTIFACT.canonical.json
+```
+
+`validate` and `inspect` return `ladon-proofir-validate-result-v1` and
+`ladon-proofir-inspect-result-v1` objects. `canonicalize` returns the canonical
+native ProofIR 3.0 artifact itself. Invocation, operational, and interruption
+failures use `ladon-proofir-terminal-v1` JSON on stderr with exits 2, 1, and
+130. These schemas describe artifact processing; they do not establish checker
+acceptance or theorem truth.
+
+List canonical artifact paths in the repository ProofIR configuration, then
+run `proof-search index build` explicitly. The database is disposable and
+project-local; a stored query never starts Lean or refreshes producer output.
+Former bridge, surface-bundle, replay, obligation-DAG, and witness artifacts
+fail with an unsupported-legacy diagnostic. Producers must regenerate native
+v3 artifacts; there is no converter or data migration command.
+
+Reviewers must inspect `coverage`, `omissions`, `checkerAcceptance`, and
+`limitations`. A claim is a producer assertion, an attachment only relates
+identities, and route/slice/alternative results are structural views. Only an
+explicit check-run states what a named checker observed in a named environment.
+
+Run the explicit closed-candidate checker with the same ordinary CLI used by
+human and automated callers:
+
+```bash
+ladon proof-search check candidate \
+  --repo-root /path/to/lean/project \
+  --module Project.Module \
+  --goal 'Exact Goal' \
+  --candidate Project.Module.declaration \
+  --timeout-seconds 120 --max-output-mib 8 --max-rss-mib 2048 \
+  --format json
+```
+
+On a closed application, `ladon-semantic-candidate-check-result-v1` contains a
+batch-closed environment manifest, check-run, and zero-residual derivation. If
+Lean applies the candidate but leaves goals, the result is
+`applicable-with-residuals` and contains an incomplete attempt-log with ordered
+substitution, residual-statement, and local-context references; it is not a
+proof. The
+environment hashes every imported `.olean` selected by Lean plus repository
+toolchain/manifest inputs; expression identities use the versioned structural
+Lean-expression scheme. The supervisor—not the Lean helper—owns command,
+executable, helper, output, deadline, and RSS observations and creates the
+check-run identity. Timeout, rejection, malformed helper output, or a resource
+limit returns no accepted artifact. This first checker intentionally checks one
+declaration application against a closed goal. It does not recursively solve
+residual goals or promote an incomplete attempt into a derivation.
+
+For `proof-search`, select machine output with `--format json`. Successful JSON
+results are isolated on stdout. Invocation failures, operational failures, and
+caller interruption produce exactly one
+`ladon-proof-search-terminal-v1` JSON record on stderr and no stdout result;
+their exit codes are respectively 2, 1, and 130. A failed or interrupted
+operation does not replace an existing `--output` file. These records describe
+CLI execution only and confer no checker or theorem authority.
 
 ## Proof-search baseline evidence
 

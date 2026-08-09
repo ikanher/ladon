@@ -3,37 +3,17 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.report_v2 import supported_report_view
-
 
 Expectation = dict[str, Any]
 ResultRow = dict[str, Any]
 
 
 _BUILTIN_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
-    "quux/project-quux.json": [
-        {"type": "acyclic"},
-        {"type": "module_count_between", "min": 360, "max": 390},
-        {"type": "top_module_fan_in", "module": "Quux.Basic", "max_rank": 1, "min_value": 90},
-        {"type": "top_module_fan_out", "module": "Quux.Problems", "max_rank": 1, "min_value": 80},
-        {"type": "finding_kind_present", "kind": "composite_import_pressure"},
-        {"type": "finding_kind_present", "kind": "facade_fanout_pressure"},
-    ],
-    "quux/owner-propagation-lean.json": [
-        {"type": "acyclic"},
-        {"type": "declaration_count_between", "min": 8, "max": 20},
-        {
-            "type": "declaration_fan_in",
-            "declaration": "Quux.Semantics.PropagationAlgebra",
-            "max_rank": 1,
-            "min_value": 6,
-        },
-        {"type": "finding_kind_absent", "kind": "unresolved_reference_hotspot"},
-        {"type": "proof_similarity_absent"},
-    ],
     "matrix-factorization/project-mf.json": [
         {"type": "acyclic"},
         {"type": "module_count_between", "min": 500, "max": 560},
@@ -64,29 +44,6 @@ _BUILTIN_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
 
 
 _ROOT_MATRIX_EXPECTATION_SUITES: dict[str, list[Expectation]] = {
-    "quux/quux-project.json": [
-        {"type": "acyclic"},
-        {"type": "module_count_between", "min": 360, "max": 390},
-        {"type": "top_module_fan_in", "module": "Quux.Basic", "max_rank": 1, "min_value": 90},
-        {"type": "top_module_fan_out", "module": "Quux.Problems", "max_rank": 1, "min_value": 80},
-        {"type": "review_region_present", "kind": "import_pressure_region", "min_signals": 5},
-    ],
-    "quux/quux-propagation.json": [
-        {"type": "declaration_count_between", "min": 8, "max": 20},
-        {
-            "type": "declaration_fan_in",
-            "declaration": "Quux.Semantics.PropagationAlgebra",
-            "max_rank": 1,
-            "min_value": 6,
-        },
-        {"type": "finding_kind_absent", "kind": "unresolved_reference_hotspot"},
-        {"type": "root_scope_classification", "classification": "narrow_owner"},
-    ],
-    "quux/quux-bifr-rmse-problem.json": [
-        {"type": "module_count_between", "min": 360, "max": 390},
-        {"type": "declaration_count_between", "min": 8, "max": 20},
-        {"type": "review_region_present", "kind": "import_context_region", "min_signals": 2},
-    ],
     "matrix-factorization/mf-project.json": [
         {"type": "module_count_between", "min": 500, "max": 560},
         {"type": "top_module_fan_in", "module": "Mf.DP.Sensitivity", "max_rank": 1, "min_value": 10},

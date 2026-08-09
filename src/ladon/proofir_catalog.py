@@ -10,19 +10,16 @@ import hashlib
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
+from ladon.proofir_v3 import (
+    LEGACY_ARTIFACT_KINDS,
+    SUPPORTED_ARTIFACT_KINDS,
+    ProofIRV3Error,
+    validate_envelope,
+)
 
 PROOFIR_CONFIG_RELATIVE_PATH = ".ladon/proofir.json"
-SUPPORTED_CATALOG_KINDS = frozenset(
-    {
-        "proofir_bridge_index",
-        "proof_ir_lean_surface_bundle",
-        "proof_ir_lean_replay_provenance",
-        "proof_ir_v2_obligation_dag",
-        "proof_ir_v2_obligation_dag_check_witness",
-    }
-)
 DEFAULT_LIMITS = {
     "maxFiles": 256,
     "maxArtifactBytes": 8 * 1024 * 1024,
@@ -74,6 +71,7 @@ class CatalogArtifact:
     state: str
     metadata_json: str
     diagnostic: str | None = None
+    validation_stage: str = "projected"
 
     def identity_payload(self) -> dict[str, Any]:
         return {
@@ -103,13 +101,19 @@ def load_proofir_config(repo_root: Path) -> ProofIRConfig:
     patterns = _config_patterns(payload)
     limits = _config_limits(payload)
     relationships = _config_relationships(payload)
-    return ProofIRConfig(True, patterns, tuple(sorted(limits.items())), tuple(sorted(relationships)))
+    return ProofIRConfig(
+        True, patterns, tuple(sorted(limits.items())), tuple(sorted(relationships))
+    )
 
 
 def _config_patterns(payload: dict[str, Any]) -> tuple[str, ...]:
     raw = payload.get("artifacts", [])
-    if not isinstance(raw, list) or not all(isinstance(pattern, str) and pattern for pattern in raw):
-        raise ProofIRCatalogError("ProofIR configuration artifacts must be non-empty strings")
+    if not isinstance(raw, list) or not all(
+        isinstance(pattern, str) and pattern for pattern in raw
+    ):
+        raise ProofIRCatalogError(
+            "ProofIR configuration artifacts must be non-empty strings"
+        )
     patterns = tuple(sorted(set(raw)))
     if any(Path(pattern).is_absolute() for pattern in patterns):
         raise ProofIRCatalogError("ProofIR artifact paths must be repository-relative")
@@ -128,18 +132,36 @@ def _config_limits(payload: dict[str, Any]) -> dict[str, int]:
     return limits
 
 
-def _config_relationships(payload: dict[str, Any]) -> tuple[tuple[str, str, str, str], ...]:
+def _config_relationships(
+    payload: dict[str, Any],
+) -> tuple[tuple[str, str, str, str], ...]:
     raw = payload.get("relationships", [])
     if not isinstance(raw, list):
-        raise ProofIRCatalogError("ProofIR configuration relationships must be an array")
+        raise ProofIRCatalogError(
+            "ProofIR configuration relationships must be an array"
+        )
     rows = []
     for row in raw:
         if not isinstance(row, dict):
             raise ProofIRCatalogError("ProofIR relationships must be objects")
         source, target, kind = row.get("source"), row.get("target"), row.get("kind")
-        if not all(isinstance(value, str) and value for value in (source, target, kind)):
-            raise ProofIRCatalogError("ProofIR relationships require source, target, and kind")
-        rows.append((source, target, kind, json.dumps(row.get("details", {}), sort_keys=True, separators=(",", ":"))))
+        if not all(
+            isinstance(value, str) and value for value in (source, target, kind)
+        ):
+            raise ProofIRCatalogError(
+                "ProofIR relationships require source, target, and kind"
+            )
+        source, target, kind = cast(tuple[str, str, str], (source, target, kind))
+        rows.append(
+            (
+                source,
+                target,
+                kind,
+                json.dumps(
+                    row.get("details", {}), sort_keys=True, separators=(",", ":")
+                ),
+            )
+        )
     return tuple(sorted(rows))
 
 
@@ -165,25 +187,37 @@ def discover_catalog_artifacts(
 def _expand_paths(root: Path, patterns: tuple[str, ...]) -> set[Path]:
     paths: set[Path] = set()
     for pattern in patterns:
-        matches = list(root.glob(pattern)) or ([root / pattern] if not any(character in pattern for character in "*?[") else [])
+        matches = list(root.glob(pattern)) or (
+            [root / pattern]
+            if not any(character in pattern for character in "*?[")
+            else []
+        )
         for path in matches:
             resolved = path.resolve()
             if not resolved.is_relative_to(root):
-                raise ProofIRCatalogError(f"ProofIR artifact path escapes repository: {pattern}")
+                raise ProofIRCatalogError(
+                    f"ProofIR artifact path escapes repository: {pattern}"
+                )
             if resolved.is_file():
                 paths.add(resolved)
     return paths
 
 
-def _read_artifacts(root: Path, paths: list[Path], limits: dict[str, int]) -> list[CatalogArtifact]:
+def _read_artifacts(
+    root: Path, paths: list[Path], limits: dict[str, int]
+) -> list[CatalogArtifact]:
     artifacts, total_bytes = [], 0
     for path in paths:
         raw = path.read_bytes()
         if len(raw) > limits["maxArtifactBytes"]:
-            raise ProofIRCatalogError(f"ProofIR artifact byte limit exceeded: {path.relative_to(root)}")
+            raise ProofIRCatalogError(
+                f"ProofIR artifact byte limit exceeded: {path.relative_to(root)}"
+            )
         total_bytes += len(raw)
         if total_bytes > limits["maxTotalBytes"]:
-            raise ProofIRCatalogError(f"ProofIR total byte limit exceeded: {total_bytes} > {limits['maxTotalBytes']}")
+            raise ProofIRCatalogError(
+                f"ProofIR total byte limit exceeded: {total_bytes} > {limits['maxTotalBytes']}"
+            )
         artifacts.append(_inspect_artifact(root, path, raw, limits["maxMetadataBytes"]))
     return artifacts
 
@@ -198,31 +232,137 @@ def _inspect_artifact(
 
     relative = path.relative_to(root).as_posix()
     digest = hashlib.sha256(raw).hexdigest()
+    decoded = _decode_artifact(relative, path, raw, digest)
+    if isinstance(decoded, CatalogArtifact):
+        return decoded
+    payload = decoded
+    kind = str(payload.get("artifactKind", ""))
+    schema = str(payload.get("schemaVersion", payload.get("proofirVersion", "")))
+    encoded, metadata_diagnostic = _bounded_metadata(payload, max_metadata_bytes)
+    state, diagnostic, stage = _catalog_validation(
+        payload, kind, schema, metadata_diagnostic
+    )
+    return CatalogArtifact(
+        relative,
+        path,
+        len(raw),
+        digest,
+        kind,
+        schema,
+        state,
+        encoded,
+        diagnostic,
+        stage,
+    )
+
+
+def _decode_artifact(
+    relative: str, path: Path, raw: bytes, digest: str
+) -> dict[str, Any] | CatalogArtifact:
     try:
         payload = json.loads(raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         return CatalogArtifact(
-            relative, path, len(raw), digest, "", "", "malformed", "{}", str(exc)
+            relative,
+            path,
+            len(raw),
+            digest,
+            "",
+            "",
+            "malformed",
+            "{}",
+            str(exc),
+            "decoded",
         )
     if not isinstance(payload, dict):
         return CatalogArtifact(
-            relative, path, len(raw), digest, "", "", "malformed", "{}", "top-level JSON is not an object"
+            relative,
+            path,
+            len(raw),
+            digest,
+            "",
+            "",
+            "malformed",
+            "{}",
+            "top-level JSON is not an object",
+            "envelope-valid",
         )
-    kind = str(payload.get("artifactKind", ""))
-    schema = str(payload.get("schemaVersion", ""))
+    return payload
+
+
+def _bounded_metadata(
+    payload: dict[str, Any], max_metadata_bytes: int
+) -> tuple[str, str | None]:
     metadata = {
         key: payload[key]
         for key in ("module", "dagId", "provenanceId", "status", "guarantee", "checker")
-        if key in payload and isinstance(payload[key], (str, int, float, bool, type(None)))
+        if key in payload
+        and isinstance(payload[key], (str, int, float, bool, type(None)))
     }
     encoded = json.dumps(metadata, sort_keys=True, separators=(",", ":"))
-    if len(encoded.encode("utf-8")) > max_metadata_bytes:
-        encoded = encoded.encode("utf-8")[:max_metadata_bytes].decode("utf-8", errors="ignore")
-        diagnostic = "catalog metadata truncated"
+    metadata_bytes = encoded.encode("utf-8")
+    if len(metadata_bytes) <= max_metadata_bytes:
+        return encoded, None
+    sentinel = json.dumps(
+        {
+            "truncated": True,
+            "originalBytes": len(metadata_bytes),
+            "sha256": hashlib.sha256(metadata_bytes).hexdigest(),
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    )
+    return sentinel, "catalog metadata truncated"
+
+
+def _catalog_validation(
+    payload: dict[str, Any],
+    kind: str,
+    schema: str,
+    metadata_diagnostic: str | None,
+) -> tuple[str, str | None, str]:
+    state = "cataloged" if _supported_kind_version(kind, schema) else "unsupported"
+    if state == "cataloged":
+        try:
+            validate_envelope(payload)
+        except ProofIRV3Error as exc:
+            diagnostic = json.dumps(
+                exc.diagnostic.to_dict(), sort_keys=True, separators=(",", ":")
+            )
+            return "malformed", diagnostic, exc.diagnostic.stage
+        return "cataloged", metadata_diagnostic, "projected"
+    diagnostic = _unsupported_diagnostic(
+        kind, schema, artifact_id=str(payload.get("artifactId", "<unbound>"))
+    )
+    return "unsupported", diagnostic, "kind-schema-valid"
+
+
+def _supported_kind_version(kind: str, schema: str) -> bool:
+    """Accept only the closed native-v3 kind/version registry."""
+
+    return schema == "3.0" and kind in SUPPORTED_ARTIFACT_KINDS
+
+
+def _unsupported_diagnostic(kind: str, schema: str, *, artifact_id: str) -> str:
+    """Return a stable diagnostic for retired v2/compatibility routes."""
+
+    if kind in LEGACY_ARTIFACT_KINDS or kind == "proofir.compatibility.v2":
+        diagnostic = {
+            "artifactId": artifact_id,
+            "stage": "kind-schema-valid",
+            "code": "legacy-artifact-kind",
+            "pointer": "/artifactKind",
+            "message": f"legacy ProofIR artifact kind is unsupported: {kind}",
+        }
     else:
-        diagnostic = None
-    state = "cataloged" if kind in SUPPORTED_CATALOG_KINDS else "unsupported"
-    return CatalogArtifact(relative, path, len(raw), digest, kind, schema, state, encoded, diagnostic)
+        diagnostic = {
+            "artifactId": artifact_id,
+            "stage": "kind-schema-valid",
+            "code": "unsupported-kind-version",
+            "pointer": "/artifactKind" if kind else "/proofirVersion",
+            "message": f"unsupported ProofIR kind/version: {kind!r}/{schema!r}",
+        }
+    return json.dumps(diagnostic, sort_keys=True, separators=(",", ":"))
 
 
 def catalog_generation_identity(
@@ -239,11 +379,10 @@ def catalog_generation_identity(
 
 __all__ = [
     "CATALOG_STATES",
+    "PROOFIR_CONFIG_RELATIVE_PATH",
     "CatalogArtifact",
     "ProofIRCatalogError",
     "ProofIRConfig",
-    "PROOFIR_CONFIG_RELATIVE_PATH",
-    "SUPPORTED_CATALOG_KINDS",
     "catalog_generation_identity",
     "discover_catalog_artifacts",
     "load_proofir_config",

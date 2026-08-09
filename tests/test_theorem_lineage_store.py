@@ -121,6 +121,11 @@ def test_ingestion_is_constrained_and_status_is_fresh() -> None:
     status = inspect_lineage_closure(connection, "Demo.target", identity)
     assert status["status"] == "fresh"
     assert status["closureId"] == result["closureId"]
+    assert result["storage"]["after"]["allocatedBytes"] >= result["storage"]["before"]["allocatedBytes"]
+    assert result["statistics"]["refreshed"] is True
+    assert connection.execute(
+        "SELECT COUNT(*) FROM sqlite_stat1 WHERE tbl IN ('lineage_edges','lineage_nodes')"
+    ).fetchone()[0] >= 2
 
 
 def test_ingestion_rejects_mismatched_closure_fingerprint() -> None:

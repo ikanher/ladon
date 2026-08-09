@@ -95,7 +95,7 @@ def build_theorem_parser() -> argparse.ArgumentParser:
     lineage.add_argument("theorem", help="Fully qualified Lean theorem name.")
     _add_repository_options(lineage)
     lineage.add_argument("--index", help="Override the project-local proof-search SQLite index.")
-    lineage.add_argument("--view", choices=("graph", "routes", "spines", "tree", "bottlenecks"), default="routes")
+    lineage.add_argument("--view", choices=("summary", "graph", "routes", "spines", "tree", "bottlenecks"), default="routes")
     lineage.add_argument("--from", dest="boundary", choices=("trust", "project", "external", "package", "declaration"), default="trust")
     lineage.add_argument("--root", dest="roots", action="append", default=[])
     lineage.add_argument("--edge-kind", choices=("all", "type", "value"), default="all")
@@ -107,6 +107,12 @@ def build_theorem_parser() -> argparse.ArgumentParser:
     lineage.add_argument("--max-routes", type=_positive_integer, default=20)
     lineage.add_argument("--refresh", choices=("missing", "stale", "always", "never"), default="missing")
     lineage.add_argument("--max-output-bytes", type=_positive_integer)
+    lineage.add_argument(
+        "--max-database-mib",
+        type=_positive_integer,
+        default=1536,
+        help="Complete project-local SQLite database ceiling during lineage refresh; defaults to 1536 MiB.",
+    )
     _add_result_options(lineage, default_output="-")
     _add_timeout(lineage)
     return parser

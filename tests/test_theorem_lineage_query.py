@@ -104,8 +104,9 @@ def test_query_uses_forward_and_reverse_lineage_indexes() -> None:
         identity,
         LineageQuery(theorem="Demo.target", boundary="trust", explain=True),
     )
-    assert "idx_lineage_edges_forward" in " ".join(forward["queryPlan"])
-    assert "idx_lineage_edges_reverse" in " ".join(forward["queryPlan"])
+    plan = " ".join(forward["queryPlan"])
+    assert "PRIMARY KEY (closure_id=? AND source=?)" in plan
+    assert "target=?" in plan
 
 
 def test_edge_cap_is_reported_without_unbounded_route_output() -> None:

@@ -15,19 +15,19 @@ from ladon.atlas_graph import (
 
 def atlas_reviewer_cards(
     atlas: dict[str, Any],
-    bridge_reports: list[dict[str, Any]] | None = None,
+    external_evidence: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Return compact reviewer cards derived from atlas graph rows."""
 
     require_atlas_v1(atlas, consumer="atlas reviewer-card reader")
-    for report in bridge_reports or []:
+    for report in external_evidence or []:
         require_bridge_v1(
             report,
             consumer="atlas reviewer-card bridge reader",
         )
     nodes = {node["id"]: node for node in atlas.get("nodes", [])}
     edges = atlas.get("edges", [])
-    bridge_by_root = bridge_summaries_by_root(bridge_reports or [])
+    bridge_by_root = bridge_summaries_by_root(external_evidence or [])
     return [
         reviewer_card(
             report,
@@ -106,12 +106,12 @@ def report_root(report: Node) -> str:
 
 
 def bridge_summaries_by_root(
-    bridge_reports: list[dict[str, Any]],
+    external_evidence: list[dict[str, Any]],
 ) -> dict[str, dict[str, Any]]:
     """Group optional ProofIR bridge diagnostics by reviewer-card root."""
 
     grouped: dict[str, dict[str, Any]] = {}
-    for report in bridge_reports:
+    for report in external_evidence:
         root = bridge_root(report)
         if not root:
             continue

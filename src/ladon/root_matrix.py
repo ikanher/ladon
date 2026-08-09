@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
-
+from typing import Any
 
 MatrixEntry = dict[str, Any]
 ROOT_ENVIRONMENT = {
-    "quux": "LADON_QUUX_ROOT",
     "matrix-factorization": "LADON_MATRIX_FACTORIZATION_ROOT",
 }
 
@@ -23,8 +22,6 @@ def default_root_matrix(
 
     roots = configured_repo_roots(repo_roots, environment=environment)
     entries: list[MatrixEntry] = []
-    if "quux" in roots:
-        entries.extend(quux_entries(roots["quux"]))
     if "matrix-factorization" in roots:
         entries.extend(matrix_factorization_entries(roots["matrix-factorization"]))
     return entries
@@ -48,38 +45,6 @@ def configured_repo_roots(
     if unknown:
         raise ValueError(f"unknown optional repository roots: {', '.join(unknown)}")
     return configured
-
-
-def quux_entries(repo_root: str) -> list[MatrixEntry]:
-    """Return explicitly rooted observational Quux entries."""
-
-    return [
-        text_entry("quux-project", "quux", repo_root, "Quux"),
-        text_entry(
-            "quux-proof-ir",
-            "quux",
-            repo_root,
-            "Quux/ProofIR.lean",
-        ),
-        text_entry(
-            "quux-bridge-example-core",
-            "quux",
-            repo_root,
-            "Quux/Bridge/Example/Core.lean",
-        ),
-        lean_entry(
-            "quux-propagation",
-            "quux",
-            repo_root,
-            "Quux/Semantics/Propagation.lean",
-        ),
-        lean_entry(
-            "quux-bifr-rmse-problem",
-            "quux",
-            repo_root,
-            "Quux/Problems/BIFRRMSESaturationMini.lean",
-        ),
-    ]
 
 
 def matrix_factorization_entries(repo_root: str) -> list[MatrixEntry]:

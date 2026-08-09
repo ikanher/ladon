@@ -210,6 +210,7 @@ def build_report_v3(
             "included_sections": sorted(sections),
             "omissions": omissions,
             "limits": _projection_limits(projection, item_limit),
+            "ownerProjection": _owner_projection(full_sections, sections, projection, item_limit),
         },
         "warnings": list(canonical.warnings),
         "diagnostics": diagnostics,
@@ -245,6 +246,25 @@ def _projection_limits(
         "max_unstratified_collection_items": item_limit,
         "max_items_per_present_stratum": item_limit,
         "selection_policy": "per_present_stratum",
+    }
+
+
+def _owner_projection(
+    canonical: Mapping[str, Any], projected: Mapping[str, Any], projection: str, item_limit: int | None
+) -> dict[str, Any]:
+    """Describe owner-first versus global populations without hiding omissions."""
+    selected = sum(len(value) for value in projected.values() if isinstance(value, list))
+    global_count = sum(len(value) for value in canonical.values() if isinstance(value, list))
+    suppressed = max(0, global_count - selected)
+    return {
+        "policy": "owner-first-v1",
+        "selectedPopulation": selected,
+        "globalPopulation": global_count,
+        "globalSuppressed": suppressed > 0 and projection != "full",
+        "suppressedCount": suppressed if projection != "full" else 0,
+        "globalSample": "opt-in-via-full-projection" if projection != "full" else "included",
+        "cap": item_limit,
+        "widening": "use --projection full or increase review/summary limits" if suppressed else None,
     }
 
 

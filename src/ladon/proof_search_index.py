@@ -33,16 +33,6 @@ from ladon.proof_search_name_query import (
     query_name_database,
     semantic_name_segments_v1,
 )
-from ladon.proofir_catalog import (
-    CatalogArtifact,
-    ProofIRCatalogError,
-    ProofIRConfig,
-    catalog_generation_identity,
-    discover_catalog_artifacts,
-)
-from ladon.proofir_surface_store import insert_surface_and_replay_evidence
-from ladon.proofir_dag_store import insert_dag_evidence
-from ladon.proofir_attachments import attach_surfaces
 from ladon.proof_search_schema import (
     EXPECTED_FOREIGN_KEYS,
     PROOF_SEARCH_HELPER_IDENTITY,
@@ -58,6 +48,17 @@ from ladon.proof_search_schema import (
     schema_lookup_indexes,
     schema_query_surfaces,
 )
+from ladon.proof_search_storage import database_storage_accounting
+from ladon.proof_search_v3_projection import project_v3_catalog
+from ladon.proofir_catalog import (
+    CatalogArtifact,
+    ProofIRCatalogError,
+    ProofIRConfig,
+    catalog_generation_identity,
+    discover_catalog_artifacts,
+)
+from ladon.proofir_link_observations import insert_manifest_link_observations
+from ladon.proofir_validation import catalog_diagnostic_code
 
 PROOF_SEARCH_RESULT_SCHEMA = "ladon-proof-search-index-result-v1"
 DEFAULT_INDEX_RELATIVE_PATH = Path(".ladon/index/proof-search.sqlite")
@@ -233,9 +234,8 @@ def build_proof_search_index(
                     f"index exceeds configured limit of {max_index_bytes} bytes"
                 )
             _durable_replace(temporary, destination)
-        except Exception:
+        finally:
             temporary.unlink(missing_ok=True)
-            raise
     finally:
         lock.unlink(missing_ok=True)
     visible = _version_control_visible(snapshot.repo_root, destination)
@@ -322,6 +322,7 @@ def inspect_proof_search_index(
             "aliases.target",
         ],
         "databaseBytes": database.stat().st_size,
+        "storage": database_storage_accounting(database, _open_readonly),
         "versionControlVisible": version_control_visible,
         "elapsedSeconds": round(time.monotonic() - started, 6),
         "nonclaim": _index_nonclaim(),
@@ -338,6 +339,7 @@ def query_proof_search_index(
     limit: int = 20,
     query_mode: str = "all",
     exclusions: Sequence[str] = (),
+    min_matched_segments: int = 1,
     freshness: str = "stored",
 ) -> dict[str, Any]:
     """Run one deterministic bounded metadata query."""
@@ -365,6 +367,7 @@ def query_proof_search_index(
                 limit=limit,
                 query_mode=query_mode,
                 exclusions=tuple(exclusions),
+                min_matched_segments=min_matched_segments,
             )
     except ValueError as exc:
         raise ProofSearchIndexError(str(exc)) from exc
@@ -386,14 +389,7 @@ def query_proof_search_index(
         ),
         "currentGenerationIdentity": current_generation,
         "evidenceStatus": metadata.get("evidenceStatus", "unknown"),
-        "query": {
-            "text": text,
-            "scope": scope,
-            "roots": list(roots),
-            "limit": limit,
-            "mode": query_mode,
-            "exclude": list(exclusions),
-        },
+        "query": _query_metadata(text, scope, roots, limit, query_mode, exclusions, min_matched_segments),
         "scope": {
             "kind": scope,
             "roots": list(roots),
@@ -407,6 +403,11 @@ def query_proof_search_index(
         "elapsedSeconds": round(time.monotonic() - started, 6),
         "nonclaim": _index_nonclaim(),
     }
+
+
+def _query_metadata(text: str | None, scope: str, roots: Sequence[str], limit: int, mode: str, exclusions: Sequence[str], minimum: int) -> dict[str, Any]:
+    terms = semantic_name_segments_v1(text).split() if text else []
+    return {"text": text, "scope": scope, "roots": list(roots), "limit": limit, "mode": mode, "exclude": list(exclusions), "minMatchedSegments": minimum, "rankingPolicy": "generic-token-downweight-v1", "queryTerms": terms, "downweightedTerms": [term for term in terms if term in {"bound", "path", "le", "eq", "of", "has", "map", "mem"}]}
 
 
 def _write_database(
@@ -485,19 +486,7 @@ def _write_database_connection(
         "proofirArtifacts": proofir_counts["artifacts"],
         "proofirRelations": proofir_counts["relations"],
         "proofirDiagnostics": proofir_counts["diagnostics"],
-        "proofirSurfaces": proofir_counts["surfaces"],
-        "proofirClaims": proofir_counts["claims"],
-        "proofirSurfaceClaims": proofir_counts["surfaceClaims"],
-        "proofirReplayRuns": proofir_counts["replayRuns"],
-        "proofirReplaySurfaces": proofir_counts["replaySurfaces"],
-        "proofirDags": proofir_counts["dags"],
-        "proofirDagNodes": proofir_counts["dagNodes"],
-        "proofirDagEdges": proofir_counts["dagEdges"],
-        "proofirDagAuthorities": proofir_counts["dagAuthorities"],
-        "proofirDagWitnesses": proofir_counts["dagWitnesses"],
-        "proofirDagOmissions": proofir_counts["dagOmissions"],
-        "proofirAttachmentCandidates": proofir_counts["attachmentCandidates"],
-        "proofirAttachments": proofir_counts["attachments"],
+        "proofirV3Artifacts": proofir_counts["v3Artifacts"],
     }
 
 
@@ -528,18 +517,20 @@ def _insert_proofir_catalog(
         ),
     )
     artifact_ids: dict[str, str] = {}
+    content_ids: dict[str, str] = {}
     for artifact in snapshot.proofir_artifacts:
         artifact_id = _insert_catalog_artifact(connection, generation_id, artifact)
         artifact_ids[artifact.relative_path] = artifact_id
+        content_ids[artifact.relative_path] = f"sha256:{artifact.sha256}"
         _insert_catalog_diagnostic(connection, generation_id, artifact, artifact_id)
-    relation_count = _insert_catalog_relations(connection, generation_id, snapshot.proofir_config.relationships, artifact_ids)
-    semantic_counts = insert_surface_and_replay_evidence(
-        connection, generation_id, snapshot.proofir_artifacts, artifact_ids
+    relation_count = _insert_catalog_relations(
+        connection,
+        generation_id,
+        snapshot.proofir_config.relationships,
+        artifact_ids,
+        content_ids,
     )
-    dag_counts = insert_dag_evidence(
-        connection, generation_id, snapshot.proofir_artifacts, artifact_ids
-    )
-    attachment_counts = attach_surfaces(connection)
+    v3_count = project_v3_catalog(connection, snapshot)
     return {
         "artifacts": len(snapshot.proofir_artifacts),
         "relations": relation_count,
@@ -549,9 +540,7 @@ def _insert_proofir_catalog(
                 for artifact in snapshot.proofir_artifacts
             )
         ),
-        **semantic_counts,
-        **dag_counts,
-        **attachment_counts,
+        "v3Artifacts": v3_count,
     }
 
 
@@ -566,22 +555,40 @@ def _insert_catalog_diagnostic(connection: sqlite3.Connection, generation_id: st
     if artifact.state == "cataloged" and not artifact.diagnostic:
         return
     reason = artifact.state if artifact.state != "cataloged" else "truncated"
-    details = {"artifactKind": artifact.artifact_kind, "diagnostic": artifact.diagnostic}
+    try:
+        structured = json.loads(artifact.diagnostic or "null")
+    except json.JSONDecodeError:
+        structured = None
+    pointer = (
+        structured.get("pointer", "/") if isinstance(structured, dict) else "/"
+    )
+    details = {
+        "artifactKind": artifact.artifact_kind,
+        "diagnostic": artifact.diagnostic,
+        "stage": artifact.validation_stage,
+        "code": catalog_diagnostic_code(artifact.state, artifact.diagnostic),
+        "pointer": pointer,
+        "sourceRecordRetained": True,
+        "semanticRowsProjected": False,
+        "retained": artifact.state != "malformed",
+    }
     connection.execute("INSERT INTO proofir_diagnostics(diagnostic_id,generation_id,artifact_id,kind,subject,reason,details_json) VALUES(?,?,?,?,?,?,?)",
         (_stable_digest({"artifact": artifact_id, "reason": reason}), generation_id, artifact_id, "proofir_catalog", artifact.relative_path, reason, json.dumps(details, sort_keys=True, separators=(",", ":"))))
 
 
-def _insert_catalog_relations(connection: sqlite3.Connection, generation_id: str, relationships: tuple[tuple[str, str, str, str], ...], artifact_ids: dict[str, str]) -> int:
-    count = 0
-    for source_path, target_path, kind, details_json in relationships:
-        source_id, target_id = artifact_ids.get(source_path), artifact_ids.get(target_path)
-        if source_id is None or target_id is None:
-            raise ProofSearchIndexError(f"ProofIR relationship references uncataloged artifact: {source_path} -> {target_path}")
-        relation_id = _stable_digest({"generation": generation_id, "source": source_id, "target": target_id, "kind": kind})
-        connection.execute("INSERT INTO proofir_relations(relation_id,generation_id,source_artifact_id,target_artifact_id,kind,details_json) VALUES(?,?,?,?,?,?)",
-            (relation_id, generation_id, source_id, target_id, kind, details_json))
-        count += 1
-    return count
+def _insert_catalog_relations(
+    connection: sqlite3.Connection,
+    generation_id: str,
+    relationships: tuple[tuple[str, str, str, str], ...],
+    artifact_ids: dict[str, str],
+    content_ids: dict[str, str],
+) -> int:
+    try:
+        return insert_manifest_link_observations(
+            connection, generation_id, relationships, artifact_ids, content_ids
+        )
+    except ValueError as error:
+        raise ProofSearchIndexError(str(error)) from error
 
 
 def _insert_source(
@@ -953,6 +960,7 @@ def _build_result_payload(
                 "message": "generated .ladon/index state is not ignored",
             }
         )
+    storage = database_storage_accounting(destination, _open_readonly)
     return {
         "schema": PROOF_SEARCH_RESULT_SCHEMA,
         "operation": "build",
@@ -970,6 +978,7 @@ def _build_result_payload(
         "sourceFingerprint": snapshot.source_fingerprint,
         "counts": dict(counts),
         "databaseBytes": destination.stat().st_size,
+        "storage": storage,
         "limits": {
             "maxIndexBytes": max_index_bytes,
             "maxLexicalTypeBytes": _MAX_LEXICAL_TYPE_BYTES,
@@ -1031,19 +1040,6 @@ def _database_counts(connection: sqlite3.Connection) -> dict[str, int]:
         "proofir_artifacts",
         "proofir_relations",
         "proofir_diagnostics",
-        "proofir_surfaces",
-        "proofir_claims",
-        "proofir_surface_claims",
-        "proofir_replay_runs",
-        "proofir_replay_surfaces",
-        "proofir_dags",
-        "proofir_dag_nodes",
-        "proofir_dag_edges",
-        "proofir_dag_node_authority",
-        "proofir_dag_witnesses",
-        "proofir_dag_omissions",
-        "proofir_attachment_candidates",
-        "proofir_attachments",
     )
     return {
         table: int(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])

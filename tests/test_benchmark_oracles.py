@@ -9,12 +9,12 @@ from pathlib import Path
 import jsonschema
 import pytest
 
+from ladon.analysis.architecture_policy import summarize_architecture_policy
 from ladon.analysis.benchmark_oracles import (
     evaluate_oracles,
     existing_optional_smoke_roots,
     oracle_schema,
 )
-from ladon.analysis.architecture_policy import summarize_architecture_policy
 from ladon.analysis.claim_authority import audit_claim_authority
 from ladon.analysis.declaration_graph import summarize_declaration_graph
 from ladon.analysis.findings import summarize_findings
@@ -36,7 +36,6 @@ from ladon.benchmark_metrics import (
     known_case_recall,
 )
 from ladon.ir import LeanDeclaration, LeanImport, LeanModule
-
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "benchmark_oracles"
 HARNESS_ROOT = Path(__file__).parent / "fixtures" / "benchmark_harness"
@@ -454,11 +453,11 @@ def test_benchmark_fixture_sources_are_portable() -> None:
 
 
 def test_oracle_schema_and_optional_smoke_roots_are_explicit(tmp_path: Path) -> None:
-    existing = tmp_path / "quux"
+    existing = tmp_path / "matrix-factorization"
     existing.mkdir()
     candidates = {
-        "quux": str(existing),
-        "matrix-factorization": str(tmp_path / "missing-mf"),
+        "matrix-factorization": str(existing),
+        "mathlib": str(tmp_path / "missing-mathlib"),
     }
 
     schema = oracle_schema()
@@ -468,7 +467,7 @@ def test_oracle_schema_and_optional_smoke_roots_are_explicit(tmp_path: Path) -> 
     assert "resolved_edge" in schema["supported_signals"]
     assert "architecture_pair_count" in schema["supported_signals"]
     assert "source_pattern_match_count" in schema["supported_signals"]
-    assert roots == {"quux": str(existing)}
+    assert roots == {"matrix-factorization": str(existing)}
 
 
 def test_versioned_benchmark_manifest_validates_and_uses_ordinary_cli() -> None:
@@ -691,9 +690,9 @@ def test_required_manifest_rejects_local_sibling_and_caller_specific_paths() -> 
     broken["cases"][0]["command"] = [
         "ladon",
         "--repo-root",
-        "../quux",
+        "../external-playground",
         "--root",
-        "Quux",
+        "ExternalPlayground",
     ]
     with pytest.raises(BenchmarkContractError, match="nonportable"):
         validate_manifest_contract(broken)

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Iterable, Mapping
 from importlib import resources
 from pathlib import Path, PurePosixPath
-from typing import Any, Iterable, Mapping
-
+from typing import Any
 
 BENCHMARK_ARTIFACT_KIND = "ladon_signal_benchmark_manifest"
 BENCHMARK_SCHEMA_VERSION = 1
@@ -24,7 +24,7 @@ LOCAL_PATH_PATTERNS = (
     re.compile(r"^/(?:home|Users)/"),
     re.compile(r"^[A-Za-z]:[\\/]+Users[\\/]+"),
 )
-OPTIONAL_LIVE_NAMES = frozenset({"quux", "matrix-factorization", "mathlib"})
+OPTIONAL_LIVE_NAMES = frozenset({"matrix-factorization", "mathlib"})
 
 
 class BenchmarkContractError(ValueError):

@@ -89,8 +89,9 @@ invariant is crossed.
 
 ## Optional live drift
 
-Quux, matrix-factorization, and mathlib are opt-in through
-`LADON_QUUX_ROOT`, `LADON_MATRIX_FACTORIZATION_ROOT`, and `LADON_MATHLIB_ROOT`.
+Matrix-factorization and mathlib are opt-in through
+`LADON_MATRIX_FACTORIZATION_ROOT` and `LADON_MATHLIB_ROOT`. Quux is never a
+Ladon benchmark or drift target.
 Live rows must record repository revision, toolchain, and environment
 provenance. Their changing module counts and top nodes are observational drift,
 never portable correctness gates.

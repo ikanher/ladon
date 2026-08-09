@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 from collections import deque
+from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass
-from typing import Iterable, Mapping
+from typing import TypeVar
+
+Node = TypeVar("Node")
 
 
 @dataclass(frozen=True)
@@ -41,7 +44,13 @@ def normalize_graph(request: GraphRequest) -> GraphResult:
     omissions: list[dict[str, str]] = []
     for source, target in request.edges:
         if source not in known or target not in known:
-            omissions.append({"kind": "edge", "subject": f"{source}->{target}", "reason": "endpoint_not_indexed"})
+            omissions.append(
+                {
+                    "kind": "edge",
+                    "subject": f"{source}->{target}",
+                    "reason": "endpoint_not_indexed",
+                }
+            )
             continue
         forward[source].add(target)
         reverse[target].add(source)
@@ -54,7 +63,13 @@ def normalize_graph(request: GraphRequest) -> GraphResult:
     )
 
 
-def bounded_bfs(graph: GraphResult, roots: Iterable[str], *, reverse: bool = False, max_depth: int = 64) -> tuple[str, ...]:
+def bounded_bfs(
+    graph: GraphResult,
+    roots: Iterable[str],
+    *,
+    reverse: bool = False,
+    max_depth: int = 64,
+) -> tuple[str, ...]:
     """Expand a bounded frontier once, preserving stable breadth-first order."""
 
     if max_depth < 0:
@@ -74,7 +89,15 @@ def bounded_bfs(graph: GraphResult, roots: Iterable[str], *, reverse: bool = Fal
     return tuple(result)
 
 
-def bounded_paths(graph: GraphResult, start: str, end: str | None = None, *, reverse: bool = False, max_depth: int = 64, max_paths: int = 100) -> tuple[tuple[str, ...], ...]:
+def bounded_paths(
+    graph: GraphResult,
+    start: str,
+    end: str | None = None,
+    *,
+    reverse: bool = False,
+    max_depth: int = 64,
+    max_paths: int = 100,
+) -> tuple[tuple[str, ...], ...]:
     """Enumerate cycle-safe paths with deterministic depth/path ordering."""
 
     _validate_path_caps(max_depth, max_paths)
@@ -88,49 +111,166 @@ def bounded_paths(graph: GraphResult, start: str, end: str | None = None, *, rev
 def strongly_connected_components(graph: GraphResult) -> tuple[tuple[str, ...], ...]:
     """Return stable SCCs using an iterative two-pass reachability algorithm."""
 
-    order = _finish_order(graph)
-    components: list[tuple[str, ...]] = []
-    assigned: set[str] = set()
-    for root in reversed(order):
-        if root in assigned:
+    return strongly_connected_components_from_adjacency(graph.forward)
+
+
+def strongly_connected_components_from_adjacency(
+    adjacency: Mapping[Node, Collection[Node]],
+) -> tuple[tuple[Node, ...], ...]:
+    """Return deterministic iterative Kosaraju components for opaque nodes."""
+
+    nodes = sorted(set(adjacency).union(*(set(rows) for rows in adjacency.values())))
+    finished = _adjacency_finish_order(nodes, adjacency)
+    reverse = _reverse_adjacency(nodes, adjacency)
+    return _reverse_components(finished, reverse)
+
+
+def _adjacency_finish_order(
+    nodes: list[Node], adjacency: Mapping[Node, Collection[Node]]
+) -> list[Node]:
+    """Compute deterministic DFS finish order without recursive calls."""
+
+    visited: set[Node] = set()
+    finished: list[Node] = []
+    for node in nodes:
+        if node in visited:
             continue
-        component = tuple(node for node in sorted(bounded_bfs(graph, (root,), reverse=True, max_depth=len(graph.nodes))) if node not in assigned and _reachable(graph, node, root))
-        assigned.update(component)
-        components.append(component or (root,))
-    return tuple(sorted(components, key=lambda component: component[0]))
+        stack: list[tuple[Node, bool]] = [(node, False)]
+        while stack:
+            current, expanded = stack.pop()
+            if expanded:
+                finished.append(current)
+                continue
+            if current in visited:
+                continue
+            visited.add(current)
+            stack.append((current, True))
+            stack.extend(
+                (target, False)
+                for target in sorted(adjacency.get(current, ()), reverse=True)
+                if target not in visited
+            )
+    return finished
+
+
+def _reverse_adjacency(
+    nodes: list[Node], adjacency: Mapping[Node, Collection[Node]]
+) -> dict[Node, set[Node]]:
+    """Build the complete reverse adjacency, including isolated nodes."""
+
+    reverse: dict[Node, set[Node]] = {node: set() for node in nodes}
+    for source, targets in adjacency.items():
+        for target in targets:
+            reverse[target].add(source)
+    return reverse
+
+
+def _reverse_components(
+    finished: list[Node], reverse: Mapping[Node, Collection[Node]]
+) -> tuple[tuple[Node, ...], ...]:
+    """Collect components in reverse finish order with an iterative DFS."""
+
+    assigned: set[Node] = set()
+    components: list[tuple[Node, ...]] = []
+    for node in reversed(finished):
+        if node in assigned:
+            continue
+        component: list[Node] = []
+        stack = [node]
+        while stack:
+            current = stack.pop()
+            if current in assigned:
+                continue
+            assigned.add(current)
+            component.append(current)
+            stack.extend(
+                source
+                for source in sorted(reverse[current], reverse=True)
+                if source not in assigned
+            )
+        components.append(tuple(sorted(component)))
+    return tuple(sorted(components))
+
+
+def cyclic_components(
+    adjacency: Mapping[Node, Collection[Node]],
+) -> tuple[tuple[Node, ...], ...]:
+    """Return SCCs containing a cycle, including explicit self-loops."""
+
+    return tuple(
+        component
+        for component in strongly_connected_components_from_adjacency(adjacency)
+        if len(component) > 1 or component[0] in adjacency.get(component[0], ())
+    )
 
 
 def unfold_dag(graph: GraphResult) -> dict[str, object]:
     """Collapse SCCs while retaining shared-node and cycle reference metadata."""
 
     components = strongly_connected_components(graph)
-    owner = {node: index for index, component in enumerate(components) for node in component}
+    owner = {
+        node: index for index, component in enumerate(components) for node in component
+    }
     edges = _component_edges(graph, owner)
     references = _component_references(graph, components, owner)
-    return {"components": [list(component) for component in components], "edges": [list(edge) for edge in edges], "references": references}
+    return {
+        "components": [list(component) for component in components],
+        "edges": [list(edge) for edge in edges],
+        "references": references,
+    }
 
 
-def _component_edges(graph: GraphResult, owner: Mapping[str, int]) -> list[tuple[int, int]]:
-    return sorted({(owner[source], owner[target]) for source, targets in graph.forward.items() for target in targets if owner[source] != owner[target]})
+def _component_edges(
+    graph: GraphResult, owner: Mapping[str, int]
+) -> list[tuple[int, int]]:
+    return sorted(
+        {
+            (owner[source], owner[target])
+            for source, targets in graph.forward.items()
+            for target in targets
+            if owner[source] != owner[target]
+        }
+    )
 
 
-def _component_references(graph: GraphResult, components: tuple[tuple[str, ...], ...], owner: Mapping[str, int]) -> list[dict[str, object]]:
-    return [{"node": node, "component": owner[node], "kind": "cycle" if len(components[owner[node]]) > 1 or node in graph.forward[node] else "shared"} for node in graph.nodes if len(components[owner[node]]) > 1 or node in graph.forward[node]]
+def _component_references(
+    graph: GraphResult,
+    components: tuple[tuple[str, ...], ...],
+    owner: Mapping[str, int],
+) -> list[dict[str, object]]:
+    return [
+        {
+            "node": node,
+            "component": owner[node],
+            "kind": "cycle"
+            if len(components[owner[node]]) > 1 or node in graph.forward[node]
+            else "shared",
+        }
+        for node in graph.nodes
+        if len(components[owner[node]]) > 1 or node in graph.forward[node]
+    ]
 
 
-def dominators(graph: GraphResult, roots: Iterable[str]) -> Mapping[str, frozenset[str]]:
+def dominators(
+    graph: GraphResult, roots: Iterable[str]
+) -> Mapping[str, frozenset[str]]:
     """Compute dominators with explicit multiple-root and unreachable semantics."""
 
     roots_set = {root for root in roots if root in graph.node_ids}
     reachable = set(bounded_bfs(graph, roots_set, max_depth=len(graph.nodes)))
     result = {node: frozenset() for node in graph.nodes if node not in reachable}
-    dom = {node: (frozenset({node}) if node in roots_set else frozenset(reachable)) for node in reachable}
+    dom = {
+        node: (frozenset({node}) if node in roots_set else frozenset(reachable))
+        for node in reachable
+    }
     _iterate_dominators(graph, reachable, roots_set, dom)
     result.update(dom)
     return result
 
 
-def brute_force_dominators(graph: GraphResult, roots: Iterable[str]) -> Mapping[str, frozenset[str]]:
+def brute_force_dominators(
+    graph: GraphResult, roots: Iterable[str]
+) -> Mapping[str, frozenset[str]]:
     """Small-graph oracle retained for differential tests."""
 
     roots_set = {root for root in roots if root in graph.node_ids}
@@ -140,17 +280,25 @@ def brute_force_dominators(graph: GraphResult, roots: Iterable[str]) -> Mapping[
         if node not in reachable:
             result[node] = frozenset()
             continue
-        result[node] = frozenset(candidate for candidate in reachable if _dominates(graph, roots_set, candidate, node))
+        result[node] = frozenset(
+            candidate
+            for candidate in reachable
+            if _dominates(graph, roots_set, candidate, node)
+        )
     return result
 
 
-def _dominates(graph: GraphResult, roots: set[str], candidate: str, target: str) -> bool:
+def _dominates(
+    graph: GraphResult, roots: set[str], candidate: str, target: str
+) -> bool:
     if target in roots:
         return candidate == target or candidate in roots
     paths = tuple(
         path
         for root in sorted(roots)
-        for path in bounded_paths(graph, root, target, max_depth=len(graph.nodes), max_paths=10_000)
+        for path in bounded_paths(
+            graph, root, target, max_depth=len(graph.nodes), max_paths=10_000
+        )
     )
     return bool(paths) and all(candidate in path for path in paths)
 
@@ -191,35 +339,38 @@ def _enumerate_paths(
     return found
 
 
-def _finish_order(graph: GraphResult) -> list[str]:
-    order: list[str] = []
-    seen: set[str] = set()
-    for root in graph.nodes:
-        if root in seen:
-            continue
-        stack = [(root, False)]
-        while stack:
-            node, expanded = stack.pop()
-            if expanded:
-                order.append(node)
-            elif node not in seen:
-                seen.add(node)
-                stack.append((node, True))
-                stack.extend((target, False) for target in reversed(graph.forward[node]) if target not in seen)
-    return order
-
-
-def _iterate_dominators(graph: GraphResult, reachable: set[str], roots: set[str], dom: dict[str, frozenset[str]]) -> None:
+def _iterate_dominators(
+    graph: GraphResult,
+    reachable: set[str],
+    roots: set[str],
+    dom: dict[str, frozenset[str]],
+) -> None:
     changed = True
     while changed:
         changed = False
         for node in sorted(reachable - roots):
             predecessors = [pred for pred in graph.reverse[node] if pred in reachable]
-            intersection = set.intersection(*(set(dom[pred]) for pred in predecessors)) if predecessors else set()
+            intersection = (
+                set.intersection(*(set(dom[pred]) for pred in predecessors))
+                if predecessors
+                else set()
+            )
             candidate = frozenset({node} | intersection)
             if candidate != dom[node]:
                 dom[node] = candidate
                 changed = True
 
 
-__all__ = ["GraphRequest", "GraphResult", "normalize_graph", "bounded_bfs", "bounded_paths", "strongly_connected_components", "unfold_dag", "dominators", "brute_force_dominators"]
+__all__ = [
+    "GraphRequest",
+    "GraphResult",
+    "bounded_bfs",
+    "bounded_paths",
+    "brute_force_dominators",
+    "cyclic_components",
+    "dominators",
+    "normalize_graph",
+    "strongly_connected_components",
+    "strongly_connected_components_from_adjacency",
+    "unfold_dag",
+]

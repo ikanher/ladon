@@ -37,7 +37,7 @@ The current renderers and readers are:
 - `ladon.atlas_diff`: atlas reader and deterministic diff renderer.
 - `ladon.atlas_sqlite`: atlas and bridge-report reader.
 - `ladon.atlas_workflow`: current/before atlas and bridge-report reader.
-- `ladon.proofir_bridge`: Ladon report reader used for optional ProofIR joins.
+- `ladon.external_evidence`: Ladon report reader used for optional ProofIR joins.
 - `ladon.calibration`: report reader used by calibration predicates.
 - `scripts/ladon_atlas_export.py` and `scripts/ladon_atlas_workflow.py`: file
   loaders for those library readers.

@@ -461,9 +461,6 @@ def test_installed_process_contract_runs_full_wheel_suite(
     ]
     assert cwd == runtime_root
     assert environment["LADON_CONSOLE"] == str(scripts / "ladon")
-    assert environment["LADON_PROOFIR_BRIDGE_CONSOLE"] == str(
-        scripts / "ladon-proofir-bridge"
-    )
     assert environment["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] == "1"
     assert "PYTHONHOME" not in environment
     assert "PYTHONPATH" not in environment

@@ -29,7 +29,7 @@ def test_calibration_regression_script_accepts_suite_argument(tmp_path: Path, ca
 
     captured = capsys.readouterr()
     assert status == 0
-    assert "PASS quux/quux-project.json" in captured.out
+    assert "PASS matrix-factorization/mf-project.json" in captured.out
 
 
 def write_minimal_root_matrix_reports(reports: Path) -> None:

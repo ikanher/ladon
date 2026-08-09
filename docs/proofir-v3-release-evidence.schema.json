@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ladon.local/schemas/proofir-v3-release-evidence-v1.json",
+  "title": "ProofIR v3 release evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "umbrella", "generatedBy", "releaseStatus", "evidence"],
+  "properties": {
+    "format": {"const": "proofir-release-evidence-v1"},
+    "umbrella": {"const": "ladon-proofir-evidence-semantics-v3-umbrella"},
+    "generatedBy": {"type": "string", "minLength": 1},
+    "releaseStatus": {"enum": ["partial", "ready", "blocked"]},
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["requirement", "status"],
+        "properties": {
+          "requirement": {"type": "string", "minLength": 1},
+          "status": {"enum": ["red", "missing", "partial", "stale", "green"]},
+          "tests": {"$ref": "#/$defs/nonEmptyStrings"},
+          "commands": {"$ref": "#/$defs/nonEmptyStrings"},
+          "docs": {"$ref": "#/$defs/nonEmptyStrings"},
+          "missing": {"$ref": "#/$defs/nonEmptyStrings"},
+          "note": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyStrings": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  }
+}

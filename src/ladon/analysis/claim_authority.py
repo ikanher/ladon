@@ -5,14 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-from ladon.analysis.proof_surface import (
-    combined_surface_rows,
-    proof_surface_context,
-    proof_surface_route_diagnostics,
-    proof_surface_route_row,
-    proof_surface_summary,
-    proof_surface_witness_diagnostics,
-)
 
 
 CLOSED_STATUSES = {"closed", "lean_closed", "fully_proved"}
@@ -72,7 +64,6 @@ class ClaimRoute:
     required_evidence: tuple[EvidenceAuthority, ...] = ()
     allowed_external_evidence: frozenset[str] = field(default_factory=frozenset)
     nonclaims: tuple[str, ...] = ()
-    proof_surface: dict[str, Any] = field(default_factory=dict)
 
     @property
     def effective_status(self) -> str:
@@ -92,36 +83,26 @@ def audit_claim_authority(
     *,
     joins: list[dict[str, Any]] | None = None,
     surfaces: Any = None,
-    proof_surface_witness: dict[str, Any] | None = None,
-    proof_surface_joins: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Audit claim route rows and return diagnostics plus normalized routes."""
 
     routes = [normalize_claim_route(row) for row in claim_rows if isinstance(row, dict)]
-    all_joins = [*(joins or []), *(proof_surface_joins or [])]
+    all_joins = [*(joins or [])]
     join_by_surface = joins_by_surface_id(all_joins)
-    surface_by_id = surfaces_by_id(combined_surface_rows(surfaces, proof_surface_witness))
-    proof_surface_ctx = proof_surface_context(proof_surface_witness, proof_surface_joins or [])
+    surface_by_id = surfaces_by_id(surfaces)
     diagnostics: list[dict[str, Any]] = []
     route_rows = []
     for route in routes:
-        route_rows.append(route_row(route, join_by_surface, surface_by_id, proof_surface_ctx))
-        diagnostics.extend(route_diagnostics(route, join_by_surface, surface_by_id, proof_surface_ctx))
-    diagnostics.extend(proof_surface_witness_diagnostics(proof_surface_ctx))
-    proof_surface_diagnostic_count = sum(
-        1 for row in diagnostics if str(row.get("ruleId", "")).startswith("ladon.proof_surface.")
-    )
+        route_rows.append(route_row(route, join_by_surface, surface_by_id))
+        diagnostics.extend(route_diagnostics(route, join_by_surface, surface_by_id))
     return {
         "routes": route_rows,
         "diagnostics": diagnostics,
         "summary": {
             "claimRouteCount": len(routes),
             "diagnosticCount": len(diagnostics),
-            "proofSurfaceWitnessPresent": bool(proof_surface_witness),
-            "proofSurfaceDiagnosticCount": proof_surface_diagnostic_count,
             "claimAuthorityDiagnosticsDoNotValidateProofTruth": True,
         },
-        "proofSurfaceWitness": proof_surface_summary(proof_surface_ctx),
         "trustNote": "Ladon audits claim authority/evidence route alignment; it does not decide theorem truth, proof correctness, or witness adequacy.",
     }
 
@@ -130,11 +111,9 @@ def route_diagnostics(
     route: ClaimRoute,
     join_by_surface: dict[str, dict[str, Any]],
     surface_by_id: dict[str, dict[str, Any]],
-    proof_surface_ctx: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Return diagnostics for one normalized claim route."""
 
-    proof_surface_ctx = proof_surface_ctx or {}
     diagnostics: list[dict[str, Any]] = []
     if lacks_route_metadata(route):
         diagnostics.append(
@@ -150,7 +129,6 @@ def route_diagnostics(
     diagnostics.extend(authority_mismatch(route))
     diagnostics.extend(endpoint_scope_overclaim(route, surface_by_id))
     diagnostics.extend(missing_primary_theorem_surface(route, join_by_surface))
-    diagnostics.extend(proof_surface_route_diagnostics(route, proof_surface_ctx))
     return diagnostics
 
 
@@ -323,11 +301,9 @@ def route_row(
     route: ClaimRoute,
     join_by_surface: dict[str, dict[str, Any]],
     surface_by_id: dict[str, dict[str, Any]],
-    proof_surface_ctx: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Return a reviewer-facing route row with attachment separate from authority."""
 
-    proof_surface_ctx = proof_surface_ctx or {}
     primary = [surface_ref_row(surface, join_by_surface, surface_by_id) for surface in route.primary_theorem_surfaces]
     return {
         "claimId": route.claim_id,
@@ -345,7 +321,6 @@ def route_row(
         },
         "allowedExternalEvidence": sorted(route.allowed_external_evidence),
         "nonclaims": list(route.nonclaims),
-        "proofSurface": proof_surface_route_row(route, proof_surface_ctx),
         "quotedOnly": True,
         "routeGovernanceOnly": True,
     }
@@ -385,27 +360,7 @@ def normalize_claim_route(row: dict[str, Any]) -> ClaimRoute:
         required_evidence=tuple(evidence_authorities(row.get("requiredEvidenceAuthorities"))),
         allowed_external_evidence=frozenset(string_values(row.get("allowedExternalEvidence"))),
         nonclaims=tuple(string_values(row.get("nonclaims"))),
-        proof_surface=normalize_proof_surface_route(row),
     )
-
-
-def normalize_proof_surface_route(row: dict[str, Any]) -> dict[str, Any]:
-    """Return proof-surface route metadata from a compact claim row."""
-
-    proof_surface = row.get("proofSurface")
-    normalized = dict(proof_surface) if isinstance(proof_surface, dict) else {}
-    for key in (
-        "specSurfaceId",
-        "proofEndpointSurfaceId",
-        "endpointSurfaceId",
-        "requiresNoDriftGate",
-        "requireNoDriftGate",
-        "requiresAxiomAudit",
-        "requireAxiomAudit",
-    ):
-        if key in row and key not in normalized:
-            normalized[key] = row[key]
-    return normalized
 
 
 def surface_refs(value: Any, role: str) -> list[TheoremSurfaceRef]:

@@ -24,3 +24,12 @@ def test_lineage_parser_accepts_repeated_roots_and_custom_index() -> None:
     ])
     assert args.roots == ["Demo", "Init"]
     assert args.index == "/tmp/demo.sqlite"
+
+
+def test_lineage_parser_exposes_complete_database_budget_and_summary() -> None:
+    parser = build_theorem_parser()
+    args = parser.parse_args([
+        "lineage", "Demo.target", "--view", "summary", "--max-database-mib", "1024",
+    ])
+    assert args.view == "summary"
+    assert args.max_database_mib == 1024

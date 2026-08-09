@@ -32,7 +32,6 @@ POLICY_DETAIL_FINDING_KINDS = {
     "refactoring_prescription.clean_generator_output",
     "refactoring_prescription.move_generated_parameters_to_manifest",
     "refactoring_prescription.run_import_diet",
-    "refactoring_prescription.add_proof_surface_witness_evidence",
     "source_pattern.invalid_policy",
     "source_pattern.match",
 }

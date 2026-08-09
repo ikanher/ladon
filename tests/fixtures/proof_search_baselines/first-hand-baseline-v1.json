@@ -1,0 +1,42 @@
+{
+  "schema": "ladon-first-hand-baseline-manifest-v1",
+  "reportDate": "2026-08-08",
+  "ladonCommit": "6de947f",
+  "sqlite": {
+    "versionObserved": "3.40.1",
+    "baseBuildMaxBytes": 536870912,
+    "databaseBytesAfterLineage": 738119680,
+    "schemaGeneration": "sqlite-v5-name2-fts2-lineage1-proofir1"
+  },
+  "matrixFactorization": {
+    "repository": "/home/codex/projects/lean/matrix-factorization",
+    "declarations": 150743,
+    "modules": 3758,
+    "moduleImports": 8455,
+    "declarationDependencies": 0,
+    "structures": 2048,
+    "structureFields": 0,
+    "lineageClosures": 1,
+    "lineageNodes": 5423,
+    "lineageEdges": 203560,
+    "theorem": "Mf.Optimization.SDE.DPAdamFixedBetaFirstPrinciplesStoppedRegionConvergence.firstPrinciplesFixedStep_private_and_randomRowStationary_withExitProbability",
+    "closureIdentity": "recorded-in-FIRST-HAND-REPORT.md",
+    "source": "read-only first-hand calibration; not a portable test dependency"
+  },
+  "commands": [
+    "../../ladon/bin/ladon proof-search index status --repo-root $PWD --format json --output -",
+    "../../ladon/bin/ladon proof-search index build --repo-root $PWD --max-index-mib 512 --format json --output -",
+    "../../ladon/bin/ladon theorem lineage <theorem> --repo-root $PWD --refresh missing --view bottlenecks --from trust --format json --output -",
+    "../../ladon/bin/ladon theorem lineage <theorem> --repo-root $PWD --refresh never --view bottlenecks --from trust --max-depth 4 --max-nodes 100 --max-edges 400 --max-routes 5 --format json --output -"
+  ],
+  "knownRedOwners": {
+    "consumerCoverage": "ladon-coverage-sensitive-consumers-and-constructors",
+    "constructorCoverage": "ladon-coverage-sensitive-consumers-and-constructors",
+    "binderDifference": "ladon-binder-aware-proof-difference",
+    "lineagePlan": "ladon-lineage-query-plan-and-warm-summary",
+    "storagePolicy": "ladon-lineage-storage-budget-and-publication",
+    "schemaRightsizing": "ladon-sqlite-schema-rightsizing-and-accounting",
+    "proofirAccessPaths": "ladon-proofir-query-access-paths",
+    "rankingAndProjection": "ladon-proof-search-ranking-and-owner-projection"
+  }
+}

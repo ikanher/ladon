@@ -14,12 +14,6 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--atlas-json", required=True, help="Current atlas JSON path.")
     parser.add_argument("--before-atlas-json", help="Optional earlier atlas JSON path.")
-    parser.add_argument(
-        "--bridge-report",
-        action="append",
-        default=[],
-        help="Optional ProofIR bridge report JSON to summarize.",
-    )
     parser.add_argument("--output-json", required=True, help="Path to write workflow JSON.")
     parser.add_argument("--output-markdown", help="Optional path to write workflow Markdown.")
     return parser
@@ -30,7 +24,6 @@ def main(argv: list[str] | None = None) -> int:
     workflow = build_atlas_workflow(
         load_json(Path(args.atlas_json)),
         before_atlas=load_json(Path(args.before_atlas_json)) if args.before_atlas_json else None,
-        bridge_reports=[load_json(Path(path)) for path in args.bridge_report],
     )
     write_json(Path(args.output_json), workflow)
     if args.output_markdown:

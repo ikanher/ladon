@@ -24,12 +24,12 @@ def render_atlas_markdown(atlas: dict[str, Any]) -> str:
 
 def render_reviewer_cards_markdown(
     atlas: dict[str, Any],
-    bridge_reports: list[dict[str, Any]] | None = None,
+    external_evidence: list[dict[str, Any]] | None = None,
 ) -> str:
     """Render reviewer cards as compact Markdown."""
 
     lines = ["# Ladon Atlas Reviewer Cards", ""]
-    for card in atlas_reviewer_cards(atlas, bridge_reports):
+    for card in atlas_reviewer_cards(atlas, external_evidence):
         lines.extend(reviewer_card_lines(card))
     return "\n".join(lines).rstrip() + "\n"
 

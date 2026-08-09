@@ -32,20 +32,15 @@ is not listed as supported here, do not describe it as implemented.
 10. `pipeline`: record phase timings and counters around extraction, analysis,
    findings, and rendering.
 11. `render`: write JSON/text reports from already-computed data.
-12. `proofir_bridge`: optionally joins compact ProofIR review inputs to Ladon
-    declaration evidence. Accepted inputs are `proofir_bridge_index` and
-    Quux-style `proof_ir_lean_surface_bundle`; raw ProofIR dialects remain out
-    of core.
-The project-local proof-search SQLite index also stores normalized ProofIR
-catalog artifacts, surfaces, claims, replay provenance, obligation DAGs,
-checker relations, and conservative declaration attachments. Query projections
-keep those authorities separate: replay does not prove a claim, an obligation
-route is not a Lean dependency edge, and missing configured evidence is
-reported with explicit coverage rather than inferred absence.
-13. `proof_surface_witness`: normalizes optional quoted proof-surface witness
-    artifacts for frozen spec stubs, proof endpoints, no-drift gates, source
-    pins, axiom audits, and proof-hole quarantine. The witness is route
-    governance metadata, not theorem-truth evidence.
+12. `proofir_v3`: validates closed native-v3 envelopes, content/environment/
+    subject identities, typed observations, attachments, and derivations.
+13. The project-local proof-search SQLite index projects canonical native-v3
+    artifacts into normalized claims, derivation hyperedges, check runs,
+    surfaces, attachments, coverage, omissions, and isolated extensions. Query
+    projections keep those authorities separate: a checker observation has an
+    explicit scope, a structural route is not a Lean dependency edge, and
+    missing configured evidence is reported through coverage rather than
+    inferred absence. Legacy ProofIR dialects are rejected before projection.
 14. `analysis.module_readiness`, `analysis.import_diet`,
     `analysis.proof_xray`, and `analysis.refactoring_prescriptions`: provide
     optional Lean-review intelligence surfaces for module boundary readiness,
@@ -85,7 +80,7 @@ metadata says, for example, that a claim is Lean-closed while a required premise
 is imported interval-certified, or that a public claim advertises an
 arbitrary-neighbor endpoint while the primary theorem surface is sampled/null.
 
-This is Ladon's highest-priority product seam after the ProofIR bridge: process
+This remains a review-governance seam beside native ProofIR v3: process
 overclaim detection is more urgent than adding new architecture-smell classes.
 Graph metrics, proof-family similarity, atlas diffs, and OpenSpec hygiene remain
 useful context, but they should not displace claim authority route auditing.
@@ -248,7 +243,7 @@ define the first extracted architecture seam.
 
 Why this seam first:
 
-- matrix-factorization and Quux both have clear acyclic module graphs;
+- matrix-factorization provides a real-project module-graph calibration target;
 - repo-wide module DAG analysis was a known Ladon blind spot;
 - module DAG logic is pure and easy to test;
 - it gives a useful Rust-port candidate later without touching Lean-native
@@ -313,15 +308,14 @@ tables are not the first thing a human has to interpret.
 
 Atlas JSON is the canonical machine-readable surface for report sets. Markdown,
 SQLite, diffs, reviewer cards, and workflow summaries are derived from atlas
-JSON and optional ProofIR bridge reports.
+JSON and optional generic external review reports. Native ProofIR v3 remains a
+separate project-local proof-search projection.
 
 The workflow answers review-routing questions: what changed, what recurs, which
 roots need review first, which joins are low-confidence, and which packet or
-bridge evidence is incomplete or stale. Optional bridge diagnostics stay in the
-`proofir.*` namespace and remain quoted context, not Ladon-validated proof
-status. Quux `ladon_proofir_bridge_snapshot` artifacts can be summarized as
-already-rendered bridge evidence, but compact surface inputs remain the primary
-ProofIR bridge contract.
+external evidence is incomplete or stale. External diagnostics remain quoted
+context, not Ladon-validated proof status. They are not a compatibility input
+for native ProofIR v3 and cannot contribute normalized semantic rows.
 
 ## TDD Rules
 

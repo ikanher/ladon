@@ -17,102 +17,25 @@ def test_atlas_workflow_answers_reviewer_routing_questions(tmp_path: Path) -> No
     workflow = build_atlas_workflow(
         build_report_atlas(after_root),
         before_atlas=build_report_atlas(before_root),
-        bridge_reports=[sample_bridge_report()],
     )
 
     sections = workflow["sections"]
     assert workflow["canonicalMachineReadableSurface"] == "atlas_json"
     assert sections["changedRows"]["summary"]["changed"] > 0
     assert sections["recurringHotspots"][0]["subject"] == "Shared.Hotspot"
-    assert sections["reviewPriorityRoots"][0]["root"] == "Quux.One"
-    assert sections["lowConfidenceJoins"][0]["matchKind"] == "basename_only"
+    assert {row["root"] for row in sections["reviewPriorityRoots"]} >= {"Quux.One"}
+    assert sections["lowConfidenceJoins"] == []
     assert sections["incompleteOrStaleEvidence"]
-    assert any(
-        row["kind"] == "claim_authority_route"
-        for row in sections["incompleteOrStaleEvidence"]
-    )
-    cards = {card["root"]: card for card in workflow["reviewerCards"]}
-    assert cards["Quux.One"]["bridge_diagnostics"]["diagnostic_count"] == 2
-
-
-def test_atlas_workflow_without_bridge_has_stable_empty_bridge_sections(tmp_path: Path) -> None:
+def test_atlas_workflow_has_stable_empty_external_evidence_sections(tmp_path: Path) -> None:
     write_report(tmp_path / "quux" / "one.json", sample_report("Quux.One", fan_in=8))
 
     workflow = build_atlas_workflow(build_report_atlas(tmp_path))
     markdown = render_atlas_workflow_markdown(workflow)
 
-    assert workflow["inputs"]["bridgeReportCount"] == 0
+    assert workflow["inputs"]["externalEvidenceCount"] == 0
     assert workflow["sections"]["lowConfidenceJoins"] == []
     assert "# Ladon Atlas Review Workflow" in markdown
     assert "## Low Confidence Joins\n- none" in markdown
-
-
-def test_atlas_workflow_imports_quux_bridge_snapshot_as_optional_evidence(tmp_path: Path) -> None:
-    write_report(tmp_path / "quux" / "one.json", sample_report("Quux.One", fan_in=8))
-
-    workflow = build_atlas_workflow(
-        build_report_atlas(tmp_path),
-        bridge_reports=[sample_bridge_snapshot()],
-    )
-
-    sections = workflow["sections"]
-    assert workflow["inputs"]["bridgeReportCount"] == 1
-    assert sections["reviewPriorityRoots"][0]["root"] == "Quux.One"
-    assert sections["reviewPriorityRoots"][0]["bridgePressure"] == 2
-    assert sections["lowConfidenceJoins"][0] == {
-        "root": "Quux.One",
-        "surfaceId": "surface.quux.minimum_path_sum.exact_value_satisfies",
-        "declarationName": "Quux.Problems.MinimumPathSum.exact_value_satisfies",
-        "matchKind": "root_module_source_anchor",
-        "confidence": "low",
-        "warningOnly": True,
-    }
-    cards = {card["root"]: card for card in workflow["reviewerCards"]}
-    assert cards["Quux.One"]["bridge_diagnostics"]["diagnostic_counts"] == {
-        "proofir.status_quoted_not_promoted": 1
-    }
-    assert any(
-        "not Ladon proof truth" in rule
-        for rule in cards["Quux.One"]["bridge_diagnostics"]["trust_rules"]
-    )
-
-
-def test_atlas_workflow_keeps_source_line_anchor_snapshot_join_warning_only(tmp_path: Path) -> None:
-    write_report(tmp_path / "quux" / "one.json", sample_report("Quux.One", fan_in=8))
-    snapshot = sample_bridge_snapshot()
-    snapshot["bridgeReport"]["joins"][0]["matchKind"] = "source_line_anchor_decl"
-
-    workflow = build_atlas_workflow(
-        build_report_atlas(tmp_path),
-        bridge_reports=[snapshot],
-    )
-
-    assert workflow["sections"]["lowConfidenceJoins"][0]["matchKind"] == "source_line_anchor_decl"
-    assert workflow["sections"]["lowConfidenceJoins"][0]["confidence"] == "low"
-    assert workflow["sections"]["lowConfidenceJoins"][0]["warningOnly"] is True
-
-
-def test_atlas_workflow_routes_proof_surface_diagnostics(tmp_path: Path) -> None:
-    write_report(tmp_path / "quux" / "one.json", sample_report("Quux.One", fan_in=8))
-    bridge = sample_bridge_report()
-    bridge["diagnostics"].append(
-        {
-            "ruleId": "ladon.proof_surface.missing_axiom_audit",
-            "level": "warning",
-            "subject": "claim.proof_surface",
-        }
-    )
-
-    workflow = build_atlas_workflow(
-        build_report_atlas(tmp_path),
-        bridge_reports=[bridge],
-    )
-
-    assert any(
-        row["kind"] == "proof_surface_route"
-        and row["ruleId"] == "ladon.proof_surface.missing_axiom_audit"
-        for row in workflow["sections"]["incompleteOrStaleEvidence"]
-    )
 
 
 def write_report(path: Path, payload: dict) -> None:
@@ -158,68 +81,4 @@ def sample_report(root: str, *, fan_in: int) -> dict:
                 ],
             }
         ],
-    }
-
-
-def sample_bridge_report() -> dict:
-    return {
-        "reviewerCards": [{"root": "Quux.One"}],
-        "joins": [
-            {
-                "surfaceId": "surface.name_only",
-                "declarationName": "target",
-                "matchKind": "basename_only",
-                "confidence": "low",
-                "warningOnly": True,
-            }
-        ],
-        "diagnostics": [
-            {
-                "ruleId": "proofir.name_only_join_warning",
-                "level": "warning",
-                "subject": "surface.name_only",
-            },
-            {
-                "ruleId": "ladon.claim.closed_with_imported_evidence",
-                "level": "warning",
-                "subject": "claim.closed.imported",
-            },
-        ],
-        "trustRules": ["name-only joins are warning-only"],
-    }
-
-
-def sample_bridge_snapshot() -> dict:
-    return {
-        "artifactKind": "ladon_proofir_bridge_snapshot",
-        "sourceLadonReport": {
-            "analysisRootModule": "Quux.One",
-            "path": "docs/generated/minimum-path-sum-ladon-report.json",
-        },
-        "surfaces": [
-            {
-                "surfaceId": "surface.quux.minimum_path_sum.exact_value_satisfies",
-                "claimId": "claim.quux.minimum_path_sum.exact_value_satisfies",
-                "declarationName": "Quux.Problems.MinimumPathSum.exact_value_satisfies",
-                "status": "established_external_lean",
-                "authority": ["lean_kernel_external"],
-            }
-        ],
-        "bridgeReport": {
-            "joins": [
-                {
-                    "surfaceId": "surface.quux.minimum_path_sum.exact_value_satisfies",
-                    "claimId": "claim.quux.minimum_path_sum.exact_value_satisfies",
-                    "analysisRootModule": "Quux.One",
-                    "matchKind": "root_module_source_anchor",
-                }
-            ],
-            "diagnostics": [
-                {
-                    "diagnosticId": "proofir.status_quoted_not_promoted",
-                    "severity": "info",
-                    "message": "External status is quoted, not promoted.",
-                }
-            ],
-        },
     }

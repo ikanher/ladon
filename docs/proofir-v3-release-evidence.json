@@ -1,0 +1,57 @@
+{
+  "format": "proofir-release-evidence-v1",
+  "umbrella": "ladon-proofir-evidence-semantics-v3-umbrella",
+  "generatedBy": "working-tree-release-gate-2026-08-09",
+  "releaseStatus": "partial",
+  "evidence": [
+    {
+      "requirement": "native-envelope-and-canonicalization",
+      "status": "partial",
+      "tests": ["tests/test_proofir_native_v3_contract.py", "tests/test_proofir_v3.py", "tests/test_proofir_validation.py", "tests/test_proofir_payload_schema.py"],
+      "missing": ["Rust parity is intentionally deferred"]
+    },
+    {
+      "requirement": "identity-observations-authority-and-coverage",
+      "status": "green",
+      "tests": ["tests/test_proofir_identity.py", "tests/test_proofir_identity_models.py", "tests/test_proofir_observations.py", "tests/test_proofir_v3_subject_scope.py", "tests/test_semantic_candidate_worker_v3_contract.py"]
+    },
+    {
+      "requirement": "attachment-and-link-observations",
+      "status": "green",
+      "tests": ["tests/test_proofir_attachment_policy.py", "tests/test_proofir_link_observations.py", "tests/test_proofir_sqlite_wave3_contract.py"]
+    },
+    {
+      "requirement": "derivation-hypergraph",
+      "status": "green",
+      "tests": ["tests/test_proofir_derivation.py", "tests/test_proofir_derivation_queries.py", "tests/test_proofir_derivation_scc.py", "tests/test_semantic_candidate_lean_integration.py", "tests/test_semantic_candidate_residual_integration.py"]
+    },
+    {
+      "requirement": "sqlite-projection",
+      "status": "green",
+      "tests": ["tests/test_proofir_sqlite_native_contract.py", "tests/test_proofir_sqlite_rows.py", "tests/test_proofir_sqlite_wave3_contract.py"],
+      "docs": ["docs/proofir-v3-sqlite-baseline.md"]
+    },
+    {
+      "requirement": "ladon-cli-integration-and-clean-break",
+      "status": "green",
+      "tests": ["tests/test_proofir_v3_installed_workflow_contract.py", "tests/test_proofir_clean_break.py", "tests/test_proofir_v3_terminal_contract.py", "tests/test_proof_search_progress_contract.py", "tests/test_semantic_candidate_lean_integration.py", "tests/test_semantic_candidate_security_contract.py"]
+    },
+    {
+      "requirement": "separated-project-boundary",
+      "status": "green",
+      "tests": ["tests/test_proofir_quux_boundary.py", "tests/test_quux_runtime_separation.py", "tests/test_quux_benchmark_separation.py"],
+      "note": "Quux is never inspected, executed, imported, or used for calibration."
+    },
+    {
+      "requirement": "rust-reference",
+      "status": "partial",
+      "missing": ["Held by user direction; no parity or release claim is made."]
+    },
+    {
+      "requirement": "quality",
+      "status": "green",
+      "commands": ["uv run --locked python scripts/python_quality.py --strict", "openspec validate proofir-v3-ladon-integration-and-release --strict", "openspec validate ladon-proofir-evidence-semantics-v3-umbrella --strict"],
+      "note": "Observed 2026-08-09: radon/vulture clean; compileall clean; 1351 tests passed; both OpenSpec changes valid."
+    }
+  ]
+}

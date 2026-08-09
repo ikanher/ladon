@@ -9,16 +9,16 @@ def test_root_matrix_script_dry_run_prints_selected_command(capsys) -> None:
         [
             "--dry-run",
             "--repository-root",
-            "quux=/repos/quux",
+            "matrix-factorization=/repos/matrix-factorization",
             "--only",
-            "quux-project",
+            "mf-project",
         ]
     )
 
     captured = capsys.readouterr()
     assert status == 0
-    assert "quux-project" in captured.out
-    assert "--repo-root /repos/quux" in captured.out
+    assert "mf-project" in captured.out
+    assert "--repo-root /repos/matrix-factorization" in captured.out
 
 
 def script_main():

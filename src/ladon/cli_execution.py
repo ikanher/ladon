@@ -11,18 +11,19 @@ import json
 import os
 import sys
 import tempfile
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from io import TextIOBase
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 from ladon.report_model import ReportV2
-
 
 EXIT_SUCCESS = 0
 EXIT_OPERATIONAL = 1
 EXIT_INVOCATION = 2
 EXIT_POLICY = 3
+EXIT_INTERRUPTED = 130
 SEVERITY_ORDER = {"info": 0, "warning": 1, "error": 2}
 
 

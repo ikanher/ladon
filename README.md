@@ -6,9 +6,9 @@ reports module/declaration graph structure, and keeps Python quality gates
 strict enough that analyzer code stays small and testable.
 
 Ladon is not a proof checker. Declaration edges, source ranges, source hashes,
-packet diagnostics, and optional ProofIR bridge joins are review-routing
+packet diagnostics, and native ProofIR v3 projections are review-routing
 evidence only. Theorem truth and proof correctness must come from Lean or an
-explicit external artifact with its own authority and hash.
+explicit check-run observation naming its checker and exact environment.
 
 ## Setup and support
 
@@ -109,10 +109,12 @@ uv run --locked ladon proof-search evidence triage all \
   --repo-root /path/to/lean/project --format json
 ```
 
-The theorem dossier keeps Lean declarations, ProofIR surfaces and claims,
-replay observations, obligation routes, lineage, diagnostics, coverage, and
-nonclaims in separate sections. Warm evidence queries are read-only and never
-refresh the index or run external tools implicitly.
+The theorem dossier keeps subjects, claims, checker and governance
+observations, derivations, source attachments, coverage, omissions, navigation,
+and limitations in separate sections. Warm evidence queries are read-only and
+never refresh the index or run external tools implicitly. A stored derivation
+or navigation route remains structural evidence; it does not imply checker
+acceptance.
 
 Theorem extraction is an explicit Lean-backed CLI workflow:
 
@@ -138,6 +140,22 @@ uv run --locked ladon theorem lineage Fully.Qualified.theorem \
   --repo-root /path/to/lean/project --refresh missing \
   --view routes --from trust --format text --output -
 ```
+
+Lineage summaries are aggregate-only and do not enumerate routes:
+
+```bash
+uv run --locked ladon theorem lineage Fully.Qualified.theorem \
+  --repo-root /path/to/lean/project --refresh never --view summary \
+  --max-database-mib 1536 --format json --output -
+```
+
+The proof-search database is disposable and schema-versioned. A schema-v5
+database uses a complete-database ceiling for lineage publication in addition
+to the 512 MiB base-index ceiling. Status/build payloads expose SQLite
+`dbstat` object and grouped byte accounting. Coverage-sensitive commands report
+`unavailable`, `not-populated`, or `partial` rather than treating empty
+observations as proof facts. Search results include inspectable ranking
+contributions; global report populations remain opt-in and bounded.
 
 Build or inspect the base index with `ladon proof-search index build|status`.
 Warm closures are reused without starting Lean; use `--refresh never` to forbid
@@ -335,25 +353,35 @@ Not yet reintroduced:
 - general report-facing transitive proof dependency extraction; theorem capsules
   use a separate exact target protocol rather than the bounded declaration report.
 
-Optional bridge:
+Native ProofIR v3:
 
-- `ladon-proofir-bridge` can join an existing Ladon JSON report with a compact
-  ProofIR bridge index and emit reviewer cards/diagnostics.  This is separate
-  from core Ladon analysis and does not make Ladon a proof checker.
-- when compact ProofIR inputs include route-authority fields, Ladon can audit
-  whether a claim's advertised authority matches its evidence route. For
-  example, it can flag a Lean-closed claim whose required finite-window evidence
-  is still imported interval-certified, or an arbitrary-neighbor public claim
-  whose primary theorem surface is sampled/null only.
+- producers write canonical `proofirVersion: "3.0"` artifacts and list them in
+  the repository ProofIR configuration; `ladon proofir validate ARTIFACT.json`
+  checks an artifact before indexing;
+- after artifacts change, rebuild the disposable project-local proof-search
+  database explicitly with `ladon proof-search index build`; no query performs
+  an implicit refresh;
+- reviewers use `proof-search evidence theorem`, `route`, `slice`,
+  `alternatives`, and `triage`. They must distinguish producer assertions,
+  checker observations, attachments, structural derivations, coverage, and
+  omissions rather than promoting any one row to theorem truth;
+- `ladon proof-search check candidate --module MODULE --goal GOAL --candidate
+  DECLARATION --format json` is the explicit Lean boundary for one declaration
+  application against a closed goal. A closed application emits batch-closed
+  environment, check-run, and derivation artifacts; remaining premises emit an
+  incomplete attempt-log with typed substitutions, residuals, and context;
+- former bridge, surface-bundle, replay, DAG, and witness dialects are rejected.
+  Regenerate them at the producer as native v3; Ladon does not convert them.
 
 Atlas workflow:
 
 - `scripts/ladon_atlas_export.py` builds canonical atlas JSON plus optional
   Markdown, SQLite, and reviewer-card outputs from a report directory.
 - `scripts/ladon_atlas_workflow.py` derives a reviewer workflow from atlas JSON,
-  an optional earlier atlas, and optional ProofIR bridge reports. It summarizes
-  changed rows, recurring hotspots, review-priority roots, low-confidence joins,
-  and incomplete or stale evidence.
+  an optional earlier atlas, and optional generic external review reports. It
+  summarizes changed rows, recurring hotspots, review-priority roots,
+  low-confidence joins, and incomplete or stale evidence. Native ProofIR v3 is
+  queried from the project-local proof-search database instead.
 - installed `ladon query` results carry a versioned envelope. Useful positive
   results over incomplete inputs are labeled `non_exhaustive` with inherited
   collection coverage; `--exhaustive` instead returns a structured unavailable

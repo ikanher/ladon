@@ -83,7 +83,12 @@ def query_lineage(
         routes = _trim_routes_to_edge_cap(routes, query.max_edges)
     nodes = _node_rows(connection, closure_id, walk_rows)
     query_plan = _query_plan(connection, closure_id, query) if query.explain else []
-    truncated = route_truncated or edge_truncated or len(walk_rows) > query.max_nodes
+    node_limit_reached = len(walk_rows) > query.max_nodes
+    recursive_limit_reached = (
+        len(walk_rows) >= query.recursive_row_limit
+        and query.max_nodes + 1 >= query.recursive_row_limit
+    )
+    truncated = route_truncated or edge_truncated or node_limit_reached or recursive_limit_reached
     return {
         "schema": "ladon-theorem-lineage-result-v1",
         "operation": "lineage",
@@ -99,6 +104,11 @@ def query_lineage(
             "maxEdges": query.max_edges,
             "maxRoutes": query.max_routes,
             "recursiveRowLimit": query.recursive_row_limit,
+        },
+        "acquisition": {
+            "rowsObserved": len(walk_rows),
+            "recursiveRowLimitReached": recursive_limit_reached,
+            "nodeLimitReached": node_limit_reached,
         },
         "nodes": nodes[: query.max_nodes],
         "routes": routes[: query.max_routes],
@@ -128,7 +138,7 @@ def _walk_rows(
                    CASE WHEN walk.edge_kinds = '' THEN e.kind
                         ELSE walk.edge_kinds || ',' || e.kind END
             FROM walk
-            JOIN lineage_edges e ON e.closure_id = ? AND {join}
+            CROSS JOIN lineage_edges e ON e.closure_id = ? AND {join}
             WHERE walk.depth < ?
               AND instr(walk.path, '|' || {next_node} || '|') = 0
               AND ({edge_filter})
@@ -322,7 +332,19 @@ def _query_plan(connection: sqlite3.Connection, closure_id: str, query: LineageQ
         "EXPLAIN QUERY PLAN SELECT source FROM lineage_edges WHERE closure_id = ? AND target = ?",
         (closure_id, query.theorem),
     ).fetchall()
-    return [str(tuple(row)) for row in [*forward, *reverse]]
+    recursive_join = "e.source = walk.node" if query.direction == "ancestry" else "e.target = walk.node"
+    recursive_next = "e.target" if query.direction == "ancestry" else "e.source"
+    recursive = connection.execute(
+        f"""EXPLAIN QUERY PLAN WITH RECURSIVE walk(node, depth) AS (
+            SELECT ? , 0
+            UNION ALL
+            SELECT {recursive_next}, walk.depth + 1
+            FROM walk CROSS JOIN lineage_edges e ON e.closure_id = ? AND {recursive_join}
+            WHERE walk.depth < ? LIMIT ?
+        ) SELECT node FROM walk""",
+        (query.theorem, closure_id, query.max_depth, query.recursive_row_limit),
+    ).fetchall()
+    return [str(tuple(row)) for row in [*forward, *reverse, *recursive]]
 
 
 def _edge_filter(column: str, edge_kind: str) -> tuple[str, list[str]]:

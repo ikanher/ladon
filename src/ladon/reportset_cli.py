@@ -132,7 +132,6 @@ def add_atlas_parser(subparsers: Any) -> None:
     )
     parser.add_argument("--output-sqlite")
     parser.add_argument("--output-cards")
-    parser.add_argument("--bridge-report", action="append", default=[])
     add_common_output(parser)
 
 
@@ -161,7 +160,6 @@ def add_diff_parser(subparsers: Any) -> None:
 def add_cards_parser(subparsers: Any) -> None:
     parser = subparsers.add_parser("cards", help="Render reviewer cards.")
     parser.add_argument("--atlas", required=True)
-    parser.add_argument("--bridge-report", action="append", default=[])
     add_common_output(parser)
 
 
@@ -169,7 +167,6 @@ def add_workflow_parser(subparsers: Any) -> None:
     parser = subparsers.add_parser("workflow", help="Build workflow summaries.")
     parser.add_argument("--atlas", required=True)
     parser.add_argument("--before")
-    parser.add_argument("--bridge-report", action="append", default=[])
     add_common_output(parser)
 
 
@@ -351,10 +348,9 @@ def execute_reportset(args: argparse.Namespace) -> tuple[Any, str]:
         return payload, render_atlas_diff_markdown(payload)
     if args.command == "cards":
         atlas = load_atlas(Path(args.atlas))
-        bridge = load_json_files(args.bridge_report)
         return (
-            atlas_reviewer_cards(atlas, bridge),
-            render_reviewer_cards_markdown(atlas, bridge),
+            atlas_reviewer_cards(atlas),
+            render_reviewer_cards_markdown(atlas),
         )
     if args.command == "findings":
         return execute_findings(args)
@@ -369,13 +365,12 @@ def execute_atlas(args: argparse.Namespace) -> tuple[dict[str, Any], str]:
     """Build an atlas and any explicitly requested derived artifacts."""
 
     atlas = selected_report_atlas(args)
-    bridge = load_json_files(args.bridge_report)
     if args.output_sqlite:
-        write_atlas_sqlite(atlas, Path(args.output_sqlite), bridge_reports=bridge)
+        write_atlas_sqlite(atlas, Path(args.output_sqlite))
     if args.output_cards:
         atomic_write_text(
             Path(args.output_cards),
-            render_reviewer_cards_markdown(atlas, bridge),
+            render_reviewer_cards_markdown(atlas),
         )
     return atlas, render_atlas_markdown(atlas)
 
@@ -400,7 +395,6 @@ def execute_workflow(args: argparse.Namespace) -> tuple[dict[str, Any], str]:
     workflow = build_atlas_workflow(
         atlas,
         before_atlas=before,
-        bridge_reports=load_json_files(args.bridge_report),
     )
     return workflow, render_atlas_workflow_markdown(workflow)
 

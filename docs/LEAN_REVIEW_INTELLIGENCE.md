@@ -57,7 +57,6 @@ actions:
 - `clean_generator_output`
 - `move_generated_parameters_to_manifest`
 - `run_import_diet`
-- `add_proof_surface_witness_evidence`
 
 Prescriptions are not automatic rewrites. They preserve the evidence, priority,
 confidence, and nonclaim text so maintainers can decide whether the suggested

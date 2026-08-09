@@ -17,14 +17,14 @@ def build_atlas_workflow(
     atlas: dict[str, Any],
     *,
     before_atlas: dict[str, Any] | None = None,
-    bridge_reports: list[dict[str, Any]] | None = None,
+    external_evidence: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Build the combined reviewer workflow surface."""
 
     require_atlas_v1(atlas, consumer="atlas workflow current-reader")
     if before_atlas is not None:
         require_atlas_v1(before_atlas, consumer="atlas workflow before-reader")
-    bridges = normalize_bridge_reports(bridge_reports or [])
+    bridges: list[dict[str, Any]] = []
     diff = diff_atlases(before_atlas, atlas) if before_atlas is not None else empty_diff()
     workflow_diagnostics = atlas_workflow_diagnostics(atlas)
     return {
@@ -33,7 +33,7 @@ def build_atlas_workflow(
         "canonicalAtlasSchema": atlas.get("schema", ""),
         "inputs": {
             "beforeAtlasPresent": before_atlas is not None,
-            "bridgeReportCount": len(bridges),
+            "externalEvidenceCount": len(bridges),
             "workflowDiagnosticCount": len(workflow_diagnostics),
         },
         "sections": {
@@ -48,22 +48,22 @@ def build_atlas_workflow(
     }
 
 
-def normalize_bridge_reports(bridge_reports: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def normalize_external_evidence(external_evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Normalize optional bridge report inputs for workflow summaries."""
 
-    for report in bridge_reports:
+    for report in external_evidence:
         require_bridge_v1(report, consumer="atlas workflow bridge reader")
     return [
-        normalize_bridge_report(report)
-        for report in bridge_reports
+        normalize_external_evidence(report)
+        for report in external_evidence
         if isinstance(report, dict)
     ]
 
 
-def normalize_bridge_report(report: dict[str, Any]) -> dict[str, Any]:
+def normalize_external_evidence(report: dict[str, Any]) -> dict[str, Any]:
     """Return a workflow-compatible bridge report summary."""
 
-    if report.get("artifactKind") == "ladon_proofir_bridge_snapshot":
+    if report.get("artifactKind") == "ladon_external_evidence_snapshot":
         return bridge_snapshot_as_report(report)
     return report
 
@@ -77,8 +77,8 @@ def bridge_snapshot_as_report(snapshot: dict[str, Any]) -> dict[str, Any]:
     root = snapshot_root(snapshot)
     surfaces = snapshot_surfaces_by_id(snapshot)
     return {
-        "artifactKind": "ladon_proofir_bridge_report",
-        "sourceArtifactKind": "ladon_proofir_bridge_snapshot",
+        "artifactKind": "ladon_proofir_external_evidence",
+        "sourceArtifactKind": "ladon_external_evidence_snapshot",
         "reviewerCards": [{"root": root}] if root else [],
         "joins": [normalize_snapshot_join(row, surfaces) for row in bridge.get("joins", []) if isinstance(row, dict)],
         "diagnostics": [
@@ -210,11 +210,11 @@ def recurring_hotspots(atlas: dict[str, Any]) -> list[dict[str, Any]]:
 
 def review_priority_roots(
     atlas: dict[str, Any],
-    bridge_reports: list[dict[str, Any]],
+    external_evidence: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     """Rank roots by review pressure visible in atlas and bridge summaries."""
 
-    bridge_pressure = bridge_pressure_by_root(bridge_reports)
+    bridge_pressure = bridge_pressure_by_root(external_evidence)
     rows = []
     for report in report_nodes(atlas):
         data = report.get("data", {})
@@ -241,12 +241,12 @@ def review_priority_roots(
     return sorted(rows, key=lambda row: (-row["score"], row["report"]))[:10]
 
 
-def bridge_pressure_by_root(bridge_reports: list[dict[str, Any]]) -> dict[str, int]:
+def bridge_pressure_by_root(external_evidence: list[dict[str, Any]]) -> dict[str, int]:
     """Return simple bridge pressure counts by root."""
 
     pressure: dict[str, int] = {}
-    for report in bridge_reports:
-        root = bridge_report_root(report)
+    for report in external_evidence:
+        root = external_evidence_root(report)
         if not root:
             continue
         pressure[root] = pressure.get(root, 0) + len(low_confidence_joins([report]))
@@ -254,12 +254,12 @@ def bridge_pressure_by_root(bridge_reports: list[dict[str, Any]]) -> dict[str, i
     return pressure
 
 
-def low_confidence_joins(bridge_reports: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def low_confidence_joins(external_evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Return optional ProofIR joins that should remain warning routes."""
 
     rows = []
-    for report in bridge_reports:
-        root = bridge_report_root(report)
+    for report in external_evidence:
+        root = external_evidence_root(report)
         for join in report.get("joins", []):
             if not isinstance(join, dict):
                 continue
@@ -290,12 +290,12 @@ def is_low_confidence_join(join: dict[str, Any]) -> bool:
 
 def incomplete_or_stale_evidence(
     atlas: dict[str, Any],
-    bridge_reports: list[dict[str, Any]],
+    external_evidence: list[dict[str, Any]],
 ) -> list[dict[str, Any]]:
     """Return packet or bridge evidence rows that need review."""
 
     rows = packet_evidence_gaps(atlas)
-    rows.extend(bridge_stale_evidence(bridge_reports))
+    rows.extend(bridge_stale_evidence(external_evidence))
     rows.extend(workflow_evidence_rows(atlas))
     return sorted(rows, key=lambda row: (row["kind"], row["subject"]))[:25]
 
@@ -360,12 +360,12 @@ def packet_evidence_gaps(atlas: dict[str, Any]) -> list[dict[str, Any]]:
     return rows
 
 
-def bridge_stale_evidence(bridge_reports: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def bridge_stale_evidence(external_evidence: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Return stale-source or route-authority bridge diagnostics."""
 
     rows = []
-    for report in bridge_reports:
-        root = bridge_report_root(report)
+    for report in external_evidence:
+        root = external_evidence_root(report)
         for diagnostic in report.get("diagnostics", []):
             if not isinstance(diagnostic, dict):
                 continue
@@ -399,7 +399,7 @@ def report_nodes(atlas: dict[str, Any]) -> list[dict[str, Any]]:
     )
 
 
-def bridge_report_root(report: dict[str, Any]) -> str:
+def external_evidence_root(report: dict[str, Any]) -> str:
     """Return the first root visible in a bridge reviewer card."""
 
     for card in report.get("reviewerCards", []):
@@ -416,7 +416,7 @@ def render_atlas_workflow_markdown(workflow: dict[str, Any]) -> str:
         "# Ladon Atlas Review Workflow",
         "",
         f"- canonical machine-readable surface: {workflow['canonicalMachineReadableSurface']}",
-        f"- bridge reports: {workflow['inputs']['bridgeReportCount']}",
+            f"- external evidence: {workflow['inputs']['externalEvidenceCount']}",
         "",
     ]
     lines.extend(changed_rows_lines(sections["changedRows"]))

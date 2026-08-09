@@ -19,9 +19,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=[],
         metavar="NAME=PATH",
         help=(
-            "Explicit optional repository root; NAME is quux or "
-            "matrix-factorization. Environment alternatives are "
-            "LADON_QUUX_ROOT and LADON_MATRIX_FACTORIZATION_ROOT."
+            "Explicit optional repository root; NAME is matrix-factorization. "
+            "The environment alternative is LADON_MATRIX_FACTORIZATION_ROOT."
         ),
     )
     parser.add_argument(
@@ -81,7 +80,7 @@ def run_commands(commands: list[tuple[str, list[str]]]) -> int:
     status = 0
     for name, command in commands:
         print(f"== {name} ==")
-        status = subprocess.run(command).returncode or status
+        status = subprocess.run(command, check=False).returncode or status
     return status
 
 

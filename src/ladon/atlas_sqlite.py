@@ -108,19 +108,19 @@ def write_atlas_sqlite(
     atlas: dict[str, Any],
     db_path: Path,
     *,
-    bridge_reports: list[dict[str, Any]] | None = None,
+    external_evidence: list[dict[str, Any]] | None = None,
 ) -> None:
     """Write a deterministic SQLite database from an atlas JSON payload."""
 
     require_atlas_v1(atlas, consumer="atlas SQLite reader")
-    for report in bridge_reports or []:
+    for report in external_evidence or []:
         require_bridge_v1(report, consumer="atlas SQLite bridge reader")
     db_path.parent.mkdir(parents=True, exist_ok=True)
     if db_path.exists():
         db_path.unlink()
     with sqlite3.connect(db_path) as connection:
         create_schema(connection)
-        insert_atlas(connection, atlas, bridge_reports or [])
+        insert_atlas(connection, atlas, external_evidence or [])
 
 
 def create_schema(connection: sqlite3.Connection) -> None:
@@ -233,7 +233,7 @@ def create_schema(connection: sqlite3.Connection) -> None:
 def insert_atlas(
     connection: sqlite3.Connection,
     atlas: dict[str, Any],
-    bridge_reports: list[dict[str, Any]],
+    external_evidence: list[dict[str, Any]],
 ) -> None:
     """Insert normalized atlas graph rows."""
 
@@ -244,7 +244,7 @@ def insert_atlas(
     insert_reports(connection, nodes.values())
     insert_collection_coverage(connection, nodes.values())
     insert_packet_evidence(connection, nodes.values())
-    insert_bridge_reports(connection, bridge_reports)
+    insert_external_evidence(connection, external_evidence)
     insert_joined_rows(connection, nodes, edges)
 
 
@@ -402,14 +402,14 @@ def insert_packet_evidence(connection: sqlite3.Connection, nodes: Any) -> None:
     )
 
 
-def insert_bridge_reports(
+def insert_external_evidence(
     connection: sqlite3.Connection,
-    bridge_reports: list[dict[str, Any]],
+    external_evidence: list[dict[str, Any]],
 ) -> None:
     """Insert optional ProofIR bridge joins and diagnostics."""
 
-    for report in bridge_reports:
-        root = bridge_report_root(report)
+    for report in external_evidence:
+        root = external_evidence_root(report)
         insert_bridge_joins(connection, root, report.get("joins", []))
         insert_bridge_diagnostics(connection, root, report.get("diagnostics", []))
 
@@ -459,7 +459,7 @@ def insert_bridge_diagnostics(connection: sqlite3.Connection, root: str, diagnos
     )
 
 
-def bridge_report_root(report: dict[str, Any]) -> str:
+def external_evidence_root(report: dict[str, Any]) -> str:
     """Return the first reviewer-card root named in a bridge report."""
 
     cards = report.get("reviewerCards", [])

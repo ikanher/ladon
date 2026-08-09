@@ -15,6 +15,7 @@ from ladon.proofir_catalog import (
     PROOFIR_CONFIG_RELATIVE_PATH,
     discover_catalog_artifacts,
 )
+from support.proofir_v3_native import claim_artifact
 
 
 def configure(
@@ -84,6 +85,19 @@ def test_catalog_marks_malformed_input_and_no_config_is_not_empty(tmp_path: Path
         assert b"not-configured" in stream.read()
 
 
+def test_valid_v3_catalog_artifact_is_projected_into_shared_index(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "Main.lean").write_text("def value : Nat := 1\n", encoding="utf-8")
+    artifact = repo / "artifact.json"
+    artifact.write_text(json.dumps(claim_artifact()), encoding="utf-8")
+    configure(repo, ["artifact.json"])
+    result = build_proof_search_index(repo)
+    assert result.payload["counts"]["proofirV3Artifacts"] == 1
+    with sqlite3.connect(result.index_path) as connection:
+        assert connection.execute("SELECT COUNT(*) FROM proofir_v3_artifacts").fetchone()[0] == 1
+
+
 def test_catalog_rejects_escape_and_limits_before_publish(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -121,7 +135,7 @@ def test_catalog_persists_configured_relationships_and_rebuilds_atomically(
     (repo / "Main.lean").write_text("def value : Nat := 1\n", encoding="utf-8")
     for name in ("surface.json", "replay.json"):
         (repo / name).write_text(
-            json.dumps({"artifactKind": "proofir_bridge_index", "schemaVersion": 1}),
+            json.dumps(claim_artifact()),
             encoding="utf-8",
         )
     configure(
@@ -143,7 +157,20 @@ def test_catalog_persists_configured_relationships_and_rebuilds_atomically(
             "EXPLAIN QUERY PLAN SELECT artifact_id FROM proofir_artifacts WHERE path = ? AND sha256 = ?",
             ("surface.json", "x" * 64),
         ).fetchall()
+        details = json.loads(
+            connection.execute("SELECT details_json FROM proofir_relations").fetchone()[
+                0
+            ]
+        )
     assert any("idx_proofir_artifact_path_hash" in str(row) for row in path_plan)
+    observation = details["linkObservation"]
+    assert observation["observationKind"] == "manifest-assertion"
+    assert observation["linkResult"] == "unbound"
+    assert observation["semanticAcceptance"] is False
+    assert observation["diagnostics"] == [
+        "missing-source-endpoint",
+        "missing-target-endpoint",
+    ]
 
     configure(repo, ["surface.json"], maxArtifactBytes=1)
     with pytest.raises(ProofSearchIndexError, match="byte limit"):

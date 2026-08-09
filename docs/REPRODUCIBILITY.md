@@ -28,8 +28,10 @@ The following paths are deliberately outside Ladon's maintained product input:
   test surface rather than vendoring it into Ladon.
 - `temp/**`, local virtual environments, caches, build products, and editor
   state are local artifacts.
-- Quux, matrix-factorization, mathlib, and other sibling checkouts are optional
-  calibration or drift smokes. Required CI uses only tracked portable fixtures.
+- Quux is outside Ladon's maintained inputs and is never inspected, executed,
+  or used for calibration. Matrix-factorization, mathlib, and other approved
+  targets are optional calibration or drift smokes. Required CI uses only
+  tracked portable fixtures.
 
 ## Supported runtimes
 

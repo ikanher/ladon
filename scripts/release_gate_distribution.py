@@ -111,18 +111,26 @@ def validate_distribution_metadata(
 
 
 def require_archive_members(artifacts: DistributionArtifacts) -> None:
-    """Require package metadata and the Lean helper in both archive types."""
+    """Require package metadata and every runtime Lean helper in both archives."""
 
     with zipfile.ZipFile(artifacts.wheel) as wheel:
         wheel_names = set(wheel.namelist())
-    if "ladon/lean/ladon_parser_helper.lean" not in wheel_names:
-        raise GateError("wheel omits packaged Lean helper")
+    wheel_helpers = (
+        "ladon/lean/ladon_parser_helper.lean",
+        "ladon/lean/ladon_semantic_candidate_helper.lean",
+    )
+    missing_wheel_helpers = [name for name in wheel_helpers if name not in wheel_names]
+    if missing_wheel_helpers:
+        raise GateError(
+            f"wheel omits packaged Lean helpers: {', '.join(missing_wheel_helpers)}"
+        )
     with tarfile.open(artifacts.sdist) as sdist:
         sdist_names = set(sdist.getnames())
     required_suffixes = (
         "/pyproject.toml",
         "/README.md",
         "/src/ladon/lean/ladon_parser_helper.lean",
+        "/src/ladon/lean/ladon_semantic_candidate_helper.lean",
     )
     missing = [
         suffix
@@ -256,7 +264,7 @@ def assert_installed_import_origin(
 ) -> None:
     """Require Ladon and its Lean helper to resolve inside the isolated venv."""
 
-    code = "\n".join(
+    code = "\n".join(  # noqa: FLY002 - executable probe is clearer as source lines
         [
             "from importlib import resources",
             "from pathlib import Path",
@@ -266,9 +274,11 @@ def assert_installed_import_origin(
             "origin = Path(ladon.__file__).resolve()",
             "prefix = Path(sys.prefix).resolve()",
             "helper = resources.files('ladon').joinpath('lean', 'ladon_parser_helper.lean')",
+            "semantic_helper = resources.files('ladon').joinpath('lean', 'ladon_semantic_candidate_helper.lean')",
             "assert origin.is_relative_to(prefix), (origin, prefix)",
             "assert helper.is_file(), helper",
-            "print(json.dumps({'origin': str(origin), 'helper': str(helper)}))",
+            "assert semantic_helper.is_file(), semantic_helper",
+            "print(json.dumps({'origin': str(origin), 'helper': str(helper), 'semanticHelper': str(semantic_helper)}))",
         ]
     )
     run_checked(
@@ -316,14 +326,12 @@ def assert_installed_process_contracts(
         environment,
     )
     analyzer = executable_path(installed, "ladon")
-    bridge = executable_path(installed, "ladon-proofir-bridge")
     contract_environment = dict(environment)
     contract_environment.pop("PYTHONHOME", None)
     contract_environment.pop("PYTHONPATH", None)
     contract_environment.update(
         {
             "LADON_CONSOLE": str(analyzer),
-            "LADON_PROOFIR_BRIDGE_CONSOLE": str(bridge),
             "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
         }
     )

@@ -406,6 +406,21 @@
               "enum": ["per_present_stratum", "unbounded"]
             }
           }
+        },
+        "ownerProjection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["policy", "selectedPopulation", "globalPopulation", "globalSuppressed", "suppressedCount", "globalSample", "cap", "widening"],
+          "properties": {
+            "policy": {"const": "owner-first-v1"},
+            "selectedPopulation": {"type": "integer", "minimum": 0},
+            "globalPopulation": {"type": "integer", "minimum": 0},
+            "globalSuppressed": {"type": "boolean"},
+            "suppressedCount": {"type": "integer", "minimum": 0},
+            "globalSample": {"enum": ["included", "opt-in-via-full-projection"]},
+            "cap": {"type": ["integer", "null"], "minimum": 1},
+            "widening": {"type": ["string", "null"]}
+          }
         }
       }
     },

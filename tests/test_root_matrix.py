@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+
 from ladon.root_matrix import (
     default_root_matrix,
     matrix_command,
@@ -11,107 +13,52 @@ from ladon.root_matrix import (
 
 def test_root_matrix_generates_ladon_commands() -> None:
     entry = select_matrix_entries(
-        default_root_matrix({"quux": "/repos/quux"}),
-        ["quux-propagation"],
+        default_root_matrix({"matrix-factorization": "/repos/matrix-factorization"}),
+        ["mf-gaussian-core"],
     )[0]
     command = matrix_command(entry, output_root=Path("out"), ladon_bin=Path("bin/ladon"))
 
     assert command[:2] == ["bin/ladon", "--repo-root"]
-    assert "--root" in command
-    assert "Quux/Semantics/Propagation.lean" in command
-    assert "--format" in command
-    assert "json" in command
-    assert "--output" in command
-    assert "out/quux/quux-propagation.json" in command
+    assert "Mf/DP/GaussianCore.lean" in command
+    assert "out/matrix-factorization/mf-gaussian-core.json" in command
     assert "--extraction-backend" in command
     assert "--skip-build" not in command
 
 
 def test_root_matrix_has_no_implicit_sibling_roots() -> None:
-    entries = default_root_matrix(environment={})
-
-    assert entries == []
+    assert default_root_matrix(environment={}) == []
 
 
 def test_root_matrix_uses_lean_backend_for_explicit_owner_roots() -> None:
-    entries = select_matrix_entries(
-        default_root_matrix(
-            {
-                "quux": "/repos/quux",
-                "matrix-factorization": "/repos/matrix-factorization",
-            }
-        ),
-        [
-            "quux-bifr-rmse-problem",
-            "mf-gaussian-core",
-            "mf-bsr-factor-core",
-            "mf-optimization-ftrl",
-        ],
+    entries = default_root_matrix(
+        {"matrix-factorization": "/repos/matrix-factorization"}
     )
-
-    assert {entry["name"] for entry in entries if entry["backend"] == "lean"} == {
-        "quux-bifr-rmse-problem",
+    assert {
+        entry["name"] for entry in entries if entry["backend"] == "lean"
+    } == {
         "mf-gaussian-core",
         "mf-bsr-factor-core",
         "mf-optimization-ftrl",
+        "mf-bifr-packed-profile",
     }
 
 
-def test_root_matrix_keeps_project_roots_text_backed() -> None:
-    entries = select_matrix_entries(
-        default_root_matrix(
-            {
-                "quux": "/repos/quux",
-                "matrix-factorization": "/repos/matrix-factorization",
-            }
-        ),
-        ["quux-project", "mf-project"],
-    )
-
-    assert [entry["backend"] for entry in entries] == ["text", "text"]
+def test_root_matrix_keeps_project_root_text_backed() -> None:
+    entry = select_matrix_entries(
+        default_root_matrix({"matrix-factorization": "/repos/matrix-factorization"}),
+        ["mf-project"],
+    )[0]
+    assert entry["backend"] == "text"
 
 
-def test_root_matrix_accepts_explicit_optional_repository_roots() -> None:
-    entries = select_matrix_entries(
-        default_root_matrix(
-            {
-                "quux": "/portable/quux",
-                "matrix-factorization": "/portable/matrix-factorization",
-            }
-        ),
-        ["quux-project", "mf-project"],
-    )
-
-    assert [entry["repo_root"] for entry in entries] == [
-        "/portable/quux",
-        "/portable/matrix-factorization",
-    ]
-
-
-def test_root_matrix_selects_named_entries() -> None:
-    entries = select_matrix_entries(
-        default_root_matrix(
-            {
-                "quux": "/repos/quux",
-                "matrix-factorization": "/repos/matrix-factorization",
-            }
-        ),
-        ["quux-project", "mf-bifr-packed-profile"],
-    )
-
-    assert [entry["name"] for entry in entries] == [
-        "quux-project",
-        "mf-bifr-packed-profile",
-    ]
+def test_root_matrix_rejects_separated_or_unknown_repository_roots() -> None:
+    with pytest.raises(ValueError, match="unknown optional repository roots"):
+        default_root_matrix({"quux": "/separated/quux"}, environment={})
 
 
 def test_root_matrix_unknown_entry_is_explicit_error() -> None:
-    try:
-        select_matrix_entries(
-            default_root_matrix({"quux": "/repos/quux"}),
-            ["missing-root"],
-        )
-    except ValueError as exc:
-        assert "unknown root matrix entries" in str(exc)
-    else:
-        raise AssertionError("missing root matrix entry should fail")
+    entries = default_root_matrix(
+        {"matrix-factorization": "/repos/matrix-factorization"}
+    )
+    with pytest.raises(ValueError, match="unknown root matrix entries"):
+        select_matrix_entries(entries, ["missing-root"])

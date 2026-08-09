@@ -24,8 +24,6 @@ QUERY_TABLES = (
     "declaration_dependencies",
     "module_highlights",
     "packet_evidence",
-    "bridge_joins",
-    "bridge_diagnostics",
 )
 
 
@@ -53,12 +51,10 @@ def assert_primary_table_counts(counts: dict[str, int]) -> None:
 
 
 def assert_optional_table_counts(counts: dict[str, int]) -> None:
-    """Check optional module, packet, and bridge query tables."""
+    """Check optional module and packet query tables."""
 
     assert counts["module_highlights"] >= 2
     assert counts["packet_evidence"] == 2
-    assert counts["bridge_joins"] == 0
-    assert counts["bridge_diagnostics"] == 0
     assert counts["collection_coverage"] == 8
 
 
@@ -120,25 +116,6 @@ def test_atlas_sqlite_packet_evidence_gap_query(tmp_path: Path) -> None:
 
     assert rows[0]["incomplete"] == 1
     assert rows[0]["partial"] == 1
-
-
-def test_atlas_sqlite_low_confidence_join_query(tmp_path: Path) -> None:
-    atlas = sample_atlas(tmp_path)
-    db_path = tmp_path / "atlas.sqlite"
-    write_atlas_sqlite(atlas, db_path, bridge_reports=[sample_bridge_report()])
-
-    rows = run_canned_query(db_path, "low_confidence_joins")
-
-    assert rows == [
-        {
-            "root": "Quux.One",
-            "surface_id": "surface.name_only",
-            "declaration_name": "target",
-            "match_kind": "basename_only",
-            "confidence": "low",
-            "warning_only": 1,
-        }
-    ]
 
 
 def test_atlas_sqlite_declaration_dependencies_keep_kind_and_authority(
@@ -307,7 +284,6 @@ def complete_hotspot_atlas() -> dict:
         ],
     }
 
-
 def exact_finding_coverage() -> dict:
     """Return exact coverage for the one visible hotspot fixture row."""
 
@@ -389,27 +365,6 @@ def sample_report(root: str) -> dict:
                         "count": 3,
                     }
                 ],
-            }
-        ],
-    }
-
-
-def sample_bridge_report() -> dict:
-    return {
-        "reviewerCards": [{"root": "Quux.One"}],
-        "joins": [
-            {
-                "surfaceId": "surface.name_only",
-                "declarationName": "target",
-                "matchKind": "basename_only",
-                "confidence": "low",
-                "warningOnly": True,
-            }
-        ],
-        "diagnostics": [
-            {
-                "ruleId": "proofir.name_only_join_warning",
-                "level": "warning",
             }
         ],
     }

@@ -16,6 +16,7 @@ from ladon.proof_search_name_query import (
 
 _TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9_']*")
 _CAMEL_BOUNDARY_RE = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
+_GENERIC_TERMS = frozenset({"bound", "path", "le", "eq", "of", "has", "map", "mem"})
 
 
 @dataclass
@@ -36,6 +37,7 @@ def query_database(
     limit: int,
     query_mode: str = "all",
     exclusions: tuple[str, ...] = (),
+    min_matched_segments: int = 1,
 ) -> tuple[list[dict[str, Any]], bool, int | None, list[dict[str, str]]]:
     """Resolve scope and run one deterministic declaration query."""
 
@@ -49,6 +51,7 @@ def query_database(
         limit=limit,
         query_mode=query_mode,
         exclusions=exclusions,
+        min_matched_segments=min_matched_segments,
     )
     return rows, truncated, len(modules) if modules is not None else None, omissions
 
@@ -107,6 +110,7 @@ def _query_declarations(
     limit: int,
     query_mode: str,
     exclusions: tuple[str, ...],
+    min_matched_segments: int,
 ) -> tuple[list[dict[str, Any]], bool]:
     """Build and execute a parameterized bounded declaration query."""
 
@@ -119,7 +123,35 @@ def _query_declarations(
     _add_named_scope_filter(query, scope, roots)
     query.values.append(limit + 1)
     rows = [dict(row) for row in connection.execute(_declaration_sql(query), query.values)]
-    return [_query_row(row) for row in rows[:limit]], len(rows) > limit
+    ranked = _rank_rows(rows, text, min_matched_segments)
+    return [_query_row(row) for row in ranked[:limit]], len(ranked) > limit
+
+
+def _rank_rows(rows: list[dict[str, Any]], text: str | None, minimum: int) -> list[dict[str, Any]]:
+    if not text:
+        return rows
+    terms = tuple(sorted(_semantic_tokens(semantic_name_segments_v1(text))))
+    ranked = []
+    for row in rows:
+        score_data = _row_score(row, terms, text)
+        matched = score_data["matched"]
+        specific = score_data["specific"]
+        if len(matched) < minimum:
+            continue
+        row["_rank"] = score_data
+        ranked.append(row)
+    ranked.sort(key=lambda row: (-row["_rank"]["score"], str(row.get("candidate_name") or ""), str(row.get("name") or ""), str(row.get("module") or ""), int(row.get("line") or 0)))
+    return ranked
+
+
+def _row_score(row: Mapping[str, Any], terms: tuple[str, ...], text: str) -> dict[str, Any]:
+    name = str(row.get("name", "")).casefold()
+    candidate = str(row.get("candidate_name", "")).casefold()
+    matched = [term for term in terms if term in name or term in candidate]
+    specific = [term for term in matched if term not in _GENERIC_TERMS]
+    exact = int(name == text.casefold())
+    score = exact * 10000 + len(specific) * 100 + len(matched) * 10 + int(bool(candidate))
+    return {"score": score, "matchedSegments": sorted(set(matched)), "specificSegments": sorted(set(specific)), "contribution": "exact" if exact else ("specific" if specific else "generic"), "matched": matched, "specific": specific}
 
 
 def _add_text_filter(
@@ -223,6 +255,9 @@ def _declaration_sql(query: _DeclarationQuery) -> str:
 def _query_row(row: Mapping[str, Any]) -> dict[str, Any]:
     """Adapt private column names to the v1 result contract."""
 
+    ranking = row.get("_rank")
+    if isinstance(ranking, dict):
+        ranking = {key: ranking[key] for key in ("score", "matchedSegments", "specificSegments", "contribution")}
     return {
         "id": row["id"],
         "name": row["name"],
@@ -240,6 +275,7 @@ def _query_row(row: Mapping[str, Any]) -> dict[str, Any]:
         "typeStatus": row["type_status"],
         "authority": row["authority"],
         "structureName": row["structure_name"],
+        "ranking": ranking,
     }
 
 

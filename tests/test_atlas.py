@@ -515,25 +515,6 @@ def test_atlas_reviewer_cards_include_routing_fields(tmp_path: Path) -> None:
     ]
 
 
-def test_atlas_reviewer_cards_include_optional_bridge_data(tmp_path: Path) -> None:
-    write_report(tmp_path / "quux" / "owner.json", sample_report())
-
-    cards = atlas_reviewer_cards(build_report_atlas(tmp_path), [sample_bridge_report()])
-
-    assert cards[0]["bridge_diagnostics"] == {
-        "diagnostic_count": 2,
-        "diagnostic_counts": {
-            "proofir.name_only_join_warning": 1,
-            "proofir.packet_stale_source": 1,
-        },
-        "low_confidence_join_count": 1,
-        "unmatched_join_count": 0,
-        "route_audit_claim_count": 1,
-        "route_audit_diagnostic_count": 1,
-        "trust_rules": ["name-only joins are warning-only"],
-    }
-
-
 def test_atlas_and_cards_preserve_finding_evidence_contract(
     tmp_path: Path,
 ) -> None:

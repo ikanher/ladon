@@ -5,7 +5,6 @@ import sys
 import tomllib
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).parents[1]
 
 
@@ -128,5 +127,7 @@ def test_reproducibility_document_records_external_boundaries() -> None:
     assert ".codex/**" in text
     assert "tests/fixtures/**" in text
     assert "temp/**" in text
-    assert "Quux, matrix-factorization, mathlib" in text
+    assert "Quux is outside Ladon's maintained inputs" in text
+    assert "never inspected, executed" in text
+    assert "Matrix-factorization, mathlib" in text
     assert "publication blocked—no license granted" in text

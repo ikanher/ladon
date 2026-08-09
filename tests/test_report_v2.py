@@ -23,7 +23,6 @@ from ladon.ir import (
     LeanTrustFact,
 )
 from ladon.pipeline import RunContext, run_pipeline
-from ladon.proofir_bridge import build_bridge_report
 from ladon.render import render_text
 from ladon.report_v3 import build_report_v3
 from ladon.report_v2 import (
@@ -641,17 +640,14 @@ def test_reader_dispatch_rejects_unknown_major_actionably() -> None:
         supported_report_view(payload, consumer="atlas")
 
 
-def test_atlas_and_bridge_read_schema_valid_v2(tmp_path: Path) -> None:
+def test_atlas_reads_schema_valid_v2(tmp_path: Path) -> None:
     payload = canonical_payload()
     report_path = tmp_path / "reports" / "tiny.json"
     report_path.parent.mkdir(parents=True)
     report_path.write_bytes(serialize_report_bytes(payload, version="v2").content)
 
     atlas = build_report_atlas(report_path.parent)
-    bridge = build_bridge_report(payload, None)
-
     assert atlas["summary"]["reports"] == 1
-    assert bridge["summary"]["declarationCount"] == 0
 
 
 def test_atlas_reader_rejects_unknown_report_major(tmp_path: Path) -> None:
