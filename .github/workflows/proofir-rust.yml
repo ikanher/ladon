@@ -1,0 +1,19 @@
+name: proofir-rust
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    env:
+      # The reference crates must not acquire Lean or Quux as transitive tools.
+      PROOFIR_NO_LEAN: "1"
+      PROOFIR_NO_QUUX: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --workspace --locked
+        working-directory: rust
+      - run: '! rg -ni "quux|matrix-factorization" rust --glob "Cargo.toml" --glob "Cargo.lock"'
