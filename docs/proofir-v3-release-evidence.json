@@ -1,39 +1,133 @@
 {
   "format": "proofir-release-evidence-v1",
   "umbrella": "ladon-proofir-evidence-semantics-v3-umbrella",
-  "generatedBy": "working-tree-release-gate-2026-08-09",
+  "generatedBy": "post-r05-blocker-fix-gates-2026-08-10",
   "releaseStatus": "partial",
+  "childExitClasses": [
+    {
+      "change": "proofir-content-environment-and-subject-identity",
+      "exitClass": "stable-content-environment-and-typed-subject-identities",
+      "status": "stale",
+      "tests": ["tests/test_proofir_identity.py", "tests/test_proofir_identity_models.py", "tests/test_proofir_v3_subject_scope.py"]
+    },
+    {
+      "change": "proofir-observation-authority-and-coverage-core",
+      "exitClass": "typed-subject-scoped-authority-and-coverage",
+      "status": "stale",
+      "tests": ["tests/test_proofir_observations.py", "tests/test_semantic_candidate_worker_v3_contract.py"]
+    },
+    {
+      "change": "proofir-attachment-and-link-observations",
+      "exitClass": "unified-attributable-attachment-without-quux-dependency",
+      "status": "stale",
+      "tests": ["tests/test_proofir_attachment_policy.py", "tests/test_proofir_link_observations.py"]
+    },
+    {
+      "change": "proofir-v3-native-schema-and-canonicalization",
+      "exitClass": "closed-native-v3-schema-canonicalization-and-diagnostics",
+      "status": "stale",
+      "tests": ["tests/test_proofir_native_v3_contract.py", "tests/test_proofir_payload_schema.py", "tests/test_proofir_v3.py"]
+    },
+    {
+      "change": "proofir-derivation-hypergraph-semantics",
+      "exitClass": "validated-and-or-hypergraph-and-bounded-slices",
+      "status": "stale",
+      "tests": ["tests/test_proofir_derivation.py", "tests/test_proofir_derivation_queries.py", "tests/test_proofir_derivation_scc.py"]
+    },
+    {
+      "change": "proofir-v3-sqlite-projection",
+      "exitClass": "provenance-complete-query-aligned-disposable-v3-projection",
+      "status": "stale",
+      "tests": ["tests/test_proofir_sqlite_native_contract.py", "tests/test_proofir_sqlite_wave3_contract.py"]
+    },
+    {
+      "change": "proofir-v3-ladon-integration-and-release",
+      "exitClass": "installed-documented-calibrated-v3-release",
+      "status": "stale",
+      "tests": ["tests/test_proofir_v3_installed_workflow_contract.py", "tests/test_proofir_clean_break.py"]
+    },
+    {
+      "change": "proofir-v3-typed-schema-and-corpus-hardening",
+      "exitClass": "authoritative-typed-validation-and-freeze-corpus",
+      "status": "green",
+      "tests": ["tests/test_proofir_v3_hardening.py", "tests/test_proofir_v3_corpus_complete.py", "tests/test_proofir_v3.py", "tests/test_proofir_payload_schema.py"],
+      "docs": ["docs/proofir-v3-corpus-inventory.md", "docs/proofir-v3-corpus-inventory.json", "docs/proofir-v3-validation-authority.md", "tests/fixtures/proofir_v3_r03_adversarial.json", "tests/fixtures/proofir_v3_r03_diagnostics.json"]
+    },
+    {
+      "change": "proofir-v3-declaration-and-application-identity",
+      "exitClass": "nonconflated-declaration-statement-value-and-application-identities",
+      "status": "green",
+      "tests": ["tests/test_proofir_declaration_application_identity.py", "tests/test_proofir_attachment_policy.py", "tests/test_semantic_candidate_residual_integration.py", "tests/test_semantic_candidate_worker_v3_contract.py"],
+      "docs": ["docs/proofir-v3-identity-contract.md"],
+      "missing": ["Relevant-hypothesis minimization remains future work; current ordered local-declaration metadata and semantic application identity are covered."]
+    },
+    {
+      "change": "proofir-v3-cross-artifact-resolution-and-query-contracts",
+      "exitClass": "incremental-reference-closure-and-truthful-bounded-queries",
+      "status": "green",
+      "tests": ["tests/test_proofir_incremental_resolution.py", "tests/test_proofir_query_contracts.py", "tests/test_proofir_observations.py", "tests/test_proofir_sqlite_native_contract.py"],
+      "docs": ["docs/proofir-v3-query-contract.md", "docs/proofir-v3-reference-families.md", "src/ladon/proofir_fingerprint_registry.py"]
+    },
+    {
+      "change": "proofir-v3-lean-worker-framed-protocol",
+      "exitClass": "framed-request-bound-metam-worker-without-source-probe",
+      "status": "partial",
+      "tests": ["tests/test_semantic_candidate_framed_protocol.py", "tests/test_semantic_candidate_worker_v3_contract.py", "tests/test_semantic_candidate_security_contract.py", "tests/test_semantic_candidate_lean_integration.py"],
+      "missing": ["Target initializer isolation remains open; Lean-owned qualified-name parsing, framing, typed context, universe policy, direct MetaM elaboration, and generated-sorry removal are verified."]
+    },
+    {
+      "change": "proofir-v3-publication-bounds-and-portability",
+      "exitClass": "locked-bounded-durable-and-portable-sqlite-publication",
+      "status": "green",
+      "tests": ["tests/test_proofir_sqlite_native_contract.py", "tests/test_proofir_sqlite_wave3_contract.py", "tests/test_proofir_publication_lock_ownership.py"],
+      "docs": ["docs/proofir-v3-publication.md", "src/ladon/proofir_sqlite_v3.py"]
+    },
+    {
+      "change": "proofir-v3-freeze-evidence-and-review-packet",
+      "exitClass": "content-addressed-reproducible-semantic-freeze-review",
+      "status": "partial",
+      "tests": ["tests/test_proofir_packet_manifest.py"],
+      "docs": ["openspec/changes/ladon-proofir-evidence-semantics-v3-umbrella/proof-state.md", "docs/proofir-v3-r05-command-records.json", "temp/ladon-proofir-evidence-semantics-v3-review-data-r05.zip"],
+      "missing": ["Independent full Lean replay and expert blocker-by-blocker disposition remain open."]
+    },
+    {
+      "change": "proofir-v3-rust-reference-core",
+      "exitClass": "cross-language-conformance-parity-without-lean-or-quux-reimplementation",
+      "status": "partial",
+      "missing": ["Held by user direction; cross-language parity and Rust release gates are not claimed."]
+    }
+  ],
   "evidence": [
     {
       "requirement": "native-envelope-and-canonicalization",
-      "status": "partial",
+      "status": "green",
       "tests": ["tests/test_proofir_native_v3_contract.py", "tests/test_proofir_v3.py", "tests/test_proofir_validation.py", "tests/test_proofir_payload_schema.py"],
-      "missing": ["Rust parity is intentionally deferred"]
+      "missing": ["Expert review showed weaker parallel validators, unfrozen Unicode and aggregate-bound behavior, and an undersized corpus."]
     },
     {
       "requirement": "identity-observations-authority-and-coverage",
-      "status": "green",
+      "status": "stale",
       "tests": ["tests/test_proofir_identity.py", "tests/test_proofir_identity_models.py", "tests/test_proofir_observations.py", "tests/test_proofir_v3_subject_scope.py", "tests/test_semantic_candidate_worker_v3_contract.py"]
     },
     {
       "requirement": "attachment-and-link-observations",
-      "status": "green",
+      "status": "stale",
       "tests": ["tests/test_proofir_attachment_policy.py", "tests/test_proofir_link_observations.py", "tests/test_proofir_sqlite_wave3_contract.py"]
     },
     {
       "requirement": "derivation-hypergraph",
-      "status": "green",
+      "status": "stale",
       "tests": ["tests/test_proofir_derivation.py", "tests/test_proofir_derivation_queries.py", "tests/test_proofir_derivation_scc.py", "tests/test_semantic_candidate_lean_integration.py", "tests/test_semantic_candidate_residual_integration.py"]
     },
     {
       "requirement": "sqlite-projection",
-      "status": "green",
+      "status": "stale",
       "tests": ["tests/test_proofir_sqlite_native_contract.py", "tests/test_proofir_sqlite_rows.py", "tests/test_proofir_sqlite_wave3_contract.py"],
       "docs": ["docs/proofir-v3-sqlite-baseline.md"]
     },
     {
       "requirement": "ladon-cli-integration-and-clean-break",
-      "status": "green",
+      "status": "stale",
       "tests": ["tests/test_proofir_v3_installed_workflow_contract.py", "tests/test_proofir_clean_break.py", "tests/test_proofir_v3_terminal_contract.py", "tests/test_proof_search_progress_contract.py", "tests/test_semantic_candidate_lean_integration.py", "tests/test_semantic_candidate_security_contract.py"]
     },
     {
@@ -41,6 +135,13 @@
       "status": "green",
       "tests": ["tests/test_proofir_quux_boundary.py", "tests/test_quux_runtime_separation.py", "tests/test_quux_benchmark_separation.py"],
       "note": "Quux is never inspected, executed, imported, or used for calibration."
+    },
+    {
+      "requirement": "expert-review-semantic-freeze",
+      "status": "partial",
+      "docs": ["docs/proofir-v3-r03-review-disposition.json", "openspec/changes/ladon-proofir-evidence-semantics-v3-umbrella/proof-state.md"],
+      "missing": ["r03 requests changes for eight P0 blockers and nine P1 seams; all six pre-freeze hardening exit classes remain partial and the Rust hold remains in force."],
+      "note": "r03 approved the architecture and verified eight fixes but explicitly rejected semantic freeze."
     },
     {
       "requirement": "rust-reference",
@@ -51,7 +152,7 @@
       "requirement": "quality",
       "status": "green",
       "commands": ["uv run --locked python scripts/python_quality.py --strict", "openspec validate proofir-v3-ladon-integration-and-release --strict", "openspec validate ladon-proofir-evidence-semantics-v3-umbrella --strict"],
-      "note": "Observed 2026-08-09: radon/vulture clean; compileall clean; 1351 tests passed; both OpenSpec changes valid."
+      "note": "The current full suite is 1447 passed; strict quality is green; umbrella OpenSpec validation passes; command and log identities are recorded in the r05 packet."
     }
   ]
 }

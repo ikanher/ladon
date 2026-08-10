@@ -1,6 +1,18 @@
 {
   "program": "ladon-proofir-evidence-semantics-v3-umbrella",
-  "sourceEvidence": "Expert ProofIR assessment supplied 2026-08-09 plus current Ladon ProofIR catalog, bridge, SQLite, dossier, and graph implementations; user authorized a clean native-v3 break on 2026-08-09",
+  "sourceEvidence": "Expert ProofIR architecture assessment supplied 2026-08-09; clean native-v3 break authorized 2026-08-09; r01 review supplied 2026-08-10 opened six hardening children; r03 review evidence in temp/proofir_v3_r03_review_evidence.zip verifies eight fixes, reopens four previously green exit classes, records eight P0 blockers and nine P1 seams, and keeps Rust on hold.",
+  "latestReview": {
+    "id": "ladon-proofir-v3-review-r03",
+    "disposition": "request-changes-before-semantic-freeze",
+    "machineDisposition": "docs/proofir-v3-r03-review-disposition.json",
+    "reopenedExitClasses": [
+      "authoritative-typed-validation-and-freeze-corpus",
+      "nonconflated-declaration-statement-value-and-application-identities",
+      "incremental-reference-closure-and-truthful-bounded-queries",
+      "locked-bounded-durable-and-portable-sqlite-publication"
+    ],
+    "rust": "hold"
+  },
   "canonicalArtifactInvariant": "Versioned content-addressed ProofIR artifacts are authoritative; every SQLite database and review view is a rebuildable bounded projection.",
   "authorityInvariant": "Assertions, source attachment, successful processes, and producer labels never become theorem truth; semantic acceptance is an exact checker observation over an exact subject and environment.",
   "interfaceInvariant": "Humans, scripts, editors, and models use the same ordinary Ladon CLI and versioned results; no caller-specific evidence command exists.",
@@ -46,12 +58,48 @@
     {
       "change": "proofir-v3-ladon-integration-and-release",
       "startAfter": ["proofir-v3-sqlite-projection"],
-      "enables": ["proofir-v3-rust-reference-core"],
+      "enables": ["proofir-v3-typed-schema-and-corpus-hardening", "proofir-v3-declaration-and-application-identity", "proofir-v3-cross-artifact-resolution-and-query-contracts", "proofir-v3-lean-worker-framed-protocol", "proofir-v3-publication-bounds-and-portability"],
       "exitClass": "installed-documented-calibrated-v3-release"
     },
     {
+      "change": "proofir-v3-typed-schema-and-corpus-hardening",
+      "startAfter": ["proofir-v3-native-schema-and-canonicalization", "proofir-v3-ladon-integration-and-release"],
+      "enables": ["proofir-v3-declaration-and-application-identity", "proofir-v3-cross-artifact-resolution-and-query-contracts", "proofir-v3-lean-worker-framed-protocol", "proofir-v3-freeze-evidence-and-review-packet"],
+      "exitClass": "authoritative-typed-validation-and-freeze-corpus"
+    },
+    {
+      "change": "proofir-v3-declaration-and-application-identity",
+      "startAfter": ["proofir-v3-typed-schema-and-corpus-hardening", "proofir-attachment-and-link-observations"],
+      "enables": ["proofir-v3-cross-artifact-resolution-and-query-contracts", "proofir-v3-lean-worker-framed-protocol", "proofir-v3-freeze-evidence-and-review-packet"],
+      "exitClass": "nonconflated-declaration-statement-value-and-application-identities"
+    },
+    {
+      "change": "proofir-v3-cross-artifact-resolution-and-query-contracts",
+      "startAfter": ["proofir-v3-typed-schema-and-corpus-hardening", "proofir-v3-declaration-and-application-identity", "proofir-v3-sqlite-projection"],
+      "enables": ["proofir-v3-publication-bounds-and-portability", "proofir-v3-freeze-evidence-and-review-packet"],
+      "exitClass": "incremental-reference-closure-and-truthful-bounded-queries"
+    },
+    {
+      "change": "proofir-v3-lean-worker-framed-protocol",
+      "startAfter": ["proofir-v3-typed-schema-and-corpus-hardening", "proofir-v3-declaration-and-application-identity"],
+      "enables": ["proofir-v3-freeze-evidence-and-review-packet"],
+      "exitClass": "framed-request-bound-metam-worker-without-source-probe"
+    },
+    {
+      "change": "proofir-v3-publication-bounds-and-portability",
+      "startAfter": ["proofir-v3-cross-artifact-resolution-and-query-contracts", "proofir-v3-sqlite-projection"],
+      "enables": ["proofir-v3-freeze-evidence-and-review-packet"],
+      "exitClass": "locked-bounded-durable-and-portable-sqlite-publication"
+    },
+    {
+      "change": "proofir-v3-freeze-evidence-and-review-packet",
+      "startAfter": ["proofir-v3-typed-schema-and-corpus-hardening", "proofir-v3-declaration-and-application-identity", "proofir-v3-cross-artifact-resolution-and-query-contracts", "proofir-v3-lean-worker-framed-protocol", "proofir-v3-publication-bounds-and-portability"],
+      "enables": ["proofir-v3-rust-reference-core"],
+      "exitClass": "content-addressed-reproducible-semantic-freeze-review"
+    },
+    {
       "change": "proofir-v3-rust-reference-core",
-      "startAfter": ["proofir-v3-ladon-integration-and-release"],
+      "startAfter": ["proofir-v3-freeze-evidence-and-review-packet"],
       "enables": [],
       "exitClass": "cross-language-conformance-parity-without-lean-or-quux-reimplementation"
     }

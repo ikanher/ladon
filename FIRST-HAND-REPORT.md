@@ -1,5 +1,130 @@
 # First-Hand Ladon Report
 
+## 2026-08-09 Update: Grid-Selection Theorem
+
+I reran the updated CLI and skill against the freshly compiled theorem
+
+```text
+Mf.Optimization.SDE.normalizedCorrectedSelectedOpacusIntegerGridEpsilonMathSpec_lt_elementary
+```
+
+in the matrix-factorization repository.
+
+### Improvements observed
+
+The revised lineage workflow is substantially better than the earlier run.
+After a fresh owner, audit, and facade build:
+
+```text
+owner build: 8570 jobs, passed
+audit build: 8571 jobs, passed
+facade build: 9744 jobs, passed
+```
+
+`theorem lineage --refresh missing` completed in about ten seconds and emitted
+all four human-useful progress phases:
+
+```text
+planning
+persisting
+rendering
+terminal: available
+```
+
+The published closure reported:
+
+```text
+authority: lean_environment
+nodes: 565
+edges: 3028
+marginal database bytes: 1568768
+publication status: complete
+```
+
+A subsequent warm `--refresh never --view bottlenecks --from project` query
+returned in about 1.4 seconds. The stored dependency evidence includes the
+expected proof seams:
+
+```text
+List.argmin
+List.argmin_eq_none
+List.argmin_eq_some_iff
+DPAdamOpacusPublicIntegerOrderGrid.selectedFirstOrder_mem
+DPAdamOpacusPublicIntegerOrderGrid.selectedFirstOrder_score_le
+normalizedCorrectedOpacusIntegerOrderEpsilonMathSpec_lt_elementary
+normalizedCorrectedSharpCumulativeRho_eq_opacusIntegerScheduleMathSpec
+```
+
+The result also preserved the important nonclaim that lineage is the dependency
+closure of one compiled proof value and type, not an enumeration of all proofs.
+The 1,000-node acquisition cap was reached and surfaced explicitly as
+`lineage_query_cap`; this is the correct behavior.
+
+The exact-name search found one production declaration with the expected source
+path, line, complete stored signature, and `lexical_text` authority. That is a
+useful navigation result, not proof authority.
+
+### Reproducible freshness inconsistency
+
+The remaining high-priority defect is an immediate build/status disagreement.
+I followed the documented workflow exactly:
+
+```bash
+../../ladon/bin/ladon proof-search index status \
+  --repo-root "$PWD" --format json --output -
+
+../../ladon/bin/ladon proof-search index build \
+  --repo-root "$PWD" --mode lexical --max-index-mib 768 \
+  --format json --output temp/ladon-opacus-grid-index-build.json --progress
+```
+
+The build completed successfully in about 105 seconds and its result said:
+
+```text
+status: complete
+freshness: fresh
+databaseBytes: 545468416
+modules: 3781
+declarations: 150871
+generationIdentity: dc6dd3c9de104184c04c2b033107250e51cf5c4370a0e78f4eb548f53182c053
+configurationFingerprint: 9b8c6c63c4cca1496a3e66fc356bfdeeee5ae0093dddd675a3f8ff9560044ba0
+```
+
+An immediate status query, with no repository source edit between publication
+and status, reported:
+
+```text
+status: available
+freshness: stale-configuration
+generationIdentity: dc6dd3c9de104184c04c2b033107250e51cf5c4370a0e78f4eb548f53182c053
+currentGenerationIdentity: 7053fbb3dffb7e65975a66116841d50f430a009e56a4581ceab30d099835c08f
+configurationFingerprint: 9b8c6c63c4cca1496a3e66fc356bfdeeee5ae0093dddd675a3f8ff9560044ba0
+```
+
+The configuration fingerprint shown by build and status is identical, yet the
+derived current generation identity differs. Exact-name search consequently
+also reports `freshness: stale-configuration` even though it returns the newly
+added theorem from the just-published index.
+
+This looks like generation-identity derivation or comparison is including one
+piece of transient state that publication and status compute differently. It
+should be fixed before callers are expected to rebuild automatically on every
+`stale-configuration` response; otherwise a correct caller enters an expensive
+rebuild loop that cannot make the warning disappear.
+
+Recommended regression test:
+
+1. Build a project-local lexical index.
+2. Make no repository or configuration changes.
+3. Run status immediately.
+4. Assert `freshness = fresh` and equality of generation/current-generation
+   identities.
+
+The compiled theorem lineage itself still reported `freshness: fresh` and
+`authority: lean_environment`, so I treated that as bounded dependency evidence
+and did not let the lexical freshness inconsistency affect the Lean theorem
+verdict.
+
 Date: 2026-08-08
 
 Target repository:

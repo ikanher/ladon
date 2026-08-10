@@ -19,6 +19,7 @@ ROOT = Path(__file__).parents[1]
 CORPUS = ROOT / "tests/fixtures/proofir_v3_parity/conformance-corpus-v1.json"
 RELEASE_EVIDENCE = ROOT / "docs/proofir-v3-release-evidence.json"
 RELEASE_SCHEMA = ROOT / "docs/proofir-v3-release-evidence.schema.json"
+UMBRELLA = ROOT / "openspec/changes/ladon-proofir-evidence-semantics-v3-umbrella"
 
 
 def _load(path: Path) -> Any:
@@ -62,6 +63,33 @@ def test_release_evidence_has_a_versioned_machine_validated_format() -> None:
     evidence = _load(RELEASE_EVIDENCE)
     Draft202012Validator.check_schema(schema)
     Draft202012Validator(schema).validate(evidence)
+
+    ledger = _load(UMBRELLA / "children/dependency-ledger.json")
+    expected = {
+        row["change"]: row["exitClass"] for row in ledger["children"]
+    }
+    observed = {
+        row["change"]: row["exitClass"] for row in evidence["childExitClasses"]
+    }
+    assert observed == expected
+
+
+def test_dependency_ledger_names_existing_changes_with_identical_specs() -> None:
+    ledger = _load(UMBRELLA / "children/dependency-ledger.json")
+    rows = ledger["children"]
+    change_ids = [row["change"] for row in rows]
+    assert len(change_ids) == len(set(change_ids))
+
+    for row in rows:
+        change_id = row["change"]
+        change = ROOT / "openspec/changes" / change_id
+        umbrella_spec = UMBRELLA / "specs" / change_id / "spec.md"
+        child_spec = change / "specs" / change_id / "spec.md"
+        assert change.is_dir(), f"dependency-ledger child is absent: {change_id}"
+        assert (change / "proposal.md").is_file(), change_id
+        assert (change / "design.md").is_file(), change_id
+        assert (change / "tasks.md").is_file(), change_id
+        assert child_spec.read_bytes() == umbrella_spec.read_bytes(), change_id
 
 
 def test_legacy_artifacts_fail_before_projection_and_leave_zero_rows() -> None:

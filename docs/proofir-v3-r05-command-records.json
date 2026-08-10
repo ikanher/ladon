@@ -1,0 +1,62 @@
+{
+  "format": "proofir-v3-command-records-v2",
+  "generatedAt": "2026-08-10T17:04:45Z",
+  "records": [
+    {
+      "id": "openspec-umbrella-strict",
+      "argv": ["uv", "run", "openspec", "validate", "ladon-proofir-evidence-semantics-v3-umbrella", "--type", "change", "--strict", "--no-interactive"],
+      "cwd": ".",
+      "environment": {"bounded": true, "variables": ["PATH", "UV_PROJECT_ENVIRONMENT"]},
+      "startedAt": "2026-08-10T17:00:00Z",
+      "finishedAt": "2026-08-10T17:00:00Z",
+      "exitCode": 0,
+      "status": "passed",
+      "stdout": {"path": "logs/openspec-umbrella.log", "bytes": 173, "sha256": "9f2aa739475970dfd6f2bafe8ab59081e9875025486df62608fab14ca2544349"},
+      "stderr": {"path": "logs/openspec-umbrella.log", "bytes": 173, "sha256": "9f2aa739475970dfd6f2bafe8ab59081e9875025486df62608fab14ca2544349"}
+    },
+    {
+      "id": "full-python-suite",
+      "argv": ["uv", "run", "pytest", "-q"],
+      "cwd": ".",
+      "environment": {"bounded": true, "variables": ["PATH", "UV_PROJECT_ENVIRONMENT"]},
+      "startedAt": "2026-08-10T16:59:00Z",
+      "finishedAt": "2026-08-10T17:00:40Z",
+      "exitCode": 0,
+      "status": "passed",
+      "observedSummary": "1447 passed in 100.43s",
+      "stdout": {"path": "logs/full-pytest.log", "bytes": 50, "sha256": "d685ed9b42458fa5bbd8dd65388d56cb9e0a251028b3a7fcbf461aa8ad305a35"},
+      "stderr": {"path": "logs/full-pytest.log", "bytes": 50, "sha256": "d685ed9b42458fa5bbd8dd65388d56cb9e0a251028b3a7fcbf461aa8ad305a35"}
+    },
+    {
+      "id": "strict-quality",
+      "argv": ["uv", "run", "python", "scripts/python_quality.py", "--strict", "--target", "src", "--target", "tests", "--target", "scripts"],
+      "cwd": ".",
+      "environment": {"bounded": true, "variables": ["PATH", "UV_PROJECT_ENVIRONMENT"]},
+      "startedAt": "2026-08-10T17:00:45Z",
+      "finishedAt": "2026-08-10T17:02:20Z",
+      "exitCode": 0,
+      "status": "passed",
+      "observedSummary": "radon/vulture clean; compileall passed; pytest 1447 passed",
+      "stdout": {"path": "logs/strict-quality.log", "bytes": 174, "sha256": "e6d3c57074ff53173322f33de69b5bd86b7762a8f558d2e1abf9dea144910da2"},
+      "stderr": {"path": "logs/strict-quality.log", "bytes": 174, "sha256": "e6d3c57074ff53173322f33de69b5bd86b7762a8f558d2e1abf9dea144910da2"}
+    },
+    {
+      "id": "lean-fixture-build",
+      "argv": ["lake", "build", "tests/fixtures/lean_integration"],
+      "cwd": ".",
+      "environment": {"bounded": true, "variables": ["PATH", "LEAN_PATH"]},
+      "startedAt": "2026-08-10T17:02:25Z",
+      "finishedAt": "2026-08-10T17:02:35Z",
+      "exitCode": 0,
+      "status": "passed",
+      "observedSummary": "Lean integration fixture build passed; unused-variable warning only",
+      "stdout": {"path": "logs/lean-fixture-build.log", "bytes": 124, "sha256": "bc914a48d1bb43010ef4c3734627cc19231e8b531d12bdd7359bf04a87694ff6"},
+      "stderr": {"path": "logs/lean-fixture-build.log", "bytes": 124, "sha256": "bc914a48d1bb43010ef4c3734627cc19231e8b531d12bdd7359bf04a87694ff6"}
+    }
+  ],
+  "limitations": [
+    "The command records are current-checkout evidence; they do not establish independent semantic-freeze approval.",
+    "Target-initializer isolation is not claimed.",
+    "Rust parity remains held and unclaimed."
+  ]
+}

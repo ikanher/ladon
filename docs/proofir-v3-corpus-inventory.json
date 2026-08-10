@@ -1,0 +1,39 @@
+{
+  "format": "proofir-v3-corpus-inventory-v2",
+  "canonicalProfile": "proofir-json-integer-v1",
+  "artifactKinds": [
+    "proofir.environment",
+    "proofir.claim",
+    "proofir.derivation",
+    "proofir.plan",
+    "proofir.attempt-log",
+    "proofir.check-run",
+    "proofir.source-map",
+    "proofir.attachment-set",
+    "proofir.governance-observation"
+  ],
+  "caseFamilies": [
+    "valid-envelope",
+    "invalid-nested-type",
+    "missing-reference",
+    "closed-payload",
+    "sqlite-projection",
+    "query-boundary",
+    "unicode-boundary",
+    "resource-boundary"
+  ],
+  "adversarialVectorFixture": "tests/fixtures/proofir_v3_r03_adversarial.json",
+  "adversarialDiagnosticFixture": "tests/fixtures/proofir_v3_r03_diagnostics.json",
+  "adversarialVectorCount": 25,
+  "environmentManifestFields": {
+    "prover": ["name", "version"],
+    "toolchain": ["name", "version", "commit"],
+    "dependencies": ["name", "version", "source", "digest"],
+    "compiledModules": ["module", "digest"],
+    "options": "string-keyed scalar map",
+    "trust": ["axiomsAllowed", "unsafeAllowed"],
+    "fingerprintScheme": ["name", "version"]
+  },
+  "rustReady": false,
+  "rustHoldReason": "The semantic-freeze review packet and remaining pre-freeze children are not green."
+}
