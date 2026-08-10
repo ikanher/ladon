@@ -1,21 +1,106 @@
-"""Disposable, normalized SQLite projection for canonical ProofIR v3 artifacts."""
+"""Disposable, normalized SQLite projection for canonical ProofIR v3 artifacts.
+
+ladon-quality: reviewed-schema-hotspot
+The normalized schema and projector remain together so constraints, foreign
+keys, insertion order, and query-plan gates are reviewed as one contract.
+"""
 
 from __future__ import annotations
 
 import hashlib
+import fcntl
+import json
 import os
 import sqlite3
 import tempfile
 import time
+import secrets
 from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ladon.proofir_v3 import canonical_bytes, validate_envelope_batch
+from ladon.proofir_v3 import (
+    _validate_external_references,
+    canonical_bytes,
+    validate_envelope,
+    validate_envelope_batch,
+)
 
 V3_SCHEMA_VERSION = 8
 MAX_EXTENSION_BYTES = 64 * 1024
 DEFAULT_MAX_DATABASE_BYTES = 512 * 1024 * 1024
+
+
+@dataclass(frozen=True)
+class _V3Lock:
+    path: Path
+    nonce: str
+    inode: int
+    descriptor: int
+
+
+def _pid_is_live(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _acquire_v3_lock(destination: Path) -> _V3Lock:
+    """Acquire a kernel-held project-local writer lock.
+
+    Advisory locking makes stale PID text non-authoritative: when a process
+    dies, the kernel releases the descriptor and the next builder can acquire
+    the same path without unlinking a potentially newer owner's file.
+    """
+    lock = destination.with_name(f"{destination.name}.lock")
+    nonce = secrets.token_hex(16)
+    payload = json.dumps({"pid": os.getpid(), "destination": str(destination), "nonce": nonce})
+    try:
+        descriptor = os.open(lock, os.O_CREAT | os.O_RDWR, 0o600)
+        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError as error:
+        try:
+            os.close(descriptor)
+        except UnboundLocalError:
+            pass
+        raise RuntimeError("ProofIR v3 database build already active") from error
+    os.ftruncate(descriptor, 0)
+    os.write(descriptor, payload.encode("utf-8"))
+    os.fsync(descriptor)
+    return _V3Lock(lock, nonce, os.fstat(descriptor).st_ino, descriptor)
+
+
+def _release_v3_lock(lock: _V3Lock) -> None:
+    """Release the kernel lock without deleting the persistent lock path.
+
+    Pathname deletion after ``flock(LOCK_UN)`` has an unavoidable same-inode
+    reacquisition race: a new writer can acquire and rewrite the path before
+    the old writer compares/unlinks it.  The path is therefore a durable
+    metadata carrier; kernel ownership, not its existence, controls access.
+    """
+    try:
+        fcntl.flock(lock.descriptor, fcntl.LOCK_UN)
+    finally:
+        os.close(lock.descriptor)
+
+
+def _durable_v3_replace(temporary: Path, destination: Path) -> None:
+    with temporary.open("rb") as stream:
+        os.fsync(stream.fileno())
+    os.replace(temporary, destination)
+    try:
+        directory = os.open(destination.parent, os.O_RDONLY)
+    except OSError:
+        return
+    try:
+        os.fsync(directory)
+    finally:
+        os.close(directory)
 
 REQUIRED_TABLES = frozenset(
     {
@@ -450,7 +535,7 @@ CREATE TABLE IF NOT EXISTS proofir_v3_check_results (
     owner_content_artifact_id TEXT NOT NULL,
     subject_kind TEXT NOT NULL,
     subject_local_id TEXT NOT NULL,
-    result TEXT NOT NULL CHECK(result IN ('accepted','rejected','unknown','error')),
+    result TEXT NOT NULL CHECK(result IN ('accepted','unchecked','rejected','unknown','error')),
     diagnostics_json TEXT NOT NULL CHECK(json_valid(diagnostics_json)),
     source_pointer TEXT NOT NULL,
     PRIMARY KEY(content_artifact_id,check_run_id,ordinal),
@@ -1301,7 +1386,7 @@ def project_envelopes(
 def project_envelope(connection: sqlite3.Connection, artifact: dict[str, Any]) -> None:
     """Project one artifact into an otherwise caller-owned projection."""
 
-    checked = _checked_artifacts([artifact])[0]
+    checked = validate_envelope(artifact).to_dict()
     create_v3_schema(connection)
     artifact_id = str(checked["artifactId"])
     existing = connection.execute(
@@ -1312,6 +1397,7 @@ def project_envelope(connection: sqlite3.Connection, artifact: dict[str, Any]) -
         if str(existing[0]) != _json(checked):
             raise ValueError(f"conflicting projection for {artifact_id}")
         return
+    _validate_incremental_external_references(connection, checked)
     with connection:
         connection.execute("PRAGMA defer_foreign_keys = ON")
         environment_ref = str(checked["environmentRef"])
@@ -1339,6 +1425,27 @@ def project_envelope(connection: sqlite3.Connection, artifact: dict[str, Any]) -
             projector(connection, checked)
         _project_common(connection, checked)
         validate_v3_database(connection)
+
+
+def _validate_incremental_external_references(
+    connection: sqlite3.Connection, artifact: dict[str, Any]
+) -> None:
+    """Close external evidence against validated persisted artifacts.
+
+    This is deliberately a read-before-write check. The single-artifact API is
+    allowed to follow a check-run or support artifact already present in the
+    project database, while premise/conclusion topology remains local to its
+    owning derivation artifact.
+    """
+
+    rows = connection.execute(
+        "SELECT content_artifact_id,canonical_json FROM proofir_v3_artifacts"
+    )
+    persisted = {
+        str(row[0]): json.loads(str(row[1]))
+        for row in rows
+    }
+    _validate_external_references(str(artifact["artifactId"]), artifact, persisted)
 
 
 def projection_counts(connection: sqlite3.Connection) -> dict[str, int]:
@@ -1379,17 +1486,23 @@ def projection_metrics(connection: sqlite3.Connection) -> dict[str, Any]:
     page_count = int(connection.execute("PRAGMA page_count").fetchone()[0])
     started = time.monotonic()
     connection.execute("SELECT COUNT(*) FROM proofir_v3_artifacts").fetchone()
-    object_bytes = {
-        str(row[0]): int(row[1])
-        for row in connection.execute(
-            "SELECT name,sum(pgsize) FROM dbstat GROUP BY name ORDER BY name"
-        )
-    }
+    try:
+        object_bytes = {
+            str(row[0]): int(row[1])
+            for row in connection.execute(
+                "SELECT name,sum(pgsize) FROM dbstat GROUP BY name ORDER BY name"
+            )
+        }
+        dbstat_available = True
+    except sqlite3.OperationalError:
+        object_bytes = {}
+        dbstat_available = False
     return {
         "databaseBytes": page_size * page_count,
         "objectBytes": object_bytes,
         "pageSize": page_size,
         "pageCount": page_count,
+        "dbstatAvailable": dbstat_available,
         "warmQuerySeconds": round(time.monotonic() - started, 6),
         **projection_counts(connection),
     }
@@ -1521,6 +1634,7 @@ def publish_v3_database(
     started = time.monotonic()
     destination = Path(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
+    lock = _acquire_v3_lock(destination)
     descriptor, temporary_name = tempfile.mkstemp(
         prefix=f".{destination.name}.{os.getpid()}.",
         suffix=".tmp",
@@ -1536,7 +1650,17 @@ def publish_v3_database(
             connection.execute("PRAGMA foreign_keys = ON")
             connection.execute("PRAGMA journal_mode = DELETE")
             connection.execute("PRAGMA synchronous = FULL")
-            create_v3_schema(connection)
+            page_size = int(connection.execute("PRAGMA page_size").fetchone()[0])
+            max_pages = max(1, max_database_bytes // page_size)
+            connection.execute(f"PRAGMA max_page_count = {max_pages}")
+            try:
+                create_v3_schema(connection)
+            except sqlite3.OperationalError as error:
+                if "full" in str(error).lower() or "max_page_count" in str(error).lower():
+                    raise ValueError(
+                        "ProofIR v3 database exceeds configured complete-database byte limit"
+                    ) from error
+                raise
             empty_metrics = projection_metrics(connection)
             project_envelopes(connection, artifacts)
             connection.execute("ANALYZE")
@@ -1570,7 +1694,7 @@ def publish_v3_database(
                     "statisticsRefreshed": True,
                 }
             )
-        os.replace(temporary, destination)
+        _durable_v3_replace(temporary, destination)
         metrics["databaseBytes"] = destination.stat().st_size
         metrics["buildSeconds"] = round(time.monotonic() - started, 6)
         return metrics
@@ -1578,6 +1702,7 @@ def publish_v3_database(
         temporary.unlink(missing_ok=True)
         for sidecar in sidecars:
             sidecar.unlink(missing_ok=True)
+        _release_v3_lock(lock)
 
 
 def normalized_rows(artifact: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:

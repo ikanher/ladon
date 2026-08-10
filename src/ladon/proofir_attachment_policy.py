@@ -307,6 +307,14 @@ def _identity_conflict(
         reasons.append("declaration-fingerprint-mismatch")
     if _different_nonempty(surface, declaration, "declarationRef"):
         reasons.append("declaration-reference-mismatch")
+    if (
+        _same_nonempty(surface, declaration, "environmentRef")
+        and _same_nonempty(surface, declaration, "declarationFingerprint")
+        and surface.get("declarationName")
+        and (declaration.get("declaration") or declaration.get("name"))
+        and not _same_name(surface, declaration)
+    ):
+        reasons.append("declaration-name-mismatch")
     return reasons
 
 
@@ -355,7 +363,7 @@ def _same_path(surface: Mapping[str, Any], declaration: Mapping[str, Any]) -> bo
 def _same_name(surface: Mapping[str, Any], declaration: Mapping[str, Any]) -> bool:
     wanted = str(surface.get("declarationName") or "")
     actual = str(declaration.get("declaration") or declaration.get("name") or "")
-    return bool(wanted and actual and wanted.rsplit(".", 1)[-1] == actual.rsplit(".", 1)[-1])
+    return bool(wanted and actual and wanted == actual)
 
 
 def _same_range(left: Any, right: Any) -> bool:

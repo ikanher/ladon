@@ -1,0 +1,35 @@
+{
+  "format": "proofir-canonical-vectors-v1",
+  "profile": "proofir-json-integer-v1",
+  "valid": [
+    {
+      "id": "key-order-unicode",
+      "value": {"z": "Å", "a": "✓", "nested": {"β": [3, 2, 1]}},
+      "canonicalJson": "{\"a\":\"✓\",\"nested\":{\"β\":[3,2,1]},\"z\":\"Å\"}",
+      "sha256": "sha256:4c0c304d18a05a867efb83e0a4ae2822391f3b5e41b1e7440be0910f410803f4"
+    },
+    {
+      "id": "safe-integer-boundaries",
+      "value": {"max": 9007199254740991, "min": -9007199254740991},
+      "canonicalJson": "{\"max\":9007199254740991,\"min\":-9007199254740991}",
+      "sha256": "sha256:63546eb60913dcb1cdd5118f7bf4885beed344af930c8a9d5f38fad243fd4819"
+    },
+    {
+      "id": "typed-decimal-string",
+      "value": {"measurement": {"representation": "canonical-decimal-string", "value": "-12.3400"}},
+      "canonicalJson": "{\"measurement\":{\"representation\":\"canonical-decimal-string\",\"value\":\"-12.3400\"}}",
+      "sha256": "sha256:7ab2022090bf7ef8eaedfac5643ebadb2af79f25f6ea37fd63c3bf46e6aeb03f"
+    },
+    {
+      "id": "arrays-and-extensions",
+      "value": {"extensions": {"example.vector/v1": {"rows": [{"b": 2, "a": 1}, null, true, false]}}},
+      "canonicalJson": "{\"extensions\":{\"example.vector/v1\":{\"rows\":[{\"a\":1,\"b\":2},null,true,false]}}}",
+      "sha256": "sha256:d79145c8201074b9b59c1083027b449bba279e83454f6b2aa071b378aa5a6ced"
+    }
+  ],
+  "invalid": [
+    {"id": "unsafe-positive-integer", "value": 9007199254740992, "messageContains": "safe integer range"},
+    {"id": "unsafe-negative-integer", "value": -9007199254740992, "messageContains": "safe integer range"},
+    {"id": "untyped-float", "value": 1.25, "messageContains": "decimal string/float"}
+  ]
+}

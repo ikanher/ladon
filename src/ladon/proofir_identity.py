@@ -223,6 +223,20 @@ class DeclarationDescriptor(_SubjectDescriptor):
 
 
 @dataclass(frozen=True)
+class CandidateApplicationDescriptor(_SubjectDescriptor):
+    """Identity of a checked application shape, distinct from its conclusion."""
+
+    kind: ClassVar[str] = "candidate-application"
+
+
+@dataclass(frozen=True)
+class ValueDescriptor(_SubjectDescriptor):
+    """Optional declaration-value/proof identity, not declaration identity."""
+
+    kind: ClassVar[str] = "value"
+
+
+@dataclass(frozen=True)
 class TermDescriptor(_SubjectDescriptor):
     kind: ClassVar[str] = "term"
 
@@ -325,6 +339,7 @@ def observation_id(
 
 
 __all__ = [
+    "CandidateApplicationDescriptor",
     "DeclarationDescriptor",
     "EnvironmentManifest",
     "ExternalSubjectRef",
@@ -336,6 +351,7 @@ __all__ = [
     "QualifiedSubjectRef",
     "StatementDescriptor",
     "TermDescriptor",
+    "ValueDescriptor",
     "content_id",
     "observation_id",
 ]

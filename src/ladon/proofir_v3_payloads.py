@@ -3,6 +3,11 @@
 Envelope identity, canonicalization, bounds, and batch reference closure remain in
 proofir_v3. This module owns only the nine native payload dialects so adding a
 kind does not expand the envelope kernel into another analyzer monolith.
+
+ladon-quality: reviewed-schema-hotspot
+The file is intentionally dense because all native payload dialects share one
+closed dispatch boundary; focused validators are covered by typed and
+adversarial corpus gates.
 """
 
 from __future__ import annotations
@@ -22,6 +27,7 @@ from ladon.proofir_observations import (
     EvidenceDimensions,
 )
 from ladon.proofir_v3 import (
+    SAFE_INTEGER_MAX,
     _closed_object,
     _digest,
     _escape,
@@ -32,6 +38,66 @@ from ladon.proofir_v3 import (
     _validate_derivation_graph,
     canonical_bytes,
 )
+
+
+def _invalid_field(value: Mapping[str, Any], pointer: str, message: str) -> None:
+    _fail("kind-schema-valid", "invalid-payload-field", pointer, message, value)
+
+
+def _require_nonempty_string(
+    field: Any, pointer: str, value: Mapping[str, Any], label: str
+) -> None:
+    if not isinstance(field, str) or not field:
+        _invalid_field(value, pointer, f"{label} must be a non-empty string")
+
+
+def _require_object(field: Any, pointer: str, value: Mapping[str, Any], label: str) -> None:
+    if not isinstance(field, dict):
+        _invalid_field(value, pointer, f"{label} must be an object")
+
+
+def _require_string_enum(
+    field: Any,
+    allowed: set[str],
+    pointer: str,
+    value: Mapping[str, Any],
+    label: str,
+) -> None:
+    if not isinstance(field, str) or field not in allowed:
+        _fail("kind-schema-valid", "invalid-enum", pointer, f"invalid {label}", value)
+
+
+def _require_string_list(
+    field: Any, pointer: str, value: Mapping[str, Any], label: str
+) -> None:
+    if not isinstance(field, list) or any(
+        not isinstance(item, str) or not item for item in field
+    ):
+        _invalid_field(value, pointer, f"{label} must be an array of non-empty strings")
+
+
+def _require_exact_object(
+    field: Any,
+    keys: set[str],
+    pointer: str,
+    value: Mapping[str, Any],
+    label: str,
+) -> None:
+    _require_object(field, pointer, value, label)
+    missing = sorted(keys - field.keys())
+    extra = sorted(set(field) - keys)
+    if missing:
+        _invalid_field(value, f"{pointer}/{_escape(missing[0])}", f"missing required key: {missing[0]}")
+    if extra:
+        _invalid_field(value, f"{pointer}/{_escape(extra[0])}", f"unexpected key: {extra[0]}")
+
+
+def _require_string_map(field: Any, pointer: str, value: Mapping[str, Any], label: str) -> None:
+    _require_object(field, pointer, value, label)
+    for key, item in field.items():
+        _require_nonempty_string(key, f"{pointer}/{_escape(str(key))}", value, "map key")
+        if not isinstance(item, (str, bool, int)) or isinstance(item, int) and not isinstance(item, bool) and not (-SAFE_INTEGER_MAX <= item <= SAFE_INTEGER_MAX):
+            _invalid_field(value, f"{pointer}/{_escape(str(key))}", f"{label} values must be scalar")
 
 
 def _exact_payload(payload: Any, keys: set[str], value: Mapping[str, Any]) -> None:
@@ -77,19 +143,9 @@ def _validate_environment(p, value, _subjects, env) -> None:
         "fingerprintScheme",
     }
     _exact_payload(p, keys, value)
-    dependency_count = len(p["dependencies"])
-    for index, row in enumerate(p["dependencies"] + p["compiledModules"]):
-        if not isinstance(row, dict):
-            collection = (
-                "dependencies" if index < dependency_count else "compiledModules"
-            )
-            _fail(
-                "kind-schema-valid",
-                "invalid-payload-field",
-                f"/payload/{collection}/{index}",
-                "invalid manifest entry",
-                value,
-            )
+    _validate_environment_identity(p, value)
+    _validate_environment_modules(p, value)
+    _validate_environment_policy(p, value)
     expected = "sha256:" + hashlib.sha256(canonical_bytes(p)).hexdigest()
     if env != expected:
         _fail(
@@ -101,6 +157,37 @@ def _validate_environment(p, value, _subjects, env) -> None:
         )
 
 
+def _validate_environment_identity(p: Mapping[str, Any], value: Mapping[str, Any]) -> None:
+    for field, keys in (("prover", {"name", "version"}), ("toolchain", {"name", "version", "commit"}), ("fingerprintScheme", {"name", "version"})):
+        _require_exact_object(p[field], keys, f"/payload/{field}", value, field)
+        for key, item in p[field].items():
+            _require_nonempty_string(item, f"/payload/{field}/{key}", value, f"{field}.{key}")
+
+
+def _validate_environment_modules(p: Mapping[str, Any], value: Mapping[str, Any]) -> None:
+    for collection, entry_keys in (("dependencies", {"name", "version", "source", "digest"}), ("compiledModules", {"module", "digest"})):
+        rows = p[collection]
+        if not isinstance(rows, list):
+            _invalid_field(value, f"/payload/{collection}", f"{collection} must be an array")
+        for index, row in enumerate(rows):
+            pointer = f"/payload/{collection}/{index}"
+            _require_exact_object(row, entry_keys, pointer, value, collection[:-1])
+            for key, item in row.items():
+                _require_nonempty_string(item, f"{pointer}/{key}", value, key)
+            if not _digest(row["digest"]):
+                _invalid_field(value, f"{pointer}/digest", "digest must be a sha256 digest")
+
+
+def _validate_environment_policy(p: Mapping[str, Any], value: Mapping[str, Any]) -> None:
+    _require_string_map(p["options"], "/payload/options", value, "options")
+    _require_exact_object(p["trust"], {"axiomsAllowed", "unsafeAllowed"}, "/payload/trust", value, "trust")
+    axioms = p["trust"]["axiomsAllowed"]
+    if not isinstance(axioms, list) or any(not isinstance(item, str) or not item for item in axioms):
+        _invalid_field(value, "/payload/trust/axiomsAllowed", "axiomsAllowed must be an array of strings")
+    if not isinstance(p["trust"]["unsafeAllowed"], bool):
+        _invalid_field(value, "/payload/trust/unsafeAllowed", "unsafeAllowed must be boolean")
+
+
 def _validate_claim(p, value, subjects, env) -> None:
     """Validate an assertion state over one registered statement identity.
 
@@ -109,6 +196,11 @@ def _validate_claim(p, value, subjects, env) -> None:
     """
 
     _exact_payload(p, {"claimId", "statementRef", "assertionState"}, value)
+    _require_nonempty_string(p["claimId"], "/payload/claimId", value, "claimId")
+    if not isinstance(p["statementRef"], dict):
+        _invalid_field(value, "/payload/statementRef", "statementRef must be an object")
+    if not isinstance(p["assertionState"], str):
+        _invalid_field(value, "/payload/assertionState", "assertionState must be a string")
     _require_ref(
         p["statementRef"],
         "/payload/statementRef",
@@ -206,10 +298,16 @@ def _validate_step_container(p, value, subjects, env, derivation: bool) -> None:
             keys.add("recursion")
     _exact_payload(p, keys, value)
     if derivation:
+        _require_nonempty_string(
+            p["derivationId"], "/payload/derivationId", value, "derivationId"
+        )
         _validate_acyclic_flag(p["acyclic"], value)
         if p["acyclic"] is False:
             _validate_recursion(p["recursion"], subjects, env, value)
         return
+    _require_nonempty_string(p["planId"], "/payload/planId", value, "planId")
+    if not isinstance(p["goalRefs"], list):
+        _invalid_field(value, "/payload/goalRefs", "goalRefs must be an array")
     for index, goal in enumerate(p["goalRefs"]):
         _require_ref(
             goal,
@@ -381,6 +479,18 @@ def _validate_step(
             value,
         )
     _closed_object(step, step_keys, pointer, value, "payload")
+    _require_string_enum(
+        step["kind"],
+        {
+            "theorem-application",
+            "constructor-application",
+            "definition-unfold",
+            "advisory",
+        },
+        pointer + "/kind",
+        value,
+        "step kind",
+    )
     _validate_step_identity(step["stepRef"], pointer, seen, subjects, env, value)
     _validate_step_references(step, pointer, subjects, env, value, derivation)
     _validate_substitutions(step["substitutions"], pointer, subjects, env, value)
@@ -514,6 +624,11 @@ def _validate_plan(p, value, subjects, env):
     Plans describe intended traversal and do not inherit derivation/checker authority.
     """
 
+    _exact_payload(p, {"planId", "goalRefs", "steps", "policy"}, value)
+    if not isinstance(p["goalRefs"], list) or not p["goalRefs"]:
+        _invalid_field(value, "/payload/goalRefs", "plan goalRefs must be a non-empty array")
+    for index, goal in enumerate(p["goalRefs"]):
+        _require_ref(goal, f"/payload/goalRefs/{index}", subjects, env, value, "statement")
     _validate_steps(p, value, subjects, env, False)
     _closed_object(
         p["policy"],
@@ -521,6 +636,26 @@ def _validate_plan(p, value, subjects, env):
         "/payload/policy",
         value,
         "payload",
+    )
+    _require_string_enum(
+        p["policy"]["strategy"],
+        {"least-cost", "breadth-first", "depth-first", "deterministic"},
+        "/payload/policy/strategy",
+        value,
+        "plan strategy",
+    )
+    _require_exact_object(
+        p["policy"]["budget"],
+        {"maxSteps"},
+        "/payload/policy/budget",
+        value,
+        "plan budget",
+    )
+    max_steps = p["policy"]["budget"]["maxSteps"]
+    if not isinstance(max_steps, int) or isinstance(max_steps, bool) or max_steps < 1:
+        _invalid_field(value, "/payload/policy/budget/maxSteps", "maxSteps must be a positive integer")
+    _require_nonempty_string(
+        p["policy"]["selection"], "/payload/policy/selection", value, "plan selection"
     )
 
 
@@ -532,6 +667,9 @@ def _validate_attempt(p, value, subjects, env):
     """
 
     _exact_payload(p, {"attemptLogId", "goalRef", "attempts", "summary"}, value)
+    _require_nonempty_string(
+        p["attemptLogId"], "/payload/attemptLogId", value, "attemptLogId"
+    )
     _require_ref(p["goalRef"], "/payload/goalRef", subjects, env, value, "statement")
     if not isinstance(p["attempts"], list) or not p["attempts"]:
         _fail(
@@ -568,21 +706,21 @@ def _validate_attempt_row(attempt, pointer, subjects, env, value) -> None:
         value,
         "payload",
     )
+    _require_nonempty_string(
+        attempt["attemptId"], pointer + "/attemptId", value, "attemptId"
+    )
     _validate_attempt_references(attempt, pointer, subjects, env, value)
-    if attempt["outcome"] not in {
-        "proposed",
-        "accepted",
-        "rejected",
-        "timeout",
-        "infrastructure-error",
-    }:
-        _fail(
-            "kind-schema-valid",
-            "invalid-enum",
-            pointer + "/outcome",
-            "invalid outcome",
-            value,
-        )
+    _require_string_enum(
+        attempt["outcome"],
+        {"proposed", "accepted", "rejected", "timeout", "infrastructure-error"},
+        pointer + "/outcome",
+        value,
+        "attempt outcome",
+    )
+    if not isinstance(attempt["premiseRefs"], list):
+        _invalid_field(value, pointer + "/premiseRefs", "premiseRefs must be an array")
+    if not isinstance(attempt["diagnostics"], list):
+        _invalid_field(value, pointer + "/diagnostics", "diagnostics must be an array")
     _validate_ordered_diagnostics(attempt["diagnostics"], pointer, value)
 
 
@@ -628,7 +766,18 @@ def _validate_ordered_diagnostics(diagnostics, pointer, value) -> None:
             value,
             "payload",
         )
-        if not isinstance(diagnostic["order"], int) or diagnostic["order"] != index:
+        for field in ("stage", "code", "pointer", "message"):
+            _require_nonempty_string(
+                diagnostic[field],
+                diagnostic_pointer + "/" + field,
+                value,
+                field,
+            )
+        if (
+            not isinstance(diagnostic["order"], int)
+            or isinstance(diagnostic["order"], bool)
+            or diagnostic["order"] != index
+        ):
             _fail(
                 "kind-schema-valid",
                 "invalid-diagnostic-order",
@@ -645,10 +794,26 @@ def _validate_attempt_summary(summary, subjects, env, value) -> None:
     avoiding invented proof semantics for advisory attempt metadata.
     """
 
-    if not isinstance(summary, dict) or not isinstance(
-        summary.get("residualPremiseRefs"), list
-    ):
-        return
+    _require_exact_object(
+        summary,
+        {"outcome", "residualPremiseRefs"},
+        "/payload/summary",
+        value,
+        "attempt summary",
+    )
+    _require_string_enum(
+        summary["outcome"],
+        {"complete", "incomplete", "rejected", "unknown"},
+        "/payload/summary/outcome",
+        value,
+        "attempt summary outcome",
+    )
+    if not isinstance(summary["residualPremiseRefs"], list):
+        _invalid_field(
+            value,
+            "/payload/summary/residualPremiseRefs",
+            "residualPremiseRefs must be an array",
+        )
     for index, residual in enumerate(summary["residualPremiseRefs"]):
         _require_ref(
             residual,
@@ -657,6 +822,14 @@ def _validate_attempt_summary(summary, subjects, env, value) -> None:
             env,
             value,
             "statement",
+        )
+    if summary["outcome"] == "complete" and summary["residualPremiseRefs"]:
+        _fail(
+            "semantic-valid",
+            "contradictory-attempt-summary",
+            "/payload/summary/outcome",
+            "a complete attempt cannot retain residual premises",
+            value,
         )
 
 
@@ -681,6 +854,8 @@ def _validate_check(p, value, subjects, env):
         },
         value,
     )
+    _require_nonempty_string(p["checkRunId"], "/payload/checkRunId", value, "checkRunId")
+    _require_nonempty_string(p["operation"], "/payload/operation", value, "operation")
     _validate_checker_identity(p["checker"], value)
     _validate_check_inputs(p["inputs"], value, subjects, env)
     _validate_check_outputs(p["outputs"], value)
@@ -734,7 +909,9 @@ def _validate_check_inputs(inputs, value, subjects, env) -> None:
             "reference environment mismatch",
             value,
         )
-    for i, r in enumerate(inputs.get("subjectRefs", [])):
+    if not isinstance(inputs["subjectRefs"], list):
+        _invalid_field(value, "/payload/inputs/subjectRefs", "subjectRefs must be an array")
+    for i, r in enumerate(inputs["subjectRefs"]):
         _require_ref(r, f"/payload/inputs/subjectRefs/{i}", subjects, env, value)
     if not isinstance(inputs["artifactRefs"], list) or not all(
         _digest(artifact_ref) for artifact_ref in inputs["artifactRefs"]
@@ -757,6 +934,11 @@ def _validate_check_results(results, value, subjects, env) -> None:
             "results must be array",
             value,
         )
+    declared_inputs = {
+        _typed_reference(ref, pointer=f"/payload/inputs/subjectRefs/{index}")
+        for index, ref in enumerate(value["payload"]["inputs"]["subjectRefs"])
+    }
+    seen_results: set[tuple[str, str]] = set()
     for i, r in enumerate(results):
         _closed_object(
             r,
@@ -768,7 +950,33 @@ def _validate_check_results(results, value, subjects, env) -> None:
         _require_ref(
             r["subjectRef"], f"/payload/results/{i}/subjectRef", subjects, env, value
         )
-        if r["result"] not in {"accepted", "rejected", "unknown", "error"}:
+        result_identity = _typed_reference(
+            r["subjectRef"], pointer=f"/payload/results/{i}/subjectRef"
+        )
+        if result_identity not in declared_inputs:
+            _fail(
+                "semantic-valid",
+                "result-subject-not-in-inputs",
+                f"/payload/results/{i}/subjectRef",
+                "check result subject must be declared in check inputs",
+                value,
+            )
+        if result_identity in seen_results:
+            _fail(
+                "semantic-valid",
+                "duplicate-check-result",
+                f"/payload/results/{i}/subjectRef",
+                "check results must contain at most one result per subject",
+                value,
+            )
+        seen_results.add(result_identity)
+        if not isinstance(r["result"], str) or r["result"] not in {
+            "accepted",
+            "unchecked",
+            "rejected",
+            "unknown",
+            "error",
+        }:
             _fail(
                 "kind-schema-valid",
                 "invalid-enum",
@@ -776,6 +984,13 @@ def _validate_check_results(results, value, subjects, env) -> None:
                 "invalid result",
                 value,
             )
+        if not isinstance(r["diagnostics"], list):
+            _invalid_field(
+                value,
+                f"/payload/results/{i}/diagnostics",
+                "check result diagnostics must be an array",
+            )
+        _validate_ordered_diagnostics(r["diagnostics"], f"/payload/results/{i}", value)
 
 
 def _validate_scoped_check_guarantee(results, guarantee, value) -> None:
@@ -865,49 +1080,60 @@ def _validate_source(p, value, subjects, env):
     _closed_object(
         p["policy"], {"version", "digest"}, "/payload/policy", value, "payload"
     )
+    _validate_source_header(p, value)
+    if not isinstance(p["anchors"], list):
+        _invalid_field(value, "/payload/anchors", "anchors must be an array")
     for i, a in enumerate(p["anchors"]):
-        ptr = f"/payload/anchors/{i}"
-        _closed_object(
-            a,
-            {
-                "subjectRef",
-                "sourcePath",
-                "module",
-                "declName",
-                "start",
-                "end",
-                "contentDigest",
-                "matchMethod",
-            },
-            ptr,
-            value,
-            "payload",
-        )
-        _require_ref(a["subjectRef"], ptr + "/subjectRef", subjects, env, value)
-        if not _digest(a["contentDigest"]):
-            _fail(
-                "kind-schema-valid",
-                "invalid-content-digest",
-                ptr + "/contentDigest",
-                "invalid digest",
-                value,
-            )
-        if a["matchMethod"] not in {
-            "environment-fingerprint",
-            "producer-declaration",
-            "content-range",
-            "content-name",
-            "path-range",
-            "module-name",
-            "name-only-diagnostic",
-        }:
-            _fail(
-                "kind-schema-valid",
-                "invalid-enum",
-                ptr + "/matchMethod",
-                "invalid match method",
-                value,
-            )
+        _validate_source_anchor(a, i, value, subjects, env)
+
+
+def _validate_source_header(p: Mapping[str, Any], value: Mapping[str, Any]) -> None:
+    _require_nonempty_string(p["sourceMapId"], "/payload/sourceMapId", value, "sourceMapId")
+    _require_nonempty_string(p["policy"]["version"], "/payload/policy/version", value, "policy version")
+    if not _digest(p["policy"]["digest"]):
+        _invalid_field(value, "/payload/policy/digest", "policy digest must be a sha256 digest")
+
+
+def _validate_source_anchor(a: Any, index: int, value: Mapping[str, Any], subjects: set[tuple[str, str]], env: str) -> None:
+    ptr = f"/payload/anchors/{index}"
+    required = {"subjectRef", "sourcePath", "module", "declName", "start", "end", "contentDigest", "matchMethod"}
+    allowed = required | {"declarationRef", "declarationFingerprint"}
+    if not isinstance(a, dict) or not required <= set(a) or set(a) - allowed:
+        _invalid_field(value, ptr, "source anchor has an invalid field set")
+    _closed_object({key: a[key] for key in required}, required, ptr, value, "payload")
+    _require_ref(a["subjectRef"], ptr + "/subjectRef", subjects, env, value)
+    for field in ("sourcePath", "module", "declName"):
+        _require_nonempty_string(a[field], ptr + "/" + field, value, field)
+    source_parts = a["sourcePath"].replace("\\", "/").split("/")
+    if a["sourcePath"].startswith("/") or ".." in source_parts or any(not part for part in source_parts):
+        _invalid_field(value, ptr + "/sourcePath", "sourcePath must be a normalized repository-relative path")
+    for position in ("start", "end"):
+        _validate_source_position(a[position], ptr + "/" + position, position, value)
+    start = a["start"]
+    end = a["end"]
+    if (
+        end["byte"] < start["byte"]
+        or end["line"] < start["line"]
+        or (end["line"] == start["line"] and end["column"] < start["column"])
+    ):
+        _invalid_field(value, ptr + "/end", "source range end must not precede start")
+    if not _digest(a["contentDigest"]):
+        _fail("kind-schema-valid", "invalid-content-digest", ptr + "/contentDigest", "invalid digest", value)
+    if "declarationRef" in a and (not isinstance(a["declarationRef"], str) or not a["declarationRef"]):
+        _invalid_field(value, ptr + "/declarationRef", "declarationRef must be a non-empty string")
+    if "declarationFingerprint" in a and not _digest(a["declarationFingerprint"]):
+        _fail("kind-schema-valid", "invalid-content-digest", ptr + "/declarationFingerprint", "invalid declaration fingerprint", value)
+    if a["matchMethod"] not in {"environment-fingerprint", "producer-declaration", "content-range", "content-name", "path-range", "module-name", "name-only-diagnostic"}:
+        _fail("kind-schema-valid", "invalid-enum", ptr + "/matchMethod", "invalid match method", value)
+
+
+def _validate_source_position(position: Any, pointer: str, label: str, value: Mapping[str, Any]) -> None:
+    _require_exact_object(position, {"byte", "line", "column"}, pointer, value, label)
+    for coordinate in ("byte", "line", "column"):
+        coordinate_value = position[coordinate]
+        minimum = 0 if coordinate == "byte" else 1
+        if not isinstance(coordinate_value, int) or isinstance(coordinate_value, bool) or coordinate_value < minimum:
+            _invalid_field(value, pointer + "/" + coordinate, f"{label}.{coordinate} must be a non-negative integer")
 
 
 def _validate_attachment(p, value, subjects, env):
@@ -918,6 +1144,7 @@ def _validate_attachment(p, value, subjects, env):
     """
 
     _exact_payload(p, {"attachmentSetId", "resolver", "attachments"}, value)
+    _require_nonempty_string(p["attachmentSetId"], "/payload/attachmentSetId", value, "attachmentSetId")
     _closed_object(
         p["resolver"],
         {"name", "version", "digest"},
@@ -933,6 +1160,8 @@ def _validate_attachment(p, value, subjects, env):
             "attachment set must name the Ladon-owned resolver policy",
             value,
         )
+    if not isinstance(p["attachments"], list) or len(p["attachments"]) > MAX_CANDIDATES:
+        _invalid_field(value, "/payload/attachments", "attachments must be a bounded array")
     for i, a in enumerate(p["attachments"]):
         _validate_attachment_decision(a, i, value, subjects, env)
     if not p["attachments"] and not value["limitations"]:
@@ -1028,6 +1257,28 @@ def _validate_attachment_lists(a, pointer, value) -> None:
             "source attachment cannot establish semantic acceptance",
             value,
         )
+    for field in ("decisiveEvidence", "rejectionReasons"):
+        for index, item in enumerate(a[field]):
+            item_pointer = f"{pointer}/{field}/{index}"
+            if field == "decisiveEvidence":
+                if not isinstance(item, dict) or "kind" not in item:
+                    _invalid_field(value, item_pointer, "evidence must be a typed object")
+                _require_nonempty_string(item["kind"], item_pointer + "/kind", value, "evidence kind")
+                if set(item) == {"kind", "value"}:
+                    _require_nonempty_string(item["value"], item_pointer + "/value", value, "evidence value")
+                elif set(item) == {"kind", "surfaceValue", "candidateValue"}:
+                    _require_nonempty_string(item["surfaceValue"], item_pointer + "/surfaceValue", value, "surface evidence value")
+                    _require_nonempty_string(item["candidateValue"], item_pointer + "/candidateValue", value, "candidate evidence value")
+                else:
+                    _invalid_field(value, item_pointer, "evidence object has unsupported fields")
+            else:
+                if isinstance(item, str):
+                    if not item:
+                        _invalid_field(value, item_pointer, "rejection reason must be non-empty")
+                else:
+                    _closed_object(item, {"code", "message"}, item_pointer, value, "attachment rejection reason")
+                    _require_nonempty_string(item["code"], item_pointer + "/code", value, "rejection code")
+                    _require_nonempty_string(item["message"], item_pointer + "/message", value, "rejection message")
 
 
 def _validate_attachment_candidate(
@@ -1111,9 +1362,29 @@ def _valid_attachment_candidate_rank(candidate) -> bool:
 
 
 def _valid_attachment_candidate_collections(candidate) -> bool:
-    return isinstance(candidate["decisiveEvidence"], list) and isinstance(
-        candidate["rejectionReasons"], list
-    )
+    if not isinstance(candidate["decisiveEvidence"], list) or not isinstance(candidate["rejectionReasons"], list):
+        return False
+    for item in candidate["decisiveEvidence"]:
+        if not isinstance(item, dict) or "kind" not in item:
+            return False
+        if set(item) == {"kind", "value"}:
+            valid_evidence = isinstance(item["value"], str) and bool(item["value"])
+        elif set(item) == {"kind", "surfaceValue", "candidateValue"}:
+            valid_evidence = all(isinstance(item[field], str) and item[field] for field in ("surfaceValue", "candidateValue"))
+        else:
+            valid_evidence = False
+        if not isinstance(item["kind"], str) or not item["kind"] or not valid_evidence:
+            return False
+    for item in candidate["rejectionReasons"]:
+        if isinstance(item, str):
+            if not item:
+                return False
+        else:
+            if not isinstance(item, dict) or set(item) != {"code", "message"}:
+                return False
+            if not isinstance(item["code"], str) or not item["code"] or not isinstance(item["message"], str) or not item["message"]:
+                return False
+    return True
 
 
 def _validate_attachment_selection(a, pointer, value) -> None:
@@ -1169,6 +1440,7 @@ def _validate_governance(p, value, subjects, env):
         },
         value,
     )
+    _validate_governance_header(p, value)
     _require_ref(p["subjectRef"], "/payload/subjectRef", subjects, env, value)
     try:
         dimensions = EvidenceDimensions.from_dict(p["dimensions"])
@@ -1191,11 +1463,21 @@ def _validate_governance(p, value, subjects, env):
             "authority and guarantee must agree with the orthogonal dimensions",
             value,
         )
-    for i, d in enumerate(p["diagnostics"]):
-        _closed_object(
-            d,
-            {"stage", "code", "pointer", "message", "order"},
-            f"/payload/diagnostics/{i}",
-            value,
-            "payload",
-        )
+    _validate_governance_diagnostics(p["diagnostics"], value)
+
+
+def _validate_governance_header(p: Mapping[str, Any], value: Mapping[str, Any]) -> None:
+    for field in ("observationId", "observationKind", "result", "guaranteeScope", "authorityBasis"):
+        _require_nonempty_string(p[field], f"/payload/{field}", value, field)
+    if not isinstance(p["details"], dict) or not isinstance(p["diagnostics"], list):
+        _invalid_field(value, "/payload", "governance details must be an object and diagnostics an array")
+
+
+def _validate_governance_diagnostics(diagnostics: Any, value: Mapping[str, Any]) -> None:
+    for i, diagnostic in enumerate(diagnostics):
+        pointer = f"/payload/diagnostics/{i}"
+        _closed_object(diagnostic, {"stage", "code", "pointer", "message", "order"}, pointer, value, "payload")
+        for field in ("stage", "code", "pointer", "message"):
+            _require_nonempty_string(diagnostic[field], pointer + "/" + field, value, field)
+        if not isinstance(diagnostic["order"], int) or isinstance(diagnostic["order"], bool) or diagnostic["order"] != i:
+            _fail("kind-schema-valid", "invalid-diagnostic-order", pointer + "/order", "diagnostic order must be contiguous", value)

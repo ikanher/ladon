@@ -221,8 +221,8 @@ def test_external_reference_requires_present_exact_owner_and_target_descriptor()
     _reidentify(missing_kind)
     _assert_failure(
         [target, missing_kind],
-        code="external-subject-not-found",
-        pointer="/payload/statementRef",
+        code="unexpected-reference-kind",
+        pointer="/payload/statementRef/kind",
     )
 
 

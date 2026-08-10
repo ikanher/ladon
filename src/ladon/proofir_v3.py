@@ -3,6 +3,8 @@
 This module deliberately does not parse Lean terms.  Lean workers provide
 environment-scoped opaque subject identities; Ladon owns the envelope,
 canonical identity, bounds, and reference-shape checks around them.
+
+ladon-quality: reviewed-schema-hotspot
 """
 
 from __future__ import annotations
@@ -17,11 +19,17 @@ from types import MappingProxyType
 from typing import Any, NoReturn
 
 from ladon.bounded_graph import cyclic_components
+from ladon.proofir_v3_batch import preflight as _preflight_batch
+from ladon.proofir_v3_batch import resolve_limits as _resolve_batch_limits
 
 PROOFIR_V3_VERSION = "3.0"
 SAFE_INTEGER_MIN = -(2**53 - 1)
 SAFE_INTEGER_MAX = 2**53 - 1
-MAX_CANONICAL_BYTES = 8 * 1024 * 1024
+MAX_ARTIFACT_BYTES = 8 * 1024 * 1024
+MAX_BATCH_BYTES = 32 * 1024 * 1024
+MAX_ARTIFACTS = 10_000
+# Compatibility name for callers that only configure one canonical artifact.
+MAX_CANONICAL_BYTES = MAX_ARTIFACT_BYTES
 MAX_DEPTH = 64
 MAX_COLLECTION_ITEMS = 10_000
 MAX_STRING_BYTES = 1 * 1024 * 1024
@@ -142,6 +150,11 @@ class ProofIRV3Artifact:
 def canonical_bytes(value: Any, *, max_bytes: int = MAX_CANONICAL_BYTES) -> bytes:
     """Encode a value deterministically using the ProofIR JSON profile."""
 
+    if not isinstance(max_bytes, int) or isinstance(max_bytes, bool) or max_bytes <= 0:
+        raise ProofIRV3Error(
+            "invalid canonical byte bound",
+            ProofIRV3Diagnostic("envelope-valid", "invalid-bound", "", "canonical byte bound must be positive"),
+        )
     _validate_bounds(value)
     try:
         encoded = json.dumps(
@@ -151,8 +164,12 @@ def canonical_bytes(value: Any, *, max_bytes: int = MAX_CANONICAL_BYTES) -> byte
             separators=(",", ":"),
             allow_nan=False,
         ).encode("utf-8")
-    except (TypeError, ValueError) as exc:
-        raise ProofIRV3Error(f"value is not canonically representable: {exc}") from exc
+    except (TypeError, ValueError, UnicodeError) as exc:
+        code = "invalid-unicode" if isinstance(exc, UnicodeError) else "invalid-canonical-value"
+        raise ProofIRV3Error(
+            f"value is not canonically representable: {exc}",
+            ProofIRV3Diagnostic("envelope-valid", code, "", "value is not canonically representable"),
+        ) from exc
     if len(encoded) > max_bytes:
         raise ProofIRV3Error(
             f"canonical payload exceeds byte limit: {len(encoded)} > {max_bytes}"
@@ -193,7 +210,14 @@ def _validate_bounds(value: Any, *, depth: int = 0) -> None:
 
 
 def _validate_string_bound(value: str) -> None:
-    if len(value.encode("utf-8")) > MAX_STRING_BYTES:
+    try:
+        encoded_length = len(value.encode("utf-8"))
+    except UnicodeEncodeError as exc:
+        raise ProofIRV3Error(
+            "string contains an invalid Unicode scalar",
+            ProofIRV3Diagnostic("envelope-valid", "invalid-unicode", "", "string contains an invalid Unicode scalar"),
+        ) from exc
+    if encoded_length > MAX_STRING_BYTES:
         raise ProofIRV3Error(f"string exceeds byte limit: {MAX_STRING_BYTES}")
 
 
@@ -248,24 +272,34 @@ def detached_content_id(envelope: Mapping[str, Any]) -> str:
 
 
 def validate_envelope(
-    value: Any, *, max_bytes: int = MAX_CANONICAL_BYTES
+    value: Any,
+    *,
+    max_bytes: int | None = None,
+    max_artifact_bytes: int = MAX_ARTIFACT_BYTES,
 ) -> ProofIRV3Artifact:
     """Validate the common v3 envelope and return its checked identity."""
 
+    if max_bytes is not None:
+        max_artifact_bytes = max_bytes
     _validate_envelope_shape(value)
-    canonical_bytes(value, max_bytes=max_bytes)
+    canonical_bytes(value, max_bytes=max_artifact_bytes)
     detached = dict(value)
     detached.pop("artifactId", None)
     expected = (
         "sha256:"
-        + hashlib.sha256(canonical_bytes(detached, max_bytes=max_bytes)).hexdigest()
+        + hashlib.sha256(canonical_bytes(detached, max_bytes=max_artifact_bytes)).hexdigest()
     )
     _validate_declared_id(value, expected)
     return ProofIRV3Artifact(_freeze(copy.deepcopy(value)), expected)
 
 
 def validate_envelope_batch(
-    values: list[dict[str, Any]], *, max_bytes: int = MAX_CANONICAL_BYTES
+    values: list[dict[str, Any]],
+    *,
+    max_bytes: int | None = None,
+    max_artifact_bytes: int = MAX_ARTIFACT_BYTES,
+    max_batch_bytes: int = MAX_BATCH_BYTES,
+    max_artifacts: int = MAX_ARTIFACTS,
 ) -> tuple[ProofIRV3Artifact, ...]:
     """Validate a closed set of content artifacts before any projection work.
 
@@ -278,39 +312,16 @@ def validate_envelope_batch(
 
     if not isinstance(values, list):
         raise ProofIRV3Error("v3 envelope batch must be an array")
-    if len(values) > MAX_COLLECTION_ITEMS:
-        _fail(
-            "reference-valid",
-            "batch-item-limit",
-            "",
-            f"v3 envelope batch exceeds item limit: {MAX_COLLECTION_ITEMS}",
-        )
-    artifacts: dict[str, dict[str, Any]] = {}
-    total_bytes = 0
-    for value in values:
-        _validate_envelope_shape(value)
-        total_bytes += len(canonical_bytes(value, max_bytes=max_bytes))
-        if total_bytes > max_bytes:
-            _fail(
-                "reference-valid",
-                "batch-byte-limit",
-                "",
-                f"v3 envelope batch exceeds aggregate byte limit: {max_bytes}",
-            )
-        artifact_id = str(value["artifactId"])
-        prior = artifacts.get(artifact_id)
-        if prior is not None and canonical_bytes(prior) != canonical_bytes(value):
-            _fail(
-                "reference-valid",
-                "duplicate-batch-artifact-id",
-                "/artifactId",
-                "different artifacts share a declared artifact ID",
-                value,
-            )
-        artifacts[artifact_id] = value
+    max_artifact_bytes, max_batch_bytes = _resolve_batch_limits(
+        max_bytes, max_artifact_bytes, max_batch_bytes, max_artifacts
+    )
+    artifacts = _preflight_batch(values, max_artifact_bytes, max_batch_bytes, max_artifacts)
     for owner_id, artifact in artifacts.items():
         _validate_external_references(owner_id, artifact, artifacts)
-    return tuple(validate_envelope(value, max_bytes=max_bytes) for value in values)
+    return tuple(
+        validate_envelope(value, max_artifact_bytes=max_artifact_bytes)
+        for value in values
+    )
 
 
 def _validate_envelope_shape(value: Any) -> None:
@@ -666,6 +677,23 @@ def _validate_coverage(c: dict[str, Any], value: Mapping[str, Any]) -> None:
             "invalid coverage fields",
             value,
         )
+    for index, omission in enumerate(c["omitted"]):
+        pointer = f"/coverage/omitted/{index}"
+        if not isinstance(omission, dict) or set(omission) != {
+            "pointer",
+            "stage",
+            "reasonCode",
+        } or any(
+            not isinstance(omission[field], str) or not omission[field]
+            for field in ("pointer", "stage", "reasonCode")
+        ):
+            _fail(
+                "envelope-valid",
+                "invalid-coverage-omission",
+                pointer,
+                "coverage omissions must contain pointer, stage, and reasonCode strings",
+                value,
+            )
     _validate_coverage_semantics(c, value)
 
 
@@ -943,6 +971,36 @@ def _external_references(value: Any, pointer: str) -> list[tuple[str, dict[str, 
     return []
 
 
+def _expected_external_kind(pointer: str) -> str | None:
+    """Return the field-owned target kind for a typed external reference.
+
+    Local references are checked at payload validation time.  External
+    references must carry the same field semantics, so this small registry is
+    shared by batch and incremental closure rather than trusting a producer's
+    self-declared ``kind``.
+    """
+
+    fields = {
+        "ruleRef": "declaration",
+        "declarationRef": "declaration",
+        "conclusionRef": "statement",
+        "premiseRefs": "statement",
+        "residualPremiseRefs": "statement",
+        "goalRef": "statement",
+        "statementRef": "statement",
+        "termRef": "term",
+        "localContextRef": "local-context",
+        "checkRunRef": "check-run",
+        "surfaceRef": "surface",
+        "sourceMapRef": "source-map",
+        "attachmentSetRef": "attachment-set",
+    }
+    for field, kind in fields.items():
+        if f"/{field}" in pointer:
+            return kind
+    return None
+
+
 def _validate_external_references(
     owner_id: str,
     artifact: Mapping[str, Any],
@@ -951,45 +1009,84 @@ def _validate_external_references(
     """Close external references over the supplied batch and exact owner identity."""
 
     for pointer, reference in _external_references(artifact["payload"], "/payload"):
-        target_id = reference["artifactRef"]
-        if target_id == owner_id:
-            _fail(
-                "reference-valid",
-                "self-external-reference",
-                pointer + "/artifactRef",
-                "external references must not name their enclosing artifact",
-                artifact,
-            )
-        target = artifacts.get(target_id)
-        if target is None:
-            _fail(
-                "reference-valid",
-                "external-artifact-not-in-batch",
-                pointer + "/artifactRef",
-                "external reference owner is not present in this batch",
-                artifact,
-            )
-        if target["environmentRef"] != artifact["environmentRef"]:
-            _fail(
-                "reference-valid",
-                "external-reference-environment-mismatch",
-                pointer,
-                "external reference crosses environments",
-                artifact,
-            )
-        target_subjects = {
-            _subject_descriptor(subject, pointer="/subjectRefs")
-            for subject in target["subjectRefs"]
-        }
-        identity = (reference["kind"], reference["localId"])
-        if identity not in target_subjects:
-            _fail(
-                "reference-valid",
-                "external-subject-not-found",
-                pointer,
-                "external reference does not name a target descriptor",
-                artifact,
-            )
+        _validate_one_external_reference(owner_id, artifact, artifacts, pointer, reference)
+
+    inputs = artifact.get("payload", {}).get("inputs")
+    if artifact.get("artifactKind") == "proofir.check-run" and isinstance(inputs, Mapping):
+        for index, target_id in enumerate(inputs.get("artifactRefs", [])):
+            if target_id not in artifacts:
+                _fail(
+                    "reference-valid",
+                    "external-artifact-not-in-batch",
+                    f"/payload/inputs/artifactRefs/{index}",
+                    "input artifact reference is not present in the validated artifact set",
+                    artifact,
+                )
+            target = artifacts[target_id]
+            if target["environmentRef"] != artifact["environmentRef"]:
+                _fail(
+                    "reference-valid",
+                    "external-reference-environment-mismatch",
+                    f"/payload/inputs/artifactRefs/{index}",
+                    "external reference crosses environments",
+                    artifact,
+                )
+
+
+def _validate_one_external_reference(
+    owner_id: str,
+    artifact: Mapping[str, Any],
+    artifacts: Mapping[str, Mapping[str, Any]],
+    pointer: str,
+    reference: Mapping[str, Any],
+) -> None:
+    target_id = reference["artifactRef"]
+    if target_id == owner_id:
+        _fail(
+            "reference-valid",
+            "self-external-reference",
+            pointer + "/artifactRef",
+            "external references must not name their enclosing artifact",
+            artifact,
+        )
+    target = artifacts.get(target_id)
+    if target is None:
+        _fail(
+            "reference-valid",
+            "external-artifact-not-in-batch",
+            pointer + "/artifactRef",
+            "external reference owner is not present in this batch",
+            artifact,
+        )
+    if target["environmentRef"] != artifact["environmentRef"]:
+        _fail(
+            "reference-valid",
+            "external-reference-environment-mismatch",
+            pointer,
+            "external reference crosses environments",
+            artifact,
+        )
+    expected_kind = _expected_external_kind(pointer)
+    if expected_kind is not None and reference["kind"] != expected_kind:
+        _fail(
+            "reference-valid",
+            "unexpected-reference-kind",
+            pointer + "/kind",
+            "unexpected reference kind",
+            artifact,
+        )
+    target_subjects = {
+        _subject_descriptor(subject, pointer="/subjectRefs")
+        for subject in target["subjectRefs"]
+    }
+    if (reference["kind"], reference["localId"]) not in target_subjects:
+        _fail(
+            "reference-valid",
+            "external-subject-not-found",
+            pointer,
+            "external reference does not name a target descriptor",
+            artifact,
+        )
 
 
 def _validate_derivation_graph(
@@ -1135,6 +1232,9 @@ def make_envelope(
 
 __all__ = [
     "MAX_CANONICAL_BYTES",
+    "MAX_ARTIFACT_BYTES",
+    "MAX_BATCH_BYTES",
+    "MAX_ARTIFACTS",
     "MAX_COLLECTION_ITEMS",
     "MAX_DEPTH",
     "MAX_STRING_BYTES",
