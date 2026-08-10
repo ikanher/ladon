@@ -57,3 +57,108 @@ def test_installed_cli_emits_batch_closed_semantic_evidence() -> None:
         "proofir.derivation",
     ]
     validate_envelope_batch(payload["artifacts"])
+
+
+@pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
+def test_lean_owned_name_parser_accepts_unicode_declaration_name() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ladon.entrypoint",
+            "proof-search",
+            "check",
+            "candidate",
+            "--repo-root",
+            str(FIXTURE),
+            "--module",
+            "LadonFixture",
+            "--goal",
+            "∀ value : Nat, value = value",
+            "--candidate",
+            "LadonFixture.identité",
+            "--timeout-seconds",
+            "30",
+            "--max-rss-mib",
+            "4096",
+            "--format",
+            "json",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["status"] == "accepted"
+
+
+@pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
+def test_worker_preserves_complete_introduced_local_context() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ladon.entrypoint",
+            "proof-search",
+            "check",
+            "candidate",
+            "--repo-root",
+            str(FIXTURE),
+            "--module",
+            "LadonFixture",
+            "--goal",
+            "∀ x y : Nat, x = x",
+            "--candidate",
+            "LadonFixture.twoIdentity",
+            "--timeout-seconds",
+            "30",
+            "--max-rss-mib",
+            "4096",
+            "--format",
+            "json",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["status"] in {"accepted", "applicable-with-residuals"}
+    derivation = payload["artifacts"][2]
+    contexts = [
+        row for row in derivation["subjectRefs"] if row["kind"] == "local-context"
+    ]
+    assert len(contexts) == 1
+    assert len(contexts[0]["searchShape"]["orderedLocals"]) == 2
+    assert [row["userName"] for row in contexts[0]["searchShape"]["orderedLocals"]] == [
+        "x",
+        "y",
+    ]
+
+
+@pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
+def test_theorem_query_accepts_worker_candidate_declaration_name() -> None:
+    from ladon.proofir_sqlite_v3 import project_envelopes
+    from ladon.proofir_v3_queries import query_v3_theorem_evidence
+    from ladon.semantic_candidate_worker import SemanticCandidateRequest, check_semantic_candidate
+    import sqlite3
+
+    result = check_semantic_candidate(
+        SemanticCandidateRequest(
+            FIXTURE,
+            "LadonFixture",
+            "∀ value : Nat, value = value",
+            "LadonFixture.fixtureIdentity",
+        )
+    )
+    assert result.status == "accepted"
+    connection = sqlite3.connect(":memory:")
+    project_envelopes(connection, list(result.artifacts))
+    dossier = query_v3_theorem_evidence(
+        connection, "LadonFixture.fixtureIdentity", limit=20
+    )
+    assert dossier["status"] == "observed"
+    assert dossier["subjects"]["returned"] >= 1

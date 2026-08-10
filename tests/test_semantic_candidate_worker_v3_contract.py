@@ -20,10 +20,15 @@ def _accepted_payload(tmp_path: Path) -> dict[str, Any]:
     executable.write_bytes(b"exact lean executable")
     return {
         "protocol": SEMANTIC_PROTOCOL,
+        "frameVersion": 1,
+        "sequence": 0,
+        "terminal": True,
+        "universePolicy": "lean-level-mvar-succ-zero/v1",
+        "requestId": "fixture-request",
         "leanVersion": "4.32.2",
         "leanCommit": "commit",
         "executablePath": str(executable),
-        "module": "Ladon.Semantic.probe",
+        "module": "Ladon.Semantic.generated",
         "probe": {
             "name": "filled-from-supervisor-command",
             "typeDisplay": "Nat → Nat",
@@ -87,9 +92,10 @@ def test_accepted_worker_result_closes_exact_environment_and_check_references(
     payload = _accepted_payload(tmp_path)
 
     def accepted_runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
-        payload["probe"]["name"] = command[-2]
+        payload["probe"]["name"] = command[-3]
+        payload["requestId"] = command[-1]
         return ProcessResult(
-            tuple(command), 0, json.dumps(payload), "", 0.25, peak_rss_bytes=4096
+            tuple(command), 0, "LADON_FRAME " + json.dumps(payload), "", 0.25, peak_rss_bytes=4096
         )
 
     result = check_semantic_candidate(
@@ -132,8 +138,8 @@ def test_worker_protocol_rejects_foreign_or_unscoped_semantic_rows(
     payload["candidate"]["name"] = "Other.foreign"
 
     def foreign_runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
-        payload["probe"]["name"] = command[-2]
-        return ProcessResult(tuple(command), 0, json.dumps(payload), "", 0.1)
+        payload["probe"]["name"] = command[-3]
+        return ProcessResult(tuple(command), 0, "LADON_FRAME " + json.dumps(payload), "", 0.1)
 
     result = check_semantic_candidate(
         SemanticCandidateRequest(repo, "Main", "Nat", "Main.identity"),

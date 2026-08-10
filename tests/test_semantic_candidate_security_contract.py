@@ -29,6 +29,50 @@ def test_generated_probe_rejects_command_injection(
         SemanticCandidateRequest(tmp_path, module, goal, candidate)
 
 
+def test_python_boundary_defers_name_grammar_to_lean(tmp_path: Path) -> None:
+    request = SemanticCandidateRequest(
+        tmp_path, "Main", "True", "Main.value+1"
+    )
+    assert request.candidate == "Main.value+1"
+
+
+@pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
+def test_lean_name_parser_rejects_non_identifier_candidate() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ladon.entrypoint",
+            "proof-search",
+            "check",
+            "candidate",
+            "--repo-root",
+            str(FIXTURE),
+            "--module",
+            "LadonFixture",
+            "--goal",
+            "True",
+            "--candidate",
+            "And.intro+True",
+            "--timeout-seconds",
+            "30",
+            "--max-rss-mib",
+            "4096",
+            "--format",
+            "json",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0
+    payload = json.loads(completed.stdout)
+    assert payload["status"] == "rejected"
+    assert payload["diagnostic"]["code"] == "checker-rejected"
+    assert "invalid Lean name" in payload["diagnostic"]["message"]
+
+
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
 def test_real_check_claims_elaborator_route_not_kernel_theorem_truth() -> None:
     completed = subprocess.run(

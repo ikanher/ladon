@@ -58,15 +58,24 @@ def test_policy_identity_is_versioned_and_content_addressed() -> None:
     assert POLICY_DIGEST.startswith("sha256:") and len(POLICY_DIGEST) == 71
 
 
-def test_exact_fingerprint_selects_despite_display_name_difference() -> None:
+def test_type_fingerprint_alone_does_not_override_qualified_name() -> None:
     decision = resolve_attachment(
         _surface(declarationName="Alias"),
         [_declaration(declaration="Qualified.Alias")],
     )
+    assert decision["selectionDecision"] == "unresolved"
+    assert decision["selectedCandidateId"] is None
+    assert decision["candidates"][0]["method"] == "identity-conflict-diagnostic"
+    assert "declaration-name-mismatch" in decision["candidates"][0]["rejectionReasons"]
+
+
+def test_exact_fingerprint_requires_the_same_qualified_name() -> None:
+    decision = resolve_attachment(
+        _surface(),
+        [_declaration(declaration="M.goal")],
+    )
     assert decision["selectionDecision"] == "selected"
-    assert decision["selectedCandidateId"] == "decl:goal"
     assert decision["candidates"][0]["method"] == "environment-fingerprint"
-    assert decision["candidates"][0]["decisiveEvidence"]
 
 
 def test_emitted_declaration_reference_selects_with_same_environment() -> None:

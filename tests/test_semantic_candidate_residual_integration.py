@@ -15,6 +15,14 @@ ROOT = Path(__file__).parents[1]
 FIXTURE = ROOT / "tests" / "fixtures" / "lean_integration"
 
 
+def _assert_residual_check_subjects(check: dict[str, object]) -> None:
+    results = check["payload"]["results"]  # type: ignore[index]
+    assert results[0]["subjectRef"]["kind"] == "candidate-application"
+    assert results[0]["result"] == "accepted"
+    assert results[1]["subjectRef"]["kind"] == "statement"
+    assert results[1]["result"] == "unchecked"
+
+
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
 def test_lean_application_emits_substitutions_residuals_and_context() -> None:
     completed = subprocess.run(
@@ -56,6 +64,7 @@ def test_lean_application_emits_substitutions_residuals_and_context() -> None:
     ]
     validate_envelope_batch(payload["artifacts"])
     attempt = payload["artifacts"][2]
+    _assert_residual_check_subjects(payload["artifacts"][1])
     assert len(attempt["payload"]["summary"]["residualPremiseRefs"]) == 2
     assert len(attempt["payload"]["attempts"][0]["substitutions"]) == 4
     context = attempt["extensions"]["ladon.lean-attempt-context/v1"]

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
+import secrets
 import tempfile
 import threading
 from collections.abc import Callable, Mapping
@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
+from ladon.proofir_fingerprint_registry import SCHEMES
 from ladon.proofir_v3 import (
     ProofIRV3Artifact,
     canonical_bytes,
@@ -27,8 +28,12 @@ from ladon.proofir_v3 import (
     validate_envelope_batch,
 )
 
-SEMANTIC_PROTOCOL = "ladon-lean-semantic-v2/check-candidate"
+SEMANTIC_PROTOCOL = "ladon-lean-semantic-v3/check-candidate"
+SEMANTIC_FRAME_PREFIX = "LADON_FRAME "
+UNIVERSE_POLICY = "lean-level-mvar-succ-zero/v1"
 FINGERPRINT_SCHEME = {"name": "lean-expr-structural", "version": "2"}
+if (FINGERPRINT_SCHEME["name"], FINGERPRINT_SCHEME["version"]) not in SCHEMES:
+    raise RuntimeError("semantic worker fingerprint scheme is not registered")
 DEFAULT_HELPER = Path(
     str(
         resources.files("ladon").joinpath(
@@ -40,9 +45,6 @@ MAX_GOAL_BYTES = 64 * 1024
 MAX_IMPORTED_MODULES = 10_000
 MAX_COMPILED_ENVIRONMENT_BYTES = 4 * 1024 * 1024 * 1024
 MAX_EVIDENCE_FILE_BYTES = 512 * 1024 * 1024
-_LEAN_DECLARATION_NAME = re.compile(
-    r"(?:[A-Za-z_][A-Za-z0-9_']*)(?:\.(?:[A-Za-z_][A-Za-z0-9_']*))*\Z"
-)
 ProcessRunner = Callable[..., ProcessResult]
 
 
@@ -67,10 +69,23 @@ class SemanticCandidateRequest:
 
 
 def _validate_request_identity(module: str, candidate: str) -> None:
-    if not _LEAN_DECLARATION_NAME.fullmatch(module):
+    if not _valid_qualified_name(module):
         raise ValueError("semantic check module must be a qualified Lean name")
-    if not _LEAN_DECLARATION_NAME.fullmatch(candidate):
+    if not _valid_qualified_name(candidate):
         raise ValueError("semantic check candidate must be a declaration name")
+
+
+def _valid_qualified_name(value: str) -> bool:
+    """Reject transport control characters; Lean owns name grammar.
+
+    The request crosses an argv boundary, so punctuation is not a shell
+    escape.  The helper parses the module/candidate with Lean's own term
+    parser before looking up declarations; Python must not maintain a second,
+    subtly different identifier grammar here.
+    """
+    return bool(value) and not any(
+        char.isspace() or ord(char) < 32 for char in value
+    )
 
 
 def _validate_request_goal(goal: str) -> None:
@@ -128,7 +143,8 @@ def check_semantic_candidate(
     """Run the explicit Lean probe and publish artifacts only after validation."""
 
     probe_name = _probe_name(request)
-    source = _probe_source(request, probe_name)
+    request_id = "req-" + secrets.token_hex(16)
+    source = _environment_source(request)
     with tempfile.TemporaryDirectory(prefix="ladon-semantic-check-") as directory:
         probe_path = Path(directory) / "Probe.lean"
         probe_path.write_text(source, encoding="utf-8")
@@ -141,8 +157,10 @@ def check_semantic_candidate(
                 str(helper_path),
                 f"Ladon.Semantic.{probe_name}",
                 str(probe_path),
+                request.goal,
                 probe_name,
                 request.candidate,
+                request_id,
             ),
             cwd=request.repo_root,
             timeout_seconds=request.timeout_seconds,
@@ -153,7 +171,7 @@ def check_semantic_candidate(
     if not process.succeeded:
         return _failed_check(process)
     try:
-        payload = _parse_worker_payload(process.stdout, request)
+        payload = _parse_worker_payload(process.stdout, request, request_id)
         artifacts = _accepted_artifacts(request, helper_path, process, payload)
         validate_envelope_batch(list(artifacts))
     except (OSError, TypeError, ValueError) as error:
@@ -189,13 +207,9 @@ def _probe_name(request: SemanticCandidateRequest) -> str:
     return "ladonSemanticProbe_" + identity[7:23]
 
 
-def _probe_source(request: SemanticCandidateRequest, probe_name: str) -> str:
-    return (
-        f"import {request.module}\n"
-        "set_option autoImplicit false\n"
-        f"theorem {probe_name} : {request.goal} := by\n"
-        "  sorry\n"
-    )
+def _environment_source(request: SemanticCandidateRequest) -> str:
+    """Provide only the requested module environment to the Lean helper."""
+    return f"import {request.module}\nset_option autoImplicit false\n"
 
 
 def _failed_check(process: ProcessResult) -> SemanticCandidateCheck:
@@ -217,17 +231,19 @@ def _failed_check(process: ProcessResult) -> SemanticCandidateCheck:
 
 
 def _parse_worker_payload(
-    stdout: str, request: SemanticCandidateRequest
+    stdout: str, request: SemanticCandidateRequest, request_id: str
 ) -> dict[str, Any]:
-    start = stdout.find("{")
-    if start < 0:
-        raise ValueError("Lean semantic helper emitted no JSON payload")
-    payload = json.loads(stdout[start:])
-    if not isinstance(payload, dict) or payload.get("protocol") != SEMANTIC_PROTOCOL:
+    payload = _decode_single_frame(stdout)
+    if payload.get("protocol") != SEMANTIC_PROTOCOL:
         raise ValueError("Lean semantic helper emitted an unsupported protocol")
     required = {
+        "frameVersion",
+        "sequence",
+        "terminal",
+        "universePolicy",
         "leanVersion",
         "leanCommit",
+        "requestId",
         "executablePath",
         "module",
         "probe",
@@ -239,11 +255,36 @@ def _parse_worker_payload(
     }
     if not required <= set(payload):
         raise ValueError("Lean semantic helper omitted required evidence fields")
+    if payload["requestId"] != request_id:
+        raise ValueError("Lean semantic helper returned a mismatched request ID")
+    if payload["frameVersion"] != 1 or payload["sequence"] != 0 or payload["terminal"] is not True:
+        raise ValueError("Lean semantic helper returned an invalid terminal frame")
+    if payload["universePolicy"] != UNIVERSE_POLICY:
+        raise ValueError("Lean semantic helper returned an unsupported universe policy")
     for field in ("substitutions", "residualPremises", "localContext"):
         if not isinstance(payload[field], list):
             raise TypeError(f"Lean semantic helper field {field} must be an array")
     _validate_worker_identity(payload, request)
     _validate_application_rows(payload)
+    return payload
+
+
+def _decode_single_frame(stdout: str) -> dict[str, Any]:
+    frames = [
+        line[len(SEMANTIC_FRAME_PREFIX):]
+        for line in stdout.splitlines()
+        if line.startswith(SEMANTIC_FRAME_PREFIX)
+    ]
+    if not frames:
+        raise ValueError("Lean semantic helper emitted no JSON payload")
+    if len(frames) != 1:
+        raise ValueError("Lean semantic helper emitted duplicate terminal frames")
+    try:
+        payload = json.loads(frames[0])
+    except json.JSONDecodeError as error:
+        raise ValueError("Lean semantic helper emitted non-framed JSON output") from error
+    if not isinstance(payload, dict):
+        raise ValueError("Lean semantic helper emitted a non-object frame")
     return payload
 
 
@@ -255,8 +296,6 @@ def _validate_worker_identity(
     _validate_worker_subject(probe, "probe", _probe_name(request))
     _validate_worker_subject(candidate, "candidate", request.candidate)
     _validate_worker_modules(payload.get("importedModules"), request.module)
-    if payload["localContext"]:
-        raise ValueError("closed semantic probes must have an empty local context")
 
 
 def _validate_worker_subject(subject: Any, label: str, expected_name: str) -> None:
@@ -285,10 +324,23 @@ def _validate_worker_modules(modules: Any, requested_module: str) -> None:
 def _validate_application_rows(payload: Mapping[str, Any]) -> None:
     substitution_fields = {"variable", "termDisplay", "termStructural"}
     expression_fields = {"typeDisplay", "typeStructural"}
+    local_fields = {
+        "localId",
+        "userName",
+        "binderInfo",
+        "typeDisplay",
+        "typeStructural",
+        "valueDisplay",
+        "valueStructural",
+        "dependencies",
+        "origin",
+    }
     if not _closed_string_rows(payload["substitutions"], substitution_fields):
         raise ValueError("Lean semantic helper returned invalid substitutions")
     if not _closed_string_rows(payload["residualPremises"], expression_fields):
         raise ValueError("Lean semantic helper returned invalid residual premises")
+    if not _closed_local_context_rows(payload["localContext"], local_fields):
+        raise ValueError("Lean semantic helper returned invalid local context")
 
 
 def _closed_string_rows(rows: list[Any], fields: set[str]) -> bool:
@@ -300,6 +352,30 @@ def _closed_string_rows(rows: list[Any], fields: set[str]) -> bool:
     return True
 
 
+def _closed_local_context_rows(rows: list[Any], fields: set[str]) -> bool:
+    for row in rows:
+        if not isinstance(row, dict) or set(row) != fields:
+            return False
+        if not _valid_local_context_scalars(row):
+            return False
+        if not _valid_local_dependencies(row["dependencies"]):
+            return False
+    return True
+
+
+def _valid_local_context_scalars(row: dict[str, Any]) -> bool:
+    fields = ("localId", "userName", "binderInfo", "typeDisplay", "typeStructural", "valueDisplay", "valueStructural", "origin")
+    return all(isinstance(row[field], str) for field in fields) and all(
+        row[field] for field in ("localId", "userName", "binderInfo", "typeDisplay", "typeStructural", "origin")
+    )
+
+
+def _valid_local_dependencies(dependencies: Any) -> bool:
+    return isinstance(dependencies, list) and all(
+        isinstance(dep, str) and dep for dep in dependencies
+    )
+
+
 def _accepted_artifacts(
     request: SemanticCandidateRequest,
     helper_path: Path,
@@ -309,10 +385,17 @@ def _accepted_artifacts(
     environment = _environment_artifact(request.repo_root, payload)
     env_ref = environment["environmentRef"]
     statement = _subject("statement", payload["probe"])
+    statement["searchShape"] = {
+        "declarationName": request.candidate,
+        "role": "candidate-goal",
+    }
     declaration = _subject("declaration", payload["candidate"])
     residuals = [_subject("statement", row) for row in payload["residualPremises"]]
     terms = [_term_subject(row) for row in payload["substitutions"]]
-    context = _context_subject(env_ref)
+    context = _context_subject(env_ref, payload["localContext"])
+    application = _application_subject(
+        statement, declaration, residuals, payload["substitutions"], context
+    )
     check = _check_artifact(
         request,
         env_ref,
@@ -323,6 +406,8 @@ def _accepted_artifacts(
         helper_path,
         process,
         payload,
+        application,
+        bool(residuals),
     )
     if residuals:
         attempt = _attempt_artifact(
@@ -334,9 +419,10 @@ def _accepted_artifacts(
             terms,
             payload["substitutions"],
             check,
+            application,
         )
         return environment, check, attempt
-    derivation = _derivation_artifact(env_ref, statement, declaration, context, terms, payload["substitutions"], check)
+    derivation = _derivation_artifact(env_ref, statement, declaration, context, terms, payload["substitutions"], check, application)
     return environment, check, derivation
 
 
@@ -386,7 +472,7 @@ def _environment_artifact(repo_root: Path, payload: Mapping[str, Any]) -> dict[s
         },
         "dependencies": dependencies,
         "compiledModules": compiled,
-        "options": {"autoImplicit": False},
+        "options": {"autoImplicit": False, "universeClosurePolicy": str(payload["universePolicy"])},
         "trust": {"axiomsAllowed": ["*"], "unsafeAllowed": False},
         "fingerprintScheme": dict(FINGERPRINT_SCHEME),
     }
@@ -396,22 +482,90 @@ def _environment_artifact(repo_root: Path, payload: Mapping[str, Any]) -> dict[s
 
 def _subject(kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
     structural = str(row["typeStructural"])
-    digest = _digest_text(structural)
+    if kind == "declaration":
+        digest = _digest_bytes(canonical_bytes({"qualifiedName": str(row["name"]), "type": structural}))
+        scheme = {"name": "lean-declaration-identity", "version": "1"}
+    else:
+        digest = _digest_text(structural)
+        scheme = dict(FINGERPRINT_SCHEME)
     return {
         "kind": kind,
         "localId": f"{kind}:{digest}",
-        "fingerprint": {"scheme": dict(FINGERPRINT_SCHEME), "digest": digest},
+        "fingerprint": {"scheme": scheme, "digest": digest},
         "display": str(row["name"] if kind == "declaration" else row["typeDisplay"]),
     }
 
 
-def _context_subject(environment_ref: str) -> dict[str, Any]:
-    digest = _digest_bytes(canonical_bytes({"environmentRef": environment_ref, "locals": []}))
+def _application_subject(
+    statement: Mapping[str, Any],
+    declaration: Mapping[str, Any],
+    residuals: list[Mapping[str, Any]],
+    substitutions: list[Mapping[str, Any]] | None = None,
+    context: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    digest = _digest_bytes(
+        canonical_bytes(
+            {
+                "statement": _identity_subject(statement),
+                "declaration": _identity_subject(declaration),
+                "residuals": [_identity_subject(row) for row in residuals],
+                "substitutions": [
+                    {
+                        "variable": str(row["variable"]),
+                        "termStructural": str(row["termStructural"]),
+                    }
+                    for row in (substitutions or [])
+                ],
+                "localContext": context["localId"] if context is not None else None,
+            }
+        )
+    )
+    return {
+        "kind": "candidate-application",
+        "localId": f"candidate-application:{digest}",
+        "fingerprint": {"scheme": {"name": "lean-candidate-application", "version": "1"}, "digest": digest},
+        "display": "candidate application",
+    }
+
+
+def _context_subject(environment_ref: str, local_context: list[Mapping[str, Any]] | None = None) -> dict[str, Any]:
+    locals_value = [dict(row) for row in (local_context or [])]
+    identity_locals = [
+        {
+            key: row[key]
+            for key in (
+                "localId",
+                "userName",
+                "binderInfo",
+                "typeStructural",
+                "valueStructural",
+                "dependencies",
+                "origin",
+            )
+        }
+        for row in locals_value
+    ]
+    digest = _digest_bytes(canonical_bytes({"environmentRef": environment_ref, "locals": identity_locals}))
     return {
         "kind": "local-context",
         "localId": f"local-context:{digest}",
         "fingerprint": {"scheme": {"name": "lean-local-context", "version": "1"}, "digest": digest},
-        "display": "empty local context",
+        "display": "local context" if locals_value else "empty local context",
+        "searchShape": {
+            "environmentRef": environment_ref,
+            "orderedLocals": locals_value,
+            "origin": "goal-introduced" if locals_value else "empty",
+        },
+    }
+
+
+def _identity_subject(subject: Mapping[str, Any]) -> dict[str, Any]:
+    """Return only semantic identity fields; display text is presentation-only."""
+
+    return {
+        "kind": subject.get("kind"),
+        "localId": subject.get("localId"),
+        "fingerprint": subject.get("fingerprint"),
     }
 
 
@@ -436,8 +590,11 @@ def _check_artifact(
     helper_path: Path,
     process: ProcessResult,
     payload: Mapping[str, Any],
+    application: Mapping[str, Any],
+    has_residuals: bool,
 ) -> dict[str, Any]:
     observation = {
+        "universePolicy": str(payload["universePolicy"]),
         "command": list(process.command),
         "returnCode": process.returncode,
         "stdoutDigest": _digest_text(process.stdout),
@@ -460,7 +617,7 @@ def _check_artifact(
     artifact = _envelope(
         "proofir.check-run",
         environment_ref,
-        [statement, declaration, *_unique_subjects(additional_subjects), check_subject],
+        [statement, declaration, *_unique_subjects(additional_subjects), check_subject, application],
         {
             "checkRunId": check_id,
             "checker": {
@@ -476,11 +633,13 @@ def _check_artifact(
                     compact_statement,
                     compact_declaration,
                     *[_compact(row) for row in additional_subjects],
+                    _compact(application),
                 ],
                 "artifactRefs": [environment_artifact_id],
             },
             "results": [
-                {"subjectRef": compact_statement, "result": "accepted", "diagnostics": []}
+                {"subjectRef": _compact(application), "result": "accepted", "diagnostics": []},
+                {"subjectRef": compact_statement, "result": "unchecked" if has_residuals else "accepted", "diagnostics": []},
             ],
             "outputs": {
                 "stdoutDigest": observation["stdoutDigest"],
@@ -509,9 +668,20 @@ def _derivation_artifact(
     terms: list[dict[str, Any]],
     substitution_rows: list[Mapping[str, Any]],
     check: Mapping[str, Any],
+    application: Mapping[str, Any],
 ) -> dict[str, Any]:
     step_digest = _digest_bytes(
-        canonical_bytes({"statement": _compact(statement), "rule": _compact(declaration), "context": _compact(context)})
+        canonical_bytes(
+            {
+                "statement": _identity_subject(statement),
+                "rule": _identity_subject(declaration),
+                "context": context["localId"],
+                "substitutions": [
+                    {"variable": row["variable"], "termStructural": row["termStructural"]}
+                    for row in substitution_rows
+                ],
+            }
+        )
     )
     step = {"kind": "derivation-step", "localId": f"step:{step_digest}"}
     check_ref = {
@@ -522,7 +692,7 @@ def _derivation_artifact(
     artifact = _envelope(
         "proofir.derivation",
         environment_ref,
-        [statement, declaration, context, *_unique_subjects(terms), step],
+        [statement, declaration, context, application, *_unique_subjects(terms), step],
         {
             "derivationId": f"derivation:{step_digest}",
             "acyclic": True,
@@ -540,7 +710,7 @@ def _derivation_artifact(
             ],
         },
         limitations=[
-            {"id": "closed-exact-candidate-only", "message": "This derivation records a closed exact-candidate probe with no residual premises or substitutions."}
+            {"id": "closed-exact-candidate-only", "message": "This derivation records a closed exact-candidate probe with no residual premises; substitutions and local context remain part of its identity."}
         ],
     )
     return artifact.to_dict()
@@ -555,13 +725,19 @@ def _attempt_artifact(
     terms: list[dict[str, Any]],
     substitution_rows: list[Mapping[str, Any]],
     check: Mapping[str, Any],
+    application: Mapping[str, Any],
 ) -> dict[str, Any]:
     identity = _digest_bytes(
         canonical_bytes(
             {
-                "goal": _compact(statement),
-                "rule": _compact(declaration),
-                "residuals": [_compact(row) for row in residuals],
+                "goal": _identity_subject(statement),
+                "rule": _identity_subject(declaration),
+                "residuals": [_identity_subject(row) for row in residuals],
+                "context": context["localId"],
+                "substitutions": [
+                    {"variable": row["variable"], "termStructural": row["termStructural"]}
+                    for row in substitution_rows
+                ],
             }
         )
     )
@@ -580,6 +756,7 @@ def _attempt_artifact(
             declaration,
             context,
             *_unique_subjects(residuals),
+            application,
             *_unique_subjects(terms),
             step,
         ],
