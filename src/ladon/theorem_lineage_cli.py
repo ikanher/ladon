@@ -14,6 +14,10 @@ from ladon.proof_search_index import (
     default_proof_search_index_path,
     inspect_proof_search_index,
 )
+from ladon.sqlite_publication import (
+    acquire_publication_lock,
+    release_publication_lock,
+)
 from ladon.theorem_capsule_planning import plan_theorem_capsule
 from ladon.theorem_lineage_projection import ProjectionQuery, project_lineage
 from ladon.theorem_lineage_query import LineageQuery
@@ -24,6 +28,19 @@ from ladon.theorem_lineage_store import LineageIdentity, ingest_theorem_lineage
 def run_lineage_command(args: Any) -> int:
     repo_root = Path(args.repo_root).resolve()
     index = _index_path(args, repo_root)
+    lock = None
+    try:
+        if args.refresh != "never":
+            lock = acquire_publication_lock(index)
+        return _run_lineage_command(args, repo_root, index)
+    finally:
+        if lock is not None:
+            release_publication_lock(lock)
+
+
+def _run_lineage_command(args: Any, repo_root: Path, index: Path) -> int:
+    """Run lineage while any mutation-capable invocation owns publication."""
+
     status = inspect_proof_search_index(repo_root, index_path=index, verify_sources=True)
     if status.get("status") != "available":
         _progress("terminal", f"error:index-unavailable:{status.get('reason', 'unknown')}")

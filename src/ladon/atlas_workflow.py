@@ -24,7 +24,7 @@ def build_atlas_workflow(
     require_atlas_v1(atlas, consumer="atlas workflow current-reader")
     if before_atlas is not None:
         require_atlas_v1(before_atlas, consumer="atlas workflow before-reader")
-    bridges: list[dict[str, Any]] = []
+    bridges = normalize_external_evidence(external_evidence or [])
     diff = diff_atlases(before_atlas, atlas) if before_atlas is not None else empty_diff()
     workflow_diagnostics = atlas_workflow_diagnostics(atlas)
     return {
@@ -54,13 +54,13 @@ def normalize_external_evidence(external_evidence: list[dict[str, Any]]) -> list
     for report in external_evidence:
         require_bridge_v1(report, consumer="atlas workflow bridge reader")
     return [
-        normalize_external_evidence(report)
+        _normalize_external_evidence_report(report)
         for report in external_evidence
         if isinstance(report, dict)
     ]
 
 
-def normalize_external_evidence(report: dict[str, Any]) -> dict[str, Any]:
+def _normalize_external_evidence_report(report: dict[str, Any]) -> dict[str, Any]:
     """Return a workflow-compatible bridge report summary."""
 
     if report.get("artifactKind") == "ladon_external_evidence_snapshot":

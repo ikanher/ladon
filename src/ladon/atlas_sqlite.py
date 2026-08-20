@@ -3,12 +3,19 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from ladon.artifact_versions import require_atlas_v1, require_bridge_v1
+from ladon.sqlite_publication import (
+    acquire_publication_lock,
+    durable_replace,
+    release_publication_lock,
+)
 
 
 CANNED_QUERIES = {
@@ -115,12 +122,32 @@ def write_atlas_sqlite(
     require_atlas_v1(atlas, consumer="atlas SQLite reader")
     for report in external_evidence or []:
         require_bridge_v1(report, consumer="atlas SQLite bridge reader")
+    db_path = db_path.resolve()
     db_path.parent.mkdir(parents=True, exist_ok=True)
-    if db_path.exists():
-        db_path.unlink()
-    with sqlite3.connect(db_path) as connection:
-        create_schema(connection)
-        insert_atlas(connection, atlas, external_evidence or [])
+    lock = acquire_publication_lock(db_path)
+    descriptor, temporary_name = tempfile.mkstemp(
+        dir=db_path.parent,
+        prefix=f".{db_path.name}.{os.getpid()}.",
+        suffix=".tmp",
+    )
+    os.close(descriptor)
+    temporary = Path(temporary_name)
+    try:
+        with sqlite3.connect(temporary) as connection:
+            connection.execute("PRAGMA foreign_keys = ON")
+            connection.execute("PRAGMA journal_mode = DELETE")
+            connection.execute("PRAGMA synchronous = FULL")
+            create_schema(connection)
+            insert_atlas(connection, atlas, external_evidence or [])
+            connection.commit()
+            if connection.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
+                raise ValueError("atlas SQLite integrity check failed")
+            if connection.execute("PRAGMA foreign_key_check").fetchall():
+                raise ValueError("atlas SQLite foreign-key check failed")
+        durable_replace(temporary, db_path)
+    finally:
+        temporary.unlink(missing_ok=True)
+        release_publication_lock(lock)
 
 
 def create_schema(connection: sqlite3.Connection) -> None:

@@ -46,7 +46,6 @@ from ladon.proofir_v3_queries import (
     query_v3_theorem_evidence,
     query_v3_triage,
 )
-from ladon.semantic_build_mode import SemanticBuildRequest
 from ladon.semantic_candidate_worker import (
     SemanticCandidateRequest,
     check_semantic_candidate,
@@ -82,15 +81,6 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
         type=_positive_integer,
         default=DEFAULT_MAX_INDEX_BYTES // (1024 * 1024),
         help="Maximum database size in MiB; defaults to 512.",
-    )
-    build.add_argument(
-        "--mode", choices=("lexical", "semantic", "hybrid"), default="lexical"
-    )
-    build.add_argument("--lean-timeout", type=float, default=120.0)
-    build.add_argument(
-        "--semantic-completeness",
-        choices=("allow-partial", "require-complete"),
-        default="allow-partial",
     )
 
     status = commands.add_parser("status", help="Inspect index identity and freshness.")
@@ -472,16 +462,10 @@ def _dispatch_index(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
     if args.index_operation == "build":
-        mode = SemanticBuildRequest(
-            args.mode, args.lean_timeout, args.semantic_completeness
-        )
         payload = build_proof_search_index(
             repo_root,
             index_path=index_path,
             max_index_bytes=args.max_index_mib * 1024 * 1024,
-            build_mode=mode.mode,
-            lean_timeout=mode.lean_timeout,
-            semantic_completeness=mode.completeness,
         ).payload
         return payload
     if args.index_operation == "status":

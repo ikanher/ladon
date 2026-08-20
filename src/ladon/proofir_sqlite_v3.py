@@ -8,15 +8,12 @@ keys, insertion order, and query-plan gates are reviewed as one contract.
 from __future__ import annotations
 
 import hashlib
-import fcntl
 import json
 import os
 import sqlite3
 import tempfile
 import time
-import secrets
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -26,81 +23,39 @@ from ladon.proofir_v3 import (
     validate_envelope,
     validate_envelope_batch,
 )
+from ladon.sqlite_publication import (
+    PublicationLock,
+    PublicationLockBusy,
+    acquire_publication_lock,
+    durable_replace,
+    release_publication_lock,
+)
 
 V3_SCHEMA_VERSION = 8
 MAX_EXTENSION_BYTES = 64 * 1024
 DEFAULT_MAX_DATABASE_BYTES = 512 * 1024 * 1024
 
 
-@dataclass(frozen=True)
-class _V3Lock:
-    path: Path
-    nonce: str
-    inode: int
-    descriptor: int
-
-
-def _pid_is_live(pid: int) -> bool:
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
+_V3Lock = PublicationLock
 
 
 def _acquire_v3_lock(destination: Path) -> _V3Lock:
-    """Acquire a kernel-held project-local writer lock.
+    """Acquire the shared ownership-safe SQLite publication lock."""
 
-    Advisory locking makes stale PID text non-authoritative: when a process
-    dies, the kernel releases the descriptor and the next builder can acquire
-    the same path without unlinking a potentially newer owner's file.
-    """
-    lock = destination.with_name(f"{destination.name}.lock")
-    nonce = secrets.token_hex(16)
-    payload = json.dumps({"pid": os.getpid(), "destination": str(destination), "nonce": nonce})
     try:
-        descriptor = os.open(lock, os.O_CREAT | os.O_RDWR, 0o600)
-        fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError as error:
-        try:
-            os.close(descriptor)
-        except UnboundLocalError:
-            pass
+        return acquire_publication_lock(destination)
+    except PublicationLockBusy as error:
         raise RuntimeError("ProofIR v3 database build already active") from error
-    os.ftruncate(descriptor, 0)
-    os.write(descriptor, payload.encode("utf-8"))
-    os.fsync(descriptor)
-    return _V3Lock(lock, nonce, os.fstat(descriptor).st_ino, descriptor)
 
 
 def _release_v3_lock(lock: _V3Lock) -> None:
-    """Release the kernel lock without deleting the persistent lock path.
+    """Release shared kernel ownership without unlinking the metadata path."""
 
-    Pathname deletion after ``flock(LOCK_UN)`` has an unavoidable same-inode
-    reacquisition race: a new writer can acquire and rewrite the path before
-    the old writer compares/unlinks it.  The path is therefore a durable
-    metadata carrier; kernel ownership, not its existence, controls access.
-    """
-    try:
-        fcntl.flock(lock.descriptor, fcntl.LOCK_UN)
-    finally:
-        os.close(lock.descriptor)
+    release_publication_lock(lock)
 
 
 def _durable_v3_replace(temporary: Path, destination: Path) -> None:
-    with temporary.open("rb") as stream:
-        os.fsync(stream.fileno())
-    os.replace(temporary, destination)
-    try:
-        directory = os.open(destination.parent, os.O_RDONLY)
-    except OSError:
-        return
-    try:
-        os.fsync(directory)
-    finally:
-        os.close(directory)
+    durable_replace(temporary, destination)
 
 REQUIRED_TABLES = frozenset(
     {

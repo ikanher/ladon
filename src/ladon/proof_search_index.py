@@ -59,6 +59,14 @@ from ladon.proofir_catalog import (
 )
 from ladon.proofir_link_observations import insert_manifest_link_observations
 from ladon.proofir_validation import catalog_diagnostic_code
+from ladon.sqlite_publication import (
+    PublicationLock,
+    PublicationLockBusy,
+    acquire_publication_lock,
+    durable_replace,
+    publication_lock_status,
+    release_publication_lock,
+)
 
 PROOF_SEARCH_RESULT_SCHEMA = "ladon-proof-search-index-result-v1"
 DEFAULT_INDEX_RELATIVE_PATH = Path(".ladon/index/proof-search.sqlite")
@@ -201,20 +209,11 @@ def build_proof_search_index(
     *,
     index_path: Path | None = None,
     max_index_bytes: int = DEFAULT_MAX_INDEX_BYTES,
-    build_mode: str = "lexical",
-    lean_timeout: float = 120.0,
-    semantic_completeness: str = "allow-partial",
 ) -> IndexBuildResult:
     """Build and atomically replace one repository's v1 query index."""
 
     if max_index_bytes < 64 * 1024:
         raise ProofSearchIndexError("maximum index size must be at least 64 KiB")
-    if build_mode not in {"lexical", "semantic", "hybrid"}:
-        raise ProofSearchIndexError("build mode must be lexical, semantic, or hybrid")
-    if lean_timeout <= 0:
-        raise ProofSearchIndexError("Lean timeout must be positive")
-    if semantic_completeness not in {"allow-partial", "require-complete"}:
-        raise ProofSearchIndexError("semantic completeness must be allow-partial or require-complete")
     started = time.monotonic()
     root = repo_root.resolve()
     destination = _resolved_index_path(root, index_path)
@@ -233,11 +232,11 @@ def build_proof_search_index(
                 raise ProofSearchIndexError(
                     f"index exceeds configured limit of {max_index_bytes} bytes"
                 )
-            _durable_replace(temporary, destination)
+            durable_replace(temporary, destination)
         finally:
             temporary.unlink(missing_ok=True)
     finally:
-        lock.unlink(missing_ok=True)
+        release_publication_lock(lock)
     visible = _version_control_visible(snapshot.repo_root, destination)
     elapsed = time.monotonic() - started
     payload = _build_result_payload(
@@ -247,9 +246,6 @@ def build_proof_search_index(
         elapsed_seconds=elapsed,
         version_control_visible=visible,
         max_index_bytes=max_index_bytes,
-        build_mode=build_mode,
-        lean_timeout=lean_timeout,
-        semantic_completeness=semantic_completeness,
     )
     return IndexBuildResult(payload)
 
@@ -946,9 +942,6 @@ def _build_result_payload(
     elapsed_seconds: float,
     version_control_visible: bool | None,
     max_index_bytes: int,
-    build_mode: str = "lexical",
-    lean_timeout: float = 120.0,
-    semantic_completeness: str = "allow-partial",
 ) -> dict[str, Any]:
     """Build a canonical public result without exposing table details."""
 
@@ -984,7 +977,7 @@ def _build_result_payload(
             "maxLexicalTypeBytes": _MAX_LEXICAL_TYPE_BYTES,
             "maxQueryRows": 1000,
         },
-        "build": {"mode": build_mode, "leanTimeout": lean_timeout, "semanticCompleteness": semantic_completeness, "publication": "atomic"},
+        "build": {"mode": "lexical", "publication": "atomic"},
         "elapsedSeconds": round(elapsed_seconds, 6),
         "versionControlVisible": version_control_visible,
         "warnings": warnings,
@@ -1112,75 +1105,19 @@ def _temporary_database_path(destination: Path) -> Path:
     return Path(raw_path)
 
 
-def _acquire_build_lock(destination: Path) -> Path:
-    """Create a project-local writer lock or identify its live owner."""
+def _acquire_build_lock(destination: Path) -> PublicationLock:
+    """Acquire the shared ownership-safe SQLite publication lock."""
 
-    lock = destination.with_name(f"{destination.name}.lock")
-    payload = json.dumps({"pid": os.getpid(), "destination": str(destination)})
     try:
-        descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
-    except FileExistsError:
-        owner = _lock_owner(lock)
-        if owner is not None and _pid_is_live(owner):
-            raise ProofSearchIndexError(
-                f"proof-search index build already active for {destination} (pid {owner})"
-            )
-        lock.unlink(missing_ok=True)
-        return _acquire_build_lock(destination)
-    with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
-        stream.write(payload)
-        stream.flush()
-        os.fsync(stream.fileno())
-    return lock
+        return acquire_publication_lock(destination)
+    except PublicationLockBusy as error:
+        raise ProofSearchIndexError(str(error)) from error
 
 
 def _build_lock_status(destination: Path) -> dict[str, Any]:
-    """Describe the project-local writer lock without changing it."""
+    """Describe shared kernel lock ownership without trusting stale PID text."""
 
-    lock = destination.with_name(f"{destination.name}.lock")
-    owner = _lock_owner(lock)
-    if owner is None:
-        return {"path": str(lock), "status": "absent"}
-    return {
-        "path": str(lock),
-        "pid": owner,
-        "status": "active" if _pid_is_live(owner) else "stale",
-    }
-
-
-def _lock_owner(lock: Path) -> int | None:
-    """Read a best-effort PID from an existing lock record."""
-
-    try:
-        value = json.loads(lock.read_text(encoding="utf-8")).get("pid")
-        return int(value) if isinstance(value, int) and value > 0 else None
-    except (OSError, ValueError, json.JSONDecodeError):
-        return None
-
-
-def _pid_is_live(pid: int) -> bool:
-    """Return whether a local process currently owns a lock PID."""
-
-    try:
-        os.kill(pid, 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
-        return True
-    return True
-
-
-def _durable_replace(temporary: Path, destination: Path) -> None:
-    """Sync and atomically publish a complete database."""
-
-    with temporary.open("rb") as stream:
-        os.fsync(stream.fileno())
-    os.replace(temporary, destination)
-    directory = os.open(destination.parent, os.O_RDONLY)
-    try:
-        os.fsync(directory)
-    finally:
-        os.close(directory)
+    return publication_lock_status(destination)
 
 
 def _toolchain_identity(repo_root: Path) -> str:

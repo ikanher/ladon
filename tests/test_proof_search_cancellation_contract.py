@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from ladon import proof_search_index
+from ladon.sqlite_publication import publication_lock_status
 
 
 def test_interrupted_index_build_preserves_prior_generation_and_cleans_state(
@@ -33,4 +34,6 @@ def test_interrupted_index_build_preserves_prior_generation_and_cleans_state(
     assert destination.read_bytes() == previous
     assert len(partial) == 1
     assert not partial[0].exists()
-    assert not destination.with_name(f"{destination.name}.lock").exists()
+    lock = destination.with_name(f"{destination.name}.lock")
+    assert lock.exists()
+    assert publication_lock_status(destination)["status"] == "inactive"

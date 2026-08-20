@@ -4,11 +4,18 @@ import json
 import sqlite3
 from pathlib import Path
 
+import pytest
+
 from ladon.atlas import build_report_atlas
 from ladon.atlas_sqlite import (
     run_canned_query,
     run_coverage_aware_query,
     write_atlas_sqlite,
+)
+from ladon.sqlite_publication import (
+    PublicationLockBusy,
+    acquire_publication_lock,
+    release_publication_lock,
 )
 
 
@@ -37,6 +44,31 @@ def test_write_atlas_sqlite_creates_query_tables(tmp_path: Path) -> None:
 
     assert_primary_table_counts(counts)
     assert_optional_table_counts(counts)
+
+
+def test_atlas_publication_preserves_prior_database_and_honors_shared_lock(
+    tmp_path: Path, monkeypatch
+) -> None:
+    atlas = sample_atlas(tmp_path)
+    db_path = tmp_path / "atlas.sqlite"
+    write_atlas_sqlite(atlas, db_path)
+    prior = db_path.read_bytes()
+
+    owner = acquire_publication_lock(db_path)
+    try:
+        with pytest.raises(PublicationLockBusy):
+            write_atlas_sqlite(atlas, db_path)
+    finally:
+        release_publication_lock(owner)
+
+    monkeypatch.setattr(
+        "ladon.atlas_sqlite.insert_atlas",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("injected")),
+    )
+    with pytest.raises(RuntimeError, match="injected"):
+        write_atlas_sqlite(atlas, db_path)
+    assert db_path.read_bytes() == prior
+    assert not list(tmp_path.glob(".atlas.sqlite.*.tmp"))
 
 
 def assert_primary_table_counts(counts: dict[str, int]) -> None:

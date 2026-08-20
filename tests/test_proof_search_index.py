@@ -184,7 +184,9 @@ def test_size_limit_refuses_publish_and_preserves_previous_generation(
     assert database.read_bytes() == previous
 
 
-def test_live_project_local_build_lock_reports_owner_pid(tmp_path: Path) -> None:
+def test_unlocked_project_local_build_lock_does_not_trust_owner_pid(
+    tmp_path: Path,
+) -> None:
     repo = sample_repository(tmp_path)
     build_proof_search_index(repo)
     database = default_proof_search_index_path(repo)
@@ -195,16 +197,11 @@ def test_live_project_local_build_lock_reports_owner_pid(tmp_path: Path) -> None
     assert status["buildLock"] == {
         "path": str(lock),
         "pid": os.getpid(),
-        "status": "active",
+        "status": "inactive",
     }
 
-    try:
-        build_proof_search_index(repo)
-    except ProofSearchIndexError as exc:
-        assert str(os.getpid()) in str(exc)
-        assert "already active" in str(exc)
-    else:
-        raise AssertionError("concurrent index build unexpectedly started")
+    rebuilt = build_proof_search_index(repo)
+    assert rebuilt.payload["status"] == "complete"
 
 
 def test_explicit_external_index_retains_repository_identity(tmp_path: Path) -> None:
