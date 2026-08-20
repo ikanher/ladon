@@ -15,7 +15,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ladon.semantic_candidate_worker import SemanticCandidateCheck, SemanticCandidateRequest
+from ladon.semantic_candidate_worker import (
+    SemanticCandidateCheck,
+    SemanticCandidateRequest,
+    check_semantic_candidate,
+)
 
 DISCOVERY_SCHEMA = "ladon-verified-discovery-result-v1"
 
@@ -104,8 +108,14 @@ def discover_candidates(
 def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checker:
     """Return a checker factory for the existing supervised Lean worker."""
     def check(candidate: str) -> SemanticCandidateCheck:
-        return __import__("ladon.semantic_candidate_worker", fromlist=["check_semantic_candidate"]).check_semantic_candidate(
-            SemanticCandidateRequest(request.repo_root, request.module, request.goal, candidate, toolchain=toolchain)
+        return check_semantic_candidate(
+            SemanticCandidateRequest(
+                request.repo_root,
+                request.module,
+                request.goal,
+                candidate,
+                toolchain=toolchain,
+            )
         )
 
     return check

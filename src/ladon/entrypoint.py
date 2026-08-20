@@ -32,28 +32,43 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 def doctor_main(arguments: Sequence[str]) -> int:
     """Emit read-only installation and bounded repository readiness data."""
-    invalid = any(
+    if not _doctor_arguments_valid(arguments):
+        print("ladon doctor: supported options are --json and --repo-root PATH", file=sys.stderr)
+        return 2
+    repo_root = _doctor_repo_root(arguments)
+    payload = _doctor_payload(repo_root)
+    if "--json" in arguments:
+        print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+    else:
+        print(f"Ladon {payload['installed']['version']}; Python {payload['installed']['python']}; pin={'present' if payload['readiness']['repositoryPinPresent'] else 'missing'}")
+    return 0
+
+
+def _doctor_arguments_valid(arguments: Sequence[str]) -> bool:
+    return not any(
         arg not in {"--json", "--repo-root"}
         and not arg.startswith("--repo-root=")
         and (index == 0 or arguments[index - 1] != "--repo-root")
         for index, arg in enumerate(arguments)
     )
-    if invalid:
-        print("ladon doctor: supported options are --json and --repo-root PATH", file=sys.stderr)
-        return 2
-    repo_root = Path(".")
+
+
+def _doctor_repo_root(arguments: Sequence[str]) -> Path:
     for index, arg in enumerate(arguments):
         if arg.startswith("--repo-root="):
-            repo_root = Path(arg.split("=", 1)[1])
-        elif arg == "--repo-root" and index + 1 < len(arguments):
-            repo_root = Path(arguments[index + 1])
-    repo_root = repo_root.resolve()
+            return Path(arg.split("=", 1)[1]).resolve()
+        if arg == "--repo-root" and index + 1 < len(arguments):
+            return Path(arguments[index + 1]).resolve()
+    return Path.cwd()
+
+
+def _doctor_payload(repo_root: Path) -> dict[str, object]:
     pin = repo_root / "lean-toolchain"
     try:
         version = metadata.version("ladon")
     except metadata.PackageNotFoundError:
         version = "source-tree"
-    payload = {
+    return {
         "schema": "ladon-doctor-result-v1",
         "status": "available",
         "installed": {"version": version, "python": platform.python_version(), "executable": sys.executable},
@@ -66,11 +81,6 @@ def doctor_main(arguments: Sequence[str]) -> int:
         "readiness": {"repositoryPinPresent": pin.is_file(), "preflight": "not-run"},
         "nonclaims": ["Doctor does not execute Lean, Lake, repository code, or target analysis."],
     }
-    if "--json" in arguments:
-        print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
-    else:
-        print(f"Ladon {version}; Python {platform.python_version()}; pin={'present' if pin.is_file() else 'missing'}")
-    return 0
 
 
 __all__ = ["main"]

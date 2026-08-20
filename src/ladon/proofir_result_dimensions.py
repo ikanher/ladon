@@ -40,6 +40,19 @@ def project_dimensions(
     parent_completeness: str | None = None,
 ) -> tuple[str, str]:
     """Validate a projection and reject authority/completeness escalation."""
+    _validate_dimensions(authority, completeness, parent_authority, parent_completeness)
+    _validate_authority_transition(parent_authority, authority)
+    if parent_completeness is not None and _COMPLETENESS_RANK[completeness] > _COMPLETENESS_RANK[parent_completeness]:
+        raise ValueError("projection cannot strengthen analysis completeness")
+    return authority, completeness
+
+
+def _validate_dimensions(
+    authority: str,
+    completeness: str,
+    parent_authority: str | None,
+    parent_completeness: str | None,
+) -> None:
     if authority not in AUTHORITY_SELECTIONS:
         raise ValueError(f"unsupported authority selection: {authority}")
     if completeness not in ANALYSIS_COMPLETENESS:
@@ -48,13 +61,13 @@ def project_dimensions(
         raise ValueError(f"unsupported parent authority selection: {parent_authority}")
     if parent_completeness is not None and parent_completeness not in ANALYSIS_COMPLETENESS:
         raise ValueError(f"unsupported parent analysis completeness: {parent_completeness}")
-    if parent_authority == "stored-observation" and authority != "stored-observation":
+
+
+def _validate_authority_transition(parent: str | None, child: str) -> None:
+    if parent == "stored-observation" and child != "stored-observation":
         raise ValueError("stored observations cannot gain live authority")
-    if parent_authority in {"ambient-selected-application-check", "not-assessed"} and authority == "explicit-pinned-application-check":
+    if parent in {"ambient-selected-application-check", "not-assessed"} and child == "explicit-pinned-application-check":
         raise ValueError("authority projection cannot promote to explicit-pinned evidence")
-    if parent_completeness is not None and _COMPLETENESS_RANK[completeness] > _COMPLETENESS_RANK[parent_completeness]:
-        raise ValueError("projection cannot strengthen analysis completeness")
-    return authority, completeness
 
 
 __all__ = [
