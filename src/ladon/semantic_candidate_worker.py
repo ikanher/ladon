@@ -22,6 +22,7 @@ from typing import Any
 from ladon.lean_toolchain import LeanToolchainContext
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
 from ladon.proofir_fingerprint_registry import SCHEMES
+from ladon.proofir_result_dimensions import derive_analysis_completeness
 from ladon.proofir_v3 import (
     ProofIRV3Artifact,
     canonical_bytes,
@@ -206,10 +207,10 @@ def check_semantic_candidate(
             if request.toolchain and request.toolchain.selection_mode == "explicit"
             else "ambient-selected-application-check"
         ),
-        analysis_completeness=(
-            "partial"
-            if status == "applicable-with-residuals"
-            else "complete"
+        analysis_completeness=derive_analysis_completeness(
+            operation_valid=True,
+            required_populations=1,
+            residuals=len(payload["residualPremises"]),
         ),
     )
 

@@ -1,0 +1,59 @@
+"""Closed authority and completeness dimensions for ProofIR projections."""
+
+from __future__ import annotations
+
+AUTHORITY_SELECTIONS = frozenset(
+    {
+        "not-assessed",
+        "ambient-selected-application-check",
+        "explicit-pinned-application-check",
+        "stored-observation",
+    }
+)
+ANALYSIS_COMPLETENESS = frozenset({"complete", "partial", "invalid", "not-assessed"})
+_COMPLETENESS_RANK = {"not-assessed": 0, "partial": 1, "complete": 2, "invalid": -1}
+
+
+def derive_analysis_completeness(
+    *,
+    operation_valid: bool,
+    required_populations: int,
+    residuals: int = 0,
+    omissions: int = 0,
+    truncated: bool = False,
+) -> str:
+    """Derive one closed state without treating absent analysis as complete."""
+    if not operation_valid:
+        return "invalid"
+    if required_populations <= 0:
+        return "not-assessed"
+    if residuals or omissions or truncated:
+        return "partial"
+    return "complete"
+
+
+def project_dimensions(
+    authority: str,
+    completeness: str,
+    *,
+    parent_authority: str | None = None,
+    parent_completeness: str | None = None,
+) -> tuple[str, str]:
+    """Validate a projection and reject authority/completeness escalation."""
+    if authority not in AUTHORITY_SELECTIONS:
+        raise ValueError(f"unsupported authority selection: {authority}")
+    if completeness not in ANALYSIS_COMPLETENESS:
+        raise ValueError(f"unsupported analysis completeness: {completeness}")
+    if parent_authority == "stored-observation" and authority != "stored-observation":
+        raise ValueError("stored observations cannot gain live authority")
+    if parent_completeness is not None and _COMPLETENESS_RANK[completeness] > _COMPLETENESS_RANK[parent_completeness]:
+        raise ValueError("projection cannot strengthen analysis completeness")
+    return authority, completeness
+
+
+__all__ = [
+    "ANALYSIS_COMPLETENESS",
+    "AUTHORITY_SELECTIONS",
+    "derive_analysis_completeness",
+    "project_dimensions",
+]

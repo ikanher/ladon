@@ -32,9 +32,9 @@
 ## 5. Separate authority from analysis completeness
 
 - [x] 5.1 Add closed typed authority-selection and `analysisCompleteness` states to semantic candidate results and shared evidence-result models without using declaration-replay terminology for application checks.
-- [ ] 5.2 Implement exhaustive derivation rules for `complete`, `partial`, `invalid`, and `not-assessed` from registered populations, residuals, operation validity, omissions, and truncation.
+- [x] 5.2 Implement exhaustive derivation rules for `complete`, `partial`, `invalid`, and `not-assessed` from registered populations, residuals, operation validity, omissions, and truncation.
 - [ ] 5.3 Update persistence readers, theorem dossiers, aggregate summaries, and renderers so reloaded observations remain stored evidence and every projection preserves or weakens both axes.
-- [ ] 5.4 Add projection invariants that reject authority or completeness escalation and ensure absent optional analysis is never defaulted to complete.
+- [x] 5.4 Add projection invariants that reject authority or completeness escalation and ensure absent optional analysis is never defaulted to complete.
 - [ ] 5.5 Update JSON/text fixtures and run candidate-worker, ProofIR query, dossier, coverage, and rendering suites across the full projection corpus.
 
 ## 6. Document migration and preserve repository separation
