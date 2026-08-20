@@ -208,7 +208,7 @@ pointers instead of returning an apparently actionable row.
 ## Runsets and report sets
 
 Proof-search uses the same installed CLI surface as a human operator. Its
-bounded search commands are `search name`, `search type`, `explain`,
+bounded search commands are `search name`, `search type-text`, `explain`,
 `consumers`, and `constructor`; `index query` remains a compatibility adapter.
 Use `--format json` for machine-readable results and inspect `authority`,
 `freshness`, `coverage`, `bounds`, and `omissions` before treating a row as

@@ -418,7 +418,7 @@ The installed CLI exposes bounded, ordinary-user commands:
 ```bash
 ladon proof-search index build --repo-root .
 ladon proof-search search name --repo-root . --text fixedIndex
-ladon proof-search search type --repo-root . --pattern 'Nat → Nat'
+ladon proof-search search type-text --repo-root . --pattern 'Nat → Nat'
 ladon proof-search explain --repo-root . --goal 'P' --candidate 'lemma'
 ladon proof-search consumers --repo-root . --declaration target
 ladon proof-search constructor --repo-root . --structure Record

@@ -160,7 +160,7 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     name.add_argument("--min-matched-segments", type=_positive_integer, default=1)
     name.add_argument("--freshness", choices=("verify", "stored"), default="verify")
     type_search = search_commands.add_parser(
-        "type-text", aliases=["type"], help="Search declaration type text (lexical shortlist)."
+        "type-text", help="Search declaration type text (lexical shortlist)."
     )
     _add_repository_options(type_search)
     _add_output_options(type_search)
@@ -253,6 +253,9 @@ def proof_search_main(argv: Sequence[str]) -> int:
     arguments = list(argv)
     operation = _operation_from_tokens(arguments)
     started = time.monotonic()
+    if arguments[:2] == ["search", "type"]:
+        _emit_retired_type_diagnostic()
+        return EXIT_INVOCATION
     try:
         args = parser.parse_args(arguments)
         operation = _operation_from_args(args)
@@ -299,6 +302,25 @@ def _emit_terminal(
                 "operation": operation,
                 "schema": "ladon-proof-search-terminal-v1",
                 "status": "interrupted" if exit_class == "interrupted" else "failed",
+            },
+            sort_keys=True,
+            separators=(",", ":"),
+        ),
+        file=sys.stderr,
+        flush=True,
+    )
+
+
+def _emit_retired_type_diagnostic() -> None:
+    print(
+        json.dumps(
+            {
+                "exitClass": "invocation",
+                "exitCode": EXIT_INVOCATION,
+                "migration": "use 'search type-text'",
+                "operation": "search.type",
+                "schema": "ladon-proof-search-terminal-v1",
+                "status": "failed",
             },
             sort_keys=True,
             separators=(",", ":"),
@@ -480,12 +502,8 @@ def _dispatch_index(
 def _dispatch_search(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
-    if args.search_operation in {"type-text", "type"}:
-        payload = dispatch_type_text(args, repo_root, index_path)
-        if args.search_operation == "type":
-            payload = dict(payload)
-            payload["migration"] = "use 'search type-text'; this alias remains for compatibility"
-        return payload
+    if args.search_operation == "type-text":
+        return dispatch_type_text(args, repo_root, index_path)
     if args.search_operation != "name":
         raise ProofSearchIndexError("unsupported search operation")
     payload = query_proof_search_index(

@@ -29,7 +29,7 @@ prove that Lean ran and populated the registered semantic collections.
 
 ```bash
 ladon proof-search index build --repo-root /path/to/project
-ladon proof-search search type --repo-root /path/to/project --pattern 'Nat → Nat'
+ladon proof-search search type-text --repo-root /path/to/project --pattern 'Nat → Nat'
 ladon proof-search check candidate --repo-root /path/to/project \
   --module Project.Owner --goal 'True' --candidate Project.Owner.goal
 ```
