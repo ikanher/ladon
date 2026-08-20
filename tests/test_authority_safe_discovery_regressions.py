@@ -65,6 +65,11 @@ def test_type_text_scope_requires_a_population_root() -> None:
         TypeSearchRequest("Nat", scope="module")
 
 
+def test_type_text_module_scope_requires_and_uses_module_filter() -> None:
+    request = TypeSearchRequest("Nat", scope="module", module="Demo")
+    assert request.scope == "module"
+
+
 def test_type_text_freshness_verification_is_not_echoed() -> None:
     connection = sqlite3.connect(":memory:")
     connection.execute(
