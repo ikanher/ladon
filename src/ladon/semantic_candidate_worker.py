@@ -202,7 +202,14 @@ def check_semantic_candidate(
         if artifacts[-1]["artifactKind"] == "proofir.attempt-log"
         else "accepted"
     )
-    status_receipt = _receipt_for_check(request, "accepted", status, "partial" if status.endswith("residuals") else "complete")
+    status_receipt = _receipt_for_check(
+        request,
+        "accepted",
+        status,
+        "partial" if status.endswith("residuals") else "complete",
+        environment_ref=str(artifacts[0]["environmentRef"]),
+        check_run_ref=str(artifacts[1]["payload"]["checkRunId"]),
+    )
     return SemanticCandidateCheck(
         status,
         tuple(artifacts),
@@ -227,6 +234,8 @@ def _receipt_for_check(
     outcome: str,
     status: str,
     completeness: str,
+    environment_ref: str | None = None,
+    check_run_ref: str | None = None,
 ) -> dict[str, Any]:
     binding = "ambient-observed"
     environment_match = "unknown"
@@ -238,9 +247,11 @@ def _receipt_for_check(
         execution_binding=binding,
         observation_state="live" if outcome == "accepted" else "failed",
         operation_outcome="accepted" if outcome == "accepted" else "failed",
-        authority_basis="lean-worker-check" if outcome == "accepted" else "worker-failure",
+        authority_basis="elaborator-check" if outcome == "accepted" else "not-assessed",
         analysis_completeness=completeness,
         environment_match=environment_match,
+        environment_ref=environment_ref,
+        check_run_ref=check_run_ref,
         limitations=(("Residual premises remain unverified.",) if status.endswith("residuals") else ()),
     )
 
@@ -680,13 +691,15 @@ def _check_artifact(
             "maxRssBytes": request.max_rss_bytes,
         },
     }
+    check_id = "check:" + _digest_bytes(canonical_bytes(observation))[7:]
     observation["evidenceReceipt"] = _receipt_for_check(
         request,
         "accepted",
         "applicable-with-residuals" if has_residuals else "accepted",
         "partial" if has_residuals else "complete",
+        environment_ref=environment_ref,
+        check_run_ref=check_id,
     )
-    check_id = "check:" + _digest_bytes(canonical_bytes(observation))[7:]
     check_subject = {"kind": "check-run", "localId": check_id, "display": "Lean exact-candidate check"}
     compact_statement = _compact(statement)
     compact_declaration = _compact(declaration)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 EXECUTION_BINDINGS = frozenset({"explicit-pinned", "ambient-observed", "none"})
 OBSERVATION_STATES = frozenset({"live", "stored", "derived", "absent", "failed"})
@@ -13,6 +14,63 @@ AUTHORITY_BASES = frozenset(
     {"not-assessed", "producer-assertion", "source-observation", "elaborator-check", "kernel-check", "stored-observation"}
 )
 ANALYSIS_COMPLETENESS = frozenset({"complete", "partial", "invalid", "not-assessed"})
+
+_TRANSITIONS = {
+    "executionBinding": {
+        "explicit-pinned": EXECUTION_BINDINGS,
+        "ambient-observed": frozenset({"ambient-observed", "none"}),
+        "none": frozenset({"none"}),
+    },
+    "observationState": {
+        "live": OBSERVATION_STATES,
+        "stored": frozenset({"stored", "derived", "failed", "absent"}),
+        "derived": frozenset({"derived", "failed", "absent"}),
+        "failed": frozenset({"failed", "absent"}),
+        "absent": frozenset({"absent"}),
+    },
+    "operationOutcome": {
+        "accepted": OPERATION_OUTCOMES,
+        "rejected": frozenset({"rejected", "failed", "not-run"}),
+        "failed": frozenset({"failed", "not-run"}),
+        "not-run": frozenset({"not-run"}),
+    },
+    "sourceFreshness": {
+        "fresh": SOURCE_FRESHNESS,
+        "stale": frozenset({"stale", "unknown", "not-assessed"}),
+        "unknown": frozenset({"unknown", "not-assessed"}),
+        "not-assessed": frozenset({"not-assessed"}),
+    },
+    "environmentMatch": {
+        "exact": ENVIRONMENT_MATCHES,
+        "mismatched": frozenset({"mismatched", "unknown", "not-assessed"}),
+        "unknown": frozenset({"unknown", "not-assessed"}),
+        "not-assessed": frozenset({"not-assessed"}),
+    },
+    "authorityBasis": {
+        "kernel-check": AUTHORITY_BASES,
+        "elaborator-check": frozenset({"elaborator-check", "source-observation", "producer-assertion", "stored-observation", "not-assessed"}),
+        "source-observation": frozenset({"source-observation", "producer-assertion", "stored-observation", "not-assessed"}),
+        "producer-assertion": frozenset({"producer-assertion", "stored-observation", "not-assessed"}),
+        "stored-observation": frozenset({"stored-observation", "not-assessed"}),
+        "not-assessed": frozenset({"not-assessed"}),
+    },
+    "analysisCompleteness": {
+        "complete": ANALYSIS_COMPLETENESS,
+        "partial": frozenset({"partial", "invalid", "not-assessed"}),
+        "not-assessed": frozenset({"not-assessed", "invalid"}),
+        "invalid": frozenset({"invalid"}),
+    },
+}
+
+_ATTRS = {
+    "executionBinding": "execution_binding",
+    "observationState": "observation_state",
+    "operationOutcome": "operation_outcome",
+    "sourceFreshness": "source_freshness",
+    "environmentMatch": "environment_match",
+    "authorityBasis": "authority_basis",
+    "analysisCompleteness": "analysis_completeness",
+}
 
 
 @dataclass(frozen=True)
@@ -42,70 +100,62 @@ class EvidenceDimensions:
 
 def validate_transition(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
     """Reject transitions that strengthen an observation or authority axis."""
-    violations: list[str] = []
-    for validator in (
-        _validate_freshness,
-        _validate_authority,
-        _validate_completeness,
-        _validate_observation,
-        _validate_outcome,
-        _validate_basis,
-    ):
-        try:
-            validator(parent, child)
-        except ValueError as error:
-            violations.append(str(error))
+    violations = [
+        _transition_error(axis, parent_value, child_value)
+        for axis, attribute in _ATTRS.items()
+        if (parent_value := getattr(parent, attribute))
+        and (child_value := getattr(child, attribute)) not in _TRANSITIONS[axis][parent_value]
+    ]
+    violations.extend(_state_violations(child))
     if violations:
         raise ValueError("; ".join(violations))
 
 
-def transition_matrix() -> dict[str, tuple[str, ...]]:
-    """Expose the registered closed states for machine-readable gate generation."""
+def transition_matrix() -> dict[str, Any]:
+    """Expose every registered state and allowed projection transition."""
     return {
-        "executionBinding": tuple(sorted(EXECUTION_BINDINGS)),
-        "observationState": tuple(sorted(OBSERVATION_STATES)),
-        "operationOutcome": tuple(sorted(OPERATION_OUTCOMES)),
-        "sourceFreshness": tuple(sorted(SOURCE_FRESHNESS)),
-        "environmentMatch": tuple(sorted(ENVIRONMENT_MATCHES)),
-        "authorityBasis": tuple(sorted(AUTHORITY_BASES)),
-        "analysisCompleteness": tuple(sorted(ANALYSIS_COMPLETENESS)),
+        "schema": "ladon-evidence-transition-matrix-v1",
+        "axes": {
+            axis: {
+                "states": sorted(transitions),
+                "allowed": {
+                    parent: sorted(children)
+                    for parent, children in sorted(transitions.items())
+                },
+            }
+            for axis, transitions in _TRANSITIONS.items()
+        },
     }
 
 
-def _validate_observation(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
-    if parent.observation_state == "stored" and child.observation_state == "live":
-        raise ValueError("stored observations cannot gain live authority")
-    if parent.observation_state == "absent" and child.observation_state not in {"absent", "failed"}:
-        raise ValueError("absent evidence cannot gain an observation")
+def validate_evidence_state(dimensions: EvidenceDimensions) -> None:
+    """Reject internally contradictory dimension combinations."""
+    violations = _state_violations(dimensions)
+    if violations:
+        raise ValueError("; ".join(violations))
 
 
-def _validate_authority(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
-    if parent.execution_binding != "explicit-pinned" and child.execution_binding == "explicit-pinned":
-        raise ValueError("authority execution binding cannot be promoted to explicit-pinned")
-    if parent.environment_match == "mismatched" and child.environment_match == "exact":
-        raise ValueError("mismatched environment cannot become exact")
+def _transition_error(axis: str, parent: str, child: str) -> str:
+    if axis == "observationState" and parent == "stored" and child == "live":
+        return "stored observations cannot gain live authority"
+    if axis == "analysisCompleteness":
+        return "projection cannot strengthen analysis completeness"
+    if axis == "authorityBasis":
+        return f"authority basis transition {parent} -> {child} is not registered"
+    return f"authority-safe {axis} transition {parent} -> {child} is not registered"
 
 
-def _validate_freshness(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
-    if parent.source_freshness == "stale" and child.source_freshness == "fresh":
-        raise ValueError("stale source evidence cannot become fresh")
-
-
-def _validate_outcome(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
-    if parent.operation_outcome in {"not-run", "failed"} and child.operation_outcome == "accepted":
-        raise ValueError("an unrun or failed operation cannot become accepted")
-
-
-def _validate_completeness(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
-    rank = {"invalid": -1, "not-assessed": 0, "partial": 1, "complete": 2}
-    if rank[child.analysis_completeness] > rank[parent.analysis_completeness]:
-        raise ValueError("projection cannot strengthen analysis completeness")
-
-
-def _validate_basis(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
-    rank = {"not-assessed": 0, "producer-assertion": 1, "source-observation": 1, "stored-observation": 1, "elaborator-check": 2, "kernel-check": 3}
-    if rank[child.authority_basis] > rank[parent.authority_basis] and parent.authority_basis != "not-assessed":
-        raise ValueError("authority basis cannot be promoted")
+def _state_violations(dimensions: EvidenceDimensions) -> list[str]:
+    violations: list[str] = []
+    if dimensions.operation_outcome == "accepted" and dimensions.observation_state in {"absent", "failed"}:
+        violations.append("accepted outcome requires an attributable observation")
+    if dimensions.observation_state == "live" and dimensions.execution_binding == "none":
+        violations.append("live observation requires an executed binding")
+    if dimensions.authority_basis in {"elaborator-check", "kernel-check"} and dimensions.observation_state in {"absent", "failed"}:
+        violations.append("checker authority requires an attributable observation")
+    if dimensions.execution_binding == "explicit-pinned" and dimensions.environment_match == "mismatched":
+        violations.append("explicit-pinned execution cannot use a mismatched environment")
+    return violations
 
 
 __all__ = [
@@ -118,5 +168,6 @@ __all__ = [
     "SOURCE_FRESHNESS",
     "EvidenceDimensions",
     "transition_matrix",
+    "validate_evidence_state",
     "validate_transition",
 ]

@@ -59,6 +59,10 @@ def _assert_artifact_family(artifacts: tuple[dict[str, Any], ...]) -> None:
 def _assert_exact_links(artifacts: tuple[dict[str, Any], ...]) -> None:
     environment, check, derivation = artifacts
     assert check["environmentRef"] == environment["environmentRef"]
+    receipt = check["extensions"]["ladon.process-observation/v1"]["evidenceReceipt"]
+    assert receipt["environmentRef"] == environment["environmentRef"]
+    assert receipt["checkRunRef"] == check["payload"]["checkRunId"]
+    assert receipt["authorityBasis"] == "elaborator-check"
     assert check["payload"]["inputs"]["artifactRefs"] == [environment["artifactId"]]
     step = derivation["payload"]["steps"][0]
     assert step["checkRunRef"]["artifactRef"] == check["artifactId"]

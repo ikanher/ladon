@@ -20,7 +20,8 @@ def test_evidence_dimensions_accept_weakened_projection() -> None:
 
 def test_transition_matrix_is_closed_and_machine_readable() -> None:
     matrix = transition_matrix()
-    assert set(matrix) == {
+    assert matrix["schema"] == "ladon-evidence-transition-matrix-v1"
+    assert set(matrix["axes"]) == {
         "executionBinding",
         "observationState",
         "operationOutcome",
@@ -29,7 +30,8 @@ def test_transition_matrix_is_closed_and_machine_readable() -> None:
         "authorityBasis",
         "analysisCompleteness",
     }
-    assert "explicit-pinned" in matrix["executionBinding"]
+    assert "explicit-pinned" in matrix["axes"]["executionBinding"]["states"]
+    assert matrix["axes"]["executionBinding"]["allowed"]["none"] == ["none"]
 
 
 @pytest.mark.parametrize(
@@ -56,4 +58,36 @@ def test_registered_transition_owner_rejects_escalation(
     parent: EvidenceDimensions, child: EvidenceDimensions, message: str
 ) -> None:
     with pytest.raises(ValueError, match=message):
+        validate_transition(parent, child)
+
+
+@pytest.mark.parametrize(
+    ("parent", "child"),
+    [
+        (
+            EvidenceDimensions("none", "absent", "not-run"),
+            EvidenceDimensions("ambient-observed", "absent", "not-run"),
+        ),
+        (
+            EvidenceDimensions("ambient-observed", "derived", "rejected"),
+            EvidenceDimensions("ambient-observed", "live", "rejected"),
+        ),
+        (
+            EvidenceDimensions("ambient-observed", "stored", "rejected"),
+            EvidenceDimensions("ambient-observed", "stored", "accepted"),
+        ),
+        (
+            EvidenceDimensions("ambient-observed", "stored", "rejected", "unknown"),
+            EvidenceDimensions("ambient-observed", "stored", "rejected", "fresh"),
+        ),
+        (
+            EvidenceDimensions("ambient-observed", "stored", "rejected", environment_match="unknown"),
+            EvidenceDimensions("ambient-observed", "stored", "rejected", environment_match="exact"),
+        ),
+    ],
+)
+def test_transition_matrix_rejects_reviewed_promotions(
+    parent: EvidenceDimensions, child: EvidenceDimensions
+) -> None:
+    with pytest.raises(ValueError, match="not registered"):
         validate_transition(parent, child)
