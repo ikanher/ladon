@@ -34,7 +34,7 @@ from ladon.proof_search_index import (
     inspect_proof_search_index,
     query_proof_search_index,
 )
-from ladon.proof_search_type import TypeSearchRequest, query_type_shortlist
+from ladon.proof_search_type_cli import dispatch_type_text
 from ladon.proofir_derivation import (
     DerivationQueryBounds,
     analyze_alternatives,
@@ -510,43 +510,11 @@ def _dispatch_search(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
     if args.search_operation in {"type-text", "type"}:
-        import sqlite3
-
-        path = index_path or default_proof_search_index_path(repo_root)
-        verification: dict[str, Mapping[str, Any]] = {}
-        if args.freshness == "verify":
-            index_status = inspect_proof_search_index(repo_root, index_path=index_path, verify_sources=True)
-            if index_status.get("freshness") != "fresh":
-                raise ProofSearchIndexError("type-text index is stale or unavailable")
-            identities = {
-                key: index_status.get(key)
-                for key in ("generationIdentity", "currentGenerationIdentity", "sourceFingerprint", "configurationFingerprint", "toolchainIdentity", "indexSchema")
-                if index_status.get(key) is not None
-            }
-            verification = {"__index__": identities}
-        with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
-            connection.row_factory = sqlite3.Row
-            payload = query_type_shortlist(
-                connection,
-                TypeSearchRequest(
-                    pattern=args.pattern,
-                    module=args.module,
-                    namespace=args.namespace,
-                    package=args.package,
-                    scope=args.scope,
-                    limit=args.limit,
-                    diagnostic_limit=args.diagnostic_limit,
-                    freshness=args.freshness,
-                ),
-                verifier=(lambda _candidates, _pattern: {}) if args.freshness == "verify" else None,
-            )
-            if args.freshness == "verify":
-                payload = dict(payload)
-                payload["freshnessEvidence"] = verification["__index__"]
-            if args.search_operation == "type":
-                payload = dict(payload)
-                payload["migration"] = "use 'search type-text'; this alias remains for compatibility"
-            return payload
+        payload = dispatch_type_text(args, repo_root, index_path)
+        if args.search_operation == "type":
+            payload = dict(payload)
+            payload["migration"] = "use 'search type-text'; this alias remains for compatibility"
+        return payload
     if args.search_operation != "name":
         raise ProofSearchIndexError("unsupported search operation")
     payload = query_proof_search_index(
