@@ -27,6 +27,7 @@ def test_discovery_preserves_accepted_rejected_and_failed_candidates() -> None:
     ]
     assert result["requestIdentity"].startswith("sha256:")
     assert result["batch"]["protocol"] == "ladon-verified-discovery-v1"
+    assert result["ranking"]["policy"] == "verified-status-priority-v1"
 
 
 def test_discovery_check_failure_is_unassessed_and_bounded() -> None:

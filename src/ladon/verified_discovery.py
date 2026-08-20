@@ -127,6 +127,13 @@ def discover_candidates(
             "checked": len(candidates),
             "truncated": len(shortlist) > request.max_candidates,
         },
+        "ranking": {
+            "policy": "verified-status-priority-v1",
+            "contributions": [
+                {"candidate": candidate.name, "status": candidate.check.get("status"), "priority": _status_priority(candidate.check.get("status"))}
+                for candidate in candidates
+            ],
+        },
         "nonclaims": [
             "Lexical shortlisting is not Lean applicability.",
             "Rejected and unassessed candidates remain visible.",
@@ -135,6 +142,10 @@ def discover_candidates(
     identity = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     payload["requestIdentity"] = "sha256:" + hashlib.sha256(identity.encode()).hexdigest()
     return payload
+
+
+def _status_priority(status: Any) -> int:
+    return {"accepted": 0, "applicable-with-residuals": 1, "rejected": 2, "timeout": 3, "resource-limited": 4, "unassessed": 5}.get(status, 6)
 
 
 def _check_one(
