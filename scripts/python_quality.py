@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Run Ladon's Python code-quality audits.
 
-Default mode prints radon and vulture reports. Strict mode is the project gate:
-it fails on C-or-worse active complexity, C-grade maintainability,
-high-confidence dead code, compile failures, or tests.
+Default mode runs the scoped Ruff, radon, and vulture reports. Strict mode is
+the project gate: it fails on configured Ruff findings, C-or-worse active
+complexity, C-grade maintainability, high-confidence dead code, compile
+failures, or tests.
 """
 
 from __future__ import annotations
@@ -39,7 +40,12 @@ def run_command(label: str, command: list[str], cwd: Path) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Run radon and vulture over Ladon's Python sources."
+        description="Run scoped Ruff, radon, and vulture checks over Ladon's Python sources."
+    )
+    parser.add_argument(
+        "--skip-ruff",
+        action="store_true",
+        help="Skip the repository-scoped Ruff lint configuration.",
     )
     parser.add_argument(
         "--target",
@@ -91,6 +97,12 @@ def run_strict(root: Path, targets: list[str]) -> int:
             print(format_issue(issue))
         return 1
     print("radon/vulture: clean", flush=True)
+    if run_command(
+        "scoped ruff",
+        [sys.executable, "-m", "ruff", "check", *targets],
+        root,
+    ):
+        return 1
     print("\n== compileall ==", flush=True)
     if not compileall.compile_dir(root / "src", quiet=1):
         return 1
@@ -109,6 +121,13 @@ def main(argv: list[str] | None = None) -> int:
         return run_strict(root, targets)
 
     commands: list[tuple[str, list[str]]] = []
+    if not args.skip_ruff:
+        commands.append(
+            (
+                "scoped ruff",
+                [sys.executable, "-m", "ruff", "check", *targets],
+            )
+        )
     if not args.skip_radon:
         commands.append(
             (

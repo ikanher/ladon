@@ -79,5 +79,10 @@ def test_strict_quality_pytest_gate_is_scoped_to_maintained_tests(
 
     assert status == 0
     assert commands == [
+        (
+            "scoped ruff",
+            [sys.executable, "-m", "ruff", "check", "src", "tests", "scripts"],
+            tmp_path,
+        ),
         ("pytest", [sys.executable, "-m", "pytest", "-q", "tests"], tmp_path)
     ]

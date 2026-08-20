@@ -135,7 +135,6 @@ def _rank_rows(rows: list[dict[str, Any]], text: str | None, minimum: int) -> li
     for row in rows:
         score_data = _row_score(row, terms, text)
         matched = score_data["matched"]
-        specific = score_data["specific"]
         if len(matched) < minimum:
             continue
         row["_rank"] = score_data
