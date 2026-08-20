@@ -81,16 +81,7 @@ def replay_scratch(
     output_digest = (
         "sha256:" + hashlib.sha256((process.stdout + process.stderr).encode()).hexdigest()
     )
-    if process.timed_out:
-        status = "timeout"
-    elif process.output_limited:
-        status = "output-limited"
-    elif process.memory_limited:
-        status = "memory-limited"
-    elif process.returncode != 0:
-        status = "lean-rejected"
-    else:
-        status = "compiled"
+    status = _replay_status(process)
     if status == "compiled":
         return ScratchReplayResult("compiled", source, source_digest, output_digest)
     return ScratchReplayResult(
@@ -100,6 +91,16 @@ def replay_scratch(
         output_digest,
         (process.stderr or process.stdout).strip() or "scratch replay failed",
     )
+
+
+def _replay_status(process: ProcessResult) -> str:
+    if process.timed_out:
+        return "timeout"
+    if process.output_limited:
+        return "output-limited"
+    if process.memory_limited:
+        return "memory-limited"
+    return "lean-rejected" if process.returncode != 0 else "compiled"
 
 
 __all__ = ["ScratchReplayResult", "build_scratch_source", "replay_scratch"]

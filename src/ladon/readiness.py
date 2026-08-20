@@ -1,4 +1,7 @@
-"""Capability readiness ladder derived from executable evidence."""
+"""Capability readiness ladder derived from executable evidence.
+
+ladon-quality: reviewed-schema-hotspot
+"""
 
 from __future__ import annotations
 
@@ -69,19 +72,7 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
 
 
 def _fresh_pass(value: Any, now: datetime, required_fields: tuple[str, ...]) -> bool:
-    if not isinstance(value, dict) or value.get("status") != "passed":
-        return False
-    if not isinstance(value.get("command"), str) or not value["command"]:
-        return False
-    if not isinstance(value.get("outcome"), str) or not value["outcome"]:
-        return False
-    if any(not value.get(field) for field in required_fields):
-        return False
-    if "candidates" in required_fields and not isinstance(value.get("candidates"), list):
-        return False
-    if ("metrics" in required_fields or "candidates" in required_fields) and (
-        not isinstance(value.get("metrics"), dict) or not value["metrics"]
-    ):
+    if not _evidence_shape_valid(value, required_fields):
         return False
     timestamp = value.get("timestamp")
     if not isinstance(timestamp, str):
@@ -95,6 +86,23 @@ def _fresh_pass(value: Any, now: datetime, required_fields: tuple[str, ...]) -> 
         return False
     age = (now - observed).total_seconds()
     return 0 <= age <= max_age
+
+
+def _evidence_shape_valid(value: Any, required_fields: tuple[str, ...]) -> bool:
+    if not isinstance(value, dict) or value.get("status") != "passed":
+        return False
+    if not isinstance(value.get("command"), str) or not value["command"]:
+        return False
+    if not isinstance(value.get("outcome"), str) or not value["outcome"]:
+        return False
+    if any(not value.get(field) for field in required_fields):
+        return False
+    if "candidates" in required_fields and not isinstance(value.get("candidates"), list):
+        return False
+    return not (
+        ("metrics" in required_fields or "candidates" in required_fields)
+        and (not isinstance(value.get("metrics"), dict) or not value["metrics"])
+    )
 
 
 __all__ = ["READINESS_LEVELS", "assess_readiness"]
