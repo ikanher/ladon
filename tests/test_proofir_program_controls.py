@@ -26,6 +26,15 @@ def _load(path: Path) -> Any:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _change_path(change_id: str) -> Path:
+    """Resolve an active packet or its date-stamped archived copy."""
+    active = ROOT / "openspec/changes" / change_id
+    if active.is_dir():
+        return active
+    archived = sorted((ROOT / "openspec/changes/archive").glob(f"*-{change_id}"))
+    return archived[-1] if archived else active
+
+
 def _assert_valid_corpus_case(row: dict[str, Any]) -> None:
     checked = validate_envelope_batch(row["artifacts"])
     assert [artifact.content_id for artifact in checked] == row["artifactIds"]
@@ -82,11 +91,7 @@ def test_dependency_ledger_names_existing_changes_with_identical_specs() -> None
 
     for row in rows:
         change_id = row["change"]
-        change = ROOT / "openspec/changes" / change_id
-        if not change.is_dir():
-            archived = sorted((ROOT / "openspec/changes/archive").glob(f"*-{change_id}"))
-            if archived:
-                change = archived[-1]
+        change = _change_path(change_id)
         umbrella_spec = UMBRELLA / "specs" / change_id / "spec.md"
         child_spec = change / "specs" / change_id / "spec.md"
         assert change.is_dir(), f"dependency-ledger child is absent: {change_id}"

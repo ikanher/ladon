@@ -47,5 +47,5 @@
 
 - [x] 7.1 Run strict OpenSpec validation for this umbrella and verify every modified requirement has executable positive, boundary, and adversarial coverage.
 - [x] 7.2 Run all focused ProofIR v3, derivation, catalog, link-observation, semantic-worker, dossier, installed-CLI, and clean-environment tests.
-- [ ] 7.3 Run the full Python test suite and repository quality/type/lint gates with Quux unavailable from the dependency path.
-- [ ] 7.4 Run snapshot or generated-artifact verification and `git diff --check`, then record exact commands and outcomes before claiming the umbrella complete.
+- [x] 7.3 Run the full Python test suite and repository quality/type/lint gates with Quux unavailable from the dependency path.
+- [x] 7.4 Run snapshot or generated-artifact verification and `git diff --check`, then record exact commands and outcomes before claiming the umbrella complete.
