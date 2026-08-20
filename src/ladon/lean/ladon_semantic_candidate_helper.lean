@@ -82,9 +82,10 @@ structure SemanticBatchRow where
   diagnostic : String
   deriving ToJson
 
-structure SemanticBatchOutput where
+structure SemanticBatchHeader where
   protocol : String
   frameVersion : Nat
+  frameKind : String
   sequence : Nat
   terminal : Bool
   universePolicy : String
@@ -95,9 +96,33 @@ structure SemanticBatchOutput where
   module : String
   probe : SemanticSubject
   importedModules : Array SemanticModule
-  rows : Array SemanticBatchRow
   localContext : Array SemanticLocalDecl
   deriving ToJson
+
+structure SemanticBatchRowFrame where
+  protocol : String
+  frameVersion : Nat
+  frameKind : String
+  sequence : Nat
+  terminal : Bool
+  requestId : String
+  row : SemanticBatchRow
+  deriving ToJson
+
+structure SemanticBatchSummary where
+  protocol : String
+  frameVersion : Nat
+  frameKind : String
+  sequence : Nat
+  terminal : Bool
+  requestId : String
+  completed : Nat
+  total : Nat
+  deriving ToJson
+
+private def emitFrame {α : Type} [ToJson α] (frame : α) : IO Unit := do
+  IO.println s!"LADON_FRAME {Json.compress (toJson frame)}"
+  (← IO.getStdout).flush
 
 private def runMetaIO {α : Type} (env : Environment) (file : String)
     (fileMap : FileMap) (action : MetaM α) : IO α := do
@@ -310,8 +335,26 @@ private def runBatchHelper (module file goal probeName requestId : String)
       let probe ← expressionSubject env file fileMap probeName.toName goalType
       let modules ← importedModules env
       let localContext ← analyzeLocalContext env file fileMap goalType
-      let rows ← candidateNames.toArray.mapM fun candidateName => do
-        try
+      let executable ← IO.appPath
+      emitFrame ({
+        protocol := "ladon-lean-semantic-v3/check-candidates"
+        frameVersion := 1
+        frameKind := "header"
+        sequence := 0
+        terminal := false
+        universePolicy := "lean-level-mvar-succ-zero/v1"
+        requestId
+        leanVersion := Lean.versionString
+        leanCommit := Lean.githash
+        executablePath := toString executable
+        module
+        probe
+        importedModules := modules
+        localContext
+      } : SemanticBatchHeader)
+      for h : index in [0:candidateNames.length] do
+        let candidateName := candidateNames[index]
+        let row : SemanticBatchRow ← try
           let candidateLeanName ← parseLeanName env candidateName
           let candidate ← subject env file fileMap candidateLeanName
           let (applicationTerm, substitutions, residuals, _) ← analyzeApplication env file fileMap goalType candidateLeanName
@@ -334,24 +377,25 @@ private def runBatchHelper (module file goal probeName requestId : String)
             residualPremises := #[]
             diagnostic := error.toString
           }
-      let executable ← IO.appPath
-      let output : SemanticBatchOutput := {
+        emitFrame ({
+          protocol := "ladon-lean-semantic-v3/check-candidates"
+          frameVersion := 1
+          frameKind := "candidate"
+          sequence := index + 1
+          terminal := false
+          requestId
+          row
+        } : SemanticBatchRowFrame)
+      emitFrame ({
         protocol := "ladon-lean-semantic-v3/check-candidates"
         frameVersion := 1
-        sequence := 0
+        frameKind := "summary"
+        sequence := candidateNames.length + 1
         terminal := true
-        universePolicy := "lean-level-mvar-succ-zero/v1"
         requestId
-        leanVersion := Lean.versionString
-        leanCommit := Lean.githash
-        executablePath := toString executable
-        module
-        probe
-        importedModules := modules
-        rows
-        localContext
-      }
-      IO.println s!"LADON_FRAME {Json.compress (toJson output)}"
+        completed := candidateNames.length
+        total := candidateNames.length
+      } : SemanticBatchSummary)
       return 0
 def main (args : List String) : IO UInt32 := do
   match args with

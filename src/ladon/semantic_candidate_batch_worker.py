@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import secrets
 import tempfile
 import threading
@@ -20,7 +21,6 @@ from ladon.semantic_candidate_worker import (
     UNIVERSE_POLICY,
     SemanticCandidateRequest,
     _accepted_artifacts,
-    _decode_single_frame,
     _digest_text,
     _environment_artifact,
     _environment_source,
@@ -44,12 +44,14 @@ class SemanticCandidateBatchCheck:
     diagnostic: Mapping[str, Any] | None = None
     elapsed_seconds: float = 0.0
     peak_rss_bytes: int | None = None
+    terminal: bool = False
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "schema": "ladon-semantic-candidate-batch-result-v1",
             "operation": "check-candidates",
             "status": self.status,
+            "terminal": self.terminal,
             "rows": [dict(row) for row in self.rows],
             "diagnostic": dict(self.diagnostic) if self.diagnostic else None,
             "resourceAccounting": {
@@ -102,18 +104,20 @@ def check_semantic_candidates(
             max_rss_bytes=request.max_rss_bytes,
             cancel_event=cancel_event,
         )
-    if not process.succeeded:
-        return SemanticCandidateBatchCheck(
-            "failed",
-            diagnostic={
-                "code": "batch-worker-failed",
-                "message": (process.stderr or process.stdout).strip(),
-            },
-            elapsed_seconds=process.elapsed_seconds,
-            peak_rss_bytes=process.peak_rss_bytes,
-        )
+    return _interpret_batch_process(request, candidates, helper_path, process, request_id)
+
+
+def _interpret_batch_process(
+    request: SemanticCandidateRequest,
+    candidates: Sequence[str],
+    helper_path: Path,
+    process: Any,
+    request_id: str,
+) -> SemanticCandidateBatchCheck:
     try:
-        payload = _parse_batch_worker_payload(process.stdout, request, request_id, candidates)
+        payload, terminal = _parse_batch_worker_payload(
+            process.stdout, request, request_id, candidates
+        )
     except (TypeError, ValueError) as error:
         return SemanticCandidateBatchCheck(
             "invalid-worker-output",
@@ -122,7 +126,13 @@ def check_semantic_candidates(
             peak_rss_bytes=process.peak_rss_bytes,
         )
     try:
-        rows = _materialize_batch_rows(request, helper_path, process, payload)
+        rows = _materialize_batch_rows(
+            request,
+            helper_path,
+            process,
+            payload,
+            authoritative=terminal and process.succeeded,
+        )
     except (OSError, TypeError, ValueError) as error:
         return SemanticCandidateBatchCheck(
             "invalid-worker-output",
@@ -130,11 +140,14 @@ def check_semantic_candidates(
             elapsed_seconds=process.elapsed_seconds,
             peak_rss_bytes=process.peak_rss_bytes,
         )
+    status = "available" if terminal and process.succeeded else ("partial" if rows else "failed")
     return SemanticCandidateBatchCheck(
-        "available",
+        status,
         tuple(rows),
+        diagnostic=(None if status == "available" else _process_diagnostic(process)),
         elapsed_seconds=process.elapsed_seconds,
         peak_rss_bytes=process.peak_rss_bytes,
+        terminal=terminal and process.succeeded,
     )
 
 
@@ -163,11 +176,92 @@ def _batch_probe_name(request: SemanticCandidateRequest) -> str:
 
 def _parse_batch_worker_payload(
     stdout: str, request: SemanticCandidateRequest, request_id: str, candidates: Sequence[str]
-) -> dict[str, Any]:
-    payload = _decode_single_frame(stdout)
+) -> tuple[dict[str, Any], bool]:
+    frames = _decode_batch_frames(stdout)
+    header = frames[0]
+    _validate_batch_header(header, request, request_id)
+    rows, terminal = _validated_batch_prefix(frames[1:], request_id, candidates)
+    payload = {**header, "rows": rows, "terminal": terminal}
+    return payload, terminal
+
+
+def _decode_batch_frames(stdout: str) -> list[dict[str, Any]]:
+    prefix = "LADON_FRAME "
+    encoded = [line[len(prefix) :] for line in stdout.splitlines() if line.startswith(prefix)]
+    if not encoded:
+        raise ValueError("Lean semantic helper emitted no batch frames")
+    try:
+        frames = [json.loads(frame) for frame in encoded]
+    except json.JSONDecodeError as error:
+        raise ValueError("Lean semantic helper emitted malformed batch JSON") from error
+    if not all(isinstance(frame, dict) for frame in frames):
+        raise TypeError("Lean semantic helper emitted a non-object batch frame")
+    return frames
+
+
+def _validate_batch_header(
+    payload: Mapping[str, Any], request: SemanticCandidateRequest, request_id: str
+) -> None:
+    expected = {
+        "protocol",
+        "frameVersion",
+        "frameKind",
+        "sequence",
+        "terminal",
+        "universePolicy",
+        "requestId",
+        "leanVersion",
+        "leanCommit",
+        "executablePath",
+        "module",
+        "probe",
+        "importedModules",
+        "localContext",
+    }
+    if set(payload) != expected or payload.get("frameKind") != "header":
+        raise ValueError("Lean semantic helper returned an invalid batch header")
     _validate_batch_identity(payload, request, request_id)
-    _validate_batch_rows(payload["rows"], candidates)
-    return payload
+
+
+def _validated_batch_prefix(
+    frames: Sequence[Mapping[str, Any]], request_id: str, candidates: Sequence[str]
+) -> tuple[list[dict[str, Any]], bool]:
+    rows: list[dict[str, Any]] = []
+    terminal = False
+    for sequence, frame in enumerate(frames, start=1):
+        _validate_prefix_frame(frame, request_id, sequence)
+        if frame["frameKind"] == "summary":
+            if (
+                sequence != len(candidates) + 1
+                or frame["completed"] != len(rows)
+                or frame["total"] != len(candidates)
+            ):
+                raise ValueError("Lean semantic helper returned an invalid batch summary")
+            terminal = True
+            if sequence != len(frames):
+                raise ValueError("Lean semantic helper emitted frames after the terminal summary")
+            break
+        row = frame["row"]
+        expected_candidate = candidates[len(rows)]
+        _validate_batch_row(row, expected_candidate)
+        rows.append(dict(row))
+    return rows, terminal
+
+
+def _validate_prefix_frame(frame: Mapping[str, Any], request_id: str, sequence: int) -> None:
+    common = {"protocol", "frameVersion", "frameKind", "sequence", "terminal", "requestId"}
+    kind = frame.get("frameKind")
+    expected = common | ({"row"} if kind == "candidate" else {"completed", "total"})
+    if (
+        set(frame) != expected
+        or frame.get("protocol") != SEMANTIC_BATCH_PROTOCOL
+        or frame.get("frameVersion") != 1
+        or frame.get("requestId") != request_id
+        or frame.get("sequence") != sequence
+        or frame.get("terminal") is not (kind == "summary")
+        or kind not in {"candidate", "summary"}
+    ):
+        raise ValueError("Lean semantic helper returned an invalid sequenced batch frame")
 
 
 def _validate_batch_identity(
@@ -183,6 +277,7 @@ def _validate_batch_required_fields(payload: Mapping[str, Any]) -> None:
     required = {
         "protocol",
         "frameVersion",
+        "frameKind",
         "sequence",
         "terminal",
         "universePolicy",
@@ -193,7 +288,6 @@ def _validate_batch_required_fields(payload: Mapping[str, Any]) -> None:
         "module",
         "probe",
         "importedModules",
-        "rows",
         "localContext",
     }
     if not required <= set(payload):
@@ -208,7 +302,7 @@ def _validate_batch_frame(
     if (
         payload.get("frameVersion") != 1
         or payload.get("sequence") != 0
-        or payload.get("terminal") is not True
+        or payload.get("terminal") is not False
         or payload.get("module") != request.module
     ):
         raise ValueError("Lean semantic helper returned an invalid batch population")
@@ -222,8 +316,6 @@ def _validate_batch_execution_identity(payload: Mapping[str, Any]) -> None:
         for field in ("leanVersion", "leanCommit", "executablePath")
     ):
         raise ValueError("Lean semantic helper returned invalid batch execution identity")
-    if not isinstance(payload.get("rows"), list):
-        raise TypeError("Lean semantic helper returned non-list batch rows")
 
 
 def _validate_batch_semantic_population(
@@ -307,12 +399,90 @@ def _materialize_batch_rows(
     helper_path: Path,
     process: Any,
     payload: Mapping[str, Any],
+    *,
+    authoritative: bool,
 ) -> list[dict[str, Any]]:
     environment = _environment_artifact(request.repo_root, payload, request.toolchain)
+    if not authoritative:
+        return [_materialize_partial_row(request, environment, row) for row in payload["rows"]]
     return [
         _materialize_batch_row(request, helper_path, process, payload, environment, row)
         for row in payload["rows"]
     ]
+
+
+def _materialize_partial_row(
+    request: SemanticCandidateRequest,
+    environment: Mapping[str, Any],
+    row: Mapping[str, Any],
+) -> dict[str, Any]:
+    candidate_request = replace(request, candidate=str(row["candidate"]))
+    check_ref = (
+        "check:"
+        + _digest_text(
+            canonical_bytes(
+                {
+                    "environmentRef": environment["environmentRef"],
+                    "candidate": row["candidate"],
+                    "status": row["status"],
+                    "batchTerminal": False,
+                }
+            ).decode()
+        )[7:]
+    )
+    receipt = _prefix_receipt(
+        candidate_request, str(environment["environmentRef"]), check_ref, str(row["status"])
+    )
+    return {
+        **dict(row),
+        "batchTerminal": False,
+        "environmentRef": environment["environmentRef"],
+        "checkRunRef": check_ref,
+        "evidenceReceipt": receipt,
+        "artifacts": [dict(environment)],
+    }
+
+
+def _prefix_receipt(
+    request: SemanticCandidateRequest,
+    environment_ref: str,
+    check_ref: str,
+    status: str,
+) -> dict[str, Any]:
+    explicit = request.toolchain is not None and request.toolchain.selection_mode == "explicit"
+    return build_evidence_receipt(
+        subject={
+            "module": request.module,
+            "candidate": request.candidate,
+            "goal": request.goal,
+            "localContext": [dict(row) for row in request.local_context],
+        },
+        execution_binding="explicit-pinned" if explicit else "ambient-observed",
+        observation_state="live",
+        operation_outcome="rejected" if status == "rejected" else "accepted",
+        authority_basis="elaborator-check",
+        analysis_completeness="partial",
+        environment_match="exact" if request.toolchain is not None else "unknown",
+        environment_ref=environment_ref,
+        check_run_ref=check_ref,
+        limitations=(
+            "Batch terminated before its completeness summary; only this validated prefix row is observed.",
+        ),
+    )
+
+
+def _process_diagnostic(process: Any) -> dict[str, str]:
+    if process.timed_out:
+        code = "batch-timeout"
+    elif process.output_limited:
+        code = "batch-output-limit"
+    elif process.memory_limited:
+        code = "batch-memory-limit"
+    elif process.returncode != 0:
+        code = "batch-worker-failed"
+    else:
+        code = "batch-terminal-summary-missing"
+    return {"code": code, "message": (process.stderr or "").strip() or code}
 
 
 def _materialize_batch_row(

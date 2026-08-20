@@ -139,10 +139,11 @@ def _batch_results(
     request: DiscoveryRequest, names: tuple[str, ...], toolchain: Any
 ) -> dict[str, Mapping[str, Any]]:
     batch = check_semantic_candidates(request_to_semantic(request, toolchain), names)
-    if batch.status != "available":
-        diagnostic = batch.diagnostic or {"code": "batch-failed"}
-        return {name: {"status": "unassessed", "diagnostic": diagnostic} for name in names}
-    return {str(row["candidate"]): dict(row) for row in batch.rows}
+    rows = {str(row["candidate"]): dict(row) for row in batch.rows}
+    diagnostic = batch.diagnostic or {"code": "batch-failed"}
+    return {
+        name: rows.get(name, {"status": "unassessed", "diagnostic": diagnostic}) for name in names
+    }
 
 
 def request_to_semantic(request: DiscoveryRequest, toolchain: Any) -> Any:
