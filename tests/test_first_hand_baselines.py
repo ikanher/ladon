@@ -92,5 +92,5 @@ def test_explain_red_contract_peels_conclusion_and_keeps_two_residuals() -> None
             "(family : Family) (j : Index) (hregion : Region j) (hinitial : Initial family j) : firstExitCrossingMass family j region n = terminalExitProbability family j region n",
         )
     )
-    assert result["classification"] == "lexically-applicable-with-residuals"
-    assert len(result["residuals"]) == 2
+    assert result["classification"] == "rendered-conclusion-with-binders"
+    assert len(result["residuals"]) == 4

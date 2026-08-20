@@ -57,7 +57,8 @@ def test_explain_compares_indexed_type_not_declaration_name(tmp_path: Path) -> N
 
     result = _dispatch_explain(args, tmp_path, database)
 
-    assert result["classification"] == "applicable"
+    assert result["classification"] == "exact-rendered-conclusion"
+    assert result["routeCard"]["accepted"] is False
     assert result["normalization"]["peeledConclusion"] == "True"
 
 
