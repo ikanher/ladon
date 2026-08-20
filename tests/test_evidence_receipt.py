@@ -30,7 +30,7 @@ def test_accepted_receipt_binds_exact_subject_environment_and_check() -> None:
     receipt = build_evidence_receipt(**_accepted())  # type: ignore[arg-type]
     assert receipt["authorityBasis"] == "elaborator-check"
     assert receipt["environmentRef"] == "sha256:" + "a" * 64
-    assert receipt["checkRunRef"] == "check:run"
+    assert receipt["checkRunRef"] == "check:" + "b" * 64
 
 
 @pytest.mark.parametrize(
