@@ -17,6 +17,7 @@ from ladon.cli_execution import (
     EXIT_SUCCESS,
     write_output_file,
 )
+from ladon.lean_toolchain import LeanToolchainError, resolve_toolchain_context
 from ladon.proof_difference import DifferenceRequest, analyze_difference
 from ladon.proof_search_constructor import (
     ConstructorRequest,
@@ -228,6 +229,14 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     candidate.add_argument("--timeout-seconds", type=float, default=120.0)
     candidate.add_argument("--max-output-mib", type=_positive_integer, default=8)
     candidate.add_argument("--max-rss-mib", type=_positive_integer, default=2048)
+    candidate.add_argument(
+        "--toolchain-mode",
+        choices=("ambient", "explicit"),
+        default="ambient",
+        help="Select ambient discovery (non-authoritative) or explicit pinned executables.",
+    )
+    candidate.add_argument("--lake-path", type=Path)
+    candidate.add_argument("--lean-path", type=Path)
     return parser
 
 
@@ -407,6 +416,12 @@ def _dispatch_check(args: argparse.Namespace, repo_root: Path) -> Mapping[str, A
     if args.check_operation != "candidate":
         raise ProofSearchIndexError("unsupported checker operation")
     try:
+        toolchain = resolve_toolchain_context(
+            repo_root.resolve(),
+            lake_path=args.lake_path,
+            lean_path=args.lean_path,
+            selection_mode=args.toolchain_mode,
+        )
         request = SemanticCandidateRequest(
             repo_root.resolve(),
             args.module,
@@ -415,8 +430,9 @@ def _dispatch_check(args: argparse.Namespace, repo_root: Path) -> Mapping[str, A
             timeout_seconds=args.timeout_seconds,
             max_output_bytes=args.max_output_mib * 1024 * 1024,
             max_rss_bytes=args.max_rss_mib * 1024 * 1024,
+            toolchain=toolchain,
         )
-    except ValueError as error:
+    except (ValueError, LeanToolchainError) as error:
         raise ProofSearchIndexError(str(error)) from error
     return check_semantic_candidate(request).to_dict()
 
