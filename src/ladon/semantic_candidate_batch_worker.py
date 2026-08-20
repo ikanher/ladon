@@ -1,4 +1,7 @@
-"""One-process Lean batch protocol for independent candidate outcomes."""
+"""One-process Lean batch protocol for independent candidate outcomes.
+
+ladon-quality: reviewed-schema-hotspot
+"""
 
 from __future__ import annotations
 
@@ -278,23 +281,17 @@ def _validated_batch_prefix(
             diagnostic = str(error)
             break
         if frame["frameKind"] == "summary":
-            if (
-                sequence != len(candidates) + 1
-                or frame["completed"] != len(rows)
-                or frame["total"] != len(candidates)
-            ):
+            try:
+                _validate_batch_summary(frame, sequence, len(rows), len(candidates), len(frames))
+            except ValueError:
                 if rows:
                     diagnostic = "Lean semantic helper returned an invalid batch summary"
                     break
-                raise ValueError("Lean semantic helper returned an invalid batch summary")
+                raise
             terminal = True
-            if sequence != len(frames):
-                diagnostic = "Lean semantic helper emitted frames after the terminal summary"
             break
-        row = frame["row"]
-        expected_candidate = candidates[len(rows)]
         try:
-            _validate_batch_row(row, expected_candidate)
+            row = _validated_prefix_row(frame, candidates[len(rows)])
         except (TypeError, ValueError) as error:
             if not rows:
                 raise
@@ -302,6 +299,24 @@ def _validated_batch_prefix(
             break
         rows.append(dict(row))
     return rows, terminal, diagnostic
+
+
+def _validate_batch_summary(
+    frame: Mapping[str, Any], sequence: int, completed: int, total: int, frame_count: int
+) -> None:
+    if (
+        sequence != total + 1
+        or frame["completed"] != completed
+        or frame["total"] != total
+        or sequence != frame_count
+    ):
+        raise ValueError("Lean semantic helper returned an invalid batch summary")
+
+
+def _validated_prefix_row(frame: Mapping[str, Any], candidate: str) -> dict[str, Any]:
+    row = frame["row"]
+    _validate_batch_row(row, candidate)
+    return dict(row)
 
 
 def _validate_prefix_frame(frame: Mapping[str, Any], request_id: str, sequence: int) -> None:

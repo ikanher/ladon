@@ -164,14 +164,20 @@ def _transition_error(axis: str, parent: str, child: str) -> str:
 
 
 def _state_violations(dimensions: EvidenceDimensions) -> list[str]:
+    return [
+        *_outcome_state_violations(dimensions),
+        *_authority_state_violations(dimensions),
+        *_binding_state_violations(dimensions),
+    ]
+
+
+def _outcome_state_violations(dimensions: EvidenceDimensions) -> list[str]:
     violations: list[str] = []
     if dimensions.operation_outcome == "accepted" and dimensions.observation_state in {
         "absent",
         "failed",
     }:
         violations.append("accepted outcome requires an attributable observation")
-    if dimensions.observation_state == "live" and dimensions.execution_binding == "none":
-        violations.append("live observation requires an executed binding")
     if dimensions.operation_outcome == "not-run" and (
         dimensions.observation_state == "live"
         or dimensions.authority_basis in {"elaborator-check", "kernel-check"}
@@ -180,11 +186,22 @@ def _state_violations(dimensions: EvidenceDimensions) -> list[str]:
         violations.append(
             "not-run outcome cannot claim live checker authority or complete analysis"
         )
+    return violations
+
+
+def _authority_state_violations(dimensions: EvidenceDimensions) -> list[str]:
     if dimensions.authority_basis in {
         "elaborator-check",
         "kernel-check",
     } and dimensions.observation_state in {"absent", "failed"}:
-        violations.append("checker authority requires an attributable observation")
+        return ["checker authority requires an attributable observation"]
+    return []
+
+
+def _binding_state_violations(dimensions: EvidenceDimensions) -> list[str]:
+    violations: list[str] = []
+    if dimensions.observation_state == "live" and dimensions.execution_binding == "none":
+        violations.append("live observation requires an executed binding")
     if (
         dimensions.execution_binding == "explicit-pinned"
         and dimensions.environment_match == "mismatched"

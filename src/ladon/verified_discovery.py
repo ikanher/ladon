@@ -324,9 +324,7 @@ def _attach_scratch(
     if scratch_replayer is None or result.get("status") != "accepted":
         return result
     try:
-        receipt = result.get("evidenceReceipt")
-        subject = receipt.get("subject", {}) if isinstance(receipt, Mapping) else {}
-        caller_context = subject.get("localContext", ()) if isinstance(subject, Mapping) else ()
+        caller_context = result.get("callerLocalContext", ())
         application_term = (result.get("applicationTerm") if caller_context else name) or name
         if not isinstance(application_term, str):
             raise TypeError("candidate application term must be a string")
