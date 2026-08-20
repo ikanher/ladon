@@ -57,6 +57,23 @@ def test_declared_and_resolved_content_id_drift_is_diagnosed() -> None:
     assert row["diagnostics"] == ["source-content-id-drift"]
 
 
+def test_v2_observation_keeps_file_digest_outside_artifact_identity() -> None:
+    row = manifest_link_observation(
+        source_path="replay.json",
+        target_path="surface.json",
+        kind="replays",
+        declared_source_artifact_id=None,
+        declared_target_artifact_id=None,
+        resolved_source_artifact_id=None,
+        resolved_target_artifact_id=None,
+        resolved_source_file_digest=_digest("a"),
+        resolved_target_file_digest=_digest("b"),
+    )
+    assert row["observer"]["version"] == "proofir-manifest-link-v2"
+    assert row["endpoints"]["source"]["resolvedFileDigest"] == _digest("a")
+    assert row["endpoints"]["source"]["resolvedArtifactId"] is None
+
+
 @pytest.mark.parametrize("field", ["declared_source_artifact_id", "resolved_target_artifact_id"])
 def test_non_content_addressed_endpoint_is_rejected(field: str) -> None:
     arguments = {

@@ -9,7 +9,7 @@ from typing import Any
 
 from ladon.proofir_v3 import canonical_bytes
 
-LINK_POLICY_VERSION = "proofir-manifest-link-v1"
+LINK_POLICY_VERSION = "proofir-manifest-link-v2"
 OBSERVER = {"name": "ladon-manifest-link-resolver", "version": LINK_POLICY_VERSION}
 
 
@@ -22,11 +22,14 @@ def manifest_link_observation(
     declared_target_artifact_id: str | None,
     resolved_source_artifact_id: str | None,
     resolved_target_artifact_id: str | None,
+    resolved_source_file_digest: str | None = None,
+    resolved_target_file_digest: str | None = None,
 ) -> dict[str, Any]:
     """Quote a repository-manifest relationship and diagnose its endpoints."""
 
     if not source_path or not target_path or not kind:
         raise ValueError("manifest link paths and kind must be non-empty")
+    legacy = resolved_source_file_digest is None and resolved_target_file_digest is None
     endpoints = {
         "source": {
             "path": source_path,
@@ -39,10 +42,16 @@ def manifest_link_observation(
             "resolvedArtifactId": resolved_target_artifact_id,
         },
     }
+    if not legacy:
+        endpoints["source"]["resolvedFileDigest"] = resolved_source_file_digest
+        endpoints["target"]["resolvedFileDigest"] = resolved_target_file_digest
     _validate_endpoint_ids(endpoints)
     diagnostics = _endpoint_diagnostics(endpoints)
     payload = {
-        "observer": dict(OBSERVER),
+        "observer": {
+            "name": OBSERVER["name"],
+            "version": "proofir-manifest-link-v1" if legacy else LINK_POLICY_VERSION,
+        },
         "observationKind": "manifest-assertion",
         "linkKind": kind,
         "endpoints": endpoints,
@@ -67,7 +76,8 @@ def insert_manifest_link_observations(
     generation_id: str,
     relationships: tuple[tuple[str, str, str, str], ...],
     artifact_ids: dict[str, str],
-    content_ids: dict[str, str],
+    content_ids: dict[str, str | None],
+    file_digests: dict[str, str] | None = None,
 ) -> int:
     """Persist configured paths as quoted, non-canonical link observations."""
 
@@ -81,6 +91,7 @@ def insert_manifest_link_observations(
             details_json,
             artifact_ids,
             content_ids,
+            file_digests,
         )
     return len(relationships)
 
@@ -94,6 +105,7 @@ def _insert_manifest_link(
     details_json,
     artifact_ids,
     content_ids,
+    file_digests,
 ) -> None:
     source_id = artifact_ids.get(source_path)
     target_id = artifact_ids.get(target_path)
@@ -108,8 +120,10 @@ def _insert_manifest_link(
         kind=kind,
         declared_source_artifact_id=None,
         declared_target_artifact_id=None,
-        resolved_source_artifact_id=content_ids[source_path],
-        resolved_target_artifact_id=content_ids[target_path],
+            resolved_source_artifact_id=content_ids.get(source_path),
+            resolved_target_artifact_id=content_ids.get(target_path),
+            resolved_source_file_digest=(file_digests or {}).get(source_path),
+            resolved_target_file_digest=(file_digests or {}).get(target_path),
     )
     details = {
         "manifestDetails": json.loads(details_json),

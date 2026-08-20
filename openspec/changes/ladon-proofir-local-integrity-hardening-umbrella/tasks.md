@@ -17,9 +17,9 @@
 
 - [x] 3.1 Introduce field-specific validated `FileDigest` and `ContentArtifactId` representations and update function signatures so raw file hashes cannot be passed as detached artifact IDs.
 - [x] 3.2 Extend ProofIR catalog discovery to retain each raw file digest and, independently, the validated native-v3 envelope artifact ID when validation establishes one.
-- [ ] 3.3 Implement manifest-link policy v2 with `resolvedFileDigest`, nullable validated `resolvedArtifactId`, domain-specific drift diagnostics, and no heuristic interpretation of legacy observations.
+- [x] 3.3 Implement manifest-link policy v2 with `resolvedFileDigest`, nullable validated `resolvedArtifactId`, domain-specific drift diagnostics, and no heuristic interpretation of legacy observations.
 - [ ] 3.4 Bump affected derived result or proof-search index versions, rebuild disposable test indexes, and regenerate repository-owned snapshots without changing canonical native-v3 artifact IDs.
-- [ ] 3.5 Add validation, catalog, link-observation, projection, and round-trip tests proving equal-looking cross-domain values cannot be substituted or compared.
+- [x] 3.5 Add validation, catalog, link-observation, projection, and round-trip tests proving equal-looking cross-domain values cannot be substituted or compared.
 
 ## 4. Bind live checks to an explicit Lean toolchain
 

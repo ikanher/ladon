@@ -513,11 +513,17 @@ def _insert_proofir_catalog(
         ),
     )
     artifact_ids: dict[str, str] = {}
-    content_ids: dict[str, str] = {}
+    content_ids: dict[str, str | None] = {}
+    file_digests: dict[str, str] = {}
     for artifact in snapshot.proofir_artifacts:
         artifact_id = _insert_catalog_artifact(connection, generation_id, artifact)
         artifact_ids[artifact.relative_path] = artifact_id
-        content_ids[artifact.relative_path] = f"sha256:{artifact.sha256}"
+        content_ids[artifact.relative_path] = (
+            str(artifact.content_artifact_id)
+            if artifact.content_artifact_id is not None
+            else None
+        )
+        file_digests[artifact.relative_path] = str(artifact.file_digest)
         _insert_catalog_diagnostic(connection, generation_id, artifact, artifact_id)
     relation_count = _insert_catalog_relations(
         connection,
@@ -525,6 +531,7 @@ def _insert_proofir_catalog(
         snapshot.proofir_config.relationships,
         artifact_ids,
         content_ids,
+        file_digests,
     )
     v3_count = project_v3_catalog(connection, snapshot)
     return {
@@ -577,11 +584,17 @@ def _insert_catalog_relations(
     generation_id: str,
     relationships: tuple[tuple[str, str, str, str], ...],
     artifact_ids: dict[str, str],
-    content_ids: dict[str, str],
+    content_ids: dict[str, str | None],
+    file_digests: dict[str, str],
 ) -> int:
     try:
         return insert_manifest_link_observations(
-            connection, generation_id, relationships, artifact_ids, content_ids
+            connection,
+            generation_id,
+            relationships,
+            artifact_ids,
+            content_ids,
+            file_digests,
         )
     except ValueError as error:
         raise ProofSearchIndexError(str(error)) from error
