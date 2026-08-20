@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from ladon.lean_toolchain import resolve_toolchain_context
 from ladon.process_supervisor import ProcessResult
 from ladon.proofir_v3 import validate_envelope_batch
 from ladon.semantic_candidate_worker import (
@@ -129,6 +130,42 @@ def test_timeout_never_publishes_accepted_artifacts(tmp_path: Path) -> None:
     assert result.status == "timeout"
     assert result.artifacts == ()
     assert result.diagnostic == {"code": "checker-timeout", "message": "deadline"}
+
+
+def test_explicit_toolchain_ignores_path_shadow_and_sanitizes_worker_environment(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    repo.joinpath("lean-toolchain").write_text("leanprover/lean4:v4.32.2\n")
+    lake = repo / "lake"
+    lean = repo / "lean"
+    for tool in (lake, lean):
+        tool.write_text("#!/bin/sh\nprintf 'Lean version 4.32.2\\n'\n")
+        tool.chmod(0o755)
+    context = resolve_toolchain_context(
+        repo,
+        lake_path=lake,
+        lean_path=lean,
+        environment={"PATH": str(tmp_path / "shadow"), "SECRET": "redacted"},
+    )
+    payload = _accepted_payload(tmp_path)
+    observed: dict[str, object] = {}
+
+    def runner(command: tuple[str, ...], **kwargs: object) -> ProcessResult:
+        observed["command"] = command
+        observed["env"] = kwargs.get("env")
+        payload["probe"]["name"] = command[-3]
+        payload["requestId"] = command[-1]
+        return ProcessResult(tuple(command), 0, "LADON_FRAME " + json.dumps(payload), "", 0.1)
+
+    result = check_semantic_candidate(
+        SemanticCandidateRequest(repo, "Main", "Nat → Nat", "Main.identity", toolchain=context),
+        runner=runner,
+    )
+    assert result.status == "accepted"
+    assert observed["command"][0:3] == (str(lake), "env", str(lean))  # type: ignore[index]
+    assert "SECRET" not in observed["env"]  # type: ignore[operator]
 
 
 def test_worker_protocol_rejects_foreign_or_unscoped_semantic_rows(

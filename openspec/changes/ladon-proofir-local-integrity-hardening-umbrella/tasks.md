@@ -4,7 +4,7 @@
 - [x] 1.2 Freeze canonical shallow-graph outputs for AND premises, stable OR alternatives, acyclic rejection, supported SCCs, and every derivation truncation cause before refactoring traversal.
 - [x] 1.3 Add negative identity fixtures that distinguish whole-file SHA-256 digests from detached native-v3 artifact IDs even when both use the `sha256:` textual form.
 - [x] 1.4 Add semantic-worker fixtures for an explicit valid toolchain, ambient `PATH` shadowing, repository-pin mismatch, missing executables, and sanitized environment behavior.
-- [ ] 1.5 Add a table-driven projection corpus covering explicit live checks, ambient checks, stored observations, residual applications, partial coverage, invalid children, truncation, and analyses that were not run.
+- [x] 1.5 Add a table-driven projection corpus covering explicit live checks, ambient checks, stored observations, residual applications, partial coverage, invalid children, truncation, and analyses that were not run.
 
 ## 2. Make derivation queries stack-safe
 
@@ -27,15 +27,15 @@
 - [x] 4.2 Implement fail-closed context resolution that verifies executable files and versions against the repository pin and never falls back from explicit selection to ambient `PATH`.
 - [x] 4.3 Launch semantic candidate checks with absolute executables, the explicit working directory, and a sanitized allowlisted environment; bind the selected context into environment and checker observations.
 - [x] 4.4 Add CLI/API selection for explicit toolchain inputs and explicitly requested ambient discovery, with stable diagnostics for pin, path, version, and environment failures.
-- [ ] 4.5 Verify ambient shadow executables are ignored under explicit selection, ambient mode is labeled non-authoritative, mismatches fail before launch, and failed checks publish no accepted artifacts.
+- [x] 4.5 Verify ambient shadow executables are ignored under explicit selection, ambient mode is labeled non-authoritative, mismatches fail before launch, and failed checks publish no accepted artifacts.
 
 ## 5. Separate authority from analysis completeness
 
 - [x] 5.1 Add closed typed authority-selection and `analysisCompleteness` states to semantic candidate results and shared evidence-result models without using declaration-replay terminology for application checks.
 - [x] 5.2 Implement exhaustive derivation rules for `complete`, `partial`, `invalid`, and `not-assessed` from registered populations, residuals, operation validity, omissions, and truncation.
-- [ ] 5.3 Update persistence readers, theorem dossiers, aggregate summaries, and renderers so reloaded observations remain stored evidence and every projection preserves or weakens both axes.
+- [x] 5.3 Update persistence readers, theorem dossiers, aggregate summaries, and renderers so reloaded observations remain stored evidence and every projection preserves or weakens both axes.
 - [x] 5.4 Add projection invariants that reject authority or completeness escalation and ensure absent optional analysis is never defaulted to complete.
-- [ ] 5.5 Update JSON/text fixtures and run candidate-worker, ProofIR query, dossier, coverage, and rendering suites across the full projection corpus.
+- [x] 5.5 Update JSON/text fixtures and run candidate-worker, ProofIR query, dossier, coverage, and rendering suites across the full projection corpus.
 
 ## 6. Document migration and preserve repository separation
 

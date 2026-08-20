@@ -637,6 +637,12 @@ def _check_artifact(
         "timeout": process.timed_out,
         "outputLimited": process.output_limited,
         "memoryLimited": process.memory_limited,
+        "authoritySelection": (
+            "explicit-pinned-application-check"
+            if request.toolchain and request.toolchain.selection_mode == "explicit"
+            else "ambient-selected-application-check"
+        ),
+        "analysisCompleteness": "partial" if has_residuals else "complete",
         "bounds": {
             "timeoutMs": max(1, int(request.timeout_seconds * 1000)),
             "maxOutputBytes": request.max_output_bytes,
