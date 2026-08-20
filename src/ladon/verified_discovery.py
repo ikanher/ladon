@@ -32,11 +32,14 @@ class DiscoveryRequest:
     local_context: tuple[Mapping[str, str], ...] = ()
     max_candidates: int = 20
     batch_size: int = 8
+    timeout_seconds: float = 120.0
+    max_output_bytes: int = 8 * 1024 * 1024
+    max_rss_bytes: int = 2 * 1024 * 1024 * 1024
 
     def __post_init__(self) -> None:
         if not self.module or not self.goal:
             raise ValueError("discovery requires module and goal")
-        if min(self.max_candidates, self.batch_size) < 1:
+        if min(self.max_candidates, self.batch_size, self.timeout_seconds, self.max_output_bytes, self.max_rss_bytes) <= 0:
             raise ValueError("discovery bounds must be positive")
         if self.max_candidates > 1000 or self.batch_size > 100:
             raise ValueError("discovery bounds exceed the supported cap")
@@ -88,6 +91,9 @@ def discover_candidates(
             "localContext": [dict(row) for row in request.local_context],
             "maxCandidates": request.max_candidates,
             "batchSize": request.batch_size,
+            "timeoutSeconds": request.timeout_seconds,
+            "maxOutputBytes": request.max_output_bytes,
+            "maxRssBytes": request.max_rss_bytes,
         },
         "candidates": [candidate.as_dict() for candidate in candidates],
         "batch": {
@@ -121,6 +127,9 @@ def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checke
                 request.module,
                 request.goal,
                 candidate,
+                timeout_seconds=request.timeout_seconds,
+                max_output_bytes=request.max_output_bytes,
+                max_rss_bytes=request.max_rss_bytes,
                 toolchain=toolchain,
             )
         )

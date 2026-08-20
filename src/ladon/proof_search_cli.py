@@ -51,6 +51,7 @@ from ladon.semantic_candidate_worker import (
     SemanticCandidateRequest,
     check_semantic_candidate,
 )
+from ladon.verified_discovery import DiscoveryRequest, discover_candidates, semantic_checker
 
 
 class ProofSearchArgumentParser(argparse.ArgumentParser):
@@ -192,6 +193,23 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Use compatibility raw-signature comparison without binder normalization.",
     )
+    discover = operations.add_parser(
+        "discover", help="Check a bounded candidate set against one exact goal."
+    )
+    _add_repository_options(discover)
+    _add_output_options(discover)
+    discover.add_argument("--module", required=True)
+    discover.add_argument("--goal", required=True)
+    discover.add_argument("--candidate", action="append", required=True)
+    discover.add_argument("--local", action="append", default=[], help="Typed local as NAME:TYPE; repeatable.")
+    discover.add_argument("--max-candidates", type=_bounded_limit, default=20)
+    discover.add_argument("--batch-size", type=_bounded_limit, default=8)
+    discover.add_argument("--timeout-seconds", type=float, default=120.0)
+    discover.add_argument("--max-output-mib", type=_positive_integer, default=8)
+    discover.add_argument("--max-rss-mib", type=_positive_integer, default=2048)
+    discover.add_argument("--toolchain-mode", choices=("ambient", "explicit"), default="ambient")
+    discover.add_argument("--lake-path", type=Path)
+    discover.add_argument("--lean-path", type=Path)
     consumers = operations.add_parser(
         "consumers", help="Find bounded declaration consumers."
     )
@@ -363,6 +381,7 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
         "consumers": _dispatch_consumers,
         "constructor": _dispatch_constructor,
         "check": _dispatch_check_adapter,
+        "discover": _dispatch_discover,
     }
     handler = handlers.get(args.proof_search_operation)
     if handler is None:
@@ -370,6 +389,44 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
             f"unsupported proof-search operation {args.proof_search_operation!r}"
         )
     return handler(args, repo_root, index_path)
+
+
+def _dispatch_discover(
+    args: argparse.Namespace, repo_root: Path, _index_path: Path | None
+) -> Mapping[str, Any]:
+    try:
+        toolchain = resolve_toolchain_context(
+            repo_root.resolve(),
+            lake_path=args.lake_path,
+            lean_path=args.lean_path,
+            selection_mode=args.toolchain_mode,
+        )
+        local_context = tuple(_parse_local_context(item) for item in args.local)
+        request = DiscoveryRequest(
+            repo_root.resolve(),
+            args.module,
+            args.goal,
+            local_context,
+            args.max_candidates,
+            args.batch_size,
+            args.timeout_seconds,
+            args.max_output_mib * 1024 * 1024,
+            args.max_rss_mib * 1024 * 1024,
+        )
+        checker = semantic_checker(request, toolchain)
+        rows = [{"candidateName": candidate} for candidate in args.candidate]
+        return discover_candidates(request, rows, checker)
+    except (ValueError, LeanToolchainError) as error:
+        raise ProofSearchIndexError(str(error)) from error
+
+
+def _parse_local_context(value: str) -> dict[str, str]:
+    if ":" not in value:
+        raise ValueError("local context must use NAME:TYPE")
+    name, type_text = value.split(":", 1)
+    if not name or not type_text:
+        raise ValueError("local context must use NAME:TYPE")
+    return {"name": name, "type": type_text}
 
 
 def _dispatch_consumers(
