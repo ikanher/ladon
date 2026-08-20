@@ -15,6 +15,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ladon.scratch_replay import replay_scratch
 from ladon.semantic_candidate_worker import (
     SemanticCandidateCheck,
     SemanticCandidateRequest,
@@ -59,12 +60,14 @@ class DiscoveryCandidate:
 
 
 Checker = Callable[[str], SemanticCandidateCheck]
+ScratchReplayer = Callable[[str], Mapping[str, Any]]
 
 
 def discover_candidates(
     request: DiscoveryRequest,
     shortlist: Sequence[Mapping[str, Any]],
     checker: Checker,
+    scratch_replayer: ScratchReplayer | None = None,
 ) -> dict[str, Any]:
     """Check a bounded shortlist and retain every candidate outcome."""
     candidates: list[DiscoveryCandidate] = []
@@ -80,6 +83,9 @@ def discover_candidates(
                 "status": "unassessed",
                 "diagnostic": {"code": "candidate-check-failed", "message": str(error)},
             }
+        if scratch_replayer is not None and check_payload.get("status") == "accepted":
+            check_payload = dict(check_payload)
+            check_payload["scratch"] = dict(scratch_replayer(name))
         candidates.append(DiscoveryCandidate(name, row, check_payload))
     payload: dict[str, Any] = {
         "schema": DISCOVERY_SCHEMA,
@@ -137,4 +143,16 @@ def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checke
     return check
 
 
-__all__ = ["DISCOVERY_SCHEMA", "DiscoveryCandidate", "DiscoveryRequest", "discover_candidates", "semantic_checker"]
+def semantic_scratch_replayer(request: DiscoveryRequest, toolchain: Any = None) -> ScratchReplayer:
+    """Return an independent scratch compiler bound to the same repository."""
+    return lambda candidate: replay_scratch(
+        repo_root=request.repo_root,
+        module=request.module,
+        goal=request.goal,
+        candidate=candidate,
+        toolchain=toolchain,
+        timeout_seconds=request.timeout_seconds,
+    ).to_dict()
+
+
+__all__ = ["DISCOVERY_SCHEMA", "DiscoveryCandidate", "DiscoveryRequest", "discover_candidates", "semantic_checker", "semantic_scratch_replayer"]

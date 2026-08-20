@@ -51,7 +51,12 @@ from ladon.semantic_candidate_worker import (
     SemanticCandidateRequest,
     check_semantic_candidate,
 )
-from ladon.verified_discovery import DiscoveryRequest, discover_candidates, semantic_checker
+from ladon.verified_discovery import (
+    DiscoveryRequest,
+    discover_candidates,
+    semantic_checker,
+    semantic_scratch_replayer,
+)
 
 
 class ProofSearchArgumentParser(argparse.ArgumentParser):
@@ -414,8 +419,9 @@ def _dispatch_discover(
             args.max_rss_mib * 1024 * 1024,
         )
         checker = semantic_checker(request, toolchain)
+        scratch_replayer = semantic_scratch_replayer(request, toolchain)
         rows = [{"candidateName": candidate} for candidate in args.candidate]
-        return discover_candidates(request, rows, checker)
+        return discover_candidates(request, rows, checker, scratch_replayer)
     except (ValueError, LeanToolchainError) as error:
         raise ProofSearchIndexError(str(error)) from error
 
