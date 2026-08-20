@@ -90,6 +90,13 @@ def discover_candidates(
             "batchSize": request.batch_size,
         },
         "candidates": [candidate.as_dict() for candidate in candidates],
+        "batch": {
+            "protocol": "ladon-verified-discovery-v1",
+            "sequence": list(range(len(candidates))),
+            "candidateNames": [candidate.name for candidate in candidates],
+            "goal": request.goal,
+            "localContext": [dict(row) for row in request.local_context],
+        },
         "coverage": {
             "shortlisted": len(shortlist),
             "checked": len(candidates),
