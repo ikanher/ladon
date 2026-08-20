@@ -33,18 +33,7 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
 
     if request.freshness == "verify" and verifier is None:
         raise ValueError("type-text freshness verification requires the index verifier")
-    clauses = ["(d.rendered_type LIKE ? OR d.conclusion_text LIKE ? OR d.type_text LIKE ?)"]
-    pattern = f"%{request.pattern}%"
-    values: list[Any] = [pattern, pattern, pattern]
-    if request.module:
-        clauses.append("d.module = ?")
-        values.append(request.module)
-    if request.namespace:
-        clauses.append("(d.namespace = ? OR d.namespace LIKE ?)")
-        values.extend((request.namespace, f"{request.namespace}.%"))
-    if request.package:
-        clauses.append("d.package = ?")
-        values.append(request.package)
+    clauses, values = _type_text_predicate(request)
     where = " AND ".join(clauses)
     rows = connection.execute(
         "SELECT d.id,d.name,d.candidate_name,d.namespace,d.module,d.package,d.path,d.line,d.type_status "
@@ -75,6 +64,21 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
         "omissions": [],
         "nonclaims": ["Shortlist rows are not Lean elaboration or proof verification."],
     }
+
+
+def _type_text_predicate(request: TypeSearchRequest) -> tuple[list[str], list[Any]]:
+    pattern = f"%{request.pattern}%"
+    clauses = ["(d.rendered_type LIKE ? OR d.conclusion_text LIKE ? OR d.type_text LIKE ?)"]
+    values: list[Any] = [pattern, pattern, pattern]
+    filters = ((request.module, "d.module = ?"), (request.package, "d.package = ?"))
+    for value, clause in filters:
+        if value:
+            clauses.append(clause)
+            values.append(value)
+    if request.namespace:
+        clauses.append("(d.namespace = ? OR d.namespace LIKE ?)")
+        values.extend((request.namespace, f"{request.namespace}.%"))
+    return clauses, values
 
 
 __all__ = ["TypeSearchRequest", "query_type_shortlist"]
