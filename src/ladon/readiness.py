@@ -6,6 +6,14 @@ from datetime import UTC, datetime
 from typing import Any
 
 READINESS_LEVELS = ("experimental", "contract-supported", "externally-evaluated", "release-qualified")
+EVIDENCE_FIELDS = {
+    "installedSmoke": ("command", "outcome"),
+    "adversarialContract": ("command", "outcome"),
+    "resourceGate": ("command", "outcome"),
+    "externalOutcome": ("command", "outcome", "candidates", "metrics"),
+    "platformPosture": ("command", "outcome"),
+    "ownerDecision": ("command", "outcome"),
+}
 
 
 def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -> dict[str, Any]:
@@ -19,7 +27,11 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
     level = "experimental"
     reasons: list[str] = []
     for candidate in READINESS_LEVELS[1:]:
-        missing = [name for name in requirements[candidate] if not _fresh_pass(evidence.get(name), current)]
+        missing = [
+            name
+            for name in requirements[candidate]
+            if not _fresh_pass(evidence.get(name), current, EVIDENCE_FIELDS[name])
+        ]
         if missing:
             reasons.extend(f"{candidate}: missing or stale {name}" for name in missing)
             break
@@ -34,8 +46,10 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
     }
 
 
-def _fresh_pass(value: Any, now: datetime) -> bool:
+def _fresh_pass(value: Any, now: datetime, required_fields: tuple[str, ...]) -> bool:
     if not isinstance(value, dict) or value.get("status") != "passed":
+        return False
+    if any(not value.get(field) for field in required_fields):
         return False
     timestamp = value.get("timestamp")
     if not isinstance(timestamp, str):
