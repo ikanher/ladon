@@ -40,7 +40,9 @@ def doctor_main(arguments: Sequence[str]) -> int:
     if "--json" in arguments:
         print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
     else:
-        print(f"Ladon {payload['installed']['version']}; Python {payload['installed']['python']}; pin={'present' if payload['readiness']['repositoryPinPresent'] else 'missing'}")
+        print(
+            f"Ladon {payload['installed']['version']}; Python {payload['installed']['python']}; pin={'present' if payload['readiness']['repositoryPinPresent'] else 'missing'}"
+        )
     return 0
 
 
@@ -71,15 +73,30 @@ def _doctor_payload(repo_root: Path) -> dict[str, object]:
     return {
         "schema": "ladon-doctor-result-v1",
         "status": "available",
-        "installed": {"version": version, "python": platform.python_version(), "executable": sys.executable},
+        "installed": {
+            "version": version,
+            "python": platform.python_version(),
+            "executable": sys.executable,
+        },
         "repository": {
             "root": str(repo_root),
             "toolchainPin": pin.read_text(encoding="utf-8").strip() if pin.is_file() else None,
-            "toolchainPinDigest": "sha256:" + hashlib.sha256(pin.read_bytes()).hexdigest() if pin.is_file() else None,
+            "toolchainPinDigest": "sha256:" + hashlib.sha256(pin.read_bytes()).hexdigest()
+            if pin.is_file()
+            else None,
         },
-        "posture": {"targetExecution": "not-run", "network": "not-assessed", "environment": "sanitized-by-worker"},
+        "posture": {
+            "targetExecution": "not-run",
+            "targetTrustRequirement": "trusted-repository-only",
+            "initializerIsolation": "absent",
+            "network": "not-assessed",
+            "environment": "sanitized-by-worker",
+        },
         "readiness": {"repositoryPinPresent": pin.is_file(), "preflight": "not-run"},
-        "nonclaims": ["Doctor does not execute Lean, Lake, repository code, or target analysis."],
+        "nonclaims": [
+            "Doctor does not execute Lean, Lake, repository code, or target analysis.",
+            "Lean-backed authority is not claimed for adversarial target repositories because target initializers are not isolated.",
+        ],
     }
 
 

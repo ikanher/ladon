@@ -12,12 +12,14 @@ from pathlib import Path
 from typing import Any
 
 from ladon.evidence_receipt import build_evidence_receipt
+from ladon.lean_toolchain import LeanToolchainError, verify_toolchain_identities
 from ladon.process_supervisor import run_bounded_target_process
 from ladon.proofir_v3 import canonical_bytes, validate_envelope_batch
 from ladon.semantic_candidate_worker import (
     DEFAULT_HELPER,
     SEMANTIC_BATCH_PROTOCOL,
     SEMANTIC_PROTOCOL,
+    TRUSTED_TARGET_LIMITATION,
     UNIVERSE_POLICY,
     SemanticCandidateRequest,
     _accepted_artifacts,
@@ -84,26 +86,36 @@ def check_semantic_candidates(
             if request.toolchain is not None
             else ("lake", "env", "lean")
         )
-        process = runner(
-            command
-            + (
-                "--run",
-                str(helper_path),
-                "--batch",
-                request.module,
-                str(probe_path),
-                goal_with_local_context(request.goal, request.local_context),
-                probe_name,
-                request_id,
-                *candidates,
-            ),
-            cwd=request.repo_root,
-            env=(request.toolchain.environment if request.toolchain else None),
-            timeout_seconds=request.timeout_seconds,
-            max_output_bytes=request.max_output_bytes,
-            max_rss_bytes=request.max_rss_bytes,
-            cancel_event=cancel_event,
-        )
+        try:
+            if request.toolchain is not None:
+                verify_toolchain_identities(request.toolchain)
+            process = runner(
+                command
+                + (
+                    "--run",
+                    str(helper_path),
+                    "--batch",
+                    request.module,
+                    str(probe_path),
+                    goal_with_local_context(request.goal, request.local_context),
+                    probe_name,
+                    request_id,
+                    *candidates,
+                ),
+                cwd=request.repo_root,
+                env=(request.toolchain.environment if request.toolchain else None),
+                timeout_seconds=request.timeout_seconds,
+                max_output_bytes=request.max_output_bytes,
+                max_rss_bytes=request.max_rss_bytes,
+                cancel_event=cancel_event,
+            )
+            if request.toolchain is not None:
+                verify_toolchain_identities(request.toolchain)
+        except LeanToolchainError as error:
+            return SemanticCandidateBatchCheck(
+                "invalid-worker-output",
+                diagnostic={"code": "toolchain-identity-changed", "message": str(error)},
+            )
     return _interpret_batch_process(request, candidates, helper_path, process, request_id)
 
 
@@ -466,6 +478,7 @@ def _prefix_receipt(
         environment_ref=environment_ref,
         check_run_ref=check_ref,
         limitations=(
+            TRUSTED_TARGET_LIMITATION,
             "Batch terminated before its completeness summary; only this validated prefix row is observed.",
         ),
     )
@@ -577,7 +590,10 @@ def _rejected_receipt(
         environment_match=environment_match,
         environment_ref=environment_ref,
         check_run_ref=check_ref,
-        limitations=("Candidate rejection does not establish theorem falsehood.",),
+        limitations=(
+            TRUSTED_TARGET_LIMITATION,
+            "Candidate rejection does not establish theorem falsehood.",
+        ),
     )
 
 

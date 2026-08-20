@@ -12,4 +12,6 @@ def test_doctor_json_is_read_only_and_reports_pin(tmp_path, capsys) -> None:
     assert payload["schema"] == "ladon-doctor-result-v1"
     assert payload["readiness"]["preflight"] == "not-run"
     assert payload["posture"]["targetExecution"] == "not-run"
+    assert payload["posture"]["targetTrustRequirement"] == "trusted-repository-only"
+    assert payload["posture"]["initializerIsolation"] == "absent"
     assert payload["repository"]["toolchainPinDigest"].startswith("sha256:")

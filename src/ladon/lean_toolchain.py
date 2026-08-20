@@ -43,7 +43,11 @@ class LeanToolchainContext:
     def __post_init__(self) -> None:
         if self.selection_mode not in {"explicit", "ambient"}:
             raise ValueError("toolchain selection mode must be explicit or ambient")
-        if not self.repo_root.is_absolute() or not self.lake_path.is_absolute() or not self.lean_path.is_absolute():
+        if (
+            not self.repo_root.is_absolute()
+            or not self.lake_path.is_absolute()
+            or not self.lean_path.is_absolute()
+        ):
             raise ValueError("toolchain paths must be absolute")
         if not self.lake_path.is_file() or not self.lean_path.is_file():
             raise ValueError("toolchain executables must be existing files")
@@ -106,7 +110,9 @@ def resolve_toolchain_context(
     lake_version = _version(lake, root, sanitized)
     lean_version = _version(lean, root, sanitized)
     expected = _pinned_release(pin_content)
-    if expected not in _reported_releases(lake_version) or expected not in _reported_releases(lean_version):
+    if expected not in _reported_releases(lake_version) or expected not in _reported_releases(
+        lean_version
+    ):
         raise LeanToolchainError(
             f"toolchain pin mismatch: expected {expected}, lake={lake_version!r}, lean={lean_version!r}"
         )
@@ -125,7 +131,11 @@ def resolve_toolchain_context(
 
 
 def _resolve_executable(path: Path | None, name: str, environment: Mapping[str, str]) -> Path:
-    candidate = path if path is not None else Path(shutil.which(name, path=environment.get("PATH", "")) or "")
+    candidate = (
+        path
+        if path is not None
+        else Path(shutil.which(name, path=environment.get("PATH", "")) or "")
+    )
     if not candidate or not candidate.is_absolute() or not candidate.is_file():
         raise LeanToolchainError(f"{name} executable is unavailable")
     return candidate.resolve()
@@ -163,4 +173,21 @@ def _identity(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-__all__ = ["LeanToolchainContext", "LeanToolchainError", "resolve_toolchain_context"]
+def verify_toolchain_identities(context: LeanToolchainContext) -> None:
+    """Fail when selected executable bytes changed after context creation."""
+    observed = {
+        "lake": _identity(context.lake_path),
+        "lean": _identity(context.lean_path),
+    }
+    expected = {"lake": context.lake_identity, "lean": context.lean_identity}
+    changed = [name for name in expected if observed[name] != expected[name]]
+    if changed:
+        raise LeanToolchainError("toolchain executable identity changed: " + ", ".join(changed))
+
+
+__all__ = [
+    "LeanToolchainContext",
+    "LeanToolchainError",
+    "resolve_toolchain_context",
+    "verify_toolchain_identities",
+]

@@ -117,6 +117,10 @@ def test_accepted_worker_result_closes_exact_environment_and_check_references(
     assert result.to_dict()["authoritySelection"] == "ambient-selected-application-check"
     assert result.to_dict()["analysisCompleteness"] == "complete"
     assert result.to_dict()["evidenceReceipt"]["schema"] == "ladon-evidence-receipt-v1"
+    assert any(
+        "trusted target code" in limitation
+        for limitation in result.to_dict()["evidenceReceipt"]["limitations"]
+    )
     assert result.to_dict()["evidenceReceipt"]["executionBinding"] == "ambient-observed"
     _assert_artifact_family(result.artifacts)
     _assert_exact_links(result.artifacts)
@@ -177,6 +181,30 @@ def test_explicit_toolchain_ignores_path_shadow_and_sanitizes_worker_environment
     assert observed["command"][0:3] == (str(lake), "env", str(lean))  # type: ignore[index]
     assert "SECRET" not in observed["env"]  # type: ignore[operator]
     assert context.context_identity.startswith("sha256:")
+
+
+def test_worker_rejects_executable_changed_during_run(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    repo.joinpath("lean-toolchain").write_text("leanprover/lean4:v4.32.2\n")
+    lake = repo / "lake"
+    lean = repo / "lean"
+    for tool in (lake, lean):
+        tool.write_text("#!/bin/sh\nprintf 'Lean version 4.32.2\\n'\n")
+        tool.chmod(0o755)
+    context = resolve_toolchain_context(repo, lake_path=lake, lean_path=lean)
+
+    def mutating_runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
+        lean.write_text("#!/bin/sh\nprintf 'Lean version 4.32.2 changed\\n'\n")
+        return ProcessResult(command, 0, "", "", 0.1)
+
+    result = check_semantic_candidate(
+        SemanticCandidateRequest(repo, "Main", "Nat → Nat", "Main.identity", toolchain=context),
+        runner=mutating_runner,
+    )
+
+    assert result.status == "invalid-worker-output"
+    assert result.diagnostic["code"] == "toolchain-identity-changed"
 
 
 def test_worker_protocol_rejects_foreign_or_unscoped_semantic_rows(

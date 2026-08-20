@@ -20,7 +20,11 @@ from pathlib import Path
 from typing import Any
 
 from ladon.evidence_receipt import build_evidence_receipt
-from ladon.lean_toolchain import LeanToolchainContext
+from ladon.lean_toolchain import (
+    LeanToolchainContext,
+    LeanToolchainError,
+    verify_toolchain_identities,
+)
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
 from ladon.proofir_fingerprint_registry import SCHEMES
 from ladon.proofir_result_dimensions import derive_analysis_completeness
@@ -62,6 +66,7 @@ MAX_GOAL_BYTES = 64 * 1024
 MAX_IMPORTED_MODULES = 10_000
 MAX_COMPILED_ENVIRONMENT_BYTES = 4 * 1024 * 1024 * 1024
 MAX_EVIDENCE_FILE_BYTES = 512 * 1024 * 1024
+TRUSTED_TARGET_LIMITATION = "Target modules may execute repository-controlled initializers; this observation is authority-scoped to trusted target code."
 ProcessRunner = Callable[..., ProcessResult]
 
 
@@ -181,25 +186,25 @@ def check_semantic_candidate(
             if request.toolchain is not None
             else ("lake", "env", "lean")
         )
-        process = runner(
-            command
-            + (
-                "--run",
-                str(helper_path),
-                f"Ladon.Semantic.{probe_name}",
-                str(probe_path),
-                goal_with_local_context(request.goal, request.local_context),
-                probe_name,
-                request.candidate,
-                request_id,
-            ),
-            cwd=request.repo_root,
-            env=(request.toolchain.environment if request.toolchain else None),
-            timeout_seconds=request.timeout_seconds,
-            max_output_bytes=request.max_output_bytes,
-            max_rss_bytes=request.max_rss_bytes,
-            cancel_event=cancel_event,
-        )
+        try:
+            process = _run_verified_candidate_process(
+                request,
+                runner,
+                command
+                + (
+                    "--run",
+                    str(helper_path),
+                    f"Ladon.Semantic.{probe_name}",
+                    str(probe_path),
+                    goal_with_local_context(request.goal, request.local_context),
+                    probe_name,
+                    request.candidate,
+                    request_id,
+                ),
+                cancel_event,
+            )
+        except LeanToolchainError as error:
+            return _toolchain_identity_failure(request, error)
     if not process.succeeded:
         return _failed_check(process, request)
     try:
@@ -221,6 +226,7 @@ def check_semantic_candidate(
         if artifacts[-1]["artifactKind"] == "proofir.attempt-log"
         else "accepted"
     )
+
     status_receipt = _receipt_for_check(
         request,
         "accepted",
@@ -246,6 +252,38 @@ def check_semantic_candidate(
         ),
         evidence_receipt=status_receipt,
         application_term=payload["applicationTerm"],
+    )
+
+
+def _run_verified_candidate_process(
+    request: SemanticCandidateRequest,
+    runner: ProcessRunner,
+    command: tuple[str, ...],
+    cancel_event: threading.Event | None,
+) -> ProcessResult:
+    if request.toolchain is not None:
+        verify_toolchain_identities(request.toolchain)
+    process = runner(
+        command,
+        cwd=request.repo_root,
+        env=(request.toolchain.environment if request.toolchain else None),
+        timeout_seconds=request.timeout_seconds,
+        max_output_bytes=request.max_output_bytes,
+        max_rss_bytes=request.max_rss_bytes,
+        cancel_event=cancel_event,
+    )
+    if request.toolchain is not None:
+        verify_toolchain_identities(request.toolchain)
+    return process
+
+
+def _toolchain_identity_failure(
+    request: SemanticCandidateRequest, error: LeanToolchainError
+) -> SemanticCandidateCheck:
+    return SemanticCandidateCheck(
+        "invalid-worker-output",
+        diagnostic={"code": "toolchain-identity-changed", "message": str(error)},
+        evidence_receipt=_receipt_for_check(request, "failed", "invalid-worker-output", "invalid"),
     )
 
 
@@ -281,9 +319,8 @@ def _receipt_for_check(
         environment_match=environment_match,
         environment_ref=environment_ref,
         check_run_ref=check_run_ref,
-        limitations=(
-            ("Residual premises remain unverified.",) if status.endswith("residuals") else ()
-        ),
+        limitations=(TRUSTED_TARGET_LIMITATION,)
+        + (("Residual premises remain unverified.",) if status.endswith("residuals") else ()),
     )
 
 
