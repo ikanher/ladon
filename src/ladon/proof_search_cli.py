@@ -25,6 +25,7 @@ from ladon.proof_search_constructor import (
     load_constructor_fields,
 )
 from ladon.proof_search_consumers import ConsumerRequest, query_consumers
+from ladon.proof_search_discovery_cli import dispatch_discover
 from ladon.proof_search_index import (
     DEFAULT_MAX_INDEX_BYTES,
     SUPPORTED_INDEX_SCOPES,
@@ -50,12 +51,6 @@ from ladon.proofir_v3_queries import (
 from ladon.semantic_candidate_worker import (
     SemanticCandidateRequest,
     check_semantic_candidate,
-)
-from ladon.verified_discovery import (
-    DiscoveryRequest,
-    discover_candidates,
-    semantic_checker,
-    semantic_scratch_replayer,
 )
 
 
@@ -386,7 +381,7 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
         "consumers": _dispatch_consumers,
         "constructor": _dispatch_constructor,
         "check": _dispatch_check_adapter,
-        "discover": _dispatch_discover,
+        "discover": lambda args, repo_root, _index_path: dispatch_discover(args, repo_root),
     }
     handler = handlers.get(args.proof_search_operation)
     if handler is None:
@@ -396,43 +391,6 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
     return handler(args, repo_root, index_path)
 
 
-def _dispatch_discover(
-    args: argparse.Namespace, repo_root: Path, _index_path: Path | None
-) -> Mapping[str, Any]:
-    try:
-        toolchain = resolve_toolchain_context(
-            repo_root.resolve(),
-            lake_path=args.lake_path,
-            lean_path=args.lean_path,
-            selection_mode=args.toolchain_mode,
-        )
-        local_context = tuple(_parse_local_context(item) for item in args.local)
-        request = DiscoveryRequest(
-            repo_root.resolve(),
-            args.module,
-            args.goal,
-            local_context,
-            args.max_candidates,
-            args.batch_size,
-            args.timeout_seconds,
-            args.max_output_mib * 1024 * 1024,
-            args.max_rss_mib * 1024 * 1024,
-        )
-        checker = semantic_checker(request, toolchain)
-        scratch_replayer = semantic_scratch_replayer(request, toolchain)
-        rows = [{"candidateName": candidate} for candidate in args.candidate]
-        return discover_candidates(request, rows, checker, scratch_replayer)
-    except (ValueError, LeanToolchainError) as error:
-        raise ProofSearchIndexError(str(error)) from error
-
-
-def _parse_local_context(value: str) -> dict[str, str]:
-    if ":" not in value:
-        raise ValueError("local context must use NAME:TYPE")
-    name, type_text = value.split(":", 1)
-    if not name or not type_text:
-        raise ValueError("local context must use NAME:TYPE")
-    return {"name": name, "type": type_text}
 
 
 def _dispatch_consumers(
