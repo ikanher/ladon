@@ -18,7 +18,7 @@
 - [x] 3.1 Introduce field-specific validated `FileDigest` and `ContentArtifactId` representations and update function signatures so raw file hashes cannot be passed as detached artifact IDs.
 - [x] 3.2 Extend ProofIR catalog discovery to retain each raw file digest and, independently, the validated native-v3 envelope artifact ID when validation establishes one.
 - [x] 3.3 Implement manifest-link policy v2 with `resolvedFileDigest`, nullable validated `resolvedArtifactId`, domain-specific drift diagnostics, and no heuristic interpretation of legacy observations.
-- [ ] 3.4 Bump affected derived result or proof-search index versions, rebuild disposable test indexes, and regenerate repository-owned snapshots without changing canonical native-v3 artifact IDs.
+- [x] 3.4 Bump affected derived result or proof-search index versions, rebuild disposable test indexes, and regenerate repository-owned snapshots without changing canonical native-v3 artifact IDs.
 - [x] 3.5 Add validation, catalog, link-observation, projection, and round-trip tests proving equal-looking cross-domain values cannot be substituted or compared.
 
 ## 4. Bind live checks to an explicit Lean toolchain
@@ -39,9 +39,9 @@
 
 ## 6. Document migration and preserve repository separation
 
-- [ ] 6.1 Document the link-policy/result break, disposable index rebuild, explicit-toolchain invocation, authority vocabulary, completeness states, and theorem-truth nonclaims in the ProofIR operator and schema documentation.
-- [ ] 6.2 Add or extend repository-owned dependency scans proving production, packaged, build, test, and calibration paths do not import, execute, or require Quux.
-- [ ] 6.3 Record object stores, provenance lattices, signed anchors, repository-closure policies, Lean trust-core predicates, and distinct future digest prefixes as deferred rather than implicit dependencies of this packet.
+- [x] 6.1 Document the link-policy/result break, disposable index rebuild, explicit-toolchain invocation, authority vocabulary, completeness states, and theorem-truth nonclaims in the ProofIR operator and schema documentation.
+- [x] 6.2 Add or extend repository-owned dependency scans proving production, packaged, build, test, and calibration paths do not import, execute, or require Quux.
+- [x] 6.3 Record object stores, provenance lattices, signed anchors, repository-closure policies, Lean trust-core predicates, and distinct future digest prefixes as deferred rather than implicit dependencies of this packet.
 
 ## 7. Umbrella closure gates
 

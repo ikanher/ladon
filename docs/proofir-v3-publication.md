@@ -17,3 +17,21 @@ proof-search builds, ProofIR v3 publication, lineage mutation, and optional
 atlas SQLite publication. `dbstat` is optional
 diagnostic enrichment; portable page-size × page-count accounting remains the
 authoritative database-size bound.
+
+## Local-integrity hardening
+
+Manifest link observations are policy v2 records. A discovered file is reported
+under `resolvedFileDigest`; `resolvedArtifactId` is populated only after native
+ProofIR envelope validation establishes the detached content identity. Existing
+disposable indexes must be rebuilt after this field correction; old observations
+are not interpreted heuristically.
+
+Authority-sensitive semantic checks should pass an explicit
+`LeanToolchainContext`, which binds absolute Lake/Lean executables, the exact
+`lean-toolchain` pin, and a sanitized environment. Explicit selection is
+fail-closed; ambient selection is labeled non-authoritative. Candidate
+application checks are not declaration-proof replay or theorem-truth claims.
+
+The current Ladon boundary deliberately defers object stores, provenance
+lattices, signed anchors, repository-closure policy, Lean trust-core predicates,
+and future digest-prefix changes.

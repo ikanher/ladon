@@ -11,7 +11,7 @@ import sqlite3
 PROOF_SEARCH_INDEX_SCHEMA = "ladon-proof-search-index-v5"
 PROOF_SEARCH_INDEX_SCHEMA_VERSION = 5
 PROOF_SEARCH_SCHEMA_GENERATION = "sqlite-v5-name2-fts2-lineage1-proofir1"
-PROOF_SEARCH_HELPER_IDENTITY = "lexical-navigation-v3;theorem-lineage-v2;proofir-catalog-v2"
+PROOF_SEARCH_HELPER_IDENTITY = "lexical-navigation-v3;theorem-lineage-v2;proofir-catalog-v3"
 
 REQUIRED_LOOKUP_INDEX_COLUMNS = {
     "idx_alias_target": ("target", "source", "kind"),
