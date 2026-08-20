@@ -12,7 +12,6 @@ from ladon.extraction import ModuleDiscovery
 from ladon.ir import LeanModule
 from ladon.pipeline import RunContext, run_pipeline
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 REPO_ROOT = Path(__file__).parents[1]
 
@@ -192,28 +191,12 @@ def test_parser_helper_preserves_open_scoped_parser_context(tmp_path: Path) -> N
     scoped_module = tmp_path / "Demo" / "Scoped.lean"
     scoped_module.parent.mkdir(parents=True)
     scoped_module.write_text(
-        "\n".join(
-            [
-                "namespace Demo",
-                'scoped syntax "foo!" : term',
-                "scoped macro_rules | `(foo!) => `(Nat.zero)",
-                "end Demo",
-                "",
-            ]
-        ),
+        'namespace Demo\nscoped syntax "foo!" : term\nscoped macro_rules | `(foo!) => `(Nat.zero)\nend Demo\n',
         encoding="utf-8",
     )
     main = tmp_path / "Main.lean"
     main.write_text(
-        "\n".join(
-            [
-                "import Demo.Scoped",
-                "open scoped Demo",
-                "",
-                "def x : Nat := foo!",
-                "",
-            ]
-        ),
+        "import Demo.Scoped\nopen scoped Demo\n\ndef x : Nat := foo!\n",
         encoding="utf-8",
     )
 

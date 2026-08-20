@@ -24,7 +24,6 @@ from ladon.pipeline import RunContext, run_pipeline
 from ladon.report_v3 import build_report_v3
 from ladon.source_index import build_source_index
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 INSPECTION_FIXTURE_ROOT = (
     Path(__file__).parent / "fixtures" / "inspection_lean"

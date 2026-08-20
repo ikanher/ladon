@@ -11,6 +11,15 @@ import time
 from pathlib import Path
 
 import pytest
+from installed_query_contract import (
+    assert_installed_exhaustive_query_contract,
+    assert_installed_query_help_contract,
+)
+from installed_signal_contract import (
+    assert_installed_lean_signal_contract,
+    assert_installed_text_signal_contract,
+    fake_batch_lake_script,
+)
 from jsonschema import Draft202012Validator
 
 from ladon.installed_contract import (
@@ -19,16 +28,6 @@ from ladon.installed_contract import (
 )
 from ladon.report_v2 import load_report_schema
 from ladon.report_v3 import load_report_v3_schema
-from installed_signal_contract import (
-    assert_installed_lean_signal_contract,
-    assert_installed_text_signal_contract,
-    fake_batch_lake_script,
-)
-from installed_query_contract import (
-    assert_installed_exhaustive_query_contract,
-    assert_installed_query_help_contract,
-)
-
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 RUNSET_MANIFEST = (

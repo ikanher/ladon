@@ -16,7 +16,6 @@ from collections.abc import Iterator
 
 from ladon.ir import LeanCommandSkeleton, LeanModule
 
-
 COMMAND_SKELETON_VERSION = "command-skeleton-v1"
 COMMAND_SKELETON_NONCLAIM = (
     "Lexical command-shape similarity only; not parsed Lean syntax, equal "

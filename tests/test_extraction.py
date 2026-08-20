@@ -3,12 +3,12 @@ from __future__ import annotations
 import hashlib
 from pathlib import Path
 
-import ladon.extraction as extraction
+from ladon import extraction
 from ladon.analysis.module_dag import summarize_module_dag
 from ladon.extraction import (
     discover_modules,
-    parse_imports,
     parse_import_sites,
+    parse_imports,
     parse_lean_module,
     parse_text_declarations,
 )

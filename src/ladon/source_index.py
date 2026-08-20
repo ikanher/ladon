@@ -9,22 +9,23 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any
 
 from ladon.extraction import parse_lean_module
 from ladon.lean_layout import LeanSourceMap, discover_lean_source_map
 from ladon.lexical_command_skeleton import (
     command_skeleton_evidence_complete,
 )
+from ladon.source_index_audit import audit_command_evidence_complete
 from ladon.source_index_cache import (
     SourceIndexCache,
     SourceIndexCacheLookup,
     default_source_index_cache_dir,
     manifest_digest,
 )
-from ladon.source_index_audit import audit_command_evidence_complete
 from ladon.source_index_models import (
     SOURCE_FAILURE_DIAGNOSTIC,
     SOURCE_INDEX_FINGERPRINT_VERSION,
@@ -35,7 +36,6 @@ from ladon.source_index_models import (
     SourceIndexError,
     SourceIndexResult,
 )
-
 
 SOURCE_INDEX_ALGORITHM_VERSION = 5
 SOURCE_INDEX_STABILIZATION_ATTEMPTS = 3
@@ -589,7 +589,7 @@ def _source_entry(
             resolved_name=name,
             source_text=source_text,
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - source adapter boundary records failures
         return _failed_source_attempt(
             repo_root,
             name,

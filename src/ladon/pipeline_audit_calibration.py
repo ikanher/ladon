@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 from ladon.analysis.audit_ownership import attach_lexical_audit_candidates
 from ladon.analysis.audit_registrations import (

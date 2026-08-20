@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 POLICY_DETAIL_FINDING_KINDS = {
     "architecture_policy.direct_forbidden_import",
     "architecture_policy.transitive_forbidden_import",

@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import ladon.source_index as source_index
 import pytest
+
+from ladon import source_index
 from ladon.source_index import (
     SOURCE_INDEX_FINGERPRINT_VERSION,
     build_source_index,

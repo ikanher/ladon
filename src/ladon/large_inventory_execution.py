@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.benchmark_process import MeasuredProcess, run_measured
 from ladon.large_inventory_models import (
@@ -38,13 +39,14 @@ def run_large_inventory_measurements(
     candidate_identity: Mapping[str, Any],
     fixture_identity: Mapping[str, Any],
     sample_count: int = REQUIRED_SAMPLE_COUNT,
-    ceilings: ScaleCeilings = ScaleCeilings(),
+    ceilings: ScaleCeilings | None = None,
     runner: MeasuredRunner = run_measured,
     report_validator: ReportValidator | None = None,
     require_large_fixture: bool = True,
 ) -> dict[str, Any]:
     """Measure cold/warm installed CLI runs and evaluate every exact ceiling."""
 
+    ceilings = ceilings or ScaleCeilings()
     _require_protocol_inputs(
         analyzer,
         fixture_root,

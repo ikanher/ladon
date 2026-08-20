@@ -10,10 +10,10 @@ from __future__ import annotations
 import os
 import re
 import tomllib
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Iterable, Mapping
-
+from typing import Any
 
 LEAN_LIBRARY_RE = re.compile(r"^\s*lean_lib\s+(?P<name>[A-Za-z0-9_.]+)")
 SOURCE_DIR_RE = re.compile(r'\bsrcDir\s*:=\s*"(?P<path>[^"]+)"')
@@ -64,7 +64,7 @@ def discover_lean_source_map(repo_root: Path) -> LeanSourceMap:
             modules,
             roots,
             "lake_declared",
-            tuple([*diagnostics, *mapping_diagnostics]),
+            (*diagnostics, *mapping_diagnostics),
         )
     fallback = LeanSourceRoot(root, "conventional", "conventional_fallback")
     modules, mapping_diagnostics = modules_from_roots(root, (fallback,))
@@ -81,7 +81,7 @@ def discover_lean_source_map(repo_root: Path) -> LeanSourceMap:
         modules,
         (fallback,),
         status,
-        tuple([*diagnostics, fallback_diagnostic, *mapping_diagnostics]),
+        (*diagnostics, fallback_diagnostic, *mapping_diagnostics),
     )
 
 

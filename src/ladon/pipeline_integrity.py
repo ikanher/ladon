@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from ladon.analysis.declaration_integrity import analyze_declaration_integrity
 from ladon.analysis.generated_family_candidate_adapters import (
@@ -16,7 +17,6 @@ from ladon.coverage import CollectionCoverage, CoverageCause
 from ladon.extraction import ModuleDiscovery
 from ladon.pipeline_extraction import analysis_module_roots
 from ladon.pipeline_models import RunContext
-
 
 DECLARATION_COVERAGE_FIELDS = (
     "declaration_collision_coverage",

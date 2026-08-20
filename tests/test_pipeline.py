@@ -6,15 +6,14 @@ from ladon.analysis.generated_family_candidate_profile import (
     COMMAND_SKELETON_VERSION,
 )
 from ladon.extraction import discover_modules, parse_lean_module
+from ladon.ir import ExtractionBundle, LeanDeclaration, LeanModule
 from ladon.pipeline import (
     REQUIRED_PHASES,
     RunContext,
     adapt_modules,
     run_pipeline,
 )
-from ladon.ir import ExtractionBundle, LeanDeclaration, LeanModule
 from ladon.render import render_text
-
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 

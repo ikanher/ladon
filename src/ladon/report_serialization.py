@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from importlib import resources
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.report_adapters import coerce_report_v2
 from ladon.report_contract import (

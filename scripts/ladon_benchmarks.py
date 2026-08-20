@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import TextIO
 
 import jsonschema
-
 from release_gate_candidate import materialize_candidate
 from release_gate_distribution import (
     build_distributions,
@@ -35,7 +34,6 @@ from ladon.benchmark_contract import (
 from ladon.benchmark_control_oracles import evaluate_control_labels
 from ladon.benchmark_runtime_cases import run_runtime_cases
 from ladon.benchmark_suite import BenchmarkFailure, run_portable_suite
-
 
 MANIFEST_PATH = Path("tests/fixtures/benchmark_harness/manifest-v1.json")
 REPORT_SCHEMA_PATH = Path("src/ladon/schemas/ladon-report-v2.schema.json")
@@ -71,8 +69,9 @@ def project_root() -> Path:
 def run_benchmarks(candidate: str, *, required: bool) -> dict:
     """Build, install, and benchmark one explicitly selected candidate."""
 
-    with materialize_candidate(candidate, project_root()) as materialized:
-        with runtime_directory("ladon-benchmarks-") as temporary:
+    with materialize_candidate(candidate, project_root()) as materialized, runtime_directory(
+        "ladon-benchmarks-"
+    ) as temporary:
             runtime_root = Path(temporary)
             environment = sanitized_environment(runtime_root, materialized.root)
             expected_lock = lock_digest(materialized.root)

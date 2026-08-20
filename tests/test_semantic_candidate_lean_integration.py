@@ -10,7 +10,6 @@ import pytest
 
 from ladon.proofir_v3 import validate_envelope_batch
 
-
 ROOT = Path(__file__).parents[1]
 FIXTURE = ROOT / "tests" / "fixtures" / "lean_integration"
 
@@ -141,10 +140,11 @@ def test_worker_preserves_complete_introduced_local_context() -> None:
 
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
 def test_theorem_query_accepts_worker_candidate_declaration_name() -> None:
+    import sqlite3
+
     from ladon.proofir_sqlite_v3 import project_envelopes
     from ladon.proofir_v3_queries import query_v3_theorem_evidence
     from ladon.semantic_candidate_worker import SemanticCandidateRequest, check_semantic_candidate
-    import sqlite3
 
     result = check_semantic_candidate(
         SemanticCandidateRequest(

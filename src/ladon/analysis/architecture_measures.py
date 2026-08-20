@@ -7,7 +7,6 @@ from typing import Any
 
 from ladon.finding_evidence import canonical_row_evidence
 
-
 MODULE_COVERAGE_REF = "module_dag.modules"
 DECLARATION_COVERAGE_REF = "declaration_graph.declarations"
 

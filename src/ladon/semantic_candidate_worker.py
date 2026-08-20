@@ -284,7 +284,7 @@ def _decode_single_frame(stdout: str) -> dict[str, Any]:
     except json.JSONDecodeError as error:
         raise ValueError("Lean semantic helper emitted non-framed JSON output") from error
     if not isinstance(payload, dict):
-        raise ValueError("Lean semantic helper emitted a non-object frame")
+        raise TypeError("Lean semantic helper emitted a non-object frame")
     return payload
 
 

@@ -4,6 +4,7 @@ import subprocess
 import sys
 import time
 
+
 def test_entrypoint_dispatches_proof_search_without_general_cli(tmp_path) -> None:
     from ladon.entrypoint import main
 

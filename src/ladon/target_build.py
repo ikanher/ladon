@@ -10,7 +10,6 @@ from typing import Any
 
 from ladon.process_supervisor import ProcessResult, run_target_process
 
-
 DEFAULT_BUILD_TIMEOUT_SECONDS = 300.0
 LAKE_MANIFESTS = ("lakefile.lean", "lakefile.toml")
 

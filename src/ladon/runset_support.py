@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import hashlib
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.process_supervisor import ProcessSignal
 from ladon.runset_contract import (
@@ -22,7 +23,6 @@ from ladon.runset_runtime import (
     ValidityResolver,
 )
 from ladon.runset_storage import RUNSET_STATE_NAME
-
 
 DEFAULT_VALIDITY_VERSION = "ladon-runset-default-validity-v1"
 
@@ -175,7 +175,7 @@ def paths_fingerprint(
         digest.update(b"\0")
         _update_file_digest(digest, path)
     for token in sorted(missing_tokens):
-        digest.update(f"requested:{token}\0".encode("utf-8"))
+        digest.update(f"requested:{token}\0".encode())
     return f"sha256:{digest.hexdigest()}"
 
 

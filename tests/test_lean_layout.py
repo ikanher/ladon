@@ -3,10 +3,9 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-import ladon.lean_layout as lean_layout
+from ladon import lean_layout
 from ladon.extraction import discover_modules
 from ladon.lean_layout import discover_lean_source_map, lean_paths_under_root
-
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "lean_runtime"
 

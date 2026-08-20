@@ -12,7 +12,6 @@ from ladon.coverage import CoverageRegistry
 from ladon.pipeline import RunContext, run_pipeline
 from ladon.report_contract import Finding
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 
 

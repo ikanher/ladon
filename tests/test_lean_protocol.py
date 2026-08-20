@@ -6,13 +6,12 @@ from pathlib import Path
 import pytest
 
 from ladon.lean_protocol import (
+    PROTOCOL_VERSION,
     BatchRequest,
     LeanProtocolError,
     ModuleRequest,
-    PROTOCOL_VERSION,
     parse_framed_stream,
 )
-
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "lean_runtime"
 REQUESTS = (

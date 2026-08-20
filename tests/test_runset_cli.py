@@ -15,7 +15,6 @@ from ladon.runset_cli import OrdinaryCliRunsetAdapter
 from ladon.runset_contract import load_bundle_schema, load_runset_manifest
 from ladon.runset_support import reuse_record
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "runsets"
 MANIFEST_PATH = FIXTURE_ROOT / "manifest-v1.json"
 FORBIDDEN_CALLER_OPTIONS = (

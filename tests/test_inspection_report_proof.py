@@ -9,7 +9,6 @@ from ladon.inspection_query import inspect_dataset
 from ladon.pipeline import RunContext, run_pipeline
 from ladon.report_v3 import build_report_v3
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 PROOF_XRAY_POINTER = "#/sections/proof_xray/rows/"
 

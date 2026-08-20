@@ -9,7 +9,6 @@ from typing import Any
 
 from ladon.ir import LeanModule
 
-
 MAX_GENERATED_FAMILY_ROWS = 20
 LONG_MODULE_NAME_THRESHOLD = 90
 LONG_SEGMENT_THRESHOLD = 40

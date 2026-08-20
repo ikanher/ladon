@@ -11,7 +11,6 @@ from typing import Any
 
 from ladon.finding_workflow import canonical_row_evidence
 
-
 SUPPORTED_KINDS = {"ladon_proof_xray", "proof_xray"}
 SUPPORTED_SCHEMA_VERSIONS = {1, "1"}
 VALID_AUTHORITIES = {"parser_observed", "lean_elaborated", "external_tool_quoted", "unknown"}

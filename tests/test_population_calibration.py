@@ -5,9 +5,9 @@ import json
 import pytest
 
 from ladon.analysis.population_calibration import (
-    AmbiguousGeneratedFamilyError,
     GENERATED_FAMILY_POLICY_SCHEMA,
     LEGACY_GENERATED_FAMILY_POLICY_SCHEMA,
+    AmbiguousGeneratedFamilyError,
     PolicyValidationError,
     PopulationCandidate,
     aggregate_generated_families,

@@ -13,7 +13,6 @@ from ladon.finding_workflow import (
     canonical_row_evidence,
 )
 
-
 HOTSPOT_THRESHOLD = 5
 LARGE_MODULE_LINE_THRESHOLD = 2000
 MAX_FINDINGS_PER_KIND = 3

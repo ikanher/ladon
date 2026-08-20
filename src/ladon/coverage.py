@@ -29,7 +29,6 @@ from ladon.coverage_producers import (
     ProducerRegistry,
 )
 
-
 __all__ = [
     "COVERAGE_CAUSE_KINDS",
     "COVERAGE_COMPLETENESS",

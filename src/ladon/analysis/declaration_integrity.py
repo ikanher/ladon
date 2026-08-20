@@ -54,13 +54,12 @@ from ladon.coverage import (
 from ladon.finding_evidence import json_pointer_token
 from ladon.ir import LeanModule, LeanTextDeclaration
 
-
 _SHA256_RE = re.compile(r"[0-9a-f]{64}")
 
 __all__ = (
     "BLOCK_DUPLICATE_COLLECTION_ID",
-    "CO_REACHABLE_COLLECTION_ID",
     "COLLISION_COLLECTION_ID",
+    "CO_REACHABLE_COLLECTION_ID",
     "DECLARATION_INTEGRITY_SCHEMA",
     "FILE_DUPLICATE_COLLECTION_ID",
     "SOURCE_SHAPE_COLLECTION_ID",
@@ -786,10 +785,7 @@ def _best_root_candidate(
     )
     if not candidates:
         return None
-    return sorted(
-        candidates,
-        key=lambda row: (-len(row[1]), row[0], row[1], row[2]),
-    )[0]
+    return min(candidates, key=lambda row: (-len(row[1]), row[0], row[1], row[2]))
 
 
 def _complete_path_witnesses(

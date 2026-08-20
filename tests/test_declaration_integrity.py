@@ -16,7 +16,6 @@ from ladon.analysis.declaration_integrity import (
 from ladon.coverage import CollectionCoverage, CoverageCause
 from ladon.ir import LeanModule, LeanTextDeclaration
 
-
 SOURCE_FINGERPRINT = "sha256:declaration-integrity-source"
 SCOPE_FINGERPRINT = "sha256:declaration-integrity-scope"
 BLOCK_HASH = "b" * 64

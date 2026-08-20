@@ -10,10 +10,9 @@ from pathlib import Path
 
 import pytest
 
-from ladon.installed_contract import invoke
 from ladon.inspection_models import INSPECTION_NOUNS
+from ladon.installed_contract import invoke
 from ladon.source_index import build_source_index
-
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 INSPECTION_FIXTURE_ROOT = (

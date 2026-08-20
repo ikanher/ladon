@@ -14,7 +14,6 @@ from ladon.report_adapters import coerce_report_v2, report_version
 from ladon.report_v2 import supported_report_view
 from ladon.report_v3 import REPORT_V3_VERSION
 
-
 _ATLAS_COLLECTIONS = (
     (
         "report.findings",

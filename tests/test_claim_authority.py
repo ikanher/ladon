@@ -6,7 +6,6 @@ from pathlib import Path
 from ladon.analysis.claim_authority import audit_claim_authority
 from ladon.analysis.conditional_signature import conditional_signature_diagnostics
 
-
 FIXTURES = Path(__file__).parent / "fixtures" / "claim_authority"
 
 

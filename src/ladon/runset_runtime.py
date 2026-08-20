@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import threading
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any
 
 from ladon.runset_contract import (
     EntryValidity,
@@ -14,7 +15,6 @@ from ladon.runset_contract import (
     RunsetResources,
     require_sha256,
 )
-
 
 TERMINAL_ANALYSIS_STATUSES = frozenset(
     {"complete", "partial", "failed", "interrupted"}
@@ -119,7 +119,7 @@ class SharedArtifactPool:
 
         for kind, raw in artifacts.items():
             if not isinstance(raw, ReusableArtifact):
-                raise ValueError(
+                raise TypeError(
                     f"analysis returned {kind} without fingerprint evidence"
                 )
             attribute = REUSABLE_ARTIFACTS[kind]

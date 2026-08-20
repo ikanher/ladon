@@ -7,8 +7,9 @@ rescanning source files or changing calibrated module populations.
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, replace
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.analysis.generated_family_candidate_models import (
     PRIMARY_POPULATIONS,
@@ -37,7 +38,6 @@ from ladon.lexical_command_skeleton import (
     valid_command_skeleton_row,
 )
 from ladon.source_index_models import SourceIndex
-
 
 GENERATED_FAMILY_REPORT_BASE = "#/sections/module_dag/generated_family_candidates"
 GENERATED_FAMILY_CANDIDATE_COVERAGE_FIELD = "generated_family_candidate_coverage"
@@ -301,13 +301,7 @@ def _selected_candidate_scope_complete(
         if scope.get("truncated") is True:
             return False
     phase = module_dag.get("completeness")
-    if isinstance(phase, Mapping) and phase.get("status") not in {
-        None,
-        "complete",
-        "ok",
-    }:
-        return False
-    return True
+    return not (isinstance(phase, Mapping) and phase.get("status") not in {None, "complete", "ok"})
 
 
 def _policy_digest(module_dag: Mapping[str, Any]) -> str | None:
@@ -466,10 +460,10 @@ def _pointer_token(value: str) -> str:
 
 
 __all__ = [
-    "CandidateIntegrationError",
     "GENERATED_FAMILY_CANDIDATE_COVERAGE_FIELD",
     "GENERATED_FAMILY_PARTITION_COVERAGE_FIELD",
     "GENERATED_FAMILY_REPORT_BASE",
+    "CandidateIntegrationError",
     "GeneratedFamilyCandidateSurface",
     "analyze_generated_family_candidate_surface",
 ]

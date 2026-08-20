@@ -7,9 +7,10 @@ index.  Planning retains source text only for the selected import closure.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.extraction import parse_import_sites
 from ladon.ir import LeanTextDeclaration

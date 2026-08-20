@@ -15,7 +15,6 @@ from ladon.coverage import (
     ProducerRegistry,
 )
 
-
 DECLARATION_INTEGRITY_SCHEMA = "ladon-declaration-integrity-v2"
 DECLARATION_INTEGRITY_ANALYSIS_VERSION = "ladon-declaration-integrity-analysis-v2"
 DEFAULT_GROUP_LIMIT = 100
@@ -28,32 +27,32 @@ CO_REACHABLE_COLLECTION_ID = "declaration_integrity.co_reachable_collisions"
 INTEGRITY_POINTER = "#/sections/module_dag/declaration_integrity"
 
 COLLISION_NONCLAIMS = (
-    "Equal lexical candidate names do not confirm that the declarations "
-    "coexist in one Lean environment.",
-    "This candidate is not a Lean name-resolution error, compilation failure, "
-    "theorem defect, or proof conflict.",
+    ("Equal lexical candidate names do not confirm that the declarations "
+    "coexist in one Lean environment."),
+    ("This candidate is not a Lean name-resolution error, compilation failure, "
+    "theorem defect, or proof conflict."),
 )
 BLOCK_DUPLICATE_NONCLAIMS = (
-    "Equal normalized lexical blocks do not establish equal Lean declarations, "
-    "statements, proofs, or theorem meaning.",
-    "This exact normalized-block candidate is not evidence of a generator "
-    "defect or compilation failure.",
+    ("Equal normalized lexical blocks do not establish equal Lean declarations, "
+    "statements, proofs, or theorem meaning."),
+    ("This exact normalized-block candidate is not evidence of a generator "
+    "defect or compilation failure."),
 )
 FILE_DUPLICATE_NONCLAIMS = (
-    "Equal source bytes do not establish that Lean loads both modules, assigns "
-    "the same declarations, or rejects either file.",
-    "This exact-source candidate is not proof equivalence, theorem identity, "
-    "authorship, provenance, or a generator defect.",
+    ("Equal source bytes do not establish that Lean loads both modules, assigns "
+    "the same declarations, or rejects either file."),
+    ("This exact-source candidate is not proof equivalence, theorem identity, "
+    "authorship, provenance, or a generator defect."),
 )
 SOURCE_SHAPE_NONCLAIMS = (
-    "Equal lexical token-category shapes do not establish equal Lean "
-    "declarations, statements, proofs, theorem meaning, or behavior.",
-    "This source-shape similarity is not parsed Lean syntax, elaborated proof "
-    "shape, generated provenance, a generator defect, or exact duplication.",
+    ("Equal lexical token-category shapes do not establish equal Lean "
+    "declarations, statements, proofs, theorem meaning, or behavior."),
+    ("This source-shape similarity is not parsed Lean syntax, elaborated proof "
+    "shape, generated provenance, a generator defect, or exact duplication."),
 )
 CO_REACHABLE_NONCLAIMS = (
-    "The selected graph witness establishes only lexical module-import "
-    "co-reachability.",
+    ("The selected graph witness establishes only lexical module-import "
+    "co-reachability."),
     *COLLISION_NONCLAIMS,
 )
 

@@ -15,7 +15,6 @@ from pathlib import Path
 
 from release_gate_types import GateError
 
-
 TEXT_AUDIT_SUFFIXES = frozenset(
     {".cfg", ".ini", ".json", ".md", ".py", ".sh", ".toml", ".yaml", ".yml"}
 )

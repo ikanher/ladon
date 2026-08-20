@@ -6,14 +6,6 @@ import random
 import subprocess
 
 import pytest
-
-from ladon.analysis.generated_family_candidate_profile import (
-    COMMAND_SKELETON_VERSION,
-    DECLARATION_STEM_VERSION,
-    CandidateProfile,
-    CandidateRatio,
-)
-from ladon.ir import LeanModule
 from test_generated_family_candidates import (
     analyze,
     clauses_by_id,
@@ -22,6 +14,14 @@ from test_generated_family_candidates import (
     partition_by_parent,
     partition_by_prefix,
 )
+
+from ladon.analysis.generated_family_candidate_profile import (
+    COMMAND_SKELETON_VERSION,
+    DECLARATION_STEM_VERSION,
+    CandidateProfile,
+    CandidateRatio,
+)
+from ladon.ir import LeanModule
 
 
 def test_target_outside_internal_inventory_remains_external_to_predicate() -> None:

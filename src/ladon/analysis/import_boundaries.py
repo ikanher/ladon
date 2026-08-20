@@ -14,7 +14,6 @@ from ladon.coverage import (
 )
 from ladon.ir import LeanModule
 
-
 IMPORT_BOUNDARY_COVERAGE = "module_dag.import_boundaries"
 IMPORT_BOUNDARY_POINTER = "#/sections/module_dag/import_boundaries"
 IMPORT_BOUNDARY_CLASSIFICATIONS = (

@@ -6,7 +6,7 @@ from typing import Any
 
 import pytest
 
-import ladon.pipeline_extraction as pipeline_extraction
+from ladon import pipeline_extraction
 from ladon.pipeline import run_pipeline
 from ladon.pipeline_models import RunContext
 
@@ -33,7 +33,7 @@ def write_changed_manifest(path: Path, changed_path: str) -> bytes:
         '  "schema": "ladon-changed-set-v1",\n'
         f'  "paths": [{{"path": "{changed_path}"}}]\n'
         "}\n"
-    ).encode("utf-8")
+    ).encode()
     path.write_bytes(content)
     return content
 

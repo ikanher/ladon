@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Mapping, Sequence
 from pathlib import PurePosixPath
-from typing import Any, Mapping, Sequence
-
+from typing import Any
 
 ENTRY_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 SUPPORTED_BACKENDS = frozenset({"text", "lean"})
@@ -474,4 +474,4 @@ def validate_diagnostics(rows: Sequence[Mapping[str, Any]]) -> None:
         if copied.get("severity") not in {"info", "warning", "error"}:
             raise ValueError("bundle diagnostic severity is unsupported")
         if not isinstance(copied.get("message"), str):
-            raise ValueError("bundle diagnostic message must be text")
+            raise TypeError("bundle diagnostic message must be text")

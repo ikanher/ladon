@@ -7,9 +7,10 @@ import os
 import shutil
 import stat
 import sys
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Mapping, Sequence
+from typing import Any
 
 from ladon.analysis.benchmark_oracles import evaluate_oracles
 from ladon.benchmark_contract import promotion_readiness
@@ -20,7 +21,6 @@ from ladon.benchmark_metrics import (
 )
 from ladon.benchmark_process import MeasuredProcess, platform_capabilities, run_measured
 from ladon.report_serialization import canonical_json_bytes
-
 
 ReportValidator = Callable[[Mapping[str, Any]], None]
 PROCESS_DEADLINE_SECONDS = 30.0
@@ -223,7 +223,7 @@ def run_case(
         output_name="cold.json",
     )
     cold_launches = helper_launch_count(context.helper_log)
-    equivalent_payload, equivalent = run_json_representation(
+    equivalent_payload, _equivalent = run_json_representation(
         context,
         analyzer,
         cache_name="cache-b",

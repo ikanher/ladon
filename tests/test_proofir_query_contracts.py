@@ -49,8 +49,8 @@ def test_semantic_candidate_query_rejects_nonpositive_limit(connection) -> None:
 
 def test_dossier_subject_queries_are_set_oriented() -> None:
     import copy
-
     from pathlib import Path
+
     from ladon.proofir_v3 import detached_content_id
 
     first = native_artifacts()["proofir.claim"]
@@ -117,6 +117,7 @@ def test_derivation_occurrence_order_is_stable_under_reverse_unordered_selects()
 
 def test_dossier_preserves_limitations_from_derivation_artifacts() -> None:
     import copy
+
     from ladon.proofir_v3 import detached_content_id
 
     derivation = copy.deepcopy(native_artifacts()["proofir.derivation"])

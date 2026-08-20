@@ -10,8 +10,9 @@ import tarfile
 import tempfile
 import unicodedata
 import zipfile
+from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.target_build import TargetPreflightError, validate_target_repository
 from ladon.theorem_capsule_inventory import discover_capsule_layout
@@ -25,7 +26,6 @@ from ladon.theorem_capsule_models import (
     TheoremPlan,
     sha256_bytes,
 )
-
 
 MANIFEST_NAME = "capsule.json"
 PLAN_NAME = "plan.json"
@@ -330,14 +330,13 @@ def _write_reproducible_archive(
         _write_zip(stage, temporary)
         return
     if str(destination).endswith((".tar.gz", ".tgz")):
-        with temporary.open("wb") as output:
-            with gzip.GzipFile(
-                filename="",
-                mode="wb",
-                fileobj=output,
-                mtime=0,
-            ) as compressed:
-                _write_tar(stage, compressed)
+        with temporary.open("wb") as output, gzip.GzipFile(
+            filename="",
+            mode="wb",
+            fileobj=output,
+            mtime=0,
+        ) as compressed:
+            _write_tar(stage, compressed)
         return
     with temporary.open("wb") as output:
         _write_tar(stage, output)

@@ -8,7 +8,6 @@ from typing import Any
 from ladon.coverage import CollectionCoverage
 from ladon.ir import LeanModule
 
-
 PRIMARY_POPULATIONS = frozenset(
     {
         "target_owned",

@@ -8,7 +8,6 @@ from ladon.render import render_text
 from ladon.render_v3 import render_report_v3_text
 from ladon.report_v3 import build_report_v3
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "scope_join_integrity"
 
 

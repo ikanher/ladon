@@ -9,10 +9,10 @@ from typing import Any
 
 from ladon.coverage import CollectionCoverage, CoverageCause, CoverageRegistry
 from ladon.inspection_models import (
+    MAX_RELATED_ROWS,
     ArtifactIdentity,
     InspectionCompatibilityError,
     InspectionRow,
-    MAX_RELATED_ROWS,
     SourceAnchor,
 )
 from ladon.source_index_models import (
@@ -20,7 +20,6 @@ from ladon.source_index_models import (
     source_index_collection_mapping,
     source_index_declaration_mapping,
 )
-
 
 LEXICAL_DECLARATION_NONCLAIM = (
     "Lexical declaration navigation only; not a Lean-resolved identity, "

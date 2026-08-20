@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from ladon.analysis.generated_family_candidate_profile import (
     BUILTIN_CANDIDATE_PROFILE,
     BUILTIN_PROFILE_VERSION,

@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from copy import deepcopy
 from pathlib import PurePosixPath
-from typing import Any, Mapping
+from typing import Any
 
 POLICY_VERSION = "proofir-attachment-policy-v1"
 MAX_CANDIDATES = 256

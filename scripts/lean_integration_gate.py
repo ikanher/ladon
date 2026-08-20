@@ -142,8 +142,9 @@ def run_real_lean(
 def run_gate(candidate: str, required: bool) -> None:
     """Run or explicitly skip the selected candidate's reference Lean smoke."""
 
-    with materialize_candidate(candidate, project_root()) as materialized:
-        with runtime_directory("ladon-lean-gate-") as temporary:
+    with materialize_candidate(candidate, project_root()) as materialized, runtime_directory(
+        "ladon-lean-gate-"
+    ) as temporary:
             runtime_root = Path(temporary)
             environment = sanitized_environment(runtime_root, materialized.root)
             expected_lock = lock_digest(materialized.root)

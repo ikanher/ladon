@@ -7,13 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from ladon.scope import ScopePlanningError
-from ladon.scope_runtime import resolve_analysis_scope
 from ladon.cli import main
 from ladon.pipeline import RunContext, run_pipeline
 from ladon.pipeline_extraction import analysis_module_roots
 from ladon.report_v3 import build_report_v3
 from ladon.reportset_cli import positive_number_argument
+from ladon.scope import ScopePlanningError
+from ladon.scope_runtime import resolve_analysis_scope
 
 
 def write_project(root: Path) -> None:

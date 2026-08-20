@@ -8,12 +8,12 @@ import hashlib
 import json
 import os
 import sys
+from collections.abc import Mapping
 from contextlib import nullcontext, redirect_stdout
 from pathlib import Path
-from typing import Any, Mapping, TextIO
+from typing import Any, TextIO
 
 import jsonschema
-
 from release_gate_candidate import materialize_candidate
 from release_gate_distribution import (
     build_distributions,
@@ -36,7 +36,6 @@ from ladon.large_inventory_gate import (
     LargeInventoryGateError,
     run_large_inventory_measurements,
 )
-
 
 MANIFEST_PATH = Path("tests/fixtures/large_inventory/manifest-v1.json")
 REPORT_SCHEMA_PATH = Path("src/ladon/schemas/ladon-report-v3.schema.json")
@@ -95,8 +94,9 @@ def project_root() -> Path:
 def run_gate(candidate: str, *, samples: int) -> dict[str, Any]:
     """Build, install, generate, and measure one explicit candidate."""
 
-    with materialize_candidate(candidate, project_root()) as materialized:
-        with runtime_directory("ladon-large-inventory-") as temporary:
+    with materialize_candidate(candidate, project_root()) as materialized, runtime_directory(
+        "ladon-large-inventory-"
+    ) as temporary:
             runtime_root = Path(temporary)
             environment = sanitized_environment(runtime_root, materialized.root)
             expected_lock = lock_digest(materialized.root)
@@ -149,17 +149,7 @@ def generate_installed_fixture(
 ) -> dict[str, Any]:
     """Generate through the selected wheel rather than the live source package."""
 
-    program = "\n".join(
-        [
-            "import json",
-            "import sys",
-            "from pathlib import Path",
-            "from ladon.large_fixture import LargeFixtureManifest, generate_large_fixture",
-            "manifest = LargeFixtureManifest.from_path(Path(sys.argv[1]))",
-            "result = generate_large_fixture(Path(sys.argv[2]), manifest)",
-            "print(json.dumps(result, sort_keys=True, separators=(',', ':')))",
-        ]
-    )
+    program = "import json\nimport sys\nfrom pathlib import Path\nfrom ladon.large_fixture import LargeFixtureManifest, generate_large_fixture\nmanifest = LargeFixtureManifest.from_path(Path(sys.argv[1]))\nresult = generate_large_fixture(Path(sys.argv[2]), manifest)\nprint(json.dumps(result, sort_keys=True, separators=(',', ':')))"
     completed = run_checked(
         [
             str(installed_python),

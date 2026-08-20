@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from itertools import combinations
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.ir import LeanDeclaration
-
 
 SIMILARITY_THRESHOLD = 0.75
 COARSE_ONLY_CAP = 0.5

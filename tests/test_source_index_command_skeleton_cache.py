@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pytest
+
 from ladon.source_index import build_source_index
 
 

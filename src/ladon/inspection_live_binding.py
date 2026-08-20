@@ -16,7 +16,6 @@ from ladon.configuration import (
     resolve_policy_configuration,
 )
 
-
 _FILE_POLICY_NAMES = frozenset(
     {"architecture", "generatedFamily", "sourcePattern"}
 )

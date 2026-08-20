@@ -210,8 +210,8 @@ def _rows(value: Any) -> tuple[Mapping[str, Any], ...]:
 
 __all__ = [
     "normalize_helper_nodes",
-    "semantic_edges",
     "semantic_components",
+    "semantic_edges",
     "semantic_external_frontier",
     "trust_frontier",
 ]

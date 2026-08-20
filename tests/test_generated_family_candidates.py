@@ -4,6 +4,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+
 from ladon.analysis.generated_family_candidate_models import (
     CANDIDATE_NONCLAIMS,
 )
@@ -19,7 +20,6 @@ from ladon.analysis.generated_family_candidates import (
 )
 from ladon.extraction import parse_lean_module
 from ladon.ir import LeanModule, LeanTextDeclaration
-
 
 SOURCE_FINGERPRINT = "sha256:portable-source"
 SCOPE_FINGERPRINT = "sha256:portable-scope"

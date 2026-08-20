@@ -98,8 +98,9 @@ def test_count_progress_emits_at_bounded_hundred_unit_intervals() -> None:
 
 def test_run_budget_reports_wall_and_report_byte_crossings() -> None:
     budget = RunBudget(RunLimits(wall_seconds=1.0, report_bytes=10))
-    with patch("ladon.progress.monotonic", return_value=budget.started_at + 2.0):
-        with pytest.raises(ResourceLimitExceeded) as wall:
+    with patch("ladon.progress.monotonic", return_value=budget.started_at + 2.0), pytest.raises(
+        ResourceLimitExceeded
+    ) as wall:
             budget.check("module_dag")
     assert wall.value.kind == "overall_wall_time"
     assert budget.crossed and budget.crossed["phase"] == "module_dag"
@@ -129,8 +130,9 @@ def test_active_wall_watchdog_sets_cancellation_and_preserves_crossing() -> None
         sample_interval_seconds=0.005,
     )
 
-    with pytest.raises(ResourceLimitExceeded) as crossing:
-        with budget.watch("lean_extraction", cancel):
+    with pytest.raises(ResourceLimitExceeded) as crossing, budget.watch(
+        "lean_extraction", cancel
+    ):
             assert cancel.wait(timeout=1)
 
     assert crossing.value.kind == "overall_wall_time"
@@ -159,9 +161,9 @@ def test_active_rss_watchdog_records_observation_and_cancels() -> None:
     def observed_rss(_pid: int) -> int:
         return next(observations, 150)
 
-    with patch("ladon.progress.process_tree_rss_bytes", side_effect=observed_rss):
-        with pytest.raises(ResourceLimitExceeded) as crossing:
-            with budget.watch("module_dag", cancel):
+    with patch("ladon.progress.process_tree_rss_bytes", side_effect=observed_rss), pytest.raises(
+        ResourceLimitExceeded
+    ) as crossing, budget.watch("module_dag", cancel):
                 assert cancel.wait(timeout=1)
 
     assert crossing.value.kind == "process_tree_rss"

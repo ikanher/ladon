@@ -61,8 +61,9 @@ def run_gate(candidate: str, baseline_only: bool, resources: list[str]) -> None:
     """Run the clean candidate's fail-fast verification sequence."""
 
     source_root = project_root()
-    with materialize_candidate(candidate, source_root) as materialized:
-        with runtime_directory("ladon-clean-gate-") as temporary:
+    with materialize_candidate(candidate, source_root) as materialized, runtime_directory(
+        "ladon-clean-gate-"
+    ) as temporary:
             runtime_root = Path(temporary)
             environment = sanitized_environment(runtime_root, materialized.root)
             expected_lock = prepare_locked_environment(

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from ladon.analysis.architecture_policy import summarize_architecture_policy
 
-
 DIRECT_MODULE_DAG = {
     "edges": {
         "Pkg.Alpha.Owner": ["Pkg.Beta.Core", "Pkg.Common.Base"],

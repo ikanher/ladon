@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from ladon.finding_evidence import resolve_local_json_pointer
 from ladon.report_contract import copy_json
 from ladon.report_projection_evidence_closure import EvidenceClosure
 from ladon.report_projection_routes import selection_strata
-
 
 _IMPORT_BOUNDARY_POINTER = "#/sections/module_dag/import_boundaries"
 

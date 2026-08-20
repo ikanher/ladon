@@ -39,8 +39,8 @@ from ladon.pipeline_extraction import (
     adapt_modules,
     add_index_counters,
     analysis_module_roots,
-    coerce_extraction_bundle,
     candidate_profile_policy_identity,
+    coerce_extraction_bundle,
     count_declarations,
     declaration_name_variants,
     declaration_roots_for_modules,
@@ -104,16 +104,15 @@ from ladon.progress import ResourceLimitExceeded
 from ladon.snapshot import SnapshotDecision
 from ladon.snapshot_registry import current_repository_snapshot
 
-
 __all__ = [
     "ARCHITECTURE_POLICY_CANDIDATES",
     "CORE_REQUIRED_PHASES",
     "GENERATED_FAMILY_POLICY_CANDIDATES",
+    "REQUIRED_PHASES",
+    "SOURCE_PATTERN_POLICY_CANDIDATES",
     "PhaseTiming",
     "PipelineResult",
-    "REQUIRED_PHASES",
     "RunContext",
-    "SOURCE_PATTERN_POLICY_CANDIDATES",
     "adapt_modules",
     "add_index_counters",
     "analysis_module_roots",
@@ -327,7 +326,7 @@ def finalize_snapshot_decision(context: RunContext) -> None:
             decision,
             context.snapshot_read_mismatches,
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - phase boundary records a bounded failure
         decision = failed_snapshot_verification(exc)
     context.snapshot_decision = decision
     if decision.status == "changed":
@@ -382,7 +381,7 @@ def current_policy_inputs(
             )
         )
         return rows
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - optional evidence is isolated at this boundary
         rows = {
             name: dict(row)
             for name, row in context.policy_inputs.items()

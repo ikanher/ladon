@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
-
+from collections.abc import Mapping
+from typing import Any
 
 ATLAS_SCHEMA = "ladon-report-atlas-v1"
 ATLAS_DIFF_SCHEMA = "ladon-atlas-diff-v1"

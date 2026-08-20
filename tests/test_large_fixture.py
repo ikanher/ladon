@@ -11,7 +11,6 @@ from ladon.large_fixture import (
     generate_large_fixture,
 )
 
-
 MANIFEST = (
     Path(__file__).parent
     / "fixtures"

@@ -27,7 +27,6 @@ from ladon.render import (
 )
 from ladon.report_v3 import ReportV3
 
-
 _DAG_SUMMARY_FIELDS = (
     "module_count",
     "edge_count",

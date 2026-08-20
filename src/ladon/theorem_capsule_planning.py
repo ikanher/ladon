@@ -5,9 +5,10 @@ from __future__ import annotations
 import json
 import tempfile
 import threading
+from collections.abc import Iterable, Mapping
 from importlib import resources
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 from ladon.ir import LeanTextDeclaration
 from ladon.process_supervisor import ProcessCancelled, run_bounded_target_process
@@ -23,15 +24,12 @@ from ladon.theorem_capsule_configuration import (
     unsupported_facets,
     verify_configuration_files,
 )
-from ladon.theorem_capsule_models import (
-    GUARANTEE_LEVEL,
-    NONCLAIMS,
-    PLAN_PROTOCOL,
-    CapsuleInvocationError,
-    CapsuleOperationalError,
-    TheoremPlan,
-    canonical_json_bytes,
-    sha256_bytes,
+from ladon.theorem_capsule_graph import (
+    normalize_helper_nodes,
+    semantic_components,
+    semantic_edges,
+    semantic_external_frontier,
+    trust_frontier,
 )
 from ladon.theorem_capsule_inventory import (
     CapsuleLayout,
@@ -42,14 +40,16 @@ from ladon.theorem_capsule_inventory import (
     source_inventory_fingerprint,
     verify_selected_sources,
 )
-from ladon.theorem_capsule_graph import (
-    normalize_helper_nodes,
-    semantic_components,
-    semantic_edges,
-    semantic_external_frontier,
-    trust_frontier,
+from ladon.theorem_capsule_models import (
+    GUARANTEE_LEVEL,
+    NONCLAIMS,
+    PLAN_PROTOCOL,
+    CapsuleInvocationError,
+    CapsuleOperationalError,
+    TheoremPlan,
+    canonical_json_bytes,
+    sha256_bytes,
 )
-
 
 DEFAULT_CAPSULE_HELPER = Path(
     str(
@@ -558,12 +558,12 @@ __all__ = [
     "HELPER_VERSION",
     "PLAN_VERSION",
     "ProcessCancelled",
-    "normalize_helper_nodes",
     "helper_closure_checksum",
+    "normalize_helper_nodes",
     "parse_helper_payload",
     "plan_theorem_capsule",
-    "semantic_edges",
     "semantic_components",
+    "semantic_edges",
     "semantic_external_frontier",
     "trust_frontier",
 ]

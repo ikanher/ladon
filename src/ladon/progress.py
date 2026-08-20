@@ -6,12 +6,12 @@ import json
 import os
 import sys
 import threading
+from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
 from pathlib import Path
 from time import monotonic
-from typing import Any, Iterator, TextIO
-
+from typing import Any, TextIO
 
 PROGRESS_SCHEMA_VERSION = 1
 PROGRESS_MODES = frozenset({"auto", "plain", "json", "off"})
@@ -27,8 +27,8 @@ class ResourceLimitExceeded(RuntimeError):
         *,
         kind: str,
         phase: str,
-        observed: float | int,
-        limit: float | int,
+        observed: float,
+        limit: float,
     ) -> None:
         self.kind = kind
         self.phase = phase
@@ -200,8 +200,8 @@ class RunBudget:
         self,
         kind: str,
         phase: str,
-        observed: float | int,
-        limit: float | int | None,
+        observed: float,
+        limit: float | None,
     ) -> None:
         if limit is None or observed <= limit:
             return

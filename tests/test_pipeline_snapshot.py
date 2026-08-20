@@ -12,11 +12,11 @@ from ladon.analysis.generated_family_candidate_profile import (
     DECLARATION_STEM_VERSION,
     GROUPING_VERSION,
 )
+from ladon.ir import LeanModule
 from ladon.pipeline import run_pipeline
 from ladon.pipeline_extraction import indexed_discovery
 from ladon.pipeline_models import RunContext
 from ladon.report_v3 import build_report_v3
-from ladon.ir import LeanModule
 
 
 def write_project(root: Path) -> bytes:

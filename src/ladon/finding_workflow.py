@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any
 
 from ladon.finding_evidence import (
     DanglingFindingEvidenceError,
@@ -15,7 +16,6 @@ from ladon.finding_evidence import (
     source_evidence_ref,
     validate_finding_evidence,
 )
-
 
 __all__ = [
     "DanglingFindingEvidenceError",
@@ -191,7 +191,7 @@ def scoped_finding_id(stable_key: str, scope_digest: str) -> str:
     """Return one compact ID for semantic evidence in one explicit scope."""
 
     digest = hashlib.sha256(
-        f"{stable_key}\0{scope_digest}".encode("utf-8")
+        f"{stable_key}\0{scope_digest}".encode()
     ).hexdigest()[:20]
     return f"ladon.finding.{digest}"
 
@@ -362,7 +362,7 @@ def load_finding_report(path: Path) -> dict[str, Any]:
 
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        raise ValueError(f"input is not a supported Ladon finding report: {path}")
+        raise TypeError(f"input is not a supported Ladon finding report: {path}")
     findings = payload.get("findings")
     if isinstance(findings, list):
         return payload

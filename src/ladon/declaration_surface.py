@@ -7,8 +7,9 @@ represented as unavailable, never as observed empty data.
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import replace
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.ir import (
     BoundedBinders,
@@ -19,7 +20,6 @@ from ladon.ir import (
     LeanDeclarationSurface,
     LeanTrustFact,
 )
-
 
 MAX_BINDERS = 32
 MAX_DEPENDENCIES = 64

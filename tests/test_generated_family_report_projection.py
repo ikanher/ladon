@@ -6,7 +6,6 @@ from ladon.coverage import CollectionCoverage, CoverageCause
 from ladon.finding_evidence import resolve_local_json_pointer
 from ladon.report_projection import project_sections
 
-
 BASE = "#/sections/module_dag/generated_family_candidates"
 
 

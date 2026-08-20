@@ -8,7 +8,6 @@ from typing import Any
 
 from ladon.proof_search_schema import create_proof_search_schema
 
-
 THEOREM = "Fixture.Theorem.target"
 CLOSURE_ID = "fixture-closure-v1"
 

@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.report_contract import copy_json
 from ladon.report_stratification import (
     projection_stratum_key,
     stratifiable_rows,
 )
-
 
 _ROW_IDENTITY_FIELDS = (
     "id",

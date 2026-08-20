@@ -10,7 +10,6 @@ import pytest
 
 from ladon.proofir_v3 import validate_envelope_batch
 
-
 ROOT = Path(__file__).parents[1]
 FIXTURE = ROOT / "tests" / "fixtures" / "lean_integration"
 

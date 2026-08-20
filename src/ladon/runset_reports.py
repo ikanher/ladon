@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.runset_contract import (
     REPORT_VERSION_NAMES,
@@ -149,7 +150,7 @@ def report_metadata(
 
     payload = json.loads(content)
     if not isinstance(payload, Mapping):
-        raise ValueError("canonical report must be a JSON object")
+        raise TypeError("canonical report must be a JSON object")
     version = validated_report_header(payload, entry)
     validate_report_projection(payload, entry, version)
     summary, required_complete = phase_completion(payload.get("phases"))
@@ -164,7 +165,7 @@ def validated_report_header(
 
     metadata = payload.get("metadata")
     if not isinstance(metadata, Mapping):
-        raise ValueError("canonical report metadata is missing")
+        raise TypeError("canonical report metadata is missing")
     version = metadata.get("report_version")
     expected = REPORT_VERSION_NAMES[entry.report_version]
     if version != expected:
@@ -187,7 +188,7 @@ def validate_report_projection(
         return
     projection = payload.get("projection")
     if not isinstance(projection, Mapping):
-        raise ValueError("report-v3 projection is missing")
+        raise TypeError("report-v3 projection is missing")
     if projection.get("name") != entry.projection:
         raise ValueError("report projection does not match runset entry")
 
@@ -196,12 +197,12 @@ def phase_completion(phases: Any) -> tuple[Mapping[str, int], bool]:
     """Summarize explicit phase states and required-phase completeness."""
 
     if not isinstance(phases, Mapping):
-        raise ValueError("canonical report phases are missing")
+        raise TypeError("canonical report phases are missing")
     summary = {status: 0 for status in ("complete", "skipped", "partial", "failed")}
     required_complete = True
     for phase in phases.values():
         if not isinstance(phase, Mapping):
-            raise ValueError("canonical report phase is malformed")
+            raise TypeError("canonical report phase is malformed")
         status = phase.get("status")
         if status not in summary:
             raise ValueError(f"canonical report phase status is invalid: {status!r}")

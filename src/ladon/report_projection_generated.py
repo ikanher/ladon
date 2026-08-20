@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from typing import Any, Callable, Mapping
+from typing import Any
 
 from ladon.report_contract import copy_json
 from ladon.report_projection_routes import (
@@ -11,7 +12,6 @@ from ladon.report_projection_routes import (
     pointer_is_within,
     selection_strata,
 )
-
 
 GENERATED_FAMILY_BASE = "#/sections/module_dag/generated_family_candidates"
 BoundValue = Callable[..., Any]
@@ -283,7 +283,7 @@ def _project_relation_row(
         strata=strata,
     )
     if not isinstance(projected, dict):
-        raise AssertionError("generated-family relation row did not remain an object")
+        raise TypeError("generated-family relation row did not remain an object")
     projected["canonicalRef"] = pointer
     return projected
 

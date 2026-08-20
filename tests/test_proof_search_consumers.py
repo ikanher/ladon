@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import sqlite3
 from pathlib import Path
 
 from ladon.proof_search_consumers import ConsumerRequest, query_consumers
 from ladon.proof_search_index import build_proof_search_index
-import sqlite3
 
 
 def test_missing_target_is_explicitly_unavailable(tmp_path: Path) -> None:

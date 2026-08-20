@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Mapping
-
+from typing import Any
 
 PROTOCOL = "ladon-lean-semantic-v1"
 
@@ -219,4 +219,4 @@ def validate_frame(frame: Mapping[str, Any], request: ExtractionRequest, *, ordi
         seen.add(key)
 
 
-__all__ = ["PROTOCOL", "Operation", "FrameKind", "TerminalStatus", "ExtractionBounds", "SemanticIdentity", "ExtractionRequest", "TerminalSummary", "ValidatedCollection", "collect_ndjson_frames", "write_request_ndjson", "run_supervised_protocol", "adapt_elaborated_payload", "exact_expr_fingerprint_v1", "search_shape_key_v1", "validate_frame"]
+__all__ = ["PROTOCOL", "ExtractionBounds", "ExtractionRequest", "FrameKind", "Operation", "SemanticIdentity", "TerminalStatus", "TerminalSummary", "ValidatedCollection", "adapt_elaborated_payload", "collect_ndjson_frames", "exact_expr_fingerprint_v1", "run_supervised_protocol", "search_shape_key_v1", "validate_frame", "write_request_ndjson"]

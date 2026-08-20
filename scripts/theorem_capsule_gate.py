@@ -6,8 +6,8 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
 from release_gate_candidate import materialize_candidate
 from release_gate_distribution import (
@@ -25,7 +25,6 @@ from release_gate_runtime import (
     sanitized_environment,
 )
 from release_gate_types import GateError
-
 
 PHASES = ("planning", "materialization", "replay", "all")
 
@@ -51,8 +50,9 @@ def project_root() -> Path:
 
 
 def run_gate(candidate: str, phase: str, required: bool) -> None:
-    with materialize_candidate(candidate, project_root()) as materialized:
-        with runtime_directory("ladon-theorem-capsule-gate-") as temporary:
+    with materialize_candidate(candidate, project_root()) as materialized, runtime_directory(
+        "ladon-theorem-capsule-gate-"
+    ) as temporary:
             runtime_root = Path(temporary)
             environment = sanitized_environment(runtime_root, materialized.root)
             lake = shutil.which("lake", path=environment.get("PATH"))

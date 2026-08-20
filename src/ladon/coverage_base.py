@@ -7,10 +7,10 @@ surfaces cannot silently entangle the base evidence envelope.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Iterable, Mapping
-
+from typing import Any
 
 COVERAGE_SCHEMA = "ladon-collection-coverage-v1"
 COVERAGE_COMPLETENESS = frozenset(

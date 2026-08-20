@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import replace
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 from ladon.coverage import CoverageRegistry, legacy_unknown_coverage
 from ladon.report_contract import (
@@ -157,7 +158,7 @@ def mark_report_phase_required(
         ),
     )
     if not isinstance(updated, ReportV2):
-        raise AssertionError("typed phase replacement returned a mapping")
+        raise TypeError("typed phase replacement returned a mapping")
     return _preserve_report_representation(payload, updated)
 
 

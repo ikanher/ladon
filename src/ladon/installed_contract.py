@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import json
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
-
 
 PROCESS_TIMEOUT_SECONDS = 20
 FORBIDDEN_CALLER_OPTIONS = (

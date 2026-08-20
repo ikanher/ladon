@@ -437,7 +437,7 @@ def _section(rows: list[dict[str, Any]], limit: int) -> dict[str, Any]:
     truncated = len(rows) > limit
     return {
         "rows": rows[:limit],
-        "matched": len(rows) if truncated else len(rows),
+        "matched": len(rows),
         "matchedLowerBound": len(rows),
         "returned": min(len(rows), limit),
         "truncated": truncated,

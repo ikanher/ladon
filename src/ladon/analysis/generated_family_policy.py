@@ -5,10 +5,10 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import PurePosixPath
-from typing import Any, Mapping, Sequence
-
+from typing import Any
 
 LEGACY_GENERATED_FAMILY_POLICY_SCHEMA = "ladon-generated-family-policy-v1"
 GENERATED_FAMILY_POLICY_SCHEMA = "ladon-generated-family-policy-v2"

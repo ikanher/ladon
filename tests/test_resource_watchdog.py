@@ -122,8 +122,9 @@ def test_supported_rss_limit_cancels_an_active_process_group(
         sample_interval_seconds=0.01,
     )
 
-    with pytest.raises(ResourceLimitExceeded) as crossing:
-        with budget.watch("lean_extraction", cancel):
+    with pytest.raises(ResourceLimitExceeded) as crossing, budget.watch(
+        "lean_extraction", cancel
+    ):
             run_target_process(
                 [sys.executable, "-c", program],
                 cwd=tmp_path,

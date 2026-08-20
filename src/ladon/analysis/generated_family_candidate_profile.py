@@ -10,12 +10,12 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.lexical_command_skeleton import COMMAND_SKELETON_VERSION
-
 
 CANDIDATE_PROFILE_SCHEMA = "ladon-generated-family-candidate-profile-v1"
 BUILTIN_PROFILE_VERSION = "generic-numbered-family-v1"

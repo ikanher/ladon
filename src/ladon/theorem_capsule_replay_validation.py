@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import stat
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.theorem_capsule_graph import normalize_helper_nodes, semantic_edges, trust_frontier
 from ladon.theorem_capsule_models import (
@@ -16,7 +17,6 @@ from ladon.theorem_capsule_models import (
     sha256_bytes,
 )
 from ladon.theorem_capsule_planning import HELPER_VERSION, helper_closure_checksum
-
 
 PLAN_NAME = "plan.json"
 

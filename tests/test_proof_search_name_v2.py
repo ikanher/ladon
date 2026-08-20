@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pathlib import Path
 import json
 import sqlite3
+from pathlib import Path
 
 from ladon.cli import main
 from ladon.proof_search_index import build_proof_search_index, query_proof_search_index

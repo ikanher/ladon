@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.coverage import CoverageRegistry
 from ladon.report_contract import (
@@ -20,7 +21,6 @@ from ladon.report_contract import (
     sorted_diagnostics,
 )
 from ladon.snapshot import AnalysisSnapshot, SnapshotDecision
-
 
 _V3_ONLY_DECLARATION_SHAPE_COVERAGE = "declaration_integrity.source_shape_similarities"
 _V3_ONLY_DECLARATION_SHAPE_FIELD = "declaration_source_shape_coverage"

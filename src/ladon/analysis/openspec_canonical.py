@@ -6,7 +6,6 @@ import json
 import re
 from pathlib import Path
 
-
 RECONCILIATION_CHANGE = "ladon-openspec-state-reconciliation"
 ARCHIVE_CHAIN = (
     "ladon-pipeline-phase-boundaries-timing",

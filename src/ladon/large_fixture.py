@@ -8,7 +8,6 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
-
 LARGE_FIXTURE_SCHEMA = "ladon-large-lean-fixture-v1"
 GENERATOR_VERSION = "ladon-large-fixture-generator-v1"
 
@@ -50,7 +49,7 @@ class LargeFixtureManifest:
 
         payload = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(payload, dict):
-            raise ValueError("large fixture manifest must be a JSON object")
+            raise TypeError("large fixture manifest must be a JSON object")
         return cls(
             schema=str(payload.get("schema", "")),
             module_count=int(payload["moduleCount"]),

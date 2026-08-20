@@ -10,8 +10,9 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.ir import (
     LeanCommandSkeleton,
@@ -38,7 +39,6 @@ from ladon.lexical_occurrences import (
     resource_order,
     resource_setting,
 )
-
 
 LEXICAL_CONTEXT_VERSION = "ladon-lexical-scope-context-v1"
 MAX_CONTEXT_ITEMS = 32
@@ -783,11 +783,11 @@ __all__ = [
     "ATTRIBUTE_TOKENS",
     "LEXICAL_CONTEXT_VERSION",
     "LEXICAL_NAVIGATION_VERSION",
-    "LexicalNavigationSurface",
     "MAX_CONTEXT_ITEMS",
     "MAX_CONTEXT_REFERENCES",
     "MAX_LEXICAL_VALUE_CHARACTERS",
     "RESOURCE_OPTIONS",
     "TACTIC_TOKENS",
+    "LexicalNavigationSurface",
     "scan_lexical_navigation",
 ]

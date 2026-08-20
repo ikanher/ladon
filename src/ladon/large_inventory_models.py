@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Mapping, Protocol, Sequence
+from typing import Any, Protocol
 
 from ladon.benchmark_process import MeasuredProcess
-
 
 LARGE_INVENTORY_GATE_SCHEMA = "ladon-large-inventory-gate-v1"
 REQUIRED_SAMPLE_COUNT = 3
@@ -175,14 +175,14 @@ class RepresentationRun:
 __all__ = [
     "ANALYSIS_COMMAND_TEMPLATE",
     "LARGE_INVENTORY_GATE_SCHEMA",
-    "CacheEvidence",
-    "LargeInventoryGateError",
-    "MeasuredRunner",
     "REPRESENTATIONS",
     "REQUIRED_DECLARATION_COUNT",
     "REQUIRED_MODULE_COUNT",
     "REQUIRED_SAMPLE_COUNT",
     "REQUIRED_SOURCE_LINE_COUNT",
+    "CacheEvidence",
+    "LargeInventoryGateError",
+    "MeasuredRunner",
     "ReportValidator",
     "RepresentationRun",
     "ScaleCeilings",

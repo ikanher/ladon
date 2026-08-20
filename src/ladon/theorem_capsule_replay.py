@@ -10,8 +10,9 @@ import tarfile
 import tempfile
 import unicodedata
 import zipfile
+from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
 from ladon.theorem_capsule_models import (
@@ -34,7 +35,6 @@ from ladon.theorem_capsule_replay_validation import (
     validate_capsule_content,
     validate_replay_helper_payload,
 )
-
 
 PROCESS_OUTPUT_LIMIT_BYTES = 16 * 1024 * 1024
 MANIFEST_NAME = "capsule.json"
@@ -143,10 +143,11 @@ def _extract_safe_tar(archive_path: Path, destination: Path) -> None:
     seen: set[str] = set()
     collision_keys: set[str] = set()
     try:
-        archive = tarfile.open(archive_path, mode="r:*")
+        archive_context = tarfile.open(  # noqa: SIM115 - entered by the following with
+            archive_path, mode="r:*")
     except (tarfile.TarError, OSError) as exc:
         raise CapsuleContentError(f"capsule archive is unreadable: {exc}") from exc
-    with archive:
+    with archive_context as archive:
         for member in archive.getmembers():
             if member.isdir():
                 continue

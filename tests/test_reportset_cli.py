@@ -6,7 +6,6 @@ from pathlib import Path
 from ladon.cli import main
 from ladon.pipeline import RunContext, run_pipeline
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 
 

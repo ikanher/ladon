@@ -259,7 +259,7 @@ def test_declaration_graph_groups_declaration_name_families_by_suffix() -> None:
 
 
 def test_declaration_graph_keeps_parser_type_and_value_edges_separate() -> None:
-    complete = lambda items, authority: BoundedStrings(  # noqa: E731
+    complete = lambda items, authority: BoundedStrings(
         items=items,
         total=len(items),
         status="complete",

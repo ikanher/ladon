@@ -13,7 +13,6 @@ from ladon.audit_enrichment import (
 from ladon.elaborated_extraction import run_elaborated_helper
 from ladon.ir import LeanAuditQuery
 
-
 REPO_ROOT = Path(__file__).parents[1]
 REAL_FIXTURE = REPO_ROOT / "tests" / "fixtures" / "lean_declarations"
 
@@ -55,16 +54,7 @@ def fake_payload() -> dict:
 
 
 def test_fake_helper_evidence_resolves_exact_check_and_axiom_queries() -> None:
-    source = "\n".join(
-        [
-            "#check Root.theorem",
-            "#print axioms Root.theorem",
-            "#check Root.missing",
-            "#print axioms Root.partial",
-            "#check Root.theorem True",
-            "",
-        ]
-    )
+    source = "#check Root.theorem\n#print axioms Root.theorem\n#check Root.missing\n#print axioms Root.partial\n#check Root.theorem True\n"
 
     queries = audit_queries_from_elaborated_payload(
         "Root.Audit",

@@ -12,7 +12,6 @@ from ladon.coverage import CollectionCoverage, CoverageCause
 from ladon.extraction import parse_lean_module
 from ladon.ir import LeanImport, LeanModule
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "scope_join_integrity"
 INVENTORY_FINGERPRINT = "sha256:scope-boundary-inventory"
 SCOPE_FINGERPRINT = "sha256:scope-boundary-plan"

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping
+from collections.abc import Mapping
+from typing import Any
 
 from ladon.report_contract import copy_json
 from ladon.report_stratification import stratified_selection
-
 
 INSPECTION_REGION_ROUTES = {
     "audit_surface_region": (
@@ -80,9 +80,9 @@ def inspection_owner_pointers(
                     f"#/sections/module_dag/audit_surfaces/{surface_index}/{collection}"
                 ),
             )
-    for noun in result:
+    for noun, entries in result.items():
         for identity in ambiguous[noun]:
-            result[noun].pop(identity, None)
+            entries.pop(identity, None)
     return result
 
 

@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import replace
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.coverage import CollectionCoverage, CoverageCause
 from ladon.report_contract import copy_json
@@ -34,7 +35,6 @@ from ladon.report_projection_routes import (
     selection_strata,
 )
 from ladon.report_stratification import stratified_selection
-
 
 _RECORD_SHAPE_KEYS = frozenset(
     {

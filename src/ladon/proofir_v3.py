@@ -1231,10 +1231,10 @@ def make_envelope(
 
 
 __all__ = [
-    "MAX_CANONICAL_BYTES",
+    "MAX_ARTIFACTS",
     "MAX_ARTIFACT_BYTES",
     "MAX_BATCH_BYTES",
-    "MAX_ARTIFACTS",
+    "MAX_CANONICAL_BYTES",
     "MAX_COLLECTION_ITEMS",
     "MAX_DEPTH",
     "MAX_STRING_BYTES",

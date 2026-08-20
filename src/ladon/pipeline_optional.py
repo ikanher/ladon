@@ -8,8 +8,10 @@ the pipeline facade can re-export these helpers without introducing a cycle.
 from __future__ import annotations
 
 import json
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import AbstractContextManager
 from pathlib import Path
-from typing import Any, Callable, ContextManager, Iterator, Mapping, Protocol
+from typing import Any, Protocol
 
 from ladon.analysis.architecture_policy import (
     skipped_architecture_policy_report,
@@ -34,7 +36,6 @@ from ladon.pipeline_snapshot import (
     read_registered_bytes,
     read_registered_text,
 )
-
 
 __all__ = [
     "ARCHITECTURE_POLICY_CANDIDATES",
@@ -82,7 +83,7 @@ class _OptionalPhaseContext(SnapshotReadContext, Protocol):
         [_OptionalPhaseContext, LeanModule],
         None,
     ] | None
-    phase: Callable[[str], ContextManager[dict[str, int]]]
+    phase: Callable[[str], AbstractContextManager[dict[str, int]]]
     record_skipped: Callable[[str, str], None]
 
 
@@ -301,7 +302,7 @@ def resolve_generated_family_policy(
     with selected.open(encoding="utf-8") as handle:
         payload = json.load(handle)
     if not isinstance(payload, dict):
-        raise ValueError(
+        raise TypeError(
             f"generated-family policy {selected} must be a JSON object"
         )
     return parse_generated_family_policy(payload), str(selected)
@@ -327,7 +328,7 @@ def load_source_pattern_policy(
     with policy_path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
     if not isinstance(payload, dict):
-        raise ValueError(
+        raise TypeError(
             f"source-pattern policy {policy_path} must be a JSON object"
         )
     return payload
@@ -388,7 +389,7 @@ def load_registered_json_object(
         return None
     payload = json.loads(text)
     if not isinstance(payload, dict):
-        raise ValueError(f"{label} {path} must be a JSON object")
+        raise TypeError(f"{label} {path} must be a JSON object")
     return payload
 
 
@@ -398,7 +399,7 @@ def load_json_object(path: Path, label: str) -> dict[str, Any]:
     with path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
     if not isinstance(payload, dict):
-        raise ValueError(f"{label} {path} must be a JSON object")
+        raise TypeError(f"{label} {path} must be a JSON object")
     return payload
 
 
@@ -461,5 +462,5 @@ def load_architecture_policy(
     with policy_path.open(encoding="utf-8") as handle:
         payload = json.load(handle)
     if not isinstance(payload, dict):
-        raise ValueError(f"architecture policy {policy_path} must be a JSON object")
+        raise TypeError(f"architecture policy {policy_path} must be a JSON object")
     return payload

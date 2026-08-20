@@ -5,12 +5,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-
 REPO_ROOT = Path(__file__).parents[1]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from lean_integration_gate import (  # noqa: E402
+from lean_integration_gate import (
     assert_declaration_evidence,
     json_strings,
 )

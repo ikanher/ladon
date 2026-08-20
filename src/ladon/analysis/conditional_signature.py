@@ -4,8 +4,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from ladon.analysis.claim_authority import normalize_claim_route, route_diagnostic, route_is_honestly_conditional
-
+from ladon.analysis.claim_authority import (
+    normalize_claim_route,
+    route_diagnostic,
+    route_is_honestly_conditional,
+)
 
 FINAL_NAME_MARKERS = (
     "final",

@@ -68,8 +68,9 @@ def run_readiness(
 
     source_root = project_root()
     ledger_relative = ledger_relative_path(ledger, source_root)
-    with materialize_candidate(candidate, source_root) as materialized:
-        with runtime_directory("ladon-alpha-readiness-") as temporary:
+    with materialize_candidate(candidate, source_root) as materialized, runtime_directory(
+        "ladon-alpha-readiness-"
+    ) as temporary:
             runtime_root = Path(temporary)
             environment = sanitized_environment(runtime_root, materialized.root)
             prepare_locked_environment(materialized.root, environment)

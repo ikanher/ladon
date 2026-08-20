@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from heapq import heappop, heappush
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -74,7 +75,7 @@ def replay_route(route: Mapping[str, Any], runner: Any) -> dict[str, Any]:
 
     try:
         success = bool(runner(route))
-    except Exception as exc:  # supervised boundary reports a bounded diagnostic
+    except Exception as exc:  # noqa: BLE001 - injected runner is a supervised boundary
         return {"status": "replay_failed", "diagnostic": str(exc)}
     return {"status": "replayed" if success else "replay_failed"}
 

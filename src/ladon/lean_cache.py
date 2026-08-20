@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.ir import LeanModule
 from ladon.lean_protocol import HELPER_VERSION, PROTOCOL_VERSION
-
 
 CACHE_FINGERPRINT_VERSION = "ladon-lean-cache-v2"
 LAKE_STATE_FILES = ("lakefile.toml", "lakefile.lean", "lake-manifest.json")

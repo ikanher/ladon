@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from ladon.ir import LeanModule
+from ladon.lean_protocol import ModuleRequest
 from ladon.lean_runtime import (
     LeanRuntimeConfig,
     RequestedModule,
@@ -15,9 +16,7 @@ from ladon.lean_runtime import (
     plan_batches,
     resolve_lean_version,
 )
-from ladon.lean_protocol import ModuleRequest
 from ladon.process_supervisor import ProcessResult
-
 
 FAKE_LAKE = r"""#!/usr/bin/env python3
 import json

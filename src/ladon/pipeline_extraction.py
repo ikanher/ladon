@@ -4,24 +4,26 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Any, Mapping, Sequence, TypeVar
+from collections.abc import Mapping, Sequence
+from typing import Any, TypeVar
 
+from ladon.analysis.generated_family_candidate_profile import (
+    BUILTIN_CANDIDATE_PROFILE,
+    CandidateProfile,
+    load_explicit_candidate_profile,
+)
 from ladon.changed_set import capture_changed_set_manifest
 from ladon.configuration import (
     policy_display_path,
     policy_fingerprint_options,
     resolve_policy_inputs,
 )
-from ladon.analysis.generated_family_candidate_profile import (
-    BUILTIN_CANDIDATE_PROFILE,
-    CandidateProfile,
-    load_explicit_candidate_profile,
-)
 from ladon.elaborated_extraction import augment_with_elaborated_surfaces
 from ladon.extraction import ModuleDiscovery
 from ladon.ir import ExtractionBundle, LeanDeclaration, LeanModule
 from ladon.lean_extraction import extract_with_lean_helper
 from ladon.pipeline_models import RunContext
+from ladon.pipeline_snapshot import register_captured_bytes
 from ladon.scope_runtime import (
     ResolvedAnalysisScope,
     resolve_analysis_scope,
@@ -32,12 +34,10 @@ from ladon.snapshot import (
     register_policy_snapshot,
     snapshot_from_source_index_manifest,
 )
-from ladon.pipeline_snapshot import register_captured_bytes
 from ladon.snapshot_registry import (
     directory_registry_path,
     snapshot_registry_path,
 )
-
 
 _ValueT = TypeVar("_ValueT")
 _INLINE_EVIDENCE_INPUTS = (

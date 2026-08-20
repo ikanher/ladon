@@ -40,7 +40,6 @@ from ladon.report_serialization import (
 )
 from ladon.snapshot import AnalysisSnapshot, SnapshotDecision
 
-
 __all__ = [
     "EXTENSION_NAMES",
     "PHASE_DISPOSITIONS",
@@ -49,10 +48,11 @@ __all__ = [
     "REPORT_VERSION",
     "SECTION_PHASES",
     "V1_REPORT_VERSION",
-    "Diagnostic",
+    "AnalysisSnapshot",
     "CollectionCoverage",
     "CoverageCause",
     "CoverageRegistry",
+    "Diagnostic",
     "ExtensionEnvelope",
     "Finding",
     "PhaseEnvelope",
@@ -60,10 +60,9 @@ __all__ = [
     "ReportMetadata",
     "ReportModelError",
     "ReportV2",
-    "AnalysisSnapshot",
-    "SnapshotDecision",
     "SerializationResult",
     "SerializedReportBytes",
+    "SnapshotDecision",
     "UnsupportedReportVersionError",
     "build_report_v2",
     "canonical_json_bytes",

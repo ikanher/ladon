@@ -9,10 +9,15 @@ from __future__ import annotations
 import argparse
 import hashlib
 import sys
+from collections.abc import Callable, Sequence
 from dataclasses import replace
 from pathlib import Path
-from typing import Callable, Sequence
 
+from ladon.analysis.generated_family_candidate_profile import (
+    CandidateProfileError,
+    load_explicit_candidate_profile,
+)
+from ladon.analysis.population_calibration import PolicyValidationError
 from ladon.cli_execution import (
     EXIT_INVOCATION,
     EXIT_OPERATIONAL,
@@ -27,22 +32,17 @@ from ladon.cli_execution import (
     validate_output_destinations,
     write_output_file,
 )
-from ladon.analysis.generated_family_candidate_profile import (
-    CandidateProfileError,
-    load_explicit_candidate_profile,
-)
 from ladon.configuration import ConfigurationError, validate_policy_configuration
-from ladon.analysis.population_calibration import PolicyValidationError
+from ladon.lean_runtime import (
+    DEFAULT_LEAN_BATCH_SIZE,
+    DEFAULT_LEAN_BATCH_TIMEOUT_SECONDS,
+    EXECUTION_SAFETY_WARNING,
+)
 from ladon.pipeline import (
     PipelineResult,
     RunContext,
     discovery_partial_result,
     run_pipeline,
-)
-from ladon.lean_runtime import (
-    DEFAULT_LEAN_BATCH_SIZE,
-    DEFAULT_LEAN_BATCH_TIMEOUT_SECONDS,
-    EXECUTION_SAFETY_WARNING,
 )
 from ladon.process_supervisor import ProcessSignal
 from ladon.progress import (
@@ -81,7 +81,6 @@ from ladon.target_build import (
     validate_lake_preflight,
     validate_target_repository,
 )
-
 
 UNSUPPORTED_OPTIONS = {
     "verify_export_surface": "--verify-export-surface",
@@ -402,7 +401,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             file=sys.stderr,
         )
         return EXIT_OPERATIONAL
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI boundary renders unexpected failures
         print(f"ladon: {exc}", file=sys.stderr)
         return EXIT_OPERATIONAL
 
@@ -549,7 +548,7 @@ def run_requested_analysis(
         return run_pipeline(context), None
     if args.extraction_backend == "lean":
         build = run_context_build(context, args.build_timeout)
-        if not build.status == "complete":
+        if build.status != "complete":
             reason = build_failure_reason(build)
             partial = discovery_partial_result(
                 context,
@@ -740,7 +739,7 @@ def emit_report(
                 budget=budget,
                 progress_callback=(
                     (
-                        lambda completed: pulse.update(
+                        lambda completed, pulse=pulse: pulse.update(
                             completed=completed,
                         )
                     )
@@ -829,8 +828,8 @@ def emit_json_report(
     write_report_content(destination, serialized.content.decode("utf-8"))
     compatibility = (
         (
-            "report v2 compatibility output duplicates large phase payloads; "
-            "use report v3 for canonical bounded projections",
+            ("report v2 compatibility output duplicates large phase payloads; "
+            "use report v3 for canonical bounded projections"),
         )
         if plan.report_version == "v2"
         else ()

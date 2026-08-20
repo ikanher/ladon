@@ -18,7 +18,6 @@ from ladon.coverage import (
 from ladon.finding_evidence import resolve_local_json_pointer
 from ladon.pipeline_models import RunContext
 
-
 ARCHITECTURE_JOINED_COVERAGE = "module_dag.architecture_joined_evidence"
 _REGISTRY_POINTER = (
     "#/sections/module_dag/architectureProducerRegistrations/producers"

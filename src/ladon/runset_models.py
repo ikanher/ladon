@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.runset_validation import (
     ENTRY_ID_PATTERN,
@@ -24,7 +25,6 @@ from ladon.runset_validation import (
     validate_portable_options,
     validate_scope,
 )
-
 
 RUNSET_ARTIFACT_KIND = "ladon_analysis_runset"
 BUNDLE_ARTIFACT_KIND = "ladon_analysis_bundle"

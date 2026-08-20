@@ -6,8 +6,9 @@ import os
 import signal
 import subprocess
 import time
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.benchmark_process import run_measured
 from ladon.benchmark_suite import (
@@ -16,7 +17,6 @@ from ladon.benchmark_suite import (
     prepare_case,
     run_json_representation,
 )
-
 
 CACHE_MUTATIONS = {
     "source": "source_changed",

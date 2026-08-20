@@ -9,7 +9,6 @@ from ladon.analysis.generated_family_candidate_models import (
 )
 from ladon.coverage import CollectionCoverage, CoverageCause
 
-
 CANDIDATE_COLLECTION_ID = "generated_family.candidates"
 PARTITION_COLLECTION_ID = "generated_family.numeric_partitions"
 
@@ -287,8 +286,8 @@ __all__ = [
     "CANDIDATE_COLLECTION_ID",
     "PARTITION_COLLECTION_ID",
     "analysis_coverage",
-    "partition_feature_coverage",
     "partition_coverage",
+    "partition_feature_coverage",
     "partition_member_coverage",
     "representative_coverage",
 ]

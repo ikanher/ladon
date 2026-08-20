@@ -29,32 +29,31 @@ from ladon.inspection_adapter_common import (
     text,
     unknown_coverage,
 )
+from ladon.inspection_live_binding import (
+    LiveInspectionBindingError,
+    live_source_index_options,
+)
 from ladon.inspection_models import (
     ArtifactIdentity,
     InspectionCompatibilityError,
     InspectionDataset,
     InspectionRow,
 )
-from ladon.inspection_live_binding import (
-    LiveInspectionBindingError,
-    live_source_index_options,
-)
 from ladon.source_index_cache import manifest_digest
 from ladon.source_index_models import (
     SOURCE_INDEX_AUDITS_COVERAGE,
     SOURCE_INDEX_DECLARATIONS_COVERAGE,
+    SOURCE_INDEX_FINGERPRINT_VERSION,
     SOURCE_INDEX_IMPORTS_COVERAGE,
     SOURCE_INDEX_MODULES_COVERAGE,
     SOURCE_INDEX_OPTIONS_COVERAGE,
     SOURCE_INDEX_PROOF_MECHANISMS_COVERAGE,
     SOURCE_INDEX_RESOURCES_COVERAGE,
-    SOURCE_INDEX_FINGERPRINT_VERSION,
     SOURCE_INDEX_SCHEMA,
     SourceIndex,
     SourceIndexError,
     source_index_collection_mapping,
 )
-
 
 SOURCE_INDEX_COLLECTION_KEYS: Mapping[str, tuple[str, ...]] = {
     "audits": ("auditCommands", "audits"),
@@ -375,8 +374,8 @@ def _import_row(
         ),
         related=(id_link("modules", module_id(module), "source module"),),
         nonclaims=(
-            "Lexical import occurrence only; not a Lean name-resolution or "
-            "build result.",
+            ("Lexical import occurrence only; not a Lean name-resolution or "
+            "build result."),
         ),
     )
 

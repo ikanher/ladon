@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 Node = dict[str, Any]
 Edge = dict[str, Any]
 

@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.report_contract import copy_json
 from ladon.report_projection_evidence_closure import (
     EvidenceClosure,
     local_pointer_tokens,
+)
+from ladon.report_projection_evidence_closure import (
     pointer as local_pointer,
 )
 from ladon.report_projection_routes import selection_strata
-
 
 _REGISTRY_PATHS = (
     ("module_dag", "declaration_integrity", "producerRegistrations"),

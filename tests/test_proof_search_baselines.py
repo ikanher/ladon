@@ -24,7 +24,6 @@ from ladon.proof_search_baselines import (
 )
 from ladon.proof_search_index import build_proof_search_index, query_proof_search_index
 
-
 FIXTURE = Path(__file__).parent / "fixtures/proof_search_baselines/public-contracts-v1.json"
 
 

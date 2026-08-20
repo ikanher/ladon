@@ -17,7 +17,6 @@ from ladon.theorem_capsule_models import (
 )
 from ladon.theorem_capsule_planning import plan_theorem_capsule
 
-
 FIXTURE = Path(__file__).parent / "fixtures" / "theorem_capsule"
 MULTI_ROOT_FIXTURE = Path(__file__).parent / "fixtures" / "theorem_capsule_multi_root"
 

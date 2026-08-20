@@ -21,8 +21,8 @@ from ladon.sqlite_publication import (
 from ladon.theorem_capsule_planning import plan_theorem_capsule
 from ladon.theorem_lineage_projection import ProjectionQuery, project_lineage
 from ladon.theorem_lineage_query import LineageQuery
-from ladon.theorem_lineage_summary import summarize_lineage
 from ladon.theorem_lineage_store import LineageIdentity, ingest_theorem_lineage
+from ladon.theorem_lineage_summary import summarize_lineage
 
 
 def run_lineage_command(args: Any) -> int:

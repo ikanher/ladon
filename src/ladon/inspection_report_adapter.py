@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import replace
-from typing import Any, Callable
+from typing import Any
 
 from ladon.analysis.audit_registrations import (
     AUDIT_COMMAND_COVERAGE,
@@ -51,19 +51,18 @@ from ladon.inspection_models import (
     InspectionDataset,
     InspectionRow,
 )
-from ladon.inspection_report_reader import inspection_report_view
 from ladon.inspection_report_proof import merge_quoted_proof_rows
-from ladon.report_coverage import (
-    DECLARATION_GRAPH_DECLARATIONS_COVERAGE,
-    MODULE_DAG_MODULES_COVERAGE,
-    PROOF_XRAY_ROWS_COVERAGE,
-)
+from ladon.inspection_report_reader import inspection_report_view
 from ladon.pipeline_inspection_navigation import (
     INSPECTION_OPTIONS_COVERAGE,
     INSPECTION_PROOF_MECHANISMS_COVERAGE,
     TEXT_DECLARATIONS_COVERAGE,
 )
-
+from ladon.report_coverage import (
+    DECLARATION_GRAPH_DECLARATIONS_COVERAGE,
+    MODULE_DAG_MODULES_COVERAGE,
+    PROOF_XRAY_ROWS_COVERAGE,
+)
 
 REPORT_COLLECTION_KEYS: Mapping[str, tuple[str, ...]] = {
     "options": ("optionRows", "optionCommands", "genericOptions"),

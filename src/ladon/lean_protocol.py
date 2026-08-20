@@ -9,9 +9,9 @@ remains in :mod:`ladon.lean_extraction`.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping, Sequence
-
+from typing import Any
 
 PROTOCOL_VERSION = "ladon-lean-batch-v1"
 HELPER_VERSION = "ladon-parser-helper-v2"

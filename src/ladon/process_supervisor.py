@@ -13,14 +13,14 @@ import signal
 import subprocess
 import tempfile
 import threading
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from time import monotonic
-from typing import Callable, IO, Iterator, Mapping, Sequence
+from typing import IO
 
 from ladon.progress import process_tree_rss_bytes
-
 
 TERMINATE_GRACE_SECONDS = 2.0
 
@@ -146,34 +146,33 @@ def run_bounded_target_process(
     normalized = tuple(str(part) for part in command)
     raise_if_cancelled(cancel_event)
     started = monotonic()
-    with tempfile.TemporaryFile() as stdout_file:
-        with tempfile.TemporaryFile() as stderr_file:
-            process = subprocess.Popen(
-                normalized,
-                cwd=cwd,
-                stdout=stdout_file,
-                stderr=stderr_file,
-                start_new_session=True,
-                env=dict(env) if env is not None else None,
-            )
-            timed_out, output_limited, memory_limited, peak_rss_bytes = (
-                _supervise_file_backed_process(
-                    process,
-                    stdout_file,
-                    stderr_file,
-                    timeout_seconds=timeout_seconds,
-                    max_output_bytes=max_output_bytes,
-                    started=started,
-                    cancel_event=cancel_event,
-                    terminate_grace_seconds=terminate_grace_seconds,
-                    max_rss_bytes=max_rss_bytes,
-                )
-            )
-            stdout, stderr = _read_bounded_outputs(
+    with tempfile.TemporaryFile() as stdout_file, tempfile.TemporaryFile() as stderr_file:
+        process = subprocess.Popen(
+            normalized,
+            cwd=cwd,
+            stdout=stdout_file,
+            stderr=stderr_file,
+            start_new_session=True,
+            env=dict(env) if env is not None else None,
+        )
+        timed_out, output_limited, memory_limited, peak_rss_bytes = (
+            _supervise_file_backed_process(
+                process,
                 stdout_file,
                 stderr_file,
-                max_output_bytes,
+                timeout_seconds=timeout_seconds,
+                max_output_bytes=max_output_bytes,
+                started=started,
+                cancel_event=cancel_event,
+                terminate_grace_seconds=terminate_grace_seconds,
+                max_rss_bytes=max_rss_bytes,
             )
+        )
+        stdout, stderr = _read_bounded_outputs(
+            stdout_file,
+            stderr_file,
+            max_output_bytes,
+        )
     return ProcessResult(
         normalized,
         process.returncode if process.returncode is not None else -signal.SIGKILL,

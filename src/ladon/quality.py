@@ -9,13 +9,12 @@ from __future__ import annotations
 
 import subprocess
 import sys
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Sequence
 
 from radon.complexity import cc_rank, cc_visit
 from radon.metrics import mi_rank, mi_visit
-
 
 RANK_ORDER = {"A": 0, "B": 1, "C": 2, "D": 3, "E": 4, "F": 5}
 

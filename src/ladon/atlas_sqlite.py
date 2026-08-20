@@ -17,7 +17,6 @@ from ladon.sqlite_publication import (
     release_publication_lock,
 )
 
-
 CANNED_QUERIES = {
     "hotspots": """
         SELECT subject, kind, COUNT(DISTINCT report_id) AS report_count, SUM(count) AS total_count

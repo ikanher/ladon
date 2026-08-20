@@ -7,6 +7,7 @@ truth, or proof validity.
 
 from __future__ import annotations
 
+import itertools
 from collections import deque
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -17,7 +18,6 @@ from ladon.finding_evidence import (
     json_pointer_token,
     resolve_local_json_pointer,
 )
-
 
 JOIN_SCHEMA = "ladon-structural-join-v1"
 JOIN_NONCLAIM = (
@@ -195,7 +195,7 @@ def graph_path_witness(
     if not isinstance(raw_mapping, Mapping):
         return None
     edge_refs: list[dict[str, Any]] = []
-    for source, target in zip(path, path[1:]):
+    for source, target in itertools.pairwise(path):
         raw_targets = raw_mapping.get(source)
         if (
             not isinstance(raw_targets, Sequence)
@@ -270,8 +270,8 @@ def build_structural_join(
             "status": "subset",
             "exhaustive": False,
             "nonclaims": [
-                "The promoted relationship is witnessed in canonical visible "
-                "rows; omitted evidence may contain additional candidates."
+                ("The promoted relationship is witnessed in canonical visible "
+                "rows; omitted evidence may contain additional candidates.")
             ],
         },
         "nonclaim": JOIN_NONCLAIM,

@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import itertools
 from collections import defaultdict
+from collections.abc import Collection, Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Collection, Iterable, Mapping
 
 from ladon.analysis.generated_family_candidate_coverage import (
     partition_feature_coverage,
@@ -217,7 +218,7 @@ def _sequence(
 def _gap_ranges(values: tuple[int, ...]) -> tuple[tuple[int, int], ...]:
     return tuple(
         (left + 1, right - 1)
-        for left, right in zip(values, values[1:])
+        for left, right in itertools.pairwise(values)
         if right - left > 1
     )
 

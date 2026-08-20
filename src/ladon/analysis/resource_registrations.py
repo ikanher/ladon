@@ -21,7 +21,6 @@ from ladon.resource_policy import (
     normalize_resource_thresholds,
 )
 
-
 RESOURCE_REVIEW_COVERAGE = "module_dag.resource_review_inputs"
 FINITE_RESOURCE_KIND = "policy_backed_finite_resource_setting"
 _RESOURCE_POLICY_POINTER = "#/sections/module_dag/resourceReviewPolicy/thresholds"

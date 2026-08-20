@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import time
 
+from support.first_hand_fixtures import CLOSURE_ID, THEOREM, populated_connection
+
 from ladon.proof_search_baselines import SqlTraceCounter
 from ladon.theorem_lineage_query import LineageQuery, query_lineage
 from ladon.theorem_lineage_store import LineageIdentity
 from ladon.theorem_lineage_summary import summarize_lineage
-from support.first_hand_fixtures import CLOSURE_ID, THEOREM, populated_connection
 
 
 def fixture_identity() -> LineageIdentity:

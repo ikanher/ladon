@@ -26,7 +26,6 @@ from ladon.source_index_models import (
     SourceIndex,
 )
 
-
 AUDIT_COMMAND_COVERAGE = "module_dag.audit_commands"
 RESOURCE_DIRECTIVE_COVERAGE = "module_dag.resource_directives"
 _AUDIT_COMMAND_POINTER = "#/sections/module_dag/audit_surfaces"

@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Any, Iterable, Mapping
-
+from typing import Any
 
 SNAPSHOT_SCHEMA = "ladon-analysis-snapshot-v1"
 SNAPSHOT_STATUSES = frozenset({"present", "absent", "unreadable"})

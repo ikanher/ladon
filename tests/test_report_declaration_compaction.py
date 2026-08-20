@@ -8,7 +8,6 @@ from ladon.report_declaration_compaction import (
     is_compact_declaration_container,
 )
 
-
 CONTAINER_POINTER = "#/sections/declaration_graph"
 
 

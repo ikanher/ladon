@@ -17,7 +17,6 @@ from ladon.runset_contract import (
     canonical_json_bytes,
 )
 
-
 RUNSET_STATE_NAME = ".ladon-runset-state.json"
 
 

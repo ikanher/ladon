@@ -18,7 +18,6 @@ from ladon.theorem_capsule_planning import (
 )
 from ladon.theorem_cli import theorem_main
 
-
 FIXTURE = Path(__file__).parent / "fixtures" / "theorem_capsule"
 
 

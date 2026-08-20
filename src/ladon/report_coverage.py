@@ -7,8 +7,9 @@ rows whose pointers resolve in the canonical report-v3 ``sections`` object.
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 from ladon.coverage import (
     CollectionCoverage,
@@ -20,7 +21,6 @@ from ladon.source_index_models import (
     SOURCE_INDEX_MODULES_COVERAGE,
     SourceIndex,
 )
-
 
 MODULE_DAG_MODULES_COVERAGE = "module_dag.modules"
 DECLARATION_GRAPH_DECLARATIONS_COVERAGE = "declaration_graph.declarations"
@@ -802,9 +802,9 @@ __all__ = [
     "DECLARATION_GRAPH_DECLARATIONS_COVERAGE",
     "MODULE_DAG_MODULES_COVERAGE",
     "PROOF_XRAY_ROWS_COVERAGE",
+    "REGISTERED_PHASE_COVERAGE",
     "REPORT_FINDINGS_COVERAGE",
     "REPORT_PACKET_EVIDENCE_COVERAGE",
     "REPORT_REVIEW_REGIONS_COVERAGE",
-    "REGISTERED_PHASE_COVERAGE",
     "build_report_coverage",
 ]

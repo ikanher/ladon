@@ -99,8 +99,8 @@ def test_bounded_target_process_stops_oversized_output(tmp_path: Path) -> None:
         [
             sys.executable,
             "-c",
-            "import sys, time; "
-            "sys.stdout.write('x' * 2000000); sys.stdout.flush(); time.sleep(60)",
+            ("import sys, time; "
+            "sys.stdout.write('x' * 2000000); sys.stdout.flush(); time.sleep(60)"),
         ],
         cwd=tmp_path,
         timeout_seconds=3,
@@ -120,8 +120,8 @@ def test_bounded_target_process_classifies_fast_oversized_output(
         [
             sys.executable,
             "-c",
-            "import sys; sys.stdout.write('o' * 5000); "
-            "sys.stderr.write('e' * 5000)",
+            ("import sys; sys.stdout.write('o' * 5000); "
+            "sys.stderr.write('e' * 5000)"),
         ],
         cwd=tmp_path,
         timeout_seconds=3,

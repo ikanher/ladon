@@ -48,8 +48,9 @@ def project_root() -> Path:
 def run_smoke(candidate: str, resources: list[str]) -> None:
     """Build, install, and smoke one selected source candidate."""
 
-    with materialize_candidate(candidate, project_root()) as materialized:
-        with runtime_directory("ladon-installed-smoke-") as temporary:
+    with materialize_candidate(candidate, project_root()) as materialized, runtime_directory(
+        "ladon-installed-smoke-"
+    ) as temporary:
             runtime_root = Path(temporary)
             environment = sanitized_environment(runtime_root, materialized.root)
             expected_lock = lock_digest(materialized.root)

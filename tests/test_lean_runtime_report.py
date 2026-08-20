@@ -11,7 +11,6 @@ from ladon.lean_runtime import EXECUTION_SAFETY_WARNING
 from ladon.pipeline import PipelineResult, RunContext, run_pipeline
 from ladon.report_v2 import PhaseEnvelope
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 
 

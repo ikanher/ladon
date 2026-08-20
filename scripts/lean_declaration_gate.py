@@ -7,8 +7,9 @@ import argparse
 import json
 import shutil
 import subprocess
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from jsonschema import Draft202012Validator
 from jsonschema.exceptions import ValidationError
@@ -35,7 +36,6 @@ from ladon.report_v3 import (
     load_report_v3_schema,
     serialize_report_v3_bytes,
 )
-
 
 EXPECTED_TOOLCHAIN = "4.32.1"
 

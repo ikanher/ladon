@@ -11,7 +11,8 @@ from __future__ import annotations
 import hashlib
 import json
 import re
-from typing import Any, Iterable, Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
+from typing import Any
 
 from ladon.ir import (
     LeanOptionOccurrence,
@@ -19,7 +20,6 @@ from ladon.ir import (
     LeanResourceSetting,
     LeanTextDeclaration,
 )
-
 
 LEXICAL_NAVIGATION_VERSION = "ladon-lexical-navigation-v1"
 MAX_LEXICAL_VALUE_CHARACTERS = 256

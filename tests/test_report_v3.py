@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 import pytest
 from jsonschema import Draft202012Validator
@@ -29,7 +30,6 @@ from ladon.report_v3 import (
     serialize_report_v3_bytes,
     write_report_v3_file,
 )
-
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 

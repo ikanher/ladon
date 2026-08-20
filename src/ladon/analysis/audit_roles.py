@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from collections import Counter
-from typing import Any, Mapping
-
+from collections.abc import Mapping
+from typing import Any
 
 AUDIT_SURFACE_ROLE = "audit_surface"
 COMMAND_ONLY_AUDIT_FACADE = "command_only_audit_facade"

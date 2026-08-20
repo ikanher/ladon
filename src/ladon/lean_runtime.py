@@ -5,10 +5,11 @@ from __future__ import annotations
 import subprocess
 import tempfile
 import threading
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from time import monotonic
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.ir import LeanModule
 from ladon.lean_cache import (
@@ -33,7 +34,6 @@ from ladon.process_supervisor import (
     run_streaming_target_process,
     run_target_process,
 )
-
 
 DEFAULT_LEAN_BATCH_SIZE = 8
 DEFAULT_LEAN_BATCH_TIMEOUT_SECONDS = 120.0

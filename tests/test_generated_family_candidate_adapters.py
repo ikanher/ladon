@@ -9,10 +9,10 @@ from typing import Any
 import pytest
 
 from ladon.analysis.generated_family_candidate_adapters import (
-    CandidateIntegrationError,
     GENERATED_FAMILY_CANDIDATE_COVERAGE_FIELD,
     GENERATED_FAMILY_PARTITION_COVERAGE_FIELD,
     GENERATED_FAMILY_REPORT_BASE,
+    CandidateIntegrationError,
     analyze_generated_family_candidate_surface,
 )
 from ladon.analysis.generated_family_candidate_profile import (
@@ -29,7 +29,6 @@ from ladon.source_index_models import (
     SourceIndex,
     SourceIndexEntry,
 )
-
 
 SOURCE_FINGERPRINT = "f" * 64
 SCOPE_FINGERPRINT = "s" * 64

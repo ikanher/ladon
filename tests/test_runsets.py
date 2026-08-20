@@ -25,6 +25,11 @@ from ladon.runset_contract import (
     load_runset_manifest,
     load_runset_state_schema,
 )
+from ladon.runset_support import (
+    default_validity,
+    resolve_validities,
+    reuse_record,
+)
 from ladon.runsets import (
     AnalysisOutcome,
     ReusableArtifact,
@@ -33,12 +38,6 @@ from ladon.runsets import (
     execute_runset,
     validate_bundle_reports,
 )
-from ladon.runset_support import (
-    default_validity,
-    resolve_validities,
-    reuse_record,
-)
-
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "runsets"
 MANIFEST_PATH = FIXTURE_ROOT / "manifest-v1.json"
@@ -279,7 +278,7 @@ def test_changed_global_resource_invalidates_every_resume_entry(
     tmp_path: Path,
     report_bytes: bytes,
     resource_name: str,
-    resource_value: int | float,
+    resource_value: float,
 ) -> None:
     manifest = load_runset_manifest(MANIFEST_PATH)
     bundle_dir = tmp_path / resource_name

@@ -13,7 +13,6 @@ from pathlib import Path
 
 from release_gate_types import GateError, MaterializedCandidate
 
-
 REQUIRED_INPUT_PATHS = (
     ".github",
     ".gitignore",
@@ -64,8 +63,7 @@ def git_output(repo_root: Path, arguments: Sequence[str]) -> bytes:
         ["git", *arguments],
         cwd=repo_root,
         check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
     if result.returncode != 0:
         detail = result.stderr.decode(errors="replace").strip()
@@ -213,8 +211,7 @@ def archive_treeish(candidate: str, repo_root: Path, destination: Path) -> None:
         ["git", "archive", "--format=tar", f"--output={archive}", candidate],
         cwd=repo_root,
         check=False,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        capture_output=True,
     )
     if result.returncode != 0:
         detail = result.stderr.decode(errors="replace").strip()

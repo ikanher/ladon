@@ -5,6 +5,7 @@ from __future__ import annotations
 import sqlite3
 from dataclasses import dataclass
 from typing import Any
+
 from ladon.proof_search_coverage import evaluate_coverage
 
 

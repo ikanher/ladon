@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-
 ROOT_APPLICABILITY_KEY = "root_reachability"
 ROOT_APPLICABILITY_STATUSES = frozenset(
     {"applicable", "auxiliary", "not_applicable"}

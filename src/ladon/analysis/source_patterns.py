@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import re
 from collections import Counter
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 from ladon.finding_workflow import canonical_row_evidence
-
 
 DEFAULT_MAX_MATCHES = 200
 SEVERITIES = {"info", "warning", "error", "critical"}

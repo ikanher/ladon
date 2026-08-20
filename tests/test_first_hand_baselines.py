@@ -3,21 +3,21 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from ladon.proof_search_consumers import ConsumerRequest, query_consumers
-from ladon.proof_search_constructor import ConstructorRequest, constructor_coverage
-from ladon.proof_difference import DifferenceRequest, analyze_difference
 from support.first_hand_fixtures import (
     CLOSURE_ID,
     THEOREM,
     coverage_connection,
+    database_resource_snapshot,
     fixture_fingerprint,
     owner_projection_fixture,
     populated_connection,
     query_plan,
-    database_resource_snapshot,
     table_counts,
 )
 
+from ladon.proof_difference import DifferenceRequest, analyze_difference
+from ladon.proof_search_constructor import ConstructorRequest, constructor_coverage
+from ladon.proof_search_consumers import ConsumerRequest, query_consumers
 
 MANIFEST = Path(__file__).parent / "fixtures/proof_search_baselines/first-hand-baseline-v1.json"
 PLAN_CONTRACT = Path(__file__).parent / "fixtures/proof_search_baselines/plan-contract-v1.json"

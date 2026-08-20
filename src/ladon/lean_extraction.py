@@ -7,8 +7,8 @@ analysis remains backend-agnostic.
 
 from __future__ import annotations
 
-import json
 import hashlib
+import json
 import threading
 from collections.abc import Callable, Mapping
 from importlib import resources
@@ -25,7 +25,6 @@ from ladon.lean_runtime import (
     execute_lean_runtime,
 )
 from ladon.process_supervisor import run_target_process
-
 
 DEFAULT_HELPER = Path(str(resources.files("ladon").joinpath("lean", "ladon_parser_helper.lean")))
 HelperRunner = Callable[[Path, Path, Path], dict[str, Any]]

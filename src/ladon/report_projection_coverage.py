@@ -2,23 +2,23 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
 import hashlib
 import json
-from typing import Any, Mapping
+from collections.abc import Mapping
+from dataclasses import replace
+from typing import Any
 
+from ladon.analysis.audit_registrations import (
+    AUDIT_COMMAND_COVERAGE,
+    RESOURCE_DIRECTIVE_COVERAGE,
+)
 from ladon.coverage import (
     CollectionCoverage,
     CoverageCause,
     CoverageError,
     CoverageRegistry,
 )
-from ladon.analysis.audit_registrations import (
-    AUDIT_COMMAND_COVERAGE,
-    RESOURCE_DIRECTIVE_COVERAGE,
-)
 from ladon.pipeline_inspection_navigation import TEXT_DECLARATIONS_COVERAGE
-
 
 _MISSING = object()
 

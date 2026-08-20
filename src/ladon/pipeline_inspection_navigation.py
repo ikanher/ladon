@@ -25,7 +25,6 @@ from ladon.source_index_navigation_codec import (
     source_index_proof_mechanism_mapping,
 )
 
-
 INSPECTION_NAVIGATION_SCHEMA = "ladon-inspection-navigation-v1"
 MAX_INSPECTION_NAVIGATION_ROWS = 10_000
 INSPECTION_OPTIONS_COVERAGE = "module_dag.inspection_options"

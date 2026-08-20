@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import sqlite3
+from pathlib import Path
 
 import pytest
+from support.proofir_v3_native import claim_artifact
 
 from ladon.proof_search_index import (
     ProofSearchIndexError,
@@ -15,7 +16,6 @@ from ladon.proofir_catalog import (
     PROOFIR_CONFIG_RELATIVE_PATH,
     discover_catalog_artifacts,
 )
-from support.proofir_v3_native import claim_artifact
 
 
 def configure(

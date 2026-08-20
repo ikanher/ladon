@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from dataclasses import replace
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 import pytest
 from jsonschema import Draft202012Validator
@@ -24,11 +25,10 @@ from ladon.ir import (
 )
 from ladon.pipeline import RunContext, run_pipeline
 from ladon.render import render_text
-from ladon.report_v3 import build_report_v3
 from ladon.report_v2 import (
+    REPORT_VERSION,
     Diagnostic,
     PhaseEnvelope,
-    REPORT_VERSION,
     ReportModelError,
     UnsupportedReportVersionError,
     canonical_json_bytes,
@@ -41,7 +41,7 @@ from ladon.report_v2 import (
     supported_report_view,
     update_report_metadata,
 )
-
+from ladon.report_v3 import build_report_v3
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 V1_FIXTURES = Path(__file__).parent / "fixtures" / "report_v1"

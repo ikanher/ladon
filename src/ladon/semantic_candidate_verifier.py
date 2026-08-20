@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
-from typing import Iterable, Mapping
 
 
 @dataclass(frozen=True)
@@ -70,4 +70,4 @@ def _matches(pattern: str, candidate_type: str) -> bool:
     return all(left == "_" or left == right for left, right in zip(pattern_parts, candidate_parts))
 
 
-__all__ = ["PatternRequest", "CandidateResult", "verify_candidates"]
+__all__ = ["CandidateResult", "PatternRequest", "verify_candidates"]

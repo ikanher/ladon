@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import json
 import tomllib
+from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 from ladon.theorem_capsule_inventory import CapsuleSource
 from ladon.theorem_capsule_models import CapsuleOperationalError, sha256_bytes
-
 
 CONFIGURATION_NAMES = (
     "lean-toolchain",

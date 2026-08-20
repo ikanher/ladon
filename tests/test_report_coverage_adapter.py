@@ -20,7 +20,6 @@ from ladon.source_index_models import (
     SourceIndexEntry,
 )
 
-
 REPORT_IDS = (
     DECLARATION_GRAPH_DECLARATIONS_COVERAGE,
     MODULE_DAG_MODULES_COVERAGE,

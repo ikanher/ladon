@@ -15,17 +15,32 @@ from ladon.analysis.import_boundaries import (
     classify_import_boundaries,
     import_is_inside_scope,
     owned_top_namespaces,
-    same_top_namespace as same_top_namespace,  # noqa: F401
 )
 from ladon.analysis.module_dag_inventory import (
     ModuleInventoryIndex as _ModuleInventoryIndex,
+)
+from ladon.analysis.module_dag_inventory import (
     build_module_inventory_index as _module_inventory_index,
+)
+from ladon.analysis.module_dag_inventory import (
     classify_facade_subtype as _facade_subtype,
+)
+from ladon.analysis.module_dag_inventory import (
     facade_names as _facade_modules,
+)
+from ladon.analysis.module_dag_inventory import (
     facade_subtype_counts as _facade_subtype_summary,
+)
+from ladon.analysis.module_dag_inventory import (
     matching_module_names as _modules_matching_filters,
+)
+from ladon.analysis.module_dag_inventory import (
     top_facade_rows as _top_facade_like_modules,
+)
+from ladon.analysis.module_dag_inventory import (
     top_fan_in_rows as _top_fan_in,
+)
+from ladon.analysis.module_dag_inventory import (
     top_fan_out_rows as _top_fan_out,
 )
 from ladon.analysis.module_naming import (
@@ -37,7 +52,6 @@ from ladon.analysis.module_naming import (
 from ladon.analysis.root_applicability import root_applicability
 from ladon.coverage import CollectionCoverage
 from ladon.ir import LeanModule
-
 
 MAX_LARGE_MODULE_ROWS = 20
 MAX_SOURCE_SMELL_ROWS = 50

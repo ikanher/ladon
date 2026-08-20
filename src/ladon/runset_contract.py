@@ -40,7 +40,6 @@ from ladon.runset_validation import (
     require_sha256,
 )
 
-
 __all__ = [
     "BUNDLE_ARTIFACT_KIND",
     "BUNDLE_SCHEMA",

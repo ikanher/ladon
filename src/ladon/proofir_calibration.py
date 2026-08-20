@@ -5,8 +5,9 @@ from __future__ import annotations
 import hashlib
 import subprocess
 import time
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 
 def run_calibration(repo_root: Path, command: Sequence[str], *, index_path: Path | None = None, predicates: Sequence[str] = ()) -> dict[str, Any]:

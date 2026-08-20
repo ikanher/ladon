@@ -4,15 +4,15 @@ from __future__ import annotations
 
 import re
 import sqlite3
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
-from typing import Any, Iterable, Mapping
+from typing import Any
 
 from ladon.proof_search_name_query import (
     is_exact_name_query,
     name_casefold,
     semantic_name_segments_v1,
 )
-
 
 _TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9_']*")
 _CAMEL_BOUNDARY_RE = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")

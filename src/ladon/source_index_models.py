@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.coverage import (
     CollectionCoverage,
@@ -40,7 +41,6 @@ from ladon.source_index_navigation_codec import (
     module_navigation_payload,
     source_index_collection_mapping,
 )
-
 
 SOURCE_INDEX_SCHEMA = "ladon-source-index-v3"
 SOURCE_INDEX_FINGERPRINT_VERSION = (
@@ -1152,8 +1152,9 @@ __all__ = [
     "CACHE_OUTCOMES",
     "INDEX_STATUSES",
     "SOURCE_FAILURE_DIAGNOSTIC",
-    "SOURCE_INDEX_COVERAGE_POINTER",
     "SOURCE_INDEX_AUDITS_COVERAGE",
+    "SOURCE_INDEX_COMMAND_SKELETONS_COVERAGE",
+    "SOURCE_INDEX_COVERAGE_POINTER",
     "SOURCE_INDEX_DECLARATIONS_COVERAGE",
     "SOURCE_INDEX_FINGERPRINT_VERSION",
     "SOURCE_INDEX_IMPORTS_COVERAGE",
@@ -1161,9 +1162,8 @@ __all__ = [
     "SOURCE_INDEX_OPTIONS_COVERAGE",
     "SOURCE_INDEX_PROOF_MECHANISMS_COVERAGE",
     "SOURCE_INDEX_RESOURCES_COVERAGE",
-    "SOURCE_INDEX_SCOPE_CONTEXTS_COVERAGE",
     "SOURCE_INDEX_SCHEMA",
-    "SOURCE_INDEX_COMMAND_SKELETONS_COVERAGE",
+    "SOURCE_INDEX_SCOPE_CONTEXTS_COVERAGE",
     "SourceIndex",
     "SourceIndexCacheOutcome",
     "SourceIndexEntry",

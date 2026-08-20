@@ -19,7 +19,6 @@ from ladon.source_index_models import (
     source_index_declaration_mapping,
 )
 
-
 NAVIGATION_SOURCE = """\
 namespace Demo
 section Work

@@ -8,9 +8,10 @@ publication, and deterministic bundle state without becoming another analyzer.
 from __future__ import annotations
 
 import threading
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.process_supervisor import ProcessCancelled, ProcessSignal
 from ladon.runset_contract import (
@@ -58,7 +59,6 @@ from ladon.runset_support import (
     skipped_record,
     stop_reason,
 )
-
 
 DEFAULT_BUNDLE_NAME = "bundle.json"
 
@@ -270,7 +270,7 @@ def _execute_entry(
             exception_reason(exc),
             reuse=reuse,
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - runset boundary records bounded failures
         record = failed_record(
             entry,
             validity,
@@ -284,9 +284,9 @@ def _execute_entry(
 
 
 __all__ = [
+    "DEFAULT_BUNDLE_NAME",
     "AnalysisOutcome",
     "AnalysisRunner",
-    "DEFAULT_BUNDLE_NAME",
     "EventSink",
     "ReusableArtifact",
     "RunsetAnalysisRequest",

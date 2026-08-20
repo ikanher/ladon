@@ -21,7 +21,6 @@ from ladon.source_index_models import (
     SourceIndexResult,
 )
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "declaration_audit_integrity"
 
 

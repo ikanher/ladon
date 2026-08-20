@@ -372,7 +372,7 @@ def bridge_stale_evidence(external_evidence: list[dict[str, Any]]) -> list[dict[
             rule_id = str(diagnostic.get("ruleId", ""))
             if rule_id == "proofir.packet_stale_source":
                 kind = "bridge_stale_source"
-            elif rule_id.startswith("ladon.claim.") or rule_id.startswith("ladon.evidence."):
+            elif rule_id.startswith(("ladon.claim.", "ladon.evidence.")):
                 kind = "claim_authority_route"
             elif rule_id.startswith("ladon.proof_surface."):
                 kind = "proof_surface_route"

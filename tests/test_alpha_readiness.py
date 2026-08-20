@@ -6,20 +6,19 @@ from pathlib import Path
 
 import pytest
 
-
 SCRIPTS_ROOT = Path(__file__).parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS_ROOT))
 
-import alpha_readiness as readiness_cli  # noqa: E402
-import alpha_readiness_run as readiness_run  # noqa: E402
-from alpha_readiness_plan import (  # noqa: E402
+import alpha_readiness as readiness_cli
+import alpha_readiness_run as readiness_run
+from alpha_readiness_plan import (
     ChildPacket,
     build_readiness_plan,
     milestone_from_row,
     milestone_task_ids,
     milestone_tasks_complete,
 )
-from alpha_readiness_run import (  # noqa: E402
+from alpha_readiness_run import (
     REPORT_AUTHORITY_VOCABULARY,
     ReadinessFailure,
     child_blockers,
@@ -28,8 +27,7 @@ from alpha_readiness_run import (  # noqa: E402
     normalized_command,
     require_authority_ledger,
 )
-from release_gate_types import GateError  # noqa: E402
-
+from release_gate_types import GateError
 
 AUTHORITY_CLASSES = [
     {

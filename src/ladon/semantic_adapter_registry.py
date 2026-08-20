@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Iterable
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -60,4 +61,4 @@ def resolve_adapters(rules: Iterable[AdapterRule], *, source_shape: str, target_
     return [{"ruleId": rule.rule_id, "declaration": rule.declaration, "authority": rule.authority, "cost": rule.cost, "sideConditions": list(rule.side_conditions), "verification": "not_requested"} for rule in selected]
 
 
-__all__ = ["AdapterRule", "BUILTIN_RULES", "validate_registry", "registry_fingerprint", "resolve_adapters"]
+__all__ = ["BUILTIN_RULES", "AdapterRule", "registry_fingerprint", "resolve_adapters", "validate_registry"]

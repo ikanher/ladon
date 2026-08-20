@@ -11,7 +11,6 @@ from typing import Any
 
 from ladon.finding_workflow import canonical_row_evidence
 
-
 SUPPORTED_WITNESS_KINDS = {"ladon_module_system_witness", "module_system_witness"}
 SUPPORTED_SCHEMA_VERSIONS = {1, "1"}
 

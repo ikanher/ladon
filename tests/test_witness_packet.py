@@ -7,7 +7,6 @@ from ladon.analysis.witness_packet import summarize_packet_evidence
 from ladon.cli import main
 from ladon.render import render_text
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 
 

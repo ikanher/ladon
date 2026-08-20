@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, replace
-from typing import Any, Iterable
+from typing import Any
 
 from ladon.coverage_base import (
     CollectionCoverage,
@@ -11,7 +12,6 @@ from ladon.coverage_base import (
     CoverageError,
     CoverageRegistry,
 )
-
 
 DERIVED_CLAIM_KINDS = frozenset(
     {"positive_witness", "exhaustive", "absence"}
@@ -173,8 +173,8 @@ def _incomplete_derived_coverage(
             exhaustive=False,
             component_authorities=authorities,
             nonclaims=(
-                "The witness is present in the visible subset; omitted rows "
-                "may add further witnesses.",
+                ("The witness is present in the visible subset; omitted rows "
+                "may add further witnesses."),
             ),
         )
     return DerivedCoverage(
@@ -184,8 +184,8 @@ def _incomplete_derived_coverage(
         exhaustive=False,
         component_authorities=authorities,
         nonclaims=(
-            "Incomplete required collections do not support an exhaustive "
-            "or repository-wide absence claim.",
+            ("Incomplete required collections do not support an exhaustive "
+            "or repository-wide absence claim."),
         ),
     )
 

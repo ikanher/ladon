@@ -1,17 +1,19 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import replace
-from typing import Any, Mapping
+from typing import Any
 
-from ladon.coverage import CollectionCoverage, CoverageRegistry
-from ladon.report_contract import Finding
-from ladon.report_model import ReportV2
-from ladon.report_v3 import build_report_v3
 from test_report_v3 import (
     canonical_model,
     model_with_large_payload,
     resolve_json_pointer,
 )
+
+from ladon.coverage import CollectionCoverage, CoverageRegistry
+from ladon.report_contract import Finding
+from ladon.report_model import ReportV2
+from ladon.report_v3 import build_report_v3
 
 
 def test_limit_below_stratum_count_retains_every_present_stratum() -> None:

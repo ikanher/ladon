@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import base64
-import bisect
 import binascii
+import bisect
 import hashlib
 import json
 from collections.abc import Iterable, Mapping
@@ -21,7 +21,6 @@ from ladon.inspection_models import (
     InspectionQuery,
     InspectionRow,
 )
-
 
 DEFAULT_INSPECTION_LIMIT = 50
 MAX_INSPECTION_LIMIT = 500

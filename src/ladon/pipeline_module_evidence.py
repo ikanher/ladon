@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 from ladon.analysis.module_dag import summarize_module_dag
 from ladon.coverage import CollectionCoverage, CoverageCause

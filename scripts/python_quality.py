@@ -17,7 +17,6 @@ from pathlib import Path
 
 from ladon.quality import format_issue, strict_quality_issues
 
-
 DEFAULT_TARGETS = ("src", "tests", "scripts")
 
 
@@ -35,7 +34,7 @@ def existing_targets(root: Path, targets: list[str]) -> list[str]:
 def run_command(label: str, command: list[str], cwd: Path) -> int:
     print(f"\n== {label} ==", flush=True)
     print("+ " + " ".join(command), flush=True)
-    return subprocess.run(command, cwd=cwd).returncode
+    return subprocess.run(command, cwd=cwd, check=False).returncode
 
 
 def build_parser() -> argparse.ArgumentParser:

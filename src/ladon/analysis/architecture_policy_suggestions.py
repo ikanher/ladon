@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
 import re
+from collections import defaultdict
 from typing import Any
 
 MIN_DRAFT_GROUP_SIZE = 3

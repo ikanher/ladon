@@ -17,10 +17,10 @@ import sqlite3
 import subprocess
 import sys
 import time
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Sequence
-
+from typing import Any, Self
 
 BASELINE_SCHEMA = "ladon-proof-search-baseline-v1"
 _SQL_LITERAL = re.compile(r"'(?:''|[^'])*'|\"(?:\"\"|[^\"])*\"|\b\d+(?:\.\d+)?\b")
@@ -48,7 +48,7 @@ class SqlTraceCounter:
         if normalized:
             self.statements.append(normalized)
 
-    def attach(self, connection: sqlite3.Connection) -> "SqlTraceCounter":
+    def attach(self, connection: sqlite3.Connection) -> SqlTraceCounter:
         """Attach to ``connection`` and return this counter for fluent use."""
 
         self._connection = connection
@@ -62,7 +62,7 @@ class SqlTraceCounter:
             self._connection.set_trace_callback(None)
             self._connection = None
 
-    def __enter__(self) -> "SqlTraceCounter":
+    def __enter__(self) -> Self:
         return self
 
     def __exit__(self, *_exc: object) -> None:
@@ -268,11 +268,11 @@ def assert_public_contract(payload: Mapping[str, Any]) -> None:
     if missing:
         raise AssertionError(f"public contract missing fields: {missing}")
     if not isinstance(payload["results"], list):
-        raise AssertionError("public contract results must be a list")
+        raise TypeError("public contract results must be a list")
     if not isinstance(payload["coverage"], Mapping):
-        raise AssertionError("public contract coverage must be an object")
+        raise TypeError("public contract coverage must be an object")
     if not isinstance(payload["nonclaims"], list):
-        raise AssertionError("public contract nonclaims must be a list")
+        raise TypeError("public contract nonclaims must be a list")
 
 
 def load_contract_fixture(path: Path) -> dict[str, Any]:
@@ -280,9 +280,9 @@ def load_contract_fixture(path: Path) -> dict[str, Any]:
 
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        raise ValueError("contract fixture root must be an object")
+        raise TypeError("contract fixture root must be an object")
     for operation, result in payload.get("contracts", {}).items():
         if not isinstance(result, Mapping):
-            raise ValueError(f"contract fixture {operation} must be an object")
+            raise TypeError(f"contract fixture {operation} must be an object")
         assert_public_contract(result)
     return payload

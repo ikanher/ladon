@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from typing import Collection, Iterable, Mapping, Sequence
+from collections.abc import Collection, Iterable, Mapping, Sequence
 
 from ladon.analysis.generated_family_candidate_coverage import (
     CANDIDATE_COLLECTION_ID,

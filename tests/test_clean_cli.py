@@ -13,7 +13,6 @@ from ladon.analysis.generated_family_candidate_profile import (
 from ladon.cli import build_parser, main
 from ladon.progress import ResourceLimitExceeded
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 
 

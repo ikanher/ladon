@@ -35,7 +35,6 @@ from ladon.finding_evidence import (
     json_pointer_token,
 )
 
-
 HOTSPOT_THRESHOLD = 5
 BROAD_INVENTORY_THRESHOLD = 20
 COMPOSITE_AUTHORITY = "ladon_derived_structural_join"

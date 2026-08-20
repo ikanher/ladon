@@ -19,7 +19,6 @@ from alpha_readiness_plan import (
 from release_gate_runtime import run_checked
 from release_gate_types import GateError
 
-
 FORBIDDEN_COMMAND_TOKENS = frozenset(
     {"&&", "||", ";", "|", ">", ">>", "<", "2>", "2>>"}
 )

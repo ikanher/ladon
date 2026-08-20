@@ -8,8 +8,8 @@ from typing import Any
 import pytest
 
 from ladon.cli import main
-from ladon.inspection_adapters import load_inspection_dataset
 from ladon.finding_evidence import resolve_local_json_pointer
+from ladon.inspection_adapters import load_inspection_dataset
 from ladon.inspection_models import (
     INSPECTION_NOUNS,
     InspectionCompatibilityError,

@@ -16,7 +16,6 @@ from ladon.declaration_surface_atlas import (
     declaration_node_data,
 )
 
-
 Node = dict[str, Any]
 Edge = dict[str, Any]
 

@@ -11,11 +11,11 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass, replace
-from typing import Any, Sequence
+from typing import Any
 
 from ladon.ir import LeanTextDeclaration
-
 
 DECLARATION_KINDS = (
     "theorem",
@@ -715,9 +715,9 @@ def _word_token_character(character: str) -> bool:
 
 __all__ = [
     "DECLARATION_BLOCK_NORMALIZATION_VERSION",
-    "DECLARATION_SOURCE_SHAPE_NORMALIZATION_VERSION",
     "DECLARATION_KINDS",
     "DECLARATION_MODIFIERS",
+    "DECLARATION_SOURCE_SHAPE_NORMALIZATION_VERSION",
     "DECL_RE",
     "normalize_declaration_block",
     "normalize_declaration_source_shape",

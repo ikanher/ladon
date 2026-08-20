@@ -14,13 +14,13 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import PurePosixPath
-from typing import Any, Sequence
+from typing import Any
 
 from ladon.ir import LeanResourceSetting
 from ladon.lexical_mask import mask_lean_source
-
 
 MAX_SUBJECT_CHARACTERS = 256
 MAX_SUBJECT_CONTINUATION_LINES = 4

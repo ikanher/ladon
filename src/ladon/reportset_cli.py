@@ -8,8 +8,9 @@ import math
 import os
 import sys
 import tempfile
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 from ladon.atlas import (
     atlas_reviewer_cards,
@@ -53,12 +54,11 @@ from ladon.inspection_query import (
     positive_inspection_limit,
 )
 from ladon.inspection_render import render_inspection_text
-from ladon.scope import SUPPORTED_SCOPE_KINDS, ScopePlanningError
-from ladon.scope_runtime import resolve_analysis_scope
-from ladon.runset_bundle_reader import bundle_report_set
 from ladon.lean_runtime import DEFAULT_LEAN_BATCH_TIMEOUT_SECONDS
 from ladon.progress import RunLimits
-
+from ladon.runset_bundle_reader import bundle_report_set
+from ladon.scope import SUPPORTED_SCOPE_KINDS, ScopePlanningError
+from ladon.scope_runtime import resolve_analysis_scope
 
 REPORTSET_COMMANDS = frozenset(
     {
@@ -93,7 +93,7 @@ def reportset_main(argv: Sequence[str]) -> int:
     except (InspectionCompatibilityError, InspectionNotFoundError) as exc:
         print(f"ladon: inspection failed [{exc.code}]: {exc}", file=sys.stderr)
         return EXIT_OPERATIONAL
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI boundary renders unexpected failures
         print(f"ladon: report-set operation failed: {exc}", file=sys.stderr)
         return EXIT_OPERATIONAL
 
@@ -628,7 +628,7 @@ def load_json(path: Path) -> dict[str, Any]:
 
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        raise ValueError(f"expected a JSON object: {path}")
+        raise TypeError(f"expected a JSON object: {path}")
     return payload
 
 

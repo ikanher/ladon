@@ -10,35 +10,35 @@ from __future__ import annotations
 import fnmatch
 import hashlib
 import json
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import PurePosixPath
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.analysis.generated_family_policy import (
     GENERATED_FAMILY_POLICY_SCHEMA,
     GENERATED_FAMILY_REVIEW_METRICS,
+    LEGACY_GENERATED_FAMILY_POLICY_SCHEMA,
     FamilyProvenance,
     FamilyReviewThreshold,
     GeneratedFamilyPolicy,
     GeneratedFamilyRule,
-    LEGACY_GENERATED_FAMILY_POLICY_SCHEMA,
     PolicyValidationError,
     normalize_relative_path,
     parse_generated_family_policy,
 )
 
-
 __all__ = [
+    "GENERATED_FAMILY_POLICY_SCHEMA",
+    "GENERATED_FAMILY_REVIEW_METRICS",
+    "LEGACY_GENERATED_FAMILY_POLICY_SCHEMA",
+    "PRIMARY_POPULATIONS",
     "AmbiguousGeneratedFamilyError",
     "FamilyProvenance",
     "FamilyReviewThreshold",
-    "GENERATED_FAMILY_POLICY_SCHEMA",
-    "GENERATED_FAMILY_REVIEW_METRICS",
     "GeneratedFamilyAggregate",
     "GeneratedFamilyPolicy",
-    "LEGACY_GENERATED_FAMILY_POLICY_SCHEMA",
     "MatchedFamilyRule",
-    "PRIMARY_POPULATIONS",
     "PolicyValidationError",
     "PopulationCandidate",
     "PopulationClassification",

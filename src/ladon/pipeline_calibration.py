@@ -7,8 +7,9 @@ the established import surface and keeps phase ordering explicit.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.analysis.architecture_registrations import (
     attach_architecture_producer_registrations,
@@ -43,10 +44,10 @@ from ladon.pipeline_extraction import (
     declaration_roots_for_modules,
     reference_inventory_names,
 )
-from ladon.pipeline_integrity import attach_integrity_surfaces
 from ladon.pipeline_inspection_navigation import (
     attach_inspection_navigation,
 )
+from ladon.pipeline_integrity import attach_integrity_surfaces
 from ladon.pipeline_models import RunContext
 from ladon.pipeline_module_evidence import (
     attach_boundary_membership_evidence,

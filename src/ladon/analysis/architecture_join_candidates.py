@@ -16,7 +16,6 @@ from ladon.analysis.architecture_measures import (
 from ladon.analysis.declaration_graph import declaration_family_suffix
 from ladon.analysis.structural_joins import deterministic_graph_path
 
-
 HOTSPOT_THRESHOLD = 5
 
 

@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 from ladon.coverage import CollectionCoverage, CoverageCause
 from ladon.source_index_models import (
     SOURCE_INDEX_DECLARATIONS_COVERAGE,
     SourceIndex,
 )
-
 
 MAX_AMBIGUOUS_CANDIDATES = 8
 LEXICAL_CANDIDATE_NONCLAIM = (

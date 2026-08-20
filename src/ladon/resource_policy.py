@@ -7,11 +7,11 @@ participates in analysis and source-index fingerprints.
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.lexical_occurrences import RESOURCE_OPTIONS
-
 
 RESOURCE_THRESHOLDS_KEY = "resourceThresholds"
 _RESOURCE_THRESHOLD_KEYS = frozenset({"id", "option", "minimumValue"})

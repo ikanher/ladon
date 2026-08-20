@@ -6,7 +6,6 @@ from typing import Any
 
 from ladon.finding_workflow import canonical_row_evidence
 
-
 SUPPORTED_KINDS = {"ladon_import_diet_witness", "import_diet_witness"}
 SUPPORTED_SCHEMA_VERSIONS = {1, "1"}
 

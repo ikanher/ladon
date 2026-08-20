@@ -6,8 +6,8 @@ import json
 import os
 import stat
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 from ladon.installed_contract import invoke
 

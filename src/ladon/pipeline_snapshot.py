@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping, Protocol
+from typing import Any, Protocol
 
 from ladon.snapshot import (
     AnalysisSnapshot,
@@ -331,6 +332,6 @@ __all__ = [
     "capture_registered_directory",
     "read_registered_bytes",
     "read_registered_text",
-    "register_captured_bytes",
     "record_snapshot_mismatch",
+    "register_captured_bytes",
 ]

@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any
 
 from ladon.analysis.population_calibration import (
     PolicyValidationError,
@@ -16,7 +17,6 @@ from ladon.resource_policy import (
     ResourceThresholdPolicyError,
     normalize_resource_thresholds,
 )
-
 
 ARCHITECTURE_POLICY_CANDIDATES = (
     ".ladon/architecture-policy.json",

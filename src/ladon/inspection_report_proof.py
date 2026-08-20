@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from collections import Counter
 from collections.abc import Mapping, Sequence
-import json
 from typing import Any
 
 from ladon.inspection_adapter_common import (

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Mapping, Sequence
 
 from ladon._scope_resolution import (
     canonical_kind,
@@ -492,7 +492,7 @@ def _ordered_primary(
     roots: set[str],
 ) -> tuple[str, ...]:
     root_modules = sorted(module for module in roots if module in modules)
-    return tuple([*root_modules, *sorted(modules - set(root_modules))])
+    return (*root_modules, *sorted(modules - set(root_modules)))
 
 
 def _truncate(

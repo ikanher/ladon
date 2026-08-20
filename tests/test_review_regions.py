@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 from ladon.analysis.review_regions import summarize_review_regions
-from ladon.coverage import CollectionCoverage, ProducerRegistration, ProducerRegistry
-from ladon.coverage import InspectionAction
+from ladon.coverage import (
+    CollectionCoverage,
+    InspectionAction,
+    ProducerRegistration,
+    ProducerRegistry,
+)
 from ladon.render import render_text
 
 

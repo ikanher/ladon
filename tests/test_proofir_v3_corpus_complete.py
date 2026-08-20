@@ -14,7 +14,6 @@ from ladon.proofir_v3 import (
     validate_envelope_batch,
 )
 
-
 KINDS = tuple(sorted(native_artifacts()))
 
 
@@ -40,8 +39,8 @@ def test_every_registered_kind_has_valid_invalid_and_projection_cases(kind: str)
 
 
 def test_every_kind_is_named_in_the_language_neutral_inventory() -> None:
-    from pathlib import Path
     import json
+    from pathlib import Path
 
     inventory = json.loads(
         Path("docs/proofir-v3-corpus-inventory.json").read_text(encoding="utf-8")

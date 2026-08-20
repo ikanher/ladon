@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-import ladon.source_index as source_index
+from ladon import source_index
 from ladon.source_index import build_source_index
 
 

@@ -2,7 +2,13 @@ from __future__ import annotations
 
 import pytest
 
-from ladon.semantic_adapter_registry import AdapterRule, BUILTIN_RULES, registry_fingerprint, resolve_adapters, validate_registry
+from ladon.semantic_adapter_registry import (
+    BUILTIN_RULES,
+    AdapterRule,
+    registry_fingerprint,
+    resolve_adapters,
+    validate_registry,
+)
 
 
 def test_builtin_registry_is_valid_and_fingerprint_stable() -> None:

@@ -12,10 +12,8 @@ import pytest
 from ladon.theorem_capsule_materialization import materialize_theorem_capsule
 from ladon.theorem_capsule_models import CapsuleManifest, sha256_bytes
 from ladon.theorem_capsule_planning import plan_theorem_capsule
-from ladon.theorem_capsule_replay import replay_theorem_capsule
-from ladon.theorem_capsule_replay import _sanitize_output
+from ladon.theorem_capsule_replay import _sanitize_output, replay_theorem_capsule
 from ladon.theorem_cli import theorem_main
-
 
 FIXTURE = Path(__file__).parent / "fixtures" / "theorem_capsule"
 MULTI_ROOT_FIXTURE = Path(__file__).parent / "fixtures" / "theorem_capsule_multi_root"

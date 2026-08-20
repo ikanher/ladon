@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Mapping
+from typing import Any
 
 from ladon.analysis.benchmark_declaration_oracles import (
     check_declaration_required_fields,
@@ -19,7 +20,6 @@ from ladon.analysis.benchmark_surface_oracles import (
     check_proof_similarity_state,
     check_text_declaration,
 )
-
 
 Oracle = Mapping[str, Any]
 Payload = Mapping[str, Any]

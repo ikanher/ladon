@@ -9,7 +9,6 @@ from typing import Any
 
 from ladon.analysis.openspec_hygiene import summarize_openspec_hygiene
 
-
 DELTA_HEADER_RE = re.compile(
     r"^## (?:ADDED|MODIFIED|REMOVED|RENAMED) Requirements\s*$",
     re.MULTILINE,

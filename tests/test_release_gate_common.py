@@ -5,28 +5,27 @@ import os
 import subprocess
 import sys
 from contextlib import nullcontext
-from types import SimpleNamespace
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
-
 
 REPO_ROOT = Path(__file__).parents[1]
 SCRIPTS_ROOT = REPO_ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS_ROOT))
 
-from release_gate_candidate import (  # noqa: E402
+from release_gate_candidate import (
     collection_comparison_root,
     materialize_candidate,
 )
-from release_gate_distribution import parse_package_resource  # noqa: E402
-from release_gate_runtime import (  # noqa: E402
+from release_gate_distribution import parse_package_resource
+from release_gate_runtime import (
     absolute_maintainer_paths,
     assert_lock_unchanged,
     pytest_node_ids,
     sanitized_environment,
 )
-from release_gate_types import GateError  # noqa: E402
+from release_gate_types import GateError
 
 
 def load_common():
@@ -94,8 +93,9 @@ def test_worktree_rejects_untracked_required_input(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    with pytest.raises(common.GateError, match="untracked required candidate inputs"):
-        with common.materialize_candidate("worktree", repository):
+    with pytest.raises(
+        common.GateError, match="untracked required candidate inputs"
+    ), common.materialize_candidate("worktree", repository):
             pass
 
 
@@ -104,8 +104,9 @@ def test_treeish_rejects_dirty_stale_head(tmp_path: Path) -> None:
     repository = initialize_candidate_repo(tmp_path)
     (repository / "README.md").write_text("dirty\n", encoding="utf-8")
 
-    with pytest.raises(common.GateError, match="stale HEAD"):
-        with common.materialize_candidate("HEAD", repository):
+    with pytest.raises(common.GateError, match="stale HEAD"), common.materialize_candidate(
+        "HEAD", repository
+    ):
             pass
 
 
@@ -305,14 +306,7 @@ def test_sanitized_environment_removes_python_and_virtualenv_state(
 
 def test_pytest_node_ids_ignore_summary_and_sort() -> None:
     common = load_common()
-    output = "\n".join(
-        [
-            "tests/test_z.py::test_z",
-            "tests/test_a.py::test_a",
-            "",
-            "2 tests collected in 0.01s",
-        ]
-    )
+    output = "tests/test_z.py::test_z\ntests/test_a.py::test_a\n\n2 tests collected in 0.01s"
 
     assert common.pytest_node_ids(output) == (
         "tests/test_a.py::test_a",

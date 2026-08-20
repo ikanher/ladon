@@ -8,11 +8,11 @@ from ladon.analysis.root_applicability import (
     root_views_applicable,
     root_views_auxiliary,
 )
+from ladon.ir import LeanModule
 from ladon.render_module_dag import (
     root_applicability_lines,
     unreachable_module_lines,
 )
-from ladon.ir import LeanModule
 
 
 def rootless_dag() -> dict:

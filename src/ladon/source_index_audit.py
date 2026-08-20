@@ -5,11 +5,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ladon.analysis.audit_surface import AuditCommand, LEXICAL_AUTHORITY
+from ladon.analysis.audit_surface import LEXICAL_AUTHORITY, AuditCommand
 from ladon.coverage import CollectionCoverage, CoverageCause
 from ladon.ir import LeanModule
 from ladon.source_index_errors import SourceIndexError
-
 
 SOURCE_INDEX_AUDITS_COVERAGE = "source_index.audits"
 SOURCE_INDEX_COVERAGE_POINTER = "#/entries"
@@ -191,6 +190,6 @@ __all__ = [
     "audit_command_coverage",
     "audit_command_evidence_complete",
     "audit_commands_complete_field",
-    "validate_audit_command_rows",
     "valid_audit_command_row",
+    "validate_audit_command_rows",
 ]

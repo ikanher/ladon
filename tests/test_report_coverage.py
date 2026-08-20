@@ -16,7 +16,6 @@ from ladon.report_projection_coverage import register_projection_strata
 from ladon.report_v3 import build_report_v3, load_report_v3_schema
 from ladon.snapshot import AnalysisSnapshot
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "tiny_lean"
 
 

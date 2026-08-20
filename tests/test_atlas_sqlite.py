@@ -18,7 +18,6 @@ from ladon.sqlite_publication import (
     release_publication_lock,
 )
 
-
 QUERY_TABLES = (
     "nodes",
     "edges",

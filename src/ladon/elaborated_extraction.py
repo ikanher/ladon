@@ -5,10 +5,11 @@ from __future__ import annotations
 import hashlib
 import json
 import threading
+from collections.abc import Mapping
 from dataclasses import replace
 from importlib import resources
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.audit_enrichment import (
     audit_queries_from_elaborated_payload,
@@ -21,7 +22,6 @@ from ladon.declaration_surface import (
 from ladon.extraction import ModuleDiscovery, module_name
 from ladon.ir import ExtractionBundle, LeanAuditQuery, LeanDeclaration
 from ladon.process_supervisor import ProcessCancelled, run_target_process
-
 
 DEFAULT_ELABORATED_HELPER = Path(
     str(resources.files("ladon").joinpath("lean", "ladon_elaborated_helper.lean"))
@@ -196,7 +196,7 @@ def parse_helper_json_suffix(stdout: str) -> dict[str, Any]:
     except json.JSONDecodeError as error:
         raise RuntimeError("Lean elaborated helper emitted invalid JSON") from error
     if not isinstance(payload, dict):
-        raise RuntimeError("Lean elaborated helper payload must be an object")
+        raise TypeError("Lean elaborated helper payload must be an object")
     return payload
 
 
@@ -245,7 +245,7 @@ def selected_surface_files(
             discovery.repo_root / module.path
             for module in sorted(discovery.modules.values(), key=lambda row: row.name)
         ]
-    raise ValueError(f"unsupported elaborated extraction scope: {scope}")
+    raise TypeError(f"unsupported elaborated extraction scope: {scope}")
 
 
 def declarations_for_module(

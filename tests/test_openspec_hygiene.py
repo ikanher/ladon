@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from ladon.analysis.openspec_canonical import (
+    CanonicalGateError,
+    check_legacy_cli_profile,
+)
 from ladon.analysis.openspec_hygiene import (
     normalize_completed_active_statuses,
     replace_metadata_status,
     summarize_openspec_hygiene,
-)
-from ladon.analysis.openspec_canonical import (
-    CanonicalGateError,
-    check_legacy_cli_profile,
 )
 
 

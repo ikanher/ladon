@@ -6,10 +6,11 @@ import argparse
 import json
 import sys
 import tempfile
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from time import monotonic
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.analysis.generated_family_policy import (
     PolicyValidationError,
@@ -46,7 +47,6 @@ from ladon.runsets import (
 )
 from ladon.scope import ScopePlanningError
 from ladon.scope_runtime import ResolvedAnalysisScope, resolve_analysis_scope
-
 
 PATH_OPTIONS = {
     "architecturePolicy": "--architecture-policy",
@@ -152,7 +152,7 @@ def runset_main(argv: Sequence[str] | None = None) -> int:
         return EXIT_INVOCATION
     except ProcessSignal as exc:
         return 128 + exc.signum
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 - CLI boundary renders unexpected failures
         print(f"ladon: runset operation failed: {exc}", file=sys.stderr)
         return EXIT_OPERATIONAL
 

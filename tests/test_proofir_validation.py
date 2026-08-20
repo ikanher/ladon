@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from ladon.proofir_validation import ProofIRDiagnostic, VALIDATION_STAGES, omission
+from ladon.proofir_validation import VALIDATION_STAGES, ProofIRDiagnostic, omission
 
 
 def test_validation_diagnostics_are_stable_and_attributable() -> None:

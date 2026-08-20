@@ -3,11 +3,12 @@
 from __future__ import annotations
 
 import threading
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Callable, Iterator, Mapping
+from typing import Any
 
 from ladon.changed_set import CapturedChangedSetManifest
 from ladon.coverage import mark_coverage_unstable
@@ -24,13 +25,13 @@ from ladon.progress import (
     ResourceLimitExceeded,
     RunBudget,
 )
+from ladon.report_contract import default_phase_disposition
 from ladon.report_coverage import build_report_coverage
 from ladon.report_v2 import (
     ReportMetadata,
     ReportV2,
     build_report_v2,
 )
-from ladon.report_contract import default_phase_disposition
 from ladon.scope import ScopePlan
 from ladon.snapshot import AnalysisSnapshot, SnapshotDecision
 from ladon.snapshot_registry import (
@@ -38,7 +39,6 @@ from ladon.snapshot_registry import (
     SnapshotFileRegistration,
 )
 from ladon.source_index_models import SourceIndex
-
 
 REQUIRED_PHASES = (
     "discover",
@@ -125,7 +125,7 @@ class RunContext:
     proof_xray: dict[str, Any] | None = None
     lean_extractor: (
         Callable[
-            ["RunContext", ModuleDiscovery],
+            [RunContext, ModuleDiscovery],
             ExtractionBundle | dict[str, LeanModule],
         ]
         | None
@@ -144,8 +144,8 @@ class RunContext:
     captured_changed_manifest: CapturedChangedSetManifest | None = None
     analysis_snapshot: AnalysisSnapshot | None = None
     snapshot_decision: SnapshotDecision | None = None
-    snapshot_verification_hook: Callable[["RunContext"], None] | None = None
-    snapshot_read_hook: Callable[["RunContext", LeanModule], None] | None = None
+    snapshot_verification_hook: Callable[[RunContext], None] | None = None
+    snapshot_read_hook: Callable[[RunContext, LeanModule], None] | None = None
     snapshot_read_mismatches: list[Mapping[str, Any]] = field(default_factory=list)
     snapshot_file_inputs: dict[str, SnapshotFileRegistration] = field(
         default_factory=dict

@@ -8,7 +8,6 @@ from ladon.finding_evidence import resolve_local_json_pointer
 from ladon.report_projection import project_sections
 from ladon.report_projection_evidence_closure import EvidenceClosure
 
-
 GENERATED_BASE = "#/sections/module_dag/generated_family_candidates"
 
 

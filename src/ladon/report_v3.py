@@ -12,10 +12,11 @@ import hashlib
 import json
 import os
 import tempfile
+from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass
 from importlib import resources
 from pathlib import Path
-from typing import Any, Callable, Iterator, Mapping
+from typing import Any
 
 from ladon.report_adapters import coerce_report_v2
 from ladon.report_contract import (
@@ -42,7 +43,6 @@ from ladon.report_projection_coverage import (
     register_projection_strata,
     synchronize_review_region_coverage,
 )
-
 
 REPORT_V3_VERSION = "ladon-report-v3"
 PROJECTION_NAMES = ("summary", "review", "full")

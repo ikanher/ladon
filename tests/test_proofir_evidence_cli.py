@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from ladon.proof_search_cli import build_proof_search_parser, _render_text
+from ladon.proof_search_cli import _render_text, build_proof_search_parser
 
 
 def test_evidence_cli_has_caller_neutral_selectors_and_route_bounds() -> None:

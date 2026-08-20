@@ -7,9 +7,9 @@ projection cannot be mistaken for a second authority-bearing inventory.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping
-
+from typing import Any
 
 INSPECTION_PAGE_SCHEMA = "ladon-inspection-page-v1"
 INSPECTION_CURSOR_SCHEMA = "ladon-inspection-cursor-v1"
@@ -294,10 +294,11 @@ class InspectionPage:
 
 
 __all__ = [
-    "ArtifactIdentity",
     "INSPECTION_CURSOR_SCHEMA",
     "INSPECTION_NOUNS",
     "INSPECTION_PAGE_SCHEMA",
+    "MAX_RELATED_ROWS",
+    "ArtifactIdentity",
     "InspectionCompatibilityError",
     "InspectionDataset",
     "InspectionError",
@@ -306,6 +307,5 @@ __all__ = [
     "InspectionPage",
     "InspectionQuery",
     "InspectionRow",
-    "MAX_RELATED_ROWS",
     "SourceAnchor",
 ]

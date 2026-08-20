@@ -22,7 +22,6 @@ from ladon.declaration_surface import (
 )
 from ladon.ir import BoundedStrings, LeanAuditQuery
 
-
 CHECK_NONCLAIM = (
     "Lean environment identity and rendered-type evidence for one exact "
     "#check subject only; it is not an independent proof-correctness or "

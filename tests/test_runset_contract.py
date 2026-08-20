@@ -15,7 +15,6 @@ from ladon.runset_contract import (
     parse_runset_manifest,
 )
 
-
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "runsets"
 MANIFEST_PATH = FIXTURE_ROOT / "manifest-v1.json"
 

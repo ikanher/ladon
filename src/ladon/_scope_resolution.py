@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping, Sequence
 from pathlib import PurePosixPath
-from typing import Any, Mapping, Sequence
+from typing import Any
 
 from ladon.changed_set import (
     ChangedSetManifestSource,
@@ -448,7 +449,7 @@ def _namespace_label(modules: set[str]) -> str:
         if len(set(segments)) != 1:
             break
         common.append(segments[0])
-    return ".".join(common) if common else sorted(modules)[0]
+    return ".".join(common) if common else min(modules)
 
 
 def _normalize_relative_path(raw: str) -> str | None:

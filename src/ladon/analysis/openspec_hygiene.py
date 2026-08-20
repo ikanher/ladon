@@ -6,7 +6,6 @@ import re
 from pathlib import Path
 from typing import Any
 
-
 CHECKBOX_RE = re.compile(r"^\s*-\s+\[(?P<mark>[ xX])\]")
 STATUS_RE = re.compile(r"^(?P<prefix>\s*status:\s*)(?P<status>\S+)(?P<suffix>.*)$")
 

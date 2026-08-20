@@ -6,14 +6,16 @@ modules.  This module remains the stable import owner for callers.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.changed_set import (
     CHANGED_SET_MANIFEST_SCHEMA as _CHANGED_SET_SCHEMA,
+)
+from ladon.changed_set import (
     ChangedSetManifestSource,
 )
-
 
 SCOPE_PLAN_SCHEMA = "ladon-scope-plan-v1"
 SCOPE_FINGERPRINT_VERSION = "ladon-scope-fingerprint-v2"
@@ -234,8 +236,7 @@ class _EffectivePopulation:
 
 # Imported after the contract types exist so the private implementation can
 # type against this stable public owner without a second public model family.
-from ladon._scope_planning import plan_analysis_scope, plan_scope  # noqa: E402
-
+from ladon._scope_planning import plan_analysis_scope, plan_scope
 
 __all__ = [
     "CHANGED_SET_MANIFEST_SCHEMA",

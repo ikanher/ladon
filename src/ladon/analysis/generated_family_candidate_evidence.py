@@ -6,10 +6,10 @@ import hashlib
 import json
 import re
 from collections import defaultdict
+from collections.abc import Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from itertools import groupby
 from pathlib import PurePosixPath
-from typing import Collection, Iterable, Mapping, Sequence
 
 from ladon.analysis.generated_family_candidate_models import (
     CandidateMember,
@@ -23,7 +23,6 @@ from ladon.analysis.generated_family_candidate_profile import (
     GROUPING_VERSION,
 )
 from ladon.ir import LeanModule, LeanTextDeclaration
-
 
 NUMBERED_BASENAME_RE = re.compile(r"^(?P<prefix>.+?)(?P<suffix>[0-9]+)$")
 IDENTIFIER_COMPONENT_RE = re.compile(r"[^\W_]+")
@@ -597,7 +596,7 @@ def _normalized_internal_module_names(
     module_names: Collection[str],
 ) -> tuple[str, ...]:
     if isinstance(module_names, (str, bytes)):
-        raise ValueError("internal module universe must be a collection")
+        raise TypeError("internal module universe must be a collection")
     normalized: set[str] = set()
     for name in module_names:
         if not isinstance(name, str) or not name or name.strip() != name:
@@ -647,9 +646,9 @@ def _validated_module_names(
 
 
 __all__ = [
-    "AggregateInput",
     "CONTENT_HASH_VERSION",
     "INTERNAL_IMPORT_VERSION",
+    "AggregateInput",
     "PreparedMember",
     "anchor_sort_key",
     "candidate_module_evidence",

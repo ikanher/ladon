@@ -5,8 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
-
-
 CLOSED_STATUSES = {"closed", "lean_closed", "fully_proved"}
 CLOSED_AUTHORITIES = {"lean_closed", "lean_proved", "fully_proved"}
 PRODUCTION_STATUSES = {"production", "fully_proved", "lean_closed", "closed"}

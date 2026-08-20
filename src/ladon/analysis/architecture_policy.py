@@ -7,6 +7,7 @@ and rules say which group-to-group imports should be reviewed.
 
 from __future__ import annotations
 
+import itertools
 from collections import defaultdict, deque
 from fnmatch import fnmatchcase
 from typing import Any
@@ -21,7 +22,6 @@ from ladon.analysis.architecture_policy_summary import (
     shared_dependency_summary,
 )
 from ladon.finding_workflow import canonical_row_evidence
-
 
 DEFAULT_MAX_FINDINGS = 30
 DEFAULT_MAX_PATH_LENGTH = 12
@@ -636,7 +636,7 @@ def path_import_sites(
     """Return source evidence for each import edge on a witness path."""
 
     rows = []
-    for source, target in zip(path, path[1:]):
+    for source, target in itertools.pairwise(path):
         site = import_sites.get((source, target), {})
         rows.append({
             "sourceModule": source,

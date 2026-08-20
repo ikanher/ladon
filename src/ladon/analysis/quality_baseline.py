@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from math import ceil
-from typing import Any, Iterable
+from typing import Any
 
 from ladon.analysis.root_applicability import root_views_applicable
-
 
 BASELINE_METHOD = "project_local_metric_distribution"
 

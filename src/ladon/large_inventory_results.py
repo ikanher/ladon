@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import os
 import platform
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 
 from ladon.benchmark_process import platform_capabilities
 from ladon.large_inventory_models import (
@@ -183,8 +184,8 @@ def _resource_checks(
 def _metric_check(
     run: RepresentationRun,
     metric: str,
-    observed: float | int | None,
-    ceiling: float | int,
+    observed: float | None,
+    ceiling: float,
     unit: str,
     candidate_id: str,
     fixture_id: str,

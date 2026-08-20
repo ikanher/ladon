@@ -72,7 +72,6 @@ from ladon.atlas_report_reader import (
     is_ladon_report_payload,
 )
 
-
 __all__ = [
     "Edge",
     "Node",
