@@ -20,5 +20,40 @@ def test_evidence_dimensions_accept_weakened_projection() -> None:
 
 def test_transition_matrix_is_closed_and_machine_readable() -> None:
     matrix = transition_matrix()
-    assert set(matrix) == {"executionBinding", "observationState", "operationOutcome", "sourceFreshness", "environmentMatch"}
+    assert set(matrix) == {
+        "executionBinding",
+        "observationState",
+        "operationOutcome",
+        "sourceFreshness",
+        "environmentMatch",
+        "authorityBasis",
+        "analysisCompleteness",
+    }
     assert "explicit-pinned" in matrix["executionBinding"]
+
+
+@pytest.mark.parametrize(
+    ("parent", "child", "message"),
+    [
+        (
+            EvidenceDimensions("none", "absent", "not-run"),
+            EvidenceDimensions("explicit-pinned", "live", "accepted"),
+            "absent",
+        ),
+        (
+            EvidenceDimensions("explicit-pinned", "live", "accepted", "stale", "mismatched"),
+            EvidenceDimensions("explicit-pinned", "live", "accepted", "fresh", "exact"),
+            "stale",
+        ),
+        (
+            EvidenceDimensions("explicit-pinned", "live", "accepted", authority_basis="producer-assertion"),
+            EvidenceDimensions("explicit-pinned", "live", "accepted", authority_basis="kernel-check"),
+            "authority basis",
+        ),
+    ],
+)
+def test_registered_transition_owner_rejects_escalation(
+    parent: EvidenceDimensions, child: EvidenceDimensions, message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        validate_transition(parent, child)
