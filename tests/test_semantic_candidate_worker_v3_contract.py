@@ -107,6 +107,8 @@ def test_accepted_worker_result_closes_exact_environment_and_check_references(
     assert result.status == "accepted"
     assert result.to_dict()["authoritySelection"] == "ambient-selected-application-check"
     assert result.to_dict()["analysisCompleteness"] == "complete"
+    assert result.to_dict()["evidenceReceipt"]["schema"] == "ladon-evidence-receipt-v1"
+    assert result.to_dict()["evidenceReceipt"]["executionBinding"] == "ambient-observed"
     _assert_artifact_family(result.artifacts)
     _assert_exact_links(result.artifacts)
     _assert_exact_semantics(result.artifacts)
@@ -130,6 +132,7 @@ def test_timeout_never_publishes_accepted_artifacts(tmp_path: Path) -> None:
     assert result.status == "timeout"
     assert result.artifacts == ()
     assert result.diagnostic == {"code": "checker-timeout", "message": "deadline"}
+    assert result.to_dict()["evidenceReceipt"]["operationOutcome"] == "failed"
 
 
 def test_explicit_toolchain_ignores_path_shadow_and_sanitizes_worker_environment(

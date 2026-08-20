@@ -19,6 +19,7 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+from ladon.evidence_receipt import build_evidence_receipt
 from ladon.lean_toolchain import LeanToolchainContext
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
 from ladon.proofir_fingerprint_registry import SCHEMES
@@ -117,6 +118,7 @@ class SemanticCandidateCheck:
     peak_rss_bytes: int | None = None
     authority_selection: str = "not-assessed"
     analysis_completeness: str = "not-assessed"
+    evidence_receipt: Mapping[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -125,6 +127,7 @@ class SemanticCandidateCheck:
             "status": self.status,
             "authoritySelection": self.authority_selection,
             "analysisCompleteness": self.analysis_completeness,
+            "evidenceReceipt": dict(self.evidence_receipt) if self.evidence_receipt else None,
             "artifacts": list(self.artifacts),
             "diagnostic": dict(self.diagnostic) if self.diagnostic else None,
             "resourceAccounting": {
@@ -180,7 +183,7 @@ def check_semantic_candidate(
             cancel_event=cancel_event,
         )
     if not process.succeeded:
-        return _failed_check(process)
+        return _failed_check(process, request)
     try:
         payload = _parse_worker_payload(process.stdout, request, request_id)
         artifacts = _accepted_artifacts(request, helper_path, process, payload)
@@ -191,12 +194,14 @@ def check_semantic_candidate(
             diagnostic={"code": "invalid-worker-output", "message": str(error)},
             elapsed_seconds=process.elapsed_seconds,
             peak_rss_bytes=process.peak_rss_bytes,
+            evidence_receipt=_receipt_for_check(request, "failed", "invalid-worker-output", "invalid"),
         )
     status = (
         "applicable-with-residuals"
         if artifacts[-1]["artifactKind"] == "proofir.attempt-log"
         else "accepted"
     )
+    status_receipt = _receipt_for_check(request, "accepted", status, "partial" if status.endswith("residuals") else "complete")
     return SemanticCandidateCheck(
         status,
         tuple(artifacts),
@@ -212,6 +217,30 @@ def check_semantic_candidate(
             required_populations=1,
             residuals=len(payload["residualPremises"]),
         ),
+        evidence_receipt=status_receipt,
+    )
+
+
+def _receipt_for_check(
+    request: SemanticCandidateRequest,
+    outcome: str,
+    status: str,
+    completeness: str,
+) -> dict[str, Any]:
+    binding = "ambient-observed"
+    environment_match = "unknown"
+    if request.toolchain is not None:
+        binding = "explicit-pinned" if request.toolchain.selection_mode == "explicit" else "ambient-observed"
+        environment_match = "exact"
+    return build_evidence_receipt(
+        subject={"module": request.module, "candidate": request.candidate, "goal": request.goal},
+        execution_binding=binding,
+        observation_state="live" if outcome == "accepted" else "failed",
+        operation_outcome="accepted" if outcome == "accepted" else "failed",
+        authority_basis="lean-worker-check" if outcome == "accepted" else "worker-failure",
+        analysis_completeness=completeness,
+        environment_match=environment_match,
+        limitations=(("Residual premises remain unverified.",) if status.endswith("residuals") else ()),
     )
 
 
@@ -233,7 +262,7 @@ def _environment_source(request: SemanticCandidateRequest) -> str:
     return f"import {request.module}\nset_option autoImplicit false\n"
 
 
-def _failed_check(process: ProcessResult) -> SemanticCandidateCheck:
+def _failed_check(process: ProcessResult, request: SemanticCandidateRequest) -> SemanticCandidateCheck:
     if process.timed_out:
         code, status = "checker-timeout", "timeout"
     elif process.output_limited:
@@ -248,6 +277,7 @@ def _failed_check(process: ProcessResult) -> SemanticCandidateCheck:
         diagnostic={"code": code, "message": detail or code},
         elapsed_seconds=process.elapsed_seconds,
         peak_rss_bytes=process.peak_rss_bytes,
+        evidence_receipt=_receipt_for_check(request, "failed", status, "not-assessed"),
     )
 
 
