@@ -679,6 +679,12 @@ def _check_artifact(
             "maxRssBytes": request.max_rss_bytes,
         },
     }
+    observation["evidenceReceipt"] = _receipt_for_check(
+        request,
+        "accepted",
+        "applicable-with-residuals" if has_residuals else "accepted",
+        "partial" if has_residuals else "complete",
+    )
     check_id = "check:" + _digest_bytes(canonical_bytes(observation))[7:]
     check_subject = {"kind": "check-run", "localId": check_id, "display": "Lean exact-candidate check"}
     compact_statement = _compact(statement)

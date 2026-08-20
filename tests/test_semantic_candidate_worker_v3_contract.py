@@ -82,6 +82,7 @@ def _assert_process_bounds(artifacts: tuple[dict[str, Any], ...]) -> None:
         "maxOutputBytes": 8 * 1024 * 1024,
         "maxRssBytes": 2 * 1024 * 1024 * 1024,
     }
+    assert check["extensions"]["ladon.process-observation/v1"]["evidenceReceipt"]["schema"] == "ladon-evidence-receipt-v1"
 
 
 def test_accepted_worker_result_closes_exact_environment_and_check_references(
