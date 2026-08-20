@@ -65,6 +65,7 @@ def dispatch_discover(args: argparse.Namespace, repo_root: Path) -> dict[str, An
             args.scope,
             tuple(args.root),
             args.freshness,
+            toolchain.context_identity if toolchain else None,
         )
     except (ValueError, LeanToolchainError) as error:
         raise ProofSearchIndexError(str(error)) from error

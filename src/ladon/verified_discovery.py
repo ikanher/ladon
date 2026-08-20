@@ -39,6 +39,7 @@ class DiscoveryRequest:
     scope: str = "repository"
     roots: tuple[str, ...] = ()
     freshness: str = "stored"
+    execution_context_ref: str | None = None
 
     def __post_init__(self) -> None:
         if not self.module or not self.goal:
@@ -110,6 +111,7 @@ def discover_candidates(
             "scope": request.scope,
             "roots": list(request.roots),
             "freshness": request.freshness,
+            "executionContextRef": request.execution_context_ref,
         },
         "candidates": [candidate.as_dict() for candidate in candidates],
         "batch": {
@@ -118,6 +120,7 @@ def discover_candidates(
             "candidateNames": [candidate.name for candidate in candidates],
             "goal": request.goal,
             "localContext": [dict(row) for row in request.local_context],
+            "executionContextRef": request.execution_context_ref,
         },
         "coverage": {
             "shortlisted": len(shortlist),
