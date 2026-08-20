@@ -80,17 +80,17 @@ def _validate_accepted_references(
     environment_ref: str | None,
     check_run_ref: str | None,
 ) -> None:
-    accepted = dimensions.operation_outcome == "accepted"
-    if accepted and dimensions.authority_basis not in {"elaborator-check", "kernel-check"}:
-        raise ValueError("accepted receipt requires registered checker authority")
-    if accepted and (not _digest(environment_ref) or not _check_ref(check_run_ref)):
-        raise ValueError("accepted receipt requires exact environment and check-run references")
+    observed = dimensions.operation_outcome in {"accepted", "rejected"}
+    if observed and dimensions.authority_basis not in {"elaborator-check", "kernel-check"}:
+        raise ValueError("observed receipt requires registered checker authority")
+    if observed and (not _digest(environment_ref) or not _check_ref(check_run_ref)):
+        raise ValueError("observed receipt requires exact environment and check-run references")
 
 
 def _validate_explicit_binding(dimensions: EvidenceDimensions) -> None:
-    accepted = dimensions.operation_outcome == "accepted"
-    if dimensions.execution_binding == "explicit-pinned" and accepted and dimensions.environment_match != "exact":
-        raise ValueError("explicit-pinned accepted receipt requires an exact environment match")
+    observed = dimensions.operation_outcome in {"accepted", "rejected"}
+    if dimensions.execution_binding == "explicit-pinned" and observed and dimensions.environment_match != "exact":
+        raise ValueError("explicit-pinned observed receipt requires an exact environment match")
 
 
 def _digest(value: str | None) -> bool:
