@@ -88,8 +88,27 @@ def _type_text_predicate(
     pattern = f"%{request.pattern}%"
     clauses = ["(d.rendered_type LIKE ? OR d.conclusion_text LIKE ? OR d.type_text LIKE ?)"]
     values: list[Any] = [pattern, pattern, pattern]
-    roots = request.roots or ((request.module,) if request.scope == "module" and request.module else (request.namespace,) if request.scope == "namespace" and request.namespace else ())
+    scope_clauses, scope_values, scope_evidence = _scope_predicate(connection, request)
+    clauses.extend(scope_clauses)
+    values.extend(scope_values)
+    filters = ((request.module, "d.module = ?"), (request.package, "d.package = ?"))
+    for value, clause in filters:
+        if value:
+            clauses.append(clause)
+            values.append(value)
+    if request.namespace:
+        clauses.append("(d.namespace = ? OR d.namespace LIKE ?)")
+        values.extend((request.namespace, f"{request.namespace}.%"))
+    return clauses, values, scope_evidence
+
+
+def _scope_predicate(
+    connection: sqlite3.Connection, request: TypeSearchRequest
+) -> tuple[list[str], list[Any], dict[str, Any]]:
+    roots = _scope_roots(request)
     modules, omissions = resolve_scope_modules(connection, request.scope, roots)
+    clauses: list[str] = []
+    values: list[Any] = []
     if modules is not None:
         if modules:
             placeholders = ",".join("?" for _ in modules)
@@ -104,15 +123,18 @@ def _type_text_predicate(
         placeholders = ",".join("?" for _ in roots)
         clauses.append(f"d.path IN ({placeholders})")
         values.extend(roots)
-    filters = ((request.module, "d.module = ?"), (request.package, "d.package = ?"))
-    for value, clause in filters:
-        if value:
-            clauses.append(clause)
-            values.append(value)
-    if request.namespace:
-        clauses.append("(d.namespace = ? OR d.namespace LIKE ?)")
-        values.extend((request.namespace, f"{request.namespace}.%"))
-    return clauses, values, {"kind": request.scope, "roots": list(roots), "omissions": omissions, "modules": len(modules) if modules is not None else None}
+    evidence = {"kind": request.scope, "roots": list(roots), "omissions": omissions, "modules": len(modules) if modules is not None else None}
+    return clauses, values, evidence
+
+
+def _scope_roots(request: TypeSearchRequest) -> tuple[str, ...]:
+    if request.roots:
+        return request.roots
+    if request.scope == "module" and request.module:
+        return (request.module,)
+    if request.scope == "namespace" and request.namespace:
+        return (request.namespace,)
+    return ()
 
 
 __all__ = ["TypeSearchRequest", "query_type_shortlist"]
