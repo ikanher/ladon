@@ -7,6 +7,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass, field
 from typing import Any
 
+from ladon.proofir_result_dimensions import ANALYSIS_COMPLETENESS
 from ladon.proofir_v3 import canonical_bytes
 
 ASSERTION_STATES = frozenset({"asserted", "denied", "unknown"})
@@ -26,6 +27,9 @@ AUTHORITY_BASES = frozenset(
         "external-attestation",
         "process-observation",
         "policy-observation",
+        "explicit-pinned-application-check",
+        "ambient-selected-application-check",
+        "stored-observation",
     }
 )
 GUARANTEE_SCOPES = frozenset(
@@ -128,6 +132,7 @@ class EvidenceDimensions:
     replay_relationship: str = "unbound"
     authority_basis: str = "producer-assertion"
     guarantee_scope: str = "none"
+    analysis_completeness: str = "not-assessed"
 
     def __post_init__(self) -> None:
         fields = (
@@ -139,6 +144,7 @@ class EvidenceDimensions:
             ("replayRelationship", self.replay_relationship, REPLAY_RELATIONSHIPS),
             ("authorityBasis", self.authority_basis, AUTHORITY_BASES),
             ("guaranteeScope", self.guarantee_scope, GUARANTEE_SCOPES),
+            ("analysisCompleteness", self.analysis_completeness, ANALYSIS_COMPLETENESS),
         )
         for field_name, value, allowed in fields:
             _enum(field_name, value, allowed)
@@ -155,7 +161,7 @@ class EvidenceDimensions:
             "authorityBasis",
             "guaranteeScope",
         }
-        if set(value) != expected:
+        if set(value) not in (expected, expected | {"analysisCompleteness"}):
             raise ValueError("dimensions must use the closed native field set")
         return cls(
             assertion_state=value["assertionState"],
@@ -166,6 +172,7 @@ class EvidenceDimensions:
             replay_relationship=value["replayRelationship"],
             authority_basis=value["authorityBasis"],
             guarantee_scope=value["guaranteeScope"],
+            analysis_completeness=value.get("analysisCompleteness", "not-assessed"),
         )
 
     def to_dict(self) -> dict[str, str]:
@@ -178,6 +185,7 @@ class EvidenceDimensions:
             "replayRelationship": self.replay_relationship,
             "authorityBasis": self.authority_basis,
             "guaranteeScope": self.guarantee_scope,
+            "analysisCompleteness": self.analysis_completeness,
         }
 
 

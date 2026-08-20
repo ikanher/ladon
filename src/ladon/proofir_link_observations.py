@@ -96,6 +96,38 @@ def insert_manifest_link_observations(
     return len(relationships)
 
 
+def validate_manifest_link_observation(value: Any) -> dict[str, Any]:
+    """Validate the persisted v2 link shape at the publication boundary.
+
+    Older v1 observations used ``resolvedArtifactId`` as a file-level
+    resolution.  They remain readable through the compatibility constructor,
+    but publication never accepts that ambiguous shape.
+    """
+
+    if (
+        not isinstance(value, dict)
+        or value.get("observer", {}).get("version") != LINK_POLICY_VERSION
+    ):
+        raise ValueError("manifest link observation must use proofir-manifest-link-v2")
+    endpoints = value.get("endpoints")
+    if not isinstance(endpoints, dict) or set(endpoints) != {"source", "target"}:
+        raise ValueError("manifest link observation endpoints are invalid")
+    for endpoint in endpoints.values():
+        _validate_v2_endpoint(endpoint)
+    return value
+
+
+def _validate_v2_endpoint(endpoint: Any) -> None:
+    required = {"path", "declaredArtifactId", "resolvedArtifactId", "resolvedFileDigest"}
+    if not isinstance(endpoint, dict) or set(endpoint) != required:
+        raise ValueError("legacy manifest endpoint shape is not supported")
+    if not endpoint["path"]:
+        raise ValueError("manifest endpoint path must be non-empty")
+    _validate_endpoint_ids({"endpoint": endpoint})
+    if endpoint["resolvedFileDigest"] is not None and not _digest(endpoint["resolvedFileDigest"]):
+        raise ValueError("resolvedFileDigest must be a sha256 file digest")
+
+
 def _insert_manifest_link(
     connection,
     generation_id,
@@ -125,6 +157,7 @@ def _insert_manifest_link(
             resolved_source_file_digest=(file_digests or {}).get(source_path),
             resolved_target_file_digest=(file_digests or {}).get(target_path),
     )
+    validate_manifest_link_observation(observation)
     details = {
         "manifestDetails": json.loads(details_json),
         "linkObservation": observation,
@@ -199,4 +232,5 @@ __all__ = [
     "LINK_POLICY_VERSION",
     "insert_manifest_link_observations",
     "manifest_link_observation",
+    "validate_manifest_link_observation",
 ]
