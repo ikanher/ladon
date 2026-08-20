@@ -368,7 +368,7 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
         "consumers": _dispatch_consumers,
         "constructor": _dispatch_constructor,
         "check": _dispatch_check_adapter,
-        "discover": lambda args, repo_root, _index_path: dispatch_discover(args, repo_root),
+        "discover": lambda args, repo_root, index_path: dispatch_discover(args, repo_root, index_path),
     }
     handler = handlers.get(args.proof_search_operation)
     if handler is None:

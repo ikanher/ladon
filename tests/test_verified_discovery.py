@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import argparse
 from pathlib import Path
 
 from ladon.proof_search_cli import build_proof_search_parser
+from ladon.proof_search_discovery_cli import _type_text_shortlist
+from ladon.proof_search_index import build_proof_search_index
 from ladon.semantic_candidate_worker import SemanticCandidateCheck
 from ladon.verified_discovery import DiscoveryRequest, discover_candidates
 
@@ -76,3 +79,23 @@ def test_discovery_uses_one_batch_checker_when_provided() -> None:
     )
     assert called == [("a", "b")]
     assert [row["check"]["status"] for row in result["candidates"]] == ["rejected", "rejected"]
+
+
+def test_discovery_shortlist_mode_reuses_type_text_scope_and_coverage(tmp_path: Path) -> None:
+    (tmp_path / "Main.lean").write_text(
+        "theorem first : Nat := 1\ntheorem second : Nat := 2\n",
+        encoding="utf-8",
+    )
+    build_proof_search_index(tmp_path)
+    args = argparse.Namespace(
+        pattern="Nat",
+        module="Main",
+        scope="module",
+        root=["Main"],
+        max_candidates=1,
+        freshness="stored",
+    )
+    rows, evidence = _type_text_shortlist(args, tmp_path, None)
+    assert len(rows) == 1
+    assert evidence["source"] == "type-text-shortlist"
+    assert evidence["coverage"]["scope"]["kind"] == "module"
