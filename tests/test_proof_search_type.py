@@ -32,3 +32,12 @@ def test_warm_sqlite_shortlist_has_bounded_latency(tmp_path: Path) -> None:
         for _ in range(10):
             query_type_shortlist(connection, TypeSearchRequest("Nat"))
     assert (time.perf_counter() - started) < 1.0
+
+
+def test_type_text_verify_includes_index_generation_evidence(tmp_path: Path, capsys) -> None:
+    (tmp_path / "Main.lean").write_text("theorem first : Nat := 1\n", encoding="utf-8")
+    build_proof_search_index(tmp_path)
+    status = main(["proof-search", "search", "type-text", "--repo-root", str(tmp_path), "--pattern", "Nat", "--freshness", "verify", "--format", "json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert status == 0
+    assert payload["freshnessEvidence"]["generationIdentity"]

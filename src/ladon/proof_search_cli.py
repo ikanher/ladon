@@ -173,7 +173,7 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     type_search.add_argument("--limit", type=_bounded_limit, default=20)
     type_search.add_argument("--diagnostic-limit", type=_bounded_limit, default=0)
     type_search.add_argument(
-        "--freshness", choices=("stored",), default="stored"
+        "--freshness", choices=("verify", "stored"), default="stored"
     )
     explain = operations.add_parser(
         "explain", help="Explain a bounded candidate/goal difference."
@@ -513,6 +513,17 @@ def _dispatch_search(
         import sqlite3
 
         path = index_path or default_proof_search_index_path(repo_root)
+        verification: dict[str, Mapping[str, Any]] = {}
+        if args.freshness == "verify":
+            index_status = inspect_proof_search_index(repo_root, index_path=index_path, verify_sources=True)
+            if index_status.get("freshness") != "fresh":
+                raise ProofSearchIndexError("type-text index is stale or unavailable")
+            identities = {
+                key: index_status.get(key)
+                for key in ("generationIdentity", "currentGenerationIdentity", "sourceFingerprint", "configurationFingerprint", "toolchainIdentity", "indexSchema")
+                if index_status.get(key) is not None
+            }
+            verification = {"__index__": identities}
         with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
             connection.row_factory = sqlite3.Row
             payload = query_type_shortlist(
@@ -527,7 +538,11 @@ def _dispatch_search(
                     diagnostic_limit=args.diagnostic_limit,
                     freshness=args.freshness,
                 ),
+                verifier=(lambda _candidates, _pattern: {}) if args.freshness == "verify" else None,
             )
+            if args.freshness == "verify":
+                payload = dict(payload)
+                payload["freshnessEvidence"] = verification["__index__"]
             if args.search_operation == "type":
                 payload = dict(payload)
                 payload["migration"] = "use 'search type-text'; this alias remains for compatibility"

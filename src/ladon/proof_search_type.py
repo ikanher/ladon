@@ -24,13 +24,15 @@ class TypeSearchRequest:
             raise ValueError("type search pattern and limit are required")
         if self.scope != "repository":
             raise ValueError("type-text search scope is not implemented; use repository")
-        if self.freshness != "stored":
-            raise ValueError("type-text freshness verification is not implemented; use stored")
+        if self.freshness not in {"stored", "verify"}:
+            raise ValueError("type-text freshness must be stored or verify")
 
 
 def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequest, *, verifier: Callable[[Sequence[str], str], Mapping[str, Mapping[str, Any]]] | None = None) -> dict[str, Any]:
     """Return deterministic lexical candidates without claiming Lean verification."""
 
+    if request.freshness == "verify" and verifier is None:
+        raise ValueError("type-text freshness verification requires the index verifier")
     clauses = ["(d.rendered_type LIKE ? OR d.conclusion_text LIKE ? OR d.type_text LIKE ?)"]
     pattern = f"%{request.pattern}%"
     values: list[Any] = [pattern, pattern, pattern]
