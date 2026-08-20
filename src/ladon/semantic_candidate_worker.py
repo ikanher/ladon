@@ -10,10 +10,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
+import re
 import secrets
 import tempfile
 import threading
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from importlib import resources
 from pathlib import Path
@@ -83,6 +85,7 @@ class SemanticCandidateRequest:
     max_rss_bytes: int = 2 * 1024 * 1024 * 1024
     toolchain: LeanToolchainContext | None = None
     local_context: tuple[Mapping[str, str], ...] = ()
+    execution_context_ref: str | None = None
 
     def __post_init__(self) -> None:
         _validate_request_identity(self.module, self.candidate)
@@ -124,8 +127,11 @@ def _validate_request_goal(goal: str) -> None:
 def _validate_request_bounds(
     timeout_seconds: float, max_output_bytes: int, max_rss_bytes: int
 ) -> None:
-    if min(timeout_seconds, max_output_bytes, max_rss_bytes) <= 0:
-        raise ValueError("semantic check bounds must be positive")
+    if (
+        not math.isfinite(timeout_seconds)
+        or min(timeout_seconds, max_output_bytes, max_rss_bytes) <= 0
+    ):
+        raise ValueError("semantic check bounds must be positive and finite")
 
 
 @dataclass(frozen=True)
@@ -141,6 +147,8 @@ class SemanticCandidateCheck:
     analysis_completeness: str = "not-assessed"
     evidence_receipt: Mapping[str, Any] | None = None
     application_term: str | None = None
+    discharged_hypotheses: tuple[Mapping[str, Any], ...] = ()
+    caller_local_context: tuple[Mapping[str, str], ...] = ()
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -151,6 +159,8 @@ class SemanticCandidateCheck:
             "analysisCompleteness": self.analysis_completeness,
             "evidenceReceipt": dict(self.evidence_receipt) if self.evidence_receipt else None,
             "applicationTerm": self.application_term,
+            "dischargedHypotheses": [dict(row) for row in self.discharged_hypotheses],
+            "callerLocalContext": [dict(row) for row in self.caller_local_context],
             "artifacts": list(self.artifacts),
             "diagnostic": dict(self.diagnostic) if self.diagnostic else None,
             "resourceAccounting": {
@@ -200,6 +210,7 @@ def check_semantic_candidate(
                     probe_name,
                     request.candidate,
                     request_id,
+                    _execution_context_ref(request),
                 ),
                 cancel_event,
             )
@@ -234,6 +245,7 @@ def check_semantic_candidate(
         "partial" if status.endswith("residuals") else "complete",
         environment_ref=str(artifacts[0]["environmentRef"]),
         check_run_ref=str(artifacts[1]["payload"]["checkRunId"]),
+        local_context=payload["localContext"],
     )
     return SemanticCandidateCheck(
         status,
@@ -252,6 +264,8 @@ def check_semantic_candidate(
         ),
         evidence_receipt=status_receipt,
         application_term=payload["applicationTerm"],
+        discharged_hypotheses=tuple(payload["dischargedHypotheses"]),
+        caller_local_context=tuple(request.local_context),
     )
 
 
@@ -294,6 +308,7 @@ def _receipt_for_check(
     completeness: str,
     environment_ref: str | None = None,
     check_run_ref: str | None = None,
+    local_context: Sequence[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     binding = "ambient-observed"
     environment_match = "unknown"
@@ -309,7 +324,13 @@ def _receipt_for_check(
             "module": request.module,
             "candidate": request.candidate,
             "goal": request.goal,
-            "localContext": [dict(row) for row in request.local_context],
+            "localContext": [
+                {
+                    "name": str(row.get("userName", row.get("name", ""))),
+                    "type": str(row.get("typeDisplay", row.get("type", ""))),
+                }
+                for row in (local_context if local_context is not None else request.local_context)
+            ],
         },
         execution_binding=binding,
         observation_state="live" if outcome == "accepted" else "failed",
@@ -343,6 +364,12 @@ def _environment_source(request: SemanticCandidateRequest) -> str:
     return f"import {request.module}\nset_option autoImplicit false\n"
 
 
+def _execution_context_ref(request: SemanticCandidateRequest) -> str:
+    return request.execution_context_ref or (
+        request.toolchain.context_identity if request.toolchain is not None else "unbound"
+    )
+
+
 def _failed_check(
     process: ProcessResult, request: SemanticCandidateRequest
 ) -> SemanticCandidateCheck:
@@ -368,7 +395,7 @@ def _parse_worker_payload(
     stdout: str, request: SemanticCandidateRequest, request_id: str
 ) -> dict[str, Any]:
     payload = _decode_single_frame(stdout)
-    _validate_worker_frame(payload, request_id)
+    _validate_worker_frame(payload, request, request_id)
     _validate_worker_collections(payload)
     _validate_worker_identity(payload, request)
     _validate_application_rows(payload)
@@ -376,7 +403,9 @@ def _parse_worker_payload(
     return payload
 
 
-def _validate_worker_frame(payload: Mapping[str, Any], request_id: str) -> None:
+def _validate_worker_frame(
+    payload: Mapping[str, Any], request: SemanticCandidateRequest, request_id: str
+) -> None:
     if payload.get("protocol") != SEMANTIC_PROTOCOL:
         raise ValueError("Lean semantic helper emitted an unsupported protocol")
     required = {
@@ -387,11 +416,13 @@ def _validate_worker_frame(payload: Mapping[str, Any], request_id: str) -> None:
         "leanVersion",
         "leanCommit",
         "requestId",
+        "executionContextRef",
         "executablePath",
         "module",
         "probe",
         "candidate",
         "applicationTerm",
+        "dischargedHypotheses",
         "importedModules",
         "substitutions",
         "residualPremises",
@@ -401,6 +432,8 @@ def _validate_worker_frame(payload: Mapping[str, Any], request_id: str) -> None:
         raise ValueError("Lean semantic helper omitted required evidence fields")
     if payload["requestId"] != request_id:
         raise ValueError("Lean semantic helper returned a mismatched request ID")
+    if payload["executionContextRef"] != _execution_context_ref(request):
+        raise ValueError("Lean semantic helper returned a mismatched execution context")
     if payload["frameVersion"] != 1 or payload["sequence"] != 0 or payload["terminal"] is not True:
         raise ValueError("Lean semantic helper returned an invalid terminal frame")
     if payload["universePolicy"] != UNIVERSE_POLICY:
@@ -408,7 +441,12 @@ def _validate_worker_frame(payload: Mapping[str, Any], request_id: str) -> None:
 
 
 def _validate_worker_collections(payload: Mapping[str, Any]) -> None:
-    for field in ("substitutions", "residualPremises", "localContext"):
+    for field in (
+        "substitutions",
+        "dischargedHypotheses",
+        "residualPremises",
+        "localContext",
+    ):
         if not isinstance(payload[field], list):
             raise TypeError(f"Lean semantic helper field {field} must be an array")
     if not isinstance(payload["applicationTerm"], str) or not payload["applicationTerm"]:
@@ -427,6 +465,24 @@ def _validate_worker_identity(
     _validate_worker_subject(probe, "probe", _probe_name(request))
     _validate_worker_subject(candidate, "candidate", request.candidate)
     _validate_worker_modules(payload.get("importedModules"), request.module)
+    if request.toolchain is not None:
+        if (
+            request.toolchain.selection_mode == "explicit"
+            and Path(str(payload.get("executablePath"))).resolve() != request.toolchain.lean_path
+        ):
+            raise ValueError(
+                "Lean semantic helper returned a foreign executable path: "
+                f"{payload.get('executablePath')} != {request.toolchain.lean_path}"
+            )
+        expected = request.toolchain.pin_content.rsplit(":v", 1)[-1]
+        versions = set(
+            re.findall(
+                r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.]+)?)(?![0-9])",
+                str(payload.get("leanVersion")),
+            )
+        )
+        if versions != {expected}:
+            raise ValueError("Lean semantic helper returned an unbound Lean version")
 
 
 def _accepted_artifacts(
@@ -447,7 +503,12 @@ def _accepted_artifacts(
     terms = [_term_subject(row) for row in payload["substitutions"]]
     context = _context_subject(env_ref, payload["localContext"])
     application = _application_subject(
-        statement, declaration, residuals, payload["substitutions"], context
+        statement,
+        declaration,
+        residuals,
+        payload["substitutions"],
+        context,
+        payload["dischargedHypotheses"],
     )
     check = _check_artifact(
         request,
@@ -578,6 +639,7 @@ def _application_subject(
     residuals: list[Mapping[str, Any]],
     substitutions: list[Mapping[str, Any]] | None = None,
     context: Mapping[str, Any] | None = None,
+    discharged_hypotheses: list[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
     digest = _digest_bytes(
         canonical_bytes(
@@ -593,6 +655,7 @@ def _application_subject(
                     for row in (substitutions or [])
                 ],
                 "localContext": context["localId"] if context is not None else None,
+                "dischargedHypotheses": [dict(row) for row in (discharged_hypotheses or [])],
             }
         )
     )
@@ -698,6 +761,9 @@ def _check_artifact(
             "maxOutputBytes": request.max_output_bytes,
             "maxRssBytes": request.max_rss_bytes,
         },
+        "candidate": request.candidate,
+        "applicationDigest": str(application["fingerprint"]["digest"]),
+        "environmentRef": environment_ref,
     }
     check_id = "check:" + _digest_bytes(canonical_bytes(observation))[7:]
     observation["evidenceReceipt"] = _receipt_for_check(
@@ -707,6 +773,7 @@ def _check_artifact(
         "partial" if has_residuals else "complete",
         environment_ref=environment_ref,
         check_run_ref=check_id,
+        local_context=payload["localContext"],
     )
     check_subject = {
         "kind": "check-run",

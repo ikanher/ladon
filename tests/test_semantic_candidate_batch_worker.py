@@ -49,8 +49,8 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
 
     def runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
         observed["command"] = command
-        request_id = command[-3]
-        probe_name = command[-4]
+        request_id = command[-4]
+        probe_name = command[-5]
         header = {
             "protocol": SEMANTIC_BATCH_PROTOCOL,
             "frameVersion": 1,
@@ -58,6 +58,7 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
             "sequence": 0,
             "terminal": False,
             "requestId": request_id,
+            "executionContextRef": "unbound",
             "universePolicy": "lean-level-mvar-succ-zero/v1",
             "leanVersion": "4.fixture",
             "leanCommit": "fixture",
@@ -77,6 +78,7 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
                     "typeStructural": "Nat",
                 },
                 "applicationTerm": "Main.good",
+                "dischargedHypotheses": [],
                 "substitutions": [],
                 "residualPremises": [],
                 "diagnostic": "",
@@ -86,6 +88,7 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
                 "status": "rejected",
                 "candidateSubject": None,
                 "applicationTerm": "",
+                "dischargedHypotheses": [],
                 "substitutions": [],
                 "residualPremises": [],
                 "diagnostic": "unknown declaration",
@@ -117,13 +120,14 @@ def test_batch_worker_rejects_malformed_accepted_row_fields(tmp_path: Path) -> N
             "frameKind": "header",
             "sequence": 0,
             "terminal": False,
-            "requestId": command[-2],
+            "requestId": command[-3],
+            "executionContextRef": "unbound",
             "universePolicy": "lean-level-mvar-succ-zero/v1",
             "leanVersion": "4.fixture",
             "leanCommit": "fixture",
             "executablePath": sys.executable,
             "module": "Main",
-            "probe": {"name": command[-3], "typeDisplay": "Nat", "typeStructural": "Nat"},
+            "probe": {"name": command[-4], "typeDisplay": "Nat", "typeStructural": "Nat"},
             "importedModules": [{"module": "Main", "oleanPath": str(tmp_path / "Main.olean")}],
             "localContext": [],
         }
@@ -131,6 +135,7 @@ def test_batch_worker_rejects_malformed_accepted_row_fields(tmp_path: Path) -> N
             {
                 "candidate": "Main.good",
                 "status": "accepted",
+                "dischargedHypotheses": [],
                 "candidateSubject": 7,
                 "substitutions": "bad",
                 "residualPremises": [{}],
@@ -158,13 +163,14 @@ def test_batch_worker_preserves_validated_prefix_after_timeout(tmp_path: Path) -
             "frameKind": "header",
             "sequence": 0,
             "terminal": False,
-            "requestId": command[-3],
+            "requestId": command[-4],
+            "executionContextRef": "unbound",
             "universePolicy": "lean-level-mvar-succ-zero/v1",
             "leanVersion": "4.fixture",
             "leanCommit": "fixture",
             "executablePath": sys.executable,
             "module": "Main",
-            "probe": {"name": command[-4], "typeDisplay": "Nat", "typeStructural": "Nat"},
+            "probe": {"name": command[-5], "typeDisplay": "Nat", "typeStructural": "Nat"},
             "importedModules": [{"module": "Main", "oleanPath": str(olean)}],
             "localContext": [],
         }
@@ -177,6 +183,7 @@ def test_batch_worker_preserves_validated_prefix_after_timeout(tmp_path: Path) -
                 "typeStructural": "Nat",
             },
             "applicationTerm": "Main.good",
+            "dischargedHypotheses": [],
             "substitutions": [],
             "residualPremises": [],
             "diagnostic": "",

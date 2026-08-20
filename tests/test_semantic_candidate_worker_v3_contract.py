@@ -26,6 +26,7 @@ def _accepted_payload(tmp_path: Path) -> dict[str, Any]:
         "terminal": True,
         "universePolicy": "lean-level-mvar-succ-zero/v1",
         "requestId": "fixture-request",
+        "executionContextRef": "fixture-context",
         "leanVersion": "4.32.2",
         "leanCommit": "commit",
         "executablePath": str(executable),
@@ -41,6 +42,7 @@ def _accepted_payload(tmp_path: Path) -> dict[str, Any]:
             "typeStructural": "forallE Nat Nat",
         },
         "applicationTerm": "Main.identity",
+        "dischargedHypotheses": [],
         "importedModules": [{"module": "Main", "oleanPath": str(olean)}],
         "substitutions": [],
         "residualPremises": [],
@@ -102,8 +104,9 @@ def test_accepted_worker_result_closes_exact_environment_and_check_references(
     payload = _accepted_payload(tmp_path)
 
     def accepted_runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
-        payload["probe"]["name"] = command[-3]
-        payload["requestId"] = command[-1]
+        payload["probe"]["name"] = command[-4]
+        payload["requestId"] = command[-2]
+        payload["executionContextRef"] = command[-1]
         return ProcessResult(
             tuple(command), 0, "LADON_FRAME " + json.dumps(payload), "", 0.25, peak_rss_bytes=4096
         )
@@ -164,13 +167,15 @@ def test_explicit_toolchain_ignores_path_shadow_and_sanitizes_worker_environment
         environment={"PATH": str(tmp_path / "shadow"), "SECRET": "redacted"},
     )
     payload = _accepted_payload(tmp_path)
+    payload["executablePath"] = str(lean)
     observed: dict[str, object] = {}
 
     def runner(command: tuple[str, ...], **kwargs: object) -> ProcessResult:
         observed["command"] = command
         observed["env"] = kwargs.get("env")
-        payload["probe"]["name"] = command[-3]
-        payload["requestId"] = command[-1]
+        payload["probe"]["name"] = command[-4]
+        payload["requestId"] = command[-2]
+        payload["executionContextRef"] = command[-1]
         return ProcessResult(tuple(command), 0, "LADON_FRAME " + json.dumps(payload), "", 0.1)
 
     result = check_semantic_candidate(
@@ -216,7 +221,7 @@ def test_worker_protocol_rejects_foreign_or_unscoped_semantic_rows(
     payload["candidate"]["name"] = "Other.foreign"
 
     def foreign_runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
-        payload["probe"]["name"] = command[-3]
+        payload["probe"]["name"] = command[-4]
         return ProcessResult(tuple(command), 0, "LADON_FRAME " + json.dumps(payload), "", 0.1)
 
     result = check_semantic_candidate(

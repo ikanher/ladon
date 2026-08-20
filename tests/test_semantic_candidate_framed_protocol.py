@@ -20,6 +20,7 @@ def _payload() -> dict[str, object]:
         "terminal": True,
         "universePolicy": "lean-level-mvar-succ-zero/v1",
         "requestId": "req-test",
+        "executionContextRef": "unbound",
         "leanVersion": "4.0",
         "leanCommit": "commit",
         "executablePath": "/bin/lean",
@@ -27,6 +28,7 @@ def _payload() -> dict[str, object]:
         "probe": {"name": "ladonSemanticProbe_abc", "typeDisplay": "Nat", "typeStructural": "Nat"},
         "candidate": {"name": "Main.identity", "typeDisplay": "Nat", "typeStructural": "Nat"},
         "applicationTerm": "Main.identity",
+        "dischargedHypotheses": [],
         "importedModules": [{"module": "Main", "oleanPath": "/tmp/Main.olean"}],
         "substitutions": [],
         "residualPremises": [],
@@ -81,6 +83,35 @@ def test_framed_parser_preserves_typed_nonempty_local_context() -> None:
     ]
     parsed = _parse_worker_payload(SEMANTIC_FRAME_PREFIX + json.dumps(payload), request, "req-test")
     assert parsed["localContext"][0]["origin"] == "goal-introduced"
+
+
+def test_framed_parser_rejects_same_name_with_mismatched_local_type() -> None:
+    request = SemanticCandidateRequest(
+        Path("."),
+        "Main",
+        "x = x",
+        "Main.identity",
+        local_context=({"name": "x", "type": "Nat"},),
+    )
+    from ladon.semantic_candidate_worker import _probe_name
+
+    payload = _payload()
+    payload["probe"]["name"] = _probe_name(request)
+    payload["localContext"] = [
+        {
+            "localId": "local:0",
+            "userName": "x",
+            "binderInfo": "default",
+            "typeDisplay": "Bool",
+            "typeStructural": "Bool",
+            "valueDisplay": "",
+            "valueStructural": "",
+            "dependencies": [],
+            "origin": "goal-introduced",
+        }
+    ]
+    with pytest.raises(ValueError, match="mismatched type"):
+        _parse_worker_payload(SEMANTIC_FRAME_PREFIX + json.dumps(payload), request, "req-test")
 
 
 @pytest.mark.parametrize(

@@ -34,6 +34,13 @@ structure SemanticExpression where
   typeStructural : String
   deriving ToJson
 
+structure SemanticDischargedHypothesis where
+  premiseOrdinal : Nat
+  premiseTypeDisplay : String
+  dischargedByLocalRef : String
+  method : String
+  deriving ToJson
+
 structure SemanticLocalDecl where
   localId : String
   userName : String
@@ -62,10 +69,12 @@ structure SemanticCandidateOutput where
   leanVersion : String
   leanCommit : String
   executablePath : String
+  executionContextRef : String
   module : String
   probe : SemanticSubject
   candidate : SemanticSubject
   applicationTerm : String
+  dischargedHypotheses : Array SemanticDischargedHypothesis
   importedModules : Array SemanticModule
   substitutions : Array SemanticSubstitution
   residualPremises : Array SemanticExpression
@@ -77,6 +86,7 @@ structure SemanticBatchRow where
   status : String
   candidateSubject : Option SemanticSubject
   applicationTerm : String
+  dischargedHypotheses : Array SemanticDischargedHypothesis
   substitutions : Array SemanticSubstitution
   residualPremises : Array SemanticExpression
   diagnostic : String
@@ -90,6 +100,7 @@ structure SemanticBatchHeader where
   terminal : Bool
   universePolicy : String
   requestId : String
+  executionContextRef : String
   leanVersion : String
   leanCommit : String
   executablePath : String
@@ -232,6 +243,32 @@ private def localContextTypes : MetaM (Array SemanticLocalDecl) := do
     }
   return rows
 
+private def dischargeResiduals (residualGoals : Array MVarId) : MetaM (Array SemanticDischargedHypothesis × Array MVarId) := do
+  let mut discharged := #[]
+  let mut remaining := #[]
+  for h : ordinal in [0:residualGoals.size] do
+    let residual := residualGoals[ordinal]
+    let type ← instantiateMVars (← residual.getType)
+    let mut match? : Option LocalDecl := none
+    for decl in ← getLCtx do
+      if match?.isNone then
+        try
+          if ← Meta.isDefEq type (← instantiateMVars decl.type) then
+            match? := some decl
+        catch _ => pure ()
+    match match? with
+    | none => remaining := remaining.push residual
+    | some localDecl =>
+        residual.assign (mkFVar localDecl.fvarId)
+        let display ← Meta.ppExpr type
+        discharged := discharged.push {
+          premiseOrdinal := ordinal
+          premiseTypeDisplay := display.pretty
+          dischargedByLocalRef := "local:" ++ (repr localDecl.fvarId).pretty
+          method := "assumption-definitional-equality"
+        }
+  return (discharged, remaining)
+
 private def analyzeLocalContext (env : Environment) (file : String)
     (fileMap : FileMap) (goalType : Expr) : IO (Array SemanticLocalDecl) :=
   runMetaIO env file fileMap (do
@@ -241,7 +278,7 @@ private def analyzeLocalContext (env : Environment) (file : String)
 
 private def analyzeApplication (env : Environment) (file : String)
     (fileMap : FileMap) (goalType : Expr) (candidateName : Name) :
-    IO (String × Array SemanticSubstitution × Array SemanticExpression × Array SemanticLocalDecl) :=
+    IO (String × Array SemanticSubstitution × Array SemanticDischargedHypothesis × Array SemanticExpression × Array SemanticLocalDecl) :=
   runMetaIO env file fileMap (do
     let some candidateInfo := env.find? candidateName
       | throwError "candidate declaration not found"
@@ -266,16 +303,17 @@ private def analyzeApplication (env : Environment) (file : String)
     let focusedAssignment ← instantiateMVars rawFocusedAssignment
     let applicationDisplay ← focused.withContext do Meta.ppExpr focusedAssignment
     let substitutions ← applicationSubstitutions candidateInfo.type focusedAssignment.getAppArgs
-    let residuals ← residualGoals.toArray.mapM fun residual => do
+    let (discharged, remainingGoals) ← dischargeResiduals residualGoals.toArray
+    let residuals ← remainingGoals.mapM fun residual => do
       let type ← instantiateMVars (← residual.getType)
       let display ← Meta.ppExpr type
       return {
         typeDisplay := display.pretty
         typeStructural := (repr type).pretty
       }
-    return (applicationDisplay.pretty, substitutions, residuals, localContext))
+    return (applicationDisplay.pretty, substitutions, discharged, residuals, localContext))
 
-private def runHelper (module file goal probeName candidateName requestId : String) : IO UInt32 := do
+private def runHelper (module file goal probeName candidateName requestId executionContextRef : String) : IO UInt32 := do
   let contents ← IO.FS.readFile file
   -- Lean's frontend requires initializer execution to load the target
   -- project's compiled environment. It runs in the supervised helper process;
@@ -292,7 +330,7 @@ private def runHelper (module file goal probeName candidateName requestId : Stri
       let fileMap := contents.toFileMap
       let candidateLeanName ← parseLeanName env candidateName
       let goalType ← elaborateGoal env file fileMap goal
-      let (applicationTerm, substitutions, residuals, localContext) ← analyzeApplication env file fileMap goalType candidateLeanName
+      let (applicationTerm, substitutions, dischargedHypotheses, residuals, localContext) ← analyzeApplication env file fileMap goalType candidateLeanName
       let probe ← expressionSubject env file fileMap probeName.toName goalType
       let candidate ← subject env file fileMap candidateLeanName
       let modules ← importedModules env
@@ -304,6 +342,7 @@ private def runHelper (module file goal probeName candidateName requestId : Stri
         terminal := true
         universePolicy := "lean-level-mvar-succ-zero/v1"
         requestId
+        executionContextRef
         leanVersion := Lean.versionString
         leanCommit := Lean.githash
         executablePath := toString executable
@@ -311,6 +350,7 @@ private def runHelper (module file goal probeName candidateName requestId : Stri
         probe
         candidate
         applicationTerm
+        dischargedHypotheses
         importedModules := modules
         substitutions
         residualPremises := residuals
@@ -319,7 +359,7 @@ private def runHelper (module file goal probeName candidateName requestId : Stri
       IO.println s!"LADON_FRAME {Json.compress (toJson output)}"
       return 0
 
-private def runBatchHelper (module file goal probeName requestId : String)
+private def runBatchHelper (module file goal probeName requestId executionContextRef : String)
     (candidateNames : List String) : IO UInt32 := do
   let contents ← IO.FS.readFile file
   unsafe Lean.enableInitializersExecution
@@ -344,6 +384,7 @@ private def runBatchHelper (module file goal probeName requestId : String)
         terminal := false
         universePolicy := "lean-level-mvar-succ-zero/v1"
         requestId
+        executionContextRef
         leanVersion := Lean.versionString
         leanCommit := Lean.githash
         executablePath := toString executable
@@ -357,12 +398,13 @@ private def runBatchHelper (module file goal probeName requestId : String)
         let row : SemanticBatchRow ← try
           let candidateLeanName ← parseLeanName env candidateName
           let candidate ← subject env file fileMap candidateLeanName
-          let (applicationTerm, substitutions, residuals, _) ← analyzeApplication env file fileMap goalType candidateLeanName
+          let (applicationTerm, substitutions, dischargedHypotheses, residuals, _) ← analyzeApplication env file fileMap goalType candidateLeanName
           pure {
             candidate := candidateName
             status := if residuals.isEmpty then "accepted" else "applicable-with-residuals"
             candidateSubject := some candidate
             applicationTerm
+            dischargedHypotheses
             substitutions
             residualPremises := residuals
             diagnostic := ""
@@ -373,6 +415,7 @@ private def runBatchHelper (module file goal probeName requestId : String)
             status := "rejected"
             candidateSubject := none
             applicationTerm := ""
+            dischargedHypotheses := #[]
             substitutions := #[]
             residualPremises := #[]
             diagnostic := error.toString
@@ -399,14 +442,14 @@ private def runBatchHelper (module file goal probeName requestId : String)
       return 0
 def main (args : List String) : IO UInt32 := do
   match args with
-  | "--batch" :: module :: file :: goal :: probeName :: requestId :: candidates =>
-      runBatchHelper module file goal probeName requestId candidates
-  | "--" :: "--batch" :: module :: file :: goal :: probeName :: requestId :: candidates =>
-      runBatchHelper module file goal probeName requestId candidates
-  | ["--", module, file, goal, probeName, candidateName, requestId] =>
-      runHelper module file goal probeName candidateName requestId
-  | [module, file, goal, probeName, candidateName, requestId] =>
-      runHelper module file goal probeName candidateName requestId
+  | "--batch" :: module :: file :: goal :: probeName :: requestId :: executionContextRef :: candidates =>
+      runBatchHelper module file goal probeName requestId executionContextRef candidates
+  | "--" :: "--batch" :: module :: file :: goal :: probeName :: requestId :: executionContextRef :: candidates =>
+      runBatchHelper module file goal probeName requestId executionContextRef candidates
+  | ["--", module, file, goal, probeName, candidateName, requestId, executionContextRef] =>
+      runHelper module file goal probeName candidateName requestId executionContextRef
+  | [module, file, goal, probeName, candidateName, requestId, executionContextRef] =>
+      runHelper module file goal probeName candidateName requestId executionContextRef
   | _ =>
       IO.eprintln
         "usage: ladon_semantic_candidate_helper MODULE FILE PROBE CANDIDATE"

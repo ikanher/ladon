@@ -47,6 +47,12 @@ def validate_worker_modules(modules: Any, requested_module: str) -> None:
 
 def validate_application_rows(payload: Mapping[str, Any]) -> None:
     substitution_fields = {"variable", "termDisplay", "termStructural"}
+    discharged_fields = {
+        "premiseOrdinal",
+        "premiseTypeDisplay",
+        "dischargedByLocalRef",
+        "method",
+    }
     expression_fields = {"typeDisplay", "typeStructural"}
     local_fields = {
         "localId",
@@ -61,6 +67,8 @@ def validate_application_rows(payload: Mapping[str, Any]) -> None:
     }
     if not _closed_string_rows(payload["substitutions"], substitution_fields):
         raise ValueError("Lean semantic helper returned invalid substitutions")
+    if not _closed_discharged_rows(payload["dischargedHypotheses"], discharged_fields):
+        raise ValueError("Lean semantic helper returned invalid discharged hypotheses")
     if not _closed_string_rows(payload["residualPremises"], expression_fields):
         raise ValueError("Lean semantic helper returned invalid residual premises")
     if not _closed_local_context_rows(payload["localContext"], local_fields):
@@ -72,6 +80,17 @@ def _closed_string_rows(rows: list[Any], fields: set[str]) -> bool:
         isinstance(row, dict)
         and set(row) == fields
         and all(isinstance(row[field], str) and row[field] for field in fields)
+        for row in rows
+    )
+
+
+def _closed_discharged_rows(rows: list[Any], fields: set[str]) -> bool:
+    return all(
+        isinstance(row, dict)
+        and set(row) == fields
+        and isinstance(row["premiseOrdinal"], int)
+        and row["premiseOrdinal"] >= 0
+        and all(isinstance(row[field], str) and row[field] for field in fields - {"premiseOrdinal"})
         for row in rows
     )
 

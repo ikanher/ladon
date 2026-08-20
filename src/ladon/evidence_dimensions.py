@@ -11,7 +11,14 @@ OPERATION_OUTCOMES = frozenset({"accepted", "rejected", "failed", "not-run"})
 SOURCE_FRESHNESS = frozenset({"fresh", "stale", "unknown", "not-assessed"})
 ENVIRONMENT_MATCHES = frozenset({"exact", "mismatched", "unknown", "not-assessed"})
 AUTHORITY_BASES = frozenset(
-    {"not-assessed", "producer-assertion", "source-observation", "elaborator-check", "kernel-check", "stored-observation"}
+    {
+        "not-assessed",
+        "producer-assertion",
+        "source-observation",
+        "elaborator-check",
+        "kernel-check",
+        "stored-observation",
+    }
 )
 ANALYSIS_COMPLETENESS = frozenset({"complete", "partial", "invalid", "not-assessed"})
 
@@ -29,7 +36,7 @@ _TRANSITIONS = {
         "absent": frozenset({"absent"}),
     },
     "operationOutcome": {
-        "accepted": OPERATION_OUTCOMES,
+        "accepted": frozenset({"accepted"}),
         "rejected": frozenset({"rejected", "failed", "not-run"}),
         "failed": frozenset({"failed", "not-run"}),
         "not-run": frozenset({"not-run"}),
@@ -48,9 +55,21 @@ _TRANSITIONS = {
     },
     "authorityBasis": {
         "kernel-check": AUTHORITY_BASES,
-        "elaborator-check": frozenset({"elaborator-check", "source-observation", "producer-assertion", "stored-observation", "not-assessed"}),
-        "source-observation": frozenset({"source-observation", "producer-assertion", "stored-observation", "not-assessed"}),
-        "producer-assertion": frozenset({"producer-assertion", "stored-observation", "not-assessed"}),
+        "elaborator-check": frozenset(
+            {
+                "elaborator-check",
+                "source-observation",
+                "producer-assertion",
+                "stored-observation",
+                "not-assessed",
+            }
+        ),
+        "source-observation": frozenset(
+            {"source-observation", "producer-assertion", "stored-observation", "not-assessed"}
+        ),
+        "producer-assertion": frozenset(
+            {"producer-assertion", "stored-observation", "not-assessed"}
+        ),
         "stored-observation": frozenset({"stored-observation", "not-assessed"}),
         "not-assessed": frozenset({"not-assessed"}),
     },
@@ -119,8 +138,7 @@ def transition_matrix() -> dict[str, Any]:
             axis: {
                 "states": sorted(transitions),
                 "allowed": {
-                    parent: sorted(children)
-                    for parent, children in sorted(transitions.items())
+                    parent: sorted(children) for parent, children in sorted(transitions.items())
                 },
             }
             for axis, transitions in _TRANSITIONS.items()
@@ -147,13 +165,30 @@ def _transition_error(axis: str, parent: str, child: str) -> str:
 
 def _state_violations(dimensions: EvidenceDimensions) -> list[str]:
     violations: list[str] = []
-    if dimensions.operation_outcome == "accepted" and dimensions.observation_state in {"absent", "failed"}:
+    if dimensions.operation_outcome == "accepted" and dimensions.observation_state in {
+        "absent",
+        "failed",
+    }:
         violations.append("accepted outcome requires an attributable observation")
     if dimensions.observation_state == "live" and dimensions.execution_binding == "none":
         violations.append("live observation requires an executed binding")
-    if dimensions.authority_basis in {"elaborator-check", "kernel-check"} and dimensions.observation_state in {"absent", "failed"}:
+    if dimensions.operation_outcome == "not-run" and (
+        dimensions.observation_state == "live"
+        or dimensions.authority_basis in {"elaborator-check", "kernel-check"}
+        or dimensions.analysis_completeness == "complete"
+    ):
+        violations.append(
+            "not-run outcome cannot claim live checker authority or complete analysis"
+        )
+    if dimensions.authority_basis in {
+        "elaborator-check",
+        "kernel-check",
+    } and dimensions.observation_state in {"absent", "failed"}:
         violations.append("checker authority requires an attributable observation")
-    if dimensions.execution_binding == "explicit-pinned" and dimensions.environment_match == "mismatched":
+    if (
+        dimensions.execution_binding == "explicit-pinned"
+        and dimensions.environment_match == "mismatched"
+    ):
         violations.append("explicit-pinned execution cannot use a mismatched environment")
     return violations
 

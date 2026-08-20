@@ -37,10 +37,22 @@ def goal_with_local_context(goal: str, rows: Sequence[Mapping[str, str]]) -> str
 def validate_observed_local_context(
     observed: Sequence[Mapping[str, Any]], requested: Sequence[Mapping[str, str]]
 ) -> None:
-    observed_names = [row.get("userName") for row in observed[: len(requested)]]
-    requested_names = [row["name"] for row in requested]
-    if observed_names != requested_names:
+    prefix = observed[: len(requested)]
+    if len(prefix) != len(requested):
         raise ValueError("Lean semantic helper did not elaborate the requested local context")
+    for observed_row, requested_row in zip(prefix, requested):
+        if observed_row.get("userName") != requested_row["name"]:
+            raise ValueError("Lean semantic helper returned a reordered local context")
+        if _normalize_type(observed_row.get("typeDisplay")) != _normalize_type(
+            requested_row["type"]
+        ):
+            raise ValueError(
+                f"Lean semantic helper returned a mismatched type for local {requested_row['name']}"
+            )
+
+
+def _normalize_type(value: Any) -> str:
+    return " ".join(value.split()) if isinstance(value, str) else ""
 
 
 __all__ = [

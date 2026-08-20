@@ -191,6 +191,7 @@ def test_discovery_shortlist_mode_reuses_type_text_scope_and_coverage(tmp_path: 
     [
         {"local_context": tuple({"name": f"h{i}", "type": "Nat"} for i in range(257))},
         {"timeout_seconds": 601},
+        {"timeout_seconds": float("nan")},
         {"max_output_bytes": 65 * 1024 * 1024},
         {"max_rss_bytes": 65 * 1024 * 1024 * 1024},
     ],

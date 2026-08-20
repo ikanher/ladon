@@ -20,7 +20,7 @@ def _accepted(**overrides: object) -> dict[str, object]:
         "analysis_completeness": "complete",
         "environment_match": "exact",
         "environment_ref": "sha256:" + "a" * 64,
-        "check_run_ref": "check:run",
+        "check_run_ref": "check:" + "b" * 64,
     }
     values.update(overrides)
     return values

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Mapping, Sequence
 from typing import Any
 
@@ -118,11 +119,11 @@ def _validate_explicit_binding(dimensions: EvidenceDimensions) -> None:
 
 
 def _digest(value: str | None) -> bool:
-    return isinstance(value, str) and value.startswith("sha256:") and len(value) == 71
+    return isinstance(value, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", value) is not None
 
 
 def _check_ref(value: str | None) -> bool:
-    return isinstance(value, str) and value.startswith("check:") and len(value) > 6
+    return isinstance(value, str) and re.fullmatch(r"check:[0-9a-f]{64}", value) is not None
 
 
 __all__ = ["RECEIPT_SCHEMA", "build_evidence_receipt"]

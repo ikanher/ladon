@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -73,8 +74,8 @@ def _validate_discovery_bounds(request: DiscoveryRequest) -> None:
         request.max_output_bytes,
         request.max_rss_bytes,
     )
-    if min(values) <= 0:
-        raise ValueError("discovery bounds must be positive")
+    if not math.isfinite(request.timeout_seconds) or min(values) <= 0:
+        raise ValueError("discovery bounds must be positive and finite (supported cap)")
     if request.max_candidates > 1000 or request.batch_size > 100:
         raise ValueError("discovery bounds exceed the supported cap")
     if request.timeout_seconds > MAX_DISCOVERY_TIMEOUT_SECONDS:
@@ -366,6 +367,7 @@ def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checke
                 max_rss_bytes=request.max_rss_bytes,
                 toolchain=toolchain,
                 local_context=request.local_context,
+                execution_context_ref=request.execution_context_ref,
             )
         )
 
@@ -406,6 +408,12 @@ def _scratch_evidence(
     parent_check_ref = parent_receipt.get("checkRunRef")
     if not isinstance(environment_ref, str) or not isinstance(parent_check_ref, str):
         raise TypeError("scratch replay requires exact parent evidence references")
+    parent_subject = parent_receipt.get("subject")
+    observed_context = (
+        parent_subject.get("localContext")
+        if isinstance(parent_subject, Mapping)
+        else [dict(row) for row in request.local_context]
+    )
     check_ref = (
         "check:"
         + _identity(
@@ -424,7 +432,7 @@ def _scratch_evidence(
             "module": request.module,
             "candidate": candidate,
             "goal": request.goal,
-            "localContext": [dict(row) for row in request.local_context],
+            "localContext": observed_context,
         },
         execution_binding=(
             "explicit-pinned"

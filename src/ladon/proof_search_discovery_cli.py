@@ -159,6 +159,7 @@ def request_to_semantic(request: DiscoveryRequest, toolchain: Any) -> Any:
         max_rss_bytes=request.max_rss_bytes,
         toolchain=toolchain,
         local_context=request.local_context,
+        execution_context_ref=request.execution_context_ref,
     )
 
 

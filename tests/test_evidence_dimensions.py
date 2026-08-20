@@ -14,7 +14,7 @@ def test_evidence_dimensions_reject_authority_and_observation_escalation() -> No
 
 def test_evidence_dimensions_accept_weakened_projection() -> None:
     parent = EvidenceDimensions("explicit-pinned", "live", "accepted", "fresh", "exact")
-    child = EvidenceDimensions("ambient-observed", "derived", "rejected", "unknown", "unknown")
+    child = EvidenceDimensions("ambient-observed", "derived", "accepted", "unknown", "unknown")
     validate_transition(parent, child)
 
 
@@ -48,8 +48,12 @@ def test_transition_matrix_is_closed_and_machine_readable() -> None:
             "stale",
         ),
         (
-            EvidenceDimensions("explicit-pinned", "live", "accepted", authority_basis="producer-assertion"),
-            EvidenceDimensions("explicit-pinned", "live", "accepted", authority_basis="kernel-check"),
+            EvidenceDimensions(
+                "explicit-pinned", "live", "accepted", authority_basis="producer-assertion"
+            ),
+            EvidenceDimensions(
+                "explicit-pinned", "live", "accepted", authority_basis="kernel-check"
+            ),
             "authority basis",
         ),
     ],
@@ -81,7 +85,9 @@ def test_registered_transition_owner_rejects_escalation(
             EvidenceDimensions("ambient-observed", "stored", "rejected", "fresh"),
         ),
         (
-            EvidenceDimensions("ambient-observed", "stored", "rejected", environment_match="unknown"),
+            EvidenceDimensions(
+                "ambient-observed", "stored", "rejected", environment_match="unknown"
+            ),
             EvidenceDimensions("ambient-observed", "stored", "rejected", environment_match="exact"),
         ),
     ],

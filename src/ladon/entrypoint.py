@@ -47,12 +47,27 @@ def doctor_main(arguments: Sequence[str]) -> int:
 
 
 def _doctor_arguments_valid(arguments: Sequence[str]) -> bool:
-    return not any(
-        arg not in {"--json", "--repo-root"}
-        and not arg.startswith("--repo-root=")
-        and (index == 0 or arguments[index - 1] != "--repo-root")
-        for index, arg in enumerate(arguments)
-    )
+    seen_root = False
+    index = 0
+    while index < len(arguments):
+        arg = arguments[index]
+        if arg == "--json":
+            index += 1
+            continue
+        if arg.startswith("--repo-root="):
+            if seen_root or not arg.split("=", 1)[1]:
+                return False
+            seen_root = True
+            index += 1
+            continue
+        if arg == "--repo-root":
+            if seen_root or index + 1 >= len(arguments) or arguments[index + 1].startswith("-"):
+                return False
+            seen_root = True
+            index += 2
+            continue
+        return False
+    return True
 
 
 def _doctor_repo_root(arguments: Sequence[str]) -> Path:

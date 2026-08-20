@@ -15,3 +15,8 @@ def test_doctor_json_is_read_only_and_reports_pin(tmp_path, capsys) -> None:
     assert payload["posture"]["targetTrustRequirement"] == "trusted-repository-only"
     assert payload["posture"]["initializerIsolation"] == "absent"
     assert payload["repository"]["toolchainPinDigest"].startswith("sha256:")
+
+
+def test_doctor_rejects_missing_repo_root_value(capsys) -> None:
+    assert main(["doctor", "--repo-root"]) == 2
+    assert "supported options" in capsys.readouterr().err
