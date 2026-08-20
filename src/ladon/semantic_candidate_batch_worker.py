@@ -206,6 +206,8 @@ def _parse_batch_worker_payload(
     header = frames[0]
     _validate_batch_header(header, request, request_id)
     rows, terminal, prefix_diagnostic = _validated_batch_prefix(frames[1:], request_id, candidates)
+    if decode_diagnostic:
+        terminal = False
     payload = {**header, "rows": rows, "terminal": terminal}
     if decode_diagnostic or prefix_diagnostic:
         payload["protocolDiagnostic"] = decode_diagnostic or prefix_diagnostic
