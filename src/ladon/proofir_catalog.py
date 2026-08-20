@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, cast
 
+from ladon.proofir_identity import ContentArtifactId, FileDigest
 from ladon.proofir_v3 import (
     LEGACY_ARTIFACT_KINDS,
     SUPPORTED_ARTIFACT_KINDS,
@@ -72,12 +73,22 @@ class CatalogArtifact:
     metadata_json: str
     diagnostic: str | None = None
     validation_stage: str = "projected"
+    content_artifact_id: ContentArtifactId | None = None
+
+    @property
+    def file_digest(self) -> FileDigest:
+        """Return the digest of the exact bytes captured for this path."""
+        return FileDigest("sha256:" + self.sha256)
 
     def identity_payload(self) -> dict[str, Any]:
         return {
             "path": self.relative_path,
             "bytes": self.byte_size,
             "sha256": self.sha256,
+            "fileDigest": str(self.file_digest),
+            "contentArtifactId": (
+                str(self.content_artifact_id) if self.content_artifact_id else None
+            ),
             "artifactKind": self.artifact_kind,
             "schemaVersion": self.schema_version,
             "state": self.state,
@@ -242,6 +253,11 @@ def _inspect_artifact(
     state, diagnostic, stage = _catalog_validation(
         payload, kind, schema, metadata_diagnostic
     )
+    content_artifact_id = (
+        ContentArtifactId(str(payload["artifactId"]))
+        if state == "cataloged" and isinstance(payload.get("artifactId"), str)
+        else None
+    )
     return CatalogArtifact(
         relative,
         path,
@@ -253,6 +269,7 @@ def _inspect_artifact(
         encoded,
         diagnostic,
         stage,
+        content_artifact_id,
     )
 
 

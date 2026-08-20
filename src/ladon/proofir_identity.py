@@ -6,9 +6,55 @@ import copy
 import hashlib
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Self
 
 from ladon.proofir_v3 import canonical_bytes
+
+
+class _Sha256Domain(str):
+    """Runtime-tagged SHA-256 spelling for one identity domain."""
+
+    domain = "sha256"
+
+    def __new__(cls, value: str) -> Self:
+        if (
+            not isinstance(value, str)
+            or len(value) != 71
+            or not value.startswith("sha256:")
+            or any(char not in "0123456789abcdef" for char in value[7:])
+        ):
+            raise ValueError(f"{cls.__name__} must be a sha256: digest")
+        return str.__new__(cls, value)
+
+
+class FileDigest(_Sha256Domain):
+    """SHA-256 over exact bytes observed at a repository path."""
+
+    domain = "file"
+
+    @classmethod
+    def from_bytes(cls, value: bytes) -> FileDigest:
+        return cls("sha256:" + hashlib.sha256(value).hexdigest())
+
+
+class ContentArtifactId(_Sha256Domain):
+    """Detached canonical identity of a validated native ProofIR envelope."""
+
+    domain = "content-artifact"
+
+
+def require_file_digest(value: str | FileDigest) -> FileDigest:
+    """Accept only the file-digest domain, never a detached artifact ID."""
+    if isinstance(value, ContentArtifactId):
+        raise TypeError("content artifact IDs cannot be used as file digests")
+    return value if isinstance(value, FileDigest) else FileDigest(value)
+
+
+def require_content_artifact_id(value: str | ContentArtifactId) -> ContentArtifactId:
+    """Accept only detached artifact identity values."""
+    if isinstance(value, FileDigest):
+        raise TypeError("file digests cannot be used as content artifact IDs")
+    return value if isinstance(value, ContentArtifactId) else ContentArtifactId(value)
 
 
 def _owned(value: Any) -> Any:
@@ -340,9 +386,11 @@ def observation_id(
 
 __all__ = [
     "CandidateApplicationDescriptor",
+    "ContentArtifactId",
     "DeclarationDescriptor",
     "EnvironmentManifest",
     "ExternalSubjectRef",
+    "FileDigest",
     "Fingerprint",
     "FingerprintScheme",
     "GenerationObservation",
@@ -354,4 +402,6 @@ __all__ = [
     "ValueDescriptor",
     "content_id",
     "observation_id",
+    "require_content_artifact_id",
+    "require_file_digest",
 ]

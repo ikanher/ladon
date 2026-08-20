@@ -2,7 +2,7 @@
 
 - [x] 1.1 Add owned 1,500-or-more-step linear derivation fixtures proving satisfaction and complete-slice queries currently exceed Python's recursion depth while remaining inside declared ProofIR budgets.
 - [x] 1.2 Freeze canonical shallow-graph outputs for AND premises, stable OR alternatives, acyclic rejection, supported SCCs, and every derivation truncation cause before refactoring traversal.
-- [ ] 1.3 Add negative identity fixtures that distinguish whole-file SHA-256 digests from detached native-v3 artifact IDs even when both use the `sha256:` textual form.
+- [x] 1.3 Add negative identity fixtures that distinguish whole-file SHA-256 digests from detached native-v3 artifact IDs even when both use the `sha256:` textual form.
 - [ ] 1.4 Add semantic-worker fixtures for an explicit valid toolchain, ambient `PATH` shadowing, repository-pin mismatch, missing executables, and sanitized environment behavior.
 - [ ] 1.5 Add a table-driven projection corpus covering explicit live checks, ambient checks, stored observations, residual applications, partial coverage, invalid children, truncation, and analyses that were not run.
 
@@ -15,8 +15,8 @@
 
 ## 3. Separate digest and artifact identity domains
 
-- [ ] 3.1 Introduce field-specific validated `FileDigest` and `ContentArtifactId` representations and update function signatures so raw file hashes cannot be passed as detached artifact IDs.
-- [ ] 3.2 Extend ProofIR catalog discovery to retain each raw file digest and, independently, the validated native-v3 envelope artifact ID when validation establishes one.
+- [x] 3.1 Introduce field-specific validated `FileDigest` and `ContentArtifactId` representations and update function signatures so raw file hashes cannot be passed as detached artifact IDs.
+- [x] 3.2 Extend ProofIR catalog discovery to retain each raw file digest and, independently, the validated native-v3 envelope artifact ID when validation establishes one.
 - [ ] 3.3 Implement manifest-link policy v2 with `resolvedFileDigest`, nullable validated `resolvedArtifactId`, domain-specific drift diagnostics, and no heuristic interpretation of legacy observations.
 - [ ] 3.4 Bump affected derived result or proof-search index versions, rebuild disposable test indexes, and regenerate repository-owned snapshots without changing canonical native-v3 artifact IDs.
 - [ ] 3.5 Add validation, catalog, link-observation, projection, and round-trip tests proving equal-looking cross-domain values cannot be substituted or compared.

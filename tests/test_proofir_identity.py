@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import pytest
+
 from ladon.proofir_identity import (
+    ContentArtifactId,
     ExternalSubjectRef,
+    FileDigest,
     LocalSubjectRef,
     QualifiedSubjectRef,
     content_id,
     observation_id,
+    require_content_artifact_id,
+    require_file_digest,
 )
 
 
@@ -47,3 +53,17 @@ def test_external_subject_round_trip_preserves_exact_scope() -> None:
         ExternalSubjectRef(encoded["artifactRef"], encoded["kind"], encoded["localId"])
         == subject
     )
+
+
+def test_file_and_detached_artifact_ids_are_distinct_domains() -> None:
+    spelling = "sha256:" + "a" * 64
+    file_digest = FileDigest(spelling)
+    artifact_id = ContentArtifactId(spelling)
+    assert file_digest == artifact_id
+    assert type(file_digest) is not type(artifact_id)
+    assert require_file_digest(file_digest) is file_digest
+    assert require_content_artifact_id(artifact_id) is artifact_id
+    with pytest.raises(TypeError):
+        require_file_digest(artifact_id)
+    with pytest.raises(TypeError):
+        require_content_artifact_id(file_digest)

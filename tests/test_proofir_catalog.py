@@ -127,6 +127,22 @@ def test_catalog_discovery_is_sorted_and_hashes_bytes(tmp_path: Path) -> None:
     assert all(len(artifact.sha256) == 64 for artifact in artifacts)
 
 
+def test_catalog_keeps_file_digest_separate_from_validated_artifact_id(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    artifact_path = repo / "claim.json"
+    artifact = claim_artifact()
+    artifact_path.write_text(json.dumps(artifact), encoding="utf-8")
+    configure(repo, ["claim.json"])
+
+    _, artifacts = discover_catalog_artifacts(repo)
+
+    observed = artifacts[0]
+    assert str(observed.file_digest) == "sha256:" + observed.sha256
+    assert observed.content_artifact_id == artifact["artifactId"]
+    assert observed.file_digest != observed.content_artifact_id
+
+
 def test_catalog_persists_configured_relationships_and_rebuilds_atomically(
     tmp_path: Path,
 ) -> None:
