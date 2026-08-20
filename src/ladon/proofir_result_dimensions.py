@@ -44,6 +44,10 @@ def project_dimensions(
         raise ValueError(f"unsupported authority selection: {authority}")
     if completeness not in ANALYSIS_COMPLETENESS:
         raise ValueError(f"unsupported analysis completeness: {completeness}")
+    if parent_authority is not None and parent_authority not in AUTHORITY_SELECTIONS:
+        raise ValueError(f"unsupported parent authority selection: {parent_authority}")
+    if parent_completeness is not None and parent_completeness not in ANALYSIS_COMPLETENESS:
+        raise ValueError(f"unsupported parent analysis completeness: {parent_completeness}")
     if parent_authority == "stored-observation" and authority != "stored-observation":
         raise ValueError("stored observations cannot gain live authority")
     if parent_authority in {"ambient-selected-application-check", "not-assessed"} and authority == "explicit-pinned-application-check":
