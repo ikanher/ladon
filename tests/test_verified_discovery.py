@@ -58,3 +58,21 @@ def test_discovery_attaches_independent_scratch_result_for_acceptance() -> None:
         lambda _name: {"status": "compiled", "sourceDigest": "sha256:scratch"},
     )
     assert result["candidates"][0]["check"]["scratch"]["status"] == "compiled"
+
+
+def test_discovery_uses_one_batch_checker_when_provided() -> None:
+    request = DiscoveryRequest(Path("/repo"), "Main", "Nat")
+    called: list[tuple[str, ...]] = []
+
+    def batch(names: tuple[str, ...]) -> dict[str, dict[str, str]]:
+        called.append(names)
+        return {name: {"candidate": name, "status": "rejected"} for name in names}
+
+    result = discover_candidates(
+        request,
+        [{"candidateName": "a"}, {"candidateName": "b"}],
+        lambda _: (_ for _ in ()).throw(AssertionError("per-candidate checker must not run")),
+        batch_checker=batch,
+    )
+    assert called == [("a", "b")]
+    assert [row["check"]["status"] for row in result["candidates"]] == ["rejected", "rejected"]

@@ -81,6 +81,7 @@ class DiscoveryCandidate:
 
 Checker = Callable[[str], SemanticCandidateCheck]
 ScratchReplayer = Callable[[str], Mapping[str, Any]]
+BatchChecker = Callable[[Sequence[str]], Mapping[str, Mapping[str, Any]]]
 
 
 def discover_candidates(
@@ -88,13 +89,10 @@ def discover_candidates(
     shortlist: Sequence[Mapping[str, Any]],
     checker: Checker,
     scratch_replayer: ScratchReplayer | None = None,
+    batch_checker: BatchChecker | None = None,
 ) -> dict[str, Any]:
     """Check a bounded shortlist and retain every candidate outcome."""
-    candidates = [
-        candidate
-        for row in shortlist[: request.max_candidates]
-        if (candidate := _check_one(row, checker, scratch_replayer)) is not None
-    ]
+    candidates = _candidate_rows(shortlist[: request.max_candidates], checker, scratch_replayer, batch_checker)
     payload: dict[str, Any] = {
         "schema": DISCOVERY_SCHEMA,
         "operation": "discover",
@@ -144,6 +142,19 @@ def discover_candidates(
     return payload
 
 
+def _candidate_rows(
+    rows: Sequence[Mapping[str, Any]],
+    checker: Checker,
+    scratch_replayer: ScratchReplayer | None,
+    batch_checker: BatchChecker | None,
+) -> list[DiscoveryCandidate]:
+    if batch_checker is not None:
+        names = tuple(str(row.get("candidateName") or row.get("name")) for row in rows if row.get("candidateName") or row.get("name"))
+        results = batch_checker(names)
+        return [candidate for row in rows if (candidate := _candidate_from_batch(row, results, scratch_replayer)) is not None]
+    return [candidate for row in rows if (candidate := _check_one(row, checker, scratch_replayer)) is not None]
+
+
 def _status_priority(status: Any) -> int:
     return {"accepted": 0, "applicable-with-residuals": 1, "rejected": 2, "timeout": 3, "resource-limited": 4, "unassessed": 5}.get(status, 6)
 
@@ -163,6 +174,20 @@ def _check_one(
         }
     if scratch_replayer is not None and check_payload.get("status") == "accepted":
         check_payload = {**check_payload, "scratch": dict(scratch_replayer(name))}
+    return DiscoveryCandidate(name, row, check_payload)
+
+
+def _candidate_from_batch(
+    row: Mapping[str, Any],
+    results: Mapping[str, Mapping[str, Any]],
+    scratch_replayer: ScratchReplayer | None,
+) -> DiscoveryCandidate | None:
+    name = str(row.get("candidateName") or row.get("name") or "")
+    if not name:
+        return None
+    check_payload = dict(results.get(name, {"status": "unassessed", "diagnostic": {"code": "batch-row-missing"}}))
+    if scratch_replayer is not None and check_payload.get("status") == "accepted":
+        check_payload["scratch"] = dict(scratch_replayer(name))
     return DiscoveryCandidate(name, row, check_payload)
 
 

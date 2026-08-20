@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
 from ladon.lean_toolchain import LeanToolchainError, resolve_toolchain_context
 from ladon.proof_search_index import ProofSearchIndexError
+from ladon.semantic_candidate_batch_worker import check_semantic_candidates
 from ladon.verified_discovery import (
     DiscoveryRequest,
     discover_candidates,
@@ -75,6 +77,32 @@ def dispatch_discover(args: argparse.Namespace, repo_root: Path) -> dict[str, An
         rows,
         semantic_checker(request, toolchain),
         semantic_scratch_replayer(request, toolchain),
+        lambda names: _batch_results(request, names, toolchain),
+    )
+
+
+def _batch_results(
+    request: DiscoveryRequest, names: tuple[str, ...], toolchain: Any
+) -> dict[str, Mapping[str, Any]]:
+    batch = check_semantic_candidates(request_to_semantic(request, toolchain), names)
+    if batch.status != "available":
+        diagnostic = batch.diagnostic or {"code": "batch-failed"}
+        return {name: {"status": "unassessed", "diagnostic": diagnostic} for name in names}
+    return {str(row["candidate"]): dict(row) for row in batch.rows}
+
+
+def request_to_semantic(request: DiscoveryRequest, toolchain: Any) -> Any:
+    from ladon.semantic_candidate_worker import SemanticCandidateRequest
+
+    return SemanticCandidateRequest(
+        request.repo_root,
+        request.module,
+        request.goal,
+        "batch-placeholder",
+        timeout_seconds=request.timeout_seconds,
+        max_output_bytes=request.max_output_bytes,
+        max_rss_bytes=request.max_rss_bytes,
+        toolchain=toolchain,
     )
 
 
