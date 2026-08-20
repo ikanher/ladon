@@ -235,6 +235,37 @@ def test_bounds_return_unknown_not_false_or_partial_success() -> None:
     assert result["truncations"][0]["dimension"] == "maxDepth"
 
 
+def test_deep_linear_derivation_is_stack_safe_within_proofir_bounds() -> None:
+    depth = 1_500
+    artifact = derivation(
+        [(f"step:{index}", [f"s{index + 1}"], f"s{index}") for index in range(depth)]
+    )
+    bounds = DerivationQueryBounds(
+        max_depth=depth + 1,
+        max_visited_refs=depth + 2,
+        max_evaluated_steps=depth + 2,
+        max_premise_slots=depth + 2,
+        max_alternatives=depth + 2,
+        max_output_bytes=8_000_000,
+    )
+    target = ref("statement", "s0")
+    available = [ref("statement", f"s{depth}")]
+
+    satisfaction = structural_satisfaction(
+        artifact, target, available_refs=available, bounds=bounds
+    )
+    assert satisfaction["status"] == "true"
+    assert satisfaction["complete"] is True
+    assert satisfaction["counters"]["visitedRefs"] == depth
+
+    slice_result = complete_derivation_slice(
+        artifact, target, available_refs=available, bounds=bounds
+    )
+    assert slice_result["status"] == "complete"
+    assert slice_result["complete"] is True
+    assert len(slice_result["result"]["selections"]) == depth
+
+
 @pytest.mark.parametrize(
     "kwargs",
     [

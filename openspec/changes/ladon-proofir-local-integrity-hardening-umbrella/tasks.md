@@ -1,17 +1,17 @@
 ## 1. Freeze red regressions and compatibility baselines
 
-- [ ] 1.1 Add owned 1,500-or-more-step linear derivation fixtures proving satisfaction and complete-slice queries currently exceed Python's recursion depth while remaining inside declared ProofIR budgets.
-- [ ] 1.2 Freeze canonical shallow-graph outputs for AND premises, stable OR alternatives, acyclic rejection, supported SCCs, and every derivation truncation cause before refactoring traversal.
+- [x] 1.1 Add owned 1,500-or-more-step linear derivation fixtures proving satisfaction and complete-slice queries currently exceed Python's recursion depth while remaining inside declared ProofIR budgets.
+- [x] 1.2 Freeze canonical shallow-graph outputs for AND premises, stable OR alternatives, acyclic rejection, supported SCCs, and every derivation truncation cause before refactoring traversal.
 - [ ] 1.3 Add negative identity fixtures that distinguish whole-file SHA-256 digests from detached native-v3 artifact IDs even when both use the `sha256:` textual form.
 - [ ] 1.4 Add semantic-worker fixtures for an explicit valid toolchain, ambient `PATH` shadowing, repository-pin mismatch, missing executables, and sanitized environment behavior.
 - [ ] 1.5 Add a table-driven projection corpus covering explicit live checks, ambient checks, stored observations, residual applications, partial coverage, invalid children, truncation, and analyses that were not run.
 
 ## 2. Make derivation queries stack-safe
 
-- [ ] 2.1 Replace recursive structural-satisfaction evaluation with explicit traversal frames and memoized terminal states while preserving existing budget charging and result schemas.
-- [ ] 2.2 Replace recursive complete-slice expansion with explicit traversal frames that preserve ordered premises, stable alternatives, cycle/SCC handling, deduplication, and canonical output ordering.
-- [ ] 2.3 Verify deep in-bound queries complete without `RecursionError` and deep out-of-bound queries terminate only through the exact declared depth, node, edge, alternative, or output limit.
-- [ ] 2.4 Run the focused derivation, SCC, query-contract, and installed proof-search CLI suites and compare all frozen shallow outputs byte-for-byte.
+- [x] 2.1 Replace recursive structural-satisfaction evaluation with explicit traversal frames and memoized terminal states while preserving existing budget charging and result schemas.
+- [x] 2.2 Replace recursive complete-slice expansion with explicit traversal frames that preserve ordered premises, stable alternatives, cycle/SCC handling, deduplication, and canonical output ordering.
+- [x] 2.3 Verify deep in-bound queries complete without `RecursionError` and deep out-of-bound queries terminate only through the exact declared depth, node, edge, alternative, or output limit.
+- [x] 2.4 Run the focused derivation, SCC, query-contract, and installed proof-search CLI suites and compare all frozen shallow outputs byte-for-byte.
 
 ## 3. Separate digest and artifact identity domains
 

@@ -481,23 +481,183 @@ class _Solver:
 
     def solve(self, goal: RefKey, depth: int = 0) -> _Solved:
         """Solve one statement goal under the available-leaf assumption."""
-        frontier = [{"ref": _ref(goal), "depth": depth}]
-        if not self.budget.depth(depth, frontier):
-            return _Solved("unknown")
-        if goal in self.available:
-            return _Solved("true")
-        if goal in self.memo:
-            return self.memo[goal]
-        if not self.budget.take("maxVisitedRefs", frontier):
-            return _Solved("unknown")
-        if goal in self.visiting:
-            return _Solved("invalid", residuals=(_Residual(goal),))
-        self.visiting.add(goal)
-        result = self._alternatives(goal, depth)
-        self.visiting.remove(goal)
-        if result.status != "unknown":
-            self.memo[goal] = result
-        return result
+        return self._run(("goal", goal, depth))
+
+    def _run(self, initial: tuple[str, RefKey | Mapping[str, Any], int]) -> _Solved:
+        """Evaluate goals and steps with an explicit call stack.
+
+        The old implementation used Python calls for every premise edge.  This
+        frame machine keeps the same short-circuiting and budget events while
+        making graph depth independent of the interpreter recursion limit.
+        """
+        stack: list[dict[str, Any]] = []
+        kind, value, depth = initial
+        stack.append(
+            {
+                "kind": kind,
+                "goal": value if kind == "goal" else None,
+                "step": value if kind == "step" else None,
+                "depth": depth,
+                "stage": "enter",
+                "index": 0,
+                "selections": [],
+                "occurrences": [],
+            }
+        )
+        returned: _Solved | None = None
+        while stack:
+            frame = stack[-1]
+            if frame["kind"] == "goal":
+                goal = frame["goal"]
+                if frame["stage"] == "enter":
+                    frontier = [{"ref": _ref(goal), "depth": frame["depth"]}]
+                    if not self.budget.depth(frame["depth"], frontier):
+                        returned = _Solved("unknown")
+                    elif goal in self.available:
+                        returned = _Solved("true")
+                    elif goal in self.memo:
+                        returned = self.memo[goal]
+                    elif not self.budget.take("maxVisitedRefs", frontier):
+                        returned = _Solved("unknown")
+                    elif goal in self.visiting:
+                        returned = _Solved("invalid", residuals=(_Residual(goal),))
+                    else:
+                        self.visiting.add(goal)
+                        frame.update(
+                            stage="alternatives", alternatives=self.graph.by_conclusion.get(goal, ()),
+                            index=0, failures=[]
+                        )
+                        continue
+                elif frame["stage"] == "waiting-step":
+                    child = returned
+                    returned = None
+                    if child is None:
+                        raise AssertionError("missing iterative child result")
+                    if child.status == "true":
+                        step = frame["step"]
+                        returned = _Solved(
+                            "true", step,
+                            ((goal, _key(step["stepRef"])), *child.selections),
+                            child.occurrences,
+                            failures=tuple(frame["failures"]),
+                        )
+                        frame["stage"] = "finish"
+                    elif child.status in {"unknown", "invalid"}:
+                        returned = _Solved(child.status, failures=tuple(frame["failures"]))
+                        frame["stage"] = "finish"
+                    else:
+                        step_key = _key(frame["step"]["stepRef"])
+                        frame["failures"].append((step_key, "false", child.residuals))
+                        frame["index"] += 1
+                        frame["stage"] = "alternatives"
+                        continue
+                if frame["stage"] == "enter":
+                    # Immediate leaves, memo hits, and budget failures return
+                    # without creating an alternatives frame.
+                    frame["stage"] = "finish"
+                if frame["stage"] == "alternatives":
+                    alternatives = frame["alternatives"]
+                    if frame["index"] >= len(alternatives):
+                        returned = _Solved(
+                            "false",
+                            residuals=tuple(row for _, _, rows in frame["failures"] for row in rows),
+                            failures=tuple(frame["failures"]),
+                        )
+                        frame["stage"] = "finish"
+                    else:
+                        step = alternatives[frame["index"]]
+                        step_key = _key(step["stepRef"])
+                        if not self.budget.take("maxAlternatives", [{"stepRef": _ref(step_key)}]):
+                            returned = _Solved("unknown", failures=tuple(frame["failures"]))
+                            frame["stage"] = "finish"
+                        else:
+                            frame["step"] = step
+                            frame["stage"] = "waiting-step"
+                            stack.append({"kind": "step", "step": step, "goal": None,
+                                          "depth": frame["depth"], "stage": "enter",
+                                          "index": 0, "selections": [], "occurrences": []})
+                            continue
+                if frame["stage"] == "finish":
+                    if goal in self.visiting:
+                        self.visiting.remove(goal)
+                    if returned is not None and returned.status != "unknown":
+                        self.memo[goal] = returned
+            else:
+                step = frame["step"]
+                step_key = _key(step["stepRef"])
+                if frame["stage"] == "enter":
+                    if not self.budget.take("maxEvaluatedSteps", [{"stepRef": _ref(step_key)}]):
+                        returned = _Solved("unknown")
+                        frame["stage"] = "finish"
+                    else:
+                        frame["stage"] = "premise"
+                elif frame["stage"] == "waiting-goal":
+                    child = returned
+                    returned = None
+                    premise_key = frame["premise_key"]
+                    ordinal = frame["index"]
+                    if child is None:
+                        raise AssertionError("missing iterative premise result")
+                    if child.status != "true":
+                        residual = child.residuals[:1] or (_Residual(premise_key),)
+                        returned = _Solved(
+                            child.status,
+                            residuals=tuple(
+                                _Residual(row.ref, ((step_key, ordinal), *row.route))
+                                for row in residual
+                            ),
+                        )
+                        frame["stage"] = "finish"
+                    else:
+                        frame["selections"].extend(child.selections)
+                        frame["occurrences"].extend(child.occurrences)
+                        frame["stage"] = "premise"
+                        frame["index"] += 1
+                if frame["stage"] == "premise":
+                    premises = step["premiseRefs"]
+                    if frame["index"] >= len(premises):
+                        returned = _Solved(
+                            "true", step, tuple(frame["selections"]), tuple(frame["occurrences"])
+                        )
+                        frame["stage"] = "finish"
+                    else:
+                        ordinal = frame["index"]
+                        premise_key = _key(premises[ordinal])
+                        frontier = [{"stepRef": _ref(step_key), "premiseOrdinal": ordinal}]
+                        if not self.budget.take("maxPremiseSlots", frontier):
+                            returned = _Solved("unknown")
+                            frame["stage"] = "finish"
+                        else:
+                            frame["occurrences"].append((step_key, ordinal, premise_key))
+                            frame["premise_key"] = premise_key
+                            frame["stage"] = "waiting-goal"
+                            stack.append({"kind": "goal", "goal": premise_key, "step": None,
+                                          "depth": frame["depth"] + 1, "stage": "enter"})
+                            continue
+            if frame["stage"] == "waiting-step":
+                # The child step returned into the goal frame on this iteration.
+                child = returned
+                returned = None
+                if child is None:
+                    raise AssertionError("missing iterative step result")
+                goal = frame["goal"]
+                if child.status == "true":
+                    returned = _Solved(
+                        "true", frame["step"],
+                        ((goal, _key(frame["step"]["stepRef"])), *child.selections),
+                        child.occurrences, failures=tuple(frame["failures"]),
+                    )
+                    frame["stage"] = "finish"
+                elif child.status in {"unknown", "invalid"}:
+                    returned = _Solved(child.status, failures=tuple(frame["failures"]))
+                    frame["stage"] = "finish"
+                else:
+                    frame["failures"].append((_key(frame["step"]["stepRef"]), "false", child.residuals))
+                    frame["index"] += 1
+                    frame["stage"] = "alternatives"
+            if frame["stage"] == "finish":
+                stack.pop()
+        return returned or _Solved("unknown")
 
     def _alternatives(self, goal: RefKey, depth: int) -> _Solved:
         """Evaluate sorted OR alternatives without selecting past unknown work."""
@@ -530,29 +690,7 @@ class _Solver:
 
     def step(self, step: Mapping[str, Any], depth: int = 0) -> _Solved:
         """Evaluate every ordered premise occurrence of one conjunctive step."""
-        # One failed premise refutes an AND step; successful witnesses retain every slot.
-        step_key = _key(step["stepRef"])
-        if not self.budget.take("maxEvaluatedSteps", [{"stepRef": _ref(step_key)}]):
-            return _Solved("unknown")
-        selections: list[tuple[RefKey, RefKey]] = []
-        occurrences: list[Occurrence] = []
-        for ordinal, premise in enumerate(step["premiseRefs"]):
-            premise_key = _key(premise)
-            frontier = [{"stepRef": _ref(step_key), "premiseOrdinal": ordinal}]
-            if not self.budget.take("maxPremiseSlots", frontier):
-                return _Solved("unknown")
-            occurrences.append((step_key, ordinal, premise_key))
-            solved = self.solve(premise_key, depth + 1)
-            if solved.status != "true":
-                residual = solved.residuals[:1] or (_Residual(premise_key),)
-                prefixed = tuple(
-                    _Residual(row.ref, ((step_key, ordinal), *row.route))
-                    for row in residual
-                )
-                return _Solved(solved.status, residuals=prefixed)
-            selections.extend(solved.selections)
-            occurrences.extend(solved.occurrences)
-        return _Solved("true", step, tuple(selections), tuple(occurrences))
+        return self._run(("step", step, depth))
 
 
 @dataclass(frozen=True)
@@ -998,7 +1136,47 @@ class _Slicer:
 
     def run(self) -> None:
         """Expand the prepared target into this mutable slice accumulator."""
-        self.expand(self.prepared.target, 0, ())
+        self._expand_iterative(self.prepared.target)
+
+    def _expand_iterative(self, target: RefKey) -> None:
+        """Expand slice goals with explicit frames instead of Python recursion."""
+        pending: list[tuple[RefKey, int, Route]] = [(target, 0, ())]
+        while pending and not self.error and not self.budget.truncations:
+            goal, depth, route = pending.pop()
+            frontier = _slice_frontier(goal, depth, route)
+            if not self.budget.depth(depth, frontier):
+                continue
+            if self._record_leaf_or_seen(goal):
+                continue
+            if not self.budget.take("maxVisitedRefs", frontier):
+                continue
+            alternatives = self.prepared.graph.by_conclusion.get(goal, ())
+            if not alternatives:
+                self.residuals.append(_Residual(goal, route))
+                self.expanded.add(goal)
+                continue
+            if not self._take_alternatives(alternatives, frontier):
+                continue
+            step = self._choose(goal, alternatives)
+            if self.error or not step:
+                continue
+            step_key = _key(step["stepRef"])
+            if not self.budget.take("maxEvaluatedSteps", [{"stepRef": _ref(step_key)}]):
+                continue
+            self.selections[goal], self.steps[step_key] = step_key, step
+            omitted = tuple(_key(row["stepRef"]) for row in alternatives if row is not step)
+            if omitted:
+                self.unselected[goal] = omitted
+            self.expanded.add(goal)
+            children: list[tuple[RefKey, int, Route]] = []
+            for ordinal, premise in enumerate(step["premiseRefs"]):
+                premise_key = _key(premise)
+                premise_frontier = [{"stepRef": _ref(step_key), "premiseOrdinal": ordinal}]
+                if not self.budget.take("maxPremiseSlots", premise_frontier):
+                    break
+                self.occurrences.append((step_key, ordinal, premise_key))
+                children.append((premise_key, depth + 1, (*route, (step_key, ordinal))))
+            pending.extend(reversed(children))
 
     def expand(self, goal: RefKey, depth: int, route: Route) -> None:
         """Expand one goal while retaining route-scoped residual occurrences."""
