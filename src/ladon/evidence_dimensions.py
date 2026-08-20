@@ -39,6 +39,17 @@ def validate_transition(parent: EvidenceDimensions, child: EvidenceDimensions) -
     _validate_freshness(parent, child)
 
 
+def transition_matrix() -> dict[str, tuple[str, ...]]:
+    """Expose the registered closed states for machine-readable gate generation."""
+    return {
+        "executionBinding": tuple(sorted(EXECUTION_BINDINGS)),
+        "observationState": tuple(sorted(OBSERVATION_STATES)),
+        "operationOutcome": tuple(sorted(OPERATION_OUTCOMES)),
+        "sourceFreshness": tuple(sorted(SOURCE_FRESHNESS)),
+        "environmentMatch": tuple(sorted(ENVIRONMENT_MATCHES)),
+    }
+
+
 def _validate_observation(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
     if parent.observation_state == "stored" and child.observation_state == "live":
         raise ValueError("stored evidence cannot become live")
@@ -65,5 +76,6 @@ __all__ = [
     "OPERATION_OUTCOMES",
     "SOURCE_FRESHNESS",
     "EvidenceDimensions",
+    "transition_matrix",
     "validate_transition",
 ]
