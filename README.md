@@ -10,6 +10,12 @@ packet diagnostics, and native ProofIR v3 projections are review-routing
 evidence only. Theorem truth and proof correctness must come from Lean or an
 explicit check-run observation naming its checker and exact environment.
 
+The near-term supported product is deliberately narrow: architecture review,
+semantic declaration discovery with explicit candidate checks, and stored
+evidence/theorem-lineage inspection. Atlas, runset/reportset, theorem-capsule,
+and bridge surfaces are optional layers. See [Product scope](docs/PRODUCT_SCOPE.md)
+and the generated [supported-feature matrix](docs/SUPPORTED_FEATURE_MATRIX.md).
+
 ## Setup and support
 
 Ladon currently supports CPython 3.11 and 3.12. Create the project environment
@@ -410,7 +416,7 @@ Near-term work:
 The installed CLI exposes bounded, ordinary-user commands:
 
 ```bash
-ladon proof-search index build --repo-root . --mode lexical
+ladon proof-search index build --repo-root .
 ladon proof-search search name --repo-root . --text fixedIndex
 ladon proof-search search type --repo-root . --pattern 'Nat → Nat'
 ladon proof-search explain --repo-root . --goal 'P' --candidate 'lemma'
@@ -429,6 +435,7 @@ uv run --locked python scripts/python_quality.py
 
 This runs:
 
+- scoped Ruff import, syntax-adjacent, and Pyflakes rules from `pyproject.toml`;
 - `radon cc` and `radon mi` as complexity/maintainability reports;
 - `vulture` as the high-confidence dead-code scan.
 
@@ -438,8 +445,10 @@ Strict mode is the gate used for implementation work:
 uv run --locked python scripts/python_quality.py --strict
 ```
 
-Strict mode fails on active C-or-worse radon blocks, C-grade maintainability,
-high-confidence vulture findings, compile failures, or test failures. Treat
+Strict mode fails on configured Ruff findings, active C-or-worse radon blocks,
+C-grade maintainability, high-confidence vulture findings, compile failures,
+or test failures. Formatting and broader Ruff style families remain deliberately
+deferred so the lint baseline can expand through reviewed changes. Treat
 that as a design constraint: split analyzer behavior into small modules before
 adding more heuristics.
 

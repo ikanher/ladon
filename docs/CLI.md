@@ -69,6 +69,11 @@ Builds are published atomically only after SQLite integrity and foreign-key
 checks pass. `--max-index-mib` sets the database ceiling and defaults to 512;
 the previous generation remains intact if the new build exceeds it. Stored
 lexical signatures are capped at 16 KiB and query limits are capped at 1,000.
+Index construction is lexical-only and never invokes Lean. The former
+`--mode semantic|hybrid`, `--lean-timeout`, and `--semantic-completeness`
+options were removed because they labeled lexical output without producing
+semantic populations. Lean-backed evidence is available only through explicit
+operations whose results name the checker and exact subject.
 
 ### Stored ProofIR evidence
 

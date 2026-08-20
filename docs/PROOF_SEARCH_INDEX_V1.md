@@ -16,9 +16,11 @@ than Lean-confirmed names, type matches, or proof facts.
 
 Every build is written to a same-directory, PID-scoped temporary database and
 published by atomic replacement only after `PRAGMA integrity_check` and
-`PRAGMA foreign_key_check` pass. A sibling `proof-search.sqlite.lock` records
-the active builder PID; a second builder fails fast rather than racing to
-publish. A stale lock is reclaimed only when its PID is no longer live. The
+`PRAGMA foreign_key_check` pass. A sibling `proof-search.sqlite.lock` is a
+persistent metadata carrier protected by a kernel-held advisory lock and an
+unpredictable owner token; a second builder fails fast rather than racing to
+publish. PID text alone never establishes ownership, and release closes the
+descriptor without unlinking a path that a replacement owner could hold. The
 canonical reusable database remains `.ladon/index/proof-search.sqlite`. The
 default maximum database size is 512 MiB; `--max-index-mib` changes it. Lexical
 signatures retain at most 16 KiB and record any truncation as omission evidence.

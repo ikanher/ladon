@@ -40,7 +40,7 @@ Command shape:
 ladon proof-search index build \
   --repo-root ../lean/matrix-factorization/Mf \
   --index /tmp/<run>/mf.sqlite3 \
-  --max-index-mib 768 --mode lexical
+  --max-index-mib 768
 ```
 
 | Measure | Observed |

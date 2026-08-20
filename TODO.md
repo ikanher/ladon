@@ -101,10 +101,10 @@ the shortest route from existing declarations to a target field.
   searches. The query `martingale bias energy lane integrable all row` returned
   no rows, while exact underscore queries found the martingale and bias owners.
   Agents cannot choose good query refinements without explicit semantics.
-- Use one stable JSON collection key. Current query output stores candidates in
-  `rows`; examples and ordinary expectations often suggest `results`. A compact
-  schema reference or `jq` example would prevent successful searches from being
-  mistaken for empty searches.
+- Retire the temporary duplicate query collections after a versioned migration.
+  Current query output intentionally returns the same candidates under both
+  `rows` and `results` for compatibility; new consumers should read `results`.
+  Add a compact schema reference and a migration gate before removing `rows`.
 
 ## P1: Proof Adapter Suggestions
 
