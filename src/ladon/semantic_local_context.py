@@ -41,6 +41,7 @@ def validate_observed_local_context(
     if len(prefix) != len(requested):
         raise ValueError("Lean semantic helper did not elaborate the requested local context")
     for observed_row, requested_row in zip(prefix, requested):
+        _validate_observed_row_shape(observed_row)
         if observed_row.get("userName") != requested_row["name"]:
             raise ValueError("Lean semantic helper returned a reordered local context")
         if _normalize_type(observed_row.get("typeDisplay")) != _normalize_type(
@@ -49,6 +50,28 @@ def validate_observed_local_context(
             raise ValueError(
                 f"Lean semantic helper returned a mismatched type for local {requested_row['name']}"
             )
+
+
+def _validate_observed_row_shape(row: Mapping[str, Any]) -> None:
+    required = {
+        "localId",
+        "userName",
+        "binderInfo",
+        "typeDisplay",
+        "typeStructural",
+        "valueDisplay",
+        "valueStructural",
+        "dependencies",
+        "origin",
+    }
+    if set(row) != required:
+        raise ValueError("Lean semantic helper returned an incomplete local context row")
+    if any(not isinstance(row[field], str) for field in required - {"dependencies"}):
+        raise TypeError("Lean semantic helper returned malformed local context metadata")
+    if not isinstance(row["dependencies"], list) or any(
+        not isinstance(item, str) for item in row["dependencies"]
+    ):
+        raise TypeError("Lean semantic helper returned malformed local dependencies")
 
 
 def _normalize_type(value: Any) -> str:
