@@ -3,7 +3,7 @@
 - [x] 1.1 Add owned 1,500-or-more-step linear derivation fixtures proving satisfaction and complete-slice queries currently exceed Python's recursion depth while remaining inside declared ProofIR budgets.
 - [x] 1.2 Freeze canonical shallow-graph outputs for AND premises, stable OR alternatives, acyclic rejection, supported SCCs, and every derivation truncation cause before refactoring traversal.
 - [x] 1.3 Add negative identity fixtures that distinguish whole-file SHA-256 digests from detached native-v3 artifact IDs even when both use the `sha256:` textual form.
-- [ ] 1.4 Add semantic-worker fixtures for an explicit valid toolchain, ambient `PATH` shadowing, repository-pin mismatch, missing executables, and sanitized environment behavior.
+- [x] 1.4 Add semantic-worker fixtures for an explicit valid toolchain, ambient `PATH` shadowing, repository-pin mismatch, missing executables, and sanitized environment behavior.
 - [ ] 1.5 Add a table-driven projection corpus covering explicit live checks, ambient checks, stored observations, residual applications, partial coverage, invalid children, truncation, and analyses that were not run.
 
 ## 2. Make derivation queries stack-safe
@@ -23,8 +23,8 @@
 
 ## 4. Bind live checks to an explicit Lean toolchain
 
-- [ ] 4.1 Add an immutable local toolchain context containing the resolved repository root, absolute Lake and Lean paths, exact `lean-toolchain` content and digest, executable identities, selection mode, and effective environment-key policy.
-- [ ] 4.2 Implement fail-closed context resolution that verifies executable files and versions against the repository pin and never falls back from explicit selection to ambient `PATH`.
+- [x] 4.1 Add an immutable local toolchain context containing the resolved repository root, absolute Lake and Lean paths, exact `lean-toolchain` content and digest, executable identities, selection mode, and effective environment-key policy.
+- [x] 4.2 Implement fail-closed context resolution that verifies executable files and versions against the repository pin and never falls back from explicit selection to ambient `PATH`.
 - [ ] 4.3 Launch semantic candidate checks with absolute executables, the explicit working directory, and a sanitized allowlisted environment; bind the selected context into environment and checker observations.
 - [ ] 4.4 Add CLI/API selection for explicit toolchain inputs and explicitly requested ambient discovery, with stable diagnostics for pin, path, version, and environment failures.
 - [ ] 4.5 Verify ambient shadow executables are ignored under explicit selection, ambient mode is labeled non-authoritative, mismatches fail before launch, and failed checks publish no accepted artifacts.
