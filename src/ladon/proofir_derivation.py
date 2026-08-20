@@ -1,5 +1,7 @@
 """Run bounded, prover-neutral queries over ProofIR derivation hypergraphs.
 
+ladon-quality: reviewed-schema-hotspot
+
 The module treats a derivation step as an AND node: every premise occurrence
 must be supported for the step to support its conclusion.  Steps with the same
 conclusion are OR alternatives.  Repeated premises remain distinct occurrences

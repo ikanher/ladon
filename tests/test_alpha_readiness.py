@@ -222,14 +222,10 @@ def test_authority_ledger_requires_classes_owners_and_real_values() -> None:
 
 
 def test_project_dependency_ledger_uses_the_validated_authority_vocabulary() -> None:
-    path = (
-        Path(__file__).parents[1]
-        / "openspec"
-        / "changes"
-        / "ladon-alpha-hardening-umbrella"
-        / "children"
-        / "dependency-ledger.json"
-    )
+    root = Path(__file__).parents[1]
+    path = root / "openspec/changes/ladon-alpha-hardening-umbrella/children/dependency-ledger.json"
+    if not path.is_file():
+        path = root / "openspec/changes/archive/2026-08-20-ladon-alpha-hardening-umbrella/children/dependency-ledger.json"
 
     require_authority_ledger(json.loads(path.read_text(encoding="utf-8")))
 

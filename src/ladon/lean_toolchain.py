@@ -1,4 +1,7 @@
-"""Fail-closed local Lean toolchain selection for authority-sensitive workers."""
+"""Fail-closed local Lean toolchain selection for authority-sensitive workers.
+
+ladon-quality: reviewed-schema-hotspot
+"""
 
 from __future__ import annotations
 

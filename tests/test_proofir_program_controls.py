@@ -83,6 +83,10 @@ def test_dependency_ledger_names_existing_changes_with_identical_specs() -> None
     for row in rows:
         change_id = row["change"]
         change = ROOT / "openspec/changes" / change_id
+        if not change.is_dir():
+            archived = sorted((ROOT / "openspec/changes/archive").glob(f"*-{change_id}"))
+            if archived:
+                change = archived[-1]
         umbrella_spec = UMBRELLA / "specs" / change_id / "spec.md"
         child_spec = change / "specs" / change_id / "spec.md"
         assert change.is_dir(), f"dependency-ledger child is absent: {change_id}"
