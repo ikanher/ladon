@@ -59,6 +59,47 @@ def test_installed_cli_emits_batch_closed_semantic_evidence() -> None:
 
 
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
+def test_discovery_batches_candidates_and_replays_selected_scratch() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ladon.entrypoint",
+            "proof-search",
+            "discover",
+            "--repo-root",
+            str(FIXTURE),
+            "--module",
+            "LadonFixture",
+            "--goal",
+            "∀ value : Nat, value = value",
+            "--candidate",
+            "LadonFixture.fixtureIdentity",
+            "--candidate",
+            "LadonFixture.noSuch",
+            "--timeout-seconds",
+            "30",
+            "--max-rss-mib",
+            "4096",
+            "--format",
+            "json",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["batch"]["protocol"] == "ladon-verified-discovery-v1"
+    assert [row["check"]["status"] for row in payload["candidates"]] == [
+        "accepted",
+        "rejected",
+    ]
+    assert payload["candidates"][0]["check"]["scratch"]["status"] == "compiled"
+
+
+@pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
 def test_lean_owned_name_parser_accepts_unicode_declaration_name() -> None:
     completed = subprocess.run(
         [
