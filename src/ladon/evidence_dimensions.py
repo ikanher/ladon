@@ -34,14 +34,26 @@ class EvidenceDimensions:
 
 def validate_transition(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
     """Reject transitions that strengthen an observation or authority axis."""
+    _validate_observation(parent, child)
+    _validate_authority(parent, child)
+    _validate_freshness(parent, child)
+
+
+def _validate_observation(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
     if parent.observation_state == "stored" and child.observation_state == "live":
         raise ValueError("stored evidence cannot become live")
     if parent.observation_state == "absent" and child.observation_state not in {"absent", "failed"}:
         raise ValueError("absent evidence cannot gain an observation")
+
+
+def _validate_authority(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
     if parent.execution_binding != "explicit-pinned" and child.execution_binding == "explicit-pinned":
         raise ValueError("execution binding cannot be promoted to explicit-pinned")
     if parent.environment_match == "mismatched" and child.environment_match == "exact":
         raise ValueError("mismatched environment cannot become exact")
+
+
+def _validate_freshness(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
     if parent.source_freshness == "stale" and child.source_freshness == "fresh":
         raise ValueError("stale source evidence cannot become fresh")
 

@@ -22,14 +22,18 @@ class TypeSearchRequest:
     def __post_init__(self) -> None:
         if not self.pattern.strip() or self.limit < 1 or self.limit > 1000:
             raise ValueError("type search pattern and limit are required")
-        if self.scope not in {"repository", "module", "namespace"}:
-            raise ValueError("type-text search scope is not implemented")
-        if self.scope == "module" and not self.module:
-            raise ValueError("type-text module scope requires --module")
-        if self.scope == "namespace" and not self.namespace:
-            raise ValueError("type-text namespace scope requires --namespace")
+        _validate_type_scope(self.scope, self.module, self.namespace)
         if self.freshness not in {"stored", "verify"}:
             raise ValueError("type-text freshness must be stored or verify")
+
+
+def _validate_type_scope(scope: str, module: str | None, namespace: str | None) -> None:
+    if scope not in {"repository", "module", "namespace"}:
+        raise ValueError("type-text search scope is not implemented")
+    if scope == "module" and not module:
+        raise ValueError("type-text module scope requires --module")
+    if scope == "namespace" and not namespace:
+        raise ValueError("type-text namespace scope requires --namespace")
 
 
 def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequest, *, verifier: Callable[[Sequence[str], str], Mapping[str, Mapping[str, Any]]] | None = None) -> dict[str, Any]:
