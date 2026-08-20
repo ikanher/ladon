@@ -45,3 +45,14 @@ def test_discovery_cli_contract_accepts_goal_context_and_candidates() -> None:
     )
     assert args.proof_search_operation == "discover"
     assert args.local == ["h:Nat"]
+
+
+def test_discovery_attaches_independent_scratch_result_for_acceptance() -> None:
+    request = DiscoveryRequest(Path("/repo"), "Main", "Nat")
+    result = discover_candidates(
+        request,
+        [{"candidateName": "Main.zero"}],
+        lambda _name: SemanticCandidateCheck("accepted"),
+        lambda _name: {"status": "compiled", "sourceDigest": "sha256:scratch"},
+    )
+    assert result["candidates"][0]["check"]["scratch"]["status"] == "compiled"
