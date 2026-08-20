@@ -25,13 +25,13 @@
 
 - [x] 4.1 Add an immutable local toolchain context containing the resolved repository root, absolute Lake and Lean paths, exact `lean-toolchain` content and digest, executable identities, selection mode, and effective environment-key policy.
 - [x] 4.2 Implement fail-closed context resolution that verifies executable files and versions against the repository pin and never falls back from explicit selection to ambient `PATH`.
-- [ ] 4.3 Launch semantic candidate checks with absolute executables, the explicit working directory, and a sanitized allowlisted environment; bind the selected context into environment and checker observations.
-- [ ] 4.4 Add CLI/API selection for explicit toolchain inputs and explicitly requested ambient discovery, with stable diagnostics for pin, path, version, and environment failures.
+- [x] 4.3 Launch semantic candidate checks with absolute executables, the explicit working directory, and a sanitized allowlisted environment; bind the selected context into environment and checker observations.
+- [x] 4.4 Add CLI/API selection for explicit toolchain inputs and explicitly requested ambient discovery, with stable diagnostics for pin, path, version, and environment failures.
 - [ ] 4.5 Verify ambient shadow executables are ignored under explicit selection, ambient mode is labeled non-authoritative, mismatches fail before launch, and failed checks publish no accepted artifacts.
 
 ## 5. Separate authority from analysis completeness
 
-- [ ] 5.1 Add closed typed authority-selection and `analysisCompleteness` states to semantic candidate results and shared evidence-result models without using declaration-replay terminology for application checks.
+- [x] 5.1 Add closed typed authority-selection and `analysisCompleteness` states to semantic candidate results and shared evidence-result models without using declaration-replay terminology for application checks.
 - [ ] 5.2 Implement exhaustive derivation rules for `complete`, `partial`, `invalid`, and `not-assessed` from registered populations, residuals, operation validity, omissions, and truncation.
 - [ ] 5.3 Update persistence readers, theorem dossiers, aggregate summaries, and renderers so reloaded observations remain stored evidence and every projection preserves or weakens both axes.
 - [ ] 5.4 Add projection invariants that reject authority or completeness escalation and ensure absent optional analysis is never defaulted to complete.

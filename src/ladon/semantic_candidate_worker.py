@@ -19,6 +19,7 @@ from importlib import resources
 from pathlib import Path
 from typing import Any
 
+from ladon.lean_toolchain import LeanToolchainContext
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
 from ladon.proofir_fingerprint_registry import SCHEMES
 from ladon.proofir_v3 import (
@@ -59,6 +60,7 @@ class SemanticCandidateRequest:
     timeout_seconds: float = 120.0
     max_output_bytes: int = 8 * 1024 * 1024
     max_rss_bytes: int = 2 * 1024 * 1024 * 1024
+    toolchain: LeanToolchainContext | None = None
 
     def __post_init__(self) -> None:
         _validate_request_identity(self.module, self.candidate)
@@ -112,12 +114,16 @@ class SemanticCandidateCheck:
     diagnostic: Mapping[str, Any] | None = None
     elapsed_seconds: float = 0.0
     peak_rss_bytes: int | None = None
+    authority_selection: str = "not-assessed"
+    analysis_completeness: str = "not-assessed"
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "schema": "ladon-semantic-candidate-check-result-v1",
             "operation": "check-candidate",
             "status": self.status,
+            "authoritySelection": self.authority_selection,
+            "analysisCompleteness": self.analysis_completeness,
             "artifacts": list(self.artifacts),
             "diagnostic": dict(self.diagnostic) if self.diagnostic else None,
             "resourceAccounting": {
@@ -148,11 +154,14 @@ def check_semantic_candidate(
     with tempfile.TemporaryDirectory(prefix="ladon-semantic-check-") as directory:
         probe_path = Path(directory) / "Probe.lean"
         probe_path.write_text(source, encoding="utf-8")
+        command = (
+            (str(request.toolchain.lake_path), "env", str(request.toolchain.lean_path))
+            if request.toolchain is not None
+            else ("lake", "env", "lean")
+        )
         process = runner(
-            (
-                "lake",
-                "env",
-                "lean",
+            command
+            + (
                 "--run",
                 str(helper_path),
                 f"Ladon.Semantic.{probe_name}",
@@ -163,6 +172,7 @@ def check_semantic_candidate(
                 request_id,
             ),
             cwd=request.repo_root,
+            env=(request.toolchain.environment if request.toolchain else None),
             timeout_seconds=request.timeout_seconds,
             max_output_bytes=request.max_output_bytes,
             max_rss_bytes=request.max_rss_bytes,
@@ -191,6 +201,16 @@ def check_semantic_candidate(
         tuple(artifacts),
         elapsed_seconds=process.elapsed_seconds,
         peak_rss_bytes=process.peak_rss_bytes,
+        authority_selection=(
+            "explicit-pinned-application-check"
+            if request.toolchain and request.toolchain.selection_mode == "explicit"
+            else "ambient-selected-application-check"
+        ),
+        analysis_completeness=(
+            "partial"
+            if status == "applicable-with-residuals"
+            else "complete"
+        ),
     )
 
 
@@ -382,7 +402,7 @@ def _accepted_artifacts(
     process: ProcessResult,
     payload: Mapping[str, Any],
 ) -> tuple[dict[str, Any], ...]:
-    environment = _environment_artifact(request.repo_root, payload)
+    environment = _environment_artifact(request.repo_root, payload, request.toolchain)
     env_ref = environment["environmentRef"]
     statement = _subject("statement", payload["probe"])
     statement["searchShape"] = {
@@ -426,7 +446,11 @@ def _accepted_artifacts(
     return environment, check, derivation
 
 
-def _environment_artifact(repo_root: Path, payload: Mapping[str, Any]) -> dict[str, Any]:
+def _environment_artifact(
+    repo_root: Path,
+    payload: Mapping[str, Any],
+    toolchain: LeanToolchainContext | None = None,
+) -> dict[str, Any]:
     module_rows = payload["importedModules"]
     if len(module_rows) > MAX_IMPORTED_MODULES:
         raise ValueError("Lean semantic environment exceeds the module limit")
@@ -472,7 +496,15 @@ def _environment_artifact(repo_root: Path, payload: Mapping[str, Any]) -> dict[s
         },
         "dependencies": dependencies,
         "compiledModules": compiled,
-        "options": {"autoImplicit": False, "universeClosurePolicy": str(payload["universePolicy"])},
+        "options": {
+            "autoImplicit": False,
+            "universeClosurePolicy": str(payload["universePolicy"]),
+            "toolchainContext": (
+                json.dumps(toolchain.to_dict(), sort_keys=True, separators=(",", ":"))
+                if toolchain
+                else "ambient-unbound"
+            ),
+        },
         "trust": {"axiomsAllowed": ["*"], "unsafeAllowed": False},
         "fingerprintScheme": dict(FINGERPRINT_SCHEME),
     }

@@ -104,6 +104,8 @@ def test_accepted_worker_result_closes_exact_environment_and_check_references(
     )
 
     assert result.status == "accepted"
+    assert result.to_dict()["authoritySelection"] == "ambient-selected-application-check"
+    assert result.to_dict()["analysisCompleteness"] == "complete"
     _assert_artifact_family(result.artifacts)
     _assert_exact_links(result.artifacts)
     _assert_exact_semantics(result.artifacts)
