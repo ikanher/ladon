@@ -3,6 +3,7 @@
   "features": [
     {
       "id": "architecture-review",
+      "readiness": "contract-supported",
       "summary": "Installed analysis, architecture policy, and bounded report output.",
       "tests": [
         "tests/test_installed_cli_contract.py::test_installed_analyzer_process_contract",
@@ -13,6 +14,7 @@
     },
     {
       "id": "semantic-declaration-search",
+      "readiness": "contract-supported",
       "summary": "Lexical/type shortlists plus explicit Lean candidate-application checks.",
       "tests": [
         "tests/test_proof_search_type.py::test_type_search_returns_lexical_shortlist_and_diagnostics",
@@ -24,6 +26,7 @@
     },
     {
       "id": "evidence-and-lineage-inspection",
+      "readiness": "contract-supported",
       "summary": "Stored ProofIR dossiers and exact compiled theorem-lineage persistence.",
       "tests": [
         "tests/test_proofir_v3_installed_workflow_contract.py::test_installed_dossier_reports_coverage_and_limitations",
@@ -34,6 +37,7 @@
     },
     {
       "id": "report-atlas",
+      "readiness": "experimental",
       "summary": "Multi-report atlas and SQLite review projections.",
       "tests": [
         "tests/test_atlas_sqlite.py::test_write_atlas_sqlite_creates_query_tables"
@@ -43,6 +47,7 @@
     },
     {
       "id": "theorem-capsules",
+      "readiness": "experimental",
       "summary": "Pinned module-prefix materialization and replay packaging.",
       "tests": [
         "tests/test_installed_theorem_cli_contract.py::test_installed_theorem_capsule_help_is_caller_neutral"
@@ -52,6 +57,7 @@
     },
     {
       "id": "runsets-and-reportsets",
+      "readiness": "experimental",
       "summary": "Versioned batch execution and independent report publication.",
       "tests": [
         "tests/test_runset_cli.py::test_runset_cli_publishes_clean_independent_reports"
@@ -60,6 +66,12 @@
       "verificationCommand": "uv run --locked pytest -q tests/test_runset_cli.py::test_runset_cli_publishes_clean_independent_reports"
     }
   ],
-  "schemaVersion": 1,
+  "readinessLadder": [
+    "experimental",
+    "contract-supported",
+    "externally-evaluated",
+    "release-qualified"
+  ],
+  "schemaVersion": 2,
   "source": "repository-owned executable pytest nodes"
 }

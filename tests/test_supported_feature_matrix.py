@@ -23,6 +23,7 @@ def test_matrix_has_exactly_three_core_workflows_and_collectable_nodes() -> None
     ]
     root = Path(__file__).parents[1]
     for feature in generator.FEATURES:
+        assert feature["readiness"] in {"experimental", "contract-supported", "externally-evaluated", "release-qualified"}
         assert feature["tests"]
         for node in feature["tests"]:
             relative, test_name = node.split("::", 1)
