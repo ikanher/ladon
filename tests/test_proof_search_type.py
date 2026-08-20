@@ -41,3 +41,13 @@ def test_type_text_verify_includes_index_generation_evidence(tmp_path: Path, cap
     payload = json.loads(capsys.readouterr().out)
     assert status == 0
     assert payload["freshnessEvidence"]["generationIdentity"]
+
+
+def test_type_text_module_scope_reports_population_evidence(tmp_path: Path, capsys) -> None:
+    (tmp_path / "Main.lean").write_text("theorem first : Nat := 1\n", encoding="utf-8")
+    build_proof_search_index(tmp_path)
+    status = main(["proof-search", "search", "type-text", "--repo-root", str(tmp_path), "--pattern", "Nat", "--scope", "module", "--root", "Main", "--format", "json"])
+    payload = json.loads(capsys.readouterr().out)
+    assert status == 0
+    assert payload["coverage"]["scope"]["kind"] == "module"
+    assert payload["coverage"]["scope"]["modules"] == 1

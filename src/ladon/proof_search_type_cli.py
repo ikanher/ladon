@@ -24,6 +24,7 @@ def dispatch_type_text(
         namespace=args.namespace,
         package=args.package,
         scope=args.scope,
+        roots=tuple(args.root),
         limit=args.limit,
         diagnostic_limit=args.diagnostic_limit,
         freshness=args.freshness,

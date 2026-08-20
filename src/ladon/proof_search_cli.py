@@ -168,8 +168,9 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     type_search.add_argument("--namespace")
     type_search.add_argument("--package")
     type_search.add_argument(
-        "--scope", choices=("repository",), default="repository"
+        "--scope", choices=sorted(SUPPORTED_INDEX_SCOPES), default="repository"
     )
+    type_search.add_argument("--root", action="append", default=[])
     type_search.add_argument("--limit", type=_bounded_limit, default=20)
     type_search.add_argument("--diagnostic-limit", type=_bounded_limit, default=0)
     type_search.add_argument(
