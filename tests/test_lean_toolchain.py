@@ -49,3 +49,21 @@ def test_pin_mismatch_fails_before_context_creation(tmp_path: Path) -> None:
     lean = _tool(tmp_path / "lean", "Lean version 4.19.0")
     with pytest.raises(LeanToolchainError, match="pin mismatch"):
         resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+
+def test_pin_comparison_is_exact_not_a_version_substring(tmp_path: Path) -> None:
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.2.0\n", encoding="utf-8")
+    lake = _tool(tmp_path / "lake", "Lake version 5.0.0 (Lean version 4.20.0)")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+    with pytest.raises(LeanToolchainError, match="pin mismatch"):
+        resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+
+def test_version_preflight_is_output_bounded(tmp_path: Path) -> None:
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
+    lake = tmp_path / "lake"
+    lake.write_text("#!/bin/sh\nyes x | head -c 1000000\n", encoding="utf-8")
+    lake.chmod(0o755)
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+    with pytest.raises(LeanToolchainError, match="output bounds"):
+        resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)

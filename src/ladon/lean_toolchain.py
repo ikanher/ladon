@@ -8,11 +8,17 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 import shutil
-import subprocess
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+
+from ladon.process_supervisor import run_bounded_target_process
+
+_RELEASE = re.compile(r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.]+)?)(?![0-9])")
+PREFLIGHT_TIMEOUT_SECONDS = 10.0
+PREFLIGHT_MAX_OUTPUT_BYTES = 64 * 1024
 
 
 class LeanToolchainError(ValueError):
@@ -99,8 +105,8 @@ def resolve_toolchain_context(
     sanitized["PATH"] = str(lake.parent) + os.pathsep + str(lean.parent)
     lake_version = _version(lake, root, sanitized)
     lean_version = _version(lean, root, sanitized)
-    expected = pin_content.rsplit(":v", maxsplit=1)[-1]
-    if expected not in lake_version or expected not in lean_version:
+    expected = _pinned_release(pin_content)
+    if expected not in _reported_releases(lake_version) or expected not in _reported_releases(lean_version):
         raise LeanToolchainError(
             f"toolchain pin mismatch: expected {expected}, lake={lake_version!r}, lean={lean_version!r}"
         )
@@ -127,17 +133,30 @@ def _resolve_executable(path: Path | None, name: str, environment: Mapping[str, 
 
 def _version(executable: Path, cwd: Path, environment: Mapping[str, str]) -> str:
     try:
-        result = subprocess.run(
+        result = run_bounded_target_process(
             [str(executable), "--version"],
             cwd=cwd,
             env=dict(environment),
-            check=True,
-            capture_output=True,
-            text=True,
+            timeout_seconds=PREFLIGHT_TIMEOUT_SECONDS,
+            max_output_bytes=PREFLIGHT_MAX_OUTPUT_BYTES,
         )
-    except (OSError, subprocess.CalledProcessError) as exc:
+    except OSError as exc:
         raise LeanToolchainError(f"cannot inspect {executable.name} version") from exc
+    if not result.succeeded:
+        reason = "timed out" if result.timed_out else "failed or exceeded output bounds"
+        raise LeanToolchainError(f"cannot inspect {executable.name} version: {reason}")
     return result.stdout.strip() or result.stderr.strip()
+
+
+def _pinned_release(pin_content: str) -> str:
+    match = re.search(r":v([0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.]+)?)$", pin_content)
+    if match is None:
+        raise LeanToolchainError("repository toolchain pin does not name an exact Lean release")
+    return match.group(1)
+
+
+def _reported_releases(output: str) -> frozenset[str]:
+    return frozenset(_RELEASE.findall(output))
 
 
 def _identity(path: Path) -> str:
