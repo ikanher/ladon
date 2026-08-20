@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from datetime import UTC, datetime
 from typing import Any
 
@@ -19,6 +20,8 @@ EVIDENCE_FIELDS = {
 def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -> dict[str, Any]:
     """Return the highest level whose named evidence is present and fresh."""
     current = now or datetime.now(UTC)
+    if current.utcoffset() is None:
+        current = current.replace(tzinfo=UTC)
     requirements = {
         "contract-supported": ("installedSmoke", "adversarialContract", "resourceGate"),
         "externally-evaluated": ("installedSmoke", "adversarialContract", "resourceGate", "externalOutcome"),
@@ -56,9 +59,13 @@ def _fresh_pass(value: Any, now: datetime, required_fields: tuple[str, ...]) -> 
         return False
     try:
         observed = datetime.fromisoformat(timestamp)
-    except ValueError:
+        max_age = float(value.get("maxAgeSeconds", 86_400))
+    except (TypeError, ValueError):
         return False
-    return (now - observed).total_seconds() <= float(value.get("maxAgeSeconds", 86_400))
+    if observed.utcoffset() is None or not math.isfinite(max_age) or max_age <= 0:
+        return False
+    age = (now - observed).total_seconds()
+    return 0 <= age <= max_age
 
 
 __all__ = ["READINESS_LEVELS", "assess_readiness"]

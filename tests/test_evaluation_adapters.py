@@ -15,3 +15,10 @@ def test_retrieval_metrics_keep_incorrect_suggestions_separate() -> None:
     metrics = evaluate_retrieval({"good", "wrong"}, {"good"})
     assert metrics["recall"] == 1.0
     assert metrics["incorrectSuggestionRate"] == 0.5
+
+
+def test_retrieval_recall_is_not_assessed_without_expected_labels() -> None:
+    metrics = evaluate_retrieval({"wrong"}, set())
+    assert metrics["recall"] is None
+    assert metrics["recallStatus"] == "not-assessed"
+    assert metrics["incorrectSuggestionRate"] == 1.0

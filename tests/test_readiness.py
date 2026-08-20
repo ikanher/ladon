@@ -56,3 +56,16 @@ def test_readiness_rejects_help_only_external_evidence() -> None:
         "outcome": "help displayed",
     }
     assert assess_readiness(evidence, now=now)["level"] == "contract-supported"
+
+
+def test_readiness_rejects_future_naive_and_malformed_age_evidence() -> None:
+    now = datetime.now(UTC)
+    for timestamp, max_age in (
+        ((now + timedelta(days=1)).isoformat(), 86_400),
+        (now.replace(tzinfo=None).isoformat(), 86_400),
+        (now.isoformat(), "invalid"),
+    ):
+        evidence = _evidence(now)
+        evidence["installedSmoke"]["timestamp"] = timestamp  # type: ignore[index]
+        evidence["installedSmoke"]["maxAgeSeconds"] = max_age  # type: ignore[index]
+        assert assess_readiness(evidence, now=now)["level"] == "experimental"

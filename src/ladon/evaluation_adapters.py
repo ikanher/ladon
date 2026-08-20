@@ -37,7 +37,7 @@ def build_evaluation_adapters(repo_root: Path) -> tuple[EvaluationAdapter, ...]:
     )
 
 
-def evaluate_retrieval(found: set[str], expected: set[str]) -> dict[str, float | int]:
+def evaluate_retrieval(found: set[str], expected: set[str]) -> dict[str, object]:
     """Compute recall and incorrect-suggestion rate without hiding empty sets."""
     true_positive = len(found & expected)
     false_positive = len(found - expected)
@@ -46,7 +46,8 @@ def evaluate_retrieval(found: set[str], expected: set[str]) -> dict[str, float |
         "found": len(found),
         "truePositive": true_positive,
         "falsePositive": false_positive,
-        "recall": true_positive / len(expected) if expected else 1.0,
+        "recall": true_positive / len(expected) if expected else None,
+        "recallStatus": "assessed" if expected else "not-assessed",
         "incorrectSuggestionRate": false_positive / len(found) if found else 0.0,
     }
 
