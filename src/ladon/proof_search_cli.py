@@ -159,7 +159,7 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     name.add_argument("--min-matched-segments", type=_positive_integer, default=1)
     name.add_argument("--freshness", choices=("verify", "stored"), default="verify")
     type_search = search_commands.add_parser(
-        "type", help="Search declarations by type pattern."
+        "type-text", aliases=["type"], help="Search declaration type text (lexical shortlist)."
     )
     _add_repository_options(type_search)
     _add_output_options(type_search)
@@ -168,12 +168,12 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     type_search.add_argument("--namespace")
     type_search.add_argument("--package")
     type_search.add_argument(
-        "--scope", choices=sorted(SUPPORTED_INDEX_SCOPES), default="repository"
+        "--scope", choices=("repository",), default="repository"
     )
     type_search.add_argument("--limit", type=_bounded_limit, default=20)
     type_search.add_argument("--diagnostic-limit", type=_bounded_limit, default=0)
     type_search.add_argument(
-        "--freshness", choices=("verify", "stored"), default="stored"
+        "--freshness", choices=("stored",), default="stored"
     )
     explain = operations.add_parser(
         "explain", help="Explain a bounded candidate/goal difference."
@@ -455,9 +455,14 @@ def _dispatch_explain(
     with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
         connection.row_factory = sqlite3.Row
         row = connection.execute(
-            "SELECT id,name,type_text,type_status,authority,module FROM declarations WHERE name=? OR candidate_name=? ORDER BY path,line,id LIMIT 1",
+            "SELECT id,name,type_text,type_status,authority,module,type_text_truncated FROM declarations WHERE name=? OR candidate_name=? ORDER BY path,line,id",
             (args.candidate, args.candidate),
-        ).fetchone()
+        ).fetchall()
+    if len(row) != 1:
+        return {"schema": "ladon-proof-difference-result-v1", "schemaVersion": 2, "operation": "explain", "status": "unavailable", "reason": "candidate declaration is not unique", "goal": args.goal, "candidate": args.candidate}
+    row = row[0]
+    if row[6]:
+        return {"schema": "ladon-proof-difference-result-v1", "schemaVersion": 2, "operation": "explain", "status": "unavailable", "reason": "candidate type text is truncated", "goal": args.goal, "candidate": args.candidate}
     evidence = (
         None
         if row is None
@@ -471,7 +476,7 @@ def _dispatch_explain(
             "freshness": args.freshness,
         }
     )
-    return analyze_difference(request, candidate_evidence=evidence)
+    return analyze_difference(request, candidate_signature=str(row[2]), candidate_evidence=evidence)
 
 
 def _dispatch_index(
@@ -504,13 +509,13 @@ def _dispatch_index(
 def _dispatch_search(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
-    if args.search_operation == "type":
+    if args.search_operation in {"type-text", "type"}:
         import sqlite3
 
         path = index_path or default_proof_search_index_path(repo_root)
         with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
             connection.row_factory = sqlite3.Row
-            return query_type_shortlist(
+            payload = query_type_shortlist(
                 connection,
                 TypeSearchRequest(
                     pattern=args.pattern,
@@ -523,6 +528,10 @@ def _dispatch_search(
                     freshness=args.freshness,
                 ),
             )
+            if args.search_operation == "type":
+                payload = dict(payload)
+                payload["migration"] = "use 'search type-text'; this alias remains for compatibility"
+            return payload
     if args.search_operation != "name":
         raise ProofSearchIndexError("unsupported search operation")
     payload = query_proof_search_index(

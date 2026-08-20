@@ -22,8 +22,10 @@ class TypeSearchRequest:
     def __post_init__(self) -> None:
         if not self.pattern.strip() or self.limit < 1 or self.limit > 1000:
             raise ValueError("type search pattern and limit are required")
-        if self.freshness not in {"stored", "verify"}:
-            raise ValueError("freshness must be stored or verify")
+        if self.scope != "repository":
+            raise ValueError("type-text search scope is not implemented; use repository")
+        if self.freshness != "stored":
+            raise ValueError("type-text freshness verification is not implemented; use stored")
 
 
 def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequest, *, verifier: Callable[[Sequence[str], str], Mapping[str, Mapping[str, Any]]] | None = None) -> dict[str, Any]:
@@ -61,6 +63,7 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
     return {
         "schema": "ladon-proof-search-type-result-v1",
         "operation": "search-type",
+        "matchMode": "type-text-overlap",
         "status": "available",
         "results": result_rows,
         "diagnostics": diagnostics,

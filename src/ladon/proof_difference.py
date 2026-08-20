@@ -51,10 +51,11 @@ class RouteCard:
         return {"schema": "ladon-proof-route-card-v1", "identity": self.identity, "goal": self.goal, "candidate": self.candidate, "module": self.module, "generation": self.generation, "policy": self.policy, "accepted": self.accepted, "reason": self.reason, "evidence": list(self.evidence), "omissions": list(self.omissions), "nonclaims": ["A route card is bounded planning evidence, not Lean proof verification."]}
 
 
-def analyze_difference(request: DifferenceRequest, *, candidate_evidence: Mapping[str, Any] | None = None) -> dict[str, Any]:
+def analyze_difference(request: DifferenceRequest, *, candidate_signature: str | None = None, candidate_evidence: Mapping[str, Any] | None = None) -> dict[str, Any]:
     """Classify a compact structural mismatch without overclaiming Lean authority."""
 
-    candidate_conclusion, peeled_binders, peel_error = (request.candidate, [], None) if request.raw_signature else peel_binder_signature(request.candidate)
+    signature = request.candidate if candidate_signature is None else candidate_signature
+    candidate_conclusion, peeled_binders, peel_error = (signature, [], None) if request.raw_signature else peel_binder_signature(signature)
     classification, reason, accepted = _classify_difference(request.goal, candidate_conclusion, peel_error, bool(peeled_binders))
     route = RouteCard(request.goal, request.candidate, request.module, "stored", request.freshness, accepted, reason, ({"classification": classification},))
     residuals = [] if accepted else ([*peeled_binders[:1], "conclusion premises"] if classification == "lexically-applicable-with-residuals" else [request.goal])

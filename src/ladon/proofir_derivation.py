@@ -1180,29 +1180,6 @@ class _Slicer:
                 children.append((premise_key, depth + 1, (*route, (step_key, ordinal))))
             pending.extend(reversed(children))
 
-    def expand(self, goal: RefKey, depth: int, route: Route) -> None:
-        """Expand one goal while retaining route-scoped residual occurrences."""
-        if self.error or self.budget.truncations:
-            return
-        frontier = _slice_frontier(goal, depth, route)
-        if not self.budget.depth(depth, frontier):
-            return
-        if self._record_leaf_or_seen(goal):
-            return
-        if not self.budget.take("maxVisitedRefs", frontier):
-            return
-        alternatives = self.prepared.graph.by_conclusion.get(goal, ())
-        if not alternatives:
-            self.residuals.append(_Residual(goal, route))
-            self.expanded.add(goal)
-            return
-        if not self._take_alternatives(alternatives, frontier):
-            return
-        step = self._choose(goal, alternatives)
-        if self.error or not step:
-            return
-        self._expand_step(goal, step, alternatives, depth, route)
-
     def _record_leaf_or_seen(self, goal: RefKey) -> bool:
         """Record available leaves and prevent repeated expansion of shared goals."""
         if goal in self.prepared.available:
@@ -1250,31 +1227,6 @@ class _Slicer:
                 "selected step does not conclude the statement",
             )
         return selected
-
-    def _expand_step(
-        self,
-        goal: RefKey,
-        step: Mapping[str, Any],
-        alternatives: tuple[Mapping[str, Any], ...],
-        depth: int,
-        route: Route,
-    ) -> None:
-        """Record a chosen step and recursively expand every premise occurrence."""
-        step_key = _key(step["stepRef"])
-        if not self.budget.take("maxEvaluatedSteps", [{"stepRef": _ref(step_key)}]):
-            return
-        self.selections[goal], self.steps[step_key] = step_key, step
-        omitted = tuple(_key(row["stepRef"]) for row in alternatives if row is not step)
-        if omitted:
-            self.unselected[goal] = omitted
-        self.expanded.add(goal)
-        for ordinal, premise in enumerate(step["premiseRefs"]):
-            premise_key = _key(premise)
-            frontier = [{"stepRef": _ref(step_key), "premiseOrdinal": ordinal}]
-            if not self.budget.take("maxPremiseSlots", frontier):
-                return
-            self.occurrences.append((step_key, ordinal, premise_key))
-            self.expand(premise_key, depth + 1, (*route, (step_key, ordinal)))
 
     def payload(self) -> dict[str, Any]:
         """Serialize accumulated evidence in exact-key deterministic order."""

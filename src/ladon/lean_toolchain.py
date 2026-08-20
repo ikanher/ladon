@@ -74,18 +74,18 @@ def resolve_toolchain_context(
     if selection_mode == "explicit" and (lake_path is None or lean_path is None):
         raise LeanToolchainError("explicit toolchain selection requires lake and lean paths")
     source_env = dict(environment or os.environ)
+    allowed = {"PATH", "HOME", "TMPDIR", "USER", "LANG", "LC_ALL"}
+    sanitized = {key: value for key, value in source_env.items() if key in allowed}
     lake = _resolve_executable(lake_path, "lake", source_env)
     lean = _resolve_executable(lean_path, "lean", source_env)
-    lake_version = _version(lake, root, source_env)
-    lean_version = _version(lean, root, source_env)
+    sanitized["PATH"] = str(lake.parent) + os.pathsep + str(lean.parent)
+    lake_version = _version(lake, root, sanitized)
+    lean_version = _version(lean, root, sanitized)
     expected = pin_content.rsplit(":v", maxsplit=1)[-1]
     if expected not in lake_version or expected not in lean_version:
         raise LeanToolchainError(
             f"toolchain pin mismatch: expected {expected}, lake={lake_version!r}, lean={lean_version!r}"
         )
-    allowed = {"PATH", "HOME", "TMPDIR", "USER", "LANG", "LC_ALL"}
-    sanitized = {key: value for key, value in source_env.items() if key in allowed}
-    sanitized["PATH"] = str(lake.parent) + os.pathsep + str(lean.parent)
     return LeanToolchainContext(
         root,
         lake,
