@@ -32,6 +32,7 @@ from ladon.proofir_v3 import (
 )
 
 SEMANTIC_PROTOCOL = "ladon-lean-semantic-v3/check-candidate"
+SEMANTIC_BATCH_PROTOCOL = "ladon-lean-semantic-v3/check-candidates"
 SEMANTIC_FRAME_PREFIX = "LADON_FRAME "
 UNIVERSE_POLICY = "lean-level-mvar-succ-zero/v1"
 FINGERPRINT_SCHEME = {"name": "lean-expr-structural", "version": "2"}
@@ -956,6 +957,7 @@ def _digest_file(path: Path) -> str:
 
 __all__ = [
     "DEFAULT_HELPER",
+    "SEMANTIC_BATCH_PROTOCOL",
     "SemanticCandidateCheck",
     "SemanticCandidateRequest",
     "check_semantic_candidate",

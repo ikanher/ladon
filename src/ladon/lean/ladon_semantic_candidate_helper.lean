@@ -71,6 +71,32 @@ structure SemanticCandidateOutput where
   localContext : Array SemanticLocalDecl
   deriving ToJson
 
+structure SemanticBatchRow where
+  candidate : String
+  status : String
+  candidateSubject : Option SemanticSubject
+  substitutions : Array SemanticSubstitution
+  residualPremises : Array SemanticExpression
+  diagnostic : String
+  deriving ToJson
+
+structure SemanticBatchOutput where
+  protocol : String
+  frameVersion : Nat
+  sequence : Nat
+  terminal : Bool
+  universePolicy : String
+  requestId : String
+  leanVersion : String
+  leanCommit : String
+  executablePath : String
+  module : String
+  probe : SemanticSubject
+  importedModules : Array SemanticModule
+  rows : Array SemanticBatchRow
+  localContext : Array SemanticLocalDecl
+  deriving ToJson
+
 private def runMetaIO {α : Type} (env : Environment) (file : String)
     (fileMap : FileMap) (action : MetaM α) : IO α := do
   let (value, _, _) ← action.toIO
@@ -256,8 +282,70 @@ private def runHelper (module file goal probeName candidateName requestId : Stri
       }
       IO.println s!"LADON_FRAME {Json.compress (toJson output)}"
       return 0
+
+private def runBatchHelper (module file goal probeName requestId : String)
+    (candidateNames : List String) : IO UInt32 := do
+  let contents ← IO.FS.readFile file
+  unsafe Lean.enableInitializersExecution
+  let options := Elab.async.set ({} : Options) false
+  let env? ← Elab.runFrontend contents options file module.toName
+  match env? with
+  | none =>
+      IO.eprintln s!"ELABORATION_FAILURE {file}"
+      return 1
+  | some env =>
+      let fileMap := contents.toFileMap
+      let goalType ← elaborateGoal env file fileMap goal
+      let probe ← expressionSubject env file fileMap probeName.toName goalType
+      let modules ← importedModules env
+      let localContext ← runMetaIO env file fileMap (do localContextTypes)
+      let rows ← candidateNames.toArray.mapM fun candidateName => do
+        try
+          let candidateLeanName ← parseLeanName env candidateName
+          let candidate ← subject env file fileMap candidateLeanName
+          let (substitutions, residuals, _) ← analyzeApplication env file fileMap goalType candidateLeanName
+          pure {
+            candidate := candidateName
+            status := if residuals.isEmpty then "accepted" else "applicable-with-residuals"
+            candidateSubject := some candidate
+            substitutions
+            residualPremises := residuals
+            diagnostic := ""
+          }
+        catch error =>
+          pure {
+            candidate := candidateName
+            status := "rejected"
+            candidateSubject := none
+            substitutions := #[]
+            residualPremises := #[]
+            diagnostic := error.toString
+          }
+      let executable ← IO.appPath
+      let output : SemanticBatchOutput := {
+        protocol := "ladon-lean-semantic-v3/check-candidates"
+        frameVersion := 1
+        sequence := 0
+        terminal := true
+        universePolicy := "lean-level-mvar-succ-zero/v1"
+        requestId
+        leanVersion := Lean.versionString
+        leanCommit := Lean.githash
+        executablePath := toString executable
+        module
+        probe
+        importedModules := modules
+        rows
+        localContext
+      }
+      IO.println s!"LADON_FRAME {Json.compress (toJson output)}"
+      return 0
 def main (args : List String) : IO UInt32 := do
   match args with
+  | "--batch" :: module :: file :: goal :: probeName :: requestId :: candidates =>
+      runBatchHelper module file goal probeName requestId candidates
+  | "--" :: "--batch" :: module :: file :: goal :: probeName :: requestId :: candidates =>
+      runBatchHelper module file goal probeName requestId candidates
   | ["--", module, file, goal, probeName, candidateName, requestId] =>
       runHelper module file goal probeName candidateName requestId
   | [module, file, goal, probeName, candidateName, requestId] =>
