@@ -77,6 +77,9 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
             "cap": request.limit,
             "diagnosticCap": request.diagnostic_limit,
             "populationComplete": not truncated and not scope_evidence.get("omissions"),
+            "rowEvidenceComplete": not any(
+                item["typeTextTruncated"] for item in result_rows
+            ),
             "authority": "sqlite_lexical_shortlist",
             "scope": scope_evidence,
             "fieldContributionCounts": field_counts,
@@ -133,7 +136,7 @@ def _result_row(row: sqlite3.Row, pattern: str) -> dict[str, Any]:
     """Expose bounded type evidence without returning unbounded source text."""
 
     field_contributions = {
-        field: pattern in str(value or "")
+        field: pattern.casefold() in str(value or "").casefold()
         for field, value in (
             ("renderedType", row[12]),
             ("conclusionText", row[13]),
@@ -162,9 +165,12 @@ def _result_row(row: sqlite3.Row, pattern: str) -> dict[str, Any]:
 def _type_text_predicate(
     connection: sqlite3.Connection, request: TypeSearchRequest
 ) -> tuple[list[str], list[Any], dict[str, Any]]:
-    pattern = f"%{request.pattern}%"
-    clauses = ["(d.rendered_type LIKE ? OR d.conclusion_text LIKE ? OR d.type_text LIKE ?)"]
-    values: list[Any] = [pattern, pattern, pattern]
+    clauses = [
+        """(instr(lower(COALESCE(d.rendered_type,'')), lower(?)) > 0
+        OR instr(lower(COALESCE(d.conclusion_text,'')), lower(?)) > 0
+        OR instr(lower(COALESCE(d.type_text,'')), lower(?)) > 0)"""
+    ]
+    values: list[Any] = [request.pattern, request.pattern, request.pattern]
     scope_clauses, scope_values, scope_evidence = _scope_predicate(connection, request)
     clauses.extend(scope_clauses)
     values.extend(scope_values)

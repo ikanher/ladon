@@ -85,3 +85,20 @@ def test_type_text_reports_field_contributions_and_bounded_omissions(
     assert payload["coverage"]["shortlistMatchedLowerBound"] >= 2
     assert payload["coverage"]["populationComplete"] is False
     assert payload["omissions"][0]["kind"] == "result-cap"
+
+
+def test_type_text_matching_is_literal_and_case_consistent(tmp_path: Path, capsys) -> None:
+    (tmp_path / "Main.lean").write_text("theorem first : Nat := 1\n", encoding="utf-8")
+    build_proof_search_index(tmp_path)
+    for pattern, expected in (("nat", 1), ("%", 0), ("_", 0)):
+        status = main(
+            [
+                "proof-search", "search", "type-text", "--repo-root", str(tmp_path),
+                "--pattern", pattern, "--format", "json",
+            ]
+        )
+        payload = json.loads(capsys.readouterr().out)
+        assert status == 0
+        assert len(payload["results"]) == expected
+        if expected:
+            assert payload["results"][0]["fieldContributions"]["typeText"] is True

@@ -23,6 +23,12 @@ from ladon.semantic_candidate_worker import (
 )
 
 DISCOVERY_SCHEMA = "ladon-verified-discovery-result-v1"
+MAX_DISCOVERY_TIMEOUT_SECONDS = 600.0
+MAX_DISCOVERY_OUTPUT_BYTES = 64 * 1024 * 1024
+MAX_DISCOVERY_RSS_BYTES = 64 * 1024 * 1024 * 1024
+MAX_LOCAL_CONTEXT_ROWS = 256
+MAX_LOCAL_CONTEXT_BYTES = 1024 * 1024
+MAX_DISCOVERY_TERM_BYTES = 64 * 1024
 
 
 @dataclass(frozen=True)
@@ -46,9 +52,15 @@ class DiscoveryRequest:
             raise ValueError("discovery requires module and goal")
         _validate_discovery_bounds(self)
         _validate_discovery_scope(self.scope, self.roots, self.freshness)
+        if len(self.local_context) > MAX_LOCAL_CONTEXT_ROWS:
+            raise ValueError("local context exceeds the supported row cap")
+        context_bytes = 0
         for row in self.local_context:
             if not row.get("name") or not row.get("type"):
                 raise ValueError("local context rows require name and type")
+            context_bytes += len(row["name"].encode()) + len(row["type"].encode())
+        if context_bytes > MAX_LOCAL_CONTEXT_BYTES:
+            raise ValueError("local context exceeds the supported byte cap")
 
 
 def _validate_discovery_bounds(request: DiscoveryRequest) -> None:
@@ -57,6 +69,14 @@ def _validate_discovery_bounds(request: DiscoveryRequest) -> None:
         raise ValueError("discovery bounds must be positive")
     if request.max_candidates > 1000 or request.batch_size > 100:
         raise ValueError("discovery bounds exceed the supported cap")
+    if request.timeout_seconds > MAX_DISCOVERY_TIMEOUT_SECONDS:
+        raise ValueError("discovery timeout exceeds the supported cap")
+    if request.max_output_bytes > MAX_DISCOVERY_OUTPUT_BYTES:
+        raise ValueError("discovery output bound exceeds the supported cap")
+    if request.max_rss_bytes > MAX_DISCOVERY_RSS_BYTES:
+        raise ValueError("discovery memory bound exceeds the supported cap")
+    if len(request.module.encode()) > MAX_DISCOVERY_TERM_BYTES or len(request.goal.encode()) > MAX_DISCOVERY_TERM_BYTES:
+        raise ValueError("discovery module or goal exceeds the supported byte cap")
 
 
 def _validate_discovery_scope(scope: str, roots: tuple[str, ...], freshness: str) -> None:
@@ -92,26 +112,28 @@ def discover_candidates(
     batch_checker: BatchChecker | None = None,
 ) -> dict[str, Any]:
     """Check a bounded shortlist and retain every candidate outcome."""
-    candidates = _candidate_rows(shortlist[: request.max_candidates], checker, scratch_replayer, batch_checker)
+    bounded = [
+        {**dict(row), "shortlistOrdinal": index}
+        for index, row in enumerate(shortlist[: request.max_candidates])
+    ]
+    candidates = _candidate_rows(
+        bounded, checker, scratch_replayer, batch_checker, request.batch_size
+    )
+    ranked = sorted(
+        candidates,
+        key=lambda candidate: (
+            _status_priority(candidate.check.get("status")),
+            int(candidate.shortlist.get("shortlistOrdinal", 0)),
+        ),
+    )
+    request_payload = _request_payload(request)
     payload: dict[str, Any] = {
         "schema": DISCOVERY_SCHEMA,
         "operation": "discover",
-        "status": "available",
-        "request": {
-            "module": request.module,
-            "goal": request.goal,
-            "localContext": [dict(row) for row in request.local_context],
-            "maxCandidates": request.max_candidates,
-            "batchSize": request.batch_size,
-            "timeoutSeconds": request.timeout_seconds,
-            "maxOutputBytes": request.max_output_bytes,
-            "maxRssBytes": request.max_rss_bytes,
-            "scope": request.scope,
-            "roots": list(request.roots),
-            "freshness": request.freshness,
-            "executionContextRef": request.execution_context_ref,
-        },
-        "candidates": [candidate.as_dict() for candidate in candidates],
+        "status": _discovery_status(candidates),
+        "request": request_payload,
+        "requestIdentity": _identity(request_payload),
+        "candidates": [candidate.as_dict() for candidate in ranked],
         "batch": {
             "protocol": "ladon-verified-discovery-v1",
             "sequence": list(range(len(candidates))),
@@ -122,7 +144,13 @@ def discover_candidates(
         },
         "coverage": {
             "shortlisted": len(shortlist),
-            "checked": len(candidates),
+            "submitted": len(candidates),
+            "completed": _count_status(candidates, {"accepted", "applicable-with-residuals", "rejected"}),
+            "accepted": _count_status(candidates, {"accepted", "applicable-with-residuals"}),
+            "rejected": _count_status(candidates, {"rejected"}),
+            "unassessed": _count_status(candidates, {"unassessed", "timeout", "resource-limited"}),
+            "scratchAttempted": sum("scratch" in candidate.check for candidate in candidates),
+            "scratchCompiled": sum(candidate.check.get("scratch", {}).get("status") == "compiled" for candidate in candidates),
             "truncated": len(shortlist) > request.max_candidates,
         },
         "ranking": {
@@ -137,9 +165,31 @@ def discover_candidates(
             "Rejected and unassessed candidates remain visible.",
         ],
     }
-    identity = json.dumps(payload, sort_keys=True, separators=(",", ":"))
-    payload["requestIdentity"] = "sha256:" + hashlib.sha256(identity.encode()).hexdigest()
+    payload["resultIdentity"] = _identity(payload)
     return payload
+
+
+def _request_payload(request: DiscoveryRequest) -> dict[str, Any]:
+    return {
+        "schema": "ladon-verified-discovery-request-v1",
+        "module": request.module,
+        "goal": request.goal,
+        "localContext": [dict(row) for row in request.local_context],
+        "maxCandidates": request.max_candidates,
+        "batchSize": request.batch_size,
+        "timeoutSeconds": request.timeout_seconds,
+        "maxOutputBytes": request.max_output_bytes,
+        "maxRssBytes": request.max_rss_bytes,
+        "scope": request.scope,
+        "roots": list(request.roots),
+        "freshness": request.freshness,
+        "executionContextRef": request.execution_context_ref,
+    }
+
+
+def _identity(payload: Mapping[str, Any]) -> str:
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    return "sha256:" + hashlib.sha256(encoded).hexdigest()
 
 
 def _candidate_rows(
@@ -147,12 +197,49 @@ def _candidate_rows(
     checker: Checker,
     scratch_replayer: ScratchReplayer | None,
     batch_checker: BatchChecker | None,
+    batch_size: int,
 ) -> list[DiscoveryCandidate]:
     if batch_checker is not None:
-        names = tuple(str(row.get("candidateName") or row.get("name")) for row in rows if row.get("candidateName") or row.get("name"))
-        results = batch_checker(names)
-        return [candidate for row in rows if (candidate := _candidate_from_batch(row, results, scratch_replayer)) is not None]
+        return _batch_candidate_rows(rows, batch_checker, scratch_replayer, batch_size)
     return [candidate for row in rows if (candidate := _check_one(row, checker, scratch_replayer)) is not None]
+
+
+def _batch_candidate_rows(
+    rows: Sequence[Mapping[str, Any]],
+    batch_checker: BatchChecker,
+    scratch_replayer: ScratchReplayer | None,
+    batch_size: int,
+) -> list[DiscoveryCandidate]:
+    names = tuple(
+        str(row.get("candidateName") or row.get("name"))
+        for row in rows
+        if row.get("candidateName") or row.get("name")
+    )
+    results: dict[str, Mapping[str, Any]] = {}
+    for start in range(0, len(names), batch_size):
+        chunk = names[start : start + batch_size]
+        try:
+            results.update(batch_checker(chunk))
+        except Exception as error:  # noqa: BLE001 - batch isolation boundary
+            results.update(_failed_batch_chunk(chunk, error))
+    return [
+        candidate
+        for row in rows
+        if (candidate := _candidate_from_batch(row, results, scratch_replayer))
+        is not None
+    ]
+
+
+def _failed_batch_chunk(
+    names: Sequence[str], error: Exception
+) -> dict[str, Mapping[str, Any]]:
+    return {
+        name: {
+            "status": "unassessed",
+            "diagnostic": {"code": "batch-check-failed", "message": str(error)},
+        }
+        for name in names
+    }
 
 
 def _status_priority(status: Any) -> int:
@@ -172,8 +259,7 @@ def _check_one(
             "status": "unassessed",
             "diagnostic": {"code": "candidate-check-failed", "message": str(error)},
         }
-    if scratch_replayer is not None and check_payload.get("status") == "accepted":
-        check_payload = {**check_payload, "scratch": dict(scratch_replayer(name))}
+    check_payload = _attach_scratch(check_payload, name, scratch_replayer)
     return DiscoveryCandidate(name, row, check_payload)
 
 
@@ -186,9 +272,37 @@ def _candidate_from_batch(
     if not name:
         return None
     check_payload = dict(results.get(name, {"status": "unassessed", "diagnostic": {"code": "batch-row-missing"}}))
-    if scratch_replayer is not None and check_payload.get("status") == "accepted":
-        check_payload["scratch"] = dict(scratch_replayer(name))
+    check_payload = _attach_scratch(check_payload, name, scratch_replayer)
     return DiscoveryCandidate(name, row, check_payload)
+
+
+def _attach_scratch(
+    check_payload: Mapping[str, Any], name: str, scratch_replayer: ScratchReplayer | None
+) -> dict[str, Any]:
+    result = dict(check_payload)
+    if scratch_replayer is None or result.get("status") != "accepted":
+        return result
+    try:
+        result["scratch"] = dict(scratch_replayer(name))
+    except Exception as error:  # noqa: BLE001 - candidate-scoped replay boundary
+        result["scratch"] = {
+            "status": "failed",
+            "diagnostic": {"code": "scratch-replay-failed", "message": str(error)},
+        }
+    return result
+
+
+def _count_status(candidates: Sequence[DiscoveryCandidate], statuses: set[str]) -> int:
+    return sum(str(candidate.check.get("status")) in statuses for candidate in candidates)
+
+
+def _discovery_status(candidates: Sequence[DiscoveryCandidate]) -> str:
+    completed = _count_status(candidates, {"accepted", "applicable-with-residuals", "rejected"})
+    if not candidates:
+        return "unavailable"
+    if completed == len(candidates):
+        return "available"
+    return "partial" if completed else "failed"
 
 
 def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checker:
