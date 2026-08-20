@@ -6,6 +6,7 @@ ladon-quality: reviewed-schema-hotspot
 from __future__ import annotations
 
 import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -52,7 +53,24 @@ class LeanToolchainContext:
             "leanIdentity": self.lean_identity,
             "selectionMode": self.selection_mode,
             "environmentKeys": list(self.environment_keys),
+            "contextIdentity": self.context_identity,
         }
+
+    @property
+    def context_identity(self) -> str:
+        """Digest the exact non-secret execution context without exposing values."""
+        payload = {
+            "repositoryRoot": str(self.repo_root),
+            "lakePath": str(self.lake_path),
+            "leanPath": str(self.lean_path),
+            "pinDigest": self.pin_digest,
+            "lakeIdentity": self.lake_identity,
+            "leanIdentity": self.lean_identity,
+            "selectionMode": self.selection_mode,
+            "environment": dict(sorted(self.environment.items())),
+        }
+        encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+        return "sha256:" + hashlib.sha256(encoded).hexdigest()
 
 
 def resolve_toolchain_context(

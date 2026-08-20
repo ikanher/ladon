@@ -169,6 +169,7 @@ def test_explicit_toolchain_ignores_path_shadow_and_sanitizes_worker_environment
     assert result.status == "accepted"
     assert observed["command"][0:3] == (str(lake), "env", str(lean))  # type: ignore[index]
     assert "SECRET" not in observed["env"]  # type: ignore[operator]
+    assert context.context_identity.startswith("sha256:")
 
 
 def test_worker_protocol_rejects_foreign_or_unscoped_semantic_rows(
