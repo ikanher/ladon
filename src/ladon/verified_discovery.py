@@ -36,17 +36,36 @@ class DiscoveryRequest:
     timeout_seconds: float = 120.0
     max_output_bytes: int = 8 * 1024 * 1024
     max_rss_bytes: int = 2 * 1024 * 1024 * 1024
+    scope: str = "repository"
+    roots: tuple[str, ...] = ()
+    freshness: str = "stored"
 
     def __post_init__(self) -> None:
         if not self.module or not self.goal:
             raise ValueError("discovery requires module and goal")
-        if min(self.max_candidates, self.batch_size, self.timeout_seconds, self.max_output_bytes, self.max_rss_bytes) <= 0:
-            raise ValueError("discovery bounds must be positive")
-        if self.max_candidates > 1000 or self.batch_size > 100:
-            raise ValueError("discovery bounds exceed the supported cap")
+        _validate_discovery_bounds(self)
+        _validate_discovery_scope(self.scope, self.roots, self.freshness)
         for row in self.local_context:
             if not row.get("name") or not row.get("type"):
                 raise ValueError("local context rows require name and type")
+
+
+def _validate_discovery_bounds(request: DiscoveryRequest) -> None:
+    values = (request.max_candidates, request.batch_size, request.timeout_seconds, request.max_output_bytes, request.max_rss_bytes)
+    if min(values) <= 0:
+        raise ValueError("discovery bounds must be positive")
+    if request.max_candidates > 1000 or request.batch_size > 100:
+        raise ValueError("discovery bounds exceed the supported cap")
+
+
+def _validate_discovery_scope(scope: str, roots: tuple[str, ...], freshness: str) -> None:
+    supported = {"repository", "project", "external", "module", "namespace", "file", "imports", "closure", "neighborhood"}
+    if scope not in supported:
+        raise ValueError("unsupported discovery scope")
+    if scope in {"module", "namespace", "file", "imports", "closure", "neighborhood"} and not roots:
+        raise ValueError("discovery scope requires roots")
+    if freshness not in {"stored", "verify"}:
+        raise ValueError("unsupported discovery freshness")
 
 
 @dataclass(frozen=True)
@@ -70,23 +89,11 @@ def discover_candidates(
     scratch_replayer: ScratchReplayer | None = None,
 ) -> dict[str, Any]:
     """Check a bounded shortlist and retain every candidate outcome."""
-    candidates: list[DiscoveryCandidate] = []
-    for row in shortlist[: request.max_candidates]:
-        name = str(row.get("candidateName") or row.get("name") or "")
-        if not name:
-            continue
-        try:
-            checked = checker(name)
-            check_payload = checked.to_dict()
-        except Exception as error:  # noqa: BLE001 - candidate isolation boundary
-            check_payload = {
-                "status": "unassessed",
-                "diagnostic": {"code": "candidate-check-failed", "message": str(error)},
-            }
-        if scratch_replayer is not None and check_payload.get("status") == "accepted":
-            check_payload = dict(check_payload)
-            check_payload["scratch"] = dict(scratch_replayer(name))
-        candidates.append(DiscoveryCandidate(name, row, check_payload))
+    candidates = [
+        candidate
+        for row in shortlist[: request.max_candidates]
+        if (candidate := _check_one(row, checker, scratch_replayer)) is not None
+    ]
     payload: dict[str, Any] = {
         "schema": DISCOVERY_SCHEMA,
         "operation": "discover",
@@ -100,6 +107,9 @@ def discover_candidates(
             "timeoutSeconds": request.timeout_seconds,
             "maxOutputBytes": request.max_output_bytes,
             "maxRssBytes": request.max_rss_bytes,
+            "scope": request.scope,
+            "roots": list(request.roots),
+            "freshness": request.freshness,
         },
         "candidates": [candidate.as_dict() for candidate in candidates],
         "batch": {
@@ -122,6 +132,24 @@ def discover_candidates(
     identity = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     payload["requestIdentity"] = "sha256:" + hashlib.sha256(identity.encode()).hexdigest()
     return payload
+
+
+def _check_one(
+    row: Mapping[str, Any], checker: Checker, scratch_replayer: ScratchReplayer | None
+) -> DiscoveryCandidate | None:
+    name = str(row.get("candidateName") or row.get("name") or "")
+    if not name:
+        return None
+    try:
+        check_payload: Mapping[str, Any] = checker(name).to_dict()
+    except Exception as error:  # noqa: BLE001 - candidate isolation boundary
+        check_payload = {
+            "status": "unassessed",
+            "diagnostic": {"code": "candidate-check-failed", "message": str(error)},
+        }
+    if scratch_replayer is not None and check_payload.get("status") == "accepted":
+        check_payload = {**check_payload, "scratch": dict(scratch_replayer(name))}
+    return DiscoveryCandidate(name, row, check_payload)
 
 
 def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checker:

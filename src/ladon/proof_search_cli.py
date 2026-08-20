@@ -25,7 +25,7 @@ from ladon.proof_search_constructor import (
     load_constructor_fields,
 )
 from ladon.proof_search_consumers import ConsumerRequest, query_consumers
-from ladon.proof_search_discovery_cli import dispatch_discover
+from ladon.proof_search_discovery_cli import dispatch_discover, register_discover_parser
 from ladon.proof_search_index import (
     DEFAULT_MAX_INDEX_BYTES,
     SUPPORTED_INDEX_SCOPES,
@@ -193,23 +193,10 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Use compatibility raw-signature comparison without binder normalization.",
     )
-    discover = operations.add_parser(
-        "discover", help="Check a bounded candidate set against one exact goal."
+    register_discover_parser(
+        operations, _add_repository_options, _add_output_options,
+        _bounded_limit, _positive_integer, SUPPORTED_INDEX_SCOPES,
     )
-    _add_repository_options(discover)
-    _add_output_options(discover)
-    discover.add_argument("--module", required=True)
-    discover.add_argument("--goal", required=True)
-    discover.add_argument("--candidate", action="append", required=True)
-    discover.add_argument("--local", action="append", default=[], help="Typed local as NAME:TYPE; repeatable.")
-    discover.add_argument("--max-candidates", type=_bounded_limit, default=20)
-    discover.add_argument("--batch-size", type=_bounded_limit, default=8)
-    discover.add_argument("--timeout-seconds", type=float, default=120.0)
-    discover.add_argument("--max-output-mib", type=_positive_integer, default=8)
-    discover.add_argument("--max-rss-mib", type=_positive_integer, default=2048)
-    discover.add_argument("--toolchain-mode", choices=("ambient", "explicit"), default="ambient")
-    discover.add_argument("--lake-path", type=Path)
-    discover.add_argument("--lean-path", type=Path)
     consumers = operations.add_parser(
         "consumers", help="Find bounded declaration consumers."
     )
