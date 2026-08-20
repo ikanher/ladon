@@ -4,7 +4,7 @@
   "runId": "runstate.proofir-local-integrity-prerequisites",
   "goal": "Close repository-baseline issues 1-6 before applying the ProofIR local-integrity umbrella.",
   "controlStateSource": "external_persistent_json",
-  "phase": "awaiting_openspec_archive_policy",
+  "phase": "completed",
   "failureTaxonomy": [
     "artifact_drift",
     "schema_invalid",
@@ -18,10 +18,10 @@
     {"stepId": "step.semantic_modes", "status": "completed", "prerequisites": [], "evidenceRefs": ["check.semantic_mode_inspection", "check.focused"], "commandRefs": ["uv run --locked pytest -q tests/test_semantic_build_mode.py"]},
     {"stepId": "step.sqlite_publication", "status": "completed", "prerequisites": [], "evidenceRefs": ["check.focused"], "commandRefs": ["focused SQLite publication, cancellation, ProofIR, lineage, and atlas tests"]},
     {"stepId": "step.product_scope", "status": "completed", "prerequisites": [], "evidenceRefs": ["check.feature_matrix"], "commandRefs": ["uv run --locked python scripts/generate_supported_feature_matrix.py --verify-tests"]},
-    {"stepId": "step.openspec_reconciliation", "status": "in_progress", "prerequisites": [], "evidenceRefs": ["check.archive_assessment"], "commandRefs": ["openspec list --json and delta/main-spec comparison"]},
+    {"stepId": "step.openspec_reconciliation", "status": "completed", "prerequisites": [], "evidenceRefs": ["check.archive_assessment", "check.backlog"], "commandRefs": ["archive 132 completed packets without delta sync; uv run --locked python scripts/ladon_openspec_backlog.py --openspec-root openspec"]},
     {"stepId": "step.roadmap", "status": "completed", "prerequisites": [], "evidenceRefs": ["check.focused"], "commandRefs": ["roadmap and CLI documentation inspection plus focused tests"]},
     {"stepId": "step.ruff", "status": "completed", "prerequisites": [], "evidenceRefs": ["check.full_quality"], "commandRefs": ["uv run --locked python scripts/python_quality.py --strict"]},
-    {"stepId": "step.full_verification", "status": "pending", "prerequisites": ["step.semantic_modes", "step.sqlite_publication", "step.product_scope", "step.openspec_reconciliation", "step.roadmap", "step.ruff"], "evidenceRefs": ["check.full_quality"], "commandRefs": ["uv run --locked python scripts/python_quality.py --strict"]}
+    {"stepId": "step.full_verification", "status": "completed", "prerequisites": ["step.semantic_modes", "step.sqlite_publication", "step.product_scope", "step.openspec_reconciliation", "step.roadmap", "step.ruff"], "evidenceRefs": ["check.full_quality", "check.backlog"], "commandRefs": ["uv run --locked python scripts/python_quality.py --strict", "openspec validate ladon-proofir-local-integrity-hardening-umbrella --strict", "git diff --check"]}
   ],
   "checks": [
     {
@@ -55,22 +55,21 @@
     {
       "checkId": "check.archive_assessment",
       "command": "openspec list --json and delta/main-spec comparison",
-      "status": "invalid",
-      "failureClass": "governance_overclaim",
-      "failureMessage": "132 task-complete active packets found; 126 contain capability deltas absent from the 10 current main specs, so bulk archive requires an explicit sync-versus-historical policy"
-    }
-  ],
-  "blockers": [
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": "132 task-complete packets archived without delta sync by explicit policy; active packet count is 40"
+    },
     {
-      "blockerId": "blocker.openspec_archive_policy",
-      "checkId": "check.archive_assessment",
-      "status": "unresolved",
-      "failureClass": "governance_overclaim",
-      "nextAction": "Choose whether the 126 unsynced completed packets are synced into main specs, archived as historical without sync, or retained pending per-capability review."
+      "checkId": "check.backlog",
+      "command": "uv run --locked python scripts/ladon_openspec_backlog.py --openspec-root openspec",
+      "status": "passed",
+      "failureClass": null,
+      "failureMessage": "40 active packets and zero backlog findings"
     }
   ],
+  "blockers": [],
   "replayBoundary": {"packetLocalReplay": false, "externalEvidenceIncluded": false},
-  "finalization": {"allowPush": false, "allowReviewPacket": false, "allowBaselinePromotion": false},
+  "finalization": {"allowPush": false, "allowReviewPacket": false, "allowBaselinePromotion": true},
   "nonClaims": [
     "This run-state is workflow evidence, not theorem evidence.",
     "The ProofIR umbrella implementation has not started."
