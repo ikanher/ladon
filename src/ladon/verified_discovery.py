@@ -1,0 +1,114 @@
+"""Bounded goal-to-candidate discovery orchestration.
+
+This service deliberately keeps lexical shortlisting and Lean checking separate:
+every shortlisted candidate receives an independent terminal outcome, including
+rejections and unassessed rows.  It is usable by the CLI and editor adapters
+without making a lexical match look like proof authority.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+from ladon.semantic_candidate_worker import SemanticCandidateCheck, SemanticCandidateRequest
+
+DISCOVERY_SCHEMA = "ladon-verified-discovery-result-v1"
+
+
+@dataclass(frozen=True)
+class DiscoveryRequest:
+    repo_root: Path
+    module: str
+    goal: str
+    local_context: tuple[Mapping[str, str], ...] = ()
+    max_candidates: int = 20
+    batch_size: int = 8
+
+    def __post_init__(self) -> None:
+        if not self.module or not self.goal:
+            raise ValueError("discovery requires module and goal")
+        if min(self.max_candidates, self.batch_size) < 1:
+            raise ValueError("discovery bounds must be positive")
+        if self.max_candidates > 1000 or self.batch_size > 100:
+            raise ValueError("discovery bounds exceed the supported cap")
+        for row in self.local_context:
+            if not row.get("name") or not row.get("type"):
+                raise ValueError("local context rows require name and type")
+
+
+@dataclass(frozen=True)
+class DiscoveryCandidate:
+    name: str
+    shortlist: Mapping[str, Any]
+    check: Mapping[str, Any]
+
+    def as_dict(self) -> dict[str, Any]:
+        return {"name": self.name, "shortlist": dict(self.shortlist), "check": dict(self.check)}
+
+
+Checker = Callable[[str], SemanticCandidateCheck]
+
+
+def discover_candidates(
+    request: DiscoveryRequest,
+    shortlist: Sequence[Mapping[str, Any]],
+    checker: Checker,
+) -> dict[str, Any]:
+    """Check a bounded shortlist and retain every candidate outcome."""
+    candidates: list[DiscoveryCandidate] = []
+    for row in shortlist[: request.max_candidates]:
+        name = str(row.get("candidateName") or row.get("name") or "")
+        if not name:
+            continue
+        try:
+            checked = checker(name)
+            check_payload = checked.to_dict()
+        except Exception as error:  # noqa: BLE001 - candidate isolation boundary
+            check_payload = {
+                "status": "unassessed",
+                "diagnostic": {"code": "candidate-check-failed", "message": str(error)},
+            }
+        candidates.append(DiscoveryCandidate(name, row, check_payload))
+    payload: dict[str, Any] = {
+        "schema": DISCOVERY_SCHEMA,
+        "operation": "discover",
+        "status": "available",
+        "request": {
+            "module": request.module,
+            "goal": request.goal,
+            "localContext": [dict(row) for row in request.local_context],
+            "maxCandidates": request.max_candidates,
+            "batchSize": request.batch_size,
+        },
+        "candidates": [candidate.as_dict() for candidate in candidates],
+        "coverage": {
+            "shortlisted": len(shortlist),
+            "checked": len(candidates),
+            "truncated": len(shortlist) > request.max_candidates,
+        },
+        "nonclaims": [
+            "Lexical shortlisting is not Lean applicability.",
+            "Rejected and unassessed candidates remain visible.",
+        ],
+    }
+    identity = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    payload["requestIdentity"] = "sha256:" + hashlib.sha256(identity.encode()).hexdigest()
+    return payload
+
+
+def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checker:
+    """Return a checker factory for the existing supervised Lean worker."""
+    def check(candidate: str) -> SemanticCandidateCheck:
+        return __import__("ladon.semantic_candidate_worker", fromlist=["check_semantic_candidate"]).check_semantic_candidate(
+            SemanticCandidateRequest(request.repo_root, request.module, request.goal, candidate, toolchain=toolchain)
+        )
+
+    return check
+
+
+__all__ = ["DISCOVERY_SCHEMA", "DiscoveryCandidate", "DiscoveryRequest", "discover_candidates", "semantic_checker"]
