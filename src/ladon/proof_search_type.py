@@ -52,21 +52,16 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
     clauses, values, scope_evidence = _type_text_predicate(connection, request)
     where = " AND ".join(clauses)
     rows = connection.execute(
-        "SELECT d.id,d.name,d.candidate_name,d.namespace,d.module,d.package,d.path,d.line,d.type_status "
+        "SELECT d.id,d.name,d.candidate_name,d.namespace,d.module,d.package,d.path,d.line,d.type_status,"
+        "d.type_text,d.type_text_bytes,d.type_text_truncated,d.rendered_type,d.conclusion_text "
         f"FROM declarations AS d WHERE {where} ORDER BY d.type_status DESC,d.candidate_name,d.module,d.line,d.id LIMIT ?",
         (*values, request.limit + request.diagnostic_limit + 1),
     ).fetchall()
     verification = verifier(tuple(str(row[2]) for row in rows[: request.limit]), request.pattern) if verifier else {}
-    result_rows = [
-        {"declarationId": row[0], "name": row[1], "candidateName": row[2], "namespace": row[3], "module": row[4], "package": row[5], "path": row[6], "line": row[7], "authority": "lexical_shortlist", "verification": "not_requested", "typeStatus": row[8], "bucket": "text-overlap"}
-        for row in rows[: request.limit]
-    ]
-    for item in result_rows:
-        item.update(verification.get(str(item["candidateName"]), {}))
-    diagnostics = [
-        {"declarationId": row[0], "candidateName": row[2], "reason": "shortlist_not_verified"}
-        for row in rows[request.limit : request.limit + request.diagnostic_limit]
-    ]
+    result_rows, diagnostics = _result_rows(rows, request, verification)
+    truncated = len(rows) > request.limit + request.diagnostic_limit
+    omission_rows = _omissions(scope_evidence, truncated, len(rows), request)
+    field_counts = _field_counts(result_rows)
     return {
         "schema": "ladon-proof-search-type-result-v1",
         "operation": "search-type",
@@ -75,10 +70,92 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
         "results": result_rows,
         "diagnostics": diagnostics,
         "query": {"pattern": request.pattern, "scope": request.scope, "module": request.module, "namespace": request.namespace, "package": request.package, "freshness": request.freshness},
-        "coverage": {"shortlistMatched": len(rows), "returned": len(result_rows), "cap": request.limit, "authority": "sqlite_lexical_shortlist", "scope": scope_evidence},
-        "truncated": len(rows) > request.limit + request.diagnostic_limit,
-        "omissions": [],
+        "coverage": {
+            "shortlistMatchedLowerBound": len(rows),
+            "returned": len(result_rows),
+            "diagnosticReturned": len(diagnostics),
+            "cap": request.limit,
+            "diagnosticCap": request.diagnostic_limit,
+            "populationComplete": not truncated and not scope_evidence.get("omissions"),
+            "authority": "sqlite_lexical_shortlist",
+            "scope": scope_evidence,
+            "fieldContributionCounts": field_counts,
+        },
+        "truncated": truncated,
+        "omissions": omission_rows,
         "nonclaims": ["Shortlist rows are not Lean elaboration or proof verification."],
+    }
+
+
+def _result_rows(
+    rows: Sequence[sqlite3.Row],
+    request: TypeSearchRequest,
+    verification: Mapping[str, Mapping[str, Any]],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    result_rows = [_result_row(row, request.pattern) for row in rows[: request.limit]]
+    for item in result_rows:
+        item.update(verification.get(str(item["candidateName"]), {}))
+    diagnostics = [
+        {"declarationId": row[0], "candidateName": row[2], "reason": "shortlist_not_verified"}
+        for row in rows[request.limit : request.limit + request.diagnostic_limit]
+    ]
+    return result_rows, diagnostics
+
+
+def _omissions(
+    scope_evidence: Mapping[str, Any],
+    truncated: bool,
+    lower_bound: int,
+    request: TypeSearchRequest,
+) -> list[dict[str, Any]]:
+    omissions = list(scope_evidence.get("omissions", ()))
+    if truncated:
+        omissions.append(
+            {
+                "kind": "result-cap",
+                "reason": "additional lexical matches were omitted by the result and diagnostic caps",
+                "lowerBound": lower_bound,
+                "cap": request.limit,
+                "diagnosticCap": request.diagnostic_limit,
+            }
+        )
+    return omissions
+
+
+def _field_counts(result_rows: Sequence[Mapping[str, Any]]) -> dict[str, int]:
+    return {
+        field: sum(bool(item["fieldContributions"][field]) for item in result_rows)
+        for field in ("renderedType", "conclusionText", "typeText")
+    }
+
+
+def _result_row(row: sqlite3.Row, pattern: str) -> dict[str, Any]:
+    """Expose bounded type evidence without returning unbounded source text."""
+
+    field_contributions = {
+        field: pattern in str(value or "")
+        for field, value in (
+            ("renderedType", row[12]),
+            ("conclusionText", row[13]),
+            ("typeText", row[9]),
+        )
+    }
+    return {
+        "declarationId": row[0],
+        "name": row[1],
+        "candidateName": row[2],
+        "namespace": row[3],
+        "module": row[4],
+        "package": row[5],
+        "path": row[6],
+        "line": row[7],
+        "authority": "lexical_shortlist",
+        "verification": "not_requested",
+        "typeStatus": row[8],
+        "typeTextBytes": row[10],
+        "typeTextTruncated": bool(row[11]),
+        "fieldContributions": field_contributions,
+        "bucket": "text-overlap",
     }
 
 

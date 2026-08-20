@@ -51,3 +51,37 @@ def test_type_text_module_scope_reports_population_evidence(tmp_path: Path, caps
     assert status == 0
     assert payload["coverage"]["scope"]["kind"] == "module"
     assert payload["coverage"]["scope"]["modules"] == 1
+
+
+def test_type_text_reports_field_contributions_and_bounded_omissions(
+    tmp_path: Path, capsys
+) -> None:
+    (tmp_path / "Main.lean").write_text(
+        "theorem first : Nat := 1\ntheorem second : Nat := 2\n",
+        encoding="utf-8",
+    )
+    build_proof_search_index(tmp_path)
+    status = main(
+        [
+            "proof-search",
+            "search",
+            "type-text",
+            "--repo-root",
+            str(tmp_path),
+            "--pattern",
+            "Nat",
+            "--limit",
+            "1",
+            "--format",
+            "json",
+        ]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert status == 0
+    row = payload["results"][0]
+    assert row["fieldContributions"]["typeText"]
+    assert row["typeTextBytes"] >= 0
+    assert payload["coverage"]["fieldContributionCounts"]["typeText"] == 1
+    assert payload["coverage"]["shortlistMatchedLowerBound"] >= 2
+    assert payload["coverage"]["populationComplete"] is False
+    assert payload["omissions"][0]["kind"] == "result-cap"
