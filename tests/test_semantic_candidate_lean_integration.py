@@ -138,6 +138,9 @@ def test_discovery_elaborates_caller_local_context_and_replays_same_context() ->
     assert "example (value : Nat) : value = value" in check["scratch"]["source"]
     assert "exact LadonFixture.fixtureIdentity value" in check["scratch"]["source"]
     assert check["scratch"]["status"] == "compiled"
+    assert check["scratch"]["parentCheckRunRef"] == check["checkRunRef"]
+    assert check["scratch"]["environmentRef"] == check["environmentRef"]
+    assert check["scratch"]["evidenceReceipt"]["checkRunRef"] == check["scratch"]["checkRunRef"]
 
 
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")

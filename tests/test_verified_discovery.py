@@ -86,7 +86,10 @@ def test_discovery_attaches_independent_scratch_result_for_acceptance() -> None:
         request,
         [{"candidateName": "Main.zero"}],
         lambda _name: SemanticCandidateCheck("accepted"),
-        lambda _name: {"status": "compiled", "sourceDigest": "sha256:scratch"},
+        lambda _name, _application, _parent: {
+            "status": "compiled",
+            "sourceDigest": "sha256:scratch",
+        },
     )
     assert result["candidates"][0]["check"]["scratch"]["status"] == "compiled"
 
@@ -155,7 +158,9 @@ def test_discovery_isolates_batch_and_scratch_failures() -> None:
         request,
         [{"candidateName": "Main.zero"}],
         lambda _: SemanticCandidateCheck("accepted"),
-        scratch_replayer=lambda _name: (_ for _ in ()).throw(RuntimeError("scratch boom")),
+        scratch_replayer=lambda _name, _application, _parent: (_ for _ in ()).throw(
+            RuntimeError("scratch boom")
+        ),
     )
     assert scratch_failed["status"] == "available"
     assert scratch_failed["candidates"][0]["check"]["scratch"]["status"] == "failed"

@@ -15,8 +15,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from ladon.evidence_receipt import build_evidence_receipt
 from ladon.scratch_replay import replay_scratch
 from ladon.semantic_candidate_worker import (
+    TRUSTED_TARGET_LIMITATION,
     SemanticCandidateCheck,
     SemanticCandidateRequest,
     check_semantic_candidate,
@@ -119,7 +121,7 @@ class DiscoveryCandidate:
 
 
 Checker = Callable[[str], SemanticCandidateCheck]
-ScratchReplayer = Callable[[str], Mapping[str, Any]]
+ScratchReplayer = Callable[[str, str, Mapping[str, Any]], Mapping[str, Any]]
 BatchChecker = Callable[[Sequence[str]], Mapping[str, Mapping[str, Any]]]
 
 
@@ -327,7 +329,7 @@ def _attach_scratch(
         application_term = (result.get("applicationTerm") if caller_context else name) or name
         if not isinstance(application_term, str):
             raise TypeError("candidate application term must be a string")
-        result["scratch"] = dict(scratch_replayer(application_term))
+        result["scratch"] = dict(scratch_replayer(name, application_term, result))
     except Exception as error:  # noqa: BLE001 - candidate-scoped replay boundary
         result["scratch"] = {
             "status": "failed",
@@ -372,15 +374,79 @@ def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checke
 
 def semantic_scratch_replayer(request: DiscoveryRequest, toolchain: Any = None) -> ScratchReplayer:
     """Return an independent scratch compiler bound to the same repository."""
-    return lambda candidate: replay_scratch(
-        repo_root=request.repo_root,
-        module=request.module,
-        goal=request.goal,
-        candidate=candidate,
-        toolchain=toolchain,
-        timeout_seconds=request.timeout_seconds,
-        local_context=request.local_context,
-    ).to_dict()
+
+    def replay(
+        candidate: str, application_term: str, parent: Mapping[str, Any]
+    ) -> Mapping[str, Any]:
+        result = replay_scratch(
+            repo_root=request.repo_root,
+            module=request.module,
+            goal=request.goal,
+            candidate=application_term,
+            toolchain=toolchain,
+            timeout_seconds=request.timeout_seconds,
+            local_context=request.local_context,
+        ).to_dict()
+        return _scratch_evidence(request, candidate, parent, result, toolchain)
+
+    return replay
+
+
+def _scratch_evidence(
+    request: DiscoveryRequest,
+    candidate: str,
+    parent: Mapping[str, Any],
+    result: Mapping[str, Any],
+    toolchain: Any,
+) -> dict[str, Any]:
+    parent_receipt = parent.get("evidenceReceipt")
+    if not isinstance(parent_receipt, Mapping):
+        raise TypeError("scratch replay requires the candidate evidence receipt")
+    environment_ref = parent_receipt.get("environmentRef")
+    parent_check_ref = parent_receipt.get("checkRunRef")
+    if not isinstance(environment_ref, str) or not isinstance(parent_check_ref, str):
+        raise TypeError("scratch replay requires exact parent evidence references")
+    check_ref = (
+        "check:"
+        + _identity(
+            {
+                "operation": "scratch-replay",
+                "parentCheckRunRef": parent_check_ref,
+                "sourceDigest": result.get("sourceDigest"),
+                "outputDigest": result.get("outputDigest"),
+                "status": result.get("status"),
+            }
+        )[7:]
+    )
+    compiled = result.get("status") == "compiled"
+    receipt = build_evidence_receipt(
+        subject={
+            "module": request.module,
+            "candidate": candidate,
+            "goal": request.goal,
+            "localContext": [dict(row) for row in request.local_context],
+        },
+        execution_binding=(
+            "explicit-pinned"
+            if toolchain is not None and toolchain.selection_mode == "explicit"
+            else "ambient-observed"
+        ),
+        observation_state="live",
+        operation_outcome="accepted" if compiled else "rejected",
+        authority_basis="elaborator-check",
+        analysis_completeness="complete",
+        environment_match="exact" if toolchain is not None else "unknown",
+        environment_ref=environment_ref,
+        check_run_ref=check_ref,
+        limitations=(TRUSTED_TARGET_LIMITATION,),
+    )
+    return {
+        **dict(result),
+        "checkRunRef": check_ref,
+        "parentCheckRunRef": parent_check_ref,
+        "environmentRef": environment_ref,
+        "evidenceReceipt": receipt,
+    }
 
 
 __all__ = [
