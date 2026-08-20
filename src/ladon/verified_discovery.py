@@ -386,6 +386,8 @@ def semantic_scratch_replayer(request: DiscoveryRequest, toolchain: Any = None) 
             toolchain=toolchain,
             timeout_seconds=request.timeout_seconds,
             local_context=request.local_context,
+            max_output_bytes=request.max_output_bytes,
+            max_rss_bytes=request.max_rss_bytes,
         ).to_dict()
         return _scratch_evidence(request, candidate, parent, result, toolchain)
 

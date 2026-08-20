@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from collections.abc import Mapping
 from typing import Any
 
@@ -73,7 +74,11 @@ def _child_scope_error(receipt: Mapping[str, Any], expected_exit: str) -> str | 
 
 def _child_commands_error(receipt: Mapping[str, Any], expected_exit: str) -> str | None:
     commands = receipt.get("commands")
-    if not isinstance(commands, list) or not commands or any(not _valid_command(row) for row in commands):
+    if (
+        not isinstance(commands, list)
+        or not commands
+        or any(not _valid_command(row) for row in commands)
+    ):
         return f"{expected_exit} child receipt has invalid command evidence"
     return None
 
@@ -96,7 +101,7 @@ def _valid_command(row: Any) -> bool:
 
 
 def _digest(value: Any) -> bool:
-    return isinstance(value, str) and value.startswith("sha256:") and len(value) == 71
+    return isinstance(value, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", value) is not None
 
 
 def _receipt_identity(receipt: Mapping[str, Any]) -> str:

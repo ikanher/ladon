@@ -6,7 +6,12 @@ import math
 from datetime import UTC, datetime
 from typing import Any
 
-READINESS_LEVELS = ("experimental", "contract-supported", "externally-evaluated", "release-qualified")
+READINESS_LEVELS = (
+    "experimental",
+    "contract-supported",
+    "externally-evaluated",
+    "release-qualified",
+)
 EVIDENCE_FIELDS = {
     "installedSmoke": ("command", "outcome"),
     "adversarialContract": ("command", "outcome"),
@@ -24,8 +29,20 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
         current = current.replace(tzinfo=UTC)
     requirements = {
         "contract-supported": ("installedSmoke", "adversarialContract", "resourceGate"),
-        "externally-evaluated": ("installedSmoke", "adversarialContract", "resourceGate", "externalOutcome"),
-        "release-qualified": ("installedSmoke", "adversarialContract", "resourceGate", "externalOutcome", "platformPosture", "ownerDecision"),
+        "externally-evaluated": (
+            "installedSmoke",
+            "adversarialContract",
+            "resourceGate",
+            "externalOutcome",
+        ),
+        "release-qualified": (
+            "installedSmoke",
+            "adversarialContract",
+            "resourceGate",
+            "externalOutcome",
+            "platformPosture",
+            "ownerDecision",
+        ),
     }
     level = "experimental"
     reasons: list[str] = []
@@ -45,14 +62,26 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
         "evidence": evidence,
         "reasons": reasons,
         "evaluatedAt": current.isoformat(),
-        "nonclaims": ["Readiness is not proof authority and does not grant public distribution rights."],
+        "nonclaims": [
+            "Readiness is not proof authority and does not grant public distribution rights."
+        ],
     }
 
 
 def _fresh_pass(value: Any, now: datetime, required_fields: tuple[str, ...]) -> bool:
     if not isinstance(value, dict) or value.get("status") != "passed":
         return False
+    if not isinstance(value.get("command"), str) or not value["command"]:
+        return False
+    if not isinstance(value.get("outcome"), str) or not value["outcome"]:
+        return False
     if any(not value.get(field) for field in required_fields):
+        return False
+    if "candidates" in required_fields and not isinstance(value.get("candidates"), list):
+        return False
+    if ("metrics" in required_fields or "candidates" in required_fields) and (
+        not isinstance(value.get("metrics"), dict) or not value["metrics"]
+    ):
         return False
     timestamp = value.get("timestamp")
     if not isinstance(timestamp, str):
