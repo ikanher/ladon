@@ -16,17 +16,18 @@ def _declaration_database(path: Path) -> None:
     with sqlite3.connect(path) as connection:
         connection.execute(
             "CREATE TABLE declarations("
-            "id TEXT,name TEXT,candidate_name TEXT,type_text TEXT,type_text_truncated INTEGER,"
+            "id TEXT,name TEXT,candidate_name TEXT,type_text TEXT,type_text_bytes INTEGER,type_text_truncated INTEGER,"
             "type_status TEXT,authority TEXT,module TEXT,path TEXT,line INTEGER,"
             "namespace TEXT,package TEXT,rendered_type TEXT,conclusion_text TEXT)"
         )
         connection.execute(
-            "INSERT INTO declarations VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "INSERT INTO declarations VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 "id",
                 "Demo.proof",
                 "Demo.proof",
                 "True",
+                4,
                 0,
                 "lean-rendered",
                 "lean_environment",
@@ -58,6 +59,29 @@ def test_explain_compares_indexed_type_not_declaration_name(tmp_path: Path) -> N
 
     assert result["classification"] == "applicable"
     assert result["normalization"]["peeledConclusion"] == "True"
+
+
+def test_explain_returns_bounded_match_evidence_for_ambiguous_candidates(tmp_path: Path) -> None:
+    database = tmp_path / "proof.sqlite"
+    _declaration_database(database)
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            "INSERT INTO declarations VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            (
+                "id-2", "Demo.proof", "Demo.proof", "False", 5, 0,
+                "lean-rendered", "lean_environment", "Demo", "Other.lean", 2,
+                "Demo", "project", "False", "False",
+            ),
+        )
+    args = argparse.Namespace(
+        goal="True", candidate="Demo.proof", module="Demo", assumption=[],
+        suggestion_cap=1, freshness="stored", raw_signature=False,
+    )
+    result = _dispatch_explain(args, tmp_path, database)
+    assert result["status"] == "unavailable"
+    assert result["candidateMatchesTruncated"] is True
+    assert result["candidateMatches"][0]["path"] == "Demo.lean"
+    assert result["candidateMatches"][0]["generationEvidence"]["freshness"] == "stored"
 
 
 def test_type_text_scope_requires_a_population_root() -> None:

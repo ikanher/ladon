@@ -18,7 +18,6 @@ from ladon.cli_execution import (
     write_output_file,
 )
 from ladon.lean_toolchain import LeanToolchainError, resolve_toolchain_context
-from ladon.proof_difference import DifferenceRequest, analyze_difference
 from ladon.proof_search_constructor import (
     ConstructorRequest,
     constructor_coverage,
@@ -26,6 +25,7 @@ from ladon.proof_search_constructor import (
 )
 from ladon.proof_search_consumers import ConsumerRequest, query_consumers
 from ladon.proof_search_discovery_cli import dispatch_discover, register_discover_parser
+from ladon.proof_search_explain import dispatch_explain as _dispatch_explain_impl
 from ladon.proof_search_index import (
     DEFAULT_MAX_INDEX_BYTES,
     SUPPORTED_INDEX_SCOPES,
@@ -449,45 +449,7 @@ def _dispatch_check(args: argparse.Namespace, repo_root: Path) -> Mapping[str, A
 def _dispatch_explain(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
-    import sqlite3
-
-    request = DifferenceRequest(
-        args.goal,
-        args.candidate,
-        args.module,
-        tuple(args.assumption),
-        args.suggestion_cap,
-        args.freshness,
-        args.raw_signature,
-    )
-    path = index_path or default_proof_search_index_path(repo_root)
-    with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
-        connection.row_factory = sqlite3.Row
-        row = connection.execute(
-            "SELECT id,name,type_text,type_status,authority,module,type_text_truncated FROM declarations WHERE name=? OR candidate_name=? ORDER BY path,line,id",
-            (args.candidate, args.candidate),
-        ).fetchall()
-    if len(row) != 1:
-        return {"schema": "ladon-proof-difference-result-v1", "schemaVersion": 2, "operation": "explain", "status": "unavailable", "reason": "candidate declaration is not unique", "goal": args.goal, "candidate": args.candidate}
-    row = row[0]
-    if row[6]:
-        return {"schema": "ladon-proof-difference-result-v1", "schemaVersion": 2, "operation": "explain", "status": "unavailable", "reason": "candidate type text is truncated", "goal": args.goal, "candidate": args.candidate}
-    evidence = (
-        None
-        if row is None
-        else {
-            "declarationId": row[0],
-            "name": row[1],
-            "typeText": row[2],
-            "typeStatus": row[3],
-            "authority": row[4],
-            "module": row[5],
-            "freshness": args.freshness,
-        }
-    )
-    return analyze_difference(request, candidate_signature=str(row[2]), candidate_evidence=evidence)
-
-
+    return _dispatch_explain_impl(args, repo_root, index_path)
 def _dispatch_index(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
