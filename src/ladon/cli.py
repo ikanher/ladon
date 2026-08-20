@@ -88,6 +88,7 @@ UNSUPPORTED_OPTIONS = {
 }
 PUBLIC_COMMAND_HELP = """\
 commands:
+  doctor    Emit read-only installation and repository readiness diagnostics.
   theorem   Plan, materialize, and independently replay theorem capsules.
   proof-search  Build and query local Lean proof-navigation evidence.
   proofir       Validate, canonicalize, or inspect ProofIR artifacts.
