@@ -65,6 +65,7 @@ structure SemanticCandidateOutput where
   module : String
   probe : SemanticSubject
   candidate : SemanticSubject
+  applicationTerm : String
   importedModules : Array SemanticModule
   substitutions : Array SemanticSubstitution
   residualPremises : Array SemanticExpression
@@ -75,6 +76,7 @@ structure SemanticBatchRow where
   candidate : String
   status : String
   candidateSubject : Option SemanticSubject
+  applicationTerm : String
   substitutions : Array SemanticSubstitution
   residualPremises : Array SemanticExpression
   diagnostic : String
@@ -205,9 +207,16 @@ private def localContextTypes : MetaM (Array SemanticLocalDecl) := do
     }
   return rows
 
+private def analyzeLocalContext (env : Environment) (file : String)
+    (fileMap : FileMap) (goalType : Expr) : IO (Array SemanticLocalDecl) :=
+  runMetaIO env file fileMap (do
+    let goal ← Meta.mkFreshExprMVar goalType
+    let focused ← introduceForall goal.mvarId!
+    focused.withContext do localContextTypes)
+
 private def analyzeApplication (env : Environment) (file : String)
     (fileMap : FileMap) (goalType : Expr) (candidateName : Name) :
-    IO (Array SemanticSubstitution × Array SemanticExpression × Array SemanticLocalDecl) :=
+    IO (String × Array SemanticSubstitution × Array SemanticExpression × Array SemanticLocalDecl) :=
   runMetaIO env file fileMap (do
     let some candidateInfo := env.find? candidateName
       | throwError "candidate declaration not found"
@@ -227,10 +236,11 @@ private def analyzeApplication (env : Environment) (file : String)
         pure []
       else
         throwError "candidate application did not unify with the elaborated goal"
-    let some rawAssignment ← getExprMVarAssignment? goal.mvarId!
-      | throwError "candidate application did not assign the probe goal"
-    let assignment ← instantiateMVars rawAssignment
-    let substitutions ← applicationSubstitutions candidateInfo.type assignment.getAppArgs
+    let some rawFocusedAssignment ← getExprMVarAssignment? focused
+      | throwError "candidate application did not assign the focused probe goal"
+    let focusedAssignment ← instantiateMVars rawFocusedAssignment
+    let applicationDisplay ← focused.withContext do Meta.ppExpr focusedAssignment
+    let substitutions ← applicationSubstitutions candidateInfo.type focusedAssignment.getAppArgs
     let residuals ← residualGoals.toArray.mapM fun residual => do
       let type ← instantiateMVars (← residual.getType)
       let display ← Meta.ppExpr type
@@ -238,7 +248,7 @@ private def analyzeApplication (env : Environment) (file : String)
         typeDisplay := display.pretty
         typeStructural := (repr type).pretty
       }
-    return (substitutions, residuals, localContext))
+    return (applicationDisplay.pretty, substitutions, residuals, localContext))
 
 private def runHelper (module file goal probeName candidateName requestId : String) : IO UInt32 := do
   let contents ← IO.FS.readFile file
@@ -257,7 +267,7 @@ private def runHelper (module file goal probeName candidateName requestId : Stri
       let fileMap := contents.toFileMap
       let candidateLeanName ← parseLeanName env candidateName
       let goalType ← elaborateGoal env file fileMap goal
-      let (substitutions, residuals, localContext) ← analyzeApplication env file fileMap goalType candidateLeanName
+      let (applicationTerm, substitutions, residuals, localContext) ← analyzeApplication env file fileMap goalType candidateLeanName
       let probe ← expressionSubject env file fileMap probeName.toName goalType
       let candidate ← subject env file fileMap candidateLeanName
       let modules ← importedModules env
@@ -275,6 +285,7 @@ private def runHelper (module file goal probeName candidateName requestId : Stri
         module
         probe
         candidate
+        applicationTerm
         importedModules := modules
         substitutions
         residualPremises := residuals
@@ -298,16 +309,17 @@ private def runBatchHelper (module file goal probeName requestId : String)
       let goalType ← elaborateGoal env file fileMap goal
       let probe ← expressionSubject env file fileMap probeName.toName goalType
       let modules ← importedModules env
-      let localContext ← runMetaIO env file fileMap (do localContextTypes)
+      let localContext ← analyzeLocalContext env file fileMap goalType
       let rows ← candidateNames.toArray.mapM fun candidateName => do
         try
           let candidateLeanName ← parseLeanName env candidateName
           let candidate ← subject env file fileMap candidateLeanName
-          let (substitutions, residuals, _) ← analyzeApplication env file fileMap goalType candidateLeanName
+          let (applicationTerm, substitutions, residuals, _) ← analyzeApplication env file fileMap goalType candidateLeanName
           pure {
             candidate := candidateName
             status := if residuals.isEmpty then "accepted" else "applicable-with-residuals"
             candidateSubject := some candidate
+            applicationTerm
             substitutions
             residualPremises := residuals
             diagnostic := ""
@@ -317,6 +329,7 @@ private def runBatchHelper (module file goal probeName requestId : String)
             candidate := candidateName
             status := "rejected"
             candidateSubject := none
+            applicationTerm := ""
             substitutions := #[]
             residualPremises := #[]
             diagnostic := error.toString

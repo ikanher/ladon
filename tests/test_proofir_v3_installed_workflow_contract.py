@@ -38,18 +38,14 @@ def installed_workflow(
 ) -> tuple[tuple[str, ...], dict[str, object], dict[str, object]]:
     repository = tmp_path / "repo"
     repository.mkdir()
-    (repository / "Main.lean").write_text(
-        "theorem goal : True := by trivial\n", encoding="utf-8"
-    )
+    (repository / "Main.lean").write_text("theorem goal : True := by trivial\n", encoding="utf-8")
     native = claim_artifact()
     legacy = _legacy_artifact()
     (repository / "claim.json").write_text(json.dumps(native), encoding="utf-8")
     (repository / "legacy.json").write_text(json.dumps(legacy), encoding="utf-8")
     config = repository / PROOFIR_CONFIG_RELATIVE_PATH
     config.parent.mkdir(parents=True)
-    config.write_text(
-        json.dumps({"artifacts": ["claim.json", "legacy.json"]}), encoding="utf-8"
-    )
+    config.write_text(json.dumps({"artifacts": ["claim.json", "legacy.json"]}), encoding="utf-8")
     index = tmp_path / "proof-search.sqlite3"
     common = ("--repo-root", str(repository), "--index", str(index), "--format", "json")
     built = _run("proof-search", "index", "build", *common)
@@ -70,15 +66,11 @@ def test_installed_dossier_reports_coverage_and_limitations(
     installed_workflow: tuple[tuple[str, ...], dict[str, object], dict[str, object]],
 ) -> None:
     common, _, _ = installed_workflow
-    dossier = _run(
-        "proof-search", "evidence", "theorem", "statement:goal", *common
-    )
+    dossier = _run("proof-search", "evidence", "theorem", "statement:goal", *common)
     assert dossier["schema"] == "ladon-proofir-v3-theorem-evidence-v1"
     assert dossier["claims"]["returned"] == 1
     assert dossier["coverage"]["applicability"] == "unavailable"
-    assert {
-        row["id"] for row in dossier["limitations"]["rows"]
-    } == {
+    assert {row["id"] for row in dossier["limitations"]["rows"]} == {
         "evidence-not-theorem-truth",
         "navigation-not-complete-proof-slice",
     }
@@ -89,14 +81,12 @@ def test_installed_legacy_and_type_diagnostics_are_bounded(
     installed_workflow: tuple[tuple[str, ...], dict[str, object], dict[str, object]],
 ) -> None:
     common, legacy, _ = installed_workflow
-    rejected = _run(
-        "proof-search", "evidence", "artifact", str(legacy["artifactId"]), *common
-    )
+    rejected = _run("proof-search", "evidence", "artifact", str(legacy["artifactId"]), *common)
     assert rejected["rows"] == []
     diagnostics = _run(
         "proof-search",
         "search",
-        "type",
+        "type-text",
         "--pattern",
         "True",
         "--limit",

@@ -64,7 +64,13 @@ class DiscoveryRequest:
 
 
 def _validate_discovery_bounds(request: DiscoveryRequest) -> None:
-    values = (request.max_candidates, request.batch_size, request.timeout_seconds, request.max_output_bytes, request.max_rss_bytes)
+    values = (
+        request.max_candidates,
+        request.batch_size,
+        request.timeout_seconds,
+        request.max_output_bytes,
+        request.max_rss_bytes,
+    )
     if min(values) <= 0:
         raise ValueError("discovery bounds must be positive")
     if request.max_candidates > 1000 or request.batch_size > 100:
@@ -75,12 +81,25 @@ def _validate_discovery_bounds(request: DiscoveryRequest) -> None:
         raise ValueError("discovery output bound exceeds the supported cap")
     if request.max_rss_bytes > MAX_DISCOVERY_RSS_BYTES:
         raise ValueError("discovery memory bound exceeds the supported cap")
-    if len(request.module.encode()) > MAX_DISCOVERY_TERM_BYTES or len(request.goal.encode()) > MAX_DISCOVERY_TERM_BYTES:
+    if (
+        len(request.module.encode()) > MAX_DISCOVERY_TERM_BYTES
+        or len(request.goal.encode()) > MAX_DISCOVERY_TERM_BYTES
+    ):
         raise ValueError("discovery module or goal exceeds the supported byte cap")
 
 
 def _validate_discovery_scope(scope: str, roots: tuple[str, ...], freshness: str) -> None:
-    supported = {"repository", "project", "external", "module", "namespace", "file", "imports", "closure", "neighborhood"}
+    supported = {
+        "repository",
+        "project",
+        "external",
+        "module",
+        "namespace",
+        "file",
+        "imports",
+        "closure",
+        "neighborhood",
+    }
     if scope not in supported:
         raise ValueError("unsupported discovery scope")
     if scope in {"module", "namespace", "file", "imports", "closure", "neighborhood"} and not roots:
@@ -145,18 +164,27 @@ def discover_candidates(
         "coverage": {
             "shortlisted": len(shortlist),
             "submitted": len(candidates),
-            "completed": _count_status(candidates, {"accepted", "applicable-with-residuals", "rejected"}),
+            "completed": _count_status(
+                candidates, {"accepted", "applicable-with-residuals", "rejected"}
+            ),
             "accepted": _count_status(candidates, {"accepted", "applicable-with-residuals"}),
             "rejected": _count_status(candidates, {"rejected"}),
             "unassessed": _count_status(candidates, {"unassessed", "timeout", "resource-limited"}),
             "scratchAttempted": sum("scratch" in candidate.check for candidate in candidates),
-            "scratchCompiled": sum(candidate.check.get("scratch", {}).get("status") == "compiled" for candidate in candidates),
+            "scratchCompiled": sum(
+                candidate.check.get("scratch", {}).get("status") == "compiled"
+                for candidate in candidates
+            ),
             "truncated": len(shortlist) > request.max_candidates,
         },
         "ranking": {
             "policy": "verified-status-priority-v1",
             "contributions": [
-                {"candidate": candidate.name, "status": candidate.check.get("status"), "priority": _status_priority(candidate.check.get("status"))}
+                {
+                    "candidate": candidate.name,
+                    "status": candidate.check.get("status"),
+                    "priority": _status_priority(candidate.check.get("status")),
+                }
                 for candidate in candidates
             ],
         },
@@ -201,7 +229,11 @@ def _candidate_rows(
 ) -> list[DiscoveryCandidate]:
     if batch_checker is not None:
         return _batch_candidate_rows(rows, batch_checker, scratch_replayer, batch_size)
-    return [candidate for row in rows if (candidate := _check_one(row, checker, scratch_replayer)) is not None]
+    return [
+        candidate
+        for row in rows
+        if (candidate := _check_one(row, checker, scratch_replayer)) is not None
+    ]
 
 
 def _batch_candidate_rows(
@@ -225,14 +257,11 @@ def _batch_candidate_rows(
     return [
         candidate
         for row in rows
-        if (candidate := _candidate_from_batch(row, results, scratch_replayer))
-        is not None
+        if (candidate := _candidate_from_batch(row, results, scratch_replayer)) is not None
     ]
 
 
-def _failed_batch_chunk(
-    names: Sequence[str], error: Exception
-) -> dict[str, Mapping[str, Any]]:
+def _failed_batch_chunk(names: Sequence[str], error: Exception) -> dict[str, Mapping[str, Any]]:
     return {
         name: {
             "status": "unassessed",
@@ -243,7 +272,14 @@ def _failed_batch_chunk(
 
 
 def _status_priority(status: Any) -> int:
-    return {"accepted": 0, "applicable-with-residuals": 1, "rejected": 2, "timeout": 3, "resource-limited": 4, "unassessed": 5}.get(status, 6)
+    return {
+        "accepted": 0,
+        "applicable-with-residuals": 1,
+        "rejected": 2,
+        "timeout": 3,
+        "resource-limited": 4,
+        "unassessed": 5,
+    }.get(status, 6)
 
 
 def _check_one(
@@ -271,7 +307,9 @@ def _candidate_from_batch(
     name = str(row.get("candidateName") or row.get("name") or "")
     if not name:
         return None
-    check_payload = dict(results.get(name, {"status": "unassessed", "diagnostic": {"code": "batch-row-missing"}}))
+    check_payload = dict(
+        results.get(name, {"status": "unassessed", "diagnostic": {"code": "batch-row-missing"}})
+    )
     check_payload = _attach_scratch(check_payload, name, scratch_replayer)
     return DiscoveryCandidate(name, row, check_payload)
 
@@ -283,7 +321,13 @@ def _attach_scratch(
     if scratch_replayer is None or result.get("status") != "accepted":
         return result
     try:
-        result["scratch"] = dict(scratch_replayer(name))
+        receipt = result.get("evidenceReceipt")
+        subject = receipt.get("subject", {}) if isinstance(receipt, Mapping) else {}
+        caller_context = subject.get("localContext", ()) if isinstance(subject, Mapping) else ()
+        application_term = (result.get("applicationTerm") if caller_context else name) or name
+        if not isinstance(application_term, str):
+            raise TypeError("candidate application term must be a string")
+        result["scratch"] = dict(scratch_replayer(application_term))
     except Exception as error:  # noqa: BLE001 - candidate-scoped replay boundary
         result["scratch"] = {
             "status": "failed",
@@ -307,6 +351,7 @@ def _discovery_status(candidates: Sequence[DiscoveryCandidate]) -> str:
 
 def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checker:
     """Return a checker factory for the existing supervised Lean worker."""
+
     def check(candidate: str) -> SemanticCandidateCheck:
         return check_semantic_candidate(
             SemanticCandidateRequest(
@@ -318,6 +363,7 @@ def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checke
                 max_output_bytes=request.max_output_bytes,
                 max_rss_bytes=request.max_rss_bytes,
                 toolchain=toolchain,
+                local_context=request.local_context,
             )
         )
 
@@ -333,7 +379,15 @@ def semantic_scratch_replayer(request: DiscoveryRequest, toolchain: Any = None) 
         candidate=candidate,
         toolchain=toolchain,
         timeout_seconds=request.timeout_seconds,
+        local_context=request.local_context,
     ).to_dict()
 
 
-__all__ = ["DISCOVERY_SCHEMA", "DiscoveryCandidate", "DiscoveryRequest", "discover_candidates", "semantic_checker", "semantic_scratch_replayer"]
+__all__ = [
+    "DISCOVERY_SCHEMA",
+    "DiscoveryCandidate",
+    "DiscoveryRequest",
+    "discover_candidates",
+    "semantic_checker",
+    "semantic_scratch_replayer",
+]

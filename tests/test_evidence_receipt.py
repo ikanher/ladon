@@ -7,7 +7,12 @@ from ladon.evidence_receipt import build_evidence_receipt
 
 def _accepted(**overrides: object) -> dict[str, object]:
     values: dict[str, object] = {
-        "subject": {"module": "Main", "candidate": "Main.proof", "goal": "True"},
+        "subject": {
+            "module": "Main",
+            "candidate": "Main.proof",
+            "goal": "True",
+            "localContext": [],
+        },
         "execution_binding": "explicit-pinned",
         "observation_state": "live",
         "operation_outcome": "accepted",

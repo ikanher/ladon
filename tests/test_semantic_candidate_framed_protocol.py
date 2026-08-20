@@ -26,6 +26,7 @@ def _payload() -> dict[str, object]:
         "module": "Main",
         "probe": {"name": "ladonSemanticProbe_abc", "typeDisplay": "Nat", "typeStructural": "Nat"},
         "candidate": {"name": "Main.identity", "typeDisplay": "Nat", "typeStructural": "Nat"},
+        "applicationTerm": "Main.identity",
         "importedModules": [{"module": "Main", "oleanPath": "/tmp/Main.olean"}],
         "substitutions": [],
         "residualPremises": [],
@@ -39,6 +40,7 @@ def test_framed_parser_allows_bounded_process_noise_but_requires_one_nonce_bound
     payload["probe"]["name"] = "ladonSemanticProbe_" + ""  # parser identity is checked below
     # The actual probe name is request-derived; use the worker helper's name.
     from ladon.semantic_candidate_worker import _probe_name
+
     payload["probe"]["name"] = _probe_name(request)
     output = "warning from Lean\n" + SEMANTIC_FRAME_PREFIX + json.dumps(payload) + "\n"
     assert _parse_worker_payload(output, request, "req-test")["requestId"] == "req-test"
@@ -47,6 +49,7 @@ def test_framed_parser_allows_bounded_process_noise_but_requires_one_nonce_bound
 def test_framed_parser_rejects_duplicate_or_forged_frames() -> None:
     request = SemanticCandidateRequest(Path("."), "Main", "Nat", "Main.identity")
     from ladon.semantic_candidate_worker import _probe_name
+
     payload = _payload()
     payload["probe"]["name"] = _probe_name(request)
     frame = SEMANTIC_FRAME_PREFIX + json.dumps(payload)
@@ -76,9 +79,7 @@ def test_framed_parser_preserves_typed_nonempty_local_context() -> None:
             "origin": "goal-introduced",
         }
     ]
-    parsed = _parse_worker_payload(
-        SEMANTIC_FRAME_PREFIX + json.dumps(payload), request, "req-test"
-    )
+    parsed = _parse_worker_payload(SEMANTIC_FRAME_PREFIX + json.dumps(payload), request, "req-test")
     assert parsed["localContext"][0]["origin"] == "goal-introduced"
 
 
@@ -98,7 +99,9 @@ def test_framed_parser_rejects_invalid_terminal_state(field: str, replacement: o
     payload = _payload()
     payload["probe"]["name"] = _probe_name(request)
     payload[field] = replacement
-    message = "unsupported universe policy" if field == "universePolicy" else "invalid terminal frame"
+    message = (
+        "unsupported universe policy" if field == "universePolicy" else "invalid terminal frame"
+    )
     with pytest.raises(ValueError, match=message):
         _parse_worker_payload(SEMANTIC_FRAME_PREFIX + json.dumps(payload), request, "req-test")
 

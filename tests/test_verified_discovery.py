@@ -48,12 +48,36 @@ def test_discovery_check_failure_is_unassessed_and_bounded() -> None:
 def test_discovery_cli_contract_accepts_goal_context_and_candidates() -> None:
     args = build_proof_search_parser().parse_args(
         [
-            "discover", "--repo-root", "/repo", "--module", "Main", "--goal", "Nat",
-            "--candidate", "Main.zero", "--local", "h:Nat", "--max-candidates", "2",
+            "discover",
+            "--repo-root",
+            "/repo",
+            "--module",
+            "Main",
+            "--goal",
+            "Nat",
+            "--candidate",
+            "Main.zero",
+            "--local",
+            "h:Nat",
+            "--max-candidates",
+            "2",
         ]
     )
     assert args.proof_search_operation == "discover"
     assert args.local == ["h:Nat"]
+
+
+def test_semantic_request_retains_discovery_local_context() -> None:
+    from ladon.proof_search_discovery_cli import request_to_semantic
+
+    request = DiscoveryRequest(
+        Path("/repo"),
+        "Main",
+        "value = value",
+        local_context=({"name": "value", "type": "Nat"},),
+    )
+    semantic = request_to_semantic(request, None)
+    assert semantic.local_context == request.local_context
 
 
 def test_discovery_attaches_independent_scratch_result_for_acceptance() -> None:
@@ -110,12 +134,8 @@ def test_discovery_honors_batch_size_and_ranks_verified_outcomes() -> None:
 def test_discovery_request_identity_does_not_depend_on_checker_outcome() -> None:
     request = DiscoveryRequest(Path("/repo"), "Main", "Nat")
     shortlist = [{"candidateName": "Main.zero"}]
-    accepted = discover_candidates(
-        request, shortlist, lambda _: SemanticCandidateCheck("accepted")
-    )
-    rejected = discover_candidates(
-        request, shortlist, lambda _: SemanticCandidateCheck("rejected")
-    )
+    accepted = discover_candidates(request, shortlist, lambda _: SemanticCandidateCheck("accepted"))
+    rejected = discover_candidates(request, shortlist, lambda _: SemanticCandidateCheck("rejected"))
     assert accepted["requestIdentity"] == rejected["requestIdentity"]
     assert accepted["resultIdentity"] != rejected["resultIdentity"]
 

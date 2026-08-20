@@ -40,6 +40,7 @@ def _accepted_payload(tmp_path: Path) -> dict[str, Any]:
             "typeDisplay": "Nat → Nat",
             "typeStructural": "forallE Nat Nat",
         },
+        "applicationTerm": "Main.identity",
         "importedModules": [{"module": "Main", "oleanPath": str(olean)}],
         "substitutions": [],
         "residualPremises": [],
@@ -86,7 +87,10 @@ def _assert_process_bounds(artifacts: tuple[dict[str, Any], ...]) -> None:
         "maxOutputBytes": 8 * 1024 * 1024,
         "maxRssBytes": 2 * 1024 * 1024 * 1024,
     }
-    assert check["extensions"]["ladon.process-observation/v1"]["evidenceReceipt"]["schema"] == "ladon-evidence-receipt-v1"
+    assert (
+        check["extensions"]["ladon.process-observation/v1"]["evidenceReceipt"]["schema"]
+        == "ladon-evidence-receipt-v1"
+    )
 
 
 def test_accepted_worker_result_closes_exact_environment_and_check_references(
@@ -125,9 +129,7 @@ def test_timeout_never_publishes_accepted_artifacts(tmp_path: Path) -> None:
     repo.mkdir()
 
     def timeout_runner(*_args: object, **_kwargs: object) -> ProcessResult:
-        return ProcessResult(
-            ("lake", "env", "lean"), -9, "", "deadline", 1.0, timed_out=True
-        )
+        return ProcessResult(("lake", "env", "lean"), -9, "", "deadline", 1.0, timed_out=True)
 
     result = check_semantic_candidate(
         SemanticCandidateRequest(repo, "Main", "Nat", "Main.value"),

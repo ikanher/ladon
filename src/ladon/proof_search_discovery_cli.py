@@ -29,14 +29,20 @@ def register_discover_parser(
     positive_integer: Any,
     scopes: Any,
 ) -> None:
-    discover = operations.add_parser("discover", help="Check a bounded candidate set against one exact goal.")
+    discover = operations.add_parser(
+        "discover", help="Check a bounded candidate set against one exact goal."
+    )
     add_repository_options(discover)
     add_output_options(discover)
     discover.add_argument("--module", required=True)
     discover.add_argument("--goal", required=True)
     discover.add_argument("--candidate", action="append", default=[])
-    discover.add_argument("--pattern", help="Type-text pattern used to build a bounded SQLite shortlist.")
-    discover.add_argument("--local", action="append", default=[], help="Typed local as NAME:TYPE; repeatable.")
+    discover.add_argument(
+        "--pattern", help="Type-text pattern used to build a bounded SQLite shortlist."
+    )
+    discover.add_argument(
+        "--local", action="append", default=[], help="Typed local as NAME:TYPE; repeatable."
+    )
     discover.add_argument("--max-candidates", type=bounded_limit, default=20)
     discover.add_argument("--batch-size", type=bounded_limit, default=8)
     discover.add_argument("--scope", choices=sorted(scopes), default="repository")
@@ -151,6 +157,7 @@ def request_to_semantic(request: DiscoveryRequest, toolchain: Any) -> Any:
         max_output_bytes=request.max_output_bytes,
         max_rss_bytes=request.max_rss_bytes,
         toolchain=toolchain,
+        local_context=request.local_context,
     )
 
 

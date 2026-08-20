@@ -69,10 +69,30 @@ def _validate_receipt_references(
 
 
 def _validate_subject(subject: Mapping[str, Any]) -> None:
-    if set(subject) != {"module", "candidate", "goal"} or not all(
-        isinstance(value, str) and value for value in subject.values()
+    if set(subject) != {"module", "candidate", "goal", "localContext"}:
+        raise ValueError(
+            "evidence receipt subject must identify exact module, candidate, goal, and local context"
+        )
+    _validate_subject_names(subject)
+    _validate_subject_context(subject["localContext"])
+
+
+def _validate_subject_names(subject: Mapping[str, Any]) -> None:
+    if not all(
+        isinstance(subject[field], str) and subject[field]
+        for field in ("module", "candidate", "goal")
     ):
-        raise ValueError("evidence receipt subject must identify exact module, candidate, and goal")
+        raise ValueError("evidence receipt subject names must be non-empty strings")
+
+
+def _validate_subject_context(context: Any) -> None:
+    if not isinstance(context, list) or any(
+        not isinstance(row, Mapping)
+        or set(row) != {"name", "type"}
+        or not all(isinstance(row[field], str) and row[field] for field in ("name", "type"))
+        for row in context
+    ):
+        raise ValueError("evidence receipt local context is invalid")
 
 
 def _validate_accepted_references(
@@ -89,7 +109,11 @@ def _validate_accepted_references(
 
 def _validate_explicit_binding(dimensions: EvidenceDimensions) -> None:
     observed = dimensions.operation_outcome in {"accepted", "rejected"}
-    if dimensions.execution_binding == "explicit-pinned" and observed and dimensions.environment_match != "exact":
+    if (
+        dimensions.execution_binding == "explicit-pinned"
+        and observed
+        and dimensions.environment_match != "exact"
+    ):
         raise ValueError("explicit-pinned observed receipt requires an exact environment match")
 
 

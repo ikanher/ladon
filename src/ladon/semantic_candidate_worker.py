@@ -30,6 +30,23 @@ from ladon.proofir_v3 import (
     make_envelope,
     validate_envelope_batch,
 )
+from ladon.semantic_candidate_protocol import (
+    decode_single_frame,
+)
+from ladon.semantic_candidate_protocol import (
+    validate_application_rows as _validate_application_rows,
+)
+from ladon.semantic_candidate_protocol import (
+    validate_worker_modules as _validate_worker_modules,
+)
+from ladon.semantic_candidate_protocol import (
+    validate_worker_subject as _validate_worker_subject,
+)
+from ladon.semantic_local_context import (
+    goal_with_local_context,
+    validate_local_context,
+    validate_observed_local_context,
+)
 
 SEMANTIC_PROTOCOL = "ladon-lean-semantic-v3/check-candidate"
 SEMANTIC_BATCH_PROTOCOL = "ladon-lean-semantic-v3/check-candidates"
@@ -39,11 +56,7 @@ FINGERPRINT_SCHEME = {"name": "lean-expr-structural", "version": "2"}
 if (FINGERPRINT_SCHEME["name"], FINGERPRINT_SCHEME["version"]) not in SCHEMES:
     raise RuntimeError("semantic worker fingerprint scheme is not registered")
 DEFAULT_HELPER = Path(
-    str(
-        resources.files("ladon").joinpath(
-            "lean", "ladon_semantic_candidate_helper.lean"
-        )
-    )
+    str(resources.files("ladon").joinpath("lean", "ladon_semantic_candidate_helper.lean"))
 )
 MAX_GOAL_BYTES = 64 * 1024
 MAX_IMPORTED_MODULES = 10_000
@@ -64,12 +77,16 @@ class SemanticCandidateRequest:
     max_output_bytes: int = 8 * 1024 * 1024
     max_rss_bytes: int = 2 * 1024 * 1024 * 1024
     toolchain: LeanToolchainContext | None = None
+    local_context: tuple[Mapping[str, str], ...] = ()
 
     def __post_init__(self) -> None:
         _validate_request_identity(self.module, self.candidate)
         _validate_request_goal(self.goal)
-        _validate_request_bounds(
-            self.timeout_seconds, self.max_output_bytes, self.max_rss_bytes
+        _validate_request_bounds(self.timeout_seconds, self.max_output_bytes, self.max_rss_bytes)
+        validate_local_context(
+            self.local_context,
+            valid_name=_valid_qualified_name,
+            validate_type=_validate_request_goal,
         )
 
 
@@ -88,9 +105,7 @@ def _valid_qualified_name(value: str) -> bool:
     parser before looking up declarations; Python must not maintain a second,
     subtly different identifier grammar here.
     """
-    return bool(value) and not any(
-        char.isspace() or ord(char) < 32 for char in value
-    )
+    return bool(value) and not any(char.isspace() or ord(char) < 32 for char in value)
 
 
 def _validate_request_goal(goal: str) -> None:
@@ -120,6 +135,7 @@ class SemanticCandidateCheck:
     authority_selection: str = "not-assessed"
     analysis_completeness: str = "not-assessed"
     evidence_receipt: Mapping[str, Any] | None = None
+    application_term: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -129,6 +145,7 @@ class SemanticCandidateCheck:
             "authoritySelection": self.authority_selection,
             "analysisCompleteness": self.analysis_completeness,
             "evidenceReceipt": dict(self.evidence_receipt) if self.evidence_receipt else None,
+            "applicationTerm": self.application_term,
             "artifacts": list(self.artifacts),
             "diagnostic": dict(self.diagnostic) if self.diagnostic else None,
             "resourceAccounting": {
@@ -171,7 +188,7 @@ def check_semantic_candidate(
                 str(helper_path),
                 f"Ladon.Semantic.{probe_name}",
                 str(probe_path),
-                request.goal,
+                goal_with_local_context(request.goal, request.local_context),
                 probe_name,
                 request.candidate,
                 request_id,
@@ -195,7 +212,9 @@ def check_semantic_candidate(
             diagnostic={"code": "invalid-worker-output", "message": str(error)},
             elapsed_seconds=process.elapsed_seconds,
             peak_rss_bytes=process.peak_rss_bytes,
-            evidence_receipt=_receipt_for_check(request, "failed", "invalid-worker-output", "invalid"),
+            evidence_receipt=_receipt_for_check(
+                request, "failed", "invalid-worker-output", "invalid"
+            ),
         )
     status = (
         "applicable-with-residuals"
@@ -226,6 +245,7 @@ def check_semantic_candidate(
             residuals=len(payload["residualPremises"]),
         ),
         evidence_receipt=status_receipt,
+        application_term=payload["applicationTerm"],
     )
 
 
@@ -240,10 +260,19 @@ def _receipt_for_check(
     binding = "ambient-observed"
     environment_match = "unknown"
     if request.toolchain is not None:
-        binding = "explicit-pinned" if request.toolchain.selection_mode == "explicit" else "ambient-observed"
+        binding = (
+            "explicit-pinned"
+            if request.toolchain.selection_mode == "explicit"
+            else "ambient-observed"
+        )
         environment_match = "exact"
     return build_evidence_receipt(
-        subject={"module": request.module, "candidate": request.candidate, "goal": request.goal},
+        subject={
+            "module": request.module,
+            "candidate": request.candidate,
+            "goal": request.goal,
+            "localContext": [dict(row) for row in request.local_context],
+        },
         execution_binding=binding,
         observation_state="live" if outcome == "accepted" else "failed",
         operation_outcome="accepted" if outcome == "accepted" else "failed",
@@ -252,7 +281,9 @@ def _receipt_for_check(
         environment_match=environment_match,
         environment_ref=environment_ref,
         check_run_ref=check_run_ref,
-        limitations=(("Residual premises remain unverified.",) if status.endswith("residuals") else ()),
+        limitations=(
+            ("Residual premises remain unverified.",) if status.endswith("residuals") else ()
+        ),
     )
 
 
@@ -263,6 +294,7 @@ def _probe_name(request: SemanticCandidateRequest) -> str:
                 "module": request.module,
                 "goal": request.goal,
                 "candidate": request.candidate,
+                "localContext": [dict(row) for row in request.local_context],
             }
         ).decode("utf-8")
     )
@@ -274,7 +306,9 @@ def _environment_source(request: SemanticCandidateRequest) -> str:
     return f"import {request.module}\nset_option autoImplicit false\n"
 
 
-def _failed_check(process: ProcessResult, request: SemanticCandidateRequest) -> SemanticCandidateCheck:
+def _failed_check(
+    process: ProcessResult, request: SemanticCandidateRequest
+) -> SemanticCandidateCheck:
     if process.timed_out:
         code, status = "checker-timeout", "timeout"
     elif process.output_limited:
@@ -297,6 +331,15 @@ def _parse_worker_payload(
     stdout: str, request: SemanticCandidateRequest, request_id: str
 ) -> dict[str, Any]:
     payload = _decode_single_frame(stdout)
+    _validate_worker_frame(payload, request_id)
+    _validate_worker_collections(payload)
+    _validate_worker_identity(payload, request)
+    _validate_application_rows(payload)
+    validate_observed_local_context(payload["localContext"], request.local_context)
+    return payload
+
+
+def _validate_worker_frame(payload: Mapping[str, Any], request_id: str) -> None:
     if payload.get("protocol") != SEMANTIC_PROTOCOL:
         raise ValueError("Lean semantic helper emitted an unsupported protocol")
     required = {
@@ -311,6 +354,7 @@ def _parse_worker_payload(
         "module",
         "probe",
         "candidate",
+        "applicationTerm",
         "importedModules",
         "substitutions",
         "residualPremises",
@@ -324,31 +368,18 @@ def _parse_worker_payload(
         raise ValueError("Lean semantic helper returned an invalid terminal frame")
     if payload["universePolicy"] != UNIVERSE_POLICY:
         raise ValueError("Lean semantic helper returned an unsupported universe policy")
+
+
+def _validate_worker_collections(payload: Mapping[str, Any]) -> None:
     for field in ("substitutions", "residualPremises", "localContext"):
         if not isinstance(payload[field], list):
             raise TypeError(f"Lean semantic helper field {field} must be an array")
-    _validate_worker_identity(payload, request)
-    _validate_application_rows(payload)
-    return payload
+    if not isinstance(payload["applicationTerm"], str) or not payload["applicationTerm"]:
+        raise ValueError("Lean semantic helper returned an invalid application term")
 
 
 def _decode_single_frame(stdout: str) -> dict[str, Any]:
-    frames = [
-        line[len(SEMANTIC_FRAME_PREFIX):]
-        for line in stdout.splitlines()
-        if line.startswith(SEMANTIC_FRAME_PREFIX)
-    ]
-    if not frames:
-        raise ValueError("Lean semantic helper emitted no JSON payload")
-    if len(frames) != 1:
-        raise ValueError("Lean semantic helper emitted duplicate terminal frames")
-    try:
-        payload = json.loads(frames[0])
-    except json.JSONDecodeError as error:
-        raise ValueError("Lean semantic helper emitted non-framed JSON output") from error
-    if not isinstance(payload, dict):
-        raise TypeError("Lean semantic helper emitted a non-object frame")
-    return payload
+    return decode_single_frame(stdout, SEMANTIC_FRAME_PREFIX)
 
 
 def _validate_worker_identity(
@@ -359,84 +390,6 @@ def _validate_worker_identity(
     _validate_worker_subject(probe, "probe", _probe_name(request))
     _validate_worker_subject(candidate, "candidate", request.candidate)
     _validate_worker_modules(payload.get("importedModules"), request.module)
-
-
-def _validate_worker_subject(subject: Any, label: str, expected_name: str) -> None:
-    if not isinstance(subject, dict) or subject.get("name") != expected_name:
-        raise ValueError(f"Lean semantic helper returned a foreign {label} identity")
-    if not all(
-        isinstance(subject.get(field), str) and subject[field]
-        for field in ("name", "typeDisplay", "typeStructural")
-    ):
-        raise ValueError(f"Lean semantic helper returned an invalid {label} subject")
-
-
-def _validate_worker_modules(modules: Any, requested_module: str) -> None:
-    if not isinstance(modules, list):
-        raise TypeError("Lean semantic helper modules must be an array")
-    valid = all(
-        isinstance(row, dict)
-        and set(row) == {"module", "oleanPath"}
-        and all(isinstance(row[field], str) and row[field] for field in row)
-        for row in modules
-    )
-    if not valid or not any(row["module"] == requested_module for row in modules):
-        raise ValueError("Lean semantic helper environment omits the requested module")
-
-
-def _validate_application_rows(payload: Mapping[str, Any]) -> None:
-    substitution_fields = {"variable", "termDisplay", "termStructural"}
-    expression_fields = {"typeDisplay", "typeStructural"}
-    local_fields = {
-        "localId",
-        "userName",
-        "binderInfo",
-        "typeDisplay",
-        "typeStructural",
-        "valueDisplay",
-        "valueStructural",
-        "dependencies",
-        "origin",
-    }
-    if not _closed_string_rows(payload["substitutions"], substitution_fields):
-        raise ValueError("Lean semantic helper returned invalid substitutions")
-    if not _closed_string_rows(payload["residualPremises"], expression_fields):
-        raise ValueError("Lean semantic helper returned invalid residual premises")
-    if not _closed_local_context_rows(payload["localContext"], local_fields):
-        raise ValueError("Lean semantic helper returned invalid local context")
-
-
-def _closed_string_rows(rows: list[Any], fields: set[str]) -> bool:
-    for row in rows:
-        if not isinstance(row, dict) or set(row) != fields:
-            return False
-        if not all(isinstance(row[field], str) and row[field] for field in fields):
-            return False
-    return True
-
-
-def _closed_local_context_rows(rows: list[Any], fields: set[str]) -> bool:
-    for row in rows:
-        if not isinstance(row, dict) or set(row) != fields:
-            return False
-        if not _valid_local_context_scalars(row):
-            return False
-        if not _valid_local_dependencies(row["dependencies"]):
-            return False
-    return True
-
-
-def _valid_local_context_scalars(row: dict[str, Any]) -> bool:
-    fields = ("localId", "userName", "binderInfo", "typeDisplay", "typeStructural", "valueDisplay", "valueStructural", "origin")
-    return all(isinstance(row[field], str) for field in fields) and all(
-        row[field] for field in ("localId", "userName", "binderInfo", "typeDisplay", "typeStructural", "origin")
-    )
-
-
-def _valid_local_dependencies(dependencies: Any) -> bool:
-    return isinstance(dependencies, list) and all(
-        isinstance(dep, str) and dep for dep in dependencies
-    )
 
 
 def _accepted_artifacts(
@@ -485,7 +438,16 @@ def _accepted_artifacts(
             application,
         )
         return environment, check, attempt
-    derivation = _derivation_artifact(env_ref, statement, declaration, context, terms, payload["substitutions"], check, application)
+    derivation = _derivation_artifact(
+        env_ref,
+        statement,
+        declaration,
+        context,
+        terms,
+        payload["substitutions"],
+        check,
+        application,
+    )
     return environment, check, derivation
 
 
@@ -558,7 +520,9 @@ def _environment_artifact(
 def _subject(kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
     structural = str(row["typeStructural"])
     if kind == "declaration":
-        digest = _digest_bytes(canonical_bytes({"qualifiedName": str(row["name"]), "type": structural}))
+        digest = _digest_bytes(
+            canonical_bytes({"qualifiedName": str(row["name"]), "type": structural})
+        )
         scheme = {"name": "lean-declaration-identity", "version": "1"}
     else:
         digest = _digest_text(structural)
@@ -598,12 +562,17 @@ def _application_subject(
     return {
         "kind": "candidate-application",
         "localId": f"candidate-application:{digest}",
-        "fingerprint": {"scheme": {"name": "lean-candidate-application", "version": "1"}, "digest": digest},
+        "fingerprint": {
+            "scheme": {"name": "lean-candidate-application", "version": "1"},
+            "digest": digest,
+        },
         "display": "candidate application",
     }
 
 
-def _context_subject(environment_ref: str, local_context: list[Mapping[str, Any]] | None = None) -> dict[str, Any]:
+def _context_subject(
+    environment_ref: str, local_context: list[Mapping[str, Any]] | None = None
+) -> dict[str, Any]:
     locals_value = [dict(row) for row in (local_context or [])]
     identity_locals = [
         {
@@ -620,7 +589,9 @@ def _context_subject(environment_ref: str, local_context: list[Mapping[str, Any]
         }
         for row in locals_value
     ]
-    digest = _digest_bytes(canonical_bytes({"environmentRef": environment_ref, "locals": identity_locals}))
+    digest = _digest_bytes(
+        canonical_bytes({"environmentRef": environment_ref, "locals": identity_locals})
+    )
     return {
         "kind": "local-context",
         "localId": f"local-context:{digest}",
@@ -700,13 +671,23 @@ def _check_artifact(
         environment_ref=environment_ref,
         check_run_ref=check_id,
     )
-    check_subject = {"kind": "check-run", "localId": check_id, "display": "Lean exact-candidate check"}
+    check_subject = {
+        "kind": "check-run",
+        "localId": check_id,
+        "display": "Lean exact-candidate check",
+    }
     compact_statement = _compact(statement)
     compact_declaration = _compact(declaration)
     artifact = _envelope(
         "proofir.check-run",
         environment_ref,
-        [statement, declaration, *_unique_subjects(additional_subjects), check_subject, application],
+        [
+            statement,
+            declaration,
+            *_unique_subjects(additional_subjects),
+            check_subject,
+            application,
+        ],
         {
             "checkRunId": check_id,
             "checker": {
@@ -728,7 +709,11 @@ def _check_artifact(
             },
             "results": [
                 {"subjectRef": _compact(application), "result": "accepted", "diagnostics": []},
-                {"subjectRef": compact_statement, "result": "unchecked" if has_residuals else "accepted", "diagnostics": []},
+                {
+                    "subjectRef": compact_statement,
+                    "result": "unchecked" if has_residuals else "accepted",
+                    "diagnostics": [],
+                },
             ],
             "outputs": {
                 "stdoutDigest": observation["stdoutDigest"],
@@ -799,7 +784,10 @@ def _derivation_artifact(
             ],
         },
         limitations=[
-            {"id": "closed-exact-candidate-only", "message": "This derivation records a closed exact-candidate probe with no residual premises; substitutions and local context remain part of its identity."}
+            {
+                "id": "closed-exact-candidate-only",
+                "message": "This derivation records a closed exact-candidate probe with no residual premises; substitutions and local context remain part of its identity.",
+            }
         ],
     )
     return artifact.to_dict()

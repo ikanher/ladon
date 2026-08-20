@@ -140,21 +140,15 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
         help="Maximum rows returned, between 1 and 1000.",
     )
     query.add_argument("--min-matched-segments", type=_positive_integer, default=1)
-    search = operations.add_parser(
-        "search", help="Run the versioned name-search contract."
-    )
+    search = operations.add_parser("search", help="Run the versioned name-search contract.")
     search_commands = search.add_subparsers(dest="search_operation", required=True)
-    name = search_commands.add_parser(
-        "name", help="Search declarations by normalized name."
-    )
+    name = search_commands.add_parser("name", help="Search declarations by normalized name.")
     _add_repository_options(name)
     _add_output_options(name)
     name.add_argument("--text", required=True)
     name.add_argument("--query-mode", choices=("all", "any", "phrase"), default="all")
     name.add_argument("--exclude", action="append", default=[])
-    name.add_argument(
-        "--scope", choices=sorted(SUPPORTED_INDEX_SCOPES), default="repository"
-    )
+    name.add_argument("--scope", choices=sorted(SUPPORTED_INDEX_SCOPES), default="repository")
     name.add_argument("--root", action="append", default=[])
     name.add_argument("--limit", type=_bounded_limit, default=20)
     name.add_argument("--min-matched-segments", type=_positive_integer, default=1)
@@ -174,12 +168,8 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     type_search.add_argument("--root", action="append", default=[])
     type_search.add_argument("--limit", type=_bounded_limit, default=20)
     type_search.add_argument("--diagnostic-limit", type=_bounded_limit, default=0)
-    type_search.add_argument(
-        "--freshness", choices=("verify", "stored"), default="stored"
-    )
-    explain = operations.add_parser(
-        "explain", help="Explain a bounded candidate/goal difference."
-    )
+    type_search.add_argument("--freshness", choices=("verify", "stored"), default="stored")
+    explain = operations.add_parser("explain", help="Explain a bounded candidate/goal difference.")
     _add_repository_options(explain)
     _add_output_options(explain)
     explain.add_argument("--goal", required=True)
@@ -194,19 +184,19 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
         help="Use compatibility raw-signature comparison without binder normalization.",
     )
     register_discover_parser(
-        operations, _add_repository_options, _add_output_options,
-        _bounded_limit, _positive_integer, SUPPORTED_INDEX_SCOPES,
+        operations,
+        _add_repository_options,
+        _add_output_options,
+        _bounded_limit,
+        _positive_integer,
+        SUPPORTED_INDEX_SCOPES,
     )
-    consumers = operations.add_parser(
-        "consumers", help="Find bounded declaration consumers."
-    )
+    consumers = operations.add_parser("consumers", help="Find bounded declaration consumers.")
     _add_repository_options(consumers)
     _add_output_options(consumers)
     consumers.add_argument("--declaration", required=True)
     consumers.add_argument("--kind", choices=("all", "type", "value"), default="all")
-    consumers.add_argument(
-        "--ownership", choices=("all", "project", "external"), default="all"
-    )
+    consumers.add_argument("--ownership", choices=("all", "project", "external"), default="all")
     consumers.add_argument("--limit", type=_bounded_limit, default=100)
     constructor = operations.add_parser(
         "constructor", help="Inspect bounded constructor field coverage."
@@ -217,12 +207,8 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     constructor.add_argument("--module")
     constructor.add_argument("--argument", action="append", default=[])
     constructor.add_argument("--limit", type=_bounded_limit, default=100)
-    constructor.add_argument(
-        "--freshness", choices=("verify", "stored"), default="stored"
-    )
-    check = operations.add_parser(
-        "check", help="Run an explicit bounded Lean checker operation."
-    )
+    constructor.add_argument("--freshness", choices=("verify", "stored"), default="stored")
+    check = operations.add_parser("check", help="Run an explicit bounded Lean checker operation.")
     check_commands = check.add_subparsers(dest="check_operation", required=True)
     candidate = check_commands.add_parser(
         "candidate", help="Check one closed candidate against one exact goal."
@@ -254,7 +240,7 @@ def proof_search_main(argv: Sequence[str]) -> int:
     operation = _operation_from_tokens(arguments)
     started = time.monotonic()
     if arguments[:2] == ["search", "type"]:
-        _emit_retired_type_diagnostic()
+        _emit_type_text_migration_diagnostic()
         return EXIT_INVOCATION
     try:
         args = parser.parse_args(arguments)
@@ -270,9 +256,7 @@ def proof_search_main(argv: Sequence[str]) -> int:
         )
         return EXIT_SUCCESS
     except KeyboardInterrupt:
-        _emit_terminal(
-            operation, exit_class="interrupted", exit_code=EXIT_INTERRUPTED
-        )
+        _emit_terminal(operation, exit_class="interrupted", exit_code=EXIT_INTERRUPTED)
         return EXIT_INTERRUPTED
     except ProofSearchIndexError as exc:
         del exc
@@ -280,9 +264,7 @@ def proof_search_main(argv: Sequence[str]) -> int:
         return EXIT_INVOCATION
     except (OSError, UnicodeError) as exc:
         del exc
-        _emit_terminal(
-            operation, exit_class="operational", exit_code=EXIT_OPERATIONAL
-        )
+        _emit_terminal(operation, exit_class="operational", exit_code=EXIT_OPERATIONAL)
         return EXIT_OPERATIONAL
 
 
@@ -311,7 +293,7 @@ def _emit_terminal(
     )
 
 
-def _emit_retired_type_diagnostic() -> None:
+def _emit_type_text_migration_diagnostic() -> None:
     print(
         json.dumps(
             {
@@ -390,7 +372,9 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
         "consumers": _dispatch_consumers,
         "constructor": _dispatch_constructor,
         "check": _dispatch_check_adapter,
-        "discover": lambda args, repo_root, index_path: dispatch_discover(args, repo_root, index_path),
+        "discover": lambda args, repo_root, index_path: dispatch_discover(
+            args, repo_root, index_path
+        ),
     }
     handler = handlers.get(args.proof_search_operation)
     if handler is None:
@@ -398,8 +382,6 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
             f"unsupported proof-search operation {args.proof_search_operation!r}"
         )
     return handler(args, repo_root, index_path)
-
-
 
 
 def _dispatch_consumers(
@@ -472,6 +454,8 @@ def _dispatch_explain(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
     return _dispatch_explain_impl(args, repo_root, index_path)
+
+
 def _dispatch_index(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
@@ -551,37 +535,26 @@ def _dispatch_evidence(
         return _dispatch_stored_derivation(connection, args)
 
 
-def _dispatch_stored_derivation(
-    connection: Any, args: argparse.Namespace
-) -> Mapping[str, Any]:
+def _dispatch_stored_derivation(connection: Any, args: argparse.Namespace) -> Mapping[str, Any]:
     """Run a bounded native derivation query over one stored artifact."""
     if args.kind == "route" and not args.start:
         raise ProofSearchIndexError("route evidence requires --start")
     target_text = _parse_typed_statement(args.end)
     start_text = _parse_typed_statement(args.start) if args.kind == "route" else None
     row = connection.execute(
-        "SELECT artifact_kind,canonical_json FROM proofir_v3_artifacts "
-        "WHERE content_artifact_id=?",
+        "SELECT artifact_kind,canonical_json FROM proofir_v3_artifacts WHERE content_artifact_id=?",
         (args.name,),
     ).fetchone()
     if row is None:
-        raise ProofSearchIndexError(
-            f"stored derivation artifact not found: {args.name}"
-        )
+        raise ProofSearchIndexError(f"stored derivation artifact not found: {args.name}")
     if row[0] != "proofir.derivation":
-        raise ProofSearchIndexError(
-            "stored evidence artifact is not a proofir.derivation"
-        )
+        raise ProofSearchIndexError("stored evidence artifact is not a proofir.derivation")
     try:
         artifact = validate_envelope(json.loads(row[1])).to_dict()
     except (json.JSONDecodeError, ProofIRV3Error) as exc:
-        raise ProofSearchIndexError(
-            f"stored derivation artifact is invalid: {exc}"
-        ) from exc
+        raise ProofSearchIndexError(f"stored derivation artifact is invalid: {exc}") from exc
     target = _resolve_statement_ref(target_text, artifact)
-    start = (
-        _resolve_statement_ref(start_text, artifact) if start_text is not None else None
-    )
+    start = _resolve_statement_ref(start_text, artifact) if start_text is not None else None
     bounds = _derivation_query_bounds(args.limit)
     if args.kind == "route":
         return navigation_path(artifact, start, target, bounds=bounds)
@@ -592,20 +565,14 @@ def _dispatch_stored_derivation(
 
 def _parse_typed_statement(value: str | None) -> str:
     """Parse the CLI's deliberately narrow typed statement reference syntax."""
-    if (
-        not isinstance(value, str)
-        or not value.startswith("statement:")
-        or not value[10:]
-    ):
+    if not isinstance(value, str) or not value.startswith("statement:") or not value[10:]:
         raise ProofSearchIndexError(
             "derivation query references must be typed as statement:<local-id>"
         )
     return value[10:]
 
 
-def _resolve_statement_ref(
-    local_id: str, artifact: Mapping[str, Any]
-) -> dict[str, str]:
+def _resolve_statement_ref(local_id: str, artifact: Mapping[str, Any]) -> dict[str, str]:
     """Accept both bare local IDs and producer-prefixed IDs in CLI fixtures."""
     subjects = artifact.get("subjectRefs", [])
     available = {
@@ -707,9 +674,7 @@ def _render_header(payload: Mapping[str, Any]) -> list[str]:
             lines.append(f"{label}: {payload[key]}")
     counts = payload.get("counts")
     if isinstance(counts, Mapping):
-        lines.append(
-            "counts: " + ", ".join(f"{key}={counts[key]}" for key in sorted(counts))
-        )
+        lines.append("counts: " + ", ".join(f"{key}={counts[key]}" for key in sorted(counts)))
     return lines
 
 
@@ -763,9 +728,7 @@ def _render_paths(payload: Mapping[str, Any]) -> list[str]:
     lines: list[str] = []
     paths = payload.get("paths")
     if isinstance(paths, list):
-        lines.append(
-            f"paths: returned={len(paths)} minimum_depth={payload.get('minimumDepth')}"
-        )
+        lines.append(f"paths: returned={len(paths)} minimum_depth={payload.get('minimumDepth')}")
         for path in paths:
             if isinstance(path, Mapping):
                 names = " -> ".join(
@@ -773,9 +736,7 @@ def _render_paths(payload: Mapping[str, Any]) -> list[str]:
                     for node in path.get("nodes", [])
                     if isinstance(node, Mapping)
                 )
-                lines.append(
-                    f"- {path.get('pathId', '?')} depth={path.get('depth', '?')}: {names}"
-                )
+                lines.append(f"- {path.get('pathId', '?')} depth={path.get('depth', '?')}: {names}")
     return lines
 
 
@@ -783,9 +744,7 @@ def _render_coverage(payload: Mapping[str, Any]) -> list[str]:
     lines: list[str] = []
     coverage = payload.get("coverage")
     if isinstance(coverage, Mapping):
-        lines.append(
-            f"coverage: {json.dumps(coverage, sort_keys=True, ensure_ascii=False)}"
-        )
+        lines.append(f"coverage: {json.dumps(coverage, sort_keys=True, ensure_ascii=False)}")
     nonclaims = payload.get("nonclaims")
     if isinstance(nonclaims, list):
         lines.extend(f"nonclaim: {item}" for item in nonclaims)
@@ -813,8 +772,7 @@ def _render_query_rows(rows: list[Any]) -> list[str]:
         name = row.get("candidateName") or row.get("name") or "<unknown>"
         location = f"{row.get('path', '?')}:{row.get('line', '?')}"
         rendered.append(
-            f"- {name} [{row.get('kind', 'unknown')}; "
-            f"{row.get('authority', 'unknown')}] {location}"
+            f"- {name} [{row.get('kind', 'unknown')}; {row.get('authority', 'unknown')}] {location}"
         )
     return rendered
 

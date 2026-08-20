@@ -29,6 +29,10 @@ from ladon.semantic_candidate_worker import (
     _validate_worker_modules,
     _validate_worker_subject,
 )
+from ladon.semantic_local_context import (
+    goal_with_local_context,
+    validate_observed_local_context,
+)
 
 ProcessRunner = Any
 
@@ -48,8 +52,13 @@ class SemanticCandidateBatchCheck:
             "status": self.status,
             "rows": [dict(row) for row in self.rows],
             "diagnostic": dict(self.diagnostic) if self.diagnostic else None,
-            "resourceAccounting": {"elapsedSeconds": round(self.elapsed_seconds, 6), "peakRssBytes": self.peak_rss_bytes},
-            "nonclaims": ["Each row is one bounded Lean observation, not an unqualified theorem verdict."],
+            "resourceAccounting": {
+                "elapsedSeconds": round(self.elapsed_seconds, 6),
+                "peakRssBytes": self.peak_rss_bytes,
+            },
+            "nonclaims": [
+                "Each row is one bounded Lean observation, not an unqualified theorem verdict."
+            ],
         }
 
 
@@ -74,7 +83,18 @@ def check_semantic_candidates(
             else ("lake", "env", "lean")
         )
         process = runner(
-            command + ("--run", str(helper_path), "--batch", request.module, str(probe_path), request.goal, probe_name, request_id, *candidates),
+            command
+            + (
+                "--run",
+                str(helper_path),
+                "--batch",
+                request.module,
+                str(probe_path),
+                goal_with_local_context(request.goal, request.local_context),
+                probe_name,
+                request_id,
+                *candidates,
+            ),
             cwd=request.repo_root,
             env=(request.toolchain.environment if request.toolchain else None),
             timeout_seconds=request.timeout_seconds,
@@ -83,38 +103,76 @@ def check_semantic_candidates(
             cancel_event=cancel_event,
         )
     if not process.succeeded:
-        return SemanticCandidateBatchCheck("failed", diagnostic={"code": "batch-worker-failed", "message": (process.stderr or process.stdout).strip()}, elapsed_seconds=process.elapsed_seconds, peak_rss_bytes=process.peak_rss_bytes)
+        return SemanticCandidateBatchCheck(
+            "failed",
+            diagnostic={
+                "code": "batch-worker-failed",
+                "message": (process.stderr or process.stdout).strip(),
+            },
+            elapsed_seconds=process.elapsed_seconds,
+            peak_rss_bytes=process.peak_rss_bytes,
+        )
     try:
         payload = _parse_batch_worker_payload(process.stdout, request, request_id, candidates)
     except (TypeError, ValueError) as error:
-        return SemanticCandidateBatchCheck("invalid-worker-output", diagnostic={"code": "invalid-batch-worker-output", "message": str(error)}, elapsed_seconds=process.elapsed_seconds, peak_rss_bytes=process.peak_rss_bytes)
+        return SemanticCandidateBatchCheck(
+            "invalid-worker-output",
+            diagnostic={"code": "invalid-batch-worker-output", "message": str(error)},
+            elapsed_seconds=process.elapsed_seconds,
+            peak_rss_bytes=process.peak_rss_bytes,
+        )
     try:
         rows = _materialize_batch_rows(request, helper_path, process, payload)
     except (OSError, TypeError, ValueError) as error:
-        return SemanticCandidateBatchCheck("invalid-worker-output", diagnostic={"code": "invalid-batch-evidence", "message": str(error)}, elapsed_seconds=process.elapsed_seconds, peak_rss_bytes=process.peak_rss_bytes)
-    return SemanticCandidateBatchCheck("available", tuple(rows), elapsed_seconds=process.elapsed_seconds, peak_rss_bytes=process.peak_rss_bytes)
+        return SemanticCandidateBatchCheck(
+            "invalid-worker-output",
+            diagnostic={"code": "invalid-batch-evidence", "message": str(error)},
+            elapsed_seconds=process.elapsed_seconds,
+            peak_rss_bytes=process.peak_rss_bytes,
+        )
+    return SemanticCandidateBatchCheck(
+        "available",
+        tuple(rows),
+        elapsed_seconds=process.elapsed_seconds,
+        peak_rss_bytes=process.peak_rss_bytes,
+    )
 
 
 def _validate_batch_candidates(candidates: Sequence[str]) -> None:
     if not candidates or len(candidates) > 100:
         raise ValueError("semantic candidate batch must contain between 1 and 100 candidates")
-    if len(set(candidates)) != len(candidates) or any(not _valid_qualified_name(candidate) for candidate in candidates):
+    if len(set(candidates)) != len(candidates) or any(
+        not _valid_qualified_name(candidate) for candidate in candidates
+    ):
         raise ValueError("semantic candidate batch contains invalid or duplicate candidates")
 
 
 def _batch_probe_name(request: SemanticCandidateRequest) -> str:
-    identity = _digest_text(canonical_bytes({"module": request.module, "goal": request.goal, "batch": True}).decode("utf-8"))
+    identity = _digest_text(
+        canonical_bytes(
+            {
+                "module": request.module,
+                "goal": request.goal,
+                "localContext": [dict(row) for row in request.local_context],
+                "batch": True,
+            }
+        ).decode("utf-8")
+    )
     return "ladonSemanticBatchProbe_" + identity[7:23]
 
 
-def _parse_batch_worker_payload(stdout: str, request: SemanticCandidateRequest, request_id: str, candidates: Sequence[str]) -> dict[str, Any]:
+def _parse_batch_worker_payload(
+    stdout: str, request: SemanticCandidateRequest, request_id: str, candidates: Sequence[str]
+) -> dict[str, Any]:
     payload = _decode_single_frame(stdout)
     _validate_batch_identity(payload, request, request_id)
     _validate_batch_rows(payload["rows"], candidates)
     return payload
 
 
-def _validate_batch_identity(payload: Mapping[str, Any], request: SemanticCandidateRequest, request_id: str) -> None:
+def _validate_batch_identity(
+    payload: Mapping[str, Any], request: SemanticCandidateRequest, request_id: str
+) -> None:
     _validate_batch_required_fields(payload)
     _validate_batch_frame(payload, request, request_id)
     _validate_batch_execution_identity(payload)
@@ -123,9 +181,20 @@ def _validate_batch_identity(payload: Mapping[str, Any], request: SemanticCandid
 
 def _validate_batch_required_fields(payload: Mapping[str, Any]) -> None:
     required = {
-        "protocol", "frameVersion", "sequence", "terminal", "universePolicy",
-        "requestId", "leanVersion", "leanCommit", "executablePath", "module",
-        "probe", "importedModules", "rows", "localContext",
+        "protocol",
+        "frameVersion",
+        "sequence",
+        "terminal",
+        "universePolicy",
+        "requestId",
+        "leanVersion",
+        "leanCommit",
+        "executablePath",
+        "module",
+        "probe",
+        "importedModules",
+        "rows",
+        "localContext",
     }
     if not required <= set(payload):
         raise ValueError("Lean semantic helper omitted required batch evidence fields")
@@ -136,14 +205,22 @@ def _validate_batch_frame(
 ) -> None:
     if payload.get("protocol") != SEMANTIC_BATCH_PROTOCOL or payload.get("requestId") != request_id:
         raise ValueError("Lean semantic helper returned an invalid batch identity")
-    if payload.get("frameVersion") != 1 or payload.get("sequence") != 0 or payload.get("terminal") is not True or payload.get("module") != request.module:
+    if (
+        payload.get("frameVersion") != 1
+        or payload.get("sequence") != 0
+        or payload.get("terminal") is not True
+        or payload.get("module") != request.module
+    ):
         raise ValueError("Lean semantic helper returned an invalid batch population")
     if payload.get("universePolicy") != UNIVERSE_POLICY:
         raise ValueError("Lean semantic helper returned an unsupported batch universe policy")
 
 
 def _validate_batch_execution_identity(payload: Mapping[str, Any]) -> None:
-    if not all(isinstance(payload.get(field), str) and payload[field] for field in ("leanVersion", "leanCommit", "executablePath")):
+    if not all(
+        isinstance(payload.get(field), str) and payload[field]
+        for field in ("leanVersion", "leanCommit", "executablePath")
+    ):
         raise ValueError("Lean semantic helper returned invalid batch execution identity")
     if not isinstance(payload.get("rows"), list):
         raise TypeError("Lean semantic helper returned non-list batch rows")
@@ -154,7 +231,10 @@ def _validate_batch_semantic_population(
 ) -> None:
     _validate_worker_subject(payload.get("probe"), "probe", _batch_probe_name(request))
     _validate_worker_modules(payload.get("importedModules"), request.module)
-    _validate_application_rows({"substitutions": [], "residualPremises": [], "localContext": payload.get("localContext")})
+    _validate_application_rows(
+        {"substitutions": [], "residualPremises": [], "localContext": payload.get("localContext")}
+    )
+    validate_observed_local_context(payload["localContext"], request.local_context)
 
 
 def _validate_batch_rows(rows: list[Any], candidates: Sequence[str]) -> None:
@@ -171,27 +251,54 @@ def _validate_batch_row(row: Any, candidate: str) -> None:
 
 
 def _validate_batch_row_shape(row: Any, candidate: str) -> None:
-    fields = {"candidate", "status", "candidateSubject", "substitutions", "residualPremises", "diagnostic"}
+    fields = {
+        "candidate",
+        "status",
+        "candidateSubject",
+        "applicationTerm",
+        "substitutions",
+        "residualPremises",
+        "diagnostic",
+    }
     if not isinstance(row, dict) or set(row) != fields:
         raise ValueError("Lean semantic helper returned an invalid candidate row shape")
-    if row["candidate"] != candidate or row["status"] not in {"accepted", "applicable-with-residuals", "rejected"}:
+    if row["candidate"] != candidate or row["status"] not in {
+        "accepted",
+        "applicable-with-residuals",
+        "rejected",
+    }:
         raise ValueError("Lean semantic helper returned an invalid candidate outcome")
     if not isinstance(row["diagnostic"], str):
         raise TypeError("Lean semantic helper returned an invalid candidate diagnostic")
+    if not isinstance(row["applicationTerm"], str):
+        raise TypeError("Lean semantic helper returned an invalid candidate application term")
 
 
 def _validate_batch_row_evidence(row: Mapping[str, Any], candidate: str) -> None:
-    _validate_application_rows({"substitutions": row["substitutions"], "residualPremises": row["residualPremises"], "localContext": []})
+    _validate_application_rows(
+        {
+            "substitutions": row["substitutions"],
+            "residualPremises": row["residualPremises"],
+            "localContext": [],
+        }
+    )
     if row["status"] == "rejected":
         _validate_rejected_row(row)
         return
     _validate_worker_subject(row["candidateSubject"], "candidate", candidate)
+    if not row["applicationTerm"]:
+        raise ValueError("accepted candidate row omits its exact application term")
     if bool(row["residualPremises"]) != (row["status"] == "applicable-with-residuals"):
         raise ValueError("candidate status disagrees with residual premises")
 
 
 def _validate_rejected_row(row: Mapping[str, Any]) -> None:
-    if row["candidateSubject"] is not None or row["substitutions"] or row["residualPremises"]:
+    if (
+        row["candidateSubject"] is not None
+        or row["applicationTerm"]
+        or row["substitutions"]
+        or row["residualPremises"]
+    ):
         raise ValueError("rejected candidate row carries accepted evidence")
 
 
@@ -222,10 +329,33 @@ def _materialize_batch_row(
         artifacts = _accepted_artifacts(candidate_request, helper_path, process, single)
         validate_envelope_batch(list(artifacts))
         receipt = artifacts[1]["extensions"]["ladon.process-observation/v1"]["evidenceReceipt"]
-        return {**dict(row), "environmentRef": environment["environmentRef"], "checkRunRef": artifacts[1]["payload"]["checkRunId"], "evidenceReceipt": receipt, "artifacts": list(artifacts)}
-    check_ref = "check:" + _digest_text(canonical_bytes({"environmentRef": environment["environmentRef"], "candidate": row["candidate"], "diagnostic": row["diagnostic"]}).decode())[7:]
+        return {
+            **dict(row),
+            "environmentRef": environment["environmentRef"],
+            "checkRunRef": artifacts[1]["payload"]["checkRunId"],
+            "evidenceReceipt": receipt,
+            "artifacts": list(artifacts),
+        }
+    check_ref = (
+        "check:"
+        + _digest_text(
+            canonical_bytes(
+                {
+                    "environmentRef": environment["environmentRef"],
+                    "candidate": row["candidate"],
+                    "diagnostic": row["diagnostic"],
+                }
+            ).decode()
+        )[7:]
+    )
     receipt = _rejected_receipt(candidate_request, str(environment["environmentRef"]), check_ref)
-    return {**dict(row), "environmentRef": environment["environmentRef"], "checkRunRef": check_ref, "evidenceReceipt": receipt, "artifacts": [dict(environment)]}
+    return {
+        **dict(row),
+        "environmentRef": environment["environmentRef"],
+        "checkRunRef": check_ref,
+        "evidenceReceipt": receipt,
+        "artifacts": [dict(environment)],
+    }
 
 
 def _single_payload(payload: Mapping[str, Any], row: Mapping[str, Any]) -> dict[str, Any]:
@@ -242,6 +372,7 @@ def _single_payload(payload: Mapping[str, Any], row: Mapping[str, Any]) -> dict[
         "module": payload["module"],
         "probe": payload["probe"],
         "candidate": row["candidateSubject"],
+        "applicationTerm": row["applicationTerm"],
         "importedModules": payload["importedModules"],
         "substitutions": row["substitutions"],
         "residualPremises": row["residualPremises"],
@@ -255,10 +386,19 @@ def _rejected_receipt(
     binding = "ambient-observed"
     environment_match = "unknown"
     if request.toolchain is not None:
-        binding = "explicit-pinned" if request.toolchain.selection_mode == "explicit" else "ambient-observed"
+        binding = (
+            "explicit-pinned"
+            if request.toolchain.selection_mode == "explicit"
+            else "ambient-observed"
+        )
         environment_match = "exact"
     return build_evidence_receipt(
-        subject={"module": request.module, "candidate": request.candidate, "goal": request.goal},
+        subject={
+            "module": request.module,
+            "candidate": request.candidate,
+            "goal": request.goal,
+            "localContext": [dict(row) for row in request.local_context],
+        },
         execution_binding=binding,
         observation_state="live",
         operation_outcome="rejected",

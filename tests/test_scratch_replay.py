@@ -13,6 +13,16 @@ def test_scratch_source_is_independent_and_digestible() -> None:
     assert "exact Main.zero" in source
 
 
+def test_scratch_source_preserves_ordered_local_context() -> None:
+    source = build_scratch_source(
+        "Main",
+        "value = value",
+        "Main.identity",
+        ({"name": "value", "type": "Nat"}, {"name": "h", "type": "value = value"}),
+    )
+    assert "example (value : Nat) (h : value = value) : value = value" in source
+
+
 def test_scratch_replay_preserves_compiled_or_rejected_outcome(tmp_path: Path) -> None:
     class Toolchain:
         lake_path = tmp_path / "lake"

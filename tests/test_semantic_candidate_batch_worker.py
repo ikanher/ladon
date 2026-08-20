@@ -36,7 +36,12 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
                 {
                     "candidate": "Main.good",
                     "status": "accepted",
-                    "candidateSubject": {"name": "Main.good", "typeDisplay": "Nat", "typeStructural": "Nat"},
+                    "candidateSubject": {
+                        "name": "Main.good",
+                        "typeDisplay": "Nat",
+                        "typeStructural": "Nat",
+                    },
+                    "applicationTerm": "Main.good",
                     "substitutions": [],
                     "residualPremises": [],
                     "diagnostic": "",
@@ -45,6 +50,7 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
                     "candidate": "Main.bad",
                     "status": "rejected",
                     "candidateSubject": None,
+                    "applicationTerm": "",
                     "substitutions": [],
                     "residualPremises": [],
                     "diagnostic": "unknown declaration",
