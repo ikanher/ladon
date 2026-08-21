@@ -4,6 +4,8 @@ The Lean helper reports only environment-scoped semantic facts.  This module
 observes the process boundary, hashes the exact helper/executable/output bytes,
 and then creates the check-run and derivation artifacts.  A failed or bounded
 run never publishes accepted evidence.
+
+ladon-quality: reviewed-schema-hotspot
 """
 
 from __future__ import annotations

@@ -4,6 +4,8 @@ This service deliberately keeps lexical shortlisting and Lean checking separate:
 every shortlisted candidate receives an independent terminal outcome, including
 rejections and unassessed rows.  It is usable by the CLI and editor adapters
 without making a lexical match look like proof authority.
+
+ladon-quality: reviewed-schema-hotspot
 """
 
 from __future__ import annotations
