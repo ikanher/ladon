@@ -422,6 +422,7 @@ def semantic_scratch_replayer(request: DiscoveryRequest, toolchain: Any = None) 
             max_output_bytes=request.max_output_bytes,
             max_rss_bytes=request.max_rss_bytes,
         ).to_dict()
+        result["applicationTerm"] = application_term
         return _scratch_evidence(request, candidate, parent, result, toolchain)
 
     return replay
@@ -521,12 +522,21 @@ def _scratch_check_artifact(
     digest = "sha256:" + hashlib.sha256(b"").hexdigest()
     compiled = result.get("status") == "compiled"
     checker_rejected = result.get("status") == "lean-rejected"
+    subject_digest = _identity(
+        {
+            "candidate": candidate,
+            "applicationTerm": result.get("applicationTerm", candidate),
+            "goal": request.goal,
+            "localContext": [dict(row) for row in request.local_context],
+            "sourceDigest": result.get("sourceDigest"),
+        }
+    )
     subject = {
         "kind": "candidate-application",
-        "localId": "candidate-application:" + hashlib.sha256(candidate.encode()).hexdigest(),
+        "localId": "candidate-application:" + subject_digest[7:],
         "fingerprint": {
             "scheme": {"name": "scratch-replay", "version": "1"},
-            "digest": "sha256:" + hashlib.sha256(candidate.encode()).hexdigest(),
+            "digest": subject_digest,
         },
         "display": candidate,
     }

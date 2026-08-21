@@ -533,7 +533,10 @@ def _materialize_batch_rows(
 ) -> list[dict[str, Any]]:
     environment = _environment_artifact(request.repo_root, payload, request.toolchain)
     if not authoritative:
-        return [_materialize_partial_row(request, environment, row) for row in payload["rows"]]
+        return [
+            _materialize_partial_row(request, helper_path, process, environment, row)
+            for row in payload["rows"]
+        ]
     return [
         _materialize_batch_row(request, helper_path, process, payload, environment, row)
         for row in payload["rows"]
@@ -542,6 +545,8 @@ def _materialize_batch_rows(
 
 def _materialize_partial_row(
     request: SemanticCandidateRequest,
+    helper_path: Path,
+    process: Any,
     environment: Mapping[str, Any],
     row: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -560,6 +565,7 @@ def _materialize_partial_row(
                     "substitutions": row.get("substitutions", []),
                     "residualPremises": row.get("residualPremises", []),
                     "dischargedHypotheses": row.get("dischargedHypotheses", []),
+                    "processOutcome": _partial_process_outcome(process),
                     "batchTerminal": False,
                 }
             ).decode()
@@ -568,7 +574,10 @@ def _materialize_partial_row(
     receipt = _prefix_receipt(
         candidate_request, str(environment["environmentRef"]), check_ref, str(row["status"])
     )
-    check_artifact = _batch_check_artifact(candidate_request, environment, check_ref, row, receipt)
+    check_artifact = _batch_check_artifact(
+        candidate_request, environment, check_ref, row, receipt,
+        helper_path=helper_path, process=process,
+    )
     validate_envelope_batch([dict(environment), check_artifact])
     return {
         **dict(row),
@@ -622,6 +631,18 @@ def _process_diagnostic(process: Any) -> dict[str, str]:
     else:
         code = "batch-terminal-summary-missing"
     return {"code": code, "message": (process.stderr or "").strip() or code}
+
+
+def _partial_process_outcome(process: Any) -> str:
+    if process.timed_out:
+        return "timeout"
+    if process.output_limited:
+        return "output-limited"
+    if process.memory_limited:
+        return "memory-limited"
+    if process.returncode != 0:
+        return "failed-checker"
+    return "summary-missing"
 
 
 def _materialize_batch_row(
@@ -683,6 +704,9 @@ def _batch_check_artifact(
     check_ref: str,
     row: Mapping[str, Any],
     receipt: Mapping[str, Any],
+    *,
+    helper_path: Path | None = None,
+    process: Any | None = None,
 ) -> dict[str, Any]:
     env_ref = str(environment["environmentRef"])
     statement = _synthetic_subject("statement", request.goal)
@@ -693,6 +717,12 @@ def _batch_check_artifact(
     application = _synthetic_subject("candidate-application", application_display)
     subjects = [statement, declaration, context, application]
     digest = "sha256:" + hashlib.sha256(b"").hexdigest()
+    helper_digest = _digest_file(helper_path) if helper_path is not None else digest
+    executable_digest = (
+        _digest_file(Path(str(process.command[2])))
+        if process is not None and len(process.command) > 2 and Path(str(process.command[2])).is_file()
+        else digest
+    )
     artifact = _envelope(
         "proofir.check-run",
         env_ref,
@@ -702,8 +732,8 @@ def _batch_check_artifact(
             "checker": {
                 "name": "Lean",
                 "version": "batch-protocol",
-                "implementationDigest": digest,
-                "executableDigest": digest,
+                "implementationDigest": helper_digest,
+                "executableDigest": executable_digest,
             },
             "operation": "exact-candidate-elaboration",
             "inputs": {
