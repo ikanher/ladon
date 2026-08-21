@@ -17,11 +17,14 @@ from pathlib import Path
 from typing import Any
 
 from ladon.evidence_receipt import build_evidence_receipt
+from ladon.proofir_v3 import validate_envelope_batch
 from ladon.scratch_replay import replay_scratch
 from ladon.semantic_candidate_worker import (
     TRUSTED_TARGET_LIMITATION,
     SemanticCandidateCheck,
     SemanticCandidateRequest,
+    _compact,
+    _envelope,
     check_semantic_candidate,
 )
 
@@ -454,13 +457,92 @@ def _scratch_evidence(
         check_run_ref=check_ref,
         limitations=(TRUSTED_TARGET_LIMITATION,),
     )
+    environment_artifact = next(
+        (
+            dict(artifact)
+            for artifact in parent.get("artifacts", ())
+            if isinstance(artifact, Mapping)
+            and artifact.get("artifactKind") == "proofir.environment"
+        ),
+        None,
+    )
+    if environment_artifact is None:
+        raise TypeError("scratch replay requires the parent environment artifact")
+    scratch_artifact = _scratch_check_artifact(
+        request, candidate, check_ref, environment_artifact, result, receipt
+    )
+    validate_envelope_batch([environment_artifact, scratch_artifact])
     return {
         **dict(result),
         "checkRunRef": check_ref,
         "parentCheckRunRef": parent_check_ref,
         "environmentRef": environment_ref,
         "evidenceReceipt": receipt,
+        "artifacts": [environment_artifact, scratch_artifact],
     }
+
+
+def _scratch_check_artifact(
+    request: DiscoveryRequest,
+    candidate: str,
+    check_ref: str,
+    environment: Mapping[str, Any],
+    result: Mapping[str, Any],
+    receipt: Mapping[str, Any],
+) -> dict[str, Any]:
+    digest = "sha256:" + hashlib.sha256(b"").hexdigest()
+    subject = {
+        "kind": "candidate-application",
+        "localId": "candidate-application:" + hashlib.sha256(candidate.encode()).hexdigest(),
+        "fingerprint": {
+            "scheme": {"name": "scratch-replay", "version": "1"},
+            "digest": "sha256:" + hashlib.sha256(candidate.encode()).hexdigest(),
+        },
+        "display": candidate,
+    }
+    env_ref = str(environment["environmentRef"])
+    artifact = _envelope(
+        "proofir.check-run",
+        env_ref,
+        [subject],
+        {
+            "checkRunId": check_ref,
+            "checker": {
+                "name": "Lean",
+                "version": "scratch-replay",
+                "implementationDigest": digest,
+                "executableDigest": digest,
+            },
+            "operation": "scratch-compilation",
+            "inputs": {
+                "environmentRef": env_ref,
+                "subjectRefs": [_compact(subject)],
+                "artifactRefs": [str(environment["artifactId"])],
+            },
+            "results": [
+                {
+                    "subjectRef": _compact(subject),
+                    "result": "accepted" if result.get("status") == "compiled" else "error",
+                    "diagnostics": [],
+                }
+            ],
+            "outputs": {
+                "stdoutDigest": str(result.get("outputDigest") or digest),
+                "stderrDigest": digest,
+            },
+            "bounds": {
+                "timeoutMs": max(1, int(request.timeout_seconds * 1000)),
+                "maxOutputBytes": request.max_output_bytes,
+            },
+            "guarantee": {
+                "scope": "process-exit",
+                "statement": "This artifact records the bounded scratch compilation result.",
+                "authorityBasis": "process-observation",
+            },
+        },
+        extensions={"ladon.process-observation/v1": {"evidenceReceipt": dict(receipt)}},
+    )
+    return artifact.to_dict()
 
 
 __all__ = [
