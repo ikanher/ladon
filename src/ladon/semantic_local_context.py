@@ -43,19 +43,11 @@ def goal_with_local_context(goal: str, rows: Sequence[Mapping[str, str]]) -> str
 def validate_observed_local_context(
     observed: Sequence[Mapping[str, Any]], requested: Sequence[Mapping[str, str]]
 ) -> None:
-    local_ids: set[str] = set()
-    local_names: set[str] = set()
     prefix = observed[: len(requested)]
     if len(prefix) != len(requested):
         raise ValueError("Lean semantic helper did not elaborate the requested local context")
     for observed_row, requested_row in zip(prefix, requested):
         _validate_observed_row_shape(observed_row)
-        local_id = observed_row["localId"]
-        user_name = observed_row["userName"]
-        if local_id in local_ids or user_name in local_names:
-            raise ValueError("Lean semantic helper returned duplicate local identity")
-        local_ids.add(local_id)
-        local_names.add(user_name)
         if observed_row.get("userName") != requested_row["name"]:
             raise ValueError("Lean semantic helper returned a reordered local context")
         if _normalize_type(observed_row.get("typeDisplay")) != _normalize_type(
@@ -70,7 +62,13 @@ def validate_observed_local_context(
             raise ValueError(
                 f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
             )
-    for row in observed[len(requested) :]:
+    _validate_unique_observed_rows(observed)
+
+
+def _validate_unique_observed_rows(observed: Sequence[Mapping[str, Any]]) -> None:
+    local_ids: set[str] = set()
+    local_names: set[str] = set()
+    for row in observed:
         _validate_observed_row_shape(row)
         if row["localId"] in local_ids or row["userName"] in local_names:
             raise ValueError("Lean semantic helper returned duplicate local identity")
