@@ -35,6 +35,7 @@ from ladon.semantic_candidate_worker import (
     _environment_artifact,
     _environment_source,
     _execution_context_ref,
+    _goal_subjects_compatible,
     _valid_qualified_name,
     _validate_application_rows,
     _validate_worker_modules,
@@ -441,9 +442,7 @@ def _validate_batch_semantic_population(
     _validate_worker_subject(payload.get("probe"), "probe", _batch_probe_name(request))
     requested_goal = " ".join(request.goal.split())
     observed_goal = " ".join(str(payload["probe"].get("typeDisplay", "")).split())
-    if requested_goal != observed_goal and (
-        requested_goal.isidentifier() or observed_goal.isidentifier()
-    ):
+    if not _goal_subjects_compatible(requested_goal, observed_goal):
         raise ValueError("Lean semantic helper returned a goal subject unrelated to the request")
     _validate_worker_modules(payload.get("importedModules"), request.module)
     _validate_application_rows(
@@ -540,7 +539,9 @@ def _materialize_batch_rows(
     environment = _environment_artifact(request.repo_root, payload, request.toolchain)
     if not authoritative:
         return [
-            _materialize_partial_row(request, helper_path, process, environment, row)
+            _materialize_partial_row(
+                request, helper_path, process, payload["localContext"], environment, row
+            )
             for row in payload["rows"]
         ]
     return [
@@ -553,6 +554,7 @@ def _materialize_partial_row(
     request: SemanticCandidateRequest,
     helper_path: Path,
     process: Any,
+    observed_context: Sequence[Mapping[str, Any]],
     environment: Mapping[str, Any],
     row: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -578,7 +580,11 @@ def _materialize_partial_row(
         )[7:]
     )
     receipt = _prefix_receipt(
-        candidate_request, str(environment["environmentRef"]), check_ref, str(row["status"])
+        candidate_request,
+        str(environment["environmentRef"]),
+        check_ref,
+        str(row["status"]),
+        local_context=observed_context,
     )
     observed_row = {**row, "processOutcome": _partial_process_outcome(process)}
     check_artifact = _batch_check_artifact(
@@ -602,6 +608,8 @@ def _prefix_receipt(
     environment_ref: str,
     check_ref: str,
     status: str,
+    *,
+    local_context: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     explicit = request.toolchain is not None and request.toolchain.selection_mode == "explicit"
     return build_evidence_receipt(
@@ -609,7 +617,7 @@ def _prefix_receipt(
             "module": request.module,
             "candidate": request.candidate,
             "goal": request.goal,
-            "localContext": [dict(row) for row in request.local_context],
+            "localContext": [dict(row) for row in (local_context or request.local_context)],
         },
         execution_binding="explicit-pinned" if explicit else "ambient-observed",
         observation_state="live",
@@ -690,6 +698,7 @@ def _materialize_batch_row(
     row: Mapping[str, Any],
 ) -> dict[str, Any]:
     candidate_request = replace(request, candidate=str(row["candidate"]))
+    observed_row = {**row, "localContext": list(payload["localContext"])}
     if row["status"] != "rejected":
         single = _single_payload(payload, row)
         artifacts = _accepted_artifacts(candidate_request, helper_path, process, single)
@@ -721,19 +730,24 @@ def _materialize_batch_row(
             ).decode()
         )[7:]
     )
-    receipt = _rejected_receipt(candidate_request, str(environment["environmentRef"]), check_ref)
+    receipt = _rejected_receipt(
+        candidate_request,
+        str(environment["environmentRef"]),
+        check_ref,
+        local_context=payload["localContext"],
+    )
     check_artifact = _batch_check_artifact(
         candidate_request,
         environment,
         check_ref,
-        row,
+        observed_row,
         receipt,
         helper_path=helper_path,
         process=process,
     )
     validate_envelope_batch([dict(environment), check_artifact])
     return {
-        **dict(row),
+        **observed_row,
         "callerLocalContext": [dict(item) for item in request.local_context],
         "environmentRef": environment["environmentRef"],
         "checkRunRef": check_ref,
@@ -869,7 +883,11 @@ def _single_payload(payload: Mapping[str, Any], row: Mapping[str, Any]) -> dict[
 
 
 def _rejected_receipt(
-    request: SemanticCandidateRequest, environment_ref: str, check_ref: str
+    request: SemanticCandidateRequest,
+    environment_ref: str,
+    check_ref: str,
+    *,
+    local_context: Sequence[Mapping[str, Any]] = (),
 ) -> dict[str, Any]:
     binding = "ambient-observed"
     environment_match = "unknown"
@@ -879,13 +897,15 @@ def _rejected_receipt(
             if request.toolchain.selection_mode == "explicit"
             else "ambient-observed"
         )
-        environment_match = "exact"
+        environment_match = (
+            "exact" if request.toolchain.lean_commit is not None else "unknown"
+        )
     return build_evidence_receipt(
         subject={
             "module": request.module,
             "candidate": request.candidate,
             "goal": request.goal,
-            "localContext": [dict(row) for row in request.local_context],
+            "localContext": [dict(row) for row in (local_context or request.local_context)],
         },
         execution_binding=binding,
         observation_state="live",

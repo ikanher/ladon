@@ -429,6 +429,19 @@ def _failed_check(
     else:
         code, status = "checker-failed", "failed-checker"
     detail = (process.stderr or process.stdout).strip()
+    check_ref = None
+    if status == "rejected":
+        check_ref = "check:" + _digest_text(
+            json.dumps(
+                {
+                    "command": list(process.command),
+                    "stdout": process.stdout,
+                    "stderr": process.stderr,
+                    "status": status,
+                },
+                sort_keys=True,
+            )
+        )[7:]
     return SemanticCandidateCheck(
         status,
         diagnostic={"code": code, "message": detail or code},
@@ -439,6 +452,7 @@ def _failed_check(
             "rejected" if status == "rejected" else "failed",
             status,
             "not-assessed",
+            check_run_ref=check_ref,
         ),
     )
 
@@ -506,6 +520,11 @@ def _validate_worker_collections(payload: Mapping[str, Any]) -> None:
         raise ValueError("Lean semantic helper returned an invalid application term")
 
 
+def _goal_subjects_compatible(requested: str, observed: str) -> bool:
+    if requested == observed:
+        return True
+    token = lambda value: set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", value))
+    return bool(token(requested) & token(observed))
 def _validate_discharged_hypotheses(payload: Mapping[str, Any]) -> None:
     local_ids = {str(row.get("localId")) for row in payload["localContext"]}
     for row in payload["dischargedHypotheses"]:
@@ -537,8 +556,8 @@ def _validate_worker_identity(
     _validate_worker_subject(probe, "probe", _probe_name(request))
     requested_goal = " ".join(request.goal.split())
     observed_goal = " ".join(str(probe.get("typeDisplay", "")).split())
-    if not request.local_context and requested_goal != observed_goal and (
-        requested_goal.isidentifier() or observed_goal.isidentifier()
+    if not request.local_context and not _goal_subjects_compatible(
+        requested_goal, observed_goal
     ):
         raise ValueError("Lean semantic helper returned a goal subject unrelated to the request")
     _validate_worker_subject(candidate, "candidate", request.candidate)

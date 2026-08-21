@@ -215,7 +215,11 @@ def _source_tree_identity(root: Path) -> str:
         path
         for path in root.rglob("*")
         if path.is_file()
-        and (path.name in config_names or any(path.is_relative_to(item) for item in source_roots))
+        and (
+            path.name in config_names
+            or (path.parent == root and path.suffix == ".lean" and path.stem not in {"helper", "Probe", "Scratch"})
+            or any(path.is_relative_to(item) for item in source_roots)
+        )
         and not any(part in excluded for part in path.parts)
     )
     for path in paths:

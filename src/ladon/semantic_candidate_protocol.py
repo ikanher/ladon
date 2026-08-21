@@ -95,6 +95,7 @@ def _closed_discharged_rows(rows: list[Any], fields: set[str]) -> bool:
         isinstance(row, dict)
         and set(row) == fields
         and isinstance(row["premiseOrdinal"], int)
+        and not isinstance(row["premiseOrdinal"], bool)
         and row["premiseOrdinal"] >= 0
         and all(isinstance(row[field], str) and row[field] for field in fields - {"premiseOrdinal"})
         for row in rows

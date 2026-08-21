@@ -135,6 +135,7 @@ def _validate_explicit_binding(dimensions: EvidenceDimensions) -> None:
         dimensions.execution_binding == "explicit-pinned"
         and observed
         and dimensions.environment_match != "exact"
+        and dimensions.authority_basis != "process-observation"
     ):
         raise ValueError("explicit-pinned observed receipt requires an exact environment match")
 

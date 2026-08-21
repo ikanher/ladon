@@ -77,6 +77,15 @@ def validate_observed_local_context(
             raise ValueError(
                 f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
             )
+        if (
+            structural.split()[:1]
+            and displayed.split()[:1]
+            and structural.split()[0] == displayed.split()[0]
+            and structural != displayed
+        ):
+            raise ValueError(
+                f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
+            )
         if structural_names and displayed_names and structural_names.isdisjoint(displayed_names):
             raise ValueError(
                 f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
