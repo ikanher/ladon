@@ -411,6 +411,7 @@ def _parse_worker_payload(
     _validate_worker_collections(payload)
     _validate_worker_identity(payload, request)
     _validate_application_rows(payload)
+    _validate_discharged_hypotheses(payload)
     validate_observed_local_context(payload["localContext"], request.local_context)
     return payload
 
@@ -463,6 +464,25 @@ def _validate_worker_collections(payload: Mapping[str, Any]) -> None:
             raise TypeError(f"Lean semantic helper field {field} must be an array")
     if not isinstance(payload["applicationTerm"], str) or not payload["applicationTerm"]:
         raise ValueError("Lean semantic helper returned an invalid application term")
+
+
+def _validate_discharged_hypotheses(payload: Mapping[str, Any]) -> None:
+    local_ids = {str(row.get("localId")) for row in payload["localContext"]}
+    for row in payload["dischargedHypotheses"]:
+        if not isinstance(row, Mapping):
+            raise TypeError("discharged hypothesis rows must be objects")
+        if (
+            not isinstance(row.get("premiseOrdinal"), int)
+            or isinstance(row.get("premiseOrdinal"), bool)
+            or row["premiseOrdinal"] < 0
+            or not isinstance(row.get("premiseTypeDisplay"), str)
+            or not row["premiseTypeDisplay"]
+            or not isinstance(row.get("dischargedByLocalRef"), str)
+            or row["dischargedByLocalRef"] not in local_ids
+            or not isinstance(row.get("method"), str)
+            or not row["method"]
+        ):
+            raise ValueError("discharged hypothesis refers to an unknown or malformed local")
 
 
 def _decode_single_frame(stdout: str) -> dict[str, Any]:
