@@ -389,6 +389,8 @@ def _failed_check(
         code, status = "checker-output-limit", "output-limited"
     elif process.memory_limited:
         code, status = "checker-memory-limit", "memory-limited"
+    elif "invalid Lean name" in (process.stderr or process.stdout):
+        code, status = "checker-rejected", "rejected"
     else:
         code, status = "checker-failed", "failed-checker"
     detail = (process.stderr or process.stdout).strip()
