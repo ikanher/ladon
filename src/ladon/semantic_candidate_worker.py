@@ -402,7 +402,10 @@ def _failed_check(
         code, status = "checker-output-limit", "output-limited"
     elif process.memory_limited:
         code, status = "checker-memory-limit", "memory-limited"
-    elif "invalid Lean name" in (process.stderr or process.stdout):
+    elif any(
+        marker in (process.stderr or process.stdout)
+        for marker in ("invalid Lean name", "did not unify with the elaborated goal")
+    ):
         code, status = "checker-rejected", "rejected"
     else:
         code, status = "checker-failed", "failed-checker"
@@ -412,7 +415,12 @@ def _failed_check(
         diagnostic={"code": code, "message": detail or code},
         elapsed_seconds=process.elapsed_seconds,
         peak_rss_bytes=process.peak_rss_bytes,
-        evidence_receipt=_receipt_for_check(request, "failed", status, "not-assessed"),
+        evidence_receipt=_receipt_for_check(
+            request,
+            "rejected" if status == "rejected" else "failed",
+            status,
+            "not-assessed",
+        ),
     )
 
 
