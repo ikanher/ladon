@@ -102,6 +102,11 @@ def _validate_accepted_references(
     check_run_ref: str | None,
 ) -> None:
     observed = dimensions.operation_outcome in {"accepted", "rejected"}
+    checker = dimensions.authority_basis in {"elaborator-check", "kernel-check"}
+    if checker and (not _digest(environment_ref) or not _check_ref(check_run_ref)):
+        raise ValueError(
+            "checker-backed receipt requires exact environment and check-run references"
+        )
     if observed and dimensions.authority_basis not in {"elaborator-check", "kernel-check"}:
         raise ValueError("observed receipt requires registered checker authority")
     if observed and (not _digest(environment_ref) or not _check_ref(check_run_ref)):

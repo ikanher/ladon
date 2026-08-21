@@ -5,6 +5,7 @@ ladon-quality: reviewed-schema-hotspot
 
 from __future__ import annotations
 
+import hashlib
 import json
 import secrets
 import tempfile
@@ -26,7 +27,9 @@ from ladon.semantic_candidate_worker import (
     UNIVERSE_POLICY,
     SemanticCandidateRequest,
     _accepted_artifacts,
+    _compact,
     _digest_text,
+    _envelope,
     _environment_artifact,
     _environment_source,
     _execution_context_ref,
@@ -519,6 +522,8 @@ def _materialize_partial_row(
     receipt = _prefix_receipt(
         candidate_request, str(environment["environmentRef"]), check_ref, str(row["status"])
     )
+    check_artifact = _batch_check_artifact(candidate_request, environment, check_ref, row, receipt)
+    validate_envelope_batch([dict(environment), check_artifact])
     return {
         **dict(row),
         "callerLocalContext": [dict(item) for item in request.local_context],
@@ -526,7 +531,7 @@ def _materialize_partial_row(
         "environmentRef": environment["environmentRef"],
         "checkRunRef": check_ref,
         "evidenceReceipt": receipt,
-        "artifacts": [dict(environment)],
+        "artifacts": [dict(environment), check_artifact],
     }
 
 
@@ -608,13 +613,80 @@ def _materialize_batch_row(
         )[7:]
     )
     receipt = _rejected_receipt(candidate_request, str(environment["environmentRef"]), check_ref)
+    check_artifact = _batch_check_artifact(candidate_request, environment, check_ref, row, receipt)
+    validate_envelope_batch([dict(environment), check_artifact])
     return {
         **dict(row),
         "callerLocalContext": [dict(item) for item in request.local_context],
         "environmentRef": environment["environmentRef"],
         "checkRunRef": check_ref,
         "evidenceReceipt": receipt,
-        "artifacts": [dict(environment)],
+        "artifacts": [dict(environment), check_artifact],
+    }
+
+
+def _batch_check_artifact(
+    request: SemanticCandidateRequest,
+    environment: Mapping[str, Any],
+    check_ref: str,
+    row: Mapping[str, Any],
+    receipt: Mapping[str, Any],
+) -> dict[str, Any]:
+    env_ref = str(environment["environmentRef"])
+    statement = _synthetic_subject("statement", request.goal)
+    declaration = _synthetic_subject("declaration", request.candidate)
+    context = _synthetic_subject("local-context", "empty local context")
+    application = _synthetic_subject("candidate-application", request.candidate)
+    subjects = [statement, declaration, context, application]
+    digest = "sha256:" + hashlib.sha256(b"").hexdigest()
+    artifact = _envelope(
+        "proofir.check-run",
+        env_ref,
+        subjects,
+        {
+            "checkRunId": check_ref,
+            "checker": {
+                "name": "Lean",
+                "version": "batch-protocol",
+                "implementationDigest": digest,
+                "executableDigest": digest,
+            },
+            "operation": "exact-candidate-elaboration",
+            "inputs": {
+                "environmentRef": env_ref,
+                "subjectRefs": [_compact(subject) for subject in subjects],
+                "artifactRefs": [str(environment["artifactId"])],
+            },
+            "results": [
+                {
+                    "subjectRef": _compact(application),
+                    "result": "rejected" if row["status"] == "rejected" else "accepted",
+                    "diagnostics": [],
+                }
+            ],
+            "outputs": {"stdoutDigest": digest, "stderrDigest": digest},
+            "bounds": {
+                "timeoutMs": max(1, int(request.timeout_seconds * 1000)),
+                "maxOutputBytes": request.max_output_bytes,
+            },
+            "guarantee": {
+                "scope": "process-exit",
+                "statement": "This artifact records one bounded batch candidate observation.",
+                "authorityBasis": "process-observation",
+            },
+        },
+        extensions={"ladon.process-observation/v1": {"evidenceReceipt": dict(receipt)}},
+    )
+    return artifact.to_dict()
+
+
+def _synthetic_subject(kind: str, display: str) -> dict[str, Any]:
+    digest = "sha256:" + hashlib.sha256(display.encode()).hexdigest()
+    return {
+        "kind": kind,
+        "localId": f"{kind}:{digest}",
+        "fingerprint": {"scheme": {"name": "batch-observation", "version": "1"}, "digest": digest},
+        "display": display,
     }
 
 
