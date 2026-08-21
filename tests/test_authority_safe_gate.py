@@ -21,6 +21,13 @@ def _receipt(exit_class: str, candidate: str = "sha256:" + "a" * 64) -> dict[str
                 "evidenceDigest": "sha256:" + "b" * 64,
             }
         ],
+        "producerIdentity": "ladon-tests/v1",
+        "sourceTreeIdentity": "sha256:" + "c" * 64,
+        "environmentRef": "sha256:" + "d" * 64,
+        "commandVector": ["python", "-m", "pytest"],
+        "workingDirectory": "/repo",
+        "resultArtifactRefs": ["sha256:" + "e" * 64],
+        "logArtifactRefs": ["sha256:" + "f" * 64],
     }
     encoded = json.dumps(receipt, sort_keys=True, separators=(",", ":")).encode()
     receipt["receiptIdentity"] = "sha256:" + hashlib.sha256(encoded).hexdigest()

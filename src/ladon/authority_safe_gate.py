@@ -1,4 +1,7 @@
-"""Machine-readable authority-safe integration gate evaluation."""
+"""Machine-readable authority-safe integration gate evaluation.
+
+ladon-quality: reviewed-schema-hotspot
+"""
 
 from __future__ import annotations
 
@@ -47,6 +50,7 @@ def _validate_child(receipt: Mapping[str, Any], expected_exit: str) -> str | Non
         _child_scope_error,
         _child_commands_error,
         _child_identity_error,
+        _child_provenance_error,
     )
     for validator in validators:
         if error := validator(receipt, expected_exit):
@@ -87,6 +91,21 @@ def _child_identity_error(receipt: Mapping[str, Any], expected_exit: str) -> str
     expected_identity = _receipt_identity(receipt)
     if receipt.get("receiptIdentity") != expected_identity:
         return f"{expected_exit} child receipt identity is invalid"
+    return None
+
+
+def _child_provenance_error(receipt: Mapping[str, Any], expected_exit: str) -> str | None:
+    required = ("producerIdentity", "sourceTreeIdentity", "environmentRef", "workingDirectory")
+    if any(not receipt.get(field) for field in required):
+        return f"{expected_exit} child receipt lacks execution provenance"
+    if not isinstance(receipt.get("commandVector"), list) or not receipt["commandVector"]:
+        return f"{expected_exit} child receipt lacks a command vector"
+    refs = receipt.get("resultArtifactRefs")
+    logs = receipt.get("logArtifactRefs")
+    if not isinstance(refs, list) or not refs or any(not _digest(ref) for ref in refs):
+        return f"{expected_exit} child receipt lacks resolvable result artifacts"
+    if not isinstance(logs, list) or not logs or any(not _digest(ref) for ref in logs):
+        return f"{expected_exit} child receipt lacks resolvable logs"
     return None
 
 

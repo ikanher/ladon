@@ -6,6 +6,7 @@ ladon-quality: reviewed-schema-hotspot
 from __future__ import annotations
 
 import math
+import re
 from datetime import UTC, datetime
 from typing import Any
 
@@ -95,6 +96,8 @@ def _evidence_shape_valid(value: Any, required_fields: tuple[str, ...]) -> bool:
         return False
     if not isinstance(value.get("outcome"), str) or not value["outcome"]:
         return False
+    if not _provenance_valid(value):
+        return False
     if any(not value.get(field) for field in required_fields):
         return False
     if "candidates" in required_fields and not isinstance(value.get("candidates"), list):
@@ -103,6 +106,34 @@ def _evidence_shape_valid(value: Any, required_fields: tuple[str, ...]) -> bool:
         ("metrics" in required_fields or "candidates" in required_fields)
         and (not isinstance(value.get("metrics"), dict) or not value["metrics"])
     )
+
+
+def _provenance_valid(value: dict[str, Any]) -> bool:
+    digest_fields = ("sourceTreeIdentity", "environmentRef")
+    if any(not _digest(value.get(field)) for field in digest_fields):
+        return False
+    if not isinstance(value.get("producerIdentity"), str) or not value["producerIdentity"]:
+        return False
+    if not isinstance(value.get("commandVector"), list) or not value["commandVector"]:
+        return False
+    if any(not isinstance(part, str) or not part for part in value["commandVector"]):
+        return False
+    if not isinstance(value.get("workingDirectory"), str) or not value["workingDirectory"]:
+        return False
+    refs = value.get("resultArtifactRefs")
+    logs = value.get("logArtifactRefs")
+    return (
+        isinstance(refs, list)
+        and bool(refs)
+        and all(_digest(ref) for ref in refs)
+        and isinstance(logs, list)
+        and bool(logs)
+        and all(_digest(ref) for ref in logs)
+    )
+
+
+def _digest(value: Any) -> bool:
+    return isinstance(value, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", value) is not None
 
 
 __all__ = ["READINESS_LEVELS", "assess_readiness"]

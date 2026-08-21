@@ -12,6 +12,13 @@ def _evidence(now: datetime) -> dict[str, object]:
             "timestamp": now.isoformat(),
             "command": f"gate {name}",
             "outcome": "passed",
+            "producerIdentity": "ladon-tests/v1",
+            "sourceTreeIdentity": "sha256:" + "c" * 64,
+            "environmentRef": "sha256:" + "d" * 64,
+            "commandVector": ["python", "-m", "pytest"],
+            "workingDirectory": "/repo",
+            "resultArtifactRefs": ["sha256:" + "e" * 64],
+            "logArtifactRefs": ["sha256:" + "f" * 64],
             "candidates": ["fixture.goal"] if name == "externalOutcome" else None,
             "metrics": {"recall": 1.0} if name == "externalOutcome" else None,
         }
