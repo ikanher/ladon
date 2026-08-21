@@ -13,6 +13,7 @@ import shutil
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 
 from ladon.process_supervisor import run_bounded_target_process
 
@@ -44,6 +45,8 @@ class LeanToolchainContext:
     environment: Mapping[str, str]
 
     def __post_init__(self) -> None:
+        object.__setattr__(self, "environment", MappingProxyType(dict(self.environment)))
+        object.__setattr__(self, "environment_keys", tuple(sorted(self.environment)))
         if self.selection_mode not in {"explicit", "ambient"}:
             raise ValueError("toolchain selection mode must be explicit or ambient")
         if (

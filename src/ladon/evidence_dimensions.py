@@ -54,7 +54,7 @@ _TRANSITIONS = {
         "unknown": frozenset({"unknown", "not-assessed"}),
         "not-assessed": frozenset({"not-assessed"}),
     },
-    "authorityBasis": {
+        "authorityBasis": {
         "kernel-check": AUTHORITY_BASES,
         "elaborator-check": frozenset(
             {
@@ -67,6 +67,9 @@ _TRANSITIONS = {
         ),
         "source-observation": frozenset(
             {"source-observation", "producer-assertion", "stored-observation", "not-assessed"}
+        ),
+        "process-observation": frozenset(
+            {"process-observation", "stored-observation", "not-assessed"}
         ),
         "producer-assertion": frozenset(
             {"producer-assertion", "stored-observation", "not-assessed"}

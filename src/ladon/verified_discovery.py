@@ -63,11 +63,15 @@ class DiscoveryRequest:
         if len(self.local_context) > MAX_LOCAL_CONTEXT_ROWS:
             raise ValueError("local context exceeds the supported row cap")
         context_bytes = 0
+        context_names: set[str] = set()
         for row in self.local_context:
             if not row.get("name") or not row.get("type"):
                 raise ValueError("local context rows require name and type")
             if any(char.isspace() or ord(char) < 32 or char in ":(){};" for char in row["name"]):
                 raise ValueError("local context row has an unsafe name")
+            if row["name"] in context_names:
+                raise ValueError("local context contains duplicate names")
+            context_names.add(row["name"])
             context_bytes += len(row["name"].encode()) + len(row["type"].encode())
         if context_bytes > MAX_LOCAL_CONTEXT_BYTES:
             raise ValueError("local context exceeds the supported byte cap")
@@ -481,7 +485,9 @@ def _scratch_evidence(
         operation_outcome=operation_outcome,
         authority_basis=authority_basis,
         analysis_completeness=completeness,
-        environment_match="exact" if toolchain is not None else "unknown",
+        environment_match=(
+            "exact" if toolchain is not None and toolchain.lean_commit is not None else "unknown"
+        ),
         environment_ref=environment_ref,
         check_run_ref=check_ref,
         limitations=(TRUSTED_TARGET_LIMITATION,),

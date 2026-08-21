@@ -117,6 +117,19 @@ def _validate_accepted_references(
         not _digest(environment_ref) or not _check_ref(check_run_ref)
     ):
         raise ValueError("observed receipt requires exact environment and check-run references")
+    _require_process_observation_reference(dimensions, observed, environment_ref)
+
+
+def _require_process_observation_reference(
+    dimensions: EvidenceDimensions, observed: bool, environment_ref: str | None
+) -> None:
+    if (
+        observed
+        and dimensions.authority_basis == "process-observation"
+        and dimensions.environment_match == "exact"
+        and not _digest(environment_ref)
+    ):
+        raise ValueError("exact process observation requires an environment reference")
 
 
 def _validate_explicit_binding(dimensions: EvidenceDimensions) -> None:

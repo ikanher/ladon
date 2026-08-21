@@ -25,7 +25,7 @@ def validate_local_context(
         if name in names:
             raise ValueError("semantic local context contains duplicate names")
         names.add(name)
-        if any(token in type_text for token in ("\n", "\r", ":=", ";", "(", ")", "{", "}")):
+        if any(token in type_text for token in ("\n", "\r", ":=", ";")):
             raise ValueError("semantic local context type contains unsupported binder syntax")
         validate_type(type_text)
         total += len(name.encode()) + len(type_text.encode())

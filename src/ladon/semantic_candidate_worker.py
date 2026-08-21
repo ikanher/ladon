@@ -344,7 +344,11 @@ def _receipt_for_check(
             if request.toolchain.selection_mode == "explicit"
             else "ambient-observed"
         )
-        environment_match = "exact"
+        environment_match = (
+            "exact"
+            if outcome == "accepted" and environment_ref is not None
+            else "unknown"
+        )
     return build_evidence_receipt(
         subject={
             "module": request.module,
@@ -523,6 +527,10 @@ def _validate_worker_identity(
     probe = payload.get("probe")
     candidate = payload.get("candidate")
     _validate_worker_subject(probe, "probe", _probe_name(request))
+    requested_goal = " ".join(request.goal.split())
+    observed_goal = " ".join(str(probe.get("typeDisplay", "")).split())
+    if requested_goal.isidentifier() and observed_goal.isidentifier() and requested_goal != observed_goal:
+        raise ValueError("Lean semantic helper returned a goal subject unrelated to the request")
     _validate_worker_subject(candidate, "candidate", request.candidate)
     expected_modules = {request.module, f"Ladon.Semantic.{_probe_name(request)}"}
     if payload.get("module") not in expected_modules:
@@ -576,6 +584,7 @@ def _accepted_artifacts(
         payload["substitutions"],
         context,
         payload["dischargedHypotheses"],
+        payload.get("applicationTerm"),
     )
     check = _check_artifact(
         request,
@@ -665,7 +674,11 @@ def _environment_artifact(
         "toolchain": {
             "name": "Lean",
             "version": str(payload["leanVersion"]),
-            "commit": str(payload["leanCommit"]) or "unknown",
+            "commit": (
+                str(payload["leanCommit"])
+                if toolchain is None or toolchain.lean_commit is not None
+                else "unknown"
+            ),
         },
         "dependencies": dependencies,
         "compiledModules": compiled,
@@ -710,6 +723,7 @@ def _application_subject(
     substitutions: list[Mapping[str, Any]] | None = None,
     context: Mapping[str, Any] | None = None,
     discharged_hypotheses: list[Mapping[str, Any]] | None = None,
+    application_term: str | None = None,
 ) -> dict[str, Any]:
     digest = _digest_bytes(
         canonical_bytes(
@@ -726,6 +740,7 @@ def _application_subject(
                 ],
                 "localContext": context["localId"] if context is not None else None,
                 "dischargedHypotheses": [dict(row) for row in (discharged_hypotheses or [])],
+                "applicationTerm": application_term,
             }
         )
     )

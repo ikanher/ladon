@@ -76,9 +76,16 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
     }
 
 
-def _common_provenance(evidence: dict[str, Any], names: tuple[str, ...]) -> tuple[str, str] | None:
+def _common_provenance(
+    evidence: dict[str, Any], names: tuple[str, ...]
+) -> tuple[str, str, str, str] | None:
     values = {
-        (str(evidence[name]["sourceTreeIdentity"]), str(evidence[name]["environmentRef"]))
+        (
+            str(evidence[name]["sourceTreeIdentity"]),
+            str(evidence[name]["environmentRef"]),
+            str(evidence[name]["producerIdentity"]),
+            str(evidence[name]["workingDirectory"]),
+        )
         for name in names
         if isinstance(evidence.get(name), dict)
     }
