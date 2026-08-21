@@ -324,8 +324,7 @@ def _attach_scratch(
     if scratch_replayer is None or result.get("status") != "accepted":
         return result
     try:
-        caller_context = result.get("callerLocalContext", ())
-        application_term = (result.get("applicationTerm") if caller_context else name) or name
+        application_term = result.get("applicationTerm") or name
         if not isinstance(application_term, str):
             raise TypeError("candidate application term must be a string")
         result["scratch"] = dict(scratch_replayer(name, application_term, result))
@@ -378,6 +377,13 @@ def semantic_scratch_replayer(request: DiscoveryRequest, toolchain: Any = None) 
     def replay(
         candidate: str, application_term: str, parent: Mapping[str, Any]
     ) -> Mapping[str, Any]:
+        parent_receipt = parent.get("evidenceReceipt")
+        subject = parent_receipt.get("subject", {}) if isinstance(parent_receipt, Mapping) else {}
+        observed_context = (
+            subject.get("localContext", request.local_context)
+            if isinstance(subject, Mapping)
+            else request.local_context
+        )
         result = replay_scratch(
             repo_root=request.repo_root,
             module=request.module,
@@ -385,7 +391,7 @@ def semantic_scratch_replayer(request: DiscoveryRequest, toolchain: Any = None) 
             candidate=application_term,
             toolchain=toolchain,
             timeout_seconds=request.timeout_seconds,
-            local_context=request.local_context,
+            local_context=observed_context,
             max_output_bytes=request.max_output_bytes,
             max_rss_bytes=request.max_rss_bytes,
         ).to_dict()

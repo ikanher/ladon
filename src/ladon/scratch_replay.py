@@ -39,6 +39,9 @@ def build_scratch_source(
     max_rss_bytes: int = 2 * 1024 * 1024 * 1024,
 ) -> str:
     """Return exact source for an independent closed application replay."""
+    if local_context and goal.lstrip().startswith(("∀", "forall")):
+        intros = "\n".join(f"  intro {row['name']}" for row in local_context)
+        return f"import {module}\n\nexample : {goal} := by\n{intros}\n  exact {candidate}\n"
     binders = " ".join(f"({row['name']} : {row['type']})" for row in local_context)
     prefix = f" {binders}" if binders else ""
     return f"import {module}\n\nexample{prefix} : {goal} := by\n  exact {candidate}\n"
