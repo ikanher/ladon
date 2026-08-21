@@ -22,10 +22,12 @@ from ladon.evidence_receipt import build_evidence_receipt
 from ladon.proofir_v3 import validate_envelope_batch
 from ladon.scratch_replay import replay_scratch
 from ladon.semantic_candidate_worker import (
+    DEFAULT_HELPER,
     TRUSTED_TARGET_LIMITATION,
     SemanticCandidateCheck,
     SemanticCandidateRequest,
     _compact,
+    _digest_file,
     _envelope,
     check_semantic_candidate,
 )
@@ -526,6 +528,9 @@ def _scratch_check_artifact(
     receipt: Mapping[str, Any],
 ) -> dict[str, Any]:
     digest = "sha256:" + hashlib.sha256(b"").hexdigest()
+    helper_digest = _digest_file(DEFAULT_HELPER) if DEFAULT_HELPER.is_file() else digest
+    toolchain_payload = environment.get("payload", {}).get("toolchain", {})
+    executable_digest = str(toolchain_payload.get("leanIdentity") or digest)
     compiled = result.get("status") == "compiled"
     checker_rejected = result.get("status") == "lean-rejected"
     subject_digest = _identity(
@@ -556,8 +561,8 @@ def _scratch_check_artifact(
             "checker": {
                 "name": "Lean",
                 "version": "scratch-replay",
-                "implementationDigest": digest,
-                "executableDigest": digest,
+                "implementationDigest": helper_digest,
+                "executableDigest": executable_digest,
             },
             "operation": "scratch-compilation",
             "inputs": {

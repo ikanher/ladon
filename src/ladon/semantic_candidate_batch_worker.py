@@ -441,7 +441,9 @@ def _validate_batch_semantic_population(
     _validate_worker_subject(payload.get("probe"), "probe", _batch_probe_name(request))
     requested_goal = " ".join(request.goal.split())
     observed_goal = " ".join(str(payload["probe"].get("typeDisplay", "")).split())
-    if requested_goal.isidentifier() and observed_goal.isidentifier() and requested_goal != observed_goal:
+    if requested_goal != observed_goal and (
+        requested_goal.isidentifier() or observed_goal.isidentifier()
+    ):
         raise ValueError("Lean semantic helper returned a goal subject unrelated to the request")
     _validate_worker_modules(payload.get("importedModules"), request.module)
     _validate_application_rows(
@@ -578,13 +580,14 @@ def _materialize_partial_row(
     receipt = _prefix_receipt(
         candidate_request, str(environment["environmentRef"]), check_ref, str(row["status"])
     )
+    observed_row = {**row, "processOutcome": _partial_process_outcome(process)}
     check_artifact = _batch_check_artifact(
-        candidate_request, environment, check_ref, row, receipt,
+        candidate_request, environment, check_ref, observed_row, receipt,
         helper_path=helper_path, process=process,
     )
     validate_envelope_batch([dict(environment), check_artifact])
     return {
-        **dict(row),
+        **observed_row,
         "callerLocalContext": [dict(item) for item in request.local_context],
         "batchTerminal": False,
         "environmentRef": environment["environmentRef"],
@@ -767,7 +770,15 @@ def _batch_check_artifact(
         "dischargedHypotheses": row.get("dischargedHypotheses", []),
         "processOutcome": row.get("processOutcome"),
     }
-    subjects = [statement, declaration, context, application]
+    residual_subjects = [
+        _synthetic_subject("statement", str(item.get("typeDisplay", "")))
+        for item in row.get("residualPremises", [])
+    ]
+    term_subjects = [
+        _synthetic_subject("term", str(item.get("termDisplay", "")))
+        for item in row.get("substitutions", [])
+    ]
+    subjects = [statement, declaration, context, application, *residual_subjects, *term_subjects]
     digest = "sha256:" + hashlib.sha256(b"").hexdigest()
     helper_digest = _digest_file(helper_path) if helper_path is not None else digest
     executable_digest = (

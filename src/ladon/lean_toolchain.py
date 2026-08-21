@@ -38,6 +38,7 @@ class LeanToolchainContext:
     pin_digest: str
     lake_identity: str
     lean_identity: str
+    source_tree_identity: str
     lean_release: str
     lean_commit: str | None
     selection_mode: str
@@ -67,6 +68,7 @@ class LeanToolchainContext:
             "pinDigest": self.pin_digest,
             "lakeIdentity": self.lake_identity,
             "leanIdentity": self.lean_identity,
+            "sourceTreeIdentity": self.source_tree_identity,
             "leanRelease": self.lean_release,
             "leanCommit": self.lean_commit,
             "selectionMode": self.selection_mode,
@@ -84,6 +86,7 @@ class LeanToolchainContext:
             "pinDigest": self.pin_digest,
             "lakeIdentity": self.lake_identity,
             "leanIdentity": self.lean_identity,
+            "sourceTreeIdentity": self.source_tree_identity,
             "leanRelease": self.lean_release,
             "leanCommit": self.lean_commit,
             "selectionMode": self.selection_mode,
@@ -134,6 +137,7 @@ def resolve_toolchain_context(
         "sha256:" + hashlib.sha256(pin_content.encode()).hexdigest(),
         _identity(lake),
         _identity(lean),
+        _source_tree_identity(root),
         expected,
         _reported_commit(lean_version),
         selection_mode,
@@ -196,6 +200,22 @@ def _identity(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def _source_tree_identity(root: Path) -> str:
+    digest = hashlib.sha256()
+    excluded = {".git", ".lake", "__pycache__", ".pytest_cache"}
+    paths = sorted(
+        path
+        for path in root.rglob("*")
+        if path.is_file() and not any(part in excluded for part in path.parts)
+    )
+    for path in paths:
+        relative = path.relative_to(root).as_posix().encode()
+        digest.update(len(relative).to_bytes(8, "big"))
+        digest.update(relative)
+        digest.update(hashlib.sha256(path.read_bytes()).digest())
+    return "sha256:" + digest.hexdigest()
+
+
 def verify_toolchain_identities(context: LeanToolchainContext) -> None:
     """Fail when selected pin or executable bytes changed after context creation."""
     observed = {
@@ -213,6 +233,8 @@ def verify_toolchain_identities(context: LeanToolchainContext) -> None:
         changed.append("lean-toolchain")
     if changed:
         raise LeanToolchainError("toolchain executable identity changed: " + ", ".join(changed))
+    if _source_tree_identity(context.repo_root) != context.source_tree_identity:
+        raise LeanToolchainError("source tree identity changed")
 
 
 __all__ = [

@@ -123,12 +123,9 @@ def _validate_accepted_references(
 def _require_process_observation_reference(
     dimensions: EvidenceDimensions, observed: bool, environment_ref: str | None
 ) -> None:
-    if (
-        observed
-        and dimensions.authority_basis == "process-observation"
-        and dimensions.environment_match == "exact"
-        and not _digest(environment_ref)
-    ):
+    if dimensions.authority_basis != "process-observation":
+        return
+    if dimensions.environment_match == "exact" and not _digest(environment_ref):
         raise ValueError("exact process observation requires an environment reference")
 
 

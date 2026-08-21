@@ -400,7 +400,15 @@ def _environment_source(request: SemanticCandidateRequest) -> str:
 
 def _execution_context_ref(request: SemanticCandidateRequest) -> str:
     if request.toolchain is not None:
-        return request.toolchain.context_identity
+        return _digest_text(
+            canonical_bytes(
+                {
+                    "baseContext": request.toolchain.context_identity,
+                    "module": request.module,
+                    "protocol": SEMANTIC_PROTOCOL,
+                }
+            ).decode()
+        )
     return request.execution_context_ref or "unbound"
 
 
@@ -529,7 +537,9 @@ def _validate_worker_identity(
     _validate_worker_subject(probe, "probe", _probe_name(request))
     requested_goal = " ".join(request.goal.split())
     observed_goal = " ".join(str(probe.get("typeDisplay", "")).split())
-    if requested_goal.isidentifier() and observed_goal.isidentifier() and requested_goal != observed_goal:
+    if requested_goal != observed_goal and (
+        requested_goal.isidentifier() or observed_goal.isidentifier()
+    ):
         raise ValueError("Lean semantic helper returned a goal subject unrelated to the request")
     _validate_worker_subject(candidate, "candidate", request.candidate)
     expected_modules = {request.module, f"Ladon.Semantic.{_probe_name(request)}"}

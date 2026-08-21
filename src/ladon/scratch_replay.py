@@ -105,7 +105,12 @@ def _replay_status(process: ProcessResult) -> str:
         return "output-limited"
     if process.memory_limited:
         return "memory-limited"
-    return "lean-rejected" if process.returncode != 0 else "compiled"
+    if process.returncode != 0:
+        text = (process.stderr or process.stdout).lower()
+        if any(marker in text for marker in ("configuration failed", "failed to load", "no such file")):
+            return "process-failed"
+        return "lean-rejected"
+    return "compiled"
 
 
 __all__ = ["ScratchReplayResult", "build_scratch_source", "replay_scratch"]

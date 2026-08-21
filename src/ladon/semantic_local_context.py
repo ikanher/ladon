@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
@@ -17,20 +18,32 @@ def validate_local_context(
     total = 0
     names: set[str] = set()
     for row in rows:
-        name, type_text = row.get("name"), row.get("type")
-        if not isinstance(name, str) or not valid_name(name):
-            raise ValueError("semantic local context contains an invalid name")
-        if not isinstance(type_text, str):
-            raise TypeError("semantic local context contains an invalid type")
-        if name in names:
-            raise ValueError("semantic local context contains duplicate names")
-        names.add(name)
-        if any(token in type_text for token in ("\n", "\r", ":=", ";")):
-            raise ValueError("semantic local context type contains unsupported binder syntax")
-        validate_type(type_text)
+        name, type_text = _validate_requested_row(row, valid_name, validate_type, names)
         total += len(name.encode()) + len(type_text.encode())
     if total > 1024 * 1024:
         raise ValueError("semantic local context exceeds the byte cap")
+
+
+def _validate_requested_row(
+    row: Mapping[str, str],
+    valid_name: Callable[[str], bool],
+    validate_type: Callable[[str], None],
+    names: set[str],
+) -> tuple[str, str]:
+    name, type_text = row.get("name"), row.get("type")
+    if not isinstance(name, str) or not valid_name(name):
+        raise ValueError("semantic local context contains an invalid name")
+    if not isinstance(type_text, str):
+        raise TypeError("semantic local context contains an invalid type")
+    if name in names:
+        raise ValueError("semantic local context contains duplicate names")
+    names.add(name)
+    if any(token in type_text for token in ("\n", "\r", ":=", ";")) or re.search(
+        r"\)\s*\(", type_text
+    ):
+        raise ValueError("semantic local context type contains unsupported binder syntax")
+    validate_type(type_text)
+    return name, type_text
 
 
 def goal_with_local_context(goal: str, rows: Sequence[Mapping[str, str]]) -> str:
@@ -58,7 +71,13 @@ def validate_observed_local_context(
             )
         structural = _normalize_type(observed_row.get("typeStructural"))
         displayed = _normalize_type(observed_row.get("typeDisplay"))
+        structural_names = set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", structural))
+        displayed_names = set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", displayed))
         if structural.isidentifier() and structural not in displayed.split():
+            raise ValueError(
+                f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
+            )
+        if structural_names and displayed_names and structural_names.isdisjoint(displayed_names):
             raise ValueError(
                 f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
             )
