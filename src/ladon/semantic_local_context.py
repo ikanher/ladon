@@ -58,7 +58,7 @@ def validate_observed_local_context(
             )
         structural = _normalize_type(observed_row.get("typeStructural"))
         displayed = _normalize_type(observed_row.get("typeDisplay"))
-        if structural.isidentifier() and displayed.isidentifier() and structural != displayed:
+        if structural.isidentifier() and structural not in displayed.split():
             raise ValueError(
                 f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
             )
