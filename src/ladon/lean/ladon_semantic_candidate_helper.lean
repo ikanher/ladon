@@ -248,25 +248,29 @@ private def dischargeResiduals (residualGoals : Array MVarId) : MetaM (Array Sem
   let mut remaining := #[]
   for h : ordinal in [0:residualGoals.size] do
     let residual := residualGoals[ordinal]
-    let type ← instantiateMVars (← residual.getType)
-    let mut match? : Option LocalDecl := none
-    for decl in ← getLCtx do
-      if match?.isNone then
-        try
-          if ← Meta.isDefEq type (← instantiateMVars decl.type) then
-            match? := some decl
-        catch _ => pure ()
-    match match? with
-    | none => remaining := remaining.push residual
-    | some localDecl =>
-        residual.assign (mkFVar localDecl.fvarId)
-        let display ← Meta.ppExpr type
-        discharged := discharged.push {
+    let result ← residual.withContext do
+      let type ← instantiateMVars (← residual.getType)
+      let mut match? : Option LocalDecl := none
+      for decl in ← getLCtx do
+        if match?.isNone then
+          try
+            if ← Meta.isDefEq type (← instantiateMVars decl.type) then
+              match? := some decl
+          catch _ => pure ()
+      match match? with
+      | none => pure (none, type)
+      | some localDecl =>
+          residual.assign (mkFVar localDecl.fvarId)
+          let display ← Meta.ppExpr type
+          pure (some {
           premiseOrdinal := ordinal
           premiseTypeDisplay := display.pretty
           dischargedByLocalRef := "local:" ++ (repr localDecl.fvarId).pretty
           method := "assumption-definitional-equality"
-        }
+          }, type)
+    match result.1 with
+    | none => remaining := remaining.push residual
+    | some row => discharged := discharged.push row
   return (discharged, remaining)
 
 private def analyzeLocalContext (env : Environment) (file : String)

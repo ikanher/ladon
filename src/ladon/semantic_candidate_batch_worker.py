@@ -216,7 +216,9 @@ def _parse_batch_worker_payload(
     frames, decode_diagnostic = _decode_batch_frames(stdout)
     header = frames[0]
     _validate_batch_header(header, request, request_id)
-    rows, terminal, prefix_diagnostic = _validated_batch_prefix(frames[1:], request_id, candidates)
+    rows, terminal, prefix_diagnostic = _validated_batch_prefix(
+        frames[1:], request_id, candidates, header["localContext"]
+    )
     if decode_diagnostic:
         terminal = False
     payload = {**header, "rows": rows, "terminal": terminal}
@@ -275,7 +277,10 @@ def _validate_batch_header(
 
 
 def _validated_batch_prefix(
-    frames: Sequence[Mapping[str, Any]], request_id: str, candidates: Sequence[str]
+    frames: Sequence[Mapping[str, Any]],
+    request_id: str,
+    candidates: Sequence[str],
+    local_context: Sequence[Mapping[str, Any]],
 ) -> tuple[list[dict[str, Any]], bool, str | None]:
     rows: list[dict[str, Any]] = []
     terminal = False
@@ -304,7 +309,7 @@ def _validated_batch_prefix(
                 break
             raise ValueError("Lean semantic helper emitted more candidate frames than requested")
         try:
-            row = _validated_prefix_row(frame, candidates[len(rows)])
+            row = _validated_prefix_row(frame, candidates[len(rows)], local_context)
         except (TypeError, ValueError) as error:
             if not rows:
                 raise
@@ -326,9 +331,11 @@ def _validate_batch_summary(
         raise ValueError("Lean semantic helper returned an invalid batch summary")
 
 
-def _validated_prefix_row(frame: Mapping[str, Any], candidate: str) -> dict[str, Any]:
+def _validated_prefix_row(
+    frame: Mapping[str, Any], candidate: str, local_context: Sequence[Mapping[str, Any]]
+) -> dict[str, Any]:
     row = frame["row"]
-    _validate_batch_row(row, candidate)
+    _validate_batch_row(row, candidate, local_context)
     return dict(row)
 
 
@@ -450,9 +457,11 @@ def _validate_batch_rows(rows: list[Any], candidates: Sequence[str]) -> None:
         _validate_batch_row(row, candidate)
 
 
-def _validate_batch_row(row: Any, candidate: str) -> None:
+def _validate_batch_row(
+    row: Any, candidate: str, local_context: Sequence[Mapping[str, Any]] = ()
+) -> None:
     _validate_batch_row_shape(row, candidate)
-    _validate_batch_row_evidence(row, candidate)
+    _validate_batch_row_evidence(row, candidate, local_context)
 
 
 def _validate_batch_row_shape(row: Any, candidate: str) -> None:
@@ -480,13 +489,15 @@ def _validate_batch_row_shape(row: Any, candidate: str) -> None:
         raise TypeError("Lean semantic helper returned an invalid candidate application term")
 
 
-def _validate_batch_row_evidence(row: Mapping[str, Any], candidate: str) -> None:
+def _validate_batch_row_evidence(
+    row: Mapping[str, Any], candidate: str, local_context: Sequence[Mapping[str, Any]] = ()
+) -> None:
     _validate_application_rows(
         {
             "substitutions": row["substitutions"],
             "dischargedHypotheses": row["dischargedHypotheses"],
             "residualPremises": row["residualPremises"],
-            "localContext": [],
+            "localContext": list(local_context),
         }
     )
     if row["status"] == "rejected":
