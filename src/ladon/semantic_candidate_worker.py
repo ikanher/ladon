@@ -309,6 +309,8 @@ def _run_verified_candidate_process(
     )
     if request.toolchain is not None:
         verify_toolchain_identities(request.toolchain)
+    if _digest_file(helper_path) != helper_identity:
+        raise LeanToolchainError("semantic helper identity changed during execution")
     return process
 
 
