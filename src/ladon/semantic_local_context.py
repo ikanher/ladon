@@ -56,6 +56,12 @@ def validate_observed_local_context(
             raise ValueError(
                 f"Lean semantic helper returned a mismatched type for local {requested_row['name']}"
             )
+        structural = _normalize_type(observed_row.get("typeStructural"))
+        displayed = _normalize_type(observed_row.get("typeDisplay"))
+        if structural.isidentifier() and displayed.isidentifier() and structural != displayed:
+            raise ValueError(
+                f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
+            )
 
 
 def _validate_observed_row_shape(row: Mapping[str, Any]) -> None:

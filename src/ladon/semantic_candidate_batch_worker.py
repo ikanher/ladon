@@ -540,6 +540,8 @@ def _materialize_partial_row(
                 {
                     "environmentRef": environment["environmentRef"],
                     "candidate": row["candidate"],
+                    "goal": request.goal,
+                    "localContext": [dict(item) for item in request.local_context],
                     "status": row["status"],
                     "batchTerminal": False,
                 }
@@ -634,6 +636,8 @@ def _materialize_batch_row(
                 {
                     "environmentRef": environment["environmentRef"],
                     "candidate": row["candidate"],
+                    "goal": request.goal,
+                    "localContext": [dict(item) for item in request.local_context],
                     "diagnostic": row["diagnostic"],
                 }
             ).decode()
