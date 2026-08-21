@@ -290,6 +290,11 @@ def _validated_batch_prefix(
                 raise
             terminal = True
             break
+        if len(rows) >= len(candidates):
+            if rows:
+                diagnostic = "Lean semantic helper emitted more candidate frames than requested"
+                break
+            raise ValueError("Lean semantic helper emitted more candidate frames than requested")
         try:
             row = _validated_prefix_row(frame, candidates[len(rows)])
         except (TypeError, ValueError) as error:

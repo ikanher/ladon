@@ -15,12 +15,18 @@ def validate_local_context(
     if len(rows) > 256:
         raise ValueError("semantic local context exceeds the row cap")
     total = 0
+    names: set[str] = set()
     for row in rows:
         name, type_text = row.get("name"), row.get("type")
         if not isinstance(name, str) or not valid_name(name):
             raise ValueError("semantic local context contains an invalid name")
         if not isinstance(type_text, str):
             raise TypeError("semantic local context contains an invalid type")
+        if name in names:
+            raise ValueError("semantic local context contains duplicate names")
+        names.add(name)
+        if any(token in type_text for token in ("\n", "\r", ":=", ";", "(", ")", "{", "}")):
+            raise ValueError("semantic local context type contains unsupported binder syntax")
         validate_type(type_text)
         total += len(name.encode()) + len(type_text.encode())
     if total > 1024 * 1024:

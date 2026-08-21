@@ -96,6 +96,11 @@ class SemanticCandidateRequest:
             valid_name=_valid_qualified_name,
             validate_type=_validate_request_goal,
         )
+        if self.toolchain is not None and self.execution_context_ref not in {
+            None,
+            self.toolchain.context_identity,
+        }:
+            raise ValueError("execution context reference must match the selected toolchain")
 
 
 def _validate_request_identity(module: str, candidate: str) -> None:
@@ -212,6 +217,7 @@ def check_semantic_candidate(
                     request_id,
                     _execution_context_ref(request),
                 ),
+                helper_path,
                 cancel_event,
             )
         except LeanToolchainError as error:
@@ -273,10 +279,14 @@ def _run_verified_candidate_process(
     request: SemanticCandidateRequest,
     runner: ProcessRunner,
     command: tuple[str, ...],
+    helper_path: Path,
     cancel_event: threading.Event | None,
 ) -> ProcessResult:
+    helper_identity = _digest_file(helper_path)
     if request.toolchain is not None:
         verify_toolchain_identities(request.toolchain)
+    if _digest_file(helper_path) != helper_identity:
+        raise LeanToolchainError("semantic helper identity changed during execution")
     process = runner(
         command,
         cwd=request.repo_root,
@@ -365,9 +375,9 @@ def _environment_source(request: SemanticCandidateRequest) -> str:
 
 
 def _execution_context_ref(request: SemanticCandidateRequest) -> str:
-    return request.execution_context_ref or (
-        request.toolchain.context_identity if request.toolchain is not None else "unbound"
-    )
+    if request.toolchain is not None:
+        return request.toolchain.context_identity
+    return request.execution_context_ref or "unbound"
 
 
 def _failed_check(
@@ -376,11 +386,11 @@ def _failed_check(
     if process.timed_out:
         code, status = "checker-timeout", "timeout"
     elif process.output_limited:
-        code, status = "checker-output-limit", "resource-limited"
+        code, status = "checker-output-limit", "output-limited"
     elif process.memory_limited:
-        code, status = "checker-memory-limit", "resource-limited"
+        code, status = "checker-memory-limit", "memory-limited"
     else:
-        code, status = "checker-rejected", "rejected"
+        code, status = "checker-failed", "failed-checker"
     detail = (process.stderr or process.stdout).strip()
     return SemanticCandidateCheck(
         status,
@@ -534,6 +544,7 @@ def _accepted_artifacts(
             payload["substitutions"],
             check,
             application,
+            payload["dischargedHypotheses"],
         )
         return environment, check, attempt
     derivation = _derivation_artifact(
@@ -545,6 +556,7 @@ def _accepted_artifacts(
         payload["substitutions"],
         check,
         application,
+        payload["dischargedHypotheses"],
     )
     return environment, check, derivation
 
@@ -847,6 +859,7 @@ def _derivation_artifact(
     substitution_rows: list[Mapping[str, Any]],
     check: Mapping[str, Any],
     application: Mapping[str, Any],
+    discharged_hypotheses: list[Mapping[str, Any]],
 ) -> dict[str, Any]:
     step_digest = _digest_bytes(
         canonical_bytes(
@@ -893,6 +906,9 @@ def _derivation_artifact(
                 "message": "This derivation records a closed exact-candidate probe with no residual premises; substitutions and local context remain part of its identity.",
             }
         ],
+        extensions={
+            "ladon.premise-discharge/v1": {"rows": [dict(row) for row in discharged_hypotheses]}
+        },
     )
     return artifact.to_dict()
 
@@ -907,6 +923,7 @@ def _attempt_artifact(
     substitution_rows: list[Mapping[str, Any]],
     check: Mapping[str, Any],
     application: Mapping[str, Any],
+    discharged_hypotheses: list[Mapping[str, Any]],
 ) -> dict[str, Any]:
     identity = _digest_bytes(
         canonical_bytes(
@@ -972,7 +989,8 @@ def _attempt_artifact(
             "ladon.lean-attempt-context/v1": {
                 "attemptId": f"attempt:{identity}",
                 "localContextRef": _compact(context),
-            }
+            },
+            "ladon.premise-discharge/v1": {"rows": [dict(row) for row in discharged_hypotheses]},
         },
     ).to_dict()
 

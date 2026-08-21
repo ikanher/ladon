@@ -174,13 +174,20 @@ def _identity(path: Path) -> str:
 
 
 def verify_toolchain_identities(context: LeanToolchainContext) -> None:
-    """Fail when selected executable bytes changed after context creation."""
+    """Fail when selected pin or executable bytes changed after context creation."""
     observed = {
         "lake": _identity(context.lake_path),
         "lean": _identity(context.lean_path),
     }
     expected = {"lake": context.lake_identity, "lean": context.lean_identity}
     changed = [name for name in expected if observed[name] != expected[name]]
+    pin_path = context.repo_root / "lean-toolchain"
+    if not pin_path.is_file() or (
+        "sha256:"
+        + hashlib.sha256(pin_path.read_text(encoding="utf-8").strip().encode()).hexdigest()
+        != context.pin_digest
+    ):
+        changed.append("lean-toolchain")
     if changed:
         raise LeanToolchainError("toolchain executable identity changed: " + ", ".join(changed))
 
