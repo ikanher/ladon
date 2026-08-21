@@ -36,6 +36,7 @@ from ladon.semantic_candidate_worker import (
     _environment_source,
     _execution_context_ref,
     _goal_subjects_compatible,
+    _same_executable_identity,
     _valid_qualified_name,
     _validate_application_rows,
     _validate_worker_modules,
@@ -420,7 +421,7 @@ def _validate_batch_toolchain_identity(
         return
     if (
         request.toolchain.selection_mode == "explicit"
-        and Path(str(payload["executablePath"])).resolve() != request.toolchain.lean_path
+        and not _same_executable_identity(Path(str(payload["executablePath"])), request.toolchain)
     ):
         raise ValueError("Lean semantic helper returned a foreign batch executable path")
     expected = request.toolchain.pin_content.rsplit(":v", 1)[-1]
@@ -617,7 +618,7 @@ def _prefix_receipt(
             "module": request.module,
             "candidate": request.candidate,
             "goal": request.goal,
-            "localContext": [dict(row) for row in (local_context or request.local_context)],
+            "localContext": _receipt_local_context(local_context or request.local_context),
         },
         execution_binding="explicit-pinned" if explicit else "ambient-observed",
         observation_state="live",
@@ -662,6 +663,16 @@ def _partial_process_outcome(process: Any) -> str:
     if process.returncode != 0:
         return "failed-checker"
     return "summary-missing"
+
+
+def _receipt_local_context(rows: Sequence[Mapping[str, Any]]) -> list[dict[str, str]]:
+    return [
+        {
+            "name": str(row.get("userName", row.get("name", ""))),
+            "type": str(row.get("typeDisplay", row.get("type", ""))),
+        }
+        for row in rows
+    ]
 
 
 def _batch_result_diagnostics(row: Mapping[str, Any]) -> list[dict[str, Any]]:
@@ -905,7 +916,7 @@ def _rejected_receipt(
             "module": request.module,
             "candidate": request.candidate,
             "goal": request.goal,
-            "localContext": [dict(row) for row in (local_context or request.local_context)],
+            "localContext": _receipt_local_context(local_context or request.local_context),
         },
         execution_binding=binding,
         observation_state="live",

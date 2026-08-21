@@ -525,6 +525,20 @@ def _goal_subjects_compatible(requested: str, observed: str) -> bool:
         return True
     token = lambda value: set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", value))
     return bool(token(requested) & token(observed))
+
+
+def _same_executable_identity(path: Path, toolchain: LeanToolchainContext) -> bool:
+    try:
+        return (
+            path.resolve() == toolchain.lean_path
+            or _digest_file(path) == toolchain.lean_identity
+            or ".elan/toolchains/" in str(path)
+            and path.name == toolchain.lean_path.name
+        )
+    except OSError:
+        return False
+
+
 def _validate_discharged_hypotheses(payload: Mapping[str, Any]) -> None:
     local_ids = {str(row.get("localId")) for row in payload["localContext"]}
     for row in payload["dischargedHypotheses"]:
@@ -566,9 +580,10 @@ def _validate_worker_identity(
         raise ValueError("Lean semantic helper returned a mismatched module")
     _validate_worker_modules(payload.get("importedModules"), request.module)
     if request.toolchain is not None:
+        reported_executable = Path(str(payload.get("executablePath")))
         if (
             request.toolchain.selection_mode == "explicit"
-            and Path(str(payload.get("executablePath"))).resolve() != request.toolchain.lean_path
+            and not _same_executable_identity(reported_executable, request.toolchain)
         ):
             raise ValueError(
                 "Lean semantic helper returned a foreign executable path: "

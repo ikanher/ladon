@@ -39,7 +39,7 @@ def _validate_requested_row(
         raise ValueError("semantic local context contains duplicate names")
     names.add(name)
     if any(token in type_text for token in ("\n", "\r", ":=", ";")) or re.search(
-        r"\)\s*\(", type_text
+        r"\)\s*[({]", type_text
     ):
         raise ValueError("semantic local context type contains unsupported binder syntax")
     validate_type(type_text)
@@ -60,37 +60,34 @@ def validate_observed_local_context(
     if len(prefix) != len(requested):
         raise ValueError("Lean semantic helper did not elaborate the requested local context")
     for observed_row, requested_row in zip(prefix, requested):
-        _validate_observed_row_shape(observed_row)
-        if observed_row.get("userName") != requested_row["name"]:
-            raise ValueError("Lean semantic helper returned a reordered local context")
-        if _normalize_type(observed_row.get("typeDisplay")) != _normalize_type(
-            requested_row["type"]
-        ):
-            raise ValueError(
-                f"Lean semantic helper returned a mismatched type for local {requested_row['name']}"
-            )
-        structural = _normalize_type(observed_row.get("typeStructural"))
-        displayed = _normalize_type(observed_row.get("typeDisplay"))
-        structural_names = set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", structural))
-        displayed_names = set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", displayed))
-        if structural.isidentifier() and structural not in displayed.split():
-            raise ValueError(
-                f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
-            )
-        if (
-            structural.split()[:1]
-            and displayed.split()[:1]
-            and structural.split()[0] == displayed.split()[0]
-            and structural != displayed
-        ):
-            raise ValueError(
-                f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
-            )
-        if structural_names and displayed_names and structural_names.isdisjoint(displayed_names):
-            raise ValueError(
-                f"Lean semantic helper returned a structurally mismatched type for local {requested_row['name']}"
-            )
+        _validate_observed_row(observed_row, requested_row)
     _validate_unique_observed_rows(observed)
+
+
+def _validate_observed_row(
+    observed_row: Mapping[str, Any], requested_row: Mapping[str, str]
+) -> None:
+    _validate_observed_row_shape(observed_row)
+    name = requested_row["name"]
+    if observed_row.get("userName") != name:
+        raise ValueError("Lean semantic helper returned a reordered local context")
+    displayed = _normalize_type(observed_row.get("typeDisplay"))
+    if displayed != _normalize_type(requested_row["type"]):
+        raise ValueError(f"Lean semantic helper returned a mismatched type for local {name}")
+    structural = _normalize_type(observed_row.get("typeStructural"))
+    names = lambda value: set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", value))
+    if structural.isidentifier() and structural not in displayed.split():
+        _raise_structural_mismatch(name)
+    if structural.split()[:1] == displayed.split()[:1] and structural != displayed:
+        _raise_structural_mismatch(name)
+    if names(structural) and names(displayed) and names(structural).isdisjoint(names(displayed)):
+        _raise_structural_mismatch(name)
+
+
+def _raise_structural_mismatch(name: str) -> None:
+    raise ValueError(
+        f"Lean semantic helper returned a structurally mismatched type for local {name}"
+    )
 
 
 def _validate_unique_observed_rows(observed: Sequence[Mapping[str, Any]]) -> None:

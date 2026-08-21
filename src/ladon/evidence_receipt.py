@@ -117,14 +117,23 @@ def _validate_accepted_references(
         not _digest(environment_ref) or not _check_ref(check_run_ref)
     ):
         raise ValueError("observed receipt requires exact environment and check-run references")
-    _require_process_observation_reference(dimensions, observed, environment_ref)
+    _require_process_observation_reference(dimensions, observed, environment_ref, check_run_ref)
 
 
 def _require_process_observation_reference(
-    dimensions: EvidenceDimensions, observed: bool, environment_ref: str | None
+    dimensions: EvidenceDimensions,
+    observed: bool,
+    environment_ref: str | None,
+    check_run_ref: str | None,
 ) -> None:
     if dimensions.authority_basis != "process-observation":
         return
+    if (
+        observed
+        and dimensions.observation_state == "live"
+        and not _check_ref(check_run_ref)
+    ):
+        raise ValueError("live process observation requires a check-run reference")
     if dimensions.environment_match == "exact" and not _digest(environment_ref):
         raise ValueError("exact process observation requires an environment reference")
 
