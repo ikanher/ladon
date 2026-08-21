@@ -554,6 +554,10 @@ def _materialize_partial_row(
                     "goal": request.goal,
                     "localContext": [dict(item) for item in request.local_context],
                     "status": row["status"],
+                    "applicationTerm": row.get("applicationTerm"),
+                    "substitutions": row.get("substitutions", []),
+                    "residualPremises": row.get("residualPremises", []),
+                    "dischargedHypotheses": row.get("dischargedHypotheses", []),
                     "batchTerminal": False,
                 }
             ).decode()
@@ -650,6 +654,10 @@ def _materialize_batch_row(
                     "goal": request.goal,
                     "localContext": [dict(item) for item in request.local_context],
                     "diagnostic": row["diagnostic"],
+                    "applicationTerm": row.get("applicationTerm"),
+                    "substitutions": row.get("substitutions", []),
+                    "residualPremises": row.get("residualPremises", []),
+                    "dischargedHypotheses": row.get("dischargedHypotheses", []),
                 }
             ).decode()
         )[7:]
@@ -677,8 +685,10 @@ def _batch_check_artifact(
     env_ref = str(environment["environmentRef"])
     statement = _synthetic_subject("statement", request.goal)
     declaration = _synthetic_subject("declaration", request.candidate)
-    context = _synthetic_subject("local-context", "empty local context")
-    application = _synthetic_subject("candidate-application", request.candidate)
+    context_rows = row.get("localContext") or row.get("callerLocalContext") or []
+    context = _synthetic_subject("local-context", json.dumps(context_rows, sort_keys=True))
+    application_display = str(row.get("applicationTerm") or request.candidate)
+    application = _synthetic_subject("candidate-application", application_display)
     subjects = [statement, declaration, context, application]
     digest = "sha256:" + hashlib.sha256(b"").hexdigest()
     artifact = _envelope(
@@ -703,7 +713,10 @@ def _batch_check_artifact(
                 {
                     "subjectRef": _compact(application),
                     "result": "rejected" if row["status"] == "rejected" else "accepted",
-                    "diagnostics": [],
+                    "diagnostics": ([{"stage": "candidate-check", "code": "candidate-rejected",
+                                       "pointer": "/candidate", "message": str(row["diagnostic"]),
+                                       "order": 0}]
+                                    if row.get("diagnostic") else []),
                 }
             ],
             "outputs": {"stdoutDigest": digest, "stderrDigest": digest},

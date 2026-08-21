@@ -504,6 +504,9 @@ def _validate_worker_identity(
     candidate = payload.get("candidate")
     _validate_worker_subject(probe, "probe", _probe_name(request))
     _validate_worker_subject(candidate, "candidate", request.candidate)
+    expected_modules = {request.module, f"Ladon.Semantic.{_probe_name(request)}"}
+    if payload.get("module") not in expected_modules:
+        raise ValueError("Lean semantic helper returned a mismatched module")
     _validate_worker_modules(payload.get("importedModules"), request.module)
     if request.toolchain is not None:
         if (

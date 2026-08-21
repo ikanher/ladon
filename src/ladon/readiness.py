@@ -59,6 +59,10 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
         if missing:
             reasons.extend(f"{candidate}: missing or stale {name}" for name in missing)
             break
+        provenance = _common_provenance(evidence, requirements[candidate])
+        if provenance is None:
+            reasons.append(f"{candidate}: evidence crosses source or environment scope")
+            break
         level = candidate
     return {
         "schema": "ladon-capability-readiness-v1",
@@ -70,6 +74,15 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
             "Readiness is not proof authority and does not grant public distribution rights."
         ],
     }
+
+
+def _common_provenance(evidence: dict[str, Any], names: tuple[str, ...]) -> tuple[str, str] | None:
+    values = {
+        (str(evidence[name]["sourceTreeIdentity"]), str(evidence[name]["environmentRef"]))
+        for name in names
+        if isinstance(evidence.get(name), dict)
+    }
+    return next(iter(values)) if len(values) == 1 else None
 
 
 def _fresh_pass(value: Any, now: datetime, required_fields: tuple[str, ...]) -> bool:

@@ -110,9 +110,9 @@ def resolve_toolchain_context(
     lake_version = _version(lake, root, sanitized)
     lean_version = _version(lean, root, sanitized)
     expected = _pinned_release(pin_content)
-    if expected not in _reported_releases(lake_version) or expected not in _reported_releases(
-        lean_version
-    ):
+    if _lake_releases(lake_version) != {expected} or _reported_releases(lean_version) != {
+        expected
+    }:
         raise LeanToolchainError(
             f"toolchain pin mismatch: expected {expected}, lake={lake_version!r}, lean={lean_version!r}"
         )
@@ -167,6 +167,12 @@ def _pinned_release(pin_content: str) -> str:
 
 def _reported_releases(output: str) -> frozenset[str]:
     return frozenset(_RELEASE.findall(output))
+
+
+def _lake_releases(output: str) -> frozenset[str]:
+    """Read Lake's embedded Lean release, ignoring Lake's own release number."""
+    labelled = frozenset(re.findall(r"Lean version\s+" + _RELEASE.pattern, output))
+    return labelled or _reported_releases(output)
 
 
 def _identity(path: Path) -> str:

@@ -26,6 +26,10 @@ def evaluate_authority_safe_gate(
     candidate = correctness.get("candidateIdentity")
     if not candidate or candidate != authority.get("candidateIdentity"):
         return _result("failed", "child receipts do not identify the same candidate")
+    if (correctness.get("sourceTreeIdentity"), correctness.get("environmentRef")) != (
+        authority.get("sourceTreeIdentity"), authority.get("environmentRef")
+    ):
+        return _result("failed", "child receipts do not identify the same source and environment")
     if correctness.get("status") != "passed" or authority.get("status") != "passed":
         return _result("failed", "both correctness and authority child gates must pass")
     return {

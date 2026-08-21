@@ -448,6 +448,10 @@ def _scratch_evidence(
         )[7:]
     )
     compiled = result.get("status") == "compiled"
+    checker_rejected = result.get("status") == "lean-rejected"
+    operation_outcome = "accepted" if compiled else ("rejected" if checker_rejected else "failed")
+    authority_basis = "elaborator-check" if (compiled or checker_rejected) else "process-observation"
+    completeness = "complete" if (compiled or checker_rejected) else "partial"
     receipt = build_evidence_receipt(
         subject={
             "module": request.module,
@@ -461,9 +465,9 @@ def _scratch_evidence(
             else "ambient-observed"
         ),
         observation_state="live",
-        operation_outcome="accepted" if compiled else "rejected",
-        authority_basis="elaborator-check",
-        analysis_completeness="complete",
+        operation_outcome=operation_outcome,
+        authority_basis=authority_basis,
+        analysis_completeness=completeness,
         environment_match="exact" if toolchain is not None else "unknown",
         environment_ref=environment_ref,
         check_run_ref=check_ref,
@@ -503,6 +507,8 @@ def _scratch_check_artifact(
     receipt: Mapping[str, Any],
 ) -> dict[str, Any]:
     digest = "sha256:" + hashlib.sha256(b"").hexdigest()
+    compiled = result.get("status") == "compiled"
+    checker_rejected = result.get("status") == "lean-rejected"
     subject = {
         "kind": "candidate-application",
         "localId": "candidate-application:" + hashlib.sha256(candidate.encode()).hexdigest(),
@@ -534,8 +540,11 @@ def _scratch_check_artifact(
             "results": [
                 {
                     "subjectRef": _compact(subject),
-                    "result": "accepted" if result.get("status") == "compiled" else "error",
-                    "diagnostics": [],
+                    "result": "accepted" if compiled else ("rejected" if checker_rejected else "error"),
+                    "diagnostics": ([{"stage": "scratch", "code": str(result.get("status")),
+                                       "pointer": "/scratch", "message": str(result.get("diagnostic")),
+                                       "order": 0}]
+                                    if result.get("diagnostic") else []),
                 }
             ],
             "outputs": {

@@ -30,7 +30,7 @@ def _accepted_payload(tmp_path: Path) -> dict[str, Any]:
         "leanVersion": "4.32.2",
         "leanCommit": "commit",
         "executablePath": str(executable),
-        "module": "Ladon.Semantic.generated",
+        "module": "Main",
         "probe": {
             "name": "filled-from-supervisor-command",
             "typeDisplay": "Nat → Nat",
