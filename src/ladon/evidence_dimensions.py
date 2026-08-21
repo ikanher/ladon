@@ -186,6 +186,11 @@ def _outcome_state_violations(dimensions: EvidenceDimensions) -> list[str]:
         violations.append(
             "not-run outcome cannot claim live checker authority or complete analysis"
         )
+    if dimensions.operation_outcome == "failed" and (
+        dimensions.authority_basis in {"elaborator-check", "kernel-check"}
+        or dimensions.analysis_completeness == "complete"
+    ):
+        violations.append("failed outcome cannot claim checker authority or complete analysis")
     return violations
 
 
