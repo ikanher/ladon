@@ -203,10 +203,20 @@ def _identity(path: Path) -> str:
 def _source_tree_identity(root: Path) -> str:
     digest = hashlib.sha256()
     excluded = {".git", ".lake", "__pycache__", ".pytest_cache"}
+    source_roots = [root / name for name in ("src", "tests", "scripts")]
+    config_names = {
+        "lean-toolchain",
+        "lake-manifest.json",
+        "lakefile.lean",
+        "lakefile.toml",
+        "lakefile.json",
+    }
     paths = sorted(
         path
         for path in root.rglob("*")
-        if path.is_file() and not any(part in excluded for part in path.parts)
+        if path.is_file()
+        and (path.name in config_names or any(path.is_relative_to(item) for item in source_roots))
+        and not any(part in excluded for part in path.parts)
     )
     for path in paths:
         relative = path.relative_to(root).as_posix().encode()

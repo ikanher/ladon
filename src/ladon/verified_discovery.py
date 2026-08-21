@@ -467,7 +467,10 @@ def _scratch_evidence(
         )[7:]
     )
     compiled = result.get("status") == "compiled"
-    checker_rejected = result.get("status") == "lean-rejected"
+    diagnostic_text = str(result.get("diagnostic", "")).lower()
+    checker_rejected = result.get("status") == "lean-rejected" and not any(
+        marker in diagnostic_text for marker in ("configuration failed", "failed to load", "no such file")
+    )
     operation_outcome = "accepted" if compiled else ("rejected" if checker_rejected else "failed")
     authority_basis = "elaborator-check" if (compiled or checker_rejected) else "process-observation"
     completeness = "complete" if (compiled or checker_rejected) else "partial"
@@ -532,7 +535,11 @@ def _scratch_check_artifact(
     toolchain_payload = environment.get("payload", {}).get("toolchain", {})
     executable_digest = str(toolchain_payload.get("leanIdentity") or digest)
     compiled = result.get("status") == "compiled"
-    checker_rejected = result.get("status") == "lean-rejected"
+    checker_rejected = result.get("status") == "lean-rejected" and not any(
+        marker in str(result.get("diagnostic", "")).lower()
+        for marker in ("configuration failed", "failed to load", "no such file")
+    )
+    diagnostic_code = "lean-rejected" if checker_rejected else "process-failed"
     subject_digest = _identity(
         {
             "candidate": candidate,
@@ -574,7 +581,7 @@ def _scratch_check_artifact(
                 {
                     "subjectRef": _compact(subject),
                     "result": "accepted" if compiled else ("rejected" if checker_rejected else "error"),
-                    "diagnostics": ([{"stage": "scratch", "code": str(result.get("status")),
+                    "diagnostics": ([{"stage": "scratch", "code": diagnostic_code,
                                        "pointer": "/scratch", "message": str(result.get("diagnostic")),
                                        "order": 0}]
                                     if result.get("diagnostic") else []),
