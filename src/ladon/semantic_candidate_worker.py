@@ -200,6 +200,7 @@ def check_semantic_candidate(
 
     probe_name = _probe_name(request)
     request_id = "req-" + secrets.token_hex(16)
+    helper_identity = _digest_file(helper_path)
     source = _environment_source(request)
     with tempfile.TemporaryDirectory(prefix="ladon-semantic-check-") as directory:
         probe_path = Path(directory) / "Probe.lean"
@@ -234,7 +235,9 @@ def check_semantic_candidate(
         return _failed_check(process, request)
     try:
         payload = _parse_worker_payload(process.stdout, request, request_id)
-        artifacts = _accepted_artifacts(request, helper_path, process, payload)
+        artifacts = _accepted_artifacts(
+            request, helper_path, process, payload, helper_identity=helper_identity
+        )
         validate_envelope_batch(list(artifacts))
     except (OSError, TypeError, ValueError) as error:
         return SemanticCandidateCheck(
@@ -533,6 +536,8 @@ def _accepted_artifacts(
     helper_path: Path,
     process: ProcessResult,
     payload: Mapping[str, Any],
+    *,
+    helper_identity: str | None = None,
 ) -> tuple[dict[str, Any], ...]:
     environment = _environment_artifact(request.repo_root, payload, request.toolchain)
     env_ref = environment["environmentRef"]
@@ -565,6 +570,7 @@ def _accepted_artifacts(
         payload,
         application,
         bool(residuals),
+        helper_identity=helper_identity,
     )
     if residuals:
         attempt = _attempt_artifact(
@@ -783,6 +789,8 @@ def _check_artifact(
     payload: Mapping[str, Any],
     application: Mapping[str, Any],
     has_residuals: bool,
+    *,
+    helper_identity: str | None = None,
 ) -> dict[str, Any]:
     observation = {
         "universePolicy": str(payload["universePolicy"]),
@@ -790,7 +798,7 @@ def _check_artifact(
         "returnCode": process.returncode,
         "stdoutDigest": _digest_text(process.stdout),
         "stderrDigest": _digest_text(process.stderr),
-        "helperDigest": _digest_file(helper_path),
+        "helperDigest": helper_identity or _digest_file(helper_path),
         "executableDigest": _digest_file(Path(str(payload["executablePath"]))),
         "timeout": process.timed_out,
         "outputLimited": process.output_limited,

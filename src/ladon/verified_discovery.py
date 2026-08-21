@@ -450,7 +450,7 @@ def _scratch_evidence(
     compiled = result.get("status") == "compiled"
     checker_rejected = result.get("status") == "lean-rejected"
     operation_outcome = "accepted" if compiled else ("rejected" if checker_rejected else "failed")
-    authority_basis = "elaborator-check" if (compiled or checker_rejected) else "process-observation"
+    authority_basis = "elaborator-check" if (compiled or checker_rejected) else "source-observation"
     completeness = "complete" if (compiled or checker_rejected) else "partial"
     receipt = build_evidence_receipt(
         subject={
