@@ -391,6 +391,13 @@ def semantic_scratch_replayer(request: DiscoveryRequest, toolchain: Any = None) 
             if isinstance(subject, Mapping)
             else request.local_context
         )
+        caller_context = parent.get("callerLocalContext", request.local_context)
+        introduced_context = (
+            observed_context[len(caller_context) :]
+            if isinstance(caller_context, Sequence)
+            and list(observed_context[: len(caller_context)]) == list(caller_context)
+            else ()
+        )
         result = replay_scratch(
             repo_root=request.repo_root,
             module=request.module,
@@ -398,7 +405,8 @@ def semantic_scratch_replayer(request: DiscoveryRequest, toolchain: Any = None) 
             candidate=application_term,
             toolchain=toolchain,
             timeout_seconds=request.timeout_seconds,
-            local_context=observed_context,
+            local_context=caller_context,
+            introduced_context=introduced_context,
             max_output_bytes=request.max_output_bytes,
             max_rss_bytes=request.max_rss_bytes,
         ).to_dict()

@@ -35,12 +35,11 @@ def build_scratch_source(
     goal: str,
     candidate: str,
     local_context: Sequence[Mapping[str, str]] = (),
-    max_output_bytes: int = 8 * 1024 * 1024,
-    max_rss_bytes: int = 2 * 1024 * 1024 * 1024,
+    introduced_context: Sequence[Mapping[str, str]] = (),
 ) -> str:
     """Return exact source for an independent closed application replay."""
-    if local_context and goal.lstrip().startswith(("∀", "forall")):
-        intros = "\n".join(f"  intro {row['name']}" for row in local_context)
+    if introduced_context and goal.lstrip().startswith(("∀", "forall")):
+        intros = "\n".join(f"  intro {row['name']}" for row in introduced_context)
         return f"import {module}\n\nexample : {goal} := by\n{intros}\n  exact {candidate}\n"
     binders = " ".join(f"({row['name']} : {row['type']})" for row in local_context)
     prefix = f" {binders}" if binders else ""
@@ -56,11 +55,12 @@ def replay_scratch(
     toolchain: LeanToolchainContext | None,
     timeout_seconds: float = 120.0,
     local_context: Sequence[Mapping[str, str]] = (),
+    introduced_context: Sequence[Mapping[str, str]] = (),
     max_output_bytes: int = 8 * 1024 * 1024,
     max_rss_bytes: int = 2 * 1024 * 1024 * 1024,
     runner: Callable[..., ProcessResult] = run_bounded_target_process,
 ) -> ScratchReplayResult:
-    source = build_scratch_source(module, goal, candidate, local_context)
+    source = build_scratch_source(module, goal, candidate, local_context, introduced_context)
     source_digest = "sha256:" + hashlib.sha256(source.encode()).hexdigest()
     if toolchain is None:
         return ScratchReplayResult(
