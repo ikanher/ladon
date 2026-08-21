@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import secrets
 import tempfile
 import threading
@@ -28,6 +29,7 @@ from ladon.semantic_candidate_worker import (
     SemanticCandidateRequest,
     _accepted_artifacts,
     _compact,
+    _digest_file,
     _digest_text,
     _envelope,
     _environment_artifact,
@@ -94,6 +96,7 @@ def check_semantic_candidates(
             else ("lake", "env", "lean")
         )
         try:
+            helper_identity = _digest_file(helper_path)
             if request.toolchain is not None:
                 verify_toolchain_identities(request.toolchain)
             process = runner(
@@ -119,6 +122,8 @@ def check_semantic_candidates(
             )
             if request.toolchain is not None:
                 verify_toolchain_identities(request.toolchain)
+            if _digest_file(helper_path) != helper_identity:
+                raise LeanToolchainError("semantic helper identity changed during execution")
         except LeanToolchainError as error:
             return SemanticCandidateBatchCheck(
                 "invalid-worker-output",
@@ -349,6 +354,7 @@ def _validate_batch_identity(
     _validate_batch_required_fields(payload)
     _validate_batch_frame(payload, request, request_id)
     _validate_batch_execution_identity(payload)
+    _validate_batch_toolchain_identity(payload, request)
     _validate_batch_semantic_population(payload, request)
 
 
@@ -397,6 +403,27 @@ def _validate_batch_execution_identity(payload: Mapping[str, Any]) -> None:
         for field in ("leanVersion", "leanCommit", "executablePath")
     ):
         raise ValueError("Lean semantic helper returned invalid batch execution identity")
+
+
+def _validate_batch_toolchain_identity(
+    payload: Mapping[str, Any], request: SemanticCandidateRequest
+) -> None:
+    if request.toolchain is None:
+        return
+    if (
+        request.toolchain.selection_mode == "explicit"
+        and Path(str(payload["executablePath"])).resolve() != request.toolchain.lean_path
+    ):
+        raise ValueError("Lean semantic helper returned a foreign batch executable path")
+    expected = request.toolchain.pin_content.rsplit(":v", 1)[-1]
+    versions = set(
+        re.findall(
+            r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.]+)?)(?![0-9])",
+            str(payload["leanVersion"]),
+        )
+    )
+    if versions != {expected}:
+        raise ValueError("Lean semantic helper returned an unbound batch Lean version")
 
 
 def _validate_batch_semantic_population(

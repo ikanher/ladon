@@ -66,6 +66,8 @@ class DiscoveryRequest:
         for row in self.local_context:
             if not row.get("name") or not row.get("type"):
                 raise ValueError("local context rows require name and type")
+            if any(char.isspace() or ord(char) < 32 or char in ":(){};" for char in row["name"]):
+                raise ValueError("local context row has an unsafe name")
             context_bytes += len(row["name"].encode()) + len(row["type"].encode())
         if context_bytes > MAX_LOCAL_CONTEXT_BYTES:
             raise ValueError("local context exceeds the supported byte cap")

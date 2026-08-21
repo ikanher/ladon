@@ -95,7 +95,7 @@ class SemanticCandidateRequest:
         _validate_request_bounds(self.timeout_seconds, self.max_output_bytes, self.max_rss_bytes)
         validate_local_context(
             self.local_context,
-            valid_name=_valid_qualified_name,
+            valid_name=_valid_local_name,
             validate_type=_validate_request_goal,
         )
         if self.toolchain is not None and self.execution_context_ref not in {
@@ -121,6 +121,12 @@ def _valid_qualified_name(value: str) -> bool:
     subtly different identifier grammar here.
     """
     return bool(value) and not any(char.isspace() or ord(char) < 32 for char in value)
+
+
+def _valid_local_name(value: str) -> bool:
+    return bool(value) and not any(
+        char.isspace() or ord(char) < 32 or char in ":(){};" for char in value
+    )
 
 
 def _validate_request_goal(goal: str) -> None:
