@@ -179,7 +179,15 @@ def discover_candidates(
             ),
             "accepted": _count_status(candidates, {"accepted", "applicable-with-residuals"}),
             "rejected": _count_status(candidates, {"rejected"}),
-            "unassessed": _count_status(candidates, {"unassessed", "timeout", "resource-limited"}),
+            "unassessed": _count_status(
+                candidates,
+                {"unassessed", "timeout", "resource-limited", "output-limited", "memory-limited"},
+            ),
+            "failed": _count_status(candidates, {"failed-checker", "invalid-worker-output", "failed"}),
+            "timeouts": _count_status(candidates, {"timeout"}),
+            "outputLimited": _count_status(candidates, {"output-limited"}),
+            "memoryLimited": _count_status(candidates, {"memory-limited"}),
+            "invalidWorkerOutput": _count_status(candidates, {"invalid-worker-output"}),
             "scratchAttempted": sum("scratch" in candidate.check for candidate in candidates),
             "scratchCompiled": sum(
                 candidate.check.get("scratch", {}).get("status") == "compiled"
@@ -288,6 +296,10 @@ def _status_priority(status: Any) -> int:
         "rejected": 2,
         "timeout": 3,
         "resource-limited": 4,
+        "output-limited": 4,
+        "memory-limited": 4,
+        "failed-checker": 5,
+        "invalid-worker-output": 6,
         "unassessed": 5,
     }.get(status, 6)
 
@@ -450,7 +462,7 @@ def _scratch_evidence(
     compiled = result.get("status") == "compiled"
     checker_rejected = result.get("status") == "lean-rejected"
     operation_outcome = "accepted" if compiled else ("rejected" if checker_rejected else "failed")
-    authority_basis = "elaborator-check" if (compiled or checker_rejected) else "source-observation"
+    authority_basis = "elaborator-check" if (compiled or checker_rejected) else "process-observation"
     completeness = "complete" if (compiled or checker_rejected) else "partial"
     receipt = build_evidence_receipt(
         subject={

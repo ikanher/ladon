@@ -431,6 +431,8 @@ def _validate_batch_toolchain_identity(
     )
     if versions != {expected}:
         raise ValueError("Lean semantic helper returned an unbound batch Lean version")
+    if request.toolchain.lean_commit is not None and str(payload.get("leanCommit", "")).lower() != request.toolchain.lean_commit:
+        raise ValueError("Lean semantic helper returned an unbound batch Lean commit")
 
 
 def _validate_batch_semantic_population(

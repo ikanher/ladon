@@ -223,11 +223,12 @@ def check_semantic_candidate(
                     goal_with_local_context(request.goal, request.local_context),
                     probe_name,
                     request.candidate,
-                    request_id,
-                    _execution_context_ref(request),
+                request_id,
+                _execution_context_ref(request),
                 ),
                 helper_path,
                 cancel_event,
+                expected_helper_identity=helper_identity,
             )
         except LeanToolchainError as error:
             return _toolchain_identity_failure(request, error)
@@ -292,8 +293,10 @@ def _run_verified_candidate_process(
     command: tuple[str, ...],
     helper_path: Path,
     cancel_event: threading.Event | None,
+    *,
+    expected_helper_identity: str | None = None,
 ) -> ProcessResult:
-    helper_identity = _digest_file(helper_path)
+    helper_identity = expected_helper_identity or _digest_file(helper_path)
     if request.toolchain is not None:
         verify_toolchain_identities(request.toolchain)
     if _digest_file(helper_path) != helper_identity:
@@ -356,9 +359,13 @@ def _receipt_for_check(
             ],
         },
         execution_binding=binding,
-        observation_state="live" if outcome == "accepted" else "failed",
-        operation_outcome="accepted" if outcome == "accepted" else "failed",
-        authority_basis="elaborator-check" if outcome == "accepted" else "not-assessed",
+        observation_state="live" if outcome in {"accepted", "rejected"} else "failed",
+        operation_outcome=outcome,
+        authority_basis=(
+            "elaborator-check"
+            if outcome == "accepted"
+            else ("process-observation" if outcome == "rejected" else "not-assessed")
+        ),
         analysis_completeness=completeness,
         environment_match=environment_match,
         environment_ref=environment_ref,
@@ -539,6 +546,8 @@ def _validate_worker_identity(
         )
         if versions != {expected}:
             raise ValueError("Lean semantic helper returned an unbound Lean version")
+        if request.toolchain.lean_commit is not None and str(payload.get("leanCommit", "")).lower() != request.toolchain.lean_commit:
+            raise ValueError("Lean semantic helper returned an unbound Lean commit")
 
 
 def _accepted_artifacts(

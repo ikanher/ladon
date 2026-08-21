@@ -17,6 +17,7 @@ from pathlib import Path
 from ladon.process_supervisor import run_bounded_target_process
 
 _RELEASE = re.compile(r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.]+)?)(?![0-9])")
+_COMMIT = re.compile(r"\bcommit\s+([0-9a-f]{7,64})\b", re.IGNORECASE)
 PREFLIGHT_TIMEOUT_SECONDS = 10.0
 PREFLIGHT_MAX_OUTPUT_BYTES = 64 * 1024
 
@@ -36,6 +37,8 @@ class LeanToolchainContext:
     pin_digest: str
     lake_identity: str
     lean_identity: str
+    lean_release: str
+    lean_commit: str | None
     selection_mode: str
     environment_keys: tuple[str, ...]
     environment: Mapping[str, str]
@@ -61,6 +64,8 @@ class LeanToolchainContext:
             "pinDigest": self.pin_digest,
             "lakeIdentity": self.lake_identity,
             "leanIdentity": self.lean_identity,
+            "leanRelease": self.lean_release,
+            "leanCommit": self.lean_commit,
             "selectionMode": self.selection_mode,
             "environmentKeys": list(self.environment_keys),
             "contextIdentity": self.context_identity,
@@ -76,6 +81,8 @@ class LeanToolchainContext:
             "pinDigest": self.pin_digest,
             "lakeIdentity": self.lake_identity,
             "leanIdentity": self.lean_identity,
+            "leanRelease": self.lean_release,
+            "leanCommit": self.lean_commit,
             "selectionMode": self.selection_mode,
             "environment": dict(sorted(self.environment.items())),
         }
@@ -124,6 +131,8 @@ def resolve_toolchain_context(
         "sha256:" + hashlib.sha256(pin_content.encode()).hexdigest(),
         _identity(lake),
         _identity(lean),
+        expected,
+        _reported_commit(lean_version),
         selection_mode,
         tuple(sorted(sanitized)),
         sanitized,
@@ -167,6 +176,11 @@ def _pinned_release(pin_content: str) -> str:
 
 def _reported_releases(output: str) -> frozenset[str]:
     return frozenset(_RELEASE.findall(output))
+
+
+def _reported_commit(output: str) -> str | None:
+    match = _COMMIT.search(output)
+    return match.group(1).lower() if match else None
 
 
 def _lake_releases(output: str) -> frozenset[str]:

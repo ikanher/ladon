@@ -15,6 +15,7 @@ AUTHORITY_BASES = frozenset(
         "not-assessed",
         "producer-assertion",
         "source-observation",
+        "process-observation",
         "elaborator-check",
         "kernel-check",
         "stored-observation",
