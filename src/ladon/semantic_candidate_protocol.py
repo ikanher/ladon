@@ -69,6 +69,12 @@ def validate_application_rows(payload: Mapping[str, Any]) -> None:
         raise ValueError("Lean semantic helper returned invalid substitutions")
     if not _closed_discharged_rows(payload["dischargedHypotheses"], discharged_fields):
         raise ValueError("Lean semantic helper returned invalid discharged hypotheses")
+    local_ids = {
+        row.get("localId") for row in payload["localContext"] if isinstance(row, dict)
+    }
+    for row in payload["dischargedHypotheses"]:
+        if row["dischargedByLocalRef"] not in local_ids:
+            raise ValueError("Lean semantic helper discharged premise via an unknown local")
     if not _closed_string_rows(payload["residualPremises"], expression_fields):
         raise ValueError("Lean semantic helper returned invalid residual premises")
     if not _closed_local_context_rows(payload["localContext"], local_fields):
