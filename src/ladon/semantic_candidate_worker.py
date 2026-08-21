@@ -537,7 +537,7 @@ def _validate_worker_identity(
     _validate_worker_subject(probe, "probe", _probe_name(request))
     requested_goal = " ".join(request.goal.split())
     observed_goal = " ".join(str(probe.get("typeDisplay", "")).split())
-    if requested_goal != observed_goal and (
+    if not request.local_context and requested_goal != observed_goal and (
         requested_goal.isidentifier() or observed_goal.isidentifier()
     ):
         raise ValueError("Lean semantic helper returned a goal subject unrelated to the request")
