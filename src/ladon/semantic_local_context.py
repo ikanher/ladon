@@ -39,7 +39,7 @@ def _validate_requested_row(
         raise ValueError("semantic local context contains duplicate names")
     names.add(name)
     if any(token in type_text for token in ("\n", "\r", ":=", ";")) or re.search(
-        r"\)\s*[({]", type_text
+        r"\)\s*[([{]", type_text
     ):
         raise ValueError("semantic local context type contains unsupported binder syntax")
     validate_type(type_text)

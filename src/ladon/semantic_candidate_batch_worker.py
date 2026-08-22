@@ -441,7 +441,7 @@ def _validate_batch_semantic_population(
     payload: Mapping[str, Any], request: SemanticCandidateRequest
 ) -> None:
     _validate_worker_subject(payload.get("probe"), "probe", _batch_probe_name(request))
-    requested_goal = " ".join(request.goal.split())
+    requested_goal = " ".join(goal_with_local_context(request.goal, request.local_context).split())
     observed_goal = " ".join(str(payload["probe"].get("typeDisplay", "")).split())
     if not _goal_subjects_compatible(requested_goal, observed_goal):
         raise ValueError("Lean semantic helper returned a goal subject unrelated to the request")

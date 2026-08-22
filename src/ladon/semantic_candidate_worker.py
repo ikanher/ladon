@@ -521,10 +521,10 @@ def _validate_worker_collections(payload: Mapping[str, Any]) -> None:
 
 
 def _goal_subjects_compatible(requested: str, observed: str) -> bool:
-    if requested == observed:
-        return True
-    token = lambda value: set(re.findall(r"[A-Za-z_][A-Za-z0-9_.]*", value))
-    return bool(token(requested) & token(observed))
+    def normalize(value: str) -> str:
+        return " ".join(value.replace("∀ (", "∀ ").replace("),", ",").split())
+
+    return normalize(requested) == normalize(observed)
 
 
 def _same_executable_identity(path: Path, toolchain: LeanToolchainContext) -> bool:
@@ -532,8 +532,6 @@ def _same_executable_identity(path: Path, toolchain: LeanToolchainContext) -> bo
         return (
             path.resolve() == toolchain.lean_path
             or _digest_file(path) == toolchain.lean_identity
-            or ".elan/toolchains/" in str(path)
-            and path.name == toolchain.lean_path.name
         )
     except OSError:
         return False
@@ -568,7 +566,7 @@ def _validate_worker_identity(
     probe = payload.get("probe")
     candidate = payload.get("candidate")
     _validate_worker_subject(probe, "probe", _probe_name(request))
-    requested_goal = " ".join(request.goal.split())
+    requested_goal = " ".join(goal_with_local_context(request.goal, request.local_context).split())
     observed_goal = " ".join(str(probe.get("typeDisplay", "")).split())
     if not request.local_context and not _goal_subjects_compatible(
         requested_goal, observed_goal
