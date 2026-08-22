@@ -21,6 +21,15 @@ from typing import Any
 from ladon.evidence_receipt import build_evidence_receipt
 from ladon.proofir_v3 import validate_envelope_batch
 from ladon.scratch_replay import replay_scratch
+from ladon.semantic_candidate_limits import (
+    MAX_DISCOVERY_BATCH_SIZE,
+    MAX_DISCOVERY_CANDIDATES,
+    MAX_DISCOVERY_PROCESS_SECONDS,
+    MAX_DISCOVERY_RESULT_BYTES,
+    MAX_DISCOVERY_SCRATCH_ATTEMPTS,
+    validate_semantic_bounds,
+    validate_transport_text,
+)
 from ladon.semantic_candidate_worker import (
     DEFAULT_HELPER,
     TRUSTED_TARGET_LIMITATION,
@@ -33,12 +42,8 @@ from ladon.semantic_candidate_worker import (
 )
 
 DISCOVERY_SCHEMA = "ladon-verified-discovery-result-v1"
-MAX_DISCOVERY_TIMEOUT_SECONDS = 600.0
-MAX_DISCOVERY_OUTPUT_BYTES = 64 * 1024 * 1024
-MAX_DISCOVERY_RSS_BYTES = 64 * 1024 * 1024 * 1024
 MAX_LOCAL_CONTEXT_ROWS = 256
 MAX_LOCAL_CONTEXT_BYTES = 1024 * 1024
-MAX_DISCOVERY_TERM_BYTES = 64 * 1024
 
 
 @dataclass(frozen=True)
@@ -60,6 +65,7 @@ class DiscoveryRequest:
     def __post_init__(self) -> None:
         if not self.module or not self.goal:
             raise ValueError("discovery requires module and goal")
+        validate_transport_text(self.module, self.goal)
         _validate_discovery_bounds(self)
         _validate_discovery_scope(self.scope, self.roots, self.freshness)
         if len(self.local_context) > MAX_LOCAL_CONTEXT_ROWS:
@@ -101,19 +107,14 @@ def _validate_discovery_bounds(request: DiscoveryRequest) -> None:
     )
     if not math.isfinite(request.timeout_seconds) or min(values) <= 0:
         raise ValueError("discovery bounds must be positive and finite (supported cap)")
-    if request.max_candidates > 1000 or request.batch_size > 100:
-        raise ValueError("discovery bounds exceed the supported cap")
-    if request.timeout_seconds > MAX_DISCOVERY_TIMEOUT_SECONDS:
-        raise ValueError("discovery timeout exceeds the supported cap")
-    if request.max_output_bytes > MAX_DISCOVERY_OUTPUT_BYTES:
-        raise ValueError("discovery output bound exceeds the supported cap")
-    if request.max_rss_bytes > MAX_DISCOVERY_RSS_BYTES:
-        raise ValueError("discovery memory bound exceeds the supported cap")
     if (
-        len(request.module.encode()) > MAX_DISCOVERY_TERM_BYTES
-        or len(request.goal.encode()) > MAX_DISCOVERY_TERM_BYTES
+        request.max_candidates > MAX_DISCOVERY_CANDIDATES
+        or request.batch_size > MAX_DISCOVERY_BATCH_SIZE
     ):
-        raise ValueError("discovery module or goal exceeds the supported byte cap")
+        raise ValueError("discovery bounds exceed the supported cap")
+    validate_semantic_bounds(
+        request.timeout_seconds, request.max_output_bytes, request.max_rss_bytes
+    )
 
 
 def _validate_discovery_scope(scope: str, roots: tuple[str, ...], freshness: str) -> None:
@@ -163,6 +164,7 @@ def discover_candidates(
         {**dict(row), "shortlistOrdinal": index}
         for index, row in enumerate(shortlist[: request.max_candidates])
     ]
+    _validate_operation_budget(request, bounded, scratch_replayer, batch_checker)
     candidates = _candidate_rows(
         bounded, checker, scratch_replayer, batch_checker, request.batch_size
     )
@@ -199,7 +201,14 @@ def discover_candidates(
             "rejected": _count_status(candidates, {"rejected"}),
             "unassessed": _count_status(
                 candidates,
-                {"unassessed", "timeout", "resource-limited", "output-limited", "memory-limited"},
+                {
+                    "provisional-observation",
+                    "unassessed",
+                    "timeout",
+                    "resource-limited",
+                    "output-limited",
+                    "memory-limited",
+                },
             ),
             "failed": _count_status(candidates, {"failed-checker", "invalid-worker-output", "failed"}),
             "timeouts": _count_status(candidates, {"timeout"}),
@@ -230,7 +239,30 @@ def discover_candidates(
         ],
     }
     payload["resultIdentity"] = _identity(payload)
+    if len(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()) > (
+        MAX_DISCOVERY_RESULT_BYTES
+    ):
+        raise ValueError("discovery result exceeds the supported byte cap")
     return payload
+
+
+def _validate_operation_budget(
+    request: DiscoveryRequest,
+    rows: Sequence[Mapping[str, Any]],
+    scratch_replayer: ScratchReplayer | None,
+    batch_checker: BatchChecker | None,
+) -> None:
+    for row in rows:
+        name = str(row.get("candidateName") or row.get("name") or "")
+        if name:
+            validate_transport_text(request.module, request.goal, name)
+    process_count = (
+        math.ceil(len(rows) / request.batch_size) if batch_checker is not None else len(rows)
+    )
+    if scratch_replayer is not None and rows:
+        process_count += MAX_DISCOVERY_SCRATCH_ATTEMPTS
+    if process_count * request.timeout_seconds > MAX_DISCOVERY_PROCESS_SECONDS:
+        raise ValueError("discovery aggregate process budget exceeds the supported cap")
 
 
 def _request_payload(request: DiscoveryRequest) -> dict[str, Any]:
@@ -263,12 +295,15 @@ def _candidate_rows(
     batch_checker: BatchChecker | None,
     batch_size: int,
 ) -> list[DiscoveryCandidate]:
+    scratch_budget = [MAX_DISCOVERY_SCRATCH_ATTEMPTS]
     if batch_checker is not None:
-        return _batch_candidate_rows(rows, batch_checker, scratch_replayer, batch_size)
+        return _batch_candidate_rows(
+            rows, batch_checker, scratch_replayer, batch_size, scratch_budget
+        )
     return [
         candidate
         for row in rows
-        if (candidate := _check_one(row, checker, scratch_replayer)) is not None
+        if (candidate := _check_one(row, checker, scratch_replayer, scratch_budget)) is not None
     ]
 
 
@@ -277,6 +312,7 @@ def _batch_candidate_rows(
     batch_checker: BatchChecker,
     scratch_replayer: ScratchReplayer | None,
     batch_size: int,
+    scratch_budget: list[int],
 ) -> list[DiscoveryCandidate]:
     names = tuple(
         str(row.get("candidateName") or row.get("name"))
@@ -293,7 +329,12 @@ def _batch_candidate_rows(
     return [
         candidate
         for row in rows
-        if (candidate := _candidate_from_batch(row, results, scratch_replayer)) is not None
+        if (
+            candidate := _candidate_from_batch(
+                row, results, scratch_replayer, scratch_budget
+            )
+        )
+        is not None
     ]
 
 
@@ -312,18 +353,22 @@ def _status_priority(status: Any) -> int:
         "accepted": 0,
         "applicable-with-residuals": 1,
         "rejected": 2,
-        "timeout": 3,
-        "resource-limited": 4,
-        "output-limited": 4,
-        "memory-limited": 4,
-        "failed-checker": 5,
-        "invalid-worker-output": 6,
-        "unassessed": 5,
-    }.get(status, 6)
+        "provisional-observation": 3,
+        "timeout": 4,
+        "resource-limited": 5,
+        "output-limited": 5,
+        "memory-limited": 5,
+        "failed-checker": 6,
+        "invalid-worker-output": 7,
+        "unassessed": 6,
+    }.get(status, 7)
 
 
 def _check_one(
-    row: Mapping[str, Any], checker: Checker, scratch_replayer: ScratchReplayer | None
+    row: Mapping[str, Any],
+    checker: Checker,
+    scratch_replayer: ScratchReplayer | None,
+    scratch_budget: list[int],
 ) -> DiscoveryCandidate | None:
     name = str(row.get("candidateName") or row.get("name") or "")
     if not name:
@@ -335,7 +380,7 @@ def _check_one(
             "status": "unassessed",
             "diagnostic": {"code": "candidate-check-failed", "message": str(error)},
         }
-    check_payload = _attach_scratch(check_payload, name, scratch_replayer)
+    check_payload = _attach_scratch(check_payload, name, scratch_replayer, scratch_budget)
     return DiscoveryCandidate(name, row, check_payload)
 
 
@@ -343,6 +388,7 @@ def _candidate_from_batch(
     row: Mapping[str, Any],
     results: Mapping[str, Mapping[str, Any]],
     scratch_replayer: ScratchReplayer | None,
+    scratch_budget: list[int],
 ) -> DiscoveryCandidate | None:
     name = str(row.get("candidateName") or row.get("name") or "")
     if not name:
@@ -350,16 +396,27 @@ def _candidate_from_batch(
     check_payload = dict(
         results.get(name, {"status": "unassessed", "diagnostic": {"code": "batch-row-missing"}})
     )
-    check_payload = _attach_scratch(check_payload, name, scratch_replayer)
+    if check_payload.get("batchTerminal") is False:
+        check_payload["observedStatus"] = check_payload.get("status")
+        check_payload["status"] = "provisional-observation"
+    check_payload = _attach_scratch(check_payload, name, scratch_replayer, scratch_budget)
     return DiscoveryCandidate(name, row, check_payload)
 
 
 def _attach_scratch(
-    check_payload: Mapping[str, Any], name: str, scratch_replayer: ScratchReplayer | None
+    check_payload: Mapping[str, Any],
+    name: str,
+    scratch_replayer: ScratchReplayer | None,
+    scratch_budget: list[int],
 ) -> dict[str, Any]:
     result = dict(check_payload)
-    if scratch_replayer is None or result.get("status") != "accepted":
+    if (
+        scratch_replayer is None
+        or result.get("status") != "accepted"
+        or scratch_budget[0] <= 0
+    ):
         return result
+    scratch_budget[0] -= 1
     try:
         application_term = result.get("applicationTerm") or name
         if not isinstance(application_term, str):
@@ -383,7 +440,9 @@ def _discovery_status(candidates: Sequence[DiscoveryCandidate]) -> str:
         return "unavailable"
     if completed == len(candidates):
         return "available"
-    return "partial" if completed else "failed"
+    if completed or _count_status(candidates, {"provisional-observation"}):
+        return "partial"
+    return "failed"
 
 
 def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checker:

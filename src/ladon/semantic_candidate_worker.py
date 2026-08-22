@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import math
 import re
 import secrets
 import tempfile
@@ -38,6 +37,7 @@ from ladon.proofir_v3 import (
     make_envelope,
     validate_envelope_batch,
 )
+from ladon.semantic_candidate_limits import validate_semantic_bounds, validate_transport_text
 from ladon.semantic_candidate_protocol import (
     decode_single_frame,
 )
@@ -66,7 +66,6 @@ if (FINGERPRINT_SCHEME["name"], FINGERPRINT_SCHEME["version"]) not in SCHEMES:
 DEFAULT_HELPER = Path(
     str(resources.files("ladon").joinpath("lean", "ladon_semantic_candidate_helper.lean"))
 )
-MAX_GOAL_BYTES = 64 * 1024
 MAX_IMPORTED_MODULES = 10_000
 MAX_COMPILED_ENVIRONMENT_BYTES = 4 * 1024 * 1024 * 1024
 MAX_EVIDENCE_FILE_BYTES = 512 * 1024 * 1024
@@ -92,7 +91,10 @@ class SemanticCandidateRequest:
     def __post_init__(self) -> None:
         _validate_request_identity(self.module, self.candidate)
         _validate_request_goal(self.goal)
-        _validate_request_bounds(self.timeout_seconds, self.max_output_bytes, self.max_rss_bytes)
+        validate_transport_text(self.module, self.goal, self.candidate)
+        validate_semantic_bounds(
+            self.timeout_seconds, self.max_output_bytes, self.max_rss_bytes
+        )
         validate_local_context(
             self.local_context,
             valid_name=_valid_local_name,
@@ -133,18 +135,8 @@ def _validate_request_goal(goal: str) -> None:
     if not goal:
         raise ValueError("semantic check requires a goal")
     forbidden = "\n" in goal or "\r" in goal or ":=" in goal
-    if forbidden or len(goal.encode("utf-8")) > MAX_GOAL_BYTES:
+    if forbidden:
         raise ValueError("semantic check goal must be one bounded Lean term")
-
-
-def _validate_request_bounds(
-    timeout_seconds: float, max_output_bytes: int, max_rss_bytes: int
-) -> None:
-    if (
-        not math.isfinite(timeout_seconds)
-        or min(timeout_seconds, max_output_bytes, max_rss_bytes) <= 0
-    ):
-        raise ValueError("semantic check bounds must be positive and finite")
 
 
 @dataclass(frozen=True)
@@ -222,6 +214,7 @@ def check_semantic_candidate(
                     f"Ladon.Semantic.{probe_name}",
                     str(probe_path),
                     goal_with_local_context(request.goal, request.local_context),
+                    _goal_request_digest(request),
                     probe_name,
                     request.candidate,
                 request_id,
@@ -424,6 +417,11 @@ def _probe_name(request: SemanticCandidateRequest) -> str:
     return "ladonSemanticProbe_" + identity[7:23]
 
 
+def _goal_request_digest(request: SemanticCandidateRequest) -> str:
+    """Bind the frame to the exact goal bytes handed to the pinned helper."""
+    return _digest_text(goal_with_local_context(request.goal, request.local_context))
+
+
 def _environment_source(request: SemanticCandidateRequest) -> str:
     """Provide only the requested module environment to the Lean helper."""
     return f"import {request.module}\nset_option autoImplicit false\n"
@@ -452,27 +450,9 @@ def _failed_check(
         code, status = "checker-output-limit", "output-limited"
     elif process.memory_limited:
         code, status = "checker-memory-limit", "memory-limited"
-    elif any(
-        marker in (process.stderr or process.stdout)
-        for marker in ("invalid Lean name", "did not unify with the elaborated goal")
-    ):
-        code, status = "checker-rejected", "rejected"
     else:
         code, status = "checker-failed", "failed-checker"
     detail = (process.stderr or process.stdout).strip()
-    check_ref = None
-    if status == "rejected":
-        check_ref = "check:" + _digest_text(
-            json.dumps(
-                {
-                    "command": list(process.command),
-                    "stdout": process.stdout,
-                    "stderr": process.stderr,
-                    "status": status,
-                },
-                sort_keys=True,
-            )
-        )[7:]
     return SemanticCandidateCheck(
         status,
         diagnostic={"code": code, "message": detail or code},
@@ -480,10 +460,9 @@ def _failed_check(
         peak_rss_bytes=process.peak_rss_bytes,
         evidence_receipt=_receipt_for_check(
             request,
-            "rejected" if status == "rejected" else "failed",
+            "failed",
             status,
             "not-assessed",
-            check_run_ref=check_ref,
         ),
     )
 
@@ -511,6 +490,7 @@ def _validate_rejected_worker_payload(
         "terminal",
         "universePolicy",
         "requestId",
+        "goalRequestDigest",
         "executionContextRef",
         "leanVersion",
         "leanCommit",
@@ -530,6 +510,8 @@ def _validate_rejected_worker_payload(
         raise ValueError("Lean semantic helper returned an unrelated rejection frame")
     if payload["executionContextRef"] != _execution_context_ref(request):
         raise ValueError("Lean semantic helper returned a mismatched execution context")
+    if payload["goalRequestDigest"] != _goal_request_digest(request):
+        raise ValueError("Lean semantic helper returned a mismatched goal request digest")
     if payload["frameVersion"] != 1 or payload["sequence"] != 0 or payload["terminal"] is not True:
         raise ValueError("Lean semantic helper returned an invalid terminal rejection frame")
     if payload["universePolicy"] != UNIVERSE_POLICY or payload["candidateName"] != request.candidate:
@@ -569,6 +551,7 @@ def _validate_worker_frame(
         "leanVersion",
         "leanCommit",
         "requestId",
+        "goalRequestDigest",
         "executionContextRef",
         "executablePath",
         "module",
@@ -587,6 +570,8 @@ def _validate_worker_frame(
         raise ValueError("Lean semantic helper returned a mismatched request ID")
     if payload["executionContextRef"] != _execution_context_ref(request):
         raise ValueError("Lean semantic helper returned a mismatched execution context")
+    if payload["goalRequestDigest"] != _goal_request_digest(request):
+        raise ValueError("Lean semantic helper returned a mismatched goal request digest")
     if payload["frameVersion"] != 1 or payload["sequence"] != 0 or payload["terminal"] is not True:
         raise ValueError("Lean semantic helper returned an invalid terminal frame")
     if payload["universePolicy"] != UNIVERSE_POLICY:
@@ -604,13 +589,6 @@ def _validate_worker_collections(payload: Mapping[str, Any]) -> None:
             raise TypeError(f"Lean semantic helper field {field} must be an array")
     if not isinstance(payload["applicationTerm"], str) or not payload["applicationTerm"]:
         raise ValueError("Lean semantic helper returned an invalid application term")
-
-
-def _goal_subjects_compatible(requested: str, observed: str) -> bool:
-    def normalize(value: str) -> str:
-        return " ".join(value.replace("∀ (", "∀ ").replace("),", ",").split())
-
-    return normalize(requested) == normalize(observed)
 
 
 def _same_executable_identity(path: Path, toolchain: LeanToolchainContext) -> bool:
@@ -652,10 +630,6 @@ def _validate_worker_identity(
     probe = payload.get("probe")
     candidate = payload.get("candidate")
     _validate_worker_subject(probe, "probe", _probe_name(request))
-    requested_goal = " ".join(goal_with_local_context(request.goal, request.local_context).split())
-    observed_goal = " ".join(str(probe.get("typeDisplay", "")).split())
-    if not _goal_subjects_compatible(requested_goal, observed_goal):
-        raise ValueError("Lean semantic helper returned a goal subject unrelated to the request")
     _validate_worker_subject(candidate, "candidate", request.candidate)
     expected_modules = {request.module, f"Ladon.Semantic.{_probe_name(request)}"}
     if payload.get("module") not in expected_modules:
@@ -1093,17 +1067,16 @@ def _check_artifact(
         "display": "Lean exact-candidate check",
     }
     compact_statement = _compact(statement)
-    compact_declaration = _compact(declaration)
+    evidence_subjects = _unique_subjects(
+        [statement, declaration, *additional_subjects, check_subject, dict(application)]
+    )
+    input_subjects = _unique_subjects(
+        [statement, declaration, *additional_subjects, dict(application)]
+    )
     artifact = _envelope(
         "proofir.check-run",
         environment_ref,
-        [
-            statement,
-            declaration,
-            *_unique_subjects(additional_subjects),
-            check_subject,
-            application,
-        ],
+        evidence_subjects,
         {
             "checkRunId": check_id,
             "checker": {
@@ -1115,12 +1088,7 @@ def _check_artifact(
             "operation": "exact-candidate-elaboration",
             "inputs": {
                 "environmentRef": environment_ref,
-                "subjectRefs": [
-                    compact_statement,
-                    compact_declaration,
-                    *[_compact(row) for row in additional_subjects],
-                    _compact(application),
-                ],
+                "subjectRefs": [_compact(row) for row in input_subjects],
                 "artifactRefs": [environment_artifact_id],
             },
             "results": [
@@ -1183,7 +1151,7 @@ def _derivation_artifact(
     artifact = _envelope(
         "proofir.derivation",
         environment_ref,
-        [statement, declaration, context, application, *_unique_subjects(terms), step],
+        _unique_subjects([statement, declaration, context, dict(application), *terms, step]),
         {
             "derivationId": f"derivation:{step_digest}",
             "acyclic": True,
@@ -1249,15 +1217,9 @@ def _attempt_artifact(
     return _envelope(
         "proofir.attempt-log",
         environment_ref,
-        [
-            statement,
-            declaration,
-            context,
-            *_unique_subjects(residuals),
-            application,
-            *_unique_subjects(terms),
-            step,
-        ],
+        _unique_subjects(
+            [statement, declaration, context, *residuals, dict(application), *terms, step]
+        ),
         {
             "attemptLogId": f"attempt-log:{identity}",
             "goalRef": _compact(statement),

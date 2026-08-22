@@ -66,6 +66,7 @@ structure SemanticCandidateOutput where
   terminal : Bool
   universePolicy : String
   requestId : String
+  goalRequestDigest : String
   leanVersion : String
   leanCommit : String
   executablePath : String
@@ -88,6 +89,7 @@ structure SemanticCandidateRejectionOutput where
   terminal : Bool
   universePolicy : String
   requestId : String
+  goalRequestDigest : String
   leanVersion : String
   leanCommit : String
   executablePath : String
@@ -122,6 +124,7 @@ structure SemanticBatchHeader where
   terminal : Bool
   universePolicy : String
   requestId : String
+  goalRequestDigest : String
   executionContextRef : String
   leanVersion : String
   leanCommit : String
@@ -346,7 +349,7 @@ private def analyzeApplication (env : Environment) (file : String)
       }
     return (applicationDisplay.pretty, substitutions, discharged, residuals, localContext))
 
-private def runHelper (module file goal probeName candidateName requestId executionContextRef : String) : IO UInt32 := do
+private def runHelper (module file goal goalRequestDigest probeName candidateName requestId executionContextRef : String) : IO UInt32 := do
   let contents ← IO.FS.readFile file
   -- Lean's frontend requires initializer execution to load the target
   -- project's compiled environment. It runs in the supervised helper process;
@@ -374,6 +377,7 @@ private def runHelper (module file goal probeName candidateName requestId execut
           terminal := true
           universePolicy := "lean-level-mvar-succ-zero/v1"
           requestId
+          goalRequestDigest
           executionContextRef
           leanVersion := Lean.versionString
           leanCommit := Lean.githash
@@ -418,6 +422,7 @@ private def runHelper (module file goal probeName candidateName requestId execut
         terminal := true
         universePolicy := "lean-level-mvar-succ-zero/v1"
         requestId
+        goalRequestDigest
         executionContextRef
         leanVersion := Lean.versionString
         leanCommit := Lean.githash
@@ -435,7 +440,7 @@ private def runHelper (module file goal probeName candidateName requestId execut
       IO.println s!"LADON_FRAME {Json.compress (toJson output)}"
       return 0
 
-private def runBatchHelper (module file goal probeName requestId executionContextRef : String)
+private def runBatchHelper (module file goal goalRequestDigest probeName requestId executionContextRef : String)
     (candidateNames : List String) : IO UInt32 := do
   let contents ← IO.FS.readFile file
   unsafe Lean.enableInitializersExecution
@@ -460,6 +465,7 @@ private def runBatchHelper (module file goal probeName requestId executionContex
         terminal := false
         universePolicy := "lean-level-mvar-succ-zero/v1"
         requestId
+        goalRequestDigest
         executionContextRef
         leanVersion := Lean.versionString
         leanCommit := Lean.githash
@@ -546,14 +552,14 @@ private def runBatchHelper (module file goal probeName requestId executionContex
       return 0
 def main (args : List String) : IO UInt32 := do
   match args with
-  | "--batch" :: module :: file :: goal :: probeName :: requestId :: executionContextRef :: candidates =>
-      runBatchHelper module file goal probeName requestId executionContextRef candidates
-  | "--" :: "--batch" :: module :: file :: goal :: probeName :: requestId :: executionContextRef :: candidates =>
-      runBatchHelper module file goal probeName requestId executionContextRef candidates
-  | ["--", module, file, goal, probeName, candidateName, requestId, executionContextRef] =>
-      runHelper module file goal probeName candidateName requestId executionContextRef
-  | [module, file, goal, probeName, candidateName, requestId, executionContextRef] =>
-      runHelper module file goal probeName candidateName requestId executionContextRef
+  | "--batch" :: module :: file :: goal :: goalRequestDigest :: probeName :: requestId :: executionContextRef :: candidates =>
+      runBatchHelper module file goal goalRequestDigest probeName requestId executionContextRef candidates
+  | "--" :: "--batch" :: module :: file :: goal :: goalRequestDigest :: probeName :: requestId :: executionContextRef :: candidates =>
+      runBatchHelper module file goal goalRequestDigest probeName requestId executionContextRef candidates
+  | ["--", module, file, goal, goalRequestDigest, probeName, candidateName, requestId, executionContextRef] =>
+      runHelper module file goal goalRequestDigest probeName candidateName requestId executionContextRef
+  | [module, file, goal, goalRequestDigest, probeName, candidateName, requestId, executionContextRef] =>
+      runHelper module file goal goalRequestDigest probeName candidateName requestId executionContextRef
   | _ =>
       IO.eprintln
         "usage: ladon_semantic_candidate_helper MODULE FILE PROBE CANDIDATE"

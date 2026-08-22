@@ -8,11 +8,12 @@ import pytest
 from ladon.semantic_candidate_worker import (
     SEMANTIC_FRAME_PREFIX,
     SemanticCandidateRequest,
+    _goal_request_digest,
     _parse_worker_payload,
 )
 
 
-def _payload() -> dict[str, object]:
+def _payload(request: SemanticCandidateRequest) -> dict[str, object]:
     return {
         "protocol": "ladon-lean-semantic-v3/check-candidate",
         "frameVersion": 1,
@@ -20,6 +21,7 @@ def _payload() -> dict[str, object]:
         "terminal": True,
         "universePolicy": "lean-level-mvar-succ-zero/v1",
         "requestId": "req-test",
+        "goalRequestDigest": _goal_request_digest(request),
         "executionContextRef": "unbound",
         "leanVersion": "4.0",
         "leanCommit": "commit",
@@ -38,7 +40,7 @@ def _payload() -> dict[str, object]:
 
 def test_framed_parser_allows_bounded_process_noise_but_requires_one_nonce_bound_frame() -> None:
     request = SemanticCandidateRequest(Path("."), "Main", "Nat", "Main.identity")
-    payload = _payload()
+    payload = _payload(request)
     payload["probe"]["name"] = "ladonSemanticProbe_" + ""  # parser identity is checked below
     # The actual probe name is request-derived; use the worker helper's name.
     from ladon.semantic_candidate_worker import _probe_name
@@ -52,7 +54,7 @@ def test_framed_parser_rejects_duplicate_or_forged_frames() -> None:
     request = SemanticCandidateRequest(Path("."), "Main", "Nat", "Main.identity")
     from ladon.semantic_candidate_worker import _probe_name
 
-    payload = _payload()
+    payload = _payload(request)
     payload["probe"]["name"] = _probe_name(request)
     frame = SEMANTIC_FRAME_PREFIX + json.dumps(payload)
     with pytest.raises(ValueError, match="duplicate terminal"):
@@ -66,7 +68,7 @@ def test_framed_parser_preserves_typed_nonempty_local_context() -> None:
     request = SemanticCandidateRequest(Path("."), "Main", "Nat", "Main.identity")
     from ladon.semantic_candidate_worker import _probe_name
 
-    payload = _payload()
+    payload = _payload(request)
     payload["probe"]["name"] = _probe_name(request)
     payload["localContext"] = [
         {
@@ -95,7 +97,7 @@ def test_framed_parser_rejects_same_name_with_mismatched_local_type() -> None:
     )
     from ladon.semantic_candidate_worker import _probe_name
 
-    payload = _payload()
+    payload = _payload(request)
     payload["probe"]["name"] = _probe_name(request)
     payload["localContext"] = [
         {
@@ -127,7 +129,7 @@ def test_framed_parser_rejects_invalid_terminal_state(field: str, replacement: o
     request = SemanticCandidateRequest(Path("."), "Main", "Nat", "Main.identity")
     from ladon.semantic_candidate_worker import _probe_name
 
-    payload = _payload()
+    payload = _payload(request)
     payload["probe"]["name"] = _probe_name(request)
     payload[field] = replacement
     message = (
@@ -143,3 +145,23 @@ def test_framed_parser_rejects_malformed_json_and_missing_frame() -> None:
         _parse_worker_payload("ordinary output", request, "req-test")
     with pytest.raises(ValueError, match="non-framed JSON"):
         _parse_worker_payload(SEMANTIC_FRAME_PREFIX + "{bad", request, "req-test")
+
+
+def test_goal_request_digest_binds_ascii_source_to_lean_structural_subject() -> None:
+    request = SemanticCandidateRequest(Path("."), "Main", "True -> True", "Main.identity")
+    from ladon.semantic_candidate_worker import _probe_name
+
+    payload = _payload(request)
+    payload["probe"]["name"] = _probe_name(request)
+    payload["probe"]["typeDisplay"] = "True → True"
+    payload["probe"]["typeStructural"] = "forallE True True"
+    parsed = _parse_worker_payload(
+        SEMANTIC_FRAME_PREFIX + json.dumps(payload), request, "req-test"
+    )
+    assert parsed["goalRequestDigest"] == _goal_request_digest(request)
+
+    payload["goalRequestDigest"] = "sha256:" + ("0" * 64)
+    with pytest.raises(ValueError, match="mismatched goal request digest"):
+        _parse_worker_payload(
+            SEMANTIC_FRAME_PREFIX + json.dumps(payload), request, "req-test"
+        )

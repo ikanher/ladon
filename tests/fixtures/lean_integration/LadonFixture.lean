@@ -5,6 +5,8 @@ namespace LadonFixture
 
 theorem fixtureIdentity (value : Nat) : value = value := rfl
 
+theorem fixtureTrue : True := True.intro
+
 theorem identité (value : Nat) : value = value := rfl
 
 theorem twoIdentity (x y : Nat) : x = x := rfl

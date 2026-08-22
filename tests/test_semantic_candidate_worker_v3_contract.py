@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 from ladon.lean_toolchain import resolve_toolchain_context
 from ladon.process_supervisor import ProcessResult
 from ladon.proofir_v3 import validate_envelope_batch
@@ -26,6 +28,7 @@ def _accepted_payload(tmp_path: Path) -> dict[str, Any]:
         "terminal": True,
         "universePolicy": "lean-level-mvar-succ-zero/v1",
         "requestId": "fixture-request",
+        "goalRequestDigest": "fixture-goal",
         "executionContextRef": "fixture-context",
         "leanVersion": "4.32.2",
         "leanCommit": "commit",
@@ -106,6 +109,7 @@ def test_accepted_worker_result_closes_exact_environment_and_check_references(
     def accepted_runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
         payload["probe"]["name"] = command[-4]
         payload["requestId"] = command[-2]
+        payload["goalRequestDigest"] = command[-5]
         payload["executionContextRef"] = command[-1]
         return ProcessResult(
             tuple(command), 0, "LADON_FRAME " + json.dumps(payload), "", 0.25, peak_rss_bytes=4096
@@ -149,6 +153,60 @@ def test_timeout_never_publishes_accepted_artifacts(tmp_path: Path) -> None:
     assert result.to_dict()["evidenceReceipt"]["operationOutcome"] == "failed"
 
 
+def test_unframed_rejection_prose_remains_process_failure(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    def prose_runner(*_args: object, **_kwargs: object) -> ProcessResult:
+        return ProcessResult(
+            ("lake", "env", "lean"),
+            1,
+            "",
+            "candidate did not unify with the elaborated goal",
+            0.1,
+        )
+
+    result = check_semantic_candidate(
+        SemanticCandidateRequest(repo, "Main", "Nat", "Main.value"),
+        runner=prose_runner,
+    )
+
+    assert result.status == "failed-checker"
+    assert result.artifacts == ()
+    assert result.evidence_receipt is not None
+    assert result.evidence_receipt["checkRunRef"] is None
+    assert result.evidence_receipt["operationOutcome"] == "failed"
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"timeout_seconds": True},
+        {"timeout_seconds": 601},
+        {"max_output_bytes": 1.5},
+        {"max_output_bytes": 65 * 1024 * 1024},
+        {"max_rss_bytes": 1.5},
+        {"max_rss_bytes": 65 * 1024 * 1024 * 1024},
+    ],
+)
+def test_direct_request_uses_shared_typed_resource_caps(
+    tmp_path: Path, kwargs: dict[str, object]
+) -> None:
+    with pytest.raises((TypeError, ValueError), match="semantic check"):
+        SemanticCandidateRequest(
+            tmp_path, "Main", "Nat", "Main.value", **kwargs  # type: ignore[arg-type]
+        )
+
+
+def test_direct_request_rejects_oversized_candidate_before_process_launch(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(ValueError, match="candidate.*transport byte cap"):
+        SemanticCandidateRequest(
+            tmp_path, "Main", "Nat", "Main." + ("x" * 100_000)
+        )
+
+
 def test_explicit_toolchain_ignores_path_shadow_and_sanitizes_worker_environment(
     tmp_path: Path,
 ) -> None:
@@ -175,6 +233,7 @@ def test_explicit_toolchain_ignores_path_shadow_and_sanitizes_worker_environment
         observed["env"] = kwargs.get("env")
         payload["probe"]["name"] = command[-4]
         payload["requestId"] = command[-2]
+        payload["goalRequestDigest"] = command[-5]
         payload["executionContextRef"] = command[-1]
         return ProcessResult(tuple(command), 0, "LADON_FRAME " + json.dumps(payload), "", 0.1)
 

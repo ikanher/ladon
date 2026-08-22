@@ -237,3 +237,163 @@ def test_theorem_query_accepts_worker_candidate_declaration_name() -> None:
     dossier = query_v3_theorem_evidence(connection, "LadonFixture.fixtureIdentity", limit=20)
     assert dossier["status"] == "observed"
     assert dossier["subjects"]["returned"] >= 1
+
+
+def _explicit_fixture_toolchain() -> object:
+    from ladon.lean_toolchain import resolve_toolchain_context
+
+    lean_path = Path(
+        subprocess.check_output(
+            ["lake", "env", "which", "lean"], cwd=FIXTURE, text=True
+        ).strip()
+    )
+    return resolve_toolchain_context(
+        FIXTURE,
+        lake_path=lean_path.with_name("lake"),
+        lean_path=lean_path,
+        selection_mode="explicit",
+    )
+
+
+def _assert_terminal_outcome_parity(toolchain: object) -> None:
+    from ladon.semantic_candidate_batch_worker import check_semantic_candidates
+    from ladon.semantic_candidate_worker import SemanticCandidateRequest, check_semantic_candidate
+
+    candidates = (
+        "LadonFixture.fixtureTrue",
+        "id",
+        "And.intro+True",
+        "LadonFixture.noSuch",
+        "LadonFixture.fixtureIdentity",
+    )
+    expected = (
+        "accepted",
+        "applicable-with-residuals",
+        "rejected",
+        "rejected",
+        "rejected",
+    )
+    direct = [
+        check_semantic_candidate(
+            SemanticCandidateRequest(
+                FIXTURE,
+                "LadonFixture",
+                "True",
+                candidate,
+                timeout_seconds=30,
+                toolchain=toolchain,
+            )
+        )
+        for candidate in candidates
+    ]
+    assert tuple(row.status for row in direct) == expected
+    assert [row.diagnostic["code"] if row.diagnostic else None for row in direct[2:]] == [
+        "candidate-name-invalid",
+        "candidate-not-found",
+        "application-rejected",
+    ]
+    assert all(row.artifacts for row in direct)
+
+    batch = check_semantic_candidates(
+        SemanticCandidateRequest(
+            FIXTURE,
+            "LadonFixture",
+            "True",
+            "batch-placeholder",
+            timeout_seconds=30,
+            toolchain=toolchain,
+        ),
+        candidates,
+    )
+    assert batch.terminal is True
+    assert tuple(row["status"] for row in batch.rows) == expected
+    assert all(row["artifacts"] for row in batch.rows)
+
+
+def _assert_discharge_and_ascii_binding(toolchain: object) -> None:
+    from ladon.semantic_candidate_worker import SemanticCandidateRequest, check_semantic_candidate
+
+    discharged = check_semantic_candidate(
+        SemanticCandidateRequest(
+            FIXTURE,
+            "LadonFixture",
+            "∀ h : True, True",
+            "id",
+            timeout_seconds=30,
+            toolchain=toolchain,
+        )
+    )
+    assert discharged.status == "accepted"
+    assert discharged.application_term == "id h"
+    assert discharged.discharged_hypotheses == (
+        {
+            "premiseOrdinal": 0,
+            "premiseTypeDisplay": "True",
+            "dischargedByLocalRef": "local:0",
+            "method": "assumption-definitional-equality",
+        },
+    )
+
+    ascii_goal = check_semantic_candidate(
+        SemanticCandidateRequest(
+            FIXTURE,
+            "LadonFixture",
+            "True -> True",
+            "id",
+            timeout_seconds=30,
+            toolchain=toolchain,
+        )
+    )
+    assert ascii_goal.status == "accepted"
+
+
+def _assert_post_discharge_scratch(toolchain: object) -> None:
+    lean_path = toolchain.lean_path
+    lake_path = toolchain.lake_path
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ladon.entrypoint",
+            "proof-search",
+            "discover",
+            "--repo-root",
+            str(FIXTURE),
+            "--module",
+            "LadonFixture",
+            "--goal",
+            "∀ h : True, True",
+            "--candidate",
+            "id",
+            "--timeout-seconds",
+            "30",
+            "--max-rss-mib",
+            "4096",
+            "--toolchain-mode",
+            "explicit",
+            "--lake-path",
+            str(lake_path),
+            "--lean-path",
+            str(lean_path),
+            "--format",
+            "json",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    discovery = json.loads(completed.stdout)
+    checked = discovery["candidates"][0]["check"]
+    assert checked["applicationTerm"] == "id h"
+    assert checked["scratch"]["status"] == "compiled"
+    assert checked["scratch"]["evidenceReceipt"]["authorityBasis"] == "process-observation"
+
+
+@pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
+def test_real_lean_closing_profile_covers_terminal_outcomes_and_replay() -> None:
+    toolchain = _explicit_fixture_toolchain()
+    _assert_terminal_outcome_parity(toolchain)
+    _assert_discharge_and_ascii_binding(toolchain)
+    _assert_post_discharge_scratch(toolchain)

@@ -94,6 +94,37 @@ def test_discovery_attaches_independent_scratch_result_for_acceptance() -> None:
     assert result["candidates"][0]["check"]["scratch"]["status"] == "compiled"
 
 
+def test_discovery_attempts_at_most_one_advisory_scratch() -> None:
+    request = DiscoveryRequest(Path("/repo"), "Main", "Nat")
+    scratch_calls: list[str] = []
+
+    result = discover_candidates(
+        request,
+        [{"candidateName": "Main.first"}, {"candidateName": "Main.second"}],
+        lambda _name: SemanticCandidateCheck("accepted"),
+        lambda name, _application, _parent: scratch_calls.append(name)
+        or {"status": "compiled"},
+    )
+
+    assert scratch_calls == ["Main.first"]
+    assert result["coverage"]["scratchAttempted"] == 1
+
+
+def test_discovery_rejects_aggregate_process_budget_before_work() -> None:
+    request = DiscoveryRequest(
+        Path("/repo"), "Main", "Nat", max_candidates=6, timeout_seconds=120
+    )
+    called: list[str] = []
+    with pytest.raises(ValueError, match="aggregate process budget"):
+        discover_candidates(
+            request,
+            [{"candidateName": f"Main.c{i}"} for i in range(6)],
+            lambda name: called.append(name) or SemanticCandidateCheck("accepted"),
+            lambda _name, _application, _parent: {"status": "compiled"},
+        )
+    assert called == []
+
+
 def test_discovery_uses_one_batch_checker_when_provided() -> None:
     request = DiscoveryRequest(Path("/repo"), "Main", "Nat")
     called: list[tuple[str, ...]] = []
@@ -132,6 +163,39 @@ def test_discovery_honors_batch_size_and_ranks_verified_outcomes() -> None:
     assert called == [("bad",), ("good",)]
     assert [row["name"] for row in result["candidates"]] == ["good", "bad"]
     assert result["candidates"][0]["shortlist"]["shortlistOrdinal"] == 1
+
+
+def test_discovery_does_not_promote_or_replay_partial_batch_prefix() -> None:
+    request = DiscoveryRequest(Path("/repo"), "Main", "Nat")
+    scratch_calls: list[str] = []
+
+    result = discover_candidates(
+        request,
+        [{"candidateName": "Main.good"}],
+        lambda _: SemanticCandidateCheck("unassessed"),
+        scratch_replayer=lambda name, _application, _parent: scratch_calls.append(name) or {},
+        batch_checker=lambda names: {
+            names[0]: {
+                "candidate": names[0],
+                "status": "accepted",
+                "batchTerminal": False,
+                "evidenceReceipt": {
+                    "authorityBasis": "process-observation",
+                    "analysisCompleteness": "partial",
+                },
+            }
+        },
+    )
+
+    candidate = result["candidates"][0]["check"]
+    assert result["status"] == "partial"
+    assert result["coverage"]["completed"] == 0
+    assert result["coverage"]["accepted"] == 0
+    assert result["coverage"]["rejected"] == 0
+    assert result["coverage"]["scratchAttempted"] == 0
+    assert candidate["status"] == "provisional-observation"
+    assert candidate["observedStatus"] == "accepted"
+    assert scratch_calls == []
 
 
 def test_discovery_request_identity_does_not_depend_on_checker_outcome() -> None:

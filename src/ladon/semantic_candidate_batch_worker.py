@@ -20,6 +20,11 @@ from ladon.evidence_receipt import build_evidence_receipt
 from ladon.lean_toolchain import LeanToolchainError, verify_toolchain_identities
 from ladon.process_supervisor import run_bounded_target_process
 from ladon.proofir_v3 import canonical_bytes, validate_envelope_batch
+from ladon.semantic_candidate_limits import (
+    MAX_SEMANTIC_BATCH_BYTES,
+    MAX_SEMANTIC_BATCH_CANDIDATES,
+    MAX_SEMANTIC_CANDIDATE_BYTES,
+)
 from ladon.semantic_candidate_worker import (
     DEFAULT_HELPER,
     SEMANTIC_BATCH_PROTOCOL,
@@ -35,7 +40,7 @@ from ladon.semantic_candidate_worker import (
     _environment_artifact,
     _environment_source,
     _execution_context_ref,
-    _goal_subjects_compatible,
+    _goal_request_digest,
     _rejected_artifacts,
     _same_executable_identity,
     _valid_qualified_name,
@@ -112,6 +117,7 @@ def check_semantic_candidates(
                     request.module,
                     str(probe_path),
                     goal_with_local_context(request.goal, request.local_context),
+                    _goal_request_digest(request),
                     probe_name,
                     request_id,
                     _execution_context_ref(request),
@@ -192,14 +198,16 @@ def _interpret_batch_process(
 
 
 def _validate_batch_candidates(candidates: Sequence[str]) -> None:
-    if not candidates or len(candidates) > 100:
+    if not candidates or len(candidates) > MAX_SEMANTIC_BATCH_CANDIDATES:
         raise ValueError("semantic candidate batch must contain between 1 and 100 candidates")
     if len(set(candidates)) != len(candidates) or any(
         not _valid_qualified_name(candidate) for candidate in candidates
     ):
         raise ValueError("semantic candidate batch contains invalid or duplicate candidates")
     encoded_sizes = [len(candidate.encode("utf-8")) for candidate in candidates]
-    if any(size > 4096 for size in encoded_sizes) or sum(encoded_sizes) > 64 * 1024:
+    if any(size > MAX_SEMANTIC_CANDIDATE_BYTES for size in encoded_sizes) or sum(
+        encoded_sizes
+    ) > MAX_SEMANTIC_BATCH_BYTES:
         raise ValueError("semantic candidate batch exceeds the supported transport byte cap")
 
 
@@ -269,6 +277,7 @@ def _validate_batch_header(
         "terminal",
         "universePolicy",
         "requestId",
+        "goalRequestDigest",
         "executionContextRef",
         "leanVersion",
         "leanCommit",
@@ -381,6 +390,7 @@ def _validate_batch_required_fields(payload: Mapping[str, Any]) -> None:
         "terminal",
         "universePolicy",
         "requestId",
+        "goalRequestDigest",
         "leanVersion",
         "leanCommit",
         "executablePath",
@@ -400,6 +410,8 @@ def _validate_batch_frame(
         raise ValueError("Lean semantic helper returned an invalid batch identity")
     if payload.get("executionContextRef") != _execution_context_ref(request):
         raise ValueError("Lean semantic helper returned a mismatched execution context")
+    if payload.get("goalRequestDigest") != _goal_request_digest(request):
+        raise ValueError("Lean semantic helper returned a mismatched goal request digest")
     if (
         payload.get("frameVersion") != 1
         or payload.get("sequence") != 0
@@ -446,10 +458,6 @@ def _validate_batch_semantic_population(
     payload: Mapping[str, Any], request: SemanticCandidateRequest
 ) -> None:
     _validate_worker_subject(payload.get("probe"), "probe", _batch_probe_name(request))
-    requested_goal = " ".join(goal_with_local_context(request.goal, request.local_context).split())
-    observed_goal = " ".join(str(payload["probe"].get("typeDisplay", "")).split())
-    if not _goal_subjects_compatible(requested_goal, observed_goal):
-        raise ValueError("Lean semantic helper returned a goal subject unrelated to the request")
     _validate_worker_modules(payload.get("importedModules"), request.module)
     _validate_application_rows(
         {
