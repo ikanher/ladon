@@ -13,16 +13,26 @@
       "verificationCommand": "uv run --locked pytest -q tests/test_installed_cli_contract.py::test_installed_analyzer_process_contract tests/test_architecture_policy.py::test_architecture_policy_flags_direct_peer_imports_from_globs"
     },
     {
-      "id": "semantic-declaration-search",
+      "id": "type-text-declaration-search",
       "readiness": "contract-supported",
-      "summary": "Lexical/type shortlists plus explicit Lean candidate-application checks.",
+      "summary": "Bounded lexical and type-text shortlists with no Lean applicability claim.",
       "tests": [
         "tests/test_proof_search_type.py::test_type_search_returns_lexical_shortlist_and_diagnostics",
-        "tests/test_semantic_candidate_lean_integration.py::test_installed_cli_emits_batch_closed_semantic_evidence",
         "tests/test_semantic_build_mode.py::test_installed_cli_rejects_removed_semantic_mode_without_invoking_lean"
       ],
       "tier": "core",
-      "verificationCommand": "uv run --locked pytest -q tests/test_proof_search_type.py::test_type_search_returns_lexical_shortlist_and_diagnostics tests/test_semantic_candidate_lean_integration.py::test_installed_cli_emits_batch_closed_semantic_evidence tests/test_semantic_build_mode.py::test_installed_cli_rejects_removed_semantic_mode_without_invoking_lean"
+      "verificationCommand": "uv run --locked pytest -q tests/test_proof_search_type.py::test_type_search_returns_lexical_shortlist_and_diagnostics tests/test_semantic_build_mode.py::test_installed_cli_rejects_removed_semantic_mode_without_invoking_lean"
+    },
+    {
+      "id": "verified-proposition-discovery",
+      "readiness": "experimental",
+      "summary": "Bounded Lean proposition checks in trusted repositories; caller locals and checker-authoritative scratch are held.",
+      "tests": [
+        "tests/test_semantic_candidate_lean_integration.py::test_installed_cli_emits_batch_closed_semantic_evidence",
+        "tests/test_semantic_candidate_lean_integration.py::test_testing_profile_rejects_caller_local_context"
+      ],
+      "tier": "optional",
+      "verificationCommand": "uv run --locked pytest -q tests/test_semantic_candidate_lean_integration.py::test_installed_cli_emits_batch_closed_semantic_evidence tests/test_semantic_candidate_lean_integration.py::test_testing_profile_rejects_caller_local_context"
     },
     {
       "id": "evidence-and-lineage-inspection",

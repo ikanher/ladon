@@ -22,14 +22,23 @@ FEATURES: tuple[dict[str, Any], ...] = (
         ),
     },
     {
-        "id": "semantic-declaration-search",
+        "id": "type-text-declaration-search",
         "tier": "core",
         "readiness": "contract-supported",
-        "summary": "Lexical/type shortlists plus explicit Lean candidate-application checks.",
+        "summary": "Bounded lexical and type-text shortlists with no Lean applicability claim.",
         "tests": (
             "tests/test_proof_search_type.py::test_type_search_returns_lexical_shortlist_and_diagnostics",
-            "tests/test_semantic_candidate_lean_integration.py::test_installed_cli_emits_batch_closed_semantic_evidence",
             "tests/test_semantic_build_mode.py::test_installed_cli_rejects_removed_semantic_mode_without_invoking_lean",
+        ),
+    },
+    {
+        "id": "verified-proposition-discovery",
+        "tier": "optional",
+        "readiness": "experimental",
+        "summary": "Bounded Lean proposition checks in trusted repositories; caller locals and checker-authoritative scratch are held.",
+        "tests": (
+            "tests/test_semantic_candidate_lean_integration.py::test_installed_cli_emits_batch_closed_semantic_evidence",
+            "tests/test_semantic_candidate_lean_integration.py::test_testing_profile_rejects_caller_local_context",
         ),
     },
     {

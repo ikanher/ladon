@@ -288,9 +288,16 @@ ladon proof-search check candidate \
   --module Project.Module \
   --goal 'Exact Goal' \
   --candidate Project.Module.declaration \
-  --timeout-seconds 120 --max-output-mib 8 --max-rss-mib 2048 \
+  --timeout-seconds 120 --max-output-mib 8 --max-rss-mib 4096 \
   --format json
 ```
+
+This checker is an experimental proposition-goal profile for trusted target
+repositories. Target initializers execute inside the bounded worker. The public
+`discover` workflow rejects caller-supplied local context, does not claim
+arbitrary-`Type` discovery, and treats scratch replay as advisory process
+evidence only. Lexical/type-text shortlists are candidate populations rather
+than semantic matches.
 
 On a closed application, `ladon-semantic-candidate-check-result-v1` contains a
 batch-closed environment manifest, check-run, and zero-residual derivation. If

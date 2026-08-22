@@ -19,13 +19,11 @@ ladon --repo-root /path/to/project --root Project/Owner.lean \
   --format json --output report.json
 ```
 
-### 2. Semantic declaration search
+### 2. Declaration search and experimental proposition verification
 
-Use the disposable proof-search index for bounded lexical/type shortlists and
-the explicit candidate checker when Lean-backed application evidence is
-required. Index construction is lexical and does not invoke Lean. Ladon does
-not advertise a semantic or hybrid index-build mode until an installed test can
-prove that Lean ran and populated the registered semantic collections.
+Use the disposable proof-search index for bounded lexical/type-text shortlists.
+Index construction is lexical and does not invoke Lean. These search commands
+are contract-supported, but they do not establish Lean applicability.
 
 ```bash
 ladon proof-search index build --repo-root /path/to/project
@@ -34,8 +32,11 @@ ladon proof-search check candidate --repo-root /path/to/project \
   --module Project.Owner --goal 'True' --candidate Project.Owner.goal
 ```
 
-Shortlist rows are discovery evidence, not elaboration results. A candidate
-check applies only to its exact goal, candidate, local context, and toolchain.
+The explicit candidate checker is an experimental proposition-only profile for
+trusted repositories under a selected toolchain. Caller-supplied local context
+is held and `proof-search discover --local` fails closed. Scratch replay is
+advisory process evidence and does not promote candidate authority. Shortlist
+rows remain discovery evidence, not elaboration results or proofs.
 
 ### 3. Evidence and lineage inspection
 
