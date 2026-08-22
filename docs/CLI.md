@@ -297,7 +297,16 @@ repositories. Target initializers execute inside the bounded worker. The public
 `discover` workflow rejects caller-supplied local context, does not claim
 arbitrary-`Type` discovery, and treats scratch replay as advisory process
 evidence only. Lexical/type-text shortlists are candidate populations rather
-than semantic matches.
+than semantic matches. A non-terminal batch prefix is exposed as a provisional
+process observation: it is not counted as accepted or rejected and cannot
+trigger scratch. Controlled testing uses explicit-pinned toolchains.
+
+The testing profile caps a candidate name at 4 KiB and a module or goal at
+64 KiB. A child timeout cannot exceed 600 seconds, output cannot exceed
+64 MiB, and RSS cannot exceed 64 GiB. Discovery also rejects a projected child
+process budget above 600 seconds, attempts at most one advisory scratch replay,
+and caps its serialized result at 64 MiB. These are safety ceilings rather than
+performance targets; the ordinary defaults are lower.
 
 On a closed application, `ladon-semantic-candidate-check-result-v1` contains a
 batch-closed environment manifest, check-run, and zero-residual derivation. If
@@ -307,7 +316,9 @@ substitution, residual-statement, and local-context references; it is not a
 proof. The
 environment hashes every imported `.olean` selected by Lean plus repository
 toolchain/manifest inputs; expression identities use the versioned structural
-Lean-expression scheme. The supervisor—not the Lean helper—owns command,
+Lean-expression scheme. The exact goal bytes passed to the pinned helper are
+digest-bound to the returned structural goal subject; pretty-printed goal text
+is explanatory and is not used as semantic identity. The supervisor—not the Lean helper—owns command,
 executable, helper, output, deadline, and RSS observations and creates the
 check-run identity. Timeout, rejection, malformed helper output, or a resource
 limit returns no accepted artifact. This first checker intentionally checks one

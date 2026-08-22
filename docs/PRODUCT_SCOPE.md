@@ -35,8 +35,12 @@ ladon proof-search check candidate --repo-root /path/to/project \
 The explicit candidate checker is an experimental proposition-only profile for
 trusted repositories under a selected toolchain. Caller-supplied local context
 is held and `proof-search discover --local` fails closed. Scratch replay is
-advisory process evidence and does not promote candidate authority. Shortlist
-rows remain discovery evidence, not elaboration results or proofs.
+advisory process evidence, is attempted at most once per discovery operation,
+and does not promote candidate authority. Non-terminal batch prefixes remain
+provisional process observations and cannot be counted, ranked, or replayed as
+semantic outcomes. Exact request bytes are digest-bound to Lean's structural
+goal subject; display spelling is non-authoritative. Shortlist rows remain
+discovery evidence, not elaboration results or proofs.
 
 ### 3. Evidence and lineage inspection
 

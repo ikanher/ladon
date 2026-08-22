@@ -35,10 +35,12 @@ FEATURES: tuple[dict[str, Any], ...] = (
         "id": "verified-proposition-discovery",
         "tier": "optional",
         "readiness": "experimental",
-        "summary": "Bounded Lean proposition checks in trusted repositories; caller locals and checker-authoritative scratch are held.",
+        "summary": "Bounded terminal Lean proposition checks in trusted repositories; partial prefixes are provisional and caller locals remain held.",
         "tests": (
             "tests/test_semantic_candidate_lean_integration.py::test_installed_cli_emits_batch_closed_semantic_evidence",
             "tests/test_semantic_candidate_lean_integration.py::test_testing_profile_rejects_caller_local_context",
+            "tests/test_semantic_candidate_lean_integration.py::test_real_lean_closing_profile_covers_terminal_outcomes_and_replay",
+            "tests/test_verified_discovery.py::test_discovery_does_not_promote_or_replay_partial_batch_prefix",
         ),
     },
     {
