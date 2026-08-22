@@ -69,8 +69,61 @@ def test_lean_name_parser_rejects_non_identifier_candidate() -> None:
     assert completed.returncode == 0
     payload = json.loads(completed.stdout)
     assert payload["status"] == "rejected"
-    assert payload["diagnostic"]["code"] == "checker-rejected"
+    assert payload["diagnostic"]["code"] == "candidate-name-invalid"
+    assert [artifact["artifactKind"] for artifact in payload["artifacts"]] == [
+        "proofir.environment",
+        "proofir.check-run",
+    ]
+    assert payload["evidenceReceipt"]["authorityBasis"] == "elaborator-check"
+    assert payload["evidenceReceipt"]["environmentRef"] == payload["artifacts"][0][
+        "environmentRef"
+    ]
+    assert payload["evidenceReceipt"]["checkRunRef"] == payload["artifacts"][1]["payload"][
+        "checkRunId"
+    ]
     assert "invalid Lean name" in payload["diagnostic"]["message"]
+
+
+@pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
+def test_missing_candidate_is_reference_closed_semantic_rejection() -> None:
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "ladon.entrypoint",
+            "proof-search",
+            "check",
+            "candidate",
+            "--repo-root",
+            str(FIXTURE),
+            "--module",
+            "LadonFixture",
+            "--goal",
+            "True",
+            "--candidate",
+            "LadonFixture.noSuch",
+            "--timeout-seconds",
+            "30",
+            "--max-rss-mib",
+            "4096",
+            "--format",
+            "json",
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["status"] == "rejected"
+    assert payload["diagnostic"]["code"] == "candidate-not-found"
+    assert payload["evidenceReceipt"]["authorityBasis"] == "elaborator-check"
+    assert [artifact["artifactKind"] for artifact in payload["artifacts"]] == [
+        "proofir.environment",
+        "proofir.check-run",
+    ]
 
 
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")

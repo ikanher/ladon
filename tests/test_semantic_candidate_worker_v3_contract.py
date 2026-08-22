@@ -87,7 +87,7 @@ def _assert_process_bounds(artifacts: tuple[dict[str, Any], ...]) -> None:
     assert check["extensions"]["ladon.process-observation/v1"]["bounds"] == {
         "timeoutMs": 120000,
         "maxOutputBytes": 8 * 1024 * 1024,
-        "maxRssBytes": 2 * 1024 * 1024 * 1024,
+        "maxRssBytes": 4 * 1024 * 1024 * 1024,
     }
     assert (
         check["extensions"]["ladon.process-observation/v1"]["evidenceReceipt"]["schema"]

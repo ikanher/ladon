@@ -59,7 +59,7 @@ def replay_scratch(
     local_context: Sequence[Mapping[str, str]] = (),
     introduced_context: Sequence[Mapping[str, str]] = (),
     max_output_bytes: int = 8 * 1024 * 1024,
-    max_rss_bytes: int = 2 * 1024 * 1024 * 1024,
+    max_rss_bytes: int = 4 * 1024 * 1024 * 1024,
     runner: Callable[..., ProcessResult] = run_bounded_target_process,
 ) -> ScratchReplayResult:
     source = build_scratch_source(module, goal, candidate, local_context, introduced_context)
@@ -106,10 +106,7 @@ def _replay_status(process: ProcessResult) -> str:
     if process.memory_limited:
         return "memory-limited"
     if process.returncode != 0:
-        text = (process.stderr or process.stdout).lower()
-        if any(marker in text for marker in ("configuration failed", "failed to load", "no such file")):
-            return "process-failed"
-        return "lean-rejected"
+        return "process-failed"
     return "compiled"
 
 

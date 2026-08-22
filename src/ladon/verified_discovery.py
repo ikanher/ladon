@@ -51,7 +51,7 @@ class DiscoveryRequest:
     batch_size: int = 8
     timeout_seconds: float = 120.0
     max_output_bytes: int = 8 * 1024 * 1024
-    max_rss_bytes: int = 2 * 1024 * 1024 * 1024
+    max_rss_bytes: int = 4 * 1024 * 1024 * 1024
     scope: str = "repository"
     roots: tuple[str, ...] = ()
     freshness: str = "stored"
@@ -80,6 +80,18 @@ class DiscoveryRequest:
 
 
 def _validate_discovery_bounds(request: DiscoveryRequest) -> None:
+    integer_bounds = (
+        request.max_candidates,
+        request.batch_size,
+        request.max_output_bytes,
+        request.max_rss_bytes,
+    )
+    if any(not isinstance(value, int) or isinstance(value, bool) for value in integer_bounds):
+        raise TypeError("discovery count, batch, output, and memory bounds must be integers")
+    if not isinstance(request.timeout_seconds, (int, float)) or isinstance(
+        request.timeout_seconds, bool
+    ):
+        raise TypeError("discovery timeout must be a finite number")
     values = (
         request.max_candidates,
         request.batch_size,
@@ -467,13 +479,9 @@ def _scratch_evidence(
         )[7:]
     )
     compiled = result.get("status") == "compiled"
-    diagnostic_text = str(result.get("diagnostic", "")).lower()
-    checker_rejected = result.get("status") == "lean-rejected" and not any(
-        marker in diagnostic_text for marker in ("configuration failed", "failed to load", "no such file")
-    )
-    operation_outcome = "accepted" if compiled else ("rejected" if checker_rejected else "failed")
-    authority_basis = "elaborator-check" if (compiled or checker_rejected) else "process-observation"
-    completeness = "complete" if (compiled or checker_rejected) else "partial"
+    operation_outcome = "accepted" if compiled else "failed"
+    authority_basis = "process-observation"
+    completeness = "partial"
     receipt = build_evidence_receipt(
         subject={
             "module": request.module,
@@ -509,7 +517,7 @@ def _scratch_evidence(
     if environment_artifact is None:
         raise TypeError("scratch replay requires the parent environment artifact")
     scratch_artifact = _scratch_check_artifact(
-        request, candidate, check_ref, environment_artifact, result, receipt
+        request, candidate, check_ref, environment_artifact, result, receipt, toolchain
     )
     validate_envelope_batch([environment_artifact, scratch_artifact])
     return {
@@ -529,17 +537,13 @@ def _scratch_check_artifact(
     environment: Mapping[str, Any],
     result: Mapping[str, Any],
     receipt: Mapping[str, Any],
+    toolchain: Any,
 ) -> dict[str, Any]:
     digest = "sha256:" + hashlib.sha256(b"").hexdigest()
     helper_digest = _digest_file(DEFAULT_HELPER) if DEFAULT_HELPER.is_file() else digest
-    toolchain_payload = environment.get("payload", {}).get("toolchain", {})
-    executable_digest = str(toolchain_payload.get("leanIdentity") or digest)
+    executable_digest = str(getattr(toolchain, "lean_identity", digest))
     compiled = result.get("status") == "compiled"
-    checker_rejected = result.get("status") == "lean-rejected" and not any(
-        marker in str(result.get("diagnostic", "")).lower()
-        for marker in ("configuration failed", "failed to load", "no such file")
-    )
-    diagnostic_code = "lean-rejected" if checker_rejected else "process-failed"
+    diagnostic_code = "process-failed"
     subject_digest = _identity(
         {
             "candidate": candidate,
@@ -580,7 +584,7 @@ def _scratch_check_artifact(
             "results": [
                 {
                     "subjectRef": _compact(subject),
-                    "result": "accepted" if compiled else ("rejected" if checker_rejected else "error"),
+                    "result": "accepted" if compiled else "error",
                     "diagnostics": ([{"stage": "scratch", "code": diagnostic_code,
                                        "pointer": "/scratch", "message": str(result.get("diagnostic")),
                                        "order": 0}]

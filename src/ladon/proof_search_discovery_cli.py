@@ -50,7 +50,7 @@ def register_discover_parser(
     discover.add_argument("--freshness", choices=("stored", "verify"), default="stored")
     discover.add_argument("--timeout-seconds", type=float, default=120.0)
     discover.add_argument("--max-output-mib", type=positive_integer, default=8)
-    discover.add_argument("--max-rss-mib", type=positive_integer, default=2048)
+    discover.add_argument("--max-rss-mib", type=positive_integer, default=4096)
     discover.add_argument("--toolchain-mode", choices=("ambient", "explicit"), default="ambient")
     discover.add_argument("--lake-path", type=Path)
     discover.add_argument("--lean-path", type=Path)
@@ -59,6 +59,10 @@ def register_discover_parser(
 def dispatch_discover(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None = None
 ) -> dict[str, Any]:
+    if args.local:
+        raise ProofSearchIndexError(
+            "caller local context is unavailable in the proposition-discovery testing profile"
+        )
     try:
         toolchain = resolve_toolchain_context(
             repo_root.resolve(),

@@ -18,6 +18,15 @@ def test_evidence_dimensions_accept_weakened_projection() -> None:
     validate_transition(parent, child)
 
 
+def test_transition_rejects_contradictory_parent_state() -> None:
+    parent = EvidenceDimensions(
+        "explicit-pinned", "failed", "accepted", authority_basis="elaborator-check"
+    )
+    child = EvidenceDimensions("none", "absent", "accepted")
+    with pytest.raises(ValueError, match="accepted outcome requires"):
+        validate_transition(parent, child)
+
+
 def test_transition_matrix_is_closed_and_machine_readable() -> None:
     matrix = transition_matrix()
     assert matrix["schema"] == "ladon-evidence-transition-matrix-v1"

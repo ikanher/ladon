@@ -84,7 +84,7 @@ class SemanticCandidateRequest:
     candidate: str
     timeout_seconds: float = 120.0
     max_output_bytes: int = 8 * 1024 * 1024
-    max_rss_bytes: int = 2 * 1024 * 1024 * 1024
+    max_rss_bytes: int = 4 * 1024 * 1024 * 1024
     toolchain: LeanToolchainContext | None = None
     local_context: tuple[Mapping[str, str], ...] = ()
     execution_context_ref: str | None = None
@@ -198,6 +198,7 @@ def check_semantic_candidate(
 ) -> SemanticCandidateCheck:
     """Run the explicit Lean probe and publish artifacts only after validation."""
 
+    helper_path = helper_path.resolve()
     probe_name = _probe_name(request)
     request_id = "req-" + secrets.token_hex(16)
     helper_identity = _digest_file(helper_path)
@@ -235,6 +236,35 @@ def check_semantic_candidate(
     if not process.succeeded:
         return _failed_check(process, request)
     try:
+        rejection_payload = _decode_single_frame(process.stdout)
+        if rejection_payload.get("status") == "rejected":
+            _validate_rejected_worker_payload(rejection_payload, request, request_id)
+            artifacts, receipt = _rejected_artifacts(
+                request,
+                helper_path,
+                process,
+                rejection_payload,
+                helper_identity=helper_identity,
+            )
+            validate_envelope_batch(list(artifacts))
+            return SemanticCandidateCheck(
+                "rejected",
+                tuple(artifacts),
+                diagnostic={
+                    "code": str(rejection_payload["failureStage"]),
+                    "message": str(rejection_payload["diagnostic"]),
+                },
+                elapsed_seconds=process.elapsed_seconds,
+                peak_rss_bytes=process.peak_rss_bytes,
+                authority_selection=(
+                    "explicit-pinned-application-check"
+                    if request.toolchain and request.toolchain.selection_mode == "explicit"
+                    else "ambient-selected-application-check"
+                ),
+                analysis_completeness="complete",
+                evidence_receipt=receipt,
+                caller_local_context=tuple(request.local_context),
+            )
         payload = _parse_worker_payload(process.stdout, request, request_id)
         artifacts = _accepted_artifacts(
             request, helper_path, process, payload, helper_identity=helper_identity
@@ -346,7 +376,7 @@ def _receipt_for_check(
         )
         environment_match = (
             "exact"
-            if outcome == "accepted" and environment_ref is not None
+            if outcome in {"accepted", "rejected"} and environment_ref is not None
             else "unknown"
         )
     return build_evidence_receipt(
@@ -368,6 +398,7 @@ def _receipt_for_check(
         authority_basis=(
             "elaborator-check"
             if outcome == "accepted"
+            or (outcome == "rejected" and environment_ref and check_run_ref)
             else ("process-observation" if outcome == "rejected" else "not-assessed")
         ),
         analysis_completeness=completeness,
@@ -463,11 +494,66 @@ def _parse_worker_payload(
     payload = _decode_single_frame(stdout)
     _validate_worker_frame(payload, request, request_id)
     _validate_worker_collections(payload)
+    validate_observed_local_context(payload["localContext"], request.local_context)
     _validate_worker_identity(payload, request)
     _validate_application_rows(payload)
     _validate_discharged_hypotheses(payload)
-    validate_observed_local_context(payload["localContext"], request.local_context)
     return payload
+
+
+def _validate_rejected_worker_payload(
+    payload: Mapping[str, Any], request: SemanticCandidateRequest, request_id: str
+) -> None:
+    required = {
+        "protocol",
+        "frameVersion",
+        "sequence",
+        "terminal",
+        "universePolicy",
+        "requestId",
+        "executionContextRef",
+        "leanVersion",
+        "leanCommit",
+        "executablePath",
+        "module",
+        "probe",
+        "candidateName",
+        "status",
+        "failureStage",
+        "diagnostic",
+        "importedModules",
+        "localContext",
+    }
+    if set(payload) != required:
+        raise ValueError("Lean semantic helper returned an invalid rejection frame")
+    if payload["protocol"] != SEMANTIC_PROTOCOL or payload["requestId"] != request_id:
+        raise ValueError("Lean semantic helper returned an unrelated rejection frame")
+    if payload["executionContextRef"] != _execution_context_ref(request):
+        raise ValueError("Lean semantic helper returned a mismatched execution context")
+    if payload["frameVersion"] != 1 or payload["sequence"] != 0 or payload["terminal"] is not True:
+        raise ValueError("Lean semantic helper returned an invalid terminal rejection frame")
+    if payload["universePolicy"] != UNIVERSE_POLICY or payload["candidateName"] != request.candidate:
+        raise ValueError("Lean semantic helper returned a mismatched rejection subject")
+    if payload["status"] != "rejected" or payload["failureStage"] not in {
+        "candidate-name-invalid",
+        "candidate-not-found",
+        "application-rejected",
+    }:
+        raise ValueError("Lean semantic helper returned an unsupported rejection stage")
+    if not isinstance(payload["diagnostic"], str) or not payload["diagnostic"]:
+        raise ValueError("Lean semantic helper returned an empty rejection diagnostic")
+    if not isinstance(payload["localContext"], list):
+        raise TypeError("Lean semantic helper returned malformed rejection context")
+    validate_observed_local_context(payload["localContext"], request.local_context)
+    identity_payload = {
+        **payload,
+        "candidate": {
+            "name": request.candidate,
+            "typeDisplay": "unresolved candidate",
+            "typeStructural": "unresolved:" + request.candidate,
+        },
+    }
+    _validate_worker_identity(identity_payload, request)
 
 
 def _validate_worker_frame(
@@ -568,9 +654,7 @@ def _validate_worker_identity(
     _validate_worker_subject(probe, "probe", _probe_name(request))
     requested_goal = " ".join(goal_with_local_context(request.goal, request.local_context).split())
     observed_goal = " ".join(str(probe.get("typeDisplay", "")).split())
-    if not request.local_context and not _goal_subjects_compatible(
-        requested_goal, observed_goal
-    ):
+    if not _goal_subjects_compatible(requested_goal, observed_goal):
         raise ValueError("Lean semantic helper returned a goal subject unrelated to the request")
     _validate_worker_subject(candidate, "candidate", request.candidate)
     expected_modules = {request.module, f"Ladon.Semantic.{_probe_name(request)}"}
@@ -668,6 +752,105 @@ def _accepted_artifacts(
         payload["dischargedHypotheses"],
     )
     return environment, check, derivation
+
+
+def _rejected_artifacts(
+    request: SemanticCandidateRequest,
+    helper_path: Path,
+    process: ProcessResult,
+    payload: Mapping[str, Any],
+    *,
+    helper_identity: str,
+) -> tuple[tuple[dict[str, Any], ...], dict[str, Any]]:
+    environment = _environment_artifact(request.repo_root, payload, request.toolchain)
+    env_ref = str(environment["environmentRef"])
+    statement = _subject("statement", payload["probe"])
+    declaration = _subject(
+        "declaration",
+        {
+            "name": request.candidate,
+            "typeDisplay": "unresolved candidate",
+            "typeStructural": "unresolved:" + request.candidate,
+        },
+    )
+    observation = {
+        "candidate": request.candidate,
+        "failureStage": payload["failureStage"],
+        "diagnostic": payload["diagnostic"],
+        "environmentRef": env_ref,
+        "command": list(process.command),
+        "returnCode": process.returncode,
+        "stdoutDigest": _digest_text(process.stdout),
+        "stderrDigest": _digest_text(process.stderr),
+        "helperDigest": helper_identity,
+        "executableDigest": _digest_file(Path(str(payload["executablePath"]))),
+        "bounds": {
+            "timeoutMs": max(1, int(request.timeout_seconds * 1000)),
+            "maxOutputBytes": request.max_output_bytes,
+            "maxRssBytes": request.max_rss_bytes,
+        },
+    }
+    check_id = "check:" + _digest_bytes(canonical_bytes(observation))[7:]
+    receipt = _receipt_for_check(
+        request,
+        "rejected",
+        "rejected",
+        "complete",
+        environment_ref=env_ref,
+        check_run_ref=check_id,
+        local_context=payload["localContext"],
+    )
+    observation["evidenceReceipt"] = receipt
+    artifact = _envelope(
+        "proofir.check-run",
+        env_ref,
+        [statement, declaration],
+        {
+            "checkRunId": check_id,
+            "checker": {
+                "name": "Lean",
+                "version": str(payload["leanVersion"]),
+                "implementationDigest": helper_identity,
+                "executableDigest": observation["executableDigest"],
+            },
+            "operation": "exact-candidate-elaboration",
+            "inputs": {
+                "environmentRef": env_ref,
+                "subjectRefs": [_compact(statement), _compact(declaration)],
+                "artifactRefs": [str(environment["artifactId"])],
+            },
+            "results": [
+                {
+                    "subjectRef": _compact(declaration),
+                    "result": "rejected",
+                    "diagnostics": [
+                        {
+                            "stage": str(payload["failureStage"]),
+                            "code": str(payload["failureStage"]),
+                            "pointer": "/candidate",
+                            "message": str(payload["diagnostic"]),
+                            "order": 0,
+                        }
+                    ],
+                }
+            ],
+            "outputs": {
+                "stdoutDigest": observation["stdoutDigest"],
+                "stderrDigest": observation["stderrDigest"],
+            },
+            "bounds": {
+                "timeoutMs": observation["bounds"]["timeoutMs"],
+                "maxOutputBytes": observation["bounds"]["maxOutputBytes"],
+            },
+            "guarantee": {
+                "scope": "route",
+                "statement": "the named Lean elaborator rejected this exact candidate route",
+                "authorityBasis": "elaborator-check",
+            },
+        },
+        extensions={"ladon.process-observation/v1": observation},
+    ).to_dict()
+    return (environment, artifact), receipt
 
 
 def _environment_artifact(

@@ -199,3 +199,9 @@ def test_discovery_shortlist_mode_reuses_type_text_scope_and_coverage(tmp_path: 
 def test_discovery_rejects_unbounded_public_resources(kwargs: dict[str, object]) -> None:
     with pytest.raises(ValueError, match="cap"):
         DiscoveryRequest(Path("/repo"), "Main", "Nat", **kwargs)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize("field", ["max_candidates", "batch_size", "max_output_bytes", "max_rss_bytes"])
+def test_discovery_rejects_non_integer_bounds(field: str) -> None:
+    with pytest.raises(TypeError, match="must be integers"):
+        DiscoveryRequest(Path("/repo"), "Main", "Nat", **{field: 1.5})  # type: ignore[arg-type]

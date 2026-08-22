@@ -9,6 +9,18 @@ from ladon.semantic_candidate_batch_worker import check_semantic_candidates
 from ladon.semantic_candidate_worker import SEMANTIC_BATCH_PROTOCOL, SemanticCandidateRequest
 
 
+def test_batch_worker_rejects_oversized_candidate_transport() -> None:
+    request = SemanticCandidateRequest(Path("."), "Main", "Nat", "Main.good")
+    oversized = "Main." + ("x" * 4096)
+
+    try:
+        check_semantic_candidates(request, [oversized])
+    except ValueError as error:
+        assert "transport byte cap" in str(error)
+    else:
+        raise AssertionError("oversized candidate transport was accepted")
+
+
 def _stream(
     header: dict[str, object], rows: list[dict[str, object]], *, summary: bool = True
 ) -> str:
@@ -81,6 +93,7 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
                 "dischargedHypotheses": [],
                 "substitutions": [],
                 "residualPremises": [],
+                "failureStage": "",
                 "diagnostic": "",
             },
             {
@@ -91,6 +104,7 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
                 "dischargedHypotheses": [],
                 "substitutions": [],
                 "residualPremises": [],
+                "failureStage": "candidate-not-found",
                 "diagnostic": "unknown declaration",
             },
         ]
@@ -101,7 +115,7 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
         ["Main.good", "Main.bad"],
         runner=runner,
     )
-    assert result.status == "available"
+    assert result.status == "available", result.diagnostic
     assert [row["candidate"] for row in result.rows] == ["Main.good", "Main.bad"]
     assert all(row["evidenceReceipt"]["checkRunRef"] == row["checkRunRef"] for row in result.rows)
     assert [artifact["artifactKind"] for artifact in result.rows[0]["artifacts"]] == [
@@ -109,6 +123,11 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
         "proofir.check-run",
         "proofir.derivation",
     ]
+    rejected = result.rows[1]
+    assert rejected["evidenceReceipt"]["authorityBasis"] == "elaborator-check"
+    assert rejected["artifacts"][1]["payload"]["guarantee"]["authorityBasis"] == (
+        "elaborator-check"
+    )
     assert "--batch" in observed["command"]  # type: ignore[operator]
 
 
@@ -139,6 +158,7 @@ def test_batch_worker_rejects_malformed_accepted_row_fields(tmp_path: Path) -> N
                 "candidateSubject": 7,
                 "substitutions": "bad",
                 "residualPremises": [{}],
+                "failureStage": "",
                 "diagnostic": [],
             }
         ]
@@ -186,6 +206,7 @@ def test_batch_worker_preserves_validated_prefix_after_timeout(tmp_path: Path) -
             "dischargedHypotheses": [],
             "substitutions": [],
             "residualPremises": [],
+            "failureStage": "",
             "diagnostic": "",
         }
         return ProcessResult(
@@ -202,3 +223,7 @@ def test_batch_worker_preserves_validated_prefix_after_timeout(tmp_path: Path) -
     assert [row["candidate"] for row in result.rows] == ["Main.good"]
     assert result.rows[0]["batchTerminal"] is False
     assert result.rows[0]["evidenceReceipt"]["analysisCompleteness"] == "partial"
+    assert result.rows[0]["evidenceReceipt"]["authorityBasis"] == "process-observation"
+    assert result.rows[0]["artifacts"][1]["payload"]["guarantee"]["authorityBasis"] == (
+        "process-observation"
+    )

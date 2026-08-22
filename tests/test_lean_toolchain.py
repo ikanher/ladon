@@ -85,3 +85,18 @@ def test_selected_executable_identity_is_rechecked(tmp_path: Path) -> None:
 
     with pytest.raises(LeanToolchainError, match="identity changed: lean"):
         verify_toolchain_identities(context)
+
+
+def test_nested_lean_source_is_part_of_source_tree_identity(tmp_path: Path) -> None:
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
+    lake = _tool(tmp_path / "lake", "Lake version 4.20.0")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+    nested = tmp_path / "Project" / "Hidden.lean"
+    nested.parent.mkdir()
+    nested.write_text("def hidden := true\n", encoding="utf-8")
+    context = resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+    nested.write_text("def hidden := false\n", encoding="utf-8")
+
+    with pytest.raises(LeanToolchainError, match="source tree identity changed"):
+        verify_toolchain_identities(context)

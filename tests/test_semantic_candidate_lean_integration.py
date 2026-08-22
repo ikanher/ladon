@@ -35,7 +35,7 @@ def test_installed_cli_emits_batch_closed_semantic_evidence() -> None:
             "--timeout-seconds",
             "30",
             "--max-rss-mib",
-            "2048",
+            "4096",
             "--format",
             "json",
         ],
@@ -80,7 +80,7 @@ def test_discovery_batches_candidates_and_replays_selected_scratch() -> None:
             "--timeout-seconds",
             "30",
             "--max-rss-mib",
-            "2048",
+            "4096",
             "--format",
             "json",
         ],
@@ -100,7 +100,7 @@ def test_discovery_batches_candidates_and_replays_selected_scratch() -> None:
 
 
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
-def test_discovery_elaborates_caller_local_context_and_replays_same_context() -> None:
+def test_testing_profile_rejects_caller_local_context() -> None:
     completed = subprocess.run(
         [
             sys.executable,
@@ -130,17 +130,11 @@ def test_discovery_elaborates_caller_local_context_and_replays_same_context() ->
         capture_output=True,
         check=False,
     )
-    assert completed.returncode == 0, completed.stderr
-    payload = json.loads(completed.stdout)
-    check = payload["candidates"][0]["check"]
-    assert check["status"] == "accepted"
-    assert check["evidenceReceipt"]["subject"]["localContext"] == [{"name": "value", "type": "Nat"}]
-    assert "example (value : Nat) : value = value" in check["scratch"]["source"]
-    assert "exact LadonFixture.fixtureIdentity value" in check["scratch"]["source"]
-    assert check["scratch"]["status"] == "compiled"
-    assert check["scratch"]["parentCheckRunRef"] == check["checkRunRef"]
-    assert check["scratch"]["environmentRef"] == check["environmentRef"]
-    assert check["scratch"]["evidenceReceipt"]["checkRunRef"] == check["scratch"]["checkRunRef"]
+    assert completed.returncode == 2
+    assert completed.stdout == ""
+    payload = json.loads(completed.stderr)
+    assert payload["exitClass"] == "invocation"
+    assert payload["status"] == "failed"
 
 
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")

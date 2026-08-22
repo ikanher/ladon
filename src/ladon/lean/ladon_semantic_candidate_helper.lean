@@ -81,6 +81,27 @@ structure SemanticCandidateOutput where
   localContext : Array SemanticLocalDecl
   deriving ToJson
 
+structure SemanticCandidateRejectionOutput where
+  protocol : String
+  frameVersion : Nat
+  sequence : Nat
+  terminal : Bool
+  universePolicy : String
+  requestId : String
+  leanVersion : String
+  leanCommit : String
+  executablePath : String
+  executionContextRef : String
+  module : String
+  probe : SemanticSubject
+  candidateName : String
+  status : String
+  failureStage : String
+  diagnostic : String
+  importedModules : Array SemanticModule
+  localContext : Array SemanticLocalDecl
+  deriving ToJson
+
 structure SemanticBatchRow where
   candidate : String
   status : String
@@ -89,6 +110,7 @@ structure SemanticBatchRow where
   dischargedHypotheses : Array SemanticDischargedHypothesis
   substitutions : Array SemanticSubstitution
   residualPremises : Array SemanticExpression
+  failureStage : String
   diagnostic : String
   deriving ToJson
 
@@ -221,6 +243,14 @@ private partial def introduceForall (goal : MVarId) : MetaM MVarId := do
       introduceForall next
   | _ => return goal
 
+private def localRef (id : FVarId) : MetaM String := do
+  let mut ordinal := 0
+  for decl in ← getLCtx do
+    if decl.fvarId == id then
+      return s!"local:{ordinal}"
+    ordinal := ordinal + 1
+  throwError "local declaration is absent from the active context"
+
 private def localContextTypes : MetaM (Array SemanticLocalDecl) := do
   let mut rows := #[]
   for decl in ← getLCtx do
@@ -228,10 +258,9 @@ private def localContextTypes : MetaM (Array SemanticLocalDecl) := do
     let typeDisplay ← Meta.ppExpr type
     let value? := decl.value? true
     let valueDisplay ← value?.mapM Meta.ppExpr
-    let dependencies := (collectFVars {} type).fvarIds.map fun id =>
-      "local:" ++ (repr id).pretty
+    let dependencies ← (collectFVars {} type).fvarIds.mapM localRef
     rows := rows.push {
-      localId := "local:" ++ (repr decl.fvarId).pretty
+      localId := ← localRef decl.fvarId
       userName := toString decl.userName
       binderInfo := (repr decl.binderInfo).pretty
       typeDisplay := typeDisplay.pretty
@@ -265,7 +294,7 @@ private def dischargeResiduals (residualGoals : Array MVarId) : MetaM (Array Sem
           pure (some {
           premiseOrdinal := ordinal
           premiseTypeDisplay := display.pretty
-          dischargedByLocalRef := "local:" ++ (repr localDecl.fvarId).pretty
+          dischargedByLocalRef := ← localRef localDecl.fvarId
           method := "assumption-definitional-equality"
           }, type)
     match result.1 with
@@ -302,12 +331,12 @@ private def analyzeApplication (env : Environment) (file : String)
         pure []
       else
         throwError "candidate application did not unify with the elaborated goal"
+    let (discharged, remainingGoals) ← dischargeResiduals residualGoals.toArray
     let some rawFocusedAssignment ← getExprMVarAssignment? focused
       | throwError "candidate application did not assign the focused probe goal"
     let focusedAssignment ← instantiateMVars rawFocusedAssignment
     let applicationDisplay ← focused.withContext do Meta.ppExpr focusedAssignment
     let substitutions ← applicationSubstitutions candidateInfo.type focusedAssignment.getAppArgs
-    let (discharged, remainingGoals) ← dischargeResiduals residualGoals.toArray
     let residuals ← remainingGoals.mapM fun residual => do
       let type ← instantiateMVars (← residual.getType)
       let display ← Meta.ppExpr type
@@ -332,13 +361,56 @@ private def runHelper (module file goal probeName candidateName requestId execut
       return 1
   | some env =>
       let fileMap := contents.toFileMap
-      let candidateLeanName ← parseLeanName env candidateName
       let goalType ← elaborateGoal env file fileMap goal
-      let (applicationTerm, substitutions, dischargedHypotheses, residuals, localContext) ← analyzeApplication env file fileMap goalType candidateLeanName
       let probe ← expressionSubject env file fileMap probeName.toName goalType
-      let candidate ← subject env file fileMap candidateLeanName
       let modules ← importedModules env
+      let localContext ← analyzeLocalContext env file fileMap goalType
       let executable ← IO.appPath
+      let emitRejected (failureStage diagnostic : String) : IO Unit := do
+        let output : SemanticCandidateRejectionOutput := {
+          protocol := ladonSemanticCandidateProtocol
+          frameVersion := 1
+          sequence := 0
+          terminal := true
+          universePolicy := "lean-level-mvar-succ-zero/v1"
+          requestId
+          executionContextRef
+          leanVersion := Lean.versionString
+          leanCommit := Lean.githash
+          executablePath := toString executable
+          module
+          probe
+          candidateName
+          status := "rejected"
+          failureStage
+          diagnostic
+          importedModules := modules
+          localContext
+        }
+        IO.println s!"LADON_FRAME {Json.compress (toJson output)}"
+      let candidateResult : Except String Name ← try
+        pure (Except.ok (← parseLeanName env candidateName))
+      catch error =>
+        pure (Except.error error.toString)
+      let candidateLeanName ← match candidateResult with
+        | Except.ok name => pure name
+        | Except.error diagnostic =>
+            emitRejected "candidate-name-invalid" diagnostic
+            return 0
+      if (env.find? candidateLeanName).isNone then
+        emitRejected "candidate-not-found" s!"declaration not found: {candidateName}"
+        return 0
+      let applicationResult ← try
+        pure (Except.ok (← analyzeApplication env file fileMap goalType candidateLeanName))
+      catch error =>
+        pure (Except.error error.toString)
+      let (applicationTerm, substitutions, dischargedHypotheses, residuals, localContext) ←
+        match applicationResult with
+        | Except.ok result => pure result
+        | Except.error diagnostic =>
+            emitRejected "application-rejected" diagnostic
+            return 0
+      let candidate ← subject env file fileMap candidateLeanName
       let output : SemanticCandidateOutput := {
         protocol := ladonSemanticCandidateProtocol
         frameVersion := 1
@@ -399,31 +471,59 @@ private def runBatchHelper (module file goal probeName requestId executionContex
       } : SemanticBatchHeader)
       for h : index in [0:candidateNames.length] do
         let candidateName := candidateNames[index]
-        let row : SemanticBatchRow ← try
-          let candidateLeanName ← parseLeanName env candidateName
-          let candidate ← subject env file fileMap candidateLeanName
-          let (applicationTerm, substitutions, dischargedHypotheses, residuals, _) ← analyzeApplication env file fileMap goalType candidateLeanName
-          pure {
-            candidate := candidateName
-            status := if residuals.isEmpty then "accepted" else "applicable-with-residuals"
-            candidateSubject := some candidate
-            applicationTerm
-            dischargedHypotheses
-            substitutions
-            residualPremises := residuals
-            diagnostic := ""
-          }
-        catch error =>
-          pure {
-            candidate := candidateName
-            status := "rejected"
-            candidateSubject := none
-            applicationTerm := ""
-            dischargedHypotheses := #[]
-            substitutions := #[]
-            residualPremises := #[]
-            diagnostic := error.toString
-          }
+        let nameResult : Except String Name ← try
+          pure (Except.ok (← parseLeanName env candidateName))
+        catch error => pure (Except.error error.toString)
+        let row : SemanticBatchRow ← match nameResult with
+          | Except.error diagnostic => pure {
+              candidate := candidateName
+              status := "rejected"
+              candidateSubject := none
+              applicationTerm := ""
+              dischargedHypotheses := #[]
+              substitutions := #[]
+              residualPremises := #[]
+              failureStage := "candidate-name-invalid"
+              diagnostic
+            }
+          | Except.ok candidateLeanName =>
+              if (env.find? candidateLeanName).isNone then
+                pure {
+                  candidate := candidateName
+                  status := "rejected"
+                  candidateSubject := none
+                  applicationTerm := ""
+                  dischargedHypotheses := #[]
+                  substitutions := #[]
+                  residualPremises := #[]
+                  failureStage := "candidate-not-found"
+                  diagnostic := s!"declaration not found: {candidateName}"
+                }
+              else try
+                let candidate ← subject env file fileMap candidateLeanName
+                let (applicationTerm, substitutions, dischargedHypotheses, residuals, _) ← analyzeApplication env file fileMap goalType candidateLeanName
+                pure {
+                  candidate := candidateName
+                  status := if residuals.isEmpty then "accepted" else "applicable-with-residuals"
+                  candidateSubject := some candidate
+                  applicationTerm
+                  dischargedHypotheses
+                  substitutions
+                  residualPremises := residuals
+                  failureStage := ""
+                  diagnostic := ""
+                }
+              catch error => pure {
+                candidate := candidateName
+                status := "rejected"
+                candidateSubject := none
+                applicationTerm := ""
+                dischargedHypotheses := #[]
+                substitutions := #[]
+                residualPremises := #[]
+                failureStage := "application-rejected"
+                diagnostic := error.toString
+              }
         emitFrame ({
           protocol := "ladon-lean-semantic-v3/check-candidates"
           frameVersion := 1

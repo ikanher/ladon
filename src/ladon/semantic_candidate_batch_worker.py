@@ -36,6 +36,7 @@ from ladon.semantic_candidate_worker import (
     _environment_source,
     _execution_context_ref,
     _goal_subjects_compatible,
+    _rejected_artifacts,
     _same_executable_identity,
     _valid_qualified_name,
     _validate_application_rows,
@@ -85,6 +86,7 @@ def check_semantic_candidates(
     runner: ProcessRunner = run_bounded_target_process,
     cancel_event: threading.Event | None = None,
 ) -> SemanticCandidateBatchCheck:
+    helper_path = helper_path.resolve()
     _validate_batch_candidates(candidates)
     request_id = secrets.token_hex(16)
     probe_name = _batch_probe_name(request)
@@ -196,6 +198,9 @@ def _validate_batch_candidates(candidates: Sequence[str]) -> None:
         not _valid_qualified_name(candidate) for candidate in candidates
     ):
         raise ValueError("semantic candidate batch contains invalid or duplicate candidates")
+    encoded_sizes = [len(candidate.encode("utf-8")) for candidate in candidates]
+    if any(size > 4096 for size in encoded_sizes) or sum(encoded_sizes) > 64 * 1024:
+        raise ValueError("semantic candidate batch exceeds the supported transport byte cap")
 
 
 def _batch_probe_name(request: SemanticCandidateRequest) -> str:
@@ -481,6 +486,7 @@ def _validate_batch_row_shape(row: Any, candidate: str) -> None:
         "dischargedHypotheses",
         "substitutions",
         "residualPremises",
+        "failureStage",
         "diagnostic",
     }
     if not isinstance(row, dict) or set(row) != fields:
@@ -493,6 +499,8 @@ def _validate_batch_row_shape(row: Any, candidate: str) -> None:
         raise ValueError("Lean semantic helper returned an invalid candidate outcome")
     if not isinstance(row["diagnostic"], str):
         raise TypeError("Lean semantic helper returned an invalid candidate diagnostic")
+    if not isinstance(row["failureStage"], str):
+        raise TypeError("Lean semantic helper returned an invalid candidate failure stage")
     if not isinstance(row["applicationTerm"], str):
         raise TypeError("Lean semantic helper returned an invalid candidate application term")
 
@@ -511,6 +519,8 @@ def _validate_batch_row_evidence(
     if row["status"] == "rejected":
         _validate_rejected_row(row)
         return
+    if row["failureStage"]:
+        raise ValueError("accepted candidate row carries a failure stage")
     _validate_worker_subject(row["candidateSubject"], "candidate", candidate)
     if not row["applicationTerm"]:
         raise ValueError("accepted candidate row omits its exact application term")
@@ -527,6 +537,12 @@ def _validate_rejected_row(row: Mapping[str, Any]) -> None:
         or row["residualPremises"]
     ):
         raise ValueError("rejected candidate row carries accepted evidence")
+    if row["failureStage"] not in {
+        "candidate-name-invalid",
+        "candidate-not-found",
+        "application-rejected",
+    }:
+        raise ValueError("rejected candidate row omits a structured failure stage")
 
 
 def _materialize_batch_rows(
@@ -623,7 +639,7 @@ def _prefix_receipt(
         execution_binding="explicit-pinned" if explicit else "ambient-observed",
         observation_state="live",
         operation_outcome="rejected" if status == "rejected" else "accepted",
-        authority_basis="elaborator-check",
+        authority_basis="process-observation",
         analysis_completeness="partial",
         environment_match=(
             "exact"
@@ -680,8 +696,8 @@ def _batch_result_diagnostics(row: Mapping[str, Any]) -> list[dict[str, Any]]:
     if row.get("diagnostic"):
         diagnostics.append(
             {
-                "stage": "candidate-check",
-                "code": "candidate-rejected",
+                "stage": str(row.get("failureStage") or "candidate-check"),
+                "code": str(row.get("failureStage") or "candidate-rejected"),
                 "pointer": "/candidate",
                 "message": str(row["diagnostic"]),
                 "order": len(diagnostics),
@@ -723,47 +739,41 @@ def _materialize_batch_row(
             "evidenceReceipt": receipt,
             "artifacts": list(artifacts),
         }
-    check_ref = (
-        "check:"
-        + _digest_text(
-            canonical_bytes(
-                {
-                    "environmentRef": environment["environmentRef"],
-                    "candidate": row["candidate"],
-                    "goal": request.goal,
-                    "localContext": [dict(item) for item in request.local_context],
-                    "diagnostic": row["diagnostic"],
-                    "applicationTerm": row.get("applicationTerm"),
-                    "substitutions": row.get("substitutions", []),
-                    "residualPremises": row.get("residualPremises", []),
-                    "dischargedHypotheses": row.get("dischargedHypotheses", []),
-                }
-            ).decode()
-        )[7:]
-    )
-    receipt = _rejected_receipt(
+    rejection_payload = {
+        "protocol": SEMANTIC_PROTOCOL,
+        "frameVersion": 1,
+        "sequence": 0,
+        "terminal": True,
+        "universePolicy": payload["universePolicy"],
+        "requestId": payload["requestId"],
+        "executionContextRef": payload["executionContextRef"],
+        "leanVersion": payload["leanVersion"],
+        "leanCommit": payload["leanCommit"],
+        "executablePath": payload["executablePath"],
+        "module": payload["module"],
+        "probe": payload["probe"],
+        "candidateName": row["candidate"],
+        "status": "rejected",
+        "failureStage": row["failureStage"],
+        "diagnostic": row["diagnostic"],
+        "importedModules": payload["importedModules"],
+        "localContext": payload["localContext"],
+    }
+    artifacts, receipt = _rejected_artifacts(
         candidate_request,
-        str(environment["environmentRef"]),
-        check_ref,
-        local_context=payload["localContext"],
+        helper_path,
+        process,
+        rejection_payload,
+        helper_identity=_digest_file(helper_path),
     )
-    check_artifact = _batch_check_artifact(
-        candidate_request,
-        environment,
-        check_ref,
-        observed_row,
-        receipt,
-        helper_path=helper_path,
-        process=process,
-    )
-    validate_envelope_batch([dict(environment), check_artifact])
+    validate_envelope_batch(list(artifacts))
     return {
         **observed_row,
         "callerLocalContext": [dict(item) for item in request.local_context],
-        "environmentRef": environment["environmentRef"],
-        "checkRunRef": check_ref,
+        "environmentRef": artifacts[0]["environmentRef"],
+        "checkRunRef": artifacts[1]["payload"]["checkRunId"],
         "evidenceReceipt": receipt,
-        "artifacts": [dict(environment), check_artifact],
+        "artifacts": list(artifacts),
     }
 
 
@@ -777,6 +787,7 @@ def _batch_check_artifact(
     helper_path: Path | None = None,
     process: Any | None = None,
 ) -> dict[str, Any]:
+    authority_basis = str(receipt.get("authorityBasis", "process-observation"))
     env_ref = str(environment["environmentRef"])
     statement = _synthetic_subject("statement", request.goal)
     declaration = _synthetic_subject("declaration", request.candidate)
@@ -849,9 +860,13 @@ def _batch_check_artifact(
                 "maxOutputBytes": request.max_output_bytes,
             },
             "guarantee": {
-                "scope": "process-exit",
+                "scope": (
+                    "route"
+                    if authority_basis == "elaborator-check"
+                    else "process-exit"
+                ),
                 "statement": "This artifact records one bounded batch candidate observation.",
-                "authorityBasis": "process-observation",
+                "authorityBasis": authority_basis,
             },
         },
         extensions={"ladon.process-observation/v1": {"evidenceReceipt": dict(receipt)}},
@@ -891,46 +906,5 @@ def _single_payload(payload: Mapping[str, Any], row: Mapping[str, Any]) -> dict[
         "residualPremises": row["residualPremises"],
         "localContext": payload["localContext"],
     }
-
-
-def _rejected_receipt(
-    request: SemanticCandidateRequest,
-    environment_ref: str,
-    check_ref: str,
-    *,
-    local_context: Sequence[Mapping[str, Any]] = (),
-) -> dict[str, Any]:
-    binding = "ambient-observed"
-    environment_match = "unknown"
-    if request.toolchain is not None:
-        binding = (
-            "explicit-pinned"
-            if request.toolchain.selection_mode == "explicit"
-            else "ambient-observed"
-        )
-        environment_match = (
-            "exact" if request.toolchain.lean_commit is not None else "unknown"
-        )
-    return build_evidence_receipt(
-        subject={
-            "module": request.module,
-            "candidate": request.candidate,
-            "goal": request.goal,
-            "localContext": _receipt_local_context(local_context or request.local_context),
-        },
-        execution_binding=binding,
-        observation_state="live",
-        operation_outcome="rejected",
-        authority_basis="elaborator-check",
-        analysis_completeness="complete",
-        environment_match=environment_match,
-        environment_ref=environment_ref,
-        check_run_ref=check_ref,
-        limitations=(
-            TRUSTED_TARGET_LIMITATION,
-            "Candidate rejection does not establish theorem falsehood.",
-        ),
-    )
-
 
 __all__ = ["SemanticCandidateBatchCheck", "check_semantic_candidates"]

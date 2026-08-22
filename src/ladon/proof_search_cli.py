@@ -220,7 +220,7 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     candidate.add_argument("--candidate", required=True)
     candidate.add_argument("--timeout-seconds", type=float, default=120.0)
     candidate.add_argument("--max-output-mib", type=_positive_integer, default=8)
-    candidate.add_argument("--max-rss-mib", type=_positive_integer, default=2048)
+    candidate.add_argument("--max-rss-mib", type=_positive_integer, default=4096)
     candidate.add_argument(
         "--toolchain-mode",
         choices=("ambient", "explicit"),

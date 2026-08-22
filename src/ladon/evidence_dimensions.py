@@ -123,12 +123,13 @@ class EvidenceDimensions:
 
 def validate_transition(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
     """Reject transitions that strengthen an observation or authority axis."""
-    violations = [
+    violations = _state_violations(parent)
+    violations.extend(
         _transition_error(axis, parent_value, child_value)
         for axis, attribute in _ATTRS.items()
         if (parent_value := getattr(parent, attribute))
         and (child_value := getattr(child, attribute)) not in _TRANSITIONS[axis][parent_value]
-    ]
+    )
     violations.extend(_state_violations(child))
     if violations:
         raise ValueError("; ".join(violations))
