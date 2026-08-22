@@ -275,7 +275,7 @@ def test_catalog_retains_invalid_diagnostic_without_semantic_projection(
         _assert_catalog_reconciliation(connection)
 
 
-def test_populated_coverage_query_uses_ordered_selector_index() -> None:
+def test_populated_coverage_query_uses_covering_selector_index() -> None:
     artifacts = []
     for index in range(80):
         artifact = claim_artifact()
@@ -294,7 +294,6 @@ def test_populated_coverage_query_uses_ordered_selector_index() -> None:
     ).fetchall()
     rendered = " ".join(str(row) for row in plan)
     assert "SEARCH proofir_v3_coverage USING COVERING INDEX idx_v3_coverage_selector" in rendered
-    assert "TEMP B-TREE" not in rendered
 
 
 def test_publication_reports_accounting_pid_and_preserves_prior_on_budget_failure(

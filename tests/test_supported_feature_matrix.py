@@ -18,7 +18,7 @@ def test_matrix_has_exactly_three_core_workflows_and_collectable_nodes() -> None
     core = [feature for feature in generator.FEATURES if feature["tier"] == "core"]
     assert [feature["id"] for feature in core] == [
         "architecture-review",
-        "semantic-declaration-search",
+        "type-text-declaration-search",
         "evidence-and-lineage-inspection",
     ]
     root = Path(__file__).parents[1]
