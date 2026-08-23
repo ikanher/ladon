@@ -10,6 +10,7 @@ import json
 import os
 import re
 import shutil
+import stat
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -31,6 +32,15 @@ SOURCE_TOTAL_BYTE_LIMIT = 4 * 1024 * 1024 * 1024
 
 class LeanToolchainError(ValueError):
     """A requested local Lean toolchain cannot be trusted or resolved."""
+
+
+@dataclass(frozen=True)
+class _SourceMaterialPath:
+    """Resolved source entry plus exact symlink identity when applicable."""
+
+    resolved_path: Path
+    symlink_path: Path | None = None
+    symlink_target: bytes | None = None
 
 
 @dataclass(frozen=True)
@@ -129,9 +139,7 @@ def resolve_toolchain_context(
     lake_version = _version(lake, root, sanitized)
     lean_version = _version(lean, root, sanitized)
     expected = _pinned_release(pin_content)
-    if _lake_releases(lake_version) != {expected} or _reported_releases(lean_version) != {
-        expected
-    }:
+    if _lake_releases(lake_version) != {expected} or _reported_releases(lean_version) != {expected}:
         raise LeanToolchainError(
             f"toolchain pin mismatch: expected {expected}, lake={lake_version!r}, lean={lean_version!r}"
         )
@@ -211,30 +219,31 @@ def _source_tree_identity(root: Path) -> str:
     total_bytes = 0
     paths = _source_material_paths(root)
     if len(paths) > SOURCE_FILE_LIMIT:
-        raise LeanToolchainError(
-            f"source identity exceeds the {SOURCE_FILE_LIMIT}-file limit"
-        )
+        raise LeanToolchainError(f"source identity exceeds the {SOURCE_FILE_LIMIT}-file limit")
     for relative in paths:
-        path = _safe_source_path(root, relative)
-        if path is None:
+        entry = _safe_source_path(root, relative)
+        if entry is None:
             continue
-        size = path.stat().st_size
-        if size > SOURCE_FILE_BYTE_LIMIT:
-            raise LeanToolchainError(
-                f"source identity file exceeds the byte limit: {relative}"
-            )
-        total_bytes += size
+        content = _read_source_bytes(entry.resolved_path, relative)
+        link_bytes = entry.symlink_target or b""
+        total_bytes += len(content) + len(link_bytes)
         if total_bytes > SOURCE_TOTAL_BYTE_LIMIT:
             raise LeanToolchainError("source identity exceeds the aggregate byte limit")
-        content = path.read_bytes()
-        if len(content) != size:
-            raise LeanToolchainError(
-                f"source identity file changed while being read: {relative}"
-            )
+        if entry.symlink_path is not None:
+            try:
+                observed_target = os.fsencode(os.readlink(entry.symlink_path))
+            except OSError as exc:
+                raise LeanToolchainError(
+                    f"source identity symlink changed while being read: {relative}"
+                ) from exc
+            if observed_target != entry.symlink_target:
+                raise LeanToolchainError(
+                    f"source identity symlink changed while being read: {relative}"
+                )
         encoded = relative.encode()
         digest.update(len(encoded).to_bytes(8, "big"))
         digest.update(encoded)
-        digest.update(hashlib.sha256(content).digest())
+        digest.update(_source_content_digest(content, entry.symlink_target))
     return "sha256:" + digest.hexdigest()
 
 
@@ -311,13 +320,16 @@ def _validate_source_relative_path(relative: str) -> str:
     return normalized
 
 
-def _safe_source_path(root: Path, relative: str) -> Path | None:
+def _safe_source_path(root: Path, relative: str) -> _SourceMaterialPath | None:
     path = root / relative
+    _reject_source_symlink_ancestors(root, path, relative)
+    if path.is_symlink():
+        return _safe_source_symlink(root, path, relative)
     try:
         resolved = path.resolve(strict=True)
-    except OSError as exc:
+    except (OSError, RuntimeError) as exc:
         raise LeanToolchainError(f"cannot read source identity path: {relative}") from exc
-    if path.is_symlink() or not resolved.is_relative_to(root):
+    if not resolved.is_relative_to(root):
         raise LeanToolchainError(f"source identity path escapes the repository: {relative}")
     if resolved.is_dir():
         # Git reports an untracked nested worktree as one directory entry. It
@@ -325,7 +337,123 @@ def _safe_source_path(root: Path, relative: str) -> Path | None:
         return None
     if not resolved.is_file():
         raise LeanToolchainError(f"source identity path is not a regular file: {relative}")
-    return resolved
+    return _SourceMaterialPath(resolved)
+
+
+def _reject_source_symlink_ancestors(root: Path, path: Path, relative: str) -> None:
+    """Reject resolution through a mutable, unframed directory link."""
+
+    current = root
+    for part in path.relative_to(root).parts[:-1]:
+        current /= part
+        try:
+            metadata = current.lstat()
+        except OSError as exc:
+            raise LeanToolchainError(f"cannot read source identity path: {relative}") from exc
+        if stat.S_ISLNK(metadata.st_mode):
+            raise LeanToolchainError(f"source identity path has a symlink ancestor: {relative}")
+        if not stat.S_ISDIR(metadata.st_mode):
+            raise LeanToolchainError(f"cannot read source identity path: {relative}")
+
+
+def _safe_source_symlink(root: Path, path: Path, relative: str) -> _SourceMaterialPath:
+    """Accept one contained link to a regular file while rejecting link chains."""
+
+    try:
+        raw_target = os.readlink(path)
+    except OSError as exc:
+        raise LeanToolchainError(f"cannot read source identity path: {relative}") from exc
+    target_bytes = os.fsencode(raw_target)
+    if not target_bytes or len(target_bytes) > SOURCE_PATH_BYTE_LIMIT:
+        raise LeanToolchainError(
+            f"source identity symlink target exceeds safety bounds: {relative}"
+        )
+    target = Path(raw_target)
+    if target.is_absolute():
+        raise LeanToolchainError(f"source identity path escapes the repository: {relative}")
+    lexical_target = Path(os.path.normpath(path.parent / target))
+    if not lexical_target.is_relative_to(root):
+        raise LeanToolchainError(f"source identity path escapes the repository: {relative}")
+    target_parts = lexical_target.relative_to(root).parts
+    if len(target_parts) > SOURCE_PATH_DEPTH_LIMIT:
+        raise LeanToolchainError(
+            f"source identity symlink target exceeds safety bounds: {relative}"
+        )
+    current = root
+    for part in target_parts:
+        current /= part
+        if current.is_symlink():
+            raise LeanToolchainError(f"source identity symlink chain is unsupported: {relative}")
+    try:
+        resolved = lexical_target.resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise LeanToolchainError(f"cannot read source identity path: {relative}") from exc
+    if not resolved.is_relative_to(root):
+        raise LeanToolchainError(f"source identity path escapes the repository: {relative}")
+    if not resolved.is_file():
+        raise LeanToolchainError(
+            f"source identity symlink target is not a regular file: {relative}"
+        )
+    return _SourceMaterialPath(resolved, path, target_bytes)
+
+
+def _read_source_bytes(path: Path, relative: str) -> bytes:
+    """Read one stable regular file without following a last-moment symlink."""
+
+    flags = os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise LeanToolchainError(f"cannot read source identity path: {relative}") from exc
+    try:
+        before = os.fstat(descriptor)
+        if not stat.S_ISREG(before.st_mode):
+            raise LeanToolchainError(f"source identity path is not a regular file: {relative}")
+        if before.st_size > SOURCE_FILE_BYTE_LIMIT:
+            raise LeanToolchainError(f"source identity file exceeds the byte limit: {relative}")
+        content = bytearray()
+        while len(content) <= SOURCE_FILE_BYTE_LIMIT:
+            chunk = os.read(
+                descriptor,
+                min(1024 * 1024, SOURCE_FILE_BYTE_LIMIT + 1 - len(content)),
+            )
+            if not chunk:
+                break
+            content.extend(chunk)
+        after = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+    stable_fields = ("st_dev", "st_ino", "st_size", "st_mtime_ns", "st_ctime_ns")
+    if any(getattr(before, key) != getattr(after, key) for key in stable_fields):
+        raise LeanToolchainError(f"source identity file changed while being read: {relative}")
+    if len(content) != before.st_size or len(content) > SOURCE_FILE_BYTE_LIMIT:
+        raise LeanToolchainError(f"source identity file changed while being read: {relative}")
+    try:
+        current = path.lstat()
+    except OSError as exc:
+        raise LeanToolchainError(
+            f"source identity file changed while being read: {relative}"
+        ) from exc
+    if (
+        not stat.S_ISREG(current.st_mode)
+        or current.st_dev != before.st_dev
+        or current.st_ino != before.st_ino
+    ):
+        raise LeanToolchainError(f"source identity file changed while being read: {relative}")
+    return bytes(content)
+
+
+def _source_content_digest(content: bytes, symlink_target: bytes | None) -> bytes:
+    content_digest = hashlib.sha256(content).digest()
+    if symlink_target is None:
+        return content_digest
+    framed = (
+        b"ladon-source-symlink-v1\0"
+        + len(symlink_target).to_bytes(8, "big")
+        + symlink_target
+        + content_digest
+    )
+    return hashlib.sha256(framed).digest()
 
 
 def _fallback_source_material_paths(root: Path) -> tuple[str, ...]:
@@ -345,9 +473,7 @@ def _fallback_source_material_paths(root: Path) -> tuple[str, ...]:
     def fail(error: OSError) -> None:
         raise LeanToolchainError(f"cannot enumerate source material: {error}") from error
 
-    for current, directories, files in os.walk(
-        root, topdown=True, onerror=fail, followlinks=False
-    ):
+    for current, directories, files in os.walk(root, topdown=True, onerror=fail, followlinks=False):
         current_path = Path(current)
         depth = len(current_path.relative_to(root).parts)
         directories[:] = sorted(

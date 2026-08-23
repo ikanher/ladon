@@ -107,9 +107,7 @@ def test_git_ignored_tree_is_outside_source_identity(tmp_path: Path) -> None:
 
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     (tmp_path / ".gitignore").write_text("temp/\n", encoding="utf-8")
-    (tmp_path / "lean-toolchain").write_text(
-        "leanprover/lean4:v4.20.0\n", encoding="utf-8"
-    )
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
     source = tmp_path / "Project.lean"
     source.write_text("def visible := true\n", encoding="utf-8")
     ignored = tmp_path / "temp" / "logs" / "logs" / "Ignored.lean"
@@ -128,15 +126,194 @@ def test_git_ignored_tree_is_outside_source_identity(tmp_path: Path) -> None:
     verify_toolchain_identities(context)
 
 
+def test_tracked_contained_source_symlink_is_bound_to_target_bytes(
+    tmp_path: Path,
+) -> None:
+    import subprocess
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
+    scripts = tmp_path / "scripts" / "bench"
+    scripts.mkdir(parents=True)
+    target = scripts / "runner"
+    target.write_text("first\n", encoding="utf-8")
+    link = scripts / "runner.py"
+    link.symlink_to("runner")
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "lean-toolchain", "scripts"],
+        check=True,
+    )
+    lake = _tool(tmp_path / "lake", "Lake version 4.20.0")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+    context = resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+    verify_toolchain_identities(context)
+    target.write_text("second\n", encoding="utf-8")
+
+    with pytest.raises(LeanToolchainError, match="source tree identity changed"):
+        verify_toolchain_identities(context)
+
+
+def test_source_symlink_retarget_to_equal_bytes_changes_identity(tmp_path: Path) -> None:
+    import subprocess
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "first").write_text("same\n", encoding="utf-8")
+    (scripts / "second").write_text("same\n", encoding="utf-8")
+    link = scripts / "runner.py"
+    link.symlink_to("first")
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "lean-toolchain", "scripts"],
+        check=True,
+    )
+    lake = _tool(tmp_path / "lake", "Lake version 4.20.0")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+    context = resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+    link.unlink()
+    link.symlink_to("second")
+
+    with pytest.raises(LeanToolchainError, match="source tree identity changed"):
+        verify_toolchain_identities(context)
+
+
+def test_source_symlink_replaced_by_equal_regular_file_changes_identity(
+    tmp_path: Path,
+) -> None:
+    import subprocess
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "runner").write_text("same\n", encoding="utf-8")
+    link = scripts / "runner.py"
+    link.symlink_to("runner")
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "lean-toolchain", "scripts"],
+        check=True,
+    )
+    lake = _tool(tmp_path / "lake", "Lake version 4.20.0")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+    context = resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+    link.unlink()
+    link.write_text("same\n", encoding="utf-8")
+
+    with pytest.raises(LeanToolchainError, match="source tree identity changed"):
+        verify_toolchain_identities(context)
+
+
+def test_source_path_rejects_symlinked_parent_directory(tmp_path: Path) -> None:
+    import subprocess
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
+    project = tmp_path / "Project"
+    project.mkdir()
+    source = project / "Run.lean"
+    source.write_text("def same := true\n", encoding="utf-8")
+    hidden = tmp_path / ".hidden"
+    hidden.mkdir()
+    (hidden / "Run.lean").write_text("def same := true\n", encoding="utf-8")
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "lean-toolchain", "Project/Run.lean"],
+        check=True,
+    )
+    lake = _tool(tmp_path / "lake", "Lake version 4.20.0")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+    context = resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+    source.unlink()
+    project.rmdir()
+    project.symlink_to(".hidden", target_is_directory=True)
+
+    with pytest.raises(LeanToolchainError, match="symlink ancestor"):
+        verify_toolchain_identities(context)
+
+
+def test_source_symlink_target_respects_path_depth_limit(tmp_path: Path) -> None:
+    import subprocess
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
+    (tmp_path / ".gitignore").write_text(".hidden/\n", encoding="utf-8")
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    target = tmp_path / ".hidden" / Path(*(["deep"] * 64)) / "runner"
+    target.parent.mkdir(parents=True)
+    target.write_text("safe\n", encoding="utf-8")
+    (scripts / "runner.py").symlink_to(Path("..") / target.relative_to(tmp_path))
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(tmp_path),
+            "add",
+            ".gitignore",
+            "lean-toolchain",
+            "scripts/runner.py",
+        ],
+        check=True,
+    )
+    lake = _tool(tmp_path / "lake", "Lake version 4.20.0")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+
+    with pytest.raises(LeanToolchainError, match="symlink target exceeds safety bounds"):
+        resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+
+@pytest.mark.parametrize(
+    "link_kind",
+    ["absolute-escape", "relative-escape", "chain", "dangling", "cycle", "directory"],
+)
+def test_unsafe_source_symlink_fails_closed(tmp_path: Path, link_kind: str) -> None:
+    import subprocess
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    target = scripts / "runner"
+    target.write_text("safe\n", encoding="utf-8")
+    link = scripts / "runner.py"
+    if link_kind in {"absolute-escape", "relative-escape"}:
+        outside = tmp_path.parent / f"{tmp_path.name}-outside"
+        outside.write_text("outside\n", encoding="utf-8")
+        link.symlink_to(outside if link_kind == "absolute-escape" else f"../../{outside.name}")
+    elif link_kind == "chain":
+        alias = scripts / "alias"
+        alias.symlink_to("runner")
+        link.symlink_to("alias")
+    elif link_kind == "dangling":
+        link.symlink_to("missing")
+    elif link_kind == "directory":
+        directory = scripts / "directory"
+        directory.mkdir()
+        link.symlink_to("directory")
+    else:
+        link.symlink_to("runner.py")
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", "lean-toolchain", "scripts"],
+        check=True,
+    )
+    lake = _tool(tmp_path / "lake", "Lake version 4.20.0")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+
+    with pytest.raises(LeanToolchainError, match="source identity"):
+        resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+
 def test_untracked_nested_repository_directory_is_not_treated_as_source_file(
     tmp_path: Path,
 ) -> None:
     import subprocess
 
     subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
-    (tmp_path / "lean-toolchain").write_text(
-        "leanprover/lean4:v4.20.0\n", encoding="utf-8"
-    )
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
     nested = tmp_path / "src" / "external-project"
     nested.mkdir(parents=True)
     subprocess.run(["git", "init", "-q", str(nested)], check=True)
@@ -151,9 +328,7 @@ def test_untracked_nested_repository_directory_is_not_treated_as_source_file(
 
 
 def test_non_git_fallback_prunes_review_and_build_trees(tmp_path: Path) -> None:
-    (tmp_path / "lean-toolchain").write_text(
-        "leanprover/lean4:v4.20.0\n", encoding="utf-8"
-    )
+    (tmp_path / "lean-toolchain").write_text("leanprover/lean4:v4.20.0\n", encoding="utf-8")
     source = tmp_path / "Project.lean"
     source.write_text("def visible := true\n", encoding="utf-8")
     ignored = tmp_path / "temp" / "packet" / "Ignored.lean"
