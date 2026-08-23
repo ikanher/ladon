@@ -11,9 +11,25 @@ from ladon.process_supervisor import ProcessResult
 from ladon.proofir_v3 import validate_envelope_batch
 from ladon.semantic_candidate_worker import (
     SEMANTIC_PROTOCOL,
+    SemanticCandidateCheck,
     SemanticCandidateRequest,
     check_semantic_candidate,
 )
+
+
+def test_resource_accounting_names_checker_process_scope() -> None:
+    accounting = SemanticCandidateCheck(
+        "failed-checker",
+        elapsed_seconds=1.25,
+        peak_rss_bytes=4096,
+    ).to_dict()["resourceAccounting"]
+
+    assert accounting == {
+        "scope": "checker-process",
+        "checkerElapsedSeconds": 1.25,
+        "elapsedSeconds": 1.25,
+        "peakRssBytes": 4096,
+    }
 
 
 def _accepted_payload(tmp_path: Path) -> dict[str, Any]:
@@ -104,6 +120,9 @@ def test_accepted_worker_result_closes_exact_environment_and_check_references(
     repo = tmp_path / "repo"
     repo.mkdir()
     repo.joinpath("lean-toolchain").write_text("leanprover/lean4:v4.32.2\n")
+    compiled_module = repo / ".lake" / "build" / "lib" / "lean" / "Main.olean"
+    compiled_module.parent.mkdir(parents=True)
+    compiled_module.write_bytes(b"compiled fixture")
     payload = _accepted_payload(tmp_path)
 
     def accepted_runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
@@ -178,6 +197,27 @@ def test_unframed_rejection_prose_remains_process_failure(tmp_path: Path) -> Non
     assert result.evidence_receipt["operationOutcome"] == "failed"
 
 
+def test_worker_process_failure_retains_both_frontend_diagnostic_streams(
+    tmp_path: Path,
+) -> None:
+    result = check_semantic_candidate(
+        SemanticCandidateRequest(tmp_path, "Main", "True", "Main.proof"),
+        runner=lambda command, **_kwargs: ProcessResult(
+            command,
+            1,
+            "Main.lean:1:0: error: unknown module 'Dependency'",
+            "ELABORATION_FAILURE Main.lean",
+            0.1,
+        ),
+    )
+
+    assert result.status == "failed-checker"
+    assert result.diagnostic is not None
+    message = str(result.diagnostic["message"])
+    assert "unknown module 'Dependency'" in message
+    assert "ELABORATION_FAILURE Main.lean" in message
+
+
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -213,6 +253,9 @@ def test_explicit_toolchain_ignores_path_shadow_and_sanitizes_worker_environment
     repo = tmp_path / "repo"
     repo.mkdir()
     repo.joinpath("lean-toolchain").write_text("leanprover/lean4:v4.32.2\n")
+    compiled_module = repo / ".lake" / "build" / "lib" / "lean" / "Main.olean"
+    compiled_module.parent.mkdir(parents=True)
+    compiled_module.write_bytes(b"compiled fixture")
     lake = repo / "lake"
     lean = repo / "lean"
     for tool in (lake, lean):
@@ -242,7 +285,8 @@ def test_explicit_toolchain_ignores_path_shadow_and_sanitizes_worker_environment
         runner=runner,
     )
     assert result.status == "accepted"
-    assert observed["command"][0:3] == (str(lake), "env", str(lean))  # type: ignore[index]
+    assert observed["command"][0] == str(lean)  # type: ignore[index]
+    assert "lake" not in observed["command"]  # type: ignore[operator]
     assert "SECRET" not in observed["env"]  # type: ignore[operator]
     assert context.context_identity.startswith("sha256:")
 
@@ -251,6 +295,9 @@ def test_worker_rejects_executable_changed_during_run(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
     repo.joinpath("lean-toolchain").write_text("leanprover/lean4:v4.32.2\n")
+    compiled_module = repo / ".lake" / "build" / "lib" / "lean" / "Main.olean"
+    compiled_module.parent.mkdir(parents=True)
+    compiled_module.write_bytes(b"compiled fixture")
     lake = repo / "lake"
     lean = repo / "lean"
     for tool in (lake, lean):

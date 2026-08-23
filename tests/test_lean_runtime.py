@@ -17,8 +17,9 @@ from ladon.lean_runtime import (
     resolve_lean_version,
 )
 from ladon.process_supervisor import ProcessResult
+from ladon.semantic_lean_execution import DirectLeanExecution
 
-FAKE_LAKE = r"""#!/usr/bin/env python3
+FAKE_LEAN = r"""#!/usr/bin/env python3
 import json
 import os
 import pathlib
@@ -270,6 +271,9 @@ def named_runtime_fixture(
         source = repo / relative
         source.parent.mkdir(parents=True, exist_ok=True)
         source.write_text(f"def {name}.value : Nat := 1\n", encoding="utf-8")
+        olean = repo / ".lake" / "build" / "lib" / "lean" / relative.with_suffix(".olean")
+        olean.parent.mkdir(parents=True, exist_ok=True)
+        olean.write_bytes(b"compiled fixture")
         modules[name] = LeanModule(name, str(relative))
         requested.append(RequestedModule(name, str(relative)))
     helper = tmp_path / "helper.lean"
@@ -285,10 +289,18 @@ def install_fake_lake(
 
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
-    lake = fake_bin / "lake"
-    lake.write_text(FAKE_LAKE, encoding="utf-8")
-    lake.chmod(lake.stat().st_mode | stat.S_IXUSR)
+    lean = fake_bin / "lean"
+    lean.write_text(FAKE_LEAN, encoding="utf-8")
+    lean.chmod(lean.stat().st_mode | stat.S_IXUSR)
     monkeypatch.setenv("PATH", f"{fake_bin}{os.pathsep}{os.environ['PATH']}")
+
+    def prepare_fake_execution(*_args, **_kwargs) -> DirectLeanExecution:
+        return DirectLeanExecution((str(lean),), dict(os.environ), ())
+
+    monkeypatch.setattr(
+        "ladon.lean_runtime.prepare_direct_lean_execution",
+        prepare_fake_execution,
+    )
 
 
 def process_is_live(pid: int) -> bool:

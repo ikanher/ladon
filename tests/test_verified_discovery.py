@@ -45,7 +45,8 @@ def test_discovery_check_failure_is_unassessed_and_bounded() -> None:
     assert result["candidates"][0]["check"]["status"] == "unassessed"
 
 
-def test_discovery_cli_contract_accepts_goal_context_and_candidates() -> None:
+def test_discovery_cli_marks_caller_context_as_unsupported() -> None:
+    parser = build_proof_search_parser()
     args = build_proof_search_parser().parse_args(
         [
             "discover",
@@ -65,6 +66,11 @@ def test_discovery_cli_contract_accepts_goal_context_and_candidates() -> None:
     )
     assert args.proof_search_operation == "discover"
     assert args.local == ["h:Nat"]
+    subparsers = next(
+        action for action in parser._actions if isinstance(action, argparse._SubParsersAction)
+    )
+    help_text = " ".join(subparsers.choices["discover"].format_help().split())
+    assert "Unsupported in the proposition-discovery testing profile" in help_text
 
 
 def test_semantic_request_retains_discovery_local_context() -> None:
@@ -102,8 +108,7 @@ def test_discovery_attempts_at_most_one_advisory_scratch() -> None:
         request,
         [{"candidateName": "Main.first"}, {"candidateName": "Main.second"}],
         lambda _name: SemanticCandidateCheck("accepted"),
-        lambda name, _application, _parent: scratch_calls.append(name)
-        or {"status": "compiled"},
+        lambda name, _application, _parent: scratch_calls.append(name) or {"status": "compiled"},
     )
 
     assert scratch_calls == ["Main.first"]
@@ -111,9 +116,7 @@ def test_discovery_attempts_at_most_one_advisory_scratch() -> None:
 
 
 def test_discovery_rejects_aggregate_process_budget_before_work() -> None:
-    request = DiscoveryRequest(
-        Path("/repo"), "Main", "Nat", max_candidates=6, timeout_seconds=120
-    )
+    request = DiscoveryRequest(Path("/repo"), "Main", "Nat", max_candidates=6, timeout_seconds=120)
     called: list[str] = []
     with pytest.raises(ValueError, match="aggregate process budget"):
         discover_candidates(
@@ -265,7 +268,9 @@ def test_discovery_rejects_unbounded_public_resources(kwargs: dict[str, object])
         DiscoveryRequest(Path("/repo"), "Main", "Nat", **kwargs)  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("field", ["max_candidates", "batch_size", "max_output_bytes", "max_rss_bytes"])
+@pytest.mark.parametrize(
+    "field", ["max_candidates", "batch_size", "max_output_bytes", "max_rss_bytes"]
+)
 def test_discovery_rejects_non_integer_bounds(field: str) -> None:
     with pytest.raises(TypeError, match="must be integers"):
         DiscoveryRequest(Path("/repo"), "Main", "Nat", **{field: 1.5})  # type: ignore[arg-type]

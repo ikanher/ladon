@@ -330,6 +330,7 @@ def run_streaming_target_process(
     stdout_line_validator: Callable[[str], None],
     cancel_event: threading.Event | None = None,
     terminate_grace_seconds: float = TERMINATE_GRACE_SECONDS,
+    env: Mapping[str, str] | None = None,
 ) -> ProcessResult:
     """Run a framed command with live validation and cancellable cleanup."""
 
@@ -338,7 +339,7 @@ def run_streaming_target_process(
     normalized = tuple(str(part) for part in command)
     raise_if_cancelled(cancel_event)
     started = monotonic()
-    process = streaming_process(normalized, cwd)
+    process = streaming_process(normalized, cwd, env=env)
     streams = start_stream_drains(process)
     write_process_input(process, input_text)
     try:
@@ -384,6 +385,8 @@ class StreamDrains:
 def streaming_process(
     command: tuple[str, ...],
     cwd: Path,
+    *,
+    env: Mapping[str, str] | None = None,
 ) -> subprocess.Popen[str]:
     """Start one session-isolated process with all standard pipes."""
 
@@ -396,6 +399,7 @@ def streaming_process(
         text=True,
         start_new_session=True,
         bufsize=1,
+        env=dict(env) if env is not None else None,
     )
 
 

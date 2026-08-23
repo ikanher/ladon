@@ -25,6 +25,7 @@ from ladon.lean_runtime import (
     execute_lean_runtime,
 )
 from ladon.process_supervisor import run_target_process
+from ladon.semantic_lean_execution import prepare_direct_lean_execution
 
 DEFAULT_HELPER = Path(str(resources.files("ladon").joinpath("lean", "ladon_parser_helper.lean")))
 HelperRunner = Callable[[Path, Path, Path], dict[str, Any]]
@@ -156,9 +157,16 @@ def run_helper(repo_root: Path, file_path: Path, helper_path: Path) -> dict[str,
     """Invoke the legacy single-file helper with a finite supervised deadline."""
 
     relative = str(file_path.relative_to(repo_root))
+    execution = prepare_direct_lean_execution(
+        repo_root,
+        module_name(repo_root, file_path),
+        None,
+        require_compiled_module=True,
+    )
     result = run_target_process(
-        ["lake", "env", "lean", "--run", str(helper_path), "--", relative],
+        [*execution.command, "--run", str(helper_path), "--", relative],
         cwd=repo_root,
+        env=execution.environment,
         timeout_seconds=DEFAULT_LEAN_BATCH_TIMEOUT_SECONDS,
     )
     if not result.succeeded:

@@ -12,6 +12,7 @@ from typing import Any
 
 from ladon.ir import LeanTextDeclaration
 from ladon.process_supervisor import ProcessCancelled, run_bounded_target_process
+from ladon.semantic_lean_execution import prepare_direct_lean_execution
 from ladon.target_build import (
     TargetPreflightError,
     validate_compiled_state,
@@ -150,6 +151,15 @@ def _run_exact_helper(
     max_rss_bytes: int | None,
     cancel_event: threading.Event | None,
 ) -> dict[str, Any]:
+    try:
+        execution = prepare_direct_lean_execution(
+            repo_root,
+            entry.module,
+            None,
+            require_compiled_module=True,
+        )
+    except ValueError as exc:
+        raise CapsuleOperationalError(str(exc)) from exc
     with tempfile.TemporaryDirectory(prefix="ladon-theorem-plan-") as temporary:
         module_file = Path(temporary) / "repository-modules.txt"
         module_file.write_text(
@@ -158,9 +168,7 @@ def _run_exact_helper(
         )
         process = run_bounded_target_process(
             [
-                "lake",
-                "env",
-                "lean",
+                *execution.command,
                 "--run",
                 str(helper_path),
                 entry.module,
@@ -169,6 +177,7 @@ def _run_exact_helper(
                 str(module_file),
             ],
             cwd=repo_root,
+            env=execution.environment,
             timeout_seconds=timeout_seconds,
             max_output_bytes=HELPER_OUTPUT_LIMIT_BYTES,
             max_rss_bytes=max_rss_bytes,

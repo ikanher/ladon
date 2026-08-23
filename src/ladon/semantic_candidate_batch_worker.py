@@ -48,6 +48,10 @@ from ladon.semantic_candidate_worker import (
     _validate_worker_modules,
     _validate_worker_subject,
 )
+from ladon.semantic_lean_execution import (
+    DirectLeanPreflightError,
+    prepare_direct_lean_execution,
+)
 from ladon.semantic_local_context import (
     goal_with_local_context,
     validate_observed_local_context,
@@ -99,17 +103,15 @@ def check_semantic_candidates(
     with tempfile.TemporaryDirectory(prefix="ladon-semantic-batch-") as directory:
         probe_path = Path(directory) / "Probe.lean"
         probe_path.write_text(source, encoding="utf-8")
-        command = (
-            (str(request.toolchain.lake_path), "env", str(request.toolchain.lean_path))
-            if request.toolchain is not None
-            else ("lake", "env", "lean")
-        )
         try:
+            execution = prepare_direct_lean_execution(
+                request.repo_root, request.module, request.toolchain
+            )
             helper_identity = _digest_file(helper_path)
             if request.toolchain is not None:
                 verify_toolchain_identities(request.toolchain)
             process = runner(
-                command
+                execution.command
                 + (
                     "--run",
                     str(helper_path),
@@ -124,7 +126,7 @@ def check_semantic_candidates(
                     *candidates,
                 ),
                 cwd=request.repo_root,
-                env=(request.toolchain.environment if request.toolchain else None),
+                env=execution.environment,
                 timeout_seconds=request.timeout_seconds,
                 max_output_bytes=request.max_output_bytes,
                 max_rss_bytes=request.max_rss_bytes,
@@ -135,6 +137,11 @@ def check_semantic_candidates(
             if _digest_file(helper_path) != helper_identity:
                 raise LeanToolchainError("semantic helper identity changed during execution")
         except LeanToolchainError as error:
+            if isinstance(error, DirectLeanPreflightError):
+                return SemanticCandidateBatchCheck(
+                    "failed-checker",
+                    diagnostic={"code": error.code, "message": str(error)},
+                )
             return SemanticCandidateBatchCheck(
                 "invalid-worker-output",
                 diagnostic={"code": "toolchain-identity-changed", "message": str(error)},

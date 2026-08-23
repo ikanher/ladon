@@ -100,3 +100,74 @@ def test_nested_lean_source_is_part_of_source_tree_identity(tmp_path: Path) -> N
 
     with pytest.raises(LeanToolchainError, match="source tree identity changed"):
         verify_toolchain_identities(context)
+
+
+def test_git_ignored_tree_is_outside_source_identity(tmp_path: Path) -> None:
+    import subprocess
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / ".gitignore").write_text("temp/\n", encoding="utf-8")
+    (tmp_path / "lean-toolchain").write_text(
+        "leanprover/lean4:v4.20.0\n", encoding="utf-8"
+    )
+    source = tmp_path / "Project.lean"
+    source.write_text("def visible := true\n", encoding="utf-8")
+    ignored = tmp_path / "temp" / "logs" / "logs" / "Ignored.lean"
+    ignored.parent.mkdir(parents=True)
+    ignored.write_text("def ignored := true\n", encoding="utf-8")
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", ".gitignore", "lean-toolchain", "Project.lean"],
+        check=True,
+    )
+    lake = _tool(tmp_path / "lake", "Lake version 4.20.0")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+    context = resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+    ignored.write_text("def ignored := false\n", encoding="utf-8")
+
+    verify_toolchain_identities(context)
+
+
+def test_untracked_nested_repository_directory_is_not_treated_as_source_file(
+    tmp_path: Path,
+) -> None:
+    import subprocess
+
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / "lean-toolchain").write_text(
+        "leanprover/lean4:v4.20.0\n", encoding="utf-8"
+    )
+    nested = tmp_path / "src" / "external-project"
+    nested.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", str(nested)], check=True)
+    nested.joinpath("Foreign.lean").write_text("def foreign := true\n", encoding="utf-8")
+    lake = _tool(tmp_path / "lake", "Lake version 4.20.0")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+
+    context = resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+
+    nested.joinpath("Foreign.lean").write_text("def foreign := false\n", encoding="utf-8")
+    verify_toolchain_identities(context)
+
+
+def test_non_git_fallback_prunes_review_and_build_trees(tmp_path: Path) -> None:
+    (tmp_path / "lean-toolchain").write_text(
+        "leanprover/lean4:v4.20.0\n", encoding="utf-8"
+    )
+    source = tmp_path / "Project.lean"
+    source.write_text("def visible := true\n", encoding="utf-8")
+    ignored = tmp_path / "temp" / "packet" / "Ignored.lean"
+    ignored.parent.mkdir(parents=True)
+    ignored.write_text("def ignored := true\n", encoding="utf-8")
+    lake = _tool(tmp_path / "lake", "Lake version 4.20.0")
+    lean = _tool(tmp_path / "lean", "Lean version 4.20.0")
+    context = resolve_toolchain_context(
+        tmp_path,
+        lake_path=lake,
+        lean_path=lean,
+        environment={"PATH": str(tmp_path)},
+    )
+
+    ignored.write_text("def ignored := false\n", encoding="utf-8")
+
+    verify_toolchain_identities(context)

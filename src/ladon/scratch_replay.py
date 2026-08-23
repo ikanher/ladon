@@ -10,6 +10,7 @@ from pathlib import Path
 
 from ladon.lean_toolchain import LeanToolchainContext, verify_toolchain_identities
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
+from ladon.semantic_lean_execution import prepare_direct_lean_execution
 
 
 @dataclass(frozen=True)
@@ -70,13 +71,18 @@ def replay_scratch(
         )
     if isinstance(toolchain, LeanToolchainContext):
         verify_toolchain_identities(toolchain)
+    execution = prepare_direct_lean_execution(
+        repo_root,
+        module,
+        toolchain if isinstance(toolchain, LeanToolchainContext) else None,
+    )
     with tempfile.TemporaryDirectory(prefix="ladon-scratch-") as directory:
         path = Path(directory) / "Scratch.lean"
         path.write_text(source, encoding="utf-8")
         process = runner(
-            (str(toolchain.lake_path), "env", str(toolchain.lean_path), str(path)),
+            execution.command + (str(path),),
             cwd=repo_root,
-            env=toolchain.environment,
+            env=execution.environment,
             timeout_seconds=timeout_seconds,
             max_output_bytes=max_output_bytes,
             max_rss_bytes=max_rss_bytes,

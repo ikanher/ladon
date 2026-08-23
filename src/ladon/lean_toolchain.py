@@ -10,7 +10,7 @@ import json
 import os
 import re
 import shutil
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import MappingProxyType
@@ -21,6 +21,12 @@ _RELEASE = re.compile(r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.]+)?)
 _COMMIT = re.compile(r"\bcommit\s+([0-9a-f]{7,64})\b", re.IGNORECASE)
 PREFLIGHT_TIMEOUT_SECONDS = 10.0
 PREFLIGHT_MAX_OUTPUT_BYTES = 64 * 1024
+SOURCE_LIST_MAX_OUTPUT_BYTES = 16 * 1024 * 1024
+SOURCE_FILE_LIMIT = 100_000
+SOURCE_PATH_BYTE_LIMIT = 4096
+SOURCE_PATH_DEPTH_LIMIT = 64
+SOURCE_FILE_BYTE_LIMIT = 64 * 1024 * 1024
+SOURCE_TOTAL_BYTE_LIMIT = 4 * 1024 * 1024 * 1024
 
 
 class LeanToolchainError(ValueError):
@@ -202,8 +208,80 @@ def _identity(path: Path) -> str:
 
 def _source_tree_identity(root: Path) -> str:
     digest = hashlib.sha256()
-    excluded = {".git", ".lake", "__pycache__", ".pytest_cache"}
-    source_roots = [root / name for name in ("src", "tests", "scripts")]
+    total_bytes = 0
+    paths = _source_material_paths(root)
+    if len(paths) > SOURCE_FILE_LIMIT:
+        raise LeanToolchainError(
+            f"source identity exceeds the {SOURCE_FILE_LIMIT}-file limit"
+        )
+    for relative in paths:
+        path = _safe_source_path(root, relative)
+        if path is None:
+            continue
+        size = path.stat().st_size
+        if size > SOURCE_FILE_BYTE_LIMIT:
+            raise LeanToolchainError(
+                f"source identity file exceeds the byte limit: {relative}"
+            )
+        total_bytes += size
+        if total_bytes > SOURCE_TOTAL_BYTE_LIMIT:
+            raise LeanToolchainError("source identity exceeds the aggregate byte limit")
+        content = path.read_bytes()
+        if len(content) != size:
+            raise LeanToolchainError(
+                f"source identity file changed while being read: {relative}"
+            )
+        encoded = relative.encode()
+        digest.update(len(encoded).to_bytes(8, "big"))
+        digest.update(encoded)
+        digest.update(hashlib.sha256(content).digest())
+    return "sha256:" + digest.hexdigest()
+
+
+def _source_material_paths(root: Path) -> tuple[str, ...]:
+    git = shutil.which("git")
+    if git is not None:
+        result = run_bounded_target_process(
+            (
+                str(Path(git).resolve()),
+                "-C",
+                str(root),
+                "ls-files",
+                "-z",
+                "--cached",
+                "--others",
+                "--exclude-standard",
+            ),
+            cwd=root,
+            env=_source_list_environment(Path(git)),
+            timeout_seconds=PREFLIGHT_TIMEOUT_SECONDS,
+            max_output_bytes=SOURCE_LIST_MAX_OUTPUT_BYTES,
+            max_rss_bytes=256 * 1024 * 1024,
+        )
+        if result.succeeded:
+            return _filter_source_material(result.stdout.split("\0"))
+        if result.output_limited:
+            raise LeanToolchainError("VCS-visible source path list exceeds its byte limit")
+        if "not a git repository" not in result.stderr.lower():
+            detail = (result.stderr or result.stdout).strip() or "git ls-files failed"
+            raise LeanToolchainError(f"cannot enumerate VCS-visible source material: {detail}")
+    return _fallback_source_material_paths(root)
+
+
+def _source_list_environment(git: Path) -> dict[str, str]:
+    environment = {"PATH": str(git.resolve().parent)}
+    for key in ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER"):
+        if key in os.environ:
+            environment[key] = os.environ[key]
+    return environment
+
+
+def _filter_source_material(paths: Iterable[str]) -> tuple[str, ...]:
+    selected = {_validate_source_relative_path(path) for path in paths if path}
+    return tuple(sorted(path for path in selected if _is_source_material(path)))
+
+
+def _is_source_material(relative: str) -> bool:
     config_names = {
         "lean-toolchain",
         "lake-manifest.json",
@@ -211,23 +289,84 @@ def _source_tree_identity(root: Path) -> str:
         "lakefile.toml",
         "lakefile.json",
     }
-    paths = sorted(
-        path
-        for path in root.rglob("*")
-        if path.is_file()
-        and (
-            path.name in config_names
-            or (path.suffix == ".lean" and path.stem not in {"helper", "Probe", "Scratch"})
-            or any(path.is_relative_to(item) for item in source_roots)
-        )
-        and not any(part in excluded for part in path.parts)
+    path = Path(relative)
+    return (
+        path.name in config_names
+        or (path.suffix == ".lean" and path.stem not in {"helper", "Probe", "Scratch"})
+        or path.parts[0] in {"src", "tests", "scripts"}
     )
-    for path in paths:
-        relative = path.relative_to(root).as_posix().encode()
-        digest.update(len(relative).to_bytes(8, "big"))
-        digest.update(relative)
-        digest.update(hashlib.sha256(path.read_bytes()).digest())
-    return "sha256:" + digest.hexdigest()
+
+
+def _validate_source_relative_path(relative: str) -> str:
+    normalized = Path(relative).as_posix()
+    parts = Path(normalized).parts
+    if (
+        not normalized
+        or Path(normalized).is_absolute()
+        or ".." in parts
+        or len(parts) > SOURCE_PATH_DEPTH_LIMIT
+        or len(normalized.encode()) > SOURCE_PATH_BYTE_LIMIT
+    ):
+        raise LeanToolchainError(f"source identity path exceeds safety bounds: {relative!r}")
+    return normalized
+
+
+def _safe_source_path(root: Path, relative: str) -> Path | None:
+    path = root / relative
+    try:
+        resolved = path.resolve(strict=True)
+    except OSError as exc:
+        raise LeanToolchainError(f"cannot read source identity path: {relative}") from exc
+    if path.is_symlink() or not resolved.is_relative_to(root):
+        raise LeanToolchainError(f"source identity path escapes the repository: {relative}")
+    if resolved.is_dir():
+        # Git reports an untracked nested worktree as one directory entry. It
+        # is not part of the owning repository's source-material population.
+        return None
+    if not resolved.is_file():
+        raise LeanToolchainError(f"source identity path is not a regular file: {relative}")
+    return resolved
+
+
+def _fallback_source_material_paths(root: Path) -> tuple[str, ...]:
+    excluded = {
+        ".git",
+        ".lake",
+        ".ladon",
+        ".pytest_cache",
+        "__pycache__",
+        "build",
+        "dist",
+        "temp",
+        "tmp",
+    }
+    selected: list[str] = []
+
+    def fail(error: OSError) -> None:
+        raise LeanToolchainError(f"cannot enumerate source material: {error}") from error
+
+    for current, directories, files in os.walk(
+        root, topdown=True, onerror=fail, followlinks=False
+    ):
+        current_path = Path(current)
+        depth = len(current_path.relative_to(root).parts)
+        directories[:] = sorted(
+            name
+            for name in directories
+            if name not in excluded and not (current_path / name).is_symlink()
+        )
+        if depth >= SOURCE_PATH_DEPTH_LIMIT:
+            directories.clear()
+        for name in sorted(files):
+            relative = (current_path / name).relative_to(root).as_posix()
+            validated = _validate_source_relative_path(relative)
+            if _is_source_material(validated):
+                selected.append(validated)
+                if len(selected) > SOURCE_FILE_LIMIT:
+                    raise LeanToolchainError(
+                        f"source identity exceeds the {SOURCE_FILE_LIMIT}-file limit"
+                    )
+    return tuple(selected)
 
 
 def verify_toolchain_identities(context: LeanToolchainContext) -> None:

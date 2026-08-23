@@ -50,6 +50,10 @@ from ladon.semantic_candidate_protocol import (
 from ladon.semantic_candidate_protocol import (
     validate_worker_subject as _validate_worker_subject,
 )
+from ladon.semantic_lean_execution import (
+    DirectLeanPreflightError,
+    prepare_direct_lean_execution,
+)
 from ladon.semantic_local_context import (
     goal_with_local_context,
     validate_local_context,
@@ -69,6 +73,7 @@ DEFAULT_HELPER = Path(
 MAX_IMPORTED_MODULES = 10_000
 MAX_COMPILED_ENVIRONMENT_BYTES = 4 * 1024 * 1024 * 1024
 MAX_EVIDENCE_FILE_BYTES = 512 * 1024 * 1024
+MAX_FAILURE_DIAGNOSTIC_BYTES = 64 * 1024
 TRUSTED_TARGET_LIMITATION = "Target modules may execute repository-controlled initializers; this observation is authority-scoped to trusted target code."
 ProcessRunner = Callable[..., ProcessResult]
 
@@ -169,6 +174,8 @@ class SemanticCandidateCheck:
             "artifacts": list(self.artifacts),
             "diagnostic": dict(self.diagnostic) if self.diagnostic else None,
             "resourceAccounting": {
+                "scope": "checker-process",
+                "checkerElapsedSeconds": round(self.elapsed_seconds, 6),
                 "elapsedSeconds": round(self.elapsed_seconds, 6),
                 "peakRssBytes": self.peak_rss_bytes,
             },
@@ -198,16 +205,14 @@ def check_semantic_candidate(
     with tempfile.TemporaryDirectory(prefix="ladon-semantic-check-") as directory:
         probe_path = Path(directory) / "Probe.lean"
         probe_path.write_text(source, encoding="utf-8")
-        command = (
-            (str(request.toolchain.lake_path), "env", str(request.toolchain.lean_path))
-            if request.toolchain is not None
-            else ("lake", "env", "lean")
-        )
         try:
+            execution = prepare_direct_lean_execution(
+                request.repo_root, request.module, request.toolchain
+            )
             process = _run_verified_candidate_process(
                 request,
                 runner,
-                command
+                execution.command
                 + (
                     "--run",
                     str(helper_path),
@@ -222,6 +227,7 @@ def check_semantic_candidate(
                 ),
                 helper_path,
                 cancel_event,
+                environment=execution.environment,
                 expected_helper_identity=helper_identity,
             )
         except LeanToolchainError as error:
@@ -317,6 +323,7 @@ def _run_verified_candidate_process(
     helper_path: Path,
     cancel_event: threading.Event | None,
     *,
+    environment: Mapping[str, str] | None = None,
     expected_helper_identity: str | None = None,
 ) -> ProcessResult:
     helper_identity = expected_helper_identity or _digest_file(helper_path)
@@ -327,7 +334,7 @@ def _run_verified_candidate_process(
     process = runner(
         command,
         cwd=request.repo_root,
-        env=(request.toolchain.environment if request.toolchain else None),
+        env=environment,
         timeout_seconds=request.timeout_seconds,
         max_output_bytes=request.max_output_bytes,
         max_rss_bytes=request.max_rss_bytes,
@@ -343,6 +350,14 @@ def _run_verified_candidate_process(
 def _toolchain_identity_failure(
     request: SemanticCandidateRequest, error: LeanToolchainError
 ) -> SemanticCandidateCheck:
+    if isinstance(error, DirectLeanPreflightError):
+        return SemanticCandidateCheck(
+            "failed-checker",
+            diagnostic={"code": error.code, "message": str(error)},
+            evidence_receipt=_receipt_for_check(
+                request, "failed", "failed-checker", "not-assessed"
+            ),
+        )
     return SemanticCandidateCheck(
         "invalid-worker-output",
         diagnostic={"code": "toolchain-identity-changed", "message": str(error)},
@@ -452,7 +467,7 @@ def _failed_check(
         code, status = "checker-memory-limit", "memory-limited"
     else:
         code, status = "checker-failed", "failed-checker"
-    detail = (process.stderr or process.stdout).strip()
+    detail = _process_failure_detail(process)
     return SemanticCandidateCheck(
         status,
         diagnostic={"code": code, "message": detail or code},
@@ -465,6 +480,25 @@ def _failed_check(
             "not-assessed",
         ),
     )
+
+
+def _process_failure_detail(process: ProcessResult) -> str:
+    """Retain Lean's frontend report even when a helper sentinel uses stderr."""
+
+    streams = []
+    for label, value in (("stdout", process.stdout), ("stderr", process.stderr)):
+        bounded = value.strip()
+        if not bounded:
+            continue
+        encoded = bounded.encode()
+        if len(encoded) > MAX_FAILURE_DIAGNOSTIC_BYTES:
+            bounded = encoded[:MAX_FAILURE_DIAGNOSTIC_BYTES].decode(
+                "utf-8", errors="replace"
+            ) + "\n[diagnostic truncated]"
+        streams.append((label, bounded))
+    if len(streams) == 1:
+        return streams[0][1]
+    return "\n".join(f"{label}:\n{value}" for label, value in streams)
 
 
 def _parse_worker_payload(

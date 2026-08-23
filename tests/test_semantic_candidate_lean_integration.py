@@ -244,7 +244,7 @@ def _explicit_fixture_toolchain() -> object:
 
     lean_path = Path(
         subprocess.check_output(
-            ["lake", "env", "which", "lean"], cwd=FIXTURE, text=True
+            ["elan", "which", "lean"], cwd=FIXTURE, text=True
         ).strip()
     )
     return resolve_toolchain_context(
@@ -345,6 +345,18 @@ def _assert_discharge_and_ascii_binding(toolchain: object) -> None:
         )
     )
     assert ascii_goal.status == "accepted"
+
+    exact_constant_equality = check_semantic_candidate(
+        SemanticCandidateRequest(
+            FIXTURE,
+            "LadonFixture",
+            "LadonFixture.Core.value = LadonFixture.Helper.identity LadonFixture.Core.value",
+            "LadonFixture.fixtureUsesCore",
+            timeout_seconds=30,
+            toolchain=toolchain,
+        )
+    )
+    assert exact_constant_equality.status == "accepted"
 
 
 def _assert_post_discharge_scratch(toolchain: object) -> None:

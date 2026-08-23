@@ -29,8 +29,11 @@ def test_scratch_replay_preserves_compiled_or_rejected_outcome(tmp_path: Path) -
         lean_path = tmp_path / "lean"
         environment = MappingProxyType({})
 
-    def runner(*_args: object, **_kwargs: object) -> ProcessResult:
-        return ProcessResult(("lake", "env", "lean"), 0, "ok", "", 0.1)
+    observed: dict[str, object] = {}
+
+    def runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
+        observed["command"] = command
+        return ProcessResult(command, 0, "ok", "", 0.1)
 
     result = replay_scratch(
         repo_root=tmp_path,
@@ -42,6 +45,8 @@ def test_scratch_replay_preserves_compiled_or_rejected_outcome(tmp_path: Path) -
     )
     assert result.status == "compiled"
     assert result.source_digest.startswith("sha256:")
+    assert observed["command"][0] == "lean"  # type: ignore[index]
+    assert "env" not in observed["command"]  # type: ignore[operator]
 
 
 def test_nonzero_scratch_exit_is_process_failure_without_framed_rejection(

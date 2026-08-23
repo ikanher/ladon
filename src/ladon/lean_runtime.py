@@ -28,12 +28,14 @@ from ladon.lean_protocol import (
     ModuleRequest,
     ProtocolFrameError,
 )
+from ladon.lean_toolchain import LeanToolchainError
 from ladon.process_supervisor import (
     ProcessCancelled,
     ProcessResult,
     run_streaming_target_process,
     run_target_process,
 )
+from ladon.semantic_lean_execution import prepare_direct_lean_execution
 
 DEFAULT_LEAN_BATCH_SIZE = 8
 DEFAULT_LEAN_BATCH_TIMEOUT_SECONDS = 120.0
@@ -257,9 +259,13 @@ def resolve_lean_version(
 ) -> str:
     """Resolve Lean identity with a finite supervised command."""
 
+    execution = prepare_direct_lean_execution(
+        repo_root, None, None, require_compiled_module=False
+    )
     result = run_target_process(
-        ["lake", "env", "lean", "--version"],
+        [*execution.command, "--version"],
         cwd=repo_root,
+        env=execution.environment,
         timeout_seconds=LEAN_VERSION_TIMEOUT_SECONDS,
         cancel_event=cancel_event,
     )
@@ -310,7 +316,7 @@ def execute_helper_batch(
             "Lean helper batch was cancelled by the caller",
             cancelled=True,
         )
-    except (OSError, ProtocolFrameError) as exc:
+    except (OSError, ProtocolFrameError, LeanToolchainError) as exc:
         return failed_batch_execution(
             collector,
             command,
@@ -328,6 +334,12 @@ def run_batch_process(
 ) -> ProcessResult:
     """Materialize a finite request and supervise the packaged helper."""
 
+    execution = prepare_direct_lean_execution(
+        repo_root,
+        tuple(request.module for request in requests),
+        None,
+        require_compiled_module=True,
+    )
     with tempfile.NamedTemporaryFile(
         mode="w",
         encoding="utf-8",
@@ -336,9 +348,7 @@ def run_batch_process(
         request_file.write(BatchRequest(tuple(requests)).to_json())
         request_file.flush()
         command = [
-            "lake",
-            "env",
-            "lean",
+            *execution.command,
             "--run",
             str(helper_path),
             "--",
@@ -348,6 +358,7 @@ def run_batch_process(
         return run_streaming_target_process(
             command,
             cwd=repo_root,
+            env=execution.environment,
             timeout_seconds=config.timeout_seconds,
             input_text="",
             stdout_line_validator=collector.feed_line,
@@ -509,8 +520,6 @@ def helper_command_shape() -> list[str]:
     """Return a redacted but replay-informative helper command shape."""
 
     return [
-        "lake",
-        "env",
         "lean",
         "--run",
         "<packaged-helper>",

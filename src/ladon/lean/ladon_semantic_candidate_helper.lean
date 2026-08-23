@@ -195,9 +195,14 @@ private def elaborateGoal (env : Environment) (file : String) (fileMap : FileMap
     | .ok termSyntax => pure termSyntax
     | .error message => throw <| IO.userError s!"goal parse failed: {message}"
   let elaborated ← runMetaIO env file fileMap <|
-    Elab.Term.TermElabM.run' (ctx := { errToSorry := false, mayPostpone := false }) <|
-      Elab.Term.elabTermEnsuringType parsed (some (mkSort .zero)) false false <*
-        Elab.Term.synthesizeSyntheticMVarsNoPostponing
+    Elab.Term.TermElabM.run' (ctx := { errToSorry := false, mayPostpone := false }) do
+      let elaborated ←
+        Elab.Term.elabTermEnsuringType parsed (some (mkSort .zero)) false false
+      Elab.Term.synthesizeSyntheticMVarsNoPostponing
+      -- Do not return an expression that refers to assignments owned by this
+      -- temporary TermElabM state. The application check runs in a fresh
+      -- MetaM state and cannot resolve those metavariable identifiers.
+      instantiateMVars elaborated
   -- Standalone term parsing can leave an unconstrained universe metavariable
   -- (for example the universe parameter of `Eq`).  A proposition's operands
   -- live in at least `Type`, so close that otherwise-unobservable parser

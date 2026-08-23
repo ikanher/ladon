@@ -22,6 +22,7 @@ from ladon.declaration_surface import (
 from ladon.extraction import ModuleDiscovery, module_name
 from ladon.ir import ExtractionBundle, LeanAuditQuery, LeanDeclaration
 from ladon.process_supervisor import ProcessCancelled, run_target_process
+from ladon.semantic_lean_execution import prepare_direct_lean_execution
 
 DEFAULT_ELABORATED_HELPER = Path(
     str(resources.files("ladon").joinpath("lean", "ladon_elaborated_helper.lean"))
@@ -157,17 +158,22 @@ def run_elaborated_helper(
     """Run the elaborated helper and parse its JSON suffix."""
 
     relative = str(file_path.relative_to(repo_root))
+    execution = prepare_direct_lean_execution(
+        repo_root,
+        module,
+        None,
+        require_compiled_module=True,
+    )
     process = run_target_process(
         [
-            "lake",
-            "env",
-            "lean",
+            *execution.command,
             "--run",
             str(helper_path),
             module,
             relative,
         ],
         cwd=repo_root,
+        env=execution.environment,
         timeout_seconds=timeout_seconds,
         cancel_event=cancel_event,
     )

@@ -332,11 +332,26 @@ def build_lean_signal_fixture(tmp_path: Path) -> tuple[Path, Path]:
     fake_bin = tmp_path / "lean-signal-bin"
     fake_bin.mkdir()
     lake = fake_bin / "lake"
-    lake.write_text(
+    lake.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    lake.chmod(lake.stat().st_mode | stat.S_IXUSR)
+    lean = fake_bin / "lean"
+    lean.write_text(
         fake_batch_lake_script(lean_signal_payload()),
         encoding="utf-8",
     )
-    lake.chmod(lake.stat().st_mode | stat.S_IXUSR)
+    lean.chmod(lean.stat().st_mode | stat.S_IXUSR)
+    compiled = (
+        repo_root
+        / ".lake"
+        / "build"
+        / "lib"
+        / "lean"
+        / "Pkg"
+        / "Surface"
+        / "Deep.olean"
+    )
+    compiled.parent.mkdir(parents=True, exist_ok=True)
+    compiled.write_bytes(b"installed signal compiled module")
     return repo_root, fake_bin
 
 

@@ -218,13 +218,12 @@ def test_installed_lean_backend_builds_then_uses_fake_helper(
         "header": {"imports": []},
         "commands": [],
     }
-    repo_root, fake_bin = build_fixture(tmp_path, "exit 99")
-    lake = fake_bin / "lake"
-    lake.write_text(
+    repo_root, fake_bin = build_fixture(tmp_path, "exit 0")
+    install_fake_lean_helper(
+        repo_root,
+        fake_bin,
         fake_batch_lake_script(payload),
-        encoding="utf-8",
     )
-    lake.chmod(lake.stat().st_mode | stat.S_IXUSR)
 
     result = run_build(
         repo_root,
@@ -844,10 +843,12 @@ def test_installed_partial_lean_failures_preserve_schema_valid_report(
     mode: str,
     diagnostic: str,
 ) -> None:
-    repo_root, fake_bin = build_fixture(tmp_path, "exit 99")
-    lake = fake_bin / "lake"
-    lake.write_text(failing_batch_lake_script(mode), encoding="utf-8")
-    lake.chmod(lake.stat().st_mode | stat.S_IXUSR)
+    repo_root, fake_bin = build_fixture(tmp_path, "exit 0")
+    install_fake_lean_helper(
+        repo_root,
+        fake_bin,
+        failing_batch_lake_script(mode),
+    )
     output = tmp_path / f"lean-{mode}.json"
 
     result = run_build(
@@ -1010,6 +1011,30 @@ print(json.dumps({{
     "declarations": [],
 }}))
 """
+
+
+def install_fake_lean_helper(
+    repo_root: Path,
+    fake_bin: Path,
+    script: str,
+    *,
+    module: str = "Tiny",
+) -> None:
+    """Install a direct-Lean stand-in and its required compiled module."""
+
+    lean = fake_bin / "lean"
+    lean.write_text(script, encoding="utf-8")
+    lean.chmod(lean.stat().st_mode | stat.S_IXUSR)
+    compiled = (
+        repo_root
+        / ".lake"
+        / "build"
+        / "lib"
+        / "lean"
+        / Path(*module.split("."))
+    ).with_suffix(".olean")
+    compiled.parent.mkdir(parents=True, exist_ok=True)
+    compiled.write_bytes(b"installed fixture compiled module")
 
 
 def environment_with_fake_bin(fake_bin: Path) -> dict[str, str]:
