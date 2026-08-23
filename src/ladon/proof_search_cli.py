@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sqlite3
 import sys
 import time
 from collections.abc import Mapping, Sequence
@@ -59,6 +60,14 @@ from ladon.semantic_candidate_worker import (
     SemanticCandidateRequest,
     check_semantic_candidate,
 )
+from ladon.semantic_evidence_registry import (
+    DEFAULT_MAX_DATABASE_BYTES,
+    SemanticEvidenceRegistry,
+    SemanticEvidenceRegistryError,
+    default_semantic_evidence_registry_path,
+)
+from ladon.semantic_result_delivery import deliver_semantic_result
+from ladon.semantic_result_projection import PROJECTION_NAMES, SemanticProjectionError
 
 
 class ProofSearchArgumentParser(argparse.ArgumentParser):
@@ -128,12 +137,27 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     _add_output_options(evidence)
     evidence.add_argument(
         "kind",
-        choices=("theorem", "artifact", "route", "slice", "alternatives", "triage"),
+        choices=(
+            "theorem",
+            "artifact",
+            "route",
+            "slice",
+            "alternatives",
+            "triage",
+            "semantic-artifact",
+            "semantic-environment",
+            "semantic-check",
+        ),
     )
     evidence.add_argument("name")
     evidence.add_argument("--start")
     evidence.add_argument("--end")
     evidence.add_argument("--limit", type=_bounded_limit, default=100)
+    evidence.add_argument(
+        "--local-id",
+        help="Typed local ID required by semantic-check evidence expansion.",
+    )
+    _add_semantic_registry_options(evidence)
     query.add_argument(
         "--root",
         action="append",
@@ -194,6 +218,7 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
         operations,
         _add_repository_options,
         _add_output_options,
+        _add_semantic_output_options,
         _bounded_limit,
         _positive_integer,
         SUPPORTED_INDEX_SCOPES,
@@ -227,6 +252,7 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     )
     _add_repository_options(candidate)
     _add_output_options(candidate)
+    _add_semantic_output_options(candidate)
     candidate.add_argument("--module", required=True)
     candidate.add_argument("--goal", required=True)
     candidate.add_argument("--candidate", required=True)
@@ -386,7 +412,42 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
         raise ProofSearchIndexError(
             f"unsupported proof-search operation {args.proof_search_operation!r}"
         )
-    return handler(args, repo_root, index_path)
+    payload = handler(args, repo_root, index_path)
+    if args.proof_search_operation in {"check", "discover"}:
+        return _deliver_semantic_payload(args, repo_root, payload)
+    return payload
+
+
+def _deliver_semantic_payload(
+    args: argparse.Namespace,
+    repo_root: Path,
+    payload: Mapping[str, Any],
+) -> Mapping[str, Any]:
+    """Commit evidence before allowing one compact semantic projection to escape."""
+
+    try:
+        return deliver_semantic_result(
+            payload,
+            projection=args.projection,
+            repo_root=repo_root,
+            registry_path=args.evidence_store,
+            max_registry_bytes=args.max_evidence_store_mib * 1024 * 1024,
+        )
+    except (
+        ProofIRV3Error,
+        SemanticEvidenceRegistryError,
+        SemanticProjectionError,
+        sqlite3.Error,
+    ) as error:
+        raise ProofSearchIndexError(
+            str(error),
+            exit_class="operational",
+            code="semantic-evidence-publication-failed",
+            remediation=(
+                "Retry with a writable --evidence-store, increase "
+                "--max-evidence-store-mib, or request --projection audit."
+            ),
+        ) from error
 
 
 def _dispatch_consumers(
@@ -537,8 +598,8 @@ def _dispatch_search(
 def _dispatch_evidence(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
-    import sqlite3
-
+    if args.kind.startswith("semantic-"):
+        return _dispatch_semantic_evidence(args, repo_root)
     path = index_path or default_proof_search_index_path(repo_root)
     with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
         connection.row_factory = sqlite3.Row
@@ -553,6 +614,48 @@ def _dispatch_evidence(
         if args.kind == "triage":
             return proofir_triage_payload(connection, args.limit)
         return _dispatch_stored_derivation(connection, args)
+
+
+def _dispatch_semantic_evidence(
+    args: argparse.Namespace,
+    repo_root: Path,
+) -> Mapping[str, Any]:
+    path = args.evidence_store or default_semantic_evidence_registry_path(repo_root)
+    if not Path(path).is_file():
+        raise ProofSearchIndexError(f"semantic evidence registry not found: {path}")
+    try:
+        registry = SemanticEvidenceRegistry(
+            path,
+            max_database_bytes=args.max_evidence_store_mib * 1024 * 1024,
+        )
+        if args.kind == "semantic-artifact":
+            reference: Mapping[str, Any] = {"artifactRef": args.name}
+            artifact = registry.resolve_artifact(args.name)
+        elif args.kind == "semantic-environment":
+            reference = {"environmentRef": args.name}
+            artifact = registry.resolve_environment(args.name)
+        else:
+            if not args.local_id:
+                raise ProofSearchIndexError("semantic-check evidence requires --local-id")
+            reference = {
+                "artifactRef": args.name,
+                "kind": "check-run",
+                "localId": args.local_id,
+            }
+            resolved = registry.resolve_typed_ref(reference)
+            artifact = resolved["artifact"]
+    except ProofSearchIndexError:
+        raise
+    except (SemanticEvidenceRegistryError, ValueError, sqlite3.Error) as error:
+        raise ProofSearchIndexError(str(error)) from error
+    return {
+        "schema": "ladon-semantic-evidence-expansion-v1",
+        "operation": "semantic-evidence-expansion",
+        "status": "available",
+        "reference": dict(reference),
+        "artifact": artifact,
+        "registry": registry.inspect(),
+    }
 
 
 def _dispatch_stored_derivation(connection: Any, args: argparse.Namespace) -> Mapping[str, Any]:
@@ -652,6 +755,33 @@ def _add_output_options(parser: argparse.ArgumentParser) -> None:
     )
 
 
+def _add_semantic_output_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--projection",
+        choices=PROJECTION_NAMES,
+        default="llm",
+        help=(
+            "Select compact LLM/review output backed by registered evidence, "
+            "or audit for the complete embedded ProofIR payload."
+        ),
+    )
+    _add_semantic_registry_options(parser)
+
+
+def _add_semantic_registry_options(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--evidence-store",
+        type=Path,
+        help="Override the repository-scoped user-cache semantic evidence registry.",
+    )
+    parser.add_argument(
+        "--max-evidence-store-mib",
+        type=_positive_integer,
+        default=DEFAULT_MAX_DATABASE_BYTES // (1024 * 1024),
+        help="Maximum semantic evidence registry size in MiB; defaults to 512.",
+    )
+
+
 def _write_payload(
     payload: Mapping[str, Any],
     *,
@@ -705,6 +835,28 @@ def _render_core_rows(payload: Mapping[str, Any]) -> list[str]:
         lines.extend(_render_query_rows(rows))
         lines.append(f"returned: {payload.get('returned', len(rows))}")
         lines.append(f"truncated: {str(bool(payload.get('truncated'))).lower()}")
+    candidates = payload.get("candidates")
+    if isinstance(candidates, list):
+        lines.extend(_render_semantic_candidates(candidates))
+        lines.append(f"candidates: {len(candidates)}")
+    candidate = payload.get("candidate")
+    if isinstance(candidate, Mapping):
+        lines.extend(_render_semantic_candidates([candidate]))
+    return lines
+
+
+def _render_semantic_candidates(candidates: list[Any]) -> list[str]:
+    lines: list[str] = []
+    for candidate in candidates:
+        if not isinstance(candidate, Mapping):
+            continue
+        check = candidate.get("check")
+        check = check if isinstance(check, Mapping) else {}
+        name = candidate.get("name") or "<unknown>"
+        status = check.get("status", "unknown")
+        application = check.get("applicationTerm")
+        suffix = f" application={application}" if isinstance(application, str) else ""
+        lines.append(f"- {name} [{status}]{suffix}")
     return lines
 
 

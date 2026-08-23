@@ -428,7 +428,7 @@ def _project_request(
             request.get("localContext"), projection, omissions, f"{pointer}/localContext"
         ),
     }
-    for field in ("scope", "freshness"):
+    for field in ("scope", "freshness", "scratchMode"):
         if request.get(field) is not None:
             result[field] = str(request[field])
     roots = request.get("roots")

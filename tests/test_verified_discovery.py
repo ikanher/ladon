@@ -101,6 +101,8 @@ def test_discovery_cli_marks_caller_context_as_unsupported() -> None:
     )
     assert args.proof_search_operation == "discover"
     assert args.local == ["h:Nat"]
+    assert args.projection == "llm"
+    assert args.scratch_mode == "none"
     subparsers = next(
         action for action in parser._actions if isinstance(action, argparse._SubParsersAction)
     )
@@ -243,6 +245,40 @@ def test_discovery_request_identity_does_not_depend_on_checker_outcome() -> None
     rejected = discover_candidates(request, shortlist, lambda _: SemanticCandidateCheck("rejected"))
     assert accepted["requestIdentity"] == rejected["requestIdentity"]
     assert accepted["resultIdentity"] != rejected["resultIdentity"]
+
+
+def test_discovery_identities_bind_shortlist_evidence_and_scratch_policy() -> None:
+    request = DiscoveryRequest(Path("/repo"), "Main", "Nat")
+    shortlist = [{"candidateName": "Main.zero"}]
+
+    def checker(_name: str) -> SemanticCandidateCheck:
+        return SemanticCandidateCheck("accepted")
+
+    explicit = discover_candidates(
+        request,
+        shortlist,
+        checker,
+        shortlist_evidence={"source": "explicit-candidates"},
+    )
+    lexical = discover_candidates(
+        request,
+        shortlist,
+        checker,
+        shortlist_evidence={"source": "type-text-shortlist", "pattern": "Nat"},
+    )
+    advisory = discover_candidates(
+        request,
+        shortlist,
+        checker,
+        lambda _name, _application, _parent: {"status": "compiled"},
+        shortlist_evidence={"source": "explicit-candidates"},
+    )
+
+    assert explicit["resultIdentity"] != lexical["resultIdentity"]
+    assert explicit["requestIdentity"] == lexical["requestIdentity"]
+    assert explicit["request"]["scratchMode"] == "none"
+    assert advisory["request"]["scratchMode"] == "advisory"
+    assert explicit["requestIdentity"] != advisory["requestIdentity"]
 
 
 def test_discovery_isolates_batch_and_scratch_failures() -> None:

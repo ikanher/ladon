@@ -265,6 +265,14 @@ class SemanticEvidenceRegistry:
             page_size = int(connection.execute("PRAGMA page_size").fetchone()[0])
             page_count = int(connection.execute("PRAGMA page_count").fetchone()[0])
             max_pages = int(connection.execute("PRAGMA max_page_count").fetchone()[0])
+            counts = {
+                label: int(connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0])
+                for label, table in (
+                    ("artifacts", "artifacts"),
+                    ("environments", "environments"),
+                    ("typedRefs", "typed_refs"),
+                )
+            }
             return {
                 "schema": REGISTRY_SCHEMA,
                 "schemaVersion": REGISTRY_SCHEMA_VERSION,
@@ -278,6 +286,7 @@ class SemanticEvidenceRegistry:
                 "maxPageCount": max_pages,
                 "databaseBytes": page_size * page_count,
                 "databaseByteLimit": self.max_database_bytes,
+                "counts": counts,
             }
         finally:
             connection.close()

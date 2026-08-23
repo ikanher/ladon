@@ -25,6 +25,7 @@ def register_discover_parser(
     operations: Any,
     add_repository_options: Any,
     add_output_options: Any,
+    add_semantic_output_options: Any,
     bounded_limit: Any,
     positive_integer: Any,
     scopes: Any,
@@ -34,6 +35,7 @@ def register_discover_parser(
     )
     add_repository_options(discover)
     add_output_options(discover)
+    add_semantic_output_options(discover)
     discover.add_argument("--module", required=True)
     discover.add_argument("--goal", required=True)
     discover.add_argument("--candidate", action="append", default=[])
@@ -57,6 +59,15 @@ def register_discover_parser(
     discover.add_argument("--toolchain-mode", choices=("ambient", "explicit"), default="ambient")
     discover.add_argument("--lake-path", type=Path)
     discover.add_argument("--lean-path", type=Path)
+    discover.add_argument(
+        "--scratch-mode",
+        choices=("none", "advisory"),
+        default="none",
+        help=(
+            "Skip scratch replay by default, or run at most one independently "
+            "attributed advisory replay."
+        ),
+    )
 
 
 def dispatch_discover(
@@ -104,15 +115,19 @@ def dispatch_discover(
         if not args.pattern:
             raise ProofSearchIndexError("discover requires --candidate or --pattern")
         rows, shortlist_evidence = _type_text_shortlist(args, repo_root, index_path)
-    payload = discover_candidates(
+    scratch_replayer = (
+        semantic_scratch_replayer(request, toolchain)
+        if args.scratch_mode == "advisory"
+        else None
+    )
+    return discover_candidates(
         request,
         rows,
         semantic_checker(request, toolchain),
-        semantic_scratch_replayer(request, toolchain),
+        scratch_replayer,
         lambda names: _batch_results(request, names, toolchain),
+        shortlist_evidence=shortlist_evidence,
     )
-    payload["shortlist"] = shortlist_evidence
-    return payload
 
 
 def _type_text_shortlist(

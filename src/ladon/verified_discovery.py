@@ -159,6 +159,8 @@ def discover_candidates(
     checker: Checker,
     scratch_replayer: ScratchReplayer | None = None,
     batch_checker: BatchChecker | None = None,
+    *,
+    shortlist_evidence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Check a bounded shortlist and retain every candidate outcome."""
     bounded = [
@@ -176,7 +178,8 @@ def discover_candidates(
             int(candidate.shortlist.get("shortlistOrdinal", 0)),
         ),
     )
-    request_payload = _request_payload(request)
+    scratch_mode = "advisory" if scratch_replayer is not None else "none"
+    request_payload = _request_payload(request, scratch_mode=scratch_mode)
     payload: dict[str, Any] = {
         "schema": DISCOVERY_SCHEMA,
         "operation": "discover",
@@ -184,6 +187,7 @@ def discover_candidates(
         "request": request_payload,
         "requestIdentity": _identity(request_payload),
         "candidates": [candidate.as_dict() for candidate in ranked],
+        "shortlist": dict(shortlist_evidence or {"source": "caller-provided"}),
         "batch": {
             "protocol": "ladon-verified-discovery-v1",
             "sequence": list(range(len(candidates))),
@@ -191,6 +195,7 @@ def discover_candidates(
             "goal": request.goal,
             "localContext": [dict(row) for row in request.local_context],
             "executionContextRef": request.execution_context_ref,
+            "scratchMode": scratch_mode,
         },
         "coverage": {
             "shortlisted": len(shortlist),
@@ -266,7 +271,7 @@ def _validate_operation_budget(
         raise ValueError("discovery aggregate process budget exceeds the supported cap")
 
 
-def _request_payload(request: DiscoveryRequest) -> dict[str, Any]:
+def _request_payload(request: DiscoveryRequest, *, scratch_mode: str) -> dict[str, Any]:
     return {
         "schema": "ladon-verified-discovery-request-v1",
         "module": request.module,
@@ -281,6 +286,7 @@ def _request_payload(request: DiscoveryRequest) -> dict[str, Any]:
         "roots": list(request.roots),
         "freshness": request.freshness,
         "executionContextRef": request.execution_context_ref,
+        "scratchMode": scratch_mode,
     }
 
 

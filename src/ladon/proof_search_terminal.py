@@ -65,6 +65,11 @@ def bounded_message(error: BaseException, *, limit: int = 4096) -> str:
 def semantic_payload_failed(operation: str, payload: Mapping[str, Any]) -> bool:
     """Identify semantic result payloads that represent operational failure."""
 
+    coverage = payload.get("coverage")
+    if isinstance(coverage, Mapping) and isinstance(
+        coverage.get("operationalFailure"), bool
+    ):
+        return bool(coverage["operationalFailure"])
     if operation == "check.candidate":
         return payload.get("status") not in _SEMANTIC_TERMINAL_RESULTS
     if operation != "discover":
