@@ -34,9 +34,13 @@ ladon proof-search check candidate --repo-root /path/to/project \
 
 The explicit candidate checker is an experimental proposition-only profile for
 trusted repositories under a selected toolchain. Caller-supplied local context
-is held and `proof-search discover --local` fails closed. Scratch replay is
-advisory process evidence, is attempted at most once per discovery operation,
-and does not promote candidate authority. Non-terminal batch prefixes remain
+is held and `proof-search discover --local` fails closed. The default compact
+`llm` result registers full ProofIR outside the target repository, returns only
+artifact-qualified evidence references, and remains bounded to 8 KiB for a
+direct check or 32 KiB for discovery. `--projection audit` returns the unchanged
+full artifact payload. Scratch replay is disabled by default;
+`--scratch-mode advisory` attempts it at most once per discovery operation and
+does not promote candidate authority. Non-terminal batch prefixes remain
 provisional process observations and cannot be counted, ranked, or replayed as
 semantic outcomes. Exact request bytes are digest-bound to Lean's structural
 goal subject; display spelling is non-authoritative. Shortlist rows remain

@@ -14,7 +14,10 @@
     "alternatives": "ladon proof-search evidence alternatives ARTIFACT_ID --end STATEMENT",
     "coverage": "ladon proof-search evidence theorem NAME",
     "diagnostics": "ladon proof-search search type-text --pattern PATTERN --diagnostic-limit N",
-    "explicitCandidateCheck": "ladon proof-search check candidate --repo-root REPO --module MODULE --goal GOAL --candidate DECLARATION --format json"
+    "explicitCandidateCheck": "ladon proof-search check candidate --repo-root REPO --module MODULE --goal GOAL --candidate DECLARATION --format json",
+    "fullCandidateAudit": "ladon proof-search check candidate --repo-root REPO --module MODULE --goal GOAL --candidate DECLARATION --projection audit --format json",
+    "semanticArtifactExpansion": "ladon proof-search evidence semantic-artifact ARTIFACT_REF --repo-root REPO",
+    "semanticCheckExpansion": "ladon proof-search evidence semantic-check CHECK_ARTIFACT_REF --local-id CHECK_LOCAL_ID --repo-root REPO"
   },
   "output": {
     "jsonSelection": "proof-search commands use --format json; proofir artifact commands emit canonical JSON",
@@ -24,7 +27,9 @@
       "validation": "ladon-proofir-validate-result-v1",
       "inspection": "ladon-proofir-inspect-result-v1",
       "canonicalization": "canonical native ProofIR 3.0 artifact",
-      "semanticCandidateCheck": "ladon-semantic-candidate-check-result-v1",
+      "semanticCandidateCheck": "ladon-semantic-candidate-projection-v1 by default; ladon-semantic-candidate-check-result-v1 with --projection audit",
+      "verifiedDiscovery": "ladon-verified-discovery-projection-v1 by default; ladon-verified-discovery-result-v1 with --projection audit",
+      "semanticEvidenceExpansion": "ladon-semantic-evidence-expansion-v1",
       "proofSearchTerminal": "ladon-proof-search-terminal-v1",
       "artifactTerminal": "ladon-proofir-terminal-v1"
     },
@@ -32,12 +37,13 @@
     "limits": "every command has bounded rows, input/output, deadline, process, or database limits",
     "progress": "--progress writes bounded ladon-proof-search-progress-v1 or ladon-proofir-progress-v1 phase records to stderr",
     "cleanup": "file outputs publish atomically and remove temporary files on failure or interruption",
-    "partial": "partial or unavailable results carry status, coverage, omissions, and nonclaim fields"
+    "partial": "partial or unavailable results carry status, coverage, omissions, and nonclaim fields",
+    "compactEvidence": "llm/review projections are emitted only after exact ProofIR is stored outside the target repository and every environment/check reference re-resolves; audit preserves embedded artifacts"
   },
   "checkerPolicy": {
     "implicitExecution": "stored, lexical, dossier, route, slice, and alternative queries never start Lean",
     "acceptedScope": "the v1 explicit checker applies one declaration to one closed goal; a closed application emits a derivation, while remaining premises emit typed substitutions, residuals, context, and an incomplete attempt-log",
-    "failurePublication": "timeout, rejection, malformed helper output, and resource limits publish no accepted semantic artifacts",
+    "failurePublication": "timeout, malformed helper output, and resource limits publish no accepted semantic artifacts; attributable semantic rejection may publish a rejected check-run observation but never an accepted derivation",
     "authority": "the Lean helper emits semantic facts; the Python supervisor owns process, output, executable, helper, and resource observations and creates the check-run"
   },
   "inputPolicy": {

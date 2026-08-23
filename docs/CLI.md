@@ -292,11 +292,35 @@ ladon proof-search check candidate \
   --format json
 ```
 
+The installed command defaults to `--projection llm`. Before stdout is
+published, Ladon commits the exact ProofIR artifacts to a separate
+repository-scoped user-cache SQLite registry and re-resolves every emitted
+environment and check-run reference. The compact direct result is capped at
+8 KiB; compact discovery is capped at 32 KiB. Select `--projection review` for
+more bounded diagnostic detail or `--projection audit` for the unchanged full
+embedded result. Override registry location and capacity with
+`--evidence-store` and `--max-evidence-store-mib`.
+
+Expand compact references without rebuilding the lexical index or starting
+Lean:
+
+```bash
+ladon proof-search evidence semantic-artifact ARTIFACT_REF --repo-root /path/to/project
+ladon proof-search evidence semantic-environment ENVIRONMENT_REF --repo-root /path/to/project
+ladon proof-search evidence semantic-check CHECK_ARTIFACT_REF \
+  --local-id CHECK_LOCAL_ID --repo-root /path/to/project
+```
+
+These commands revalidate stored canonical bytes. Their references locate
+evidence; they do not increase its recorded authority.
+
 This checker is an experimental proposition-goal profile for trusted target
 repositories. Target initializers execute inside the bounded worker. The public
 `discover` workflow rejects caller-supplied local context, does not claim
 arbitrary-`Type` discovery, and treats scratch replay as advisory process
-evidence only. Lexical/type-text shortlists are candidate populations rather
+evidence only. Scratch is disabled by default; `--scratch-mode advisory`
+requests at most one replay and is bound into the discovery request identity.
+Lexical/type-text shortlists are candidate populations rather
 than semantic matches. A non-terminal batch prefix is exposed as a provisional
 process observation: it is not counted as accepted or rejected and cannot
 trigger scratch. Controlled testing uses explicit-pinned toolchains.
@@ -304,12 +328,16 @@ trigger scratch. Controlled testing uses explicit-pinned toolchains.
 The testing profile caps a candidate name at 4 KiB and a module or goal at
 64 KiB. A child timeout cannot exceed 600 seconds, output cannot exceed
 64 MiB, and RSS cannot exceed 64 GiB. Discovery also rejects a projected child
-process budget above 600 seconds, attempts at most one advisory scratch replay,
-and caps its serialized result at 64 MiB. These are safety ceilings rather than
-performance targets; the ordinary defaults are lower.
+process budget above 600 seconds, attempts at most one explicitly selected
+advisory scratch replay, and caps its canonical serialized result at 64 MiB.
+Compact transport has the smaller 8/32 KiB limits above. These are safety
+ceilings rather than performance targets; the ordinary defaults are lower.
 
-On a closed application, `ladon-semantic-candidate-check-result-v1` contains a
-batch-closed environment manifest, check-run, and zero-residual derivation. If
+With `--projection audit`, a closed application returns
+`ladon-semantic-candidate-check-result-v1` containing a batch-closed environment
+manifest, check-run, and zero-residual derivation. The default compact schema is
+`ladon-semantic-candidate-projection-v1`; it carries resolvable environment and
+check-run references without embedding those bodies. If
 Lean applies the candidate but leaves goals, the result is
 `applicable-with-residuals` and contains an incomplete attempt-log with ordered
 substitution, residual-statement, and local-context references; it is not a

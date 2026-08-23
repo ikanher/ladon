@@ -373,9 +373,11 @@ Native ProofIR v3:
   omissions rather than promoting any one row to theorem truth;
 - `ladon proof-search check candidate --module MODULE --goal GOAL --candidate
   DECLARATION --format json` is the explicit Lean boundary for one declaration
-  application against a closed goal. A closed application emits batch-closed
-  environment, check-run, and derivation artifacts; remaining premises emit an
-  incomplete attempt-log with typed substitutions, residuals, and context;
+  application against a closed goal. Its default `llm` projection stores exact
+  ProofIR in a repository-scoped user-cache registry and returns bounded,
+  artifact-qualified references. Use `--projection audit` to embed the complete
+  environment, check-run, and derivation/attempt artifacts; remaining premises
+  remain typed substitutions, residuals, and context rather than a proof;
 - former bridge, surface-bundle, replay, DAG, and witness dialects are rejected.
   Regenerate them at the producer as native v3; Ladon does not convert them.
 
@@ -422,10 +424,18 @@ ladon proof-search search type-text --repo-root . --pattern 'Nat → Nat'
 ladon proof-search explain --repo-root . --goal 'P' --candidate 'lemma'
 ladon proof-search consumers --repo-root . --declaration target
 ladon proof-search constructor --repo-root . --structure Record
+ladon proof-search check candidate --repo-root . --module Project.Owner \
+  --goal 'True' --candidate Project.Owner.proof --format json
+ladon proof-search discover --repo-root . --module Project.Owner \
+  --goal 'True' --pattern 'True' --format json
 ```
 
 JSON results preserve freshness, authority, bounds, omissions, and nonclaims;
 lexical/SQLite shortlist rows are never presented as Lean verification.
+Semantic checks default to compact `llm` output: full artifacts are registered
+outside the target repository and can be expanded with `proof-search evidence
+semantic-artifact`, `semantic-environment`, or `semantic-check`. Discovery does
+not run scratch replay unless `--scratch-mode advisory` is selected.
 
 Run the project-local quality command from this repository:
 
