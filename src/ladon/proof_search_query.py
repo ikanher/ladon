@@ -121,8 +121,17 @@ def _query_declarations(
     _add_exclusions(query, exclusions)
     _add_module_filter(query, modules)
     _add_named_scope_filter(query, scope, roots)
+    exact_key = name_casefold(text) if text and is_exact_name_query(text) else None
+    if exact_key is not None:
+        query.values.append(exact_key)
     query.values.append(limit + 1)
-    rows = [dict(row) for row in connection.execute(_declaration_sql(query), query.values)]
+    rows = [
+        dict(row)
+        for row in connection.execute(
+            _declaration_sql(query, prioritize_exact=exact_key is not None),
+            query.values,
+        )
+    ]
     ranked = _rank_rows(rows, text, min_matched_segments)
     return [_query_row(row) for row in ranked[:limit]], len(ranked) > limit
 
@@ -135,11 +144,19 @@ def _rank_rows(rows: list[dict[str, Any]], text: str | None, minimum: int) -> li
     for row in rows:
         score_data = _row_score(row, terms, text)
         matched = score_data["matched"]
-        if len(matched) < minimum:
+        if len(matched) < minimum and score_data["contribution"] != "exact":
             continue
         row["_rank"] = score_data
         ranked.append(row)
-    ranked.sort(key=lambda row: (-row["_rank"]["score"], str(row.get("candidate_name") or ""), str(row.get("name") or ""), str(row.get("module") or ""), int(row.get("line") or 0)))
+    ranked.sort(
+        key=lambda row: (
+            -row["_rank"]["score"],
+            str(row.get("candidate_name") or ""),
+            str(row.get("name") or ""),
+            str(row.get("module") or ""),
+            int(row.get("line") or 0),
+        )
+    )
     return ranked
 
 
@@ -148,9 +165,17 @@ def _row_score(row: Mapping[str, Any], terms: tuple[str, ...], text: str) -> dic
     candidate = str(row.get("candidate_name", "")).casefold()
     matched = [term for term in terms if term in name or term in candidate]
     specific = [term for term in matched if term not in _GENERIC_TERMS]
-    exact = int(name == text.casefold())
+    folded = name_casefold(text)
+    exact = int(name == folded or candidate == folded)
     score = exact * 10000 + len(specific) * 100 + len(matched) * 10 + int(bool(candidate))
-    return {"score": score, "matchedSegments": sorted(set(matched)), "specificSegments": sorted(set(specific)), "contribution": "exact" if exact else ("specific" if specific else "generic"), "matched": matched, "specific": specific}
+    return {
+        "score": score,
+        "matchedSegments": sorted(set(matched)),
+        "specificSegments": sorted(set(specific)),
+        "contribution": "exact" if exact else ("specific" if specific else "generic"),
+        "matched": matched,
+        "specific": specific,
+    }
 
 
 def _add_text_filter(
@@ -182,11 +207,21 @@ def _add_text_filter(
             query.values.append(name_casefold(text))
         query.values.append(expression)
         return
+    _add_fallback_text_filter(query, text)
+
+
+def _add_fallback_text_filter(query: _DeclarationQuery, text: str) -> None:
+    """Retain exact folded names when the ASCII-oriented FTS has no tokens."""
+
+    exact = is_exact_name_query(text)
+    exact_clause = "d.name_casefold = ? OR " if exact else ""
     query.clauses.append(
-        "(d.candidate_name LIKE ? ESCAPE '\\' OR d.name LIKE ? ESCAPE '\\' "
+        "(" + exact_clause + "d.candidate_name LIKE ? ESCAPE '\\' OR d.name LIKE ? ESCAPE '\\' "
         "OR d.type_text LIKE ? ESCAPE '\\')"
     )
     pattern = f"%{_escape_like(text)}%"
+    if exact:
+        query.values.append(name_casefold(text))
     query.values.extend((pattern, pattern, pattern))
 
 
@@ -238,8 +273,9 @@ def _add_file_filter(query: _DeclarationQuery, roots: tuple[str, ...]) -> None:
     query.values.extend(roots)
 
 
-def _declaration_sql(query: _DeclarationQuery) -> str:
+def _declaration_sql(query: _DeclarationQuery, *, prioritize_exact: bool = False) -> str:
     where = " WHERE " + " AND ".join(query.clauses) if query.clauses else ""
+    exact_order = "(d.name_casefold = ?) DESC, " if prioritize_exact else ""
     return (
         "SELECT d.id, d.name, d.candidate_name, d.namespace, d.kind, d.module, "
         "d.package, d.path, d.line, d.column_number, d.type_text, "
@@ -247,7 +283,9 @@ def _declaration_sql(query: _DeclarationQuery) -> str:
         "d.structure_name FROM "
         + query.table
         + where
-        + " ORDER BY d.candidate_name IS NULL, d.candidate_name, d.module, d.line LIMIT ?"
+        + " ORDER BY "
+        + exact_order
+        + "d.candidate_name IS NULL, d.candidate_name, d.module, d.line LIMIT ?"
     )
 
 
@@ -256,7 +294,10 @@ def _query_row(row: Mapping[str, Any]) -> dict[str, Any]:
 
     ranking = row.get("_rank")
     if isinstance(ranking, dict):
-        ranking = {key: ranking[key] for key in ("score", "matchedSegments", "specificSegments", "contribution")}
+        ranking = {
+            key: ranking[key]
+            for key in ("score", "matchedSegments", "specificSegments", "contribution")
+        }
     return {
         "id": row["id"],
         "name": row["name"],
@@ -354,9 +395,7 @@ def _semantic_tokens(value: str) -> frozenset[str]:
     for raw in _TOKEN_RE.findall(value.replace(".", " ")):
         for underscored in raw.split("_"):
             tokens.update(
-                part.casefold()
-                for part in _CAMEL_BOUNDARY_RE.split(underscored)
-                if len(part) > 1
+                part.casefold() for part in _CAMEL_BOUNDARY_RE.split(underscored) if len(part) > 1
             )
     return frozenset(tokens)
 
