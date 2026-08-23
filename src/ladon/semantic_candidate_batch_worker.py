@@ -212,9 +212,10 @@ def _validate_batch_candidates(candidates: Sequence[str]) -> None:
     ):
         raise ValueError("semantic candidate batch contains invalid or duplicate candidates")
     encoded_sizes = [len(candidate.encode("utf-8")) for candidate in candidates]
-    if any(size > MAX_SEMANTIC_CANDIDATE_BYTES for size in encoded_sizes) or sum(
-        encoded_sizes
-    ) > MAX_SEMANTIC_BATCH_BYTES:
+    if (
+        any(size > MAX_SEMANTIC_CANDIDATE_BYTES for size in encoded_sizes)
+        or sum(encoded_sizes) > MAX_SEMANTIC_BATCH_BYTES
+    ):
         raise ValueError("semantic candidate batch exceeds the supported transport byte cap")
 
 
@@ -443,9 +444,8 @@ def _validate_batch_toolchain_identity(
 ) -> None:
     if request.toolchain is None:
         return
-    if (
-        request.toolchain.selection_mode == "explicit"
-        and not _same_executable_identity(Path(str(payload["executablePath"])), request.toolchain)
+    if request.toolchain.selection_mode == "explicit" and not _same_executable_identity(
+        Path(str(payload["executablePath"])), request.toolchain
     ):
         raise ValueError("Lean semantic helper returned a foreign batch executable path")
     expected = request.toolchain.pin_content.rsplit(":v", 1)[-1]
@@ -457,7 +457,10 @@ def _validate_batch_toolchain_identity(
     )
     if versions != {expected}:
         raise ValueError("Lean semantic helper returned an unbound batch Lean version")
-    if request.toolchain.lean_commit is not None and str(payload.get("leanCommit", "")).lower() != request.toolchain.lean_commit:
+    if (
+        request.toolchain.lean_commit is not None
+        and str(payload.get("leanCommit", "")).lower() != request.toolchain.lean_commit
+    ):
         raise ValueError("Lean semantic helper returned an unbound batch Lean commit")
 
 
@@ -620,8 +623,13 @@ def _materialize_partial_row(
     )
     observed_row = {**row, "processOutcome": _partial_process_outcome(process)}
     check_artifact = _batch_check_artifact(
-        candidate_request, environment, check_ref, observed_row, receipt,
-        helper_path=helper_path, process=process,
+        candidate_request,
+        environment,
+        check_ref,
+        observed_row,
+        receipt,
+        helper_path=helper_path,
+        process=process,
     )
     validate_envelope_batch([dict(environment), check_artifact])
     return {
@@ -743,7 +751,13 @@ def _materialize_batch_row(
     observed_row = {**row, "localContext": list(payload["localContext"])}
     if row["status"] != "rejected":
         single = _single_payload(payload, row)
-        artifacts = _accepted_artifacts(candidate_request, helper_path, process, single)
+        artifacts = _accepted_artifacts(
+            candidate_request,
+            helper_path,
+            process,
+            single,
+            environment_artifact=environment,
+        )
         validate_envelope_batch(list(artifacts))
         receipt = artifacts[1]["extensions"]["ladon.process-observation/v1"]["evidenceReceipt"]
         return {
@@ -780,6 +794,7 @@ def _materialize_batch_row(
         process,
         rejection_payload,
         helper_identity=_digest_file(helper_path),
+        environment_artifact=environment,
     )
     validate_envelope_batch(list(artifacts))
     return {
@@ -834,7 +849,9 @@ def _batch_check_artifact(
     helper_digest = _digest_file(helper_path) if helper_path is not None else digest
     executable_digest = (
         _digest_file(Path(str(process.command[2])))
-        if process is not None and len(process.command) > 2 and Path(str(process.command[2])).is_file()
+        if process is not None
+        and len(process.command) > 2
+        and Path(str(process.command[2])).is_file()
         else digest
     )
     artifact = _envelope(
@@ -863,23 +880,15 @@ def _batch_check_artifact(
                 }
             ],
             "outputs": {
-                "stdoutDigest": (
-                    _digest_text(process.stdout) if process is not None else digest
-                ),
-                "stderrDigest": (
-                    _digest_text(process.stderr) if process is not None else digest
-                ),
+                "stdoutDigest": (_digest_text(process.stdout) if process is not None else digest),
+                "stderrDigest": (_digest_text(process.stderr) if process is not None else digest),
             },
             "bounds": {
                 "timeoutMs": max(1, int(request.timeout_seconds * 1000)),
                 "maxOutputBytes": request.max_output_bytes,
             },
             "guarantee": {
-                "scope": (
-                    "route"
-                    if authority_basis == "elaborator-check"
-                    else "process-exit"
-                ),
+                "scope": ("route" if authority_basis == "elaborator-check" else "process-exit"),
                 "statement": "This artifact records one bounded batch candidate observation.",
                 "authorityBasis": authority_basis,
             },
@@ -921,5 +930,6 @@ def _single_payload(payload: Mapping[str, Any], row: Mapping[str, Any]) -> dict[
         "residualPremises": row["residualPremises"],
         "localContext": payload["localContext"],
     }
+
 
 __all__ = ["SemanticCandidateBatchCheck", "check_semantic_candidates"]

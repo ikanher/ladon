@@ -4,6 +4,10 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
+import ladon.semantic_candidate_batch_worker as batch_worker
+import ladon.semantic_candidate_worker as candidate_worker
 from ladon.process_supervisor import ProcessResult
 from ladon.semantic_candidate_batch_worker import check_semantic_candidates
 from ladon.semantic_candidate_worker import SEMANTIC_BATCH_PROTOCOL, SemanticCandidateRequest
@@ -54,10 +58,23 @@ def _stream(
     return "\n".join("LADON_FRAME " + json.dumps(frame) for frame in frames)
 
 
-def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: Path) -> None:
+def test_batch_worker_uses_one_framed_process_and_preserves_row_order(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     observed: dict[str, object] = {}
+    environment_calls = 0
     olean = tmp_path / "Main.olean"
     olean.write_bytes(b"compiled")
+
+    original_environment_artifact = candidate_worker._environment_artifact
+
+    def counted_environment_artifact(*args: object, **kwargs: object) -> dict[str, object]:
+        nonlocal environment_calls
+        environment_calls += 1
+        return original_environment_artifact(*args, **kwargs)
+
+    monkeypatch.setattr(batch_worker, "_environment_artifact", counted_environment_artifact)
+    monkeypatch.setattr(candidate_worker, "_environment_artifact", counted_environment_artifact)
 
     def runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
         observed["command"] = command
@@ -129,6 +146,7 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(tmp_path: 
     assert rejected["artifacts"][1]["payload"]["guarantee"]["authorityBasis"] == (
         "elaborator-check"
     )
+    assert environment_calls == 1
     assert "--batch" in observed["command"]  # type: ignore[operator]
 
 

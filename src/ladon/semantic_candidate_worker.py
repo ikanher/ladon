@@ -97,9 +97,7 @@ class SemanticCandidateRequest:
         _validate_request_identity(self.module, self.candidate)
         _validate_request_goal(self.goal)
         validate_transport_text(self.module, self.goal, self.candidate)
-        validate_semantic_bounds(
-            self.timeout_seconds, self.max_output_bytes, self.max_rss_bytes
-        )
+        validate_semantic_bounds(self.timeout_seconds, self.max_output_bytes, self.max_rss_bytes)
         validate_local_context(
             self.local_context,
             valid_name=_valid_local_name,
@@ -222,8 +220,8 @@ def check_semantic_candidate(
                     _goal_request_digest(request),
                     probe_name,
                     request.candidate,
-                request_id,
-                _execution_context_ref(request),
+                    request_id,
+                    _execution_context_ref(request),
                 ),
                 helper_path,
                 cancel_event,
@@ -492,9 +490,10 @@ def _process_failure_detail(process: ProcessResult) -> str:
             continue
         encoded = bounded.encode()
         if len(encoded) > MAX_FAILURE_DIAGNOSTIC_BYTES:
-            bounded = encoded[:MAX_FAILURE_DIAGNOSTIC_BYTES].decode(
-                "utf-8", errors="replace"
-            ) + "\n[diagnostic truncated]"
+            bounded = (
+                encoded[:MAX_FAILURE_DIAGNOSTIC_BYTES].decode("utf-8", errors="replace")
+                + "\n[diagnostic truncated]"
+            )
         streams.append((label, bounded))
     if len(streams) == 1:
         return streams[0][1]
@@ -548,7 +547,10 @@ def _validate_rejected_worker_payload(
         raise ValueError("Lean semantic helper returned a mismatched goal request digest")
     if payload["frameVersion"] != 1 or payload["sequence"] != 0 or payload["terminal"] is not True:
         raise ValueError("Lean semantic helper returned an invalid terminal rejection frame")
-    if payload["universePolicy"] != UNIVERSE_POLICY or payload["candidateName"] != request.candidate:
+    if (
+        payload["universePolicy"] != UNIVERSE_POLICY
+        or payload["candidateName"] != request.candidate
+    ):
         raise ValueError("Lean semantic helper returned a mismatched rejection subject")
     if payload["status"] != "rejected" or payload["failureStage"] not in {
         "candidate-name-invalid",
@@ -628,8 +630,7 @@ def _validate_worker_collections(payload: Mapping[str, Any]) -> None:
 def _same_executable_identity(path: Path, toolchain: LeanToolchainContext) -> bool:
     try:
         return (
-            path.resolve() == toolchain.lean_path
-            or _digest_file(path) == toolchain.lean_identity
+            path.resolve() == toolchain.lean_path or _digest_file(path) == toolchain.lean_identity
         )
     except OSError:
         return False
@@ -671,9 +672,8 @@ def _validate_worker_identity(
     _validate_worker_modules(payload.get("importedModules"), request.module)
     if request.toolchain is not None:
         reported_executable = Path(str(payload.get("executablePath")))
-        if (
-            request.toolchain.selection_mode == "explicit"
-            and not _same_executable_identity(reported_executable, request.toolchain)
+        if request.toolchain.selection_mode == "explicit" and not _same_executable_identity(
+            reported_executable, request.toolchain
         ):
             raise ValueError(
                 "Lean semantic helper returned a foreign executable path: "
@@ -688,7 +688,10 @@ def _validate_worker_identity(
         )
         if versions != {expected}:
             raise ValueError("Lean semantic helper returned an unbound Lean version")
-        if request.toolchain.lean_commit is not None and str(payload.get("leanCommit", "")).lower() != request.toolchain.lean_commit:
+        if (
+            request.toolchain.lean_commit is not None
+            and str(payload.get("leanCommit", "")).lower() != request.toolchain.lean_commit
+        ):
             raise ValueError("Lean semantic helper returned an unbound Lean commit")
 
 
@@ -699,8 +702,13 @@ def _accepted_artifacts(
     payload: Mapping[str, Any],
     *,
     helper_identity: str | None = None,
+    environment_artifact: Mapping[str, Any] | None = None,
 ) -> tuple[dict[str, Any], ...]:
-    environment = _environment_artifact(request.repo_root, payload, request.toolchain)
+    environment = (
+        dict(environment_artifact)
+        if environment_artifact is not None
+        else _environment_artifact(request.repo_root, payload, request.toolchain)
+    )
     env_ref = environment["environmentRef"]
     statement = _subject("statement", payload["probe"])
     statement["searchShape"] = {
@@ -769,8 +777,13 @@ def _rejected_artifacts(
     payload: Mapping[str, Any],
     *,
     helper_identity: str,
+    environment_artifact: Mapping[str, Any] | None = None,
 ) -> tuple[tuple[dict[str, Any], ...], dict[str, Any]]:
-    environment = _environment_artifact(request.repo_root, payload, request.toolchain)
+    environment = (
+        dict(environment_artifact)
+        if environment_artifact is not None
+        else _environment_artifact(request.repo_root, payload, request.toolchain)
+    )
     env_ref = str(environment["environmentRef"])
     statement = _subject("statement", payload["probe"])
     declaration = _subject(
@@ -868,7 +881,11 @@ def _environment_artifact(
 ) -> dict[str, Any]:
     module_rows = payload["importedModules"]
     if len(module_rows) > MAX_IMPORTED_MODULES:
-        raise ValueError("Lean semantic environment exceeds the module limit")
+        raise ValueError(
+            "Lean semantic environment reports "
+            f"{len(module_rows):,} imported modules; evidence limit is "
+            f"{MAX_IMPORTED_MODULES:,}"
+        )
     compiled = []
     seen_modules: set[str] = set()
     total_bytes = 0

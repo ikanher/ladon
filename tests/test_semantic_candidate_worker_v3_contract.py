@@ -10,9 +10,11 @@ from ladon.lean_toolchain import resolve_toolchain_context
 from ladon.process_supervisor import ProcessResult
 from ladon.proofir_v3 import validate_envelope_batch
 from ladon.semantic_candidate_worker import (
+    MAX_IMPORTED_MODULES,
     SEMANTIC_PROTOCOL,
     SemanticCandidateCheck,
     SemanticCandidateRequest,
+    _environment_artifact,
     check_semantic_candidate,
 )
 
@@ -30,6 +32,18 @@ def test_resource_accounting_names_checker_process_scope() -> None:
         "elapsedSeconds": 1.25,
         "peakRssBytes": 4096,
     }
+
+
+def test_environment_module_limit_diagnostic_reports_observed_and_allowed(
+    tmp_path: Path,
+) -> None:
+    payload = {"importedModules": [{}] * (MAX_IMPORTED_MODULES + 1)}
+
+    with pytest.raises(
+        ValueError,
+        match=r"10,001 imported modules; evidence limit is 10,000",
+    ):
+        _environment_artifact(tmp_path, payload)
 
 
 def _accepted_payload(tmp_path: Path) -> dict[str, Any]:
@@ -234,7 +248,11 @@ def test_direct_request_uses_shared_typed_resource_caps(
 ) -> None:
     with pytest.raises((TypeError, ValueError), match="semantic check"):
         SemanticCandidateRequest(
-            tmp_path, "Main", "Nat", "Main.value", **kwargs  # type: ignore[arg-type]
+            tmp_path,
+            "Main",
+            "Nat",
+            "Main.value",
+            **kwargs,  # type: ignore[arg-type]
         )
 
 
@@ -242,9 +260,7 @@ def test_direct_request_rejects_oversized_candidate_before_process_launch(
     tmp_path: Path,
 ) -> None:
     with pytest.raises(ValueError, match="candidate.*transport byte cap"):
-        SemanticCandidateRequest(
-            tmp_path, "Main", "Nat", "Main." + ("x" * 100_000)
-        )
+        SemanticCandidateRequest(tmp_path, "Main", "Nat", "Main." + ("x" * 100_000))
 
 
 def test_explicit_toolchain_ignores_path_shadow_and_sanitizes_worker_environment(
