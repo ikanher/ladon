@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "program": "ladon-authority-safe-verified-discovery-umbrella",
+  "sourceEvidence": {
+    "reviewPacket": "temp/ladon-future-directions-review-data-r02.zip",
+    "reviewPacketSha256": "bf3c42311389478b6aa5d7f07e10a7d2d800a61d7141294157c2e8a8ce63a35d",
+    "reviewEvidenceBundle": "temp/ladon_future_r02_review_evidence.zip",
+    "pinnedLadonCommit": "35b7a85",
+    "reproducedDefectFamilies": [
+      "explain-compares-declaration-name-instead-of-indexed-type",
+      "type-text-scope-is-ignored",
+      "verified-freshness-is-echoed-not-established",
+      "toolchain-preflight-environment-differs-from-worker",
+      "authority-projection-allows-ambient-or-absent-promotion"
+    ]
+  },
+  "releaseInvariant": "No candidate is authority-safe until both correctness and execution-authority repair children pass their complete installed gates from that same tracked candidate.",
+  "evidenceInvariant": "Execution binding, observation state, operation outcome, source freshness, environment match, authority basis, and analysis completeness remain independent and non-escalating through every projection.",
+  "discoveryInvariant": "A discovery result may claim applicability only for an exact goal, local context, candidate, execution context, and recorded Lean operation; lexical evidence remains shortlist or structural explanation evidence.",
+  "freezeInvariant": "New ProofIR families, Rust parity ownership, daemon protocols, broad service refactors, and optional-layer expansion remain off the critical path until the authority-safe gate and vertical discovery slice exit.",
+  "tddInvariant": "Every reproduced failure is captured as repository-owned red portable and installed evidence before production edits, and every promotion claim names executable candidate evidence.",
+  "existingOwners": [
+    {
+      "owner": "ladon-first-hand-proof-search-hardening-umbrella",
+      "concern": "proof-search SQLite, binder explanation, scope, coverage, operational release"
+    },
+    {
+      "owner": "ladon-proofir-local-integrity-hardening-umbrella",
+      "concern": "stack safety, identity domains, toolchain selection, authority and completeness"
+    },
+    {
+      "owner": "proofir-observation-authority-and-coverage-core",
+      "concern": "canonical evidence dimensions, observations, coverage, limitations"
+    },
+    {
+      "owner": "proofir-derivation-hypergraph-semantics",
+      "concern": "bounded derivation algorithms and graph-query nonclaims"
+    },
+    {
+      "owner": "ladon-cli-execution-contract",
+      "concern": "installed exits, streams, progress, cancellation, output publication"
+    },
+    {
+      "owner": "ladon-alpha-hardening-umbrella",
+      "concern": "clean-candidate technical release evidence"
+    }
+  ],
+  "children": [
+    {
+      "change": "ladon-proof-discovery-correctness-repairs",
+      "capabilitySpec": "specs/ladon-proof-discovery-correctness-repairs/spec.md",
+      "startAfter": [],
+      "integrationDependsOn": [
+        "ladon-first-hand-proof-search-hardening-umbrella",
+        "ladon-cli-execution-contract"
+      ],
+      "enables": [
+        "ladon-authority-safe-release-gate"
+      ],
+      "exitClass": "installed-scope-freshness-and-type-evidence-honest-discovery"
+    },
+    {
+      "change": "ladon-execution-authority-integrity",
+      "capabilitySpec": "specs/ladon-execution-authority-integrity/spec.md",
+      "startAfter": [],
+      "integrationDependsOn": [
+        "ladon-proofir-local-integrity-hardening-umbrella",
+        "proofir-observation-authority-and-coverage-core",
+        "proofir-derivation-hypergraph-semantics",
+        "ladon-cli-execution-contract"
+      ],
+      "enables": [
+        "ladon-authority-safe-release-gate"
+      ],
+      "exitClass": "single-context-secret-safe-non-escalating-evidence-receipts"
+    },
+    {
+      "change": "ladon-authority-safe-release-gate",
+      "capabilitySpec": "specs/ladon-authority-safe-release-gate/spec.md",
+      "startAfter": [
+        "ladon-proof-discovery-correctness-repairs",
+        "ladon-execution-authority-integrity"
+      ],
+      "integrationDependsOn": [
+        "ladon-alpha-hardening-umbrella"
+      ],
+      "enables": [
+        "ladon-verified-discovery-loop"
+      ],
+      "exitClass": "same-candidate-conjunctive-authority-safe-integration"
+    },
+    {
+      "change": "ladon-verified-discovery-loop",
+      "capabilitySpec": "specs/ladon-verified-discovery-loop/spec.md",
+      "startAfter": [
+        "ladon-authority-safe-release-gate"
+      ],
+      "integrationDependsOn": [
+        "ladon-proof-discovery-correctness-repairs",
+        "ladon-execution-authority-integrity"
+      ],
+      "enables": [
+        "ladon-capability-readiness-and-external-evaluation"
+      ],
+      "exitClass": "installed-bounded-goal-context-to-attributable-compiled-application"
+    },
+    {
+      "change": "ladon-capability-readiness-and-external-evaluation",
+      "capabilitySpec": "specs/ladon-capability-readiness-and-external-evaluation/spec.md",
+      "startAfter": [
+        "ladon-verified-discovery-loop"
+      ],
+      "integrationDependsOn": [
+        "ladon-authority-safe-release-gate",
+        "ladon-portable-benchmark-fixtures-and-signal-oracles"
+      ],
+      "enables": [],
+      "exitClass": "machine-evidenced-held-out-capability-readiness"
+    }
+  ]
+}

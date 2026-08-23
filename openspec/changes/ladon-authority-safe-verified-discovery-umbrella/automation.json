@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-authority-safe-verified-discovery-umbrella",
+  "commands": [
+    "openspec validate ladon-authority-safe-verified-discovery-umbrella --strict",
+    "uv run --locked pytest -q tests/test_proof_difference.py tests/test_proof_search_type.py tests/test_proof_search_installed_v3_contract.py",
+    "uv run --locked pytest -q tests/test_lean_toolchain.py tests/test_semantic_candidate_security_contract.py tests/test_semantic_candidate_worker_v3_contract.py tests/test_proofir_result_dimensions.py tests/test_proofir_projection_corpus.py tests/test_proofir_derivation_queries.py",
+    "uv run --locked python scripts/generate_supported_feature_matrix.py --verify-tests",
+    "uv run --locked python scripts/installed_distribution_smoke.py --candidate worktree",
+    "uv run --locked python scripts/python_quality.py --strict",
+    "git diff --check"
+  ]
+}
