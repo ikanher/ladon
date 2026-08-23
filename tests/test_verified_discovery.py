@@ -47,6 +47,34 @@ def test_scratch_check_artifact_owns_its_check_run_subject() -> None:
     validate_envelope_batch([environment, artifact])
 
 
+@pytest.mark.parametrize(
+    "status", ["timeout", "output-limited", "memory-limited", "process-failed"]
+)
+def test_scratch_check_artifact_records_exact_supervised_failure_status(
+    status: str,
+) -> None:
+    environment = environment_artifact()
+    artifact = _scratch_check_artifact(
+        DiscoveryRequest(Path("/repo"), "Main", "Nat"),
+        "Main.value",
+        "check:" + "d" * 64,
+        environment,
+        {
+            "status": status,
+            "sourceDigest": "sha256:" + "b" * 64,
+            "outputDigest": "sha256:" + "c" * 64,
+            "applicationTerm": "Main.value",
+            "diagnostic": "bounded failure",
+        },
+        {"schema": "fixture-receipt"},
+        None,
+    )
+
+    diagnostics = artifact["payload"]["results"][0]["diagnostics"]
+    assert diagnostics[0]["stage"] == "scratch"
+    assert diagnostics[0]["code"] == status
+
+
 def test_discovery_preserves_accepted_rejected_and_failed_candidates() -> None:
     request = DiscoveryRequest(Path("/repo"), "Main", "Nat", max_candidates=3)
 

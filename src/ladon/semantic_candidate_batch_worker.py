@@ -622,7 +622,11 @@ def _materialize_partial_row(
         str(row["status"]),
         local_context=observed_context,
     )
-    observed_row = {**row, "processOutcome": _partial_process_outcome(process)}
+    observed_row = {
+        **row,
+        "localContext": [dict(item) for item in observed_context],
+        "processOutcome": _partial_process_outcome(process),
+    }
     check_artifact = _batch_check_artifact(
         candidate_request,
         environment,
@@ -821,6 +825,12 @@ def _batch_check_artifact(
     authority_basis = str(receipt.get("authorityBasis", "process-observation"))
     env_ref = str(environment["environmentRef"])
     statement = _synthetic_subject("statement", request.goal)
+    statement["searchShape"] = {
+        "declarationName": request.candidate,
+        "role": "candidate-goal",
+        "module": request.module,
+        "requestGoal": request.goal,
+    }
     declaration = _synthetic_subject("declaration", request.candidate)
     context_rows = row.get("localContext") or row.get("callerLocalContext") or []
     context = _synthetic_subject("local-context", json.dumps(context_rows, sort_keys=True))
@@ -828,13 +838,16 @@ def _batch_check_artifact(
         "orderedLocals": context_rows,
         "origin": "observed-prefix",
     }
-    application_display = str(row.get("applicationTerm") or request.candidate)
+    application_term = row.get("applicationTerm")
+    application_display = str(application_term or request.candidate)
     application = _synthetic_subject("candidate-application", application_display)
     application["searchShape"] = {
-        "applicationTerm": application_display,
+        "candidate": request.candidate,
+        "applicationTerm": application_term,
         "substitutions": row.get("substitutions", []),
         "residualPremises": row.get("residualPremises", []),
         "dischargedHypotheses": row.get("dischargedHypotheses", []),
+        "localContext": context_rows,
         "processOutcome": row.get("processOutcome"),
     }
     residual_subjects = [

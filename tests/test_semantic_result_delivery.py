@@ -1,30 +1,25 @@
 from __future__ import annotations
 
-import copy
 from pathlib import Path
 from typing import Any
 
 import pytest
-from support.proofir_v3_native import check_run_artifact, environment_artifact
+from support.semantic_evidence import semantic_evidence
 
-from ladon.proofir_v3 import detached_content_id, validate_envelope_batch
 from ladon.semantic_evidence_registry import SemanticEvidenceRegistry
 from ladon.semantic_result_delivery import (
     collect_semantic_artifacts,
     deliver_semantic_result,
 )
 from ladon.semantic_result_projection import SemanticProjectionError
+from ladon.verified_discovery import _attach_scratch
 
 
 def _canonical_result() -> dict[str, Any]:
-    environment = environment_artifact()
-    check = copy.deepcopy(check_run_artifact())
-    check["environmentRef"] = environment["environmentRef"]
-    check["payload"]["inputs"]["environmentRef"] = environment["environmentRef"]
-    check["payload"]["inputs"]["artifactRefs"] = [environment["artifactId"]]
-    check["payload"]["checkRunId"] = "check:" + "1" * 64
-    check["artifactId"] = detached_content_id(check)
-    validate_envelope_batch([environment, check])
+    artifacts, _registry, receipt = semantic_evidence(
+        "delivery", candidate="Main.proof"
+    )
+    environment, check = artifacts
     check_run_id = check["payload"]["checkRunId"]
     return {
         "schema": "ladon-semantic-candidate-check-result-v1",
@@ -41,23 +36,7 @@ def _canonical_result() -> dict[str, Any]:
             "kind": "check-run",
             "localId": check_run_id,
         },
-        "evidenceReceipt": {
-            "subject": {
-                "module": "Main",
-                "candidate": "Main.proof",
-                "goal": "True",
-                "localContext": [],
-            },
-            "environmentRef": environment["environmentRef"],
-            "checkRunRef": check_run_id,
-            "executionBinding": "explicit-pinned",
-            "observationState": "live",
-            "operationOutcome": "accepted",
-            "authorityBasis": "elaborator-check",
-            "analysisCompleteness": "complete",
-            "sourceFreshness": "cached-observed",
-            "environmentMatch": "exact",
-        },
+        "evidenceReceipt": receipt,
         "artifacts": [environment, check],
         "diagnostic": None,
         "resourceAccounting": {},
@@ -85,7 +64,7 @@ def test_compact_delivery_registers_and_reresolves_every_reference(tmp_path: Pat
         "checkRunRef"
     ]
     counts = registry.inspect()["counts"]
-    assert counts == {"artifacts": 2, "environments": 1, "typedRefs": 2}
+    assert counts == {"artifacts": 2, "environments": 1, "typedRefs": 4}
 
     repeated = deliver_semantic_result(
         canonical,
@@ -155,6 +134,30 @@ def test_operational_result_without_evidence_needs_no_registry(tmp_path: Path) -
     assert projected["candidate"]["check"]["status"] == "failed-checker"
     assert projected["coverage"]["operationalFailure"] is True
     assert not path.exists()
+
+
+def test_discovery_preserves_nonchecker_scratch_callback_failure(tmp_path: Path) -> None:
+    canonical = _canonical_result()
+
+    def raising_replayer(
+        _candidate: str, _application: str, _parent: dict[str, Any]
+    ) -> dict[str, Any]:
+        raise RuntimeError("callback raised")
+
+    canonical = _attach_scratch(
+        canonical, "Main.proof", raising_replayer, [1]
+    )
+
+    projected = deliver_semantic_result(
+        canonical,
+        projection="llm",
+        repo_root=tmp_path,
+        registry_path=tmp_path / "semantic.sqlite",
+    )
+
+    scratch = projected["candidate"]["check"]["scratch"]
+    assert scratch["status"] == "failed"
+    assert scratch["diagnostic"]["code"] == "scratch-replay-failed"
 
 
 def test_collection_includes_discovery_candidate_and_scratch_artifacts() -> None:

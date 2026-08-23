@@ -23,6 +23,14 @@ def test_candidate_application_is_distinct_from_goal_statement() -> None:
     assert application["kind"] == "candidate-application"
     assert application["localId"] != statement["localId"]
     assert application["fingerprint"]["scheme"]["name"] == "lean-candidate-application"
+    assert application["searchShape"] == {
+        "candidate": "Pkg.rule",
+        "applicationTerm": None,
+        "substitutions": [],
+        "residualPremises": [],
+        "dischargedHypotheses": [],
+        "localContext": [],
+    }
 
 
 def test_application_identity_changes_with_ordered_substitutions_and_context() -> None:

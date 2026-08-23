@@ -14,6 +14,8 @@ from collections import Counter
 from collections.abc import Mapping
 from typing import Any
 
+from ladon._semantic_observation_population import validate_discovery_aggregate
+from ladon.semantic_observation_closure import validate_semantic_observation_population
 from ladon.semantic_projection_cards import (
     candidate_card,
     candidate_status,
@@ -32,7 +34,6 @@ from ladon.semantic_projection_core import (
     SemanticProjectionError,
     identity,
     omit,
-    safe_mapping,
     semantic_projection_bytes,
 )
 from ladon.semantic_projection_fit import finalize_projection
@@ -60,6 +61,7 @@ def project_semantic_result(
         raise SemanticProjectionError(
             "compact semantic projections require a registered artifact resolver"
         )
+    validate_semantic_observation_population(payload, registered_artifacts)
     projected, maximum = _compact_projection(payload, projection, registered_artifacts)
     return finalize_projection(projected, maximum)
 
@@ -213,9 +215,7 @@ def _discovery_coverage(
         status for row in rows if (status := scratch_status(row)) is not None
     )
     return {
-        "canonical": safe_mapping(
-            payload.get("coverage"), projection, omissions, "/coverage/canonical"
-        ),
+        "canonical": validate_discovery_aggregate(payload),
         "candidatePopulation": {
             "observed": len(rows),
             "projected": projected_count,

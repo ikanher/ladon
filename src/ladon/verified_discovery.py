@@ -609,7 +609,7 @@ def _scratch_check_artifact(
     helper_digest = _digest_file(DEFAULT_HELPER) if DEFAULT_HELPER.is_file() else digest
     executable_digest = str(getattr(toolchain, "lean_identity", digest))
     compiled = result.get("status") == "compiled"
-    diagnostic_code = "process-failed"
+    diagnostic_code = str(result.get("status") or "process-failed")
     subject_digest = _identity(
         {
             "candidate": candidate,
@@ -627,6 +627,14 @@ def _scratch_check_artifact(
             "digest": subject_digest,
         },
         "display": candidate,
+        "searchShape": {
+            "candidate": candidate,
+            "module": request.module,
+            "applicationTerm": result.get("applicationTerm", candidate),
+            "goal": request.goal,
+            "localContext": [dict(row) for row in request.local_context],
+            "sourceDigest": result.get("sourceDigest"),
+        },
     }
     check_subject = _check_run_subject(check_ref)
     env_ref = str(environment["environmentRef"])

@@ -835,6 +835,8 @@ def _accepted_artifacts(
     statement["searchShape"] = {
         "declarationName": request.candidate,
         "role": "candidate-goal",
+        "module": request.module,
+        "requestGoal": request.goal,
     }
     declaration = _subject("declaration", payload["candidate"])
     residuals = [_subject("statement", row) for row in payload["residualPremises"]]
@@ -848,6 +850,7 @@ def _accepted_artifacts(
         context,
         payload["dischargedHypotheses"],
         payload.get("applicationTerm"),
+        residual_rows=payload["residualPremises"],
     )
     check = _check_artifact(
         request,
@@ -907,6 +910,12 @@ def _rejected_artifacts(
     )
     env_ref = str(environment["environmentRef"])
     statement = _subject("statement", payload["probe"])
+    statement["searchShape"] = {
+        "declarationName": request.candidate,
+        "role": "candidate-goal",
+        "module": request.module,
+        "requestGoal": request.goal,
+    }
     declaration = _subject(
         "declaration",
         {
@@ -1096,7 +1105,17 @@ def _application_subject(
     context: Mapping[str, Any] | None = None,
     discharged_hypotheses: list[Mapping[str, Any]] | None = None,
     application_term: str | None = None,
+    *,
+    residual_rows: list[Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
+    substitutions_value = [dict(row) for row in (substitutions or [])]
+    discharged_value = [dict(row) for row in (discharged_hypotheses or [])]
+    context_shape = context.get("searchShape") if context is not None else None
+    ordered_locals = (
+        context_shape.get("orderedLocals", [])
+        if isinstance(context_shape, Mapping)
+        else []
+    )
     digest = _digest_bytes(
         canonical_bytes(
             {
@@ -1108,10 +1127,10 @@ def _application_subject(
                         "variable": str(row["variable"]),
                         "termStructural": str(row["termStructural"]),
                     }
-                    for row in (substitutions or [])
+                    for row in substitutions_value
                 ],
                 "localContext": context["localId"] if context is not None else None,
-                "dischargedHypotheses": [dict(row) for row in (discharged_hypotheses or [])],
+                "dischargedHypotheses": discharged_value,
                 "applicationTerm": application_term,
             }
         )
@@ -1124,6 +1143,14 @@ def _application_subject(
             "digest": digest,
         },
         "display": "candidate application",
+        "searchShape": {
+            "candidate": declaration.get("display"),
+            "applicationTerm": application_term,
+            "substitutions": substitutions_value,
+            "residualPremises": [dict(row) for row in (residual_rows or [])],
+            "dischargedHypotheses": discharged_value,
+            "localContext": [dict(row) for row in ordered_locals],
+        },
     }
 
 

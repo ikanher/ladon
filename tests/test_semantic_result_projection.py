@@ -1,11 +1,20 @@
 from __future__ import annotations
 
 import copy
-import hashlib
 from collections.abc import Mapping
 from typing import Any
 
 import pytest
+from support.semantic_evidence import (
+    check_ref as _check_ref,
+)
+from support.semantic_evidence import (
+    digest as _digest,
+)
+from support.semantic_evidence import (
+    semantic_evidence,
+    semantic_receipt,
+)
 
 from ladon.semantic_result_projection import (
     DIRECT_PROJECTION_MAX_BYTES,
@@ -16,85 +25,70 @@ from ladon.semantic_result_projection import (
 )
 
 
-def _digest(label: str) -> str:
-    return "sha256:" + hashlib.sha256(label.encode()).hexdigest()
+def _artifacts(
+    label: str = "main",
+    *,
+    candidate: str | None = None,
+    status: str = "accepted",
+    scratch: bool = False,
+    application_term: str | None = None,
+    substitutions: tuple[dict[str, Any], ...] = (),
+    residual_premises: tuple[dict[str, Any], ...] | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
+    artifacts, registry, _receipt = semantic_evidence(
+        label,
+        candidate=candidate,
+        status=status,
+        scratch=scratch,
+        application_term=application_term,
+        substitutions=substitutions,
+        residual_premises=residual_premises,
+    )
+    return artifacts, registry
 
 
-def _check_ref(label: str) -> str:
-    return "check:" + hashlib.sha256(label.encode()).hexdigest()
-
-
-def _artifacts(label: str = "main") -> tuple[list[dict[str, Any]], dict[str, dict[str, Any]]]:
-    environment_ref = _digest("environment")
-    check_ref = _check_ref(label)
-    environment = {
-        "artifactId": _digest("environment-artifact"),
-        "artifactKind": "proofir.environment",
-        "environmentRef": environment_ref,
-        "payload": {"compiledModules": [{"module": "Main", "digest": _digest("olean")}]},
-    }
-    check = {
-        "artifactId": _digest(f"check-artifact:{label}"),
-        "artifactKind": "proofir.check-run",
-        "environmentRef": environment_ref,
-        "payload": {"checkRunId": check_ref},
-    }
-    registry = {
-        row["artifactId"]: {
-            "artifactId": row["artifactId"],
-            "artifactKind": row["artifactKind"],
-        }
-        for row in (environment, check)
-    }
-    return [environment, check], registry
-
-
-def _receipt(label: str = "main") -> dict[str, Any]:
-    return {
-        "schema": "ladon-evidence-receipt-v1",
-        "subject": {
-            "module": "Main",
-            "candidate": f"Main.{label}",
-            "goal": "True",
-            "localContext": [],
-        },
-        "executionBinding": "explicit-pinned",
-        "observationState": "live",
-        "operationOutcome": "accepted",
-        "authorityBasis": "elaborator-check",
-        "analysisCompleteness": "complete",
-        "sourceFreshness": "cached-observed",
-        "environmentMatch": "exact",
-        "environmentRef": _digest("environment"),
-        "checkRunRef": _check_ref(label),
-        "receiptIdentity": _digest(f"receipt:{label}"),
-        "limitations": [],
-    }
+def _receipt(
+    label: str = "main",
+    *,
+    candidate: str | None = None,
+    status: str = "accepted",
+    scratch: bool = False,
+) -> dict[str, Any]:
+    return semantic_receipt(
+        label,
+        candidate=candidate,
+        status=status,
+        scratch=scratch,
+    )
 
 
 def _direct_payload() -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
-    artifacts, registry = _artifacts()
+    substitutions = (
+        {
+            "variable": "α",
+            "termDisplay": "Nat",
+            "termStructural": "Lean.Expr.const `Nat []",
+        },
+    )
+    artifacts, registry = _artifacts(substitutions=substitutions)
+    environment_ref = artifacts[0]["environmentRef"]
+    check_artifact_ref = artifacts[1]["artifactId"]
     return (
         {
             "schema": "ladon-semantic-candidate-check-result-v1",
             "operation": "check-candidate",
             "status": "accepted",
             "applicationTerm": "Main.main",
-            "substitutions": [
-                {
-                    "variable": "α",
-                    "termDisplay": "Nat",
-                    "termStructural": "Lean.Expr.const `Nat []",
-                }
-            ],
+            "substitutions": list(substitutions),
             "residualPremises": [],
             "dischargedHypotheses": [],
             "checkRunId": _check_ref("main"),
             "checkRunRef": {
-                "artifactRef": _digest("check-artifact:main"),
+                "artifactRef": check_artifact_ref,
                 "kind": "check-run",
                 "localId": _check_ref("main"),
             },
+            "environmentRef": environment_ref,
             "evidenceReceipt": _receipt(),
             "artifacts": artifacts,
             "diagnostic": None,
@@ -113,7 +107,7 @@ def _discovery_payload() -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
         "substitutions": [],
         "residualPremises": [],
         "dischargedHypotheses": [],
-        "environmentRef": _digest("environment"),
+        "environmentRef": artifacts[0]["environmentRef"],
         "checkRunRef": _check_ref("main"),
         "evidenceReceipt": _receipt(),
         "artifacts": artifacts,
@@ -135,7 +129,6 @@ def _discovery_payload() -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
         "schema": "ladon-verified-discovery-result-v1",
         "operation": "discover",
         "status": "partial",
-        "resultIdentity": _digest("producer-result"),
         "request": {
             "module": "Main",
             "goal": "True",
@@ -204,8 +197,6 @@ def test_audit_is_an_unchanged_detached_canonical_payload() -> None:
     assert projected is not payload
     projected["artifacts"].clear()
     assert payload["artifacts"]
-
-
 @pytest.mark.parametrize("projection", ["llm", "review"])
 def test_direct_projection_is_compact_reference_closed_and_nonstructural(
     projection: str,
@@ -218,11 +209,11 @@ def test_direct_projection_is_compact_reference_closed_and_nonstructural(
     check = projected["candidate"]["check"]
     assert projected["schema"] == "ladon-semantic-candidate-projection-v1"
     assert check["environmentRef"] == {
-        "artifactRef": _digest("environment-artifact"),
-        "environmentRef": _digest("environment"),
+        "artifactRef": payload["artifacts"][0]["artifactId"],
+        "environmentRef": payload["artifacts"][0]["environmentRef"],
     }
     assert check["checkRunRef"] == {
-        "artifactRef": _digest("check-artifact:main"),
+        "artifactRef": payload["artifacts"][1]["artifactId"],
         "kind": "check-run",
         "localId": _check_ref("main"),
     }
@@ -254,12 +245,14 @@ def test_discovery_projection_retains_complete_status_accounting_and_failure() -
 
 def test_projection_fails_closed_for_missing_or_mismatched_registration() -> None:
     payload, registry = _direct_payload()
-    registry.pop(_digest("check-artifact:main"))
+    check_artifact_ref = payload["artifacts"][1]["artifactId"]
+    registry.pop(check_artifact_ref)
     with pytest.raises(SemanticProjectionError, match="not registered"):
         project_semantic_result(payload, projection="llm", registered_artifacts=registry)
 
     _payload, registry = _direct_payload()
-    registry[_digest("check-artifact:main")]["artifactKind"] = "proofir.environment"
+    check_artifact_ref = _payload["artifacts"][1]["artifactId"]
+    registry[check_artifact_ref]["artifactKind"] = "proofir.environment"
     with pytest.raises(SemanticProjectionError, match="mismatched kind"):
         project_semantic_result(_payload, projection="llm", registered_artifacts=registry)
 
@@ -271,14 +264,20 @@ def test_projection_fails_closed_for_missing_or_mismatched_registration() -> Non
 
 def test_scratch_uses_qualified_evidence_and_never_exposes_bare_parent_ref() -> None:
     payload, registry = _direct_payload()
-    scratch_artifacts, scratch_registry = _artifacts("scratch")
+    scratch_artifacts, scratch_registry = _artifacts(
+        "scratch", candidate="Main.main", status="compiled", scratch=True
+    )
     registry.update(scratch_registry)
     payload["scratch"] = {
         "status": "compiled",
-        "environmentRef": _digest("environment"),
+        "applicationTerm": "Main.main",
+        "sourceDigest": _digest("scratch-source:scratch"),
+        "environmentRef": scratch_artifacts[0]["environmentRef"],
         "checkRunRef": _check_ref("scratch"),
         "parentCheckRunRef": _check_ref("main"),
-        "evidenceReceipt": _receipt("scratch"),
+        "evidenceReceipt": _receipt(
+            "scratch", candidate="Main.main", status="compiled", scratch=True
+        ),
         "artifacts": scratch_artifacts,
     }
 
@@ -286,11 +285,11 @@ def test_scratch_uses_qualified_evidence_and_never_exposes_bare_parent_ref() -> 
 
     scratch = projected["candidate"]["check"]["scratch"]
     assert scratch["environmentRef"] == {
-        "environmentRef": _digest("environment"),
-        "artifactRef": _digest("environment-artifact"),
+        "environmentRef": scratch_artifacts[0]["environmentRef"],
+        "artifactRef": scratch_artifacts[0]["artifactId"],
     }
     assert scratch["checkRunRef"] == {
-        "artifactRef": _digest("check-artifact:scratch"),
+        "artifactRef": scratch_artifacts[1]["artifactId"],
         "kind": "check-run",
         "localId": _check_ref("scratch"),
     }
@@ -313,24 +312,41 @@ def test_bloated_discovery_is_bounded_with_explicit_population_omissions() -> No
     template = payload["candidates"][0]
     payload["candidates"] = []
     for index in range(40):
-        artifacts, row_registry = _artifacts(f"candidate-{index}")
+        candidate = "Main." + ("longName" * 200) + str(index)
+        application_term = "term " * 2000
+        residual_premises = tuple(
+            {"typeDisplay": "premise " * 500, "typeStructural": "hidden"}
+            for _ in range(20)
+        )
+        artifacts, row_registry = _artifacts(
+            f"candidate-{index}",
+            candidate=candidate,
+            status="applicable-with-residuals",
+            application_term=application_term,
+            residual_premises=residual_premises,
+        )
         registry.update(row_registry)
-        receipt = _receipt(f"candidate-{index}")
+        receipt = _receipt(
+            f"candidate-{index}",
+            candidate=candidate,
+            status="applicable-with-residuals",
+        )
         row = copy.deepcopy(template)
-        row["name"] = "Main." + ("longName" * 200) + str(index)
+        row["name"] = candidate
         row["check"].update(
             {
-                "applicationTerm": "term " * 2000,
-                "environmentRef": _digest("environment"),
+                "status": "applicable-with-residuals",
+                "applicationTerm": application_term,
+                "environmentRef": artifacts[0]["environmentRef"],
                 "checkRunRef": _check_ref(f"candidate-{index}"),
                 "evidenceReceipt": receipt,
                 "artifacts": artifacts,
-                "residualPremises": [
-                    {"typeDisplay": "premise " * 500, "typeStructural": "hidden"} for _ in range(20)
-                ],
+                "residualPremises": list(residual_premises),
             }
         )
         payload["candidates"].append(row)
+    payload["status"] = "available"
+    payload["coverage"] = {"submitted": 40, "completed": 40, "accepted": 40}
 
     projected = project_semantic_result(payload, projection="review", registered_artifacts=registry)
 
@@ -341,16 +357,12 @@ def test_bloated_discovery_is_bounded_with_explicit_population_omissions() -> No
     assert len(semantic_projection_bytes(projected)) <= DISCOVERY_PROJECTION_MAX_BYTES
 
 
-def test_missing_direct_canonical_rows_are_disclosed_instead_of_invented() -> None:
+def test_checker_backed_direct_result_requires_exact_canonical_rows() -> None:
     payload, registry = _direct_payload()
     payload.pop("substitutions")
     payload.pop("residualPremises")
 
-    projected = project_semantic_result(payload, projection="llm", registered_artifacts=registry)
-
-    assert projected["candidate"]["check"]["substitutions"] is None
-    assert projected["candidate"]["check"]["residualPremises"] is None
-    assert {(row["pointer"], row["reason"]) for row in projected["omissions"]} >= {
-        ("/candidate/check/substitutions", "canonical-field-unavailable"),
-        ("/candidate/check/residualPremises", "canonical-field-unavailable"),
-    }
+    with pytest.raises(SemanticProjectionError, match="substitutions disagrees"):
+        project_semantic_result(
+            payload, projection="llm", registered_artifacts=registry
+        )

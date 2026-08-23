@@ -1,30 +1,25 @@
 from __future__ import annotations
 
-import copy
 import json
 from pathlib import Path
 from typing import Any
 
 import pytest
-from support.proofir_v3_native import check_run_artifact, environment_artifact
+from support.proofir_v3_native import environment_artifact
+from support.semantic_evidence import semantic_evidence
 
 from ladon import proof_search_cli
 from ladon.proof_search_cli import _render_text, build_proof_search_parser, proof_search_main
 from ladon.proof_search_terminal import semantic_payload_failed
-from ladon.proofir_v3 import detached_content_id, validate_envelope_batch
 from ladon.semantic_evidence_registry import SemanticEvidenceRegistry
 
 
 def _canonical_check() -> dict[str, Any]:
-    environment = environment_artifact()
-    check = copy.deepcopy(check_run_artifact())
-    check_run_id = "check:" + "a" * 64
-    check["environmentRef"] = environment["environmentRef"]
-    check["payload"]["checkRunId"] = check_run_id
-    check["payload"]["inputs"]["environmentRef"] = environment["environmentRef"]
-    check["payload"]["inputs"]["artifactRefs"] = [environment["artifactId"]]
-    check["artifactId"] = detached_content_id(check)
-    validate_envelope_batch([environment, check])
+    artifacts, _registry, receipt = semantic_evidence(
+        "cli", candidate="Main.proof"
+    )
+    environment, check = artifacts
+    check_run_id = check["payload"]["checkRunId"]
     return {
         "schema": "ladon-semantic-candidate-check-result-v1",
         "operation": "check-candidate",
@@ -40,23 +35,7 @@ def _canonical_check() -> dict[str, Any]:
             "kind": "check-run",
             "localId": check_run_id,
         },
-        "evidenceReceipt": {
-            "subject": {
-                "module": "Main",
-                "candidate": "Main.proof",
-                "goal": "True",
-                "localContext": [],
-            },
-            "environmentRef": environment["environmentRef"],
-            "checkRunRef": check_run_id,
-            "executionBinding": "explicit-pinned",
-            "observationState": "live",
-            "operationOutcome": "accepted",
-            "authorityBasis": "elaborator-check",
-            "analysisCompleteness": "complete",
-            "sourceFreshness": "cached-observed",
-            "environmentMatch": "exact",
-        },
+        "evidenceReceipt": receipt,
         "artifacts": [environment, check],
         "diagnostic": None,
         "resourceAccounting": {},
