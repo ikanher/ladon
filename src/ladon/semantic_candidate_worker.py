@@ -35,6 +35,7 @@ from ladon.proofir_v3 import (
     ProofIRV3Artifact,
     canonical_bytes,
     make_envelope,
+    validate_envelope,
     validate_envelope_batch,
 )
 from ladon.semantic_candidate_limits import validate_semantic_bounds, validate_transport_text
@@ -157,8 +158,19 @@ class SemanticCandidateCheck:
     application_term: str | None = None
     discharged_hypotheses: tuple[Mapping[str, Any], ...] = ()
     caller_local_context: tuple[Mapping[str, str], ...] = ()
+    substitutions: tuple[Mapping[str, Any], ...] = ()
+    residual_premises: tuple[Mapping[str, Any], ...] = ()
+    failure_stage: str | None = None
+    environment_ref: str | None = None
+    check_run_id: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
+        environment_ref = _result_environment_ref(
+            self.environment_ref, self.artifacts, self.evidence_receipt
+        )
+        check_run_id = _result_check_run_id(
+            self.check_run_id, self.artifacts, self.evidence_receipt
+        )
         return {
             "schema": "ladon-semantic-candidate-check-result-v1",
             "operation": "check-candidate",
@@ -169,6 +181,14 @@ class SemanticCandidateCheck:
             "applicationTerm": self.application_term,
             "dischargedHypotheses": [dict(row) for row in self.discharged_hypotheses],
             "callerLocalContext": [dict(row) for row in self.caller_local_context],
+            "substitutions": [dict(row) for row in self.substitutions],
+            "residualPremises": [dict(row) for row in self.residual_premises],
+            "failureStage": self.failure_stage,
+            "environmentRef": environment_ref,
+            "checkRunRef": _artifact_qualified_check_run_ref(
+                self.artifacts, environment_ref, check_run_id
+            ),
+            "checkRunId": check_run_id,
             "artifacts": list(self.artifacts),
             "diagnostic": dict(self.diagnostic) if self.diagnostic else None,
             "resourceAccounting": {
@@ -184,6 +204,96 @@ class SemanticCandidateCheck:
                 }
             ],
         }
+
+
+def _result_environment_ref(
+    explicit: str | None,
+    artifacts: Sequence[Mapping[str, Any]],
+    receipt: Mapping[str, Any] | None,
+) -> str | None:
+    """Return one non-conflicting environment identity for a public result."""
+
+    candidates = {
+        value
+        for value in (
+            explicit,
+            receipt.get("environmentRef") if isinstance(receipt, Mapping) else None,
+            *(artifact.get("environmentRef") for artifact in artifacts),
+        )
+        if isinstance(value, str) and re.fullmatch(r"sha256:[0-9a-f]{64}", value) is not None
+    }
+    return next(iter(candidates)) if len(candidates) == 1 else None
+
+
+def _result_check_run_id(
+    explicit: str | None,
+    artifacts: Sequence[Mapping[str, Any]],
+    receipt: Mapping[str, Any] | None,
+) -> str | None:
+    """Return one non-conflicting raw check-run ID for integration callers."""
+
+    artifact_ids = []
+    for artifact in artifacts:
+        if artifact.get("artifactKind") != "proofir.check-run":
+            continue
+        payload = artifact.get("payload")
+        artifact_ids.append(payload.get("checkRunId") if isinstance(payload, Mapping) else None)
+    candidates = {
+        value
+        for value in (
+            explicit,
+            receipt.get("checkRunRef") if isinstance(receipt, Mapping) else None,
+            *artifact_ids,
+        )
+        if isinstance(value, str) and re.fullmatch(r"check:[0-9a-f]{64}", value) is not None
+    }
+    return next(iter(candidates)) if len(candidates) == 1 else None
+
+
+def _artifact_qualified_check_run_ref(
+    artifacts: Sequence[Mapping[str, Any]],
+    environment_ref: str | None,
+    check_run_id: str | None,
+) -> dict[str, str] | None:
+    """Qualify a check ID only when its owning artifact proves the exact subject."""
+
+    if environment_ref is None or check_run_id is None:
+        return None
+    owners: list[str] = []
+    for artifact in artifacts:
+        if artifact.get("artifactKind") != "proofir.check-run":
+            continue
+        try:
+            checked = validate_envelope(dict(artifact)).to_dict()
+        except (TypeError, ValueError):
+            continue
+        if checked.get("environmentRef") != environment_ref:
+            continue
+        artifact_id = checked.get("artifactId")
+        payload = checked.get("payload")
+        subjects = checked.get("subjectRefs")
+        if (
+            not isinstance(artifact_id, str)
+            or re.fullmatch(r"sha256:[0-9a-f]{64}", artifact_id) is None
+            or not isinstance(payload, Mapping)
+            or payload.get("checkRunId") != check_run_id
+            or not isinstance(subjects, list)
+            or not any(
+                isinstance(subject, Mapping)
+                and subject.get("kind") == "check-run"
+                and subject.get("localId") == check_run_id
+                for subject in subjects
+            )
+        ):
+            continue
+        owners.append(artifact_id)
+    if len(owners) != 1:
+        return None
+    return {
+        "artifactRef": owners[0],
+        "kind": "check-run",
+        "localId": check_run_id,
+    }
 
 
 def check_semantic_candidate(
@@ -261,6 +371,9 @@ def check_semantic_candidate(
                 analysis_completeness="complete",
                 evidence_receipt=receipt,
                 caller_local_context=tuple(request.local_context),
+                failure_stage=str(rejection_payload["failureStage"]),
+                environment_ref=str(artifacts[0]["environmentRef"]),
+                check_run_id=str(artifacts[1]["payload"]["checkRunId"]),
             )
         payload = _parse_worker_payload(process.stdout, request, request_id)
         artifacts = _accepted_artifacts(
@@ -276,6 +389,7 @@ def check_semantic_candidate(
             evidence_receipt=_receipt_for_check(
                 request, "failed", "invalid-worker-output", "invalid"
             ),
+            failure_stage="invalid-worker-output",
         )
     status = (
         "applicable-with-residuals"
@@ -311,6 +425,10 @@ def check_semantic_candidate(
         application_term=payload["applicationTerm"],
         discharged_hypotheses=tuple(payload["dischargedHypotheses"]),
         caller_local_context=tuple(request.local_context),
+        substitutions=tuple(payload["substitutions"]),
+        residual_premises=tuple(payload["residualPremises"]),
+        environment_ref=str(artifacts[0]["environmentRef"]),
+        check_run_id=str(artifacts[1]["payload"]["checkRunId"]),
     )
 
 
@@ -355,11 +473,13 @@ def _toolchain_identity_failure(
             evidence_receipt=_receipt_for_check(
                 request, "failed", "failed-checker", "not-assessed"
             ),
+            failure_stage=error.code,
         )
     return SemanticCandidateCheck(
         "invalid-worker-output",
         diagnostic={"code": "toolchain-identity-changed", "message": str(error)},
         evidence_receipt=_receipt_for_check(request, "failed", "invalid-worker-output", "invalid"),
+        failure_stage="toolchain-identity-changed",
     )
 
 
@@ -477,6 +597,7 @@ def _failed_check(
             status,
             "not-assessed",
         ),
+        failure_stage=code,
     )
 
 
@@ -822,10 +943,11 @@ def _rejected_artifacts(
         local_context=payload["localContext"],
     )
     observation["evidenceReceipt"] = receipt
+    check_subject = _check_run_subject(check_id)
     artifact = _envelope(
         "proofir.check-run",
         env_ref,
-        [statement, declaration],
+        [statement, declaration, check_subject],
         {
             "checkRunId": check_id,
             "checker": {
@@ -1112,11 +1234,7 @@ def _check_artifact(
         check_run_ref=check_id,
         local_context=payload["localContext"],
     )
-    check_subject = {
-        "kind": "check-run",
-        "localId": check_id,
-        "display": "Lean exact-candidate check",
-    }
+    check_subject = _check_run_subject(check_id)
     compact_statement = _compact(statement)
     evidence_subjects = _unique_subjects(
         [statement, declaration, *additional_subjects, check_subject, dict(application)]
@@ -1328,6 +1446,8 @@ def _envelope(
     limitations: list[dict[str, str]] | None = None,
     extensions: dict[str, Any] | None = None,
 ) -> ProofIRV3Artifact:
+    if kind == "proofir.check-run":
+        _require_owned_check_run_subject(subjects, payload)
     observed = len(subjects)
     return make_envelope(
         artifact_kind=kind,
@@ -1360,6 +1480,36 @@ def _envelope(
 
 def _compact(subject: Mapping[str, Any]) -> dict[str, str]:
     return {"kind": str(subject["kind"]), "localId": str(subject["localId"])}
+
+
+def _check_run_subject(check_run_id: str) -> dict[str, str]:
+    """Return the one producer-owned descriptor for a semantic check run."""
+
+    if re.fullmatch(r"check:[0-9a-f]{64}", check_run_id) is None:
+        raise ValueError("semantic check-run ID must be a check: digest")
+    return {
+        "kind": "check-run",
+        "localId": check_run_id,
+        "display": "Lean check run",
+    }
+
+
+def _require_owned_check_run_subject(
+    subjects: Sequence[Mapping[str, Any]], payload: Mapping[str, Any]
+) -> None:
+    """Reject producer check artifacts whose run cannot be externally referenced."""
+
+    check_run_id = payload.get("checkRunId")
+    if not isinstance(check_run_id, str):
+        raise TypeError("semantic check artifact omits its check-run ID")
+    expected = _check_run_subject(check_run_id)
+    owned = [dict(subject) for subject in subjects if subject.get("kind") == "check-run"]
+    if owned != [expected]:
+        raise ValueError("semantic check artifact must own its canonical check-run subject")
+    inputs = payload.get("inputs")
+    input_subjects = inputs.get("subjectRefs") if isinstance(inputs, Mapping) else None
+    if isinstance(input_subjects, list) and _compact(expected) in input_subjects:
+        raise ValueError("semantic check-run subject cannot be its own checker input")
 
 
 def _unique_subjects(subjects: list[dict[str, Any]]) -> list[dict[str, Any]]:

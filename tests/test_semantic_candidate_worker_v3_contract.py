@@ -103,6 +103,19 @@ def _assert_exact_links(artifacts: tuple[dict[str, Any], ...]) -> None:
     step = derivation["payload"]["steps"][0]
     assert step["checkRunRef"]["artifactRef"] == check["artifactId"]
     assert step["checkRunRef"]["localId"] == check["payload"]["checkRunId"]
+    _assert_owned_check_run(check)
+
+
+def _assert_owned_check_run(check: dict[str, Any]) -> None:
+    check_run_id = check["payload"]["checkRunId"]
+    assert [
+        {"kind": row["kind"], "localId": row["localId"]}
+        for row in check["subjectRefs"]
+        if row["kind"] == "check-run"
+    ] == [{"kind": "check-run", "localId": check_run_id}]
+    assert {"kind": "check-run", "localId": check_run_id} not in check["payload"]["inputs"][
+        "subjectRefs"
+    ]
 
 
 def _assert_exact_semantics(artifacts: tuple[dict[str, Any], ...]) -> None:
@@ -162,10 +175,114 @@ def test_accepted_worker_result_closes_exact_environment_and_check_references(
         for limitation in result.to_dict()["evidenceReceipt"]["limitations"]
     )
     assert result.to_dict()["evidenceReceipt"]["executionBinding"] == "ambient-observed"
+    assert result.to_dict()["environmentRef"] == result.artifacts[0]["environmentRef"]
+    assert result.to_dict()["checkRunId"] == result.artifacts[1]["payload"]["checkRunId"]
+    assert result.to_dict()["checkRunRef"] == {
+        "artifactRef": result.artifacts[1]["artifactId"],
+        "kind": "check-run",
+        "localId": result.artifacts[1]["payload"]["checkRunId"],
+    }
+    assert result.to_dict()["substitutions"] == []
+    assert result.to_dict()["residualPremises"] == []
+    assert result.to_dict()["failureStage"] is None
     _assert_artifact_family(result.artifacts)
     _assert_exact_links(result.artifacts)
     _assert_exact_semantics(result.artifacts)
     _assert_process_bounds(result.artifacts)
+
+    stale_check = json.loads(json.dumps(result.artifacts[1]))
+    stale_check["subjectRefs"][-1]["display"] = "mutated after identity"
+    fallback = SemanticCandidateCheck(
+        "accepted",
+        artifacts=(stale_check,),
+        environment_ref=result.artifacts[0]["environmentRef"],
+        check_run_id=result.artifacts[1]["payload"]["checkRunId"],
+    ).to_dict()
+    assert fallback["checkRunRef"] is None
+    assert fallback["checkRunId"] == result.artifacts[1]["payload"]["checkRunId"]
+
+
+def test_rejected_worker_result_owns_and_qualifies_its_check_run(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    repo.joinpath("lean-toolchain").write_text("leanprover/lean4:v4.32.2\n")
+    payload = _accepted_payload(tmp_path)
+    rejected = {
+        key: payload[key]
+        for key in (
+            "protocol",
+            "frameVersion",
+            "sequence",
+            "terminal",
+            "universePolicy",
+            "requestId",
+            "goalRequestDigest",
+            "executionContextRef",
+            "leanVersion",
+            "leanCommit",
+            "executablePath",
+            "module",
+            "probe",
+            "importedModules",
+            "localContext",
+        )
+    }
+    rejected.update(
+        {
+            "candidateName": "Main.missing",
+            "status": "rejected",
+            "failureStage": "candidate-not-found",
+            "diagnostic": "unknown declaration",
+        }
+    )
+
+    def rejected_runner(command: tuple[str, ...], **_kwargs: object) -> ProcessResult:
+        rejected["probe"]["name"] = command[-4]
+        rejected["requestId"] = command[-2]
+        rejected["goalRequestDigest"] = command[-5]
+        rejected["executionContextRef"] = command[-1]
+        return ProcessResult(
+            command,
+            0,
+            "LADON_FRAME " + json.dumps(rejected),
+            "",
+            0.1,
+        )
+
+    result = check_semantic_candidate(
+        SemanticCandidateRequest(repo, "Main", "Nat", "Main.missing"),
+        runner=rejected_runner,
+    )
+
+    assert result.status == "rejected"
+    assert result.to_dict()["failureStage"] == "candidate-not-found"
+    assert result.to_dict()["checkRunRef"] == {
+        "artifactRef": result.artifacts[1]["artifactId"],
+        "kind": "check-run",
+        "localId": result.artifacts[1]["payload"]["checkRunId"],
+    }
+    _assert_owned_check_run(result.artifacts[1])
+    validate_envelope_batch(list(result.artifacts))
+
+
+def test_result_exposes_raw_check_id_when_no_owner_artifact_is_available() -> None:
+    check_run_id = "check:" + "a" * 64
+    result = SemanticCandidateCheck(
+        "unassessed",
+        substitutions=({"variable": "x", "termDisplay": "value"},),
+        residual_premises=({"typeDisplay": "P"},),
+        failure_stage="integration-only",
+        environment_ref="sha256:" + "b" * 64,
+        check_run_id=check_run_id,
+    ).to_dict()
+
+    assert result["checkRunRef"] is None
+    assert result["checkRunId"] == check_run_id
+    assert result["substitutions"] == [{"variable": "x", "termDisplay": "value"}]
+    assert result["residualPremises"] == [{"typeDisplay": "P"}]
+    assert result["failureStage"] == "integration-only"
 
 
 def test_timeout_never_publishes_accepted_artifacts(tmp_path: Path) -> None:

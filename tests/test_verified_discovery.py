@@ -4,12 +4,47 @@ import argparse
 from pathlib import Path
 
 import pytest
+from support.proofir_v3_native import environment_artifact
 
 from ladon.proof_search_cli import build_proof_search_parser
 from ladon.proof_search_discovery_cli import _type_text_shortlist
 from ladon.proof_search_index import build_proof_search_index
+from ladon.proofir_v3 import validate_envelope_batch
 from ladon.semantic_candidate_worker import SemanticCandidateCheck
-from ladon.verified_discovery import DiscoveryRequest, discover_candidates
+from ladon.verified_discovery import (
+    DiscoveryRequest,
+    _scratch_check_artifact,
+    discover_candidates,
+)
+
+
+def test_scratch_check_artifact_owns_its_check_run_subject() -> None:
+    environment = environment_artifact()
+    check_run_id = "check:" + "a" * 64
+    artifact = _scratch_check_artifact(
+        DiscoveryRequest(Path("/repo"), "Main", "Nat"),
+        "Main.value",
+        check_run_id,
+        environment,
+        {
+            "status": "compiled",
+            "sourceDigest": "sha256:" + "b" * 64,
+            "outputDigest": "sha256:" + "c" * 64,
+            "applicationTerm": "Main.value",
+        },
+        {"schema": "fixture-receipt"},
+        None,
+    )
+
+    assert [
+        {"kind": row["kind"], "localId": row["localId"]}
+        for row in artifact["subjectRefs"]
+        if row["kind"] == "check-run"
+    ] == [{"kind": "check-run", "localId": check_run_id}]
+    assert {"kind": "check-run", "localId": check_run_id} not in artifact["payload"]["inputs"][
+        "subjectRefs"
+    ]
+    validate_envelope_batch([environment, artifact])
 
 
 def test_discovery_preserves_accepted_rejected_and_failed_candidates() -> None:

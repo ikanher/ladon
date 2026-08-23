@@ -58,6 +58,20 @@ def _stream(
     return "\n".join("LADON_FRAME " + json.dumps(frame) for frame in frames)
 
 
+def _assert_owned_check_run(row: object) -> None:
+    assert isinstance(row, dict)
+    check = row["artifacts"][1]
+    check_run_id = check["payload"]["checkRunId"]
+    assert [
+        {"kind": subject["kind"], "localId": subject["localId"]}
+        for subject in check["subjectRefs"]
+        if subject["kind"] == "check-run"
+    ] == [{"kind": "check-run", "localId": check_run_id}]
+    assert {"kind": "check-run", "localId": check_run_id} not in check["payload"]["inputs"][
+        "subjectRefs"
+    ]
+
+
 def test_batch_worker_uses_one_framed_process_and_preserves_row_order(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -136,6 +150,8 @@ def test_batch_worker_uses_one_framed_process_and_preserves_row_order(
     assert result.status == "available", result.diagnostic
     assert [row["candidate"] for row in result.rows] == ["Main.good", "Main.bad"]
     assert all(row["evidenceReceipt"]["checkRunRef"] == row["checkRunRef"] for row in result.rows)
+    for row in result.rows:
+        _assert_owned_check_run(dict(row))
     assert [artifact["artifactKind"] for artifact in result.rows[0]["artifacts"]] == [
         "proofir.environment",
         "proofir.check-run",
@@ -248,3 +264,4 @@ def test_batch_worker_preserves_validated_prefix_after_timeout(tmp_path: Path) -
     assert result.rows[0]["artifacts"][1]["payload"]["guarantee"]["authorityBasis"] == (
         "process-observation"
     )
+    _assert_owned_check_run(dict(result.rows[0]))

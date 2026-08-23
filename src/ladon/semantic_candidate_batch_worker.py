@@ -33,6 +33,7 @@ from ladon.semantic_candidate_worker import (
     UNIVERSE_POLICY,
     SemanticCandidateRequest,
     _accepted_artifacts,
+    _check_run_subject,
     _compact,
     _digest_file,
     _digest_text,
@@ -844,7 +845,15 @@ def _batch_check_artifact(
         _synthetic_subject("term", str(item.get("termDisplay", "")))
         for item in row.get("substitutions", [])
     ]
-    subjects = [statement, declaration, context, application, *residual_subjects, *term_subjects]
+    input_subjects = [
+        statement,
+        declaration,
+        context,
+        application,
+        *residual_subjects,
+        *term_subjects,
+    ]
+    subjects = [*input_subjects, _check_run_subject(check_ref)]
     digest = "sha256:" + hashlib.sha256(b"").hexdigest()
     helper_digest = _digest_file(helper_path) if helper_path is not None else digest
     executable_digest = (
@@ -869,7 +878,7 @@ def _batch_check_artifact(
             "operation": "exact-candidate-elaboration",
             "inputs": {
                 "environmentRef": env_ref,
-                "subjectRefs": [_compact(subject) for subject in subjects],
+                "subjectRefs": [_compact(subject) for subject in input_subjects],
                 "artifactRefs": [str(environment["artifactId"])],
             },
             "results": [

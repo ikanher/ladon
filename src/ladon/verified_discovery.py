@@ -35,6 +35,7 @@ from ladon.semantic_candidate_worker import (
     TRUSTED_TARGET_LIMITATION,
     SemanticCandidateCheck,
     SemanticCandidateRequest,
+    _check_run_subject,
     _compact,
     _digest_file,
     _envelope,
@@ -621,11 +622,12 @@ def _scratch_check_artifact(
         },
         "display": candidate,
     }
+    check_subject = _check_run_subject(check_ref)
     env_ref = str(environment["environmentRef"])
     artifact = _envelope(
         "proofir.check-run",
         env_ref,
-        [subject],
+        [subject, check_subject],
         {
             "checkRunId": check_ref,
             "checker": {
