@@ -165,14 +165,17 @@ class SemanticArtifactRepository:
         """Resolve one validated typed reference to its owner artifact."""
 
         row = self.connection.execute(
-            "SELECT source_pointer FROM typed_refs "
-            "WHERE artifact_ref=? AND kind=? AND local_id=?",
+            "SELECT source_pointer FROM typed_refs WHERE artifact_ref=? AND kind=? AND local_id=?",
             (artifact_ref, kind, local_id),
         ).fetchone()
         if row is None:
             raise SemanticEvidenceRegistryNotFound("semantic typed reference is not registered")
         artifact = self.load_artifact(artifact_ref)
-        _validate_resolved_typed_ref(artifact, kind, local_id)
+        canonical_pointer = _canonical_typed_ref_pointer(artifact, kind, local_id)
+        if str(row[0]) != canonical_pointer:
+            raise SemanticEvidenceRegistryConflict(
+                f"typed reference projection is inconsistent for {artifact_ref}"
+            )
         self.validate_registered_environment(artifact)
         return {
             "reference": {
@@ -180,7 +183,7 @@ class SemanticArtifactRepository:
                 "kind": kind,
                 "localId": local_id,
             },
-            "sourcePointer": str(row[0]),
+            "sourcePointer": canonical_pointer,
             "artifact": artifact,
         }
 
@@ -392,25 +395,15 @@ def _stored_metadata_matches(
     )
 
 
-def _validate_resolved_typed_ref(
+def _canonical_typed_ref_pointer(
     artifact: Mapping[str, Any],
     kind: str,
     local_id: str,
-) -> None:
-    if kind == "check-run":
-        if (
-            artifact["artifactKind"] != "proofir.check-run"
-            or artifact["payload"].get("checkRunId") != local_id
-        ):
-            raise SemanticEvidenceRegistryConflict(
-                "typed check reference does not match its check artifact"
-            )
-        return
-    identities = {(str(row["kind"]), str(row["localId"])) for row in artifact["subjectRefs"]}
-    if (kind, local_id) not in identities:
-        raise SemanticEvidenceRegistryConflict(
-            "typed subject reference does not match its owner artifact"
-        )
+) -> str:
+    pointer = _typed_reference_rows(artifact).get((kind, local_id))
+    if pointer is None:
+        raise SemanticEvidenceRegistryConflict("typed reference does not match its owner artifact")
+    return pointer
 
 
 def _external_artifact_refs(artifact: Mapping[str, Any]) -> set[str]:

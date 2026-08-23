@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 import sqlite3
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -67,12 +70,18 @@ _SCHEMA_STATEMENTS = (
             ON DELETE RESTRICT
     ) STRICT
     """,
-    (
-        "CREATE INDEX idx_semantic_artifact_environment "
-        "ON artifacts(environment_ref, artifact_kind)"
-    ),
+    ("CREATE INDEX idx_semantic_artifact_environment ON artifacts(environment_ref, artifact_kind)"),
     "CREATE INDEX idx_semantic_typed_ref ON typed_refs(kind, local_id, artifact_ref)",
 )
+
+_REGISTRY_TABLES = (
+    "registry_meta",
+    "artifacts",
+    "environments",
+    "typed_refs",
+)
+
+_MIN_SQLITE_VERSION = (3, 37, 0)
 
 
 class SemanticRegistryDatabase:
@@ -92,6 +101,11 @@ class SemanticRegistryDatabase:
     def initialize(self) -> None:
         """Create or validate the exact registry generation."""
 
+        # Probe lazily so importing Ladon remains usable on hosts whose SQLite
+        # cannot own this private STRICT-schema generation.  In particular,
+        # lexical proof-search commands import the registry module but never
+        # construct a registry.
+        _expected_schema_fingerprint()
         parent_created = not self.path.parent.exists()
         self.path.parent.mkdir(parents=True, exist_ok=True)
         if parent_created:
@@ -154,13 +168,15 @@ class SemanticRegistryDatabase:
         }
 
     def _initialize_connection(self, connection: sqlite3.Connection) -> None:
-        mode = str(connection.execute("PRAGMA journal_mode=WAL").fetchone()[0])
-        if mode.lower() != "wal":
-            raise SemanticEvidenceRegistrySchemaError(
-                f"semantic evidence registry requires WAL mode, observed {mode}"
-            )
+        uninitialized = self._is_uninitialized(connection)
+        if uninitialized:
+            mode = str(connection.execute("PRAGMA journal_mode=WAL").fetchone()[0])
+            if mode.lower() != "wal":
+                raise SemanticEvidenceRegistrySchemaError(
+                    f"semantic evidence registry requires WAL mode, observed {mode}"
+                )
         connection.execute("BEGIN IMMEDIATE")
-        if self._is_uninitialized(connection):
+        if uninitialized:
             self._create_schema(connection)
         self._validate_schema(connection)
         self._apply_page_limit(connection)
@@ -211,32 +227,67 @@ class SemanticRegistryDatabase:
             )
         return False
 
+    def _validate_schema(self, connection: sqlite3.Connection) -> None:
+        try:
+            self._validate_schema_identity(connection)
+            self._validate_schema_fingerprint(connection)
+            self._validate_registry_metadata(connection)
+            self._validate_required_pragmas(connection)
+        except SemanticEvidenceRegistrySchemaError:
+            raise
+        except (LookupError, TypeError, ValueError, sqlite3.DatabaseError) as error:
+            raise SemanticEvidenceRegistrySchemaError(
+                "semantic evidence registry schema cannot be validated"
+            ) from error
+
     @staticmethod
-    def _validate_schema(connection: sqlite3.Connection) -> None:
+    def _validate_schema_identity(connection: sqlite3.Connection) -> None:
         application_id = int(connection.execute("PRAGMA application_id").fetchone()[0])
         user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
         if application_id != REGISTRY_APPLICATION_ID or user_version != REGISTRY_SCHEMA_VERSION:
             raise SemanticEvidenceRegistrySchemaError(
                 "semantic evidence registry schema identity is unsupported"
             )
-        row = connection.execute(
+
+    @staticmethod
+    def _validate_registry_metadata(connection: sqlite3.Connection) -> None:
+        rows = connection.execute(
             "SELECT schema_name,schema_version FROM registry_meta WHERE singleton=1"
-        ).fetchone()
-        if row is None or (str(row[0]), int(row[1])) != (
+        ).fetchall()
+        if len(rows) != 1 or (str(rows[0][0]), int(rows[0][1])) != (
             REGISTRY_SCHEMA,
             REGISTRY_SCHEMA_VERSION,
         ):
             raise SemanticEvidenceRegistrySchemaError(
                 "semantic evidence registry metadata is inconsistent"
             )
-        required = {"registry_meta", "artifacts", "environments", "typed_refs"}
-        present = {
-            str(found[0])
-            for found in connection.execute("SELECT name FROM sqlite_schema WHERE type='table'")
-        }
-        if not required <= present:
+
+    @staticmethod
+    def _validate_schema_fingerprint(connection: sqlite3.Connection) -> None:
+        observed = _schema_fingerprint(connection)
+        if observed != _expected_schema_fingerprint():
             raise SemanticEvidenceRegistrySchemaError(
-                "semantic evidence registry is missing required tables"
+                "semantic evidence registry schema structure is inconsistent"
+            )
+
+    def _validate_required_pragmas(self, connection: sqlite3.Connection) -> None:
+        observed = {
+            "journalMode": str(connection.execute("PRAGMA journal_mode").fetchone()[0]).lower(),
+            "synchronous": int(connection.execute("PRAGMA synchronous").fetchone()[0]),
+            "foreignKeys": int(connection.execute("PRAGMA foreign_keys").fetchone()[0]),
+            "busyTimeoutMs": int(connection.execute("PRAGMA busy_timeout").fetchone()[0]),
+            "encoding": str(connection.execute("PRAGMA encoding").fetchone()[0]),
+        }
+        expected = {
+            "journalMode": "wal",
+            "synchronous": 2,
+            "foreignKeys": 1,
+            "busyTimeoutMs": self.busy_timeout_ms,
+            "encoding": "UTF-8",
+        }
+        if observed != expected:
+            raise SemanticEvidenceRegistrySchemaError(
+                "semantic evidence registry durability pragmas are inconsistent"
             )
 
     def _apply_page_limit(self, connection: sqlite3.Connection) -> None:
@@ -254,3 +305,111 @@ class SemanticRegistryDatabase:
             raise SemanticEvidenceRegistryCapacity(
                 "semantic evidence registry cannot enforce the configured byte limit"
             )
+
+
+def _schema_fingerprint(connection: sqlite3.Connection) -> str:
+    projection = {
+        "objects": _schema_objects(connection),
+        "tables": {
+            table: _table_schema_projection(connection, table) for table in _REGISTRY_TABLES
+        },
+    }
+    encoded = json.dumps(
+        projection,
+        ensure_ascii=False,
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _schema_objects(connection: sqlite3.Connection) -> list[list[Any]]:
+    return [
+        [str(row[0]), str(row[1]), str(row[2]), _normalized_sql(row[3])]
+        for row in connection.execute(
+            "SELECT type,name,tbl_name,sql FROM sqlite_schema "
+            "WHERE name NOT LIKE 'sqlite_%' ORDER BY type,name"
+        )
+    ]
+
+
+def _table_schema_projection(
+    connection: sqlite3.Connection,
+    table: str,
+) -> dict[str, Any]:
+    table_state = [
+        list(row)
+        for row in connection.execute("PRAGMA main.table_list")
+        if str(row[0]) == "main" and str(row[1]) == table
+    ]
+    return {
+        "tableState": table_state,
+        "columns": [
+            list(row) for row in connection.execute("SELECT * FROM pragma_table_xinfo(?)", (table,))
+        ],
+        "foreignKeys": [
+            list(row)
+            for row in connection.execute("SELECT * FROM pragma_foreign_key_list(?)", (table,))
+        ],
+        "indexes": _index_schema_projection(connection, table),
+    }
+
+
+def _index_schema_projection(
+    connection: sqlite3.Connection,
+    table: str,
+) -> list[dict[str, Any]]:
+    rows = sorted(
+        (list(row) for row in connection.execute("SELECT * FROM pragma_index_list(?)", (table,))),
+        key=lambda row: str(row[1]),
+    )
+    return [
+        {
+            "index": row,
+            "columns": [
+                list(column)
+                for column in connection.execute(
+                    "SELECT * FROM pragma_index_xinfo(?)",
+                    (row[1],),
+                )
+            ],
+        }
+        for row in rows
+    ]
+
+
+def _normalized_sql(value: Any) -> str | None:
+    if value is None:
+        return None
+    return " ".join(str(value).split())
+
+
+def _canonical_schema_fingerprint() -> str:
+    connection = sqlite3.connect(":memory:")
+    try:
+        for statement in _SCHEMA_STATEMENTS:
+            connection.execute(statement)
+        return _schema_fingerprint(connection)
+    finally:
+        connection.close()
+
+
+@lru_cache(maxsize=1)
+def _expected_schema_fingerprint() -> str:
+    """Return the owned schema identity or a stable SQLite capability error."""
+
+    if sqlite3.sqlite_version_info < _MIN_SQLITE_VERSION:
+        required = ".".join(str(part) for part in _MIN_SQLITE_VERSION)
+        observed = sqlite3.sqlite_version
+        raise SemanticEvidenceRegistrySchemaError(
+            "semantic evidence registry requires SQLite "
+            f"{required} or newer with STRICT-table and JSON support; "
+            f"observed {observed}"
+        )
+    try:
+        return _canonical_schema_fingerprint()
+    except (LookupError, TypeError, ValueError, sqlite3.DatabaseError) as error:
+        raise SemanticEvidenceRegistrySchemaError(
+            "semantic evidence registry requires SQLite STRICT-table, JSON, "
+            "and schema-introspection support"
+        ) from error

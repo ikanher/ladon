@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 from support.proofir_v3_native import check_run_artifact, environment_artifact
 
+from ladon import _semantic_evidence_registry_sqlite as registry_sqlite
 from ladon.proofir_v3 import detached_content_id, validate_envelope_batch
 from ladon.semantic_evidence_registry import (
     REGISTRY_APPLICATION_ID,
@@ -134,6 +135,21 @@ def test_payload_check_identity_resolves_without_a_check_subject_descriptor(
     assert resolved["artifact"] == check
 
 
+def test_typed_resolution_rejects_tampered_cached_source_pointer(tmp_path: Path) -> None:
+    registry = _registry(tmp_path / "semantic.sqlite")
+    environment, check = _semantic_artifacts()
+    result = registry.register_bundle([environment, check])
+    with sqlite3.connect(registry.path) as connection:
+        connection.execute(
+            "UPDATE typed_refs SET source_pointer='/tampered' "
+            "WHERE artifact_ref=? AND kind='check-run'",
+            (check["artifactId"],),
+        )
+
+    with pytest.raises(SemanticEvidenceRegistryConflict, match="projection is inconsistent"):
+        registry.resolve_typed_ref(result["checkRunRefs"][0])
+
+
 def test_dangling_input_reference_rolls_back_complete_bundle(tmp_path: Path) -> None:
     registry = _registry(tmp_path / "semantic.sqlite")
     environment, check = _semantic_artifacts()
@@ -243,6 +259,86 @@ def test_unknown_schema_fails_closed_without_reinitializing_database(
     assert path.read_bytes() == before
     with sqlite3.connect(path) as connection:
         assert connection.execute("SELECT COUNT(*) FROM artifacts").fetchone() == (1,)
+
+
+def test_known_version_schema_spoof_fails_during_open(tmp_path: Path) -> None:
+    path = tmp_path / "semantic.sqlite"
+    with sqlite3.connect(path, isolation_level=None) as connection:
+        assert connection.execute("PRAGMA journal_mode=WAL").fetchone() == ("wal",)
+        connection.execute(f"PRAGMA application_id={REGISTRY_APPLICATION_ID}")
+        connection.execute(f"PRAGMA user_version={REGISTRY_SCHEMA_VERSION}")
+        connection.execute(
+            "CREATE TABLE registry_meta("
+            "singleton INTEGER PRIMARY KEY, schema_name TEXT, schema_version INTEGER)"
+        )
+        connection.execute(
+            "INSERT INTO registry_meta VALUES(1,'ladon-semantic-evidence-registry-v1',1)"
+        )
+        for table in ("artifacts", "environments", "typed_refs"):
+            connection.execute(f"CREATE TABLE {table}(lookalike TEXT)")
+
+    with pytest.raises(SemanticEvidenceRegistrySchemaError, match="structure"):
+        _registry(path)
+
+
+def test_unsupported_sqlite_fails_lazily_with_stable_schema_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "semantic.sqlite"
+    registry_sqlite._expected_schema_fingerprint.cache_clear()
+    monkeypatch.setattr(registry_sqlite.sqlite3, "sqlite_version_info", (3, 36, 0))
+    monkeypatch.setattr(registry_sqlite.sqlite3, "sqlite_version", "3.36.0")
+
+    try:
+        with pytest.raises(
+            SemanticEvidenceRegistrySchemaError,
+            match=r"requires SQLite 3\.37\.0 or newer",
+        ):
+            _registry(path)
+    finally:
+        registry_sqlite._expected_schema_fingerprint.cache_clear()
+
+    assert not path.exists()
+
+
+def test_known_schema_rejects_altered_index_and_preserves_normal_compatibility(
+    tmp_path: Path,
+) -> None:
+    path = tmp_path / "semantic.sqlite"
+    registry = _registry(path)
+    environment, check = _semantic_artifacts()
+    registry.register_bundle([environment, check])
+
+    reopened = _registry(path)
+    assert (
+        reopened.resolve_typed_ref(
+            {
+                "artifactRef": check["artifactId"],
+                "kind": "check-run",
+                "localId": check["payload"]["checkRunId"],
+            }
+        )["sourcePointer"]
+        == "/payload/checkRunId"
+    )
+
+    with sqlite3.connect(path) as connection:
+        connection.execute("DROP INDEX idx_semantic_artifact_environment")
+        connection.execute(
+            "CREATE INDEX idx_semantic_artifact_environment ON artifacts(artifact_kind)"
+        )
+
+    with pytest.raises(SemanticEvidenceRegistrySchemaError, match="structure"):
+        _registry(path)
+
+
+def test_known_schema_requires_persistent_wal_mode(tmp_path: Path) -> None:
+    path = tmp_path / "semantic.sqlite"
+    _registry(path)
+    with sqlite3.connect(path, isolation_level=None) as connection:
+        assert connection.execute("PRAGMA journal_mode=DELETE").fetchone() == ("delete",)
+
+    with pytest.raises(SemanticEvidenceRegistrySchemaError, match="pragmas"):
+        _registry(path)
 
 
 def test_registry_rejects_symbolic_link_destination(tmp_path: Path) -> None:
