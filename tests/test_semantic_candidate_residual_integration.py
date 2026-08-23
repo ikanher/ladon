@@ -44,6 +44,8 @@ def test_lean_application_emits_substitutions_residuals_and_context() -> None:
             "30",
             "--max-rss-mib",
             "4096",
+            "--projection",
+            "audit",
             "--format",
             "json",
         ],

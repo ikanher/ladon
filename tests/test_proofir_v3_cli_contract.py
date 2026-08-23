@@ -31,6 +31,10 @@ def test_ordinary_cli_contract_is_machine_readable_and_native_only() -> None:
         "coverage",
         "diagnostics",
         "explicitCandidateCheck",
+        "fullCandidateAudit",
+        "semanticArtifactExpansion",
+        "semanticEnvironmentExpansion",
+        "semanticCheckExpansion",
     }
     assert all(
         command.startswith("ladon ") for command in contract["commands"].values()

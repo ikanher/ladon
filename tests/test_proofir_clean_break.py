@@ -203,10 +203,12 @@ def test_no_retired_bridge_adapter_survives_in_product_or_current_docs() -> None
 
 def test_native_evidence_cli_has_no_dag_compatibility_arguments() -> None:
     cli = (ROOT / "src/ladon/proof_search_cli.py").read_text(encoding="utf-8")
-    assert (
-        'choices=("theorem", "artifact", "route", "slice", "alternatives", "triage")'
-        in cli
+    evidence_cli = (ROOT / "src/ladon/proof_search_evidence_cli.py").read_text(
+        encoding="utf-8"
     )
-    assert '"dag"' not in cli
-    assert '"--dag"' not in cli
-    assert '"--reverse"' not in cli
+    combined = cli + evidence_cli
+    for native_kind in ("theorem", "artifact", "route", "slice", "alternatives", "triage"):
+        assert f'"{native_kind}"' in cli
+    assert '"dag"' not in combined
+    assert '"--dag"' not in combined
+    assert '"--reverse"' not in combined

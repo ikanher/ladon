@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
@@ -141,6 +142,52 @@ def _assert_process_bounds(artifacts: tuple[dict[str, Any], ...]) -> None:
     )
 
 
+def _assert_public_accepted_result(result: SemanticCandidateCheck) -> None:
+    payload = result.to_dict()
+    assert result.status == "accepted"
+    assert payload["authoritySelection"] == "ambient-selected-application-check"
+    assert payload["analysisCompleteness"] == "complete"
+    _assert_public_receipt(payload)
+    _assert_public_check_references(result, payload)
+    assert payload["substitutions"] == []
+    assert payload["residualPremises"] == []
+    assert payload["failureStage"] is None
+
+
+def _assert_public_receipt(payload: Mapping[str, Any]) -> None:
+    assert payload["evidenceReceipt"]["schema"] == "ladon-evidence-receipt-v1"
+    assert any(
+        "trusted target code" in limitation
+        for limitation in payload["evidenceReceipt"]["limitations"]
+    )
+    assert payload["evidenceReceipt"]["executionBinding"] == "ambient-observed"
+
+
+def _assert_public_check_references(
+    result: SemanticCandidateCheck, payload: Mapping[str, Any]
+) -> None:
+    assert payload["environmentRef"] == result.artifacts[0]["environmentRef"]
+    assert payload["checkRunId"] == result.artifacts[1]["payload"]["checkRunId"]
+    assert payload["checkRunRef"] == {
+        "artifactRef": result.artifacts[1]["artifactId"],
+        "kind": "check-run",
+        "localId": result.artifacts[1]["payload"]["checkRunId"],
+    }
+
+
+def _assert_stale_check_cannot_qualify(result: SemanticCandidateCheck) -> None:
+    stale_check = json.loads(json.dumps(result.artifacts[1]))
+    stale_check["subjectRefs"][-1]["display"] = "mutated after identity"
+    fallback = SemanticCandidateCheck(
+        "accepted",
+        artifacts=(stale_check,),
+        environment_ref=result.artifacts[0]["environmentRef"],
+        check_run_id=result.artifacts[1]["payload"]["checkRunId"],
+    ).to_dict()
+    assert fallback["checkRunRef"] is None
+    assert fallback["checkRunId"] == result.artifacts[1]["payload"]["checkRunId"]
+
+
 def test_accepted_worker_result_closes_exact_environment_and_check_references(
     tmp_path: Path,
 ) -> None:
@@ -166,40 +213,13 @@ def test_accepted_worker_result_closes_exact_environment_and_check_references(
         runner=accepted_runner,
     )
 
-    assert result.status == "accepted"
-    assert result.to_dict()["authoritySelection"] == "ambient-selected-application-check"
-    assert result.to_dict()["analysisCompleteness"] == "complete"
-    assert result.to_dict()["evidenceReceipt"]["schema"] == "ladon-evidence-receipt-v1"
-    assert any(
-        "trusted target code" in limitation
-        for limitation in result.to_dict()["evidenceReceipt"]["limitations"]
-    )
-    assert result.to_dict()["evidenceReceipt"]["executionBinding"] == "ambient-observed"
-    assert result.to_dict()["environmentRef"] == result.artifacts[0]["environmentRef"]
-    assert result.to_dict()["checkRunId"] == result.artifacts[1]["payload"]["checkRunId"]
-    assert result.to_dict()["checkRunRef"] == {
-        "artifactRef": result.artifacts[1]["artifactId"],
-        "kind": "check-run",
-        "localId": result.artifacts[1]["payload"]["checkRunId"],
-    }
-    assert result.to_dict()["substitutions"] == []
-    assert result.to_dict()["residualPremises"] == []
-    assert result.to_dict()["failureStage"] is None
+    _assert_public_accepted_result(result)
     _assert_artifact_family(result.artifacts)
     _assert_exact_links(result.artifacts)
     _assert_exact_semantics(result.artifacts)
     _assert_process_bounds(result.artifacts)
 
-    stale_check = json.loads(json.dumps(result.artifacts[1]))
-    stale_check["subjectRefs"][-1]["display"] = "mutated after identity"
-    fallback = SemanticCandidateCheck(
-        "accepted",
-        artifacts=(stale_check,),
-        environment_ref=result.artifacts[0]["environmentRef"],
-        check_run_id=result.artifacts[1]["payload"]["checkRunId"],
-    ).to_dict()
-    assert fallback["checkRunRef"] is None
-    assert fallback["checkRunId"] == result.artifacts[1]["payload"]["checkRunId"]
+    _assert_stale_check_cannot_qualify(result)
 
 
 def test_rejected_worker_result_owns_and_qualifies_its_check_run(
