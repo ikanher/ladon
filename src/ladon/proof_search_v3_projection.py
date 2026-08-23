@@ -41,7 +41,12 @@ def project_v3_catalog(connection: sqlite3.Connection, snapshot: Any) -> int:
             ) from exc
         envelopes.append(validate_envelope(value).to_dict())
 
-    counts = project_envelopes(connection, envelopes, exact_inventory=False)
+    counts = project_envelopes(
+        connection,
+        envelopes,
+        exact_inventory=False,
+        manage_user_version=False,
+    )
     return int(counts["artifacts"])
 
 

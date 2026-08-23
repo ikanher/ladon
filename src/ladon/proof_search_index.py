@@ -99,6 +99,21 @@ _MAX_LEXICAL_TYPE_BYTES = 16 * 1024
 class ProofSearchIndexError(RuntimeError):
     """A v1 index could not be built, opened, or queried safely."""
 
+    def __init__(
+        self,
+        message: str,
+        *,
+        exit_class: str = "invocation",
+        code: str = "invalid-invocation",
+        remediation: str | None = None,
+        details: Mapping[str, Any] | None = None,
+    ) -> None:
+        super().__init__(message)
+        self.exit_class = exit_class
+        self.code = code
+        self.remediation = remediation
+        self.details = dict(details or {})
+
 
 @dataclass(frozen=True)
 class IndexedSource:
@@ -176,9 +191,7 @@ def capture_repository_snapshot(repo_root: Path) -> RepositorySnapshot:
     except ProofIRCatalogError as exc:
         raise ProofSearchIndexError(str(exc)) from exc
     configuration = _configuration_fingerprint(root, proofir_config, proofir_artifacts)
-    source_fingerprint = _stable_digest(
-        [source.identity_payload() for source in sources]
-    )
+    source_fingerprint = _stable_digest([source.identity_payload() for source in sources])
     generation = _stable_digest(
         {
             "schema": PROOF_SEARCH_INDEX_SCHEMA,
@@ -229,9 +242,7 @@ def build_proof_search_index(
                 max_index_bytes=max_index_bytes,
             )
             if temporary.stat().st_size > max_index_bytes:
-                raise ProofSearchIndexError(
-                    f"index exceeds configured limit of {max_index_bytes} bytes"
-                )
+                raise _index_storage_limit_error(max_index_bytes)
             durable_replace(temporary, destination)
         finally:
             temporary.unlink(missing_ok=True)
@@ -370,9 +381,7 @@ def query_proof_search_index(
     stored_freshness = "unchecked"
     current_generation = None
     if freshness == "verify":
-        stored_freshness, current_generation = _freshness(
-            root, metadata, verify_sources=True
-        )
+        stored_freshness, current_generation = _freshness(root, metadata, verify_sources=True)
     return {
         "schema": PROOF_SEARCH_RESULT_SCHEMA,
         "operation": "query",
@@ -380,12 +389,12 @@ def query_proof_search_index(
         "indexPath": str(database),
         "generationIdentity": metadata.get("generationIdentity"),
         "freshness": stored_freshness,
-        "freshnessStatus": (
-            "verified-fresh" if stored_freshness == "fresh" else stored_freshness
-        ),
+        "freshnessStatus": ("verified-fresh" if stored_freshness == "fresh" else stored_freshness),
         "currentGenerationIdentity": current_generation,
         "evidenceStatus": metadata.get("evidenceStatus", "unknown"),
-        "query": _query_metadata(text, scope, roots, limit, query_mode, exclusions, min_matched_segments),
+        "query": _query_metadata(
+            text, scope, roots, limit, query_mode, exclusions, min_matched_segments
+        ),
         "scope": {
             "kind": scope,
             "roots": list(roots),
@@ -401,9 +410,32 @@ def query_proof_search_index(
     }
 
 
-def _query_metadata(text: str | None, scope: str, roots: Sequence[str], limit: int, mode: str, exclusions: Sequence[str], minimum: int) -> dict[str, Any]:
+def _query_metadata(
+    text: str | None,
+    scope: str,
+    roots: Sequence[str],
+    limit: int,
+    mode: str,
+    exclusions: Sequence[str],
+    minimum: int,
+) -> dict[str, Any]:
     terms = semantic_name_segments_v1(text).split() if text else []
-    return {"text": text, "scope": scope, "roots": list(roots), "limit": limit, "mode": mode, "exclude": list(exclusions), "minMatchedSegments": minimum, "rankingPolicy": "generic-token-downweight-v1", "queryTerms": terms, "downweightedTerms": [term for term in terms if term in {"bound", "path", "le", "eq", "of", "has", "map", "mem"}]}
+    return {
+        "text": text,
+        "scope": scope,
+        "roots": list(roots),
+        "limit": limit,
+        "mode": mode,
+        "exclude": list(exclusions),
+        "minMatchedSegments": minimum,
+        "rankingPolicy": "generic-token-downweight-v1",
+        "queryTerms": terms,
+        "downweightedTerms": [
+            term
+            for term in terms
+            if term in {"bound", "path", "le", "eq", "of", "has", "map", "mem"}
+        ],
+    }
 
 
 def _write_database(
@@ -417,7 +449,26 @@ def _write_database(
     try:
         return _write_database_connection(path, snapshot, max_index_bytes)
     except sqlite3.Error as exc:
+        if getattr(exc, "sqlite_errorcode", None) == sqlite3.SQLITE_FULL or (
+            "database or disk is full" in str(exc).lower()
+        ):
+            raise _index_storage_limit_error(max_index_bytes) from exc
         raise ProofSearchIndexError(f"SQLite index build failed: {exc}") from exc
+
+
+def _index_storage_limit_error(max_index_bytes: int) -> ProofSearchIndexError:
+    max_index_mib = round(max_index_bytes / (1024 * 1024), 2)
+    return ProofSearchIndexError(
+        "proof-search index reached its configured limit of "
+        f"{max_index_bytes} bytes ({max_index_mib} MiB)",
+        exit_class="operational",
+        code="index-storage-limit",
+        remediation=(
+            "Confirm available disk space, then rerun with a larger "
+            "--max-index-mib value; the existing published index is unchanged."
+        ),
+        details={"maxIndexBytes": max_index_bytes, "maxIndexMiB": max_index_mib},
+    )
 
 
 def _write_database_connection(
@@ -519,9 +570,7 @@ def _insert_proofir_catalog(
         artifact_id = _insert_catalog_artifact(connection, generation_id, artifact)
         artifact_ids[artifact.relative_path] = artifact_id
         content_ids[artifact.relative_path] = (
-            str(artifact.content_artifact_id)
-            if artifact.content_artifact_id is not None
-            else None
+            str(artifact.content_artifact_id) if artifact.content_artifact_id is not None else None
         )
         file_digests[artifact.relative_path] = str(artifact.file_digest)
         _insert_catalog_diagnostic(connection, generation_id, artifact, artifact_id)
@@ -547,14 +596,31 @@ def _insert_proofir_catalog(
     }
 
 
-def _insert_catalog_artifact(connection: sqlite3.Connection, generation_id: str, artifact: CatalogArtifact) -> str:
+def _insert_catalog_artifact(
+    connection: sqlite3.Connection, generation_id: str, artifact: CatalogArtifact
+) -> str:
     artifact_id = _stable_digest({"generation": generation_id, **artifact.identity_payload()})
-    connection.execute("INSERT INTO proofir_artifacts(artifact_id,generation_id,path,sha256,byte_size,artifact_kind,schema_version,state,metadata_json,diagnostic) VALUES(?,?,?,?,?,?,?,?,?,?)",
-        (artifact_id, generation_id, artifact.relative_path, artifact.sha256, artifact.byte_size, artifact.artifact_kind, artifact.schema_version, artifact.state, artifact.metadata_json, artifact.diagnostic))
+    connection.execute(
+        "INSERT INTO proofir_artifacts(artifact_id,generation_id,path,sha256,byte_size,artifact_kind,schema_version,state,metadata_json,diagnostic) VALUES(?,?,?,?,?,?,?,?,?,?)",
+        (
+            artifact_id,
+            generation_id,
+            artifact.relative_path,
+            artifact.sha256,
+            artifact.byte_size,
+            artifact.artifact_kind,
+            artifact.schema_version,
+            artifact.state,
+            artifact.metadata_json,
+            artifact.diagnostic,
+        ),
+    )
     return artifact_id
 
 
-def _insert_catalog_diagnostic(connection: sqlite3.Connection, generation_id: str, artifact: CatalogArtifact, artifact_id: str) -> None:
+def _insert_catalog_diagnostic(
+    connection: sqlite3.Connection, generation_id: str, artifact: CatalogArtifact, artifact_id: str
+) -> None:
     if artifact.state == "cataloged" and not artifact.diagnostic:
         return
     reason = artifact.state if artifact.state != "cataloged" else "truncated"
@@ -562,9 +628,7 @@ def _insert_catalog_diagnostic(connection: sqlite3.Connection, generation_id: st
         structured = json.loads(artifact.diagnostic or "null")
     except json.JSONDecodeError:
         structured = None
-    pointer = (
-        structured.get("pointer", "/") if isinstance(structured, dict) else "/"
-    )
+    pointer = structured.get("pointer", "/") if isinstance(structured, dict) else "/"
     details = {
         "artifactKind": artifact.artifact_kind,
         "diagnostic": artifact.diagnostic,
@@ -575,8 +639,18 @@ def _insert_catalog_diagnostic(connection: sqlite3.Connection, generation_id: st
         "semanticRowsProjected": False,
         "retained": artifact.state != "malformed",
     }
-    connection.execute("INSERT INTO proofir_diagnostics(diagnostic_id,generation_id,artifact_id,kind,subject,reason,details_json) VALUES(?,?,?,?,?,?,?)",
-        (_stable_digest({"artifact": artifact_id, "reason": reason}), generation_id, artifact_id, "proofir_catalog", artifact.relative_path, reason, json.dumps(details, sort_keys=True, separators=(",", ":"))))
+    connection.execute(
+        "INSERT INTO proofir_diagnostics(diagnostic_id,generation_id,artifact_id,kind,subject,reason,details_json) VALUES(?,?,?,?,?,?,?)",
+        (
+            _stable_digest({"artifact": artifact_id, "reason": reason}),
+            generation_id,
+            artifact_id,
+            "proofir_catalog",
+            artifact.relative_path,
+            reason,
+            json.dumps(details, sort_keys=True, separators=(",", ":")),
+        ),
+    )
 
 
 def _insert_catalog_relations(
@@ -661,7 +735,15 @@ def _insert_module_semantic_states(
     for source in snapshot.sources:
         connection.execute(
             "INSERT INTO module_semantic_state VALUES (?, ?, '', ?, '', ?, ?, 'lexical', 'semantic extraction not requested', ?, ?)",
-            (source.module, source.sha256, snapshot.source_fingerprint, PROOF_SEARCH_HELPER_IDENTITY, snapshot.toolchain_identity, declaration_count, import_count),
+            (
+                source.module,
+                source.sha256,
+                snapshot.source_fingerprint,
+                PROOF_SEARCH_HELPER_IDENTITY,
+                snapshot.toolchain_identity,
+                declaration_count,
+                import_count,
+            ),
         )
 
 
@@ -739,22 +821,53 @@ def _insert_one_declaration(
             doc_text, rendered_type, conclusion_text
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
-        (declaration.identifier, declaration.name, candidate,
-         name_casefold(candidate or declaration.name), semantic_name_segments_v1(candidate or declaration.name),
-         ".".join(declaration.namespace_stack), declaration.kind, source.module, source.package,
-         source.relative_path, declaration.line, declaration.column, declaration.start_offset,
-         declaration.end_offset, declaration.normalized_block_sha256, type_text, type_bytes,
-         int(type_truncated), "lexical-signature" if type_text else "unavailable", "lexical_text",
-         declaration.privacy, declaration.locality, structure_name, "", type_text or "", type_text or ""),
+        (
+            declaration.identifier,
+            declaration.name,
+            candidate,
+            name_casefold(candidate or declaration.name),
+            semantic_name_segments_v1(candidate or declaration.name),
+            ".".join(declaration.namespace_stack),
+            declaration.kind,
+            source.module,
+            source.package,
+            source.relative_path,
+            declaration.line,
+            declaration.column,
+            declaration.start_offset,
+            declaration.end_offset,
+            declaration.normalized_block_sha256,
+            type_text,
+            type_bytes,
+            int(type_truncated),
+            "lexical-signature" if type_text else "unavailable",
+            "lexical_text",
+            declaration.privacy,
+            declaration.locality,
+            structure_name,
+            "",
+            type_text or "",
+            type_text or "",
+        ),
     )
     if type_truncated:
         connection.execute(
             "INSERT INTO omissions VALUES ('declaration', ?, 'lexical_type_truncated', ?)",
-            (declaration.identifier, json.dumps({"observedBytes": type_bytes, "storedBytes": _MAX_LEXICAL_TYPE_BYTES}, sort_keys=True, separators=(",", ":"))),
+            (
+                declaration.identifier,
+                json.dumps(
+                    {"observedBytes": type_bytes, "storedBytes": _MAX_LEXICAL_TYPE_BYTES},
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+            ),
         )
     _insert_search_row(connection, declaration.identifier, candidate or declaration.name, type_text)
     if structure_name is not None:
-        connection.execute("INSERT INTO structures VALUES (?, ?, ?, 'lexical_text')", (declaration.identifier, structure_name, source.module))
+        connection.execute(
+            "INSERT INTO structures VALUES (?, ?, ?, 'lexical_text')",
+            (declaration.identifier, structure_name, source.module),
+        )
     return structure_name is not None, type_truncated
 
 
@@ -788,8 +901,8 @@ def _lexical_type_text(
     """Return a bounded lexical signature without claiming elaboration."""
 
     finish = declaration.block_end_offset or declaration.end_offset
-    raw_tail = text[declaration.end_offset:finish]
-    masked_tail = masked[declaration.end_offset:finish]
+    raw_tail = text[declaration.end_offset : finish]
+    masked_tail = masked[declaration.end_offset : finish]
     boundaries = [position for position in (masked_tail.find(":="),) if position >= 0]
     where_match = re.search(r"(?m)^[ \t]*where\b", masked_tail)
     if where_match is not None:
@@ -1158,9 +1271,7 @@ def _configuration_fingerprint(
         rows.append(
             {
                 "path": ".ladon/proofir.json",
-                "proofir": catalog_generation_identity(
-                    proofir_config, proofir_artifacts
-                ),
+                "proofir": catalog_generation_identity(proofir_config, proofir_artifacts),
             }
         )
     return _stable_digest(rows)

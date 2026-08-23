@@ -28,12 +28,15 @@ class ProjectionQuery:
     max_algorithm_nodes: int = 5000
     max_tree_depth: int = 32
     max_tree_bytes: int = 1_000_000
+    max_dominator_rows: int = 100
 
     def __post_init__(self) -> None:
         if self.view not in {"routes", "graph", "tree", "bottlenecks"}:
             raise TheoremLineageProjectionError("unsupported projection view")
         if self.max_algorithm_nodes < 1:
             raise TheoremLineageProjectionError("algorithm node cap must be positive")
+        if self.max_dominator_rows < 1:
+            raise TheoremLineageProjectionError("dominator summary cap must be positive")
 
 
 def project_lineage(
@@ -62,23 +65,78 @@ def project_lineage(
             cap=query.max_algorithm_nodes,
         )
     elif query.view == "bottlenecks":
-        roots = sorted({route["root"] for route in routes})
-        try:
-            payload["bottlenecks"] = compute_dominators(
-                [row["name"] for row in nodes], edge_rows, roots, query.lineage.theorem,
-                cap=query.max_algorithm_nodes,
-            )
-        except AlgorithmInputError as exc:
-            raise TheoremLineageProjectionError(str(exc)) from exc
+        payload["bottlenecks"] = _project_bottlenecks(nodes, routes, edge_rows, query)
     return payload
 
 
+def _project_bottlenecks(
+    nodes: list[dict[str, Any]],
+    routes: list[dict[str, Any]],
+    edge_rows: list[tuple[str, str]],
+    query: ProjectionQuery,
+) -> dict[str, Any]:
+    roots = sorted({route["root"] for route in routes})
+    node_names = {row["name"] for row in nodes}
+    if not roots or query.lineage.theorem not in node_names:
+        raise TheoremLineageProjectionError(
+            "bottlenecks requires at least one root-to-target route in the "
+            "bounded result; run --view summary first, select an exact --root, "
+            "or increase --max-nodes/--max-routes"
+        )
+    try:
+        result = compute_dominators(
+            [row["name"] for row in nodes],
+            edge_rows,
+            roots,
+            query.lineage.theorem,
+            cap=query.max_algorithm_nodes,
+        )
+        dominators = result.pop("dominators")
+        assert isinstance(dominators, dict)
+        summary = sorted(
+            (
+                {"node": node, "dominatorCount": len(values)}
+                for node, values in dominators.items()
+            ),
+            key=lambda row: (-row["dominatorCount"], row["node"]),
+        )
+        result["dominatorSummary"] = summary[: query.max_dominator_rows]
+        result["dominatorPopulation"] = len(summary)
+        result["dominatorReturned"] = min(len(summary), query.max_dominator_rows)
+        result["dominatorSummaryTruncated"] = len(summary) > query.max_dominator_rows
+        return result
+    except AlgorithmInputError as exc:
+        raise TheoremLineageProjectionError(str(exc)) from exc
+
+
 def _route_edges(routes: list[dict[str, Any]]) -> list[tuple[str, str]]:
-    return sorted({(source, target) for route in routes for source, target in zip(route["nodes"], route["nodes"][1:])})
+    return sorted(
+        {
+            (source, target)
+            for route in routes
+            for source, target in zip(route["nodes"], route["nodes"][1:])
+        }
+    )
 
 
-def _base_payload(result: dict[str, Any], query: ProjectionQuery, nodes: list[dict[str, Any]], routes: list[dict[str, Any]], edges: list[tuple[str, str]]) -> dict[str, Any]:
-    return {**result, "projection": query.view, "nodes": nodes, "edges": [{"source": source, "target": target} for source, target in edges], "routes": routes, "collapses": _collapses(nodes), "branchPoints": _branch_points(edges), "projectionFingerprint": _fingerprint(query, nodes, edges), "nonclaim": result["nonclaim"]}
+def _base_payload(
+    result: dict[str, Any],
+    query: ProjectionQuery,
+    nodes: list[dict[str, Any]],
+    routes: list[dict[str, Any]],
+    edges: list[tuple[str, str]],
+) -> dict[str, Any]:
+    return {
+        **result,
+        "projection": query.view,
+        "nodes": nodes,
+        "edges": [{"source": source, "target": target} for source, target in edges],
+        "routes": routes,
+        "collapses": _collapses(nodes),
+        "branchPoints": _branch_points(edges),
+        "projectionFingerprint": _fingerprint(query, nodes, edges),
+        "nonclaim": result["nonclaim"],
+    }
 
 
 def _collapses(nodes: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -96,11 +154,23 @@ def _branch_points(edges: list[tuple[str, str]]) -> list[dict[str, Any]]:
     counts: dict[str, int] = {}
     for source, _ in edges:
         counts[source] = counts.get(source, 0) + 1
-    return [{"node": node, "outDegree": count} for node, count in sorted(counts.items()) if count > 1]
+    return [
+        {"node": node, "outDegree": count} for node, count in sorted(counts.items()) if count > 1
+    ]
 
 
-def _fingerprint(query: ProjectionQuery, nodes: list[dict[str, Any]], edges: list[tuple[str, str]]) -> str:
-    encoded = json.dumps({"query": query.lineage.__dict__, "view": query.view, "nodes": [row["name"] for row in nodes], "edges": edges}, sort_keys=True)
+def _fingerprint(
+    query: ProjectionQuery, nodes: list[dict[str, Any]], edges: list[tuple[str, str]]
+) -> str:
+    encoded = json.dumps(
+        {
+            "query": query.lineage.__dict__,
+            "view": query.view,
+            "nodes": [row["name"] for row in nodes],
+            "edges": edges,
+        },
+        sort_keys=True,
+    )
     return hashlib.sha256(encoded.encode()).hexdigest()
 
 

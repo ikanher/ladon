@@ -117,6 +117,23 @@ def test_findings_flag_duplicate_imports_and_large_target_owned_modules() -> Non
     assert findings[2]["count"] == 3000
 
 
+def test_findings_do_not_penalize_long_handwritten_semantic_names() -> None:
+    findings = summarize_findings(
+        {
+            "module_name_smells": [
+                {
+                    "module": "Domain.CenteredTightnessExactJensenHybridCommand",
+                    "generated": False,
+                    "reasonKinds": ["long_module_name", "long_segment"],
+                }
+            ]
+        },
+        None,
+    )
+
+    assert findings == []
+
+
 def test_findings_cap_each_hotspot_family() -> None:
     declaration_graph = {
         "top_fan_in": [],

@@ -64,6 +64,20 @@ def test_edge_kind_filter_and_depth_cap_are_explicit() -> None:
     assert result["query"]["edgeKind"] == "type"
     assert result["bounds"]["maxDepth"] == 1
     assert result["truncated"] is False
+    assert result["routeExplanation"]["status"] == "no-route-within-boundary"
+
+
+def test_empty_trust_route_explains_unclassified_boundary() -> None:
+    connection, identity = lineage_database()
+
+    result = query_lineage(
+        connection,
+        identity,
+        LineageQuery(theorem="Demo.target", boundary="trust", max_depth=1),
+    )
+
+    assert result["routeExplanation"]["status"] == "no-route-within-boundary"
+    assert result["acquisition"]["boundaryPopulation"] == 1
 
 
 def test_missing_or_stale_closure_does_not_fallback() -> None:

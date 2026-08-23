@@ -44,6 +44,34 @@ def test_segmented_name_terms_find_camel_case_declaration(tmp_path: Path) -> Non
     assert result["rows"][0]["candidateName"] == "fixedIndexPathExpression"
 
 
+def test_empty_name_search_suggests_type_text(tmp_path: Path) -> None:
+    from argparse import Namespace
+
+    from ladon.proof_search_cli import _dispatch_search
+
+    (tmp_path / "Main.lean").write_text(
+        "theorem fixedIndexPathExpression : True := True.intro\n",
+        encoding="utf-8",
+    )
+    build_proof_search_index(tmp_path)
+    args = Namespace(
+        search_operation="name",
+        text="concept not in name",
+        scope="repository",
+        root=[],
+        limit=20,
+        query_mode="all",
+        exclude=[],
+        min_matched_segments=1,
+        freshness="verify",
+    )
+
+    result = _dispatch_search(args, tmp_path, None)
+
+    assert result["returned"] == 0
+    assert result["suggestions"][0]["operation"] == "search-type-text"
+
+
 def test_results_is_canonical_and_exclusions_are_explicit(tmp_path: Path) -> None:
     (tmp_path / "Main.lean").write_text(
         "theorem fixedIndexPathExpression : True := True.intro\n"

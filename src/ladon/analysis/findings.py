@@ -364,7 +364,7 @@ def source_line_suffix(lines: Any) -> str:
 
 
 def module_name_smell_findings(module_dag: dict[str, Any]) -> list[dict[str, Any]]:
-    """Flag module names that encode generator, parameter, or proof-case pressure."""
+    """Flag generated naming pressure without penalizing semantic domain names."""
 
     rows = [
         finding(
@@ -384,6 +384,10 @@ def module_name_smell_findings(module_dag: dict[str, Any]) -> list[dict[str, Any
             ],
         )
         for index, row in enumerate(module_dag.get("module_name_smells", []))
+        if row.get("generated")
+        or any(
+            str(kind).startswith("generated_") for kind in row.get("reasonKinds", [])
+        )
     ]
     return rows[:MAX_FINDINGS_PER_KIND]
 

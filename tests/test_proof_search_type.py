@@ -19,6 +19,10 @@ def test_type_search_returns_lexical_shortlist_and_diagnostics(tmp_path: Path, c
     assert status == 0
     assert payload["schema"] == "ladon-proof-search-type-result-v1"
     assert payload["results"][0]["authority"] == "lexical_shortlist"
+    assert "Nat" in payload["results"][0]["typeText"]
+    assert payload["freshness"] == "stored"
+    assert payload["matched"] >= payload["returned"] == 1
+    assert payload["matchedExact"] is True
     assert payload["diagnostics"]
 
 

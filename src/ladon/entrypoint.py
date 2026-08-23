@@ -15,6 +15,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Dispatch proof-search without importing the general analyzer first."""
 
     arguments = list(sys.argv[1:] if argv is None else argv)
+    lightweight = _dispatch_lightweight(arguments)
+    if lightweight is not None:
+        return lightweight
+    from ladon.cli import main as analyzer_main
+
+    return analyzer_main(arguments)
+
+
+def _dispatch_lightweight(arguments: list[str]) -> int | None:
+    """Dispatch lightweight command families without loading the analyzer."""
+
+    if arguments == ["--version"]:
+        return version_main(())
+    if arguments and arguments[0] == "version":
+        return version_main(arguments[1:], force_json=True)
     if arguments and arguments[0] == "doctor":
         return doctor_main(arguments[1:])
     if arguments and arguments[0] == "proof-search":
@@ -25,9 +40,28 @@ def main(argv: Sequence[str] | None = None) -> int:
         from ladon.proofir_v3_cli import proofir_v3_main
 
         return proofir_v3_main(arguments[1:])
-    from ladon.cli import main as analyzer_main
+    return None
 
-    return analyzer_main(arguments)
+
+def version_main(arguments: Sequence[str], *, force_json: bool = False) -> int:
+    """Report installed content plus local source revision when observable."""
+
+    if any(argument != "--json" for argument in arguments):
+        print("ladon version: supported option is --json", file=sys.stderr)
+        return 2
+    from ladon.version_info import version_payload
+
+    payload = version_payload()
+    if force_json or "--json" in arguments:
+        print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+    else:
+        package = payload["package"]
+        source = payload["source"]
+        assert isinstance(package, dict) and isinstance(source, dict)
+        revision = source.get("commit") or "source-unavailable"
+        dirty = " dirty" if source.get("dirty") is True else ""
+        print(f"ladon {package['version']} ({revision}{dirty})")
+    return 0
 
 
 def doctor_main(arguments: Sequence[str]) -> int:
@@ -85,6 +119,9 @@ def _doctor_payload(repo_root: Path) -> dict[str, object]:
         version = metadata.version("ladon")
     except metadata.PackageNotFoundError:
         version = "source-tree"
+    from ladon.version_info import version_payload
+
+    build = version_payload()
     return {
         "schema": "ladon-doctor-result-v1",
         "status": "available",
@@ -92,6 +129,8 @@ def _doctor_payload(repo_root: Path) -> dict[str, object]:
             "version": version,
             "python": platform.python_version(),
             "executable": sys.executable,
+            "identity": build["package"],
+            "source": build["source"],
         },
         "repository": {
             "root": str(repo_root),

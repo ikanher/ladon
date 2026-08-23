@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -26,19 +27,22 @@ from ladon.theorem_lineage_summary import summarize_lineage
 
 
 def run_lineage_command(args: Any) -> int:
+    started = time.monotonic()
     repo_root = Path(args.repo_root).resolve()
     index = _index_path(args, repo_root)
     lock = None
     try:
         if args.refresh != "never":
             lock = acquire_publication_lock(index)
-        return _run_lineage_command(args, repo_root, index)
+        return _run_lineage_command(args, repo_root, index, started)
     finally:
         if lock is not None:
             release_publication_lock(lock)
 
 
-def _run_lineage_command(args: Any, repo_root: Path, index: Path) -> int:
+def _run_lineage_command(
+    args: Any, repo_root: Path, index: Path, started: float
+) -> int:
     """Run lineage while any mutation-capable invocation owns publication."""
 
     status = inspect_proof_search_index(repo_root, index_path=index, verify_sources=True)
@@ -74,6 +78,7 @@ def _run_lineage_command(args: Any, repo_root: Path, index: Path) -> int:
         result["indexPath"] = str(index)
         result["refresh"] = {"policy": args.refresh, "performed": should_refresh}
         result["limits"] = {"completeDatabaseMaxBytes": int(args.max_database_mib) * 1024 * 1024}
+        result["acquisitionElapsedSeconds"] = round(time.monotonic() - started, 6)
         if ingest_result is not None:
             result["publication"] = ingest_result
         _progress("rendering", args.theorem)
@@ -115,7 +120,15 @@ def _project(connection: sqlite3.Connection, identity: LineageIdentity, args: An
         max_depth=args.max_depth, max_nodes=args.max_nodes,
         max_edges=args.max_edges, max_routes=args.max_routes,
     )
-    return project_lineage(connection, identity, ProjectionQuery(lineage=query, view=view))
+    return project_lineage(
+        connection,
+        identity,
+        ProjectionQuery(
+            lineage=query,
+            view=view,
+            max_dominator_rows=args.max_dominators,
+        ),
+    )
 
 
 def _closure_status(connection: sqlite3.Connection, identity: LineageIdentity, theorem: str) -> dict[str, Any]:

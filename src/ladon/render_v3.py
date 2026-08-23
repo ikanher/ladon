@@ -42,7 +42,7 @@ def render_report_v3_text(report: ReportV3) -> str:
     payload = _mapping(report.payload)
     metadata = _mapping(payload.get("metadata"))
     sections = _mapping(payload.get("sections"))
-    dag = _mapping(sections.get("module_dag"))
+    dag = _projected_mapping(sections.get("module_dag"))
     lines = [
         "Ladon Report",
         f"Root: {metadata.get('repo_root', '')}",
@@ -156,7 +156,19 @@ def _optional_mapping(
     name: str,
 ) -> dict[str, Any] | None:
     value = sections.get(name)
-    return dict(value) if isinstance(value, Mapping) else None
+    projected = _projected_mapping(value)
+    return dict(projected) if projected else None
+
+
+def _projected_mapping(value: Any) -> Mapping[str, Any]:
+    """Expose scalar fields from the compact summary-section envelope."""
+
+    mapping = _mapping(value)
+    scalars = mapping.get("scalars")
+    collections = mapping.get("collections")
+    if isinstance(scalars, Mapping) and isinstance(collections, Mapping):
+        return scalars
+    return mapping
 
 
 def _mapping(value: Any) -> Mapping[str, Any]:

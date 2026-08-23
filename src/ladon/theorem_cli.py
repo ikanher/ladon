@@ -95,9 +95,32 @@ def build_theorem_parser() -> argparse.ArgumentParser:
     lineage.add_argument("theorem", help="Fully qualified Lean theorem name.")
     _add_repository_options(lineage)
     lineage.add_argument("--index", help="Override the project-local proof-search SQLite index.")
-    lineage.add_argument("--view", choices=("summary", "graph", "routes", "spines", "tree", "bottlenecks"), default="routes")
-    lineage.add_argument("--from", dest="boundary", choices=("trust", "project", "external", "package", "declaration"), default="trust")
-    lineage.add_argument("--root", dest="roots", action="append", default=[])
+    lineage.add_argument(
+        "--view",
+        choices=("summary", "graph", "routes", "spines", "tree", "bottlenecks"),
+        default="summary",
+        help=(
+            "Projection to return; defaults to summary. Routes may be empty when "
+            "the bounded population is truncated. Bottlenecks requires a returned "
+            "root-to-target route."
+        ),
+    )
+    lineage.add_argument(
+        "--from",
+        dest="boundary",
+        choices=("trust", "project", "external", "package", "declaration"),
+        default="trust",
+    )
+    lineage.add_argument(
+        "--root",
+        dest="roots",
+        action="append",
+        default=[],
+        help=(
+            "Exact lineage boundary declaration; repeatable. Required with "
+            "--from package/declaration and useful for narrowing routes or bottlenecks."
+        ),
+    )
     lineage.add_argument("--edge-kind", choices=("all", "type", "value"), default="all")
     lineage.add_argument("--include-generated", action="store_true", default=True)
     lineage.add_argument("--exclude-generated", dest="include_generated", action="store_false")
@@ -105,7 +128,15 @@ def build_theorem_parser() -> argparse.ArgumentParser:
     lineage.add_argument("--max-nodes", type=_positive_integer, default=1000)
     lineage.add_argument("--max-edges", type=_positive_integer, default=4000)
     lineage.add_argument("--max-routes", type=_positive_integer, default=20)
-    lineage.add_argument("--refresh", choices=("missing", "stale", "always", "never"), default="missing")
+    lineage.add_argument(
+        "--max-dominators",
+        type=_positive_integer,
+        default=100,
+        help="Maximum compact dominator-summary rows; defaults to 100.",
+    )
+    lineage.add_argument(
+        "--refresh", choices=("missing", "stale", "always", "never"), default="missing"
+    )
     lineage.add_argument("--max-output-bytes", type=_positive_integer)
     lineage.add_argument(
         "--max-database-mib",
@@ -205,9 +236,7 @@ def _dispatch(args: argparse.Namespace) -> int:
         from ladon.theorem_lineage_cli import run_lineage_command
 
         return run_lineage_command(args)
-    raise CapsuleInvocationError(
-        f"unsupported theorem operation {args.theorem_command!r}"
-    )
+    raise CapsuleInvocationError(f"unsupported theorem operation {args.theorem_command!r}")
 
 
 def _validate_plan_output(repo_root: Path, output: str) -> None:
@@ -218,9 +247,7 @@ def _validate_plan_output(repo_root: Path, output: str) -> None:
     root = repo_root.resolve()
     destination = Path(output).absolute().resolve(strict=False)
     if destination == root or destination.is_relative_to(root):
-        raise CapsuleInvocationError(
-            "theorem plan output must be outside the target repository"
-        )
+        raise CapsuleInvocationError("theorem plan output must be outside the target repository")
 
 
 def _materialize_command(args: argparse.Namespace) -> int:
@@ -289,7 +316,11 @@ def _extract_command(args: argparse.Namespace) -> int:
         result["status"] = receipt["status"]
         result["receiptIdentity"] = receipt["receiptIdentity"]
     _write_command_result(result, args.format)
-    return EXIT_SUCCESS if result["status"] in {"materialized_unverified", "verified"} else EXIT_OPERATIONAL
+    return (
+        EXIT_SUCCESS
+        if result["status"] in {"materialized_unverified", "verified"}
+        else EXIT_OPERATIONAL
+    )
 
 
 def _write_command_result(payload: Mapping[str, Any], output_format: str) -> None:

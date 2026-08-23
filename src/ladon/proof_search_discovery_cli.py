@@ -41,7 +41,10 @@ def register_discover_parser(
         "--pattern", help="Type-text pattern used to build a bounded SQLite shortlist."
     )
     discover.add_argument(
-        "--local", action="append", default=[], help="Typed local as NAME:TYPE; repeatable."
+        "--local",
+        action="append",
+        default=[],
+        help=("Unsupported in the proposition-discovery testing profile; any use fails closed."),
     )
     discover.add_argument("--max-candidates", type=bounded_limit, default=20)
     discover.add_argument("--batch-size", type=bounded_limit, default=8)
@@ -85,7 +88,14 @@ def dispatch_discover(
             args.freshness,
             toolchain.context_identity if toolchain else None,
         )
-    except (ValueError, LeanToolchainError) as error:
+    except LeanToolchainError as error:
+        raise ProofSearchIndexError(
+            str(error),
+            exit_class="operational",
+            code="toolchain-unavailable",
+            remediation="Run 'ladon doctor --json' and correct the reported Lean/Lake posture.",
+        ) from error
+    except ValueError as error:
         raise ProofSearchIndexError(str(error)) from error
     shortlist_evidence: dict[str, Any] = {"source": "explicit-candidates"}
     if args.candidate:

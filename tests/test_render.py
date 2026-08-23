@@ -549,3 +549,41 @@ def test_text_renders_population_counts_and_partial_diagnostics() -> None:
     assert "- target_owned: 1" in text
     assert "retained counters: modules=3" in text
     assert "diagnostic resource.overall_wall_time subject=module_dag" in text
+
+
+def test_report_v3_summary_text_reads_compact_section_scalars() -> None:
+    from ladon.render_v3 import render_report_v3_text
+    from ladon.report_v3 import ReportV3
+
+    report = ReportV3(
+        projection="summary",
+        analysis_fingerprint="sha256:" + "a" * 64,
+        payload={
+            "metadata": {"repo_root": "/repo"},
+            "sections": {
+                "module_dag": {
+                    "scalars": {
+                        "module_count": 2,
+                        "edge_count": 1,
+                        "acyclic": True,
+                        "topological_layer_count": 2,
+                        "facade_module_count": 0,
+                    },
+                    "collections": {},
+                },
+                "declaration_graph": {
+                    "scalars": {
+                        "declaration_count": 7,
+                        "edge_count": 4,
+                        "unresolved_reference_count": 1,
+                    },
+                    "collections": {},
+                },
+            },
+        },
+    )
+
+    text = render_report_v3_text(report)
+
+    assert "- modules: 2" in text
+    assert "- declarations: 7" in text

@@ -89,6 +89,7 @@ def query_lineage(
         and query.max_nodes + 1 >= query.recursive_row_limit
     )
     truncated = route_truncated or edge_truncated or node_limit_reached or recursive_limit_reached
+    boundary_count = _boundary_population_count(connection, closure_id, query)
     return {
         "schema": "ladon-theorem-lineage-result-v1",
         "operation": "lineage",
@@ -109,15 +110,73 @@ def query_lineage(
             "rowsObserved": len(walk_rows),
             "recursiveRowLimitReached": recursive_limit_reached,
             "nodeLimitReached": node_limit_reached,
+            "boundaryPopulation": boundary_count,
         },
         "nodes": nodes[: query.max_nodes],
         "routes": routes[: query.max_routes],
         "returned": {"nodes": min(len(nodes), query.max_nodes), "routes": min(len(routes), query.max_routes), "edges": min(edge_count, query.max_edges)},
         "truncated": truncated,
+        "routeExplanation": _route_explanation(
+            query, routes, truncated, boundary_count
+        ),
         "omissions": _omissions(query, walk_rows, routes, truncated),
         "queryPlan": query_plan,
         "elapsedSeconds": round(time.monotonic() - started, 6),
         "nonclaim": _NONCLAIM,
+    }
+
+
+def _boundary_population_count(
+    connection: sqlite3.Connection,
+    closure_id: str,
+    query: LineageQuery,
+) -> int:
+    """Count classified boundary nodes for an explicit route explanation."""
+
+    if query.boundary == "trust":
+        row = connection.execute(
+            "SELECT count(DISTINCT target) FROM lineage_trust WHERE closure_id = ?",
+            (closure_id,),
+        ).fetchone()
+        return int(row[0] or 0)
+    if query.boundary == "declaration":
+        return len(query.roots)
+    row = connection.execute(
+        "SELECT count(*) FROM lineage_nodes WHERE closure_id = ? AND "
+        "(project_owned = 1 OR external_frontier = 1)",
+        (closure_id,),
+    ).fetchone()
+    return int(row[0] or 0)
+
+
+def _route_explanation(
+    query: LineageQuery,
+    routes: list[dict[str, Any]],
+    truncated: bool,
+    boundary_count: int,
+) -> dict[str, Any]:
+    """Explain empty route populations without upgrading them to absence claims."""
+
+    if routes:
+        return {"status": "routes-present", "message": "bounded routes returned"}
+    if truncated:
+        return {
+            "status": "unknown-bounded",
+            "message": "no routes returned within the selected bounds",
+        }
+    if boundary_count == 0:
+        return {
+            "status": "no-classified-boundary",
+            "message": (
+                f"no {query.boundary} boundary nodes were classified in the stored closure"
+            ),
+        }
+    return {
+        "status": "no-route-within-boundary",
+        "message": (
+            f"{boundary_count} {query.boundary} boundary nodes were classified, "
+            "but none has a route to the target under this query"
+        ),
     }
 
 

@@ -35,6 +35,13 @@ from ladon.proof_search_index import (
     inspect_proof_search_index,
     query_proof_search_index,
 )
+from ladon.proof_search_terminal import (
+    bounded_message,
+    emit_terminal,
+    exception_diagnostic,
+    semantic_payload_failed,
+    semantic_progress_fields,
+)
 from ladon.proof_search_type_cli import dispatch_type_text
 from ladon.proofir_derivation import (
     DerivationQueryBounds,
@@ -42,11 +49,11 @@ from ladon.proofir_derivation import (
     complete_derivation_slice,
     navigation_path,
 )
+from ladon.proofir_triage_cli import proofir_triage_payload
 from ladon.proofir_v3 import ProofIRV3Error, validate_envelope
 from ladon.proofir_v3_queries import (
     query_v3_artifacts,
     query_v3_theorem_evidence,
-    query_v3_triage,
 )
 from ladon.semantic_candidate_worker import (
     SemanticCandidateRequest,
@@ -211,7 +218,12 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     check = operations.add_parser("check", help="Run an explicit bounded Lean checker operation.")
     check_commands = check.add_subparsers(dest="check_operation", required=True)
     candidate = check_commands.add_parser(
-        "candidate", help="Check one closed candidate against one exact goal."
+        "candidate",
+        help="Check one closed candidate against one exact goal.",
+        description=(
+            "Load one trusted target module with direct Lean and existing compiled .olean "
+            "roots; Ladon does not reconcile Lake dependencies. Target initializers may run."
+        ),
     )
     _add_repository_options(candidate)
     _add_output_options(candidate)
@@ -248,49 +260,40 @@ def proof_search_main(argv: Sequence[str]) -> int:
         _emit_progress(args, operation, "started")
         payload = _dispatch(args)
         _write_payload(payload, output=args.output, output_format=args.output_format)
+        exit_code = (
+            EXIT_OPERATIONAL
+            if semantic_payload_failed(operation, payload)
+            else EXIT_SUCCESS
+        )
         _emit_progress(
             args,
             operation,
-            "completed",
+            "completed" if exit_code == EXIT_SUCCESS else "failed",
             elapsed_seconds=time.monotonic() - started,
+            extra=semantic_progress_fields(operation, payload, exit_code),
         )
-        return EXIT_SUCCESS
+        return exit_code
     except KeyboardInterrupt:
-        _emit_terminal(operation, exit_class="interrupted", exit_code=EXIT_INTERRUPTED)
+        emit_terminal(operation, exit_class="interrupted", exit_code=EXIT_INTERRUPTED)
         return EXIT_INTERRUPTED
     except ProofSearchIndexError as exc:
-        del exc
-        _emit_terminal(operation, exit_class="invocation", exit_code=EXIT_INVOCATION)
-        return EXIT_INVOCATION
+        exit_class = exc.exit_class
+        exit_code = EXIT_OPERATIONAL if exit_class == "operational" else EXIT_INVOCATION
+        emit_terminal(
+            operation,
+            exit_class=exit_class,
+            exit_code=exit_code,
+            diagnostic=exception_diagnostic(exc),
+        )
+        return exit_code
     except (OSError, UnicodeError) as exc:
-        del exc
-        _emit_terminal(operation, exit_class="operational", exit_code=EXIT_OPERATIONAL)
+        emit_terminal(
+            operation,
+            exit_class="operational",
+            exit_code=EXIT_OPERATIONAL,
+            diagnostic={"code": "operational-failure", "message": bounded_message(exc)},
+        )
         return EXIT_OPERATIONAL
-
-
-def _emit_terminal(
-    operation: str,
-    *,
-    exit_class: str,
-    exit_code: int,
-) -> None:
-    """Write one stable terminal failure record without contaminating stdout."""
-
-    print(
-        json.dumps(
-            {
-                "exitClass": exit_class,
-                "exitCode": exit_code,
-                "operation": operation,
-                "schema": "ladon-proof-search-terminal-v1",
-                "status": "interrupted" if exit_class == "interrupted" else "failed",
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        ),
-        file=sys.stderr,
-        flush=True,
-    )
 
 
 def _emit_type_text_migration_diagnostic() -> None:
@@ -318,6 +321,7 @@ def _emit_progress(
     status: str,
     *,
     elapsed_seconds: float | None = None,
+    extra: Mapping[str, object] | None = None,
 ) -> None:
     """Emit one bounded machine-readable progress row on stderr."""
 
@@ -331,6 +335,7 @@ def _emit_progress(
     }
     if elapsed_seconds is not None:
         payload["elapsedSeconds"] = round(elapsed_seconds, 6)
+    payload.update(extra or {})
     print(
         json.dumps(payload, sort_keys=True, separators=(",", ":")),
         file=sys.stderr,
@@ -445,7 +450,14 @@ def _dispatch_check(args: argparse.Namespace, repo_root: Path) -> Mapping[str, A
             max_rss_bytes=args.max_rss_mib * 1024 * 1024,
             toolchain=toolchain,
         )
-    except (ValueError, LeanToolchainError) as error:
+    except LeanToolchainError as error:
+        raise ProofSearchIndexError(
+            str(error),
+            exit_class="operational",
+            code="toolchain-unavailable",
+            remediation="Run 'ladon doctor --json' and correct the reported Lean/Lake posture.",
+        ) from error
+    except ValueError as error:
         raise ProofSearchIndexError(str(error)) from error
     return check_semantic_candidate(request).to_dict()
 
@@ -508,6 +520,17 @@ def _dispatch_search(
     result["matchMode"] = "exact-name+fts" if args.text else "bounded"
     result["normalization"] = "semantic-name-segments-v1"
     result.pop("rows", None)
+    if args.text and not result.get("results"):
+        result["suggestions"] = [
+            {
+                "operation": "search-type-text",
+                "reason": "no-name-results",
+                "message": (
+                    "No declaration name matched every requested segment; try "
+                    "proof-search search type-text for stored signature text."
+                ),
+            }
+        ]
     return result
 
 
@@ -528,10 +551,7 @@ def _dispatch_evidence(
                 "rows": query_v3_artifacts(connection, args.name, limit=args.limit),
             }
         if args.kind == "triage":
-            return {
-                "schema": "ladon-proofir-v3-triage-v1",
-                "rows": query_v3_triage(connection, limit=args.limit),
-            }
+            return proofir_triage_payload(connection, args.limit)
         return _dispatch_stored_derivation(connection, args)
 
 

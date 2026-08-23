@@ -742,8 +742,12 @@ def _escape_pointer(value: str) -> str:
     return value.replace("~", "~0").replace("/", "~1")
 
 
-def create_v3_schema(connection: sqlite3.Connection) -> None:
-    """Create the exact native-v3 projection schema."""
+def create_v3_schema(
+    connection: sqlite3.Connection,
+    *,
+    manage_user_version: bool = True,
+) -> None:
+    """Create native-v3 tables, optionally owning database-wide version metadata."""
 
     connection.execute("PRAGMA foreign_keys = ON")
     existing = connection.execute(
@@ -768,7 +772,8 @@ def create_v3_schema(connection: sqlite3.Connection) -> None:
     # ``executescript`` commits a caller-open transaction; repeat the pragma because
     # SQLite ignores attempts to change foreign-key enforcement inside a transaction.
     connection.execute("PRAGMA foreign_keys = ON")
-    connection.execute(f"PRAGMA user_version = {V3_SCHEMA_VERSION}")
+    if manage_user_version:
+        connection.execute(f"PRAGMA user_version = {V3_SCHEMA_VERSION}")
 
 
 def _checked_artifacts(artifacts: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -1317,6 +1322,7 @@ def project_envelopes(
     artifacts: list[dict[str, Any]],
     *,
     exact_inventory: bool = True,
+    manage_user_version: bool = True,
 ) -> dict[str, Any]:
     """Replace the complete projection atomically after validating every input.
 
@@ -1327,7 +1333,7 @@ def project_envelopes(
 
     started = time.monotonic()
     checked = _checked_artifacts(artifacts)
-    create_v3_schema(connection)
+    create_v3_schema(connection, manage_user_version=manage_user_version)
     with connection:
         connection.execute("PRAGMA defer_foreign_keys = ON")
         _clear_projection(connection)

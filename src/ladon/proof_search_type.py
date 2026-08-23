@@ -67,7 +67,11 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
         "operation": "search-type",
         "matchMode": "type-text-overlap",
         "status": "available",
+        "freshness": "verified-fresh" if request.freshness == "verify" else "stored",
         "results": result_rows,
+        "matched": len(rows),
+        "matchedExact": not truncated,
+        "returned": len(result_rows),
         "diagnostics": diagnostics,
         "query": {"pattern": request.pattern, "scope": request.scope, "module": request.module, "namespace": request.namespace, "package": request.package, "freshness": request.freshness},
         "coverage": {
@@ -155,8 +159,11 @@ def _result_row(row: sqlite3.Row, pattern: str) -> dict[str, Any]:
         "authority": "lexical_shortlist",
         "verification": "not_requested",
         "typeStatus": row[8],
+        "typeText": row[9],
         "typeTextBytes": row[10],
         "typeTextTruncated": bool(row[11]),
+        "renderedType": row[12],
+        "conclusionText": row[13],
         "fieldContributions": field_contributions,
         "bucket": "text-overlap",
     }
