@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 from collections.abc import Mapping
 from typing import Any
 
@@ -35,9 +36,19 @@ class SemanticProjectionError(ValueError):
 def semantic_projection_bytes(payload: Mapping[str, Any]) -> bytes:
     """Serialize exactly as the installed JSON CLI for byte-limit enforcement."""
 
-    return (json.dumps(payload, sort_keys=True, indent=2, ensure_ascii=False) + "\n").encode(
-        "utf-8"
-    )
+    try:
+        rendered = json.dumps(
+            payload,
+            sort_keys=True,
+            indent=2,
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+    except ValueError as error:
+        raise SemanticProjectionError(
+            "semantic projection contains a non-finite number"
+        ) from error
+    return (rendered + "\n").encode("utf-8")
 
 
 def sanitize(
@@ -59,7 +70,12 @@ def sanitize(
         return _sanitize_list(value, projection, omissions, pointer, depth)
     if isinstance(value, str):
         return bounded_text(value, 512, omissions, pointer)
-    if value is None or isinstance(value, (bool, int, float)):
+    if isinstance(value, float):
+        if math.isfinite(value):
+            return value
+        omit(omissions, pointer, "projection-non-finite-number", 1)
+        return None
+    if value is None or isinstance(value, (bool, int)):
         return value
     return bounded_text(str(value), 512, omissions, pointer)
 
@@ -182,9 +198,19 @@ def omit(
 def identity(value: Mapping[str, Any]) -> str:
     """Return the canonical JSON identity for one mapping."""
 
-    encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode(
-        "utf-8"
-    )
+    try:
+        rendered = json.dumps(
+            value,
+            sort_keys=True,
+            separators=(",", ":"),
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+    except ValueError as error:
+        raise SemanticProjectionError(
+            "semantic projection identity contains a non-finite number"
+        ) from error
+    encoded = rendered.encode("utf-8")
     return "sha256:" + hashlib.sha256(encoded).hexdigest()
 
 

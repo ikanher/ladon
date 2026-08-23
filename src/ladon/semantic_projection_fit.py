@@ -8,18 +8,23 @@ from typing import Any
 from ladon.semantic_projection_core import (
     SemanticProjectionError,
     identity,
+    identity_text,
     omit,
     semantic_projection_bytes,
     truncate_utf8,
 )
 
 _SEMANTIC_ROW_FIELDS = ("substitutions", "residualPremises", "dischargedHypotheses")
+_OMISSION_LEDGER_LIMIT = 24
 
 
 def finalize_projection(payload: dict[str, Any], maximum: int) -> dict[str, Any]:
     """Fit, identify, and enforce one projection's public byte cap."""
 
     fit_projection(payload, maximum - 128)
+    _bound_omission_ledger(payload, _OMISSION_LEDGER_LIMIT)
+    if not _fits(payload, maximum - 128):
+        payload = _minimal_projection(payload)
     payload["projection"]["projectionIdentity"] = identity(payload)
     size = len(semantic_projection_bytes(payload))
     if size > maximum:
@@ -41,6 +46,210 @@ def fit_projection(payload: dict[str, Any], maximum: int) -> None:
     if _fits(payload, maximum):
         return
     _trim_request(payload)
+
+
+def _bound_omission_ledger(payload: dict[str, Any], limit: int) -> None:
+    rows = payload.get("omissions")
+    if not isinstance(rows, list):
+        rows = []
+    observed = len(rows)
+    total_claims = sum(_omitted_claims(row) for row in rows)
+    projected = min(observed, limit)
+    generated = 0
+    if observed > limit:
+        projected = max(0, limit - 1)
+        rows = [*rows[:projected], _omission_summary(observed - projected)]
+        rows.sort(key=lambda row: (str(row.get("pointer")), str(row.get("reason"))))
+        generated = 1
+    payload["omissions"] = rows
+    coverage = payload.get("coverage")
+    if isinstance(coverage, dict):
+        coverage["omissionPopulation"] = {
+            "observedRecords": observed,
+            "projectedRecords": projected,
+            "omittedRecords": observed - projected,
+            "generatedRecords": generated,
+            "transportRecords": len(rows),
+            "totalClaims": total_claims,
+        }
+
+
+def _omitted_claims(row: Any) -> int:
+    if not isinstance(row, Mapping):
+        return 0
+    value = row.get("omitted")
+    return value if isinstance(value, int) and value > 0 else 0
+
+
+def _omission_summary(omitted: int) -> dict[str, Any]:
+    return {
+        "pointer": "/omissions",
+        "reason": "projection-collection-limit",
+        "omitted": omitted,
+    }
+
+
+def _minimal_projection(payload: Mapping[str, Any]) -> dict[str, Any]:
+    """Retain the authority-bearing compact skeleton as a last resort."""
+
+    omissions = payload.get("omissions")
+    rows = omissions if isinstance(omissions, list) else []
+    status = str(payload.get("status", "unknown"))
+    result: dict[str, Any] = {
+        "schema": payload.get("schema"),
+        "operation": payload.get("operation"),
+        "status": truncate_utf8(status, 128),
+        "statusFingerprint": identity_text(status),
+        "projection": _minimal_projection_header(payload.get("projection")),
+        "request": _minimal_request(payload.get("request")),
+        "coverage": _minimal_coverage(payload.get("coverage"), rows),
+        "omissions": [
+            {
+                "pointer": "/projection",
+                "reason": "projection-byte-limit",
+                "omitted": 1,
+            }
+        ],
+    }
+    _copy_minimal_candidates(payload, result)
+    return result
+
+
+def _minimal_projection_header(value: Any) -> dict[str, Any]:
+    row = value if isinstance(value, Mapping) else {}
+    result = {
+        "canonicalPayloadIdentity": row.get("canonicalPayloadIdentity"),
+        "limits": row.get("limits"),
+    }
+    _copy_minimal_identity_text(result, "name", row.get("name"), 32)
+    _copy_minimal_identity_text(
+        result, "canonicalSchema", row.get("canonicalSchema"), 128
+    )
+    _copy_minimal_identity_text(
+        result, "producerResultIdentity", row.get("producerResultIdentity"), 128
+    )
+    return result
+
+
+def _minimal_request(value: Any) -> dict[str, Any]:
+    row = value if isinstance(value, Mapping) else {}
+    result = {
+        field: row[field]
+        for field in ("moduleFingerprint", "goalFingerprint")
+        if field in row
+    }
+    for field in ("scope", "freshness", "scratchMode"):
+        _copy_minimal_identity_text(result, field, row.get(field), 64)
+    return result
+
+
+def _copy_minimal_identity_text(
+    result: dict[str, Any], field: str, value: Any, limit: int
+) -> None:
+    if value is None:
+        return
+    text = str(value)
+    result[field] = truncate_utf8(text, limit)
+    result[f"{field}Fingerprint"] = identity_text(text)
+
+
+def _minimal_coverage(value: Any, omissions: list[Any]) -> dict[str, Any]:
+    row = value if isinstance(value, Mapping) else {}
+    canonical = row.get("canonical")
+    result = {
+        "canonical": _minimal_canonical_coverage(canonical),
+        "canonicalIdentity": identity(canonical) if isinstance(canonical, Mapping) else None,
+        "candidatePopulation": row.get("candidatePopulation"),
+        "operationalFailure": row.get("operationalFailure"),
+    }
+    prior = row.get("omissionPopulation")
+    prior = prior if isinstance(prior, Mapping) else {}
+    result["omissionPopulation"] = {
+        "observedRecords": prior.get("observedRecords", len(omissions)),
+        "projectedRecords": 0,
+        "omittedRecords": prior.get("observedRecords", len(omissions)),
+        "generatedRecords": 1,
+        "transportRecords": 1,
+        "totalClaims": prior.get(
+            "totalClaims", sum(_omitted_claims(item) for item in omissions)
+        ),
+    }
+    return result
+
+
+def _minimal_canonical_coverage(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, Mapping):
+        return None
+    fields = (
+        "shortlisted",
+        "submitted",
+        "completed",
+        "accepted",
+        "rejected",
+        "unassessed",
+        "failed",
+        "timeouts",
+        "outputLimited",
+        "memoryLimited",
+        "invalidWorkerOutput",
+        "scratchAttempted",
+        "scratchCompiled",
+        "truncated",
+    )
+    return {field: value[field] for field in fields if field in value}
+
+
+def _copy_minimal_candidates(
+    payload: Mapping[str, Any], result: dict[str, Any]
+) -> None:
+    candidates = payload.get("candidates")
+    if isinstance(candidates, list):
+        result["candidates"] = [
+            _minimal_candidate(card) for card in candidates if isinstance(card, Mapping)
+        ]
+        return
+    candidate = payload.get("candidate")
+    if isinstance(candidate, Mapping):
+        result["candidate"] = _minimal_candidate(candidate)
+
+
+def _minimal_candidate(card: Mapping[str, Any]) -> dict[str, Any]:
+    check = card.get("check")
+    check = check if isinstance(check, Mapping) else {}
+    result: dict[str, Any] = {
+        "nameFingerprint": card.get("nameFingerprint"),
+        "source": _minimal_source(card.get("source")),
+        "check": {
+            "status": check.get("status"),
+            "authority": check.get("authority"),
+            "environmentRef": check.get("environmentRef"),
+            "checkRunRef": check.get("checkRunRef"),
+            "scratch": _minimal_scratch(check.get("scratch")),
+        },
+    }
+    _copy_minimal_identity_text(
+        result["check"], "receiptIdentity", check.get("receiptIdentity"), 128
+    )
+    return result
+
+
+def _minimal_source(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, Mapping):
+        return None
+    return {
+        field: value[field]
+        for field in ("moduleFingerprint", "pathFingerprint", "line")
+        if field in value
+    }
+
+
+def _minimal_scratch(value: Any) -> dict[str, Any] | None:
+    if not isinstance(value, Mapping):
+        return None
+    return {
+        field: value.get(field)
+        for field in ("status", "environmentRef", "checkRunRef")
+    }
 
 
 def _trim_candidate_population(payload: dict[str, Any], maximum: int) -> None:

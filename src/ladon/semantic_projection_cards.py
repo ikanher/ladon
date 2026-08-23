@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping
 from typing import Any
 
@@ -281,11 +282,40 @@ def _source(
     if not any(shortlist.get(key) is not None for key in ("module", "path", "line")):
         omit(omissions, pointer, "source-location-unavailable", 1)
         return None
-    return {
-        "module": shortlist.get("module"),
-        "path": shortlist.get("path"),
-        "line": shortlist.get("line"),
-    }
+    result: dict[str, Any] = {"line": _source_line(shortlist.get("line"), omissions, pointer)}
+    _copy_source_text(shortlist, result, "module", 512, omissions, pointer)
+    _copy_source_text(shortlist, result, "path", 1024, omissions, pointer)
+    return result
+
+
+def _copy_source_text(
+    shortlist: Mapping[str, Any],
+    result: dict[str, Any],
+    field: str,
+    limit: int,
+    omissions: list[dict[str, Any]],
+    pointer: str,
+) -> None:
+    """Copy one optional source label with a stable full-value identity."""
+
+    if shortlist.get(field) is None:
+        return
+    value = str(shortlist[field])
+    result[field] = bounded_text(value, limit, omissions, f"{pointer}/{field}")
+    result[f"{field}Fingerprint"] = identity_text(value)
+
+
+def _source_line(
+    value: Any, omissions: list[dict[str, Any]], pointer: str
+) -> Any:
+    if value is None or isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        if math.isfinite(value):
+            return value
+        omit(omissions, f"{pointer}/line", "source-line-non-finite", 1)
+        return None
+    return bounded_text(str(value), 64, omissions, f"{pointer}/line")
 
 
 def _shortlist_card(
