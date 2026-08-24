@@ -77,6 +77,7 @@ def dispatch_discover(
         raise ProofSearchIndexError(
             "caller local context is unavailable in the proposition-discovery testing profile"
         )
+    _validate_explicit_candidates(args.candidate)
     try:
         toolchain = resolve_toolchain_context(
             repo_root.resolve(),
@@ -128,6 +129,16 @@ def dispatch_discover(
         lambda names: _batch_results(request, names, toolchain),
         shortlist_evidence=shortlist_evidence,
     )
+
+
+def _validate_explicit_candidates(candidates: list[str]) -> None:
+    observed: set[str] = set()
+    for candidate in candidates:
+        if candidate in observed:
+            raise ProofSearchIndexError(
+                f"discover candidate names must be unique: {candidate}"
+            )
+        observed.add(candidate)
 
 
 def _type_text_shortlist(

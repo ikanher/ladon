@@ -33,6 +33,7 @@ def validate_discovery_aggregate(payload: Mapping[str, Any]) -> dict[str, Any]:
         raise SemanticProjectionError(
             "canonical discovery result has no candidate population"
         )
+    validate_unique_candidate_population(rows)
     statuses, scratch_statuses = _population_statuses(rows)
     expected_status = _availability(statuses)
     if payload.get("status") != expected_status:
@@ -129,7 +130,9 @@ def _validated_shortlist_coverage(
     shortlisted = reported.get("shortlisted")
     truncated = reported.get("truncated")
     if shortlisted is None or truncated is None or maximum is None:
-        return {}
+        raise SemanticProjectionError(
+            "canonical discovery requires maxCandidates, shortlisted, and truncated"
+        )
     if not _valid_shortlist_bounds(shortlisted, maximum, submitted):
         raise SemanticProjectionError("discovery shortlist coverage is invalid")
     if not _valid_truncation(truncated, shortlisted, maximum):
@@ -137,6 +140,27 @@ def _validated_shortlist_coverage(
             "discovery truncation disagrees with its shortlist population"
         )
     return {"shortlisted": shortlisted, "truncated": truncated}
+
+
+def validate_unique_candidate_population(rows: list[Any]) -> None:
+    """Require one canonical observation per exact candidate name."""
+
+    observed: set[str] = set()
+    for index, row in enumerate(rows):
+        if not isinstance(row, Mapping):
+            raise SemanticProjectionError(
+                f"semantic candidate row {index} is invalid"
+            )
+        candidate = row.get("name")
+        if not isinstance(candidate, str) or not candidate:
+            raise SemanticProjectionError(
+                f"semantic candidate row {index} has no name"
+            )
+        if candidate in observed:
+            raise SemanticProjectionError(
+                f"canonical discovery candidate names must be unique: {candidate}"
+            )
+        observed.add(candidate)
 
 
 def _valid_shortlist_bounds(shortlisted: Any, maximum: Any, submitted: int) -> bool:
@@ -181,4 +205,4 @@ def _identity(value: Mapping[str, Any]) -> str:
     return "sha256:" + hashlib.sha256(encoded).hexdigest()
 
 
-__all__ = ["validate_discovery_aggregate"]
+__all__ = ["validate_discovery_aggregate", "validate_unique_candidate_population"]

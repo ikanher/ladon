@@ -136,6 +136,7 @@ def _discovery_payload() -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
             "scope": "repository",
             "roots": [],
             "freshness": "stored",
+            "maxCandidates": 2,
         },
         "candidates": [
             {
@@ -162,7 +163,13 @@ def _discovery_payload() -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
                 "check": failed,
             },
         ],
-        "coverage": {"submitted": 2, "completed": 1, "failed": 1},
+        "coverage": {
+            "shortlisted": 2,
+            "submitted": 2,
+            "completed": 1,
+            "failed": 1,
+            "truncated": False,
+        },
         "shortlist": {
             "source": "type-text-shortlist",
             "pattern": "True",
@@ -346,7 +353,14 @@ def test_bloated_discovery_is_bounded_with_explicit_population_omissions() -> No
         )
         payload["candidates"].append(row)
     payload["status"] = "available"
-    payload["coverage"] = {"submitted": 40, "completed": 40, "accepted": 40}
+    payload["request"]["maxCandidates"] = 40
+    payload["coverage"] = {
+        "shortlisted": 40,
+        "submitted": 40,
+        "completed": 40,
+        "accepted": 40,
+        "truncated": False,
+    }
 
     projected = project_semantic_result(payload, projection="review", registered_artifacts=registry)
 

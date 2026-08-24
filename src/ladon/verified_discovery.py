@@ -163,6 +163,7 @@ def discover_candidates(
     shortlist_evidence: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Check a bounded shortlist and retain every candidate outcome."""
+    _validate_unique_candidates(shortlist)
     bounded = [
         {**dict(row), "shortlistOrdinal": index}
         for index, row in enumerate(shortlist[: request.max_candidates])
@@ -250,6 +251,19 @@ def discover_candidates(
     ):
         raise ValueError("discovery result exceeds the supported byte cap")
     return payload
+
+
+def _validate_unique_candidates(rows: Sequence[Mapping[str, Any]]) -> None:
+    """Reject an ambiguous submitted population before any checker work."""
+
+    observed: set[str] = set()
+    for row in rows:
+        name = str(row.get("candidateName") or row.get("name") or "")
+        if not name:
+            continue
+        if name in observed:
+            raise ValueError(f"discovery candidate names must be unique: {name}")
+        observed.add(name)
 
 
 def _validate_operation_budget(

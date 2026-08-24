@@ -23,7 +23,10 @@ from ladon._semantic_observation_evidence import (
     resolve_observation_evidence,
     validate_canonical_receipt,
 )
-from ladon._semantic_observation_population import validate_discovery_aggregate
+from ladon._semantic_observation_population import (
+    validate_discovery_aggregate,
+    validate_unique_candidate_population,
+)
 from ladon._semantic_observation_support import direct_candidate, mapping
 from ladon.semantic_projection_core import SemanticProjectionError
 
@@ -95,6 +98,7 @@ def _resolve_discovery_population(
         raise SemanticProjectionError(
             "canonical discovery result has no candidate population"
         )
+    validate_unique_candidate_population(rows)
     request = mapping(payload.get("request"))
     resolved: list[ResolvedSemanticObservation] = []
     for index, row_value in enumerate(rows):

@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-import math
 from collections.abc import Mapping
 from typing import Any
 
 from ladon.semantic_projection_core import (
+    SemanticProjectionError,
     bounded_text,
     identity_text,
     omit,
@@ -308,14 +308,13 @@ def _copy_source_text(
 def _source_line(
     value: Any, omissions: list[dict[str, Any]], pointer: str
 ) -> Any:
-    if value is None or isinstance(value, int):
+    if value is None:
         return value
-    if isinstance(value, float):
-        if math.isfinite(value):
-            return value
-        omit(omissions, f"{pointer}/line", "source-line-non-finite", 1)
-        return None
-    return bounded_text(str(value), 64, omissions, f"{pointer}/line")
+    if isinstance(value, int) and not isinstance(value, bool) and value > 0:
+        return value
+    raise SemanticProjectionError(
+        "semantic source line must be a positive integer or absent"
+    )
 
 
 def _shortlist_card(

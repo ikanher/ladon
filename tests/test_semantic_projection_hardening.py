@@ -63,11 +63,18 @@ def _discovery(check: dict[str, Any], shortlist: dict[str, Any]) -> dict[str, An
             "scope": "repository",
             "freshness": "stored",
             "scratchMode": "none",
+            "maxCandidates": 1,
         },
         "candidates": [
             {"name": "Main.proof", "shortlist": shortlist, "check": check}
         ],
-        "coverage": {"submitted": 1, "completed": 1, "accepted": 1},
+        "coverage": {
+            "shortlisted": 1,
+            "submitted": 1,
+            "completed": 1,
+            "accepted": 1,
+            "truncated": False,
+        },
         "shortlist": {"source": "type-text-shortlist", "omissions": []},
         "ranking": {"policy": "verified-status-priority-v1", "contributions": []},
         "nonclaims": [],
@@ -80,7 +87,7 @@ def test_oversized_source_labels_are_bounded_and_fingerprinted() -> None:
     path = "nested/" + "δ" * 50_000 + ".lean"
     payload = _discovery(
         check,
-        {"module": module, "path": path, "line": "1" * 10_000},
+        {"module": module, "path": path, "line": 123},
     )
 
     projected = project_semantic_result(
@@ -90,14 +97,13 @@ def test_oversized_source_labels_are_bounded_and_fingerprinted() -> None:
     source = projected["candidates"][0]["source"]
     assert len(source["module"].encode()) <= 512
     assert len(source["path"].encode()) <= 1024
-    assert len(source["line"].encode()) <= 64
+    assert source["line"] == 123
     assert source["moduleFingerprint"] == identity_text(module)
     assert source["pathFingerprint"] == identity_text(path)
     assert len(semantic_projection_bytes(projected)) <= DISCOVERY_PROJECTION_MAX_BYTES
     assert {
         ("/candidates/0/source/module", "projection-text-byte-limit"),
         ("/candidates/0/source/path", "projection-text-byte-limit"),
-        ("/candidates/0/source/line", "projection-text-byte-limit"),
     } <= {(row["pointer"], row["reason"]) for row in projected["omissions"]}
 
 
@@ -147,6 +153,7 @@ def test_last_resort_projection_preserves_authority_bearing_skeleton() -> None:
         "schema": "ladon-semantic-candidate-check-result-v1",
         "operation": "check-candidate",
         "status": "accepted",
+        "limitations": ["Accepted result requires explicit audit expansion."],
         **check,
     }
     canonical_identity = identity(canonical)
@@ -158,6 +165,7 @@ def test_last_resort_projection_preserves_authority_bearing_skeleton() -> None:
     _assert_minimal_projection_context(projected, canonical_identity)
     _assert_minimal_candidate(projected, canonical)
     _assert_minimal_coverage(projected)
+    _assert_minimal_audit_expansion(projected)
     assert len(semantic_projection_bytes(projected)) <= DIRECT_PROJECTION_MAX_BYTES
 
 
@@ -204,6 +212,26 @@ def _assert_minimal_coverage(projected: dict[str, Any]) -> None:
     ]
 
 
+def _assert_minimal_audit_expansion(projected: dict[str, Any]) -> None:
+    assert projected["requiresAuditExpansion"] is True
+    assert projected["limitationCount"] == 2
+    assert projected["limitationsFingerprint"].startswith("sha256:")
+
+
+@pytest.mark.parametrize("line", [True, False, 0, -1, 1.0, "1"])
+def test_source_line_requires_positive_integer_or_absent(line: Any) -> None:
+    check, registry = _accepted_check()
+    payload = _discovery(
+        check,
+        {"module": "Main", "path": "Main.lean", "line": line},
+    )
+
+    with pytest.raises(SemanticProjectionError, match="positive integer or absent"):
+        project_semantic_result(
+            payload, projection="llm", registered_artifacts=registry
+        )
+
+
 @pytest.mark.parametrize("line", [float("nan"), float("inf"), float("-inf")])
 def test_non_finite_source_line_is_rejected_before_projection(line: float) -> None:
     check, registry = _accepted_check()
@@ -212,7 +240,7 @@ def test_non_finite_source_line_is_rejected_before_projection(line: float) -> No
         {"module": "Main", "path": "Main.lean", "line": line},
     )
 
-    with pytest.raises(SemanticProjectionError, match="non-finite number"):
+    with pytest.raises(SemanticProjectionError, match="positive integer or absent"):
         project_semantic_result(
             payload, projection="llm", registered_artifacts=registry
         )

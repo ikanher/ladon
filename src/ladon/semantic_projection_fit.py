@@ -94,6 +94,8 @@ def _minimal_projection(payload: Mapping[str, Any]) -> dict[str, Any]:
 
     omissions = payload.get("omissions")
     rows = omissions if isinstance(omissions, list) else []
+    limitation_rows = payload.get("limitations")
+    limitation_rows = limitation_rows if isinstance(limitation_rows, list) else []
     status = str(payload.get("status", "unknown"))
     result: dict[str, Any] = {
         "schema": payload.get("schema"),
@@ -110,6 +112,9 @@ def _minimal_projection(payload: Mapping[str, Any]) -> dict[str, Any]:
                 "omitted": 1,
             }
         ],
+        "requiresAuditExpansion": True,
+        "limitationCount": len(limitation_rows),
+        "limitationsFingerprint": identity({"limitations": limitation_rows}),
     }
     _copy_minimal_candidates(payload, result)
     return result

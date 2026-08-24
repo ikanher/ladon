@@ -6,7 +6,8 @@ from pathlib import Path
 import pytest
 from support.proofir_v3_native import environment_artifact
 
-from ladon.proof_search_cli import build_proof_search_parser
+from ladon import proof_search_discovery_cli
+from ladon.proof_search_cli import build_proof_search_parser, proof_search_main
 from ladon.proof_search_discovery_cli import _type_text_shortlist
 from ladon.proof_search_index import build_proof_search_index
 from ladon.proofir_v3 import validate_envelope_batch
@@ -96,6 +97,64 @@ def test_discovery_preserves_accepted_rejected_and_failed_candidates() -> None:
     assert result["requestIdentity"].startswith("sha256:")
     assert result["batch"]["protocol"] == "ladon-verified-discovery-v1"
     assert result["ranking"]["policy"] == "verified-status-priority-v1"
+
+
+def test_discovery_rejects_duplicate_candidates_before_checker_work() -> None:
+    request = DiscoveryRequest(Path("/repo"), "Main", "Nat", batch_size=1)
+    checker_calls: list[str] = []
+    batch_calls: list[tuple[str, ...]] = []
+
+    with pytest.raises(ValueError, match="candidate names must be unique"):
+        discover_candidates(
+            request,
+            [{"candidateName": "Main.same"}, {"candidateName": "Main.same"}],
+            lambda name: checker_calls.append(name) or SemanticCandidateCheck("accepted"),
+            batch_checker=lambda names: batch_calls.append(tuple(names)) or {},
+        )
+
+    assert checker_calls == []
+    assert batch_calls == []
+
+
+def test_discovery_cli_rejects_duplicates_before_toolchain_or_registry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    evidence_store = tmp_path / "semantic-evidence.sqlite"
+
+    def unexpected_toolchain(*_args: object, **_kwargs: object) -> object:
+        raise AssertionError("toolchain resolution must not run")
+
+    monkeypatch.setattr(
+        proof_search_discovery_cli,
+        "resolve_toolchain_context",
+        unexpected_toolchain,
+    )
+
+    status = proof_search_main(
+        [
+            "discover",
+            "--repo-root",
+            str(tmp_path),
+            "--module",
+            "Main",
+            "--goal",
+            "True",
+            "--candidate",
+            "Main.same",
+            "--candidate",
+            "Main.same",
+            "--evidence-store",
+            str(evidence_store),
+            "--format",
+            "json",
+        ]
+    )
+
+    assert status == 2
+    assert not evidence_store.exists()
+    assert "candidate names must be unique" in capsys.readouterr().err
 
 
 def test_discovery_check_failure_is_unassessed_and_bounded() -> None:

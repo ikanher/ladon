@@ -86,9 +86,14 @@ def _discovery(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "schema": "ladon-verified-discovery-result-v1",
         "operation": "discover",
         "status": status,
-        "request": {"module": "Main", "goal": "True", "localContext": []},
+        "request": {
+            "module": "Main",
+            "goal": "True",
+            "localContext": [],
+            "maxCandidates": max(1, len(rows)),
+        },
         "candidates": rows,
-        "coverage": {},
+        "coverage": {"shortlisted": len(rows), "truncated": False},
         "shortlist": {},
         "ranking": {},
         "nonclaims": [],
@@ -267,6 +272,34 @@ def test_omitted_candidate_must_resolve_before_population_accounting() -> None:
     with pytest.raises(SemanticProjectionError, match="unresolved or not registered"):
         project_semantic_result(
             _discovery(rows), projection="llm", registered_artifacts=registry
+        )
+
+
+def test_discovery_rejects_duplicate_canonical_candidate_names() -> None:
+    check, registry = _check("duplicate", candidate="Main.same")
+    rows = [
+        {"name": "Main.same", "check": copy.deepcopy(check)},
+        {"name": "Main.same", "check": copy.deepcopy(check)},
+    ]
+
+    with pytest.raises(SemanticProjectionError, match="candidate names must be unique"):
+        project_semantic_result(
+            _discovery(rows), projection="llm", registered_artifacts=registry
+        )
+
+
+@pytest.mark.parametrize(
+    ("owner", "field"),
+    [("request", "maxCandidates"), ("coverage", "shortlisted"), ("coverage", "truncated")],
+)
+def test_discovery_requires_canonical_population_bounds(owner: str, field: str) -> None:
+    check, registry = _check(f"missing-{field}")
+    payload = _discovery([{"name": f"Main.missing-{field}", "check": check}])
+    del payload[owner][field]
+
+    with pytest.raises(SemanticProjectionError, match="requires maxCandidates"):
+        project_semantic_result(
+            payload, projection="llm", registered_artifacts=registry
         )
 
 
@@ -567,7 +600,7 @@ def test_discovery_availability_and_coverage_are_derived_from_full_population() 
             payload, projection="llm", registered_artifacts={}
         )
 
-    payload["coverage"] = {}
+    payload["coverage"] = {"shortlisted": 1, "truncated": False}
     projected = project_semantic_result(
         payload, projection="llm", registered_artifacts={}
     )
@@ -584,6 +617,8 @@ def test_discovery_availability_and_coverage_are_derived_from_full_population() 
         "invalidWorkerOutput": 0,
         "scratchAttempted": 0,
         "scratchCompiled": 0,
+        "shortlisted": 1,
+        "truncated": False,
     }
 
 
