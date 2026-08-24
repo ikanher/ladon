@@ -101,7 +101,7 @@ dependencies. It does not invoke Lean, build the target, or promote indexed
 text to a type match or proof fact. `index status` verifies current source,
 configuration, toolchain, helper, and schema identity; pass
 `--no-verify-sources` only for a cheap stored-metadata inspection.
-Builds default to a 512 MiB hard database ceiling, configurable with
+Builds default to a 1 GiB hard database ceiling, configurable with
 `--max-index-mib`. Lexical signatures are capped at 16 KiB with per-row
 truncation evidence, and queries cannot return more than 1,000 rows.
 
@@ -157,7 +157,7 @@ uv run --locked ladon theorem lineage Fully.Qualified.theorem \
 
 The proof-search database is disposable and schema-versioned. A schema-v5
 database uses a complete-database ceiling for lineage publication in addition
-to the 512 MiB base-index ceiling. Status/build payloads expose SQLite
+to the 1 GiB base-index ceiling. Status/build payloads expose SQLite
 `dbstat` object and grouped byte accounting. Coverage-sensitive commands report
 `unavailable`, `not-populated`, or `partial` rather than treating empty
 observations as proof facts. Search results include inspectable ranking

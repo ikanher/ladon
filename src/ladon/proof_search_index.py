@@ -70,7 +70,7 @@ from ladon.sqlite_publication import (
 
 PROOF_SEARCH_RESULT_SCHEMA = "ladon-proof-search-index-result-v1"
 DEFAULT_INDEX_RELATIVE_PATH = Path(".ladon/index/proof-search.sqlite")
-DEFAULT_MAX_INDEX_BYTES = 512 * 1024 * 1024
+DEFAULT_MAX_INDEX_BYTES = 1024 * 1024 * 1024
 SUPPORTED_INDEX_SCOPES = frozenset(
     {
         "repository",
@@ -366,6 +366,7 @@ def query_proof_search_index(
     try:
         with _open_readonly(database) as connection:
             metadata = _metadata(connection)
+            _require_query_schema(metadata)
             rows, truncated, selected_module_count, scope_omissions = query_name_database(
                 connection,
                 text=text,
@@ -376,6 +377,11 @@ def query_proof_search_index(
                 exclusions=tuple(exclusions),
                 min_matched_segments=min_matched_segments,
             )
+    except sqlite3.Error as exc:
+        raise ProofSearchIndexError(
+            "proof-search index is incompatible or unreadable; rebuild it before querying: "
+            f"{exc}"
+        ) from exc
     except ValueError as exc:
         raise ProofSearchIndexError(str(exc)) from exc
     stored_freshness = "unchecked"
@@ -1201,6 +1207,18 @@ def _metadata(connection: sqlite3.Connection) -> dict[str, str]:
     if "indexSchema" not in metadata:
         raise ProofSearchIndexError("database has no proof-search schema identity")
     return metadata
+
+
+def _require_query_schema(metadata: Mapping[str, str]) -> None:
+    """Reject stale query layouts before any schema-specific SQL executes."""
+
+    if (
+        metadata.get("indexSchema") != PROOF_SEARCH_INDEX_SCHEMA
+        or metadata.get("schemaGeneration") != PROOF_SEARCH_SCHEMA_GENERATION
+    ):
+        raise ProofSearchIndexError(
+            "proof-search index schema is incompatible; rebuild it before querying"
+        )
 
 
 def _open_readonly(path: Path) -> sqlite3.Connection:

@@ -66,7 +66,7 @@ evidence and exposes unavailable Lean-backed populations rather than treating
 them as empty. Results use `--format text|json` and `--output PATH|-`; bounded
 queries always report scope, omissions, generation identity, and truncation.
 Builds are published atomically only after SQLite integrity and foreign-key
-checks pass. `--max-index-mib` sets the database ceiling and defaults to 512;
+checks pass. `--max-index-mib` sets the database ceiling and defaults to 1024;
 the previous generation remains intact if the new build exceeds it. Stored
 lexical signatures are capped at 16 KiB and query limits are capped at 1,000.
 Index construction is lexical-only and never invokes Lean. The former

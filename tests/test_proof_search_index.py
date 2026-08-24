@@ -8,7 +8,9 @@ from pathlib import Path
 import pytest
 
 from ladon.cli import main
+from ladon.proof_search_cli import build_proof_search_parser
 from ladon.proof_search_index import (
+    DEFAULT_MAX_INDEX_BYTES,
     ProofSearchIndexError,
     build_proof_search_index,
     default_proof_search_index_path,
@@ -62,6 +64,13 @@ def test_v2_index_builds_repository_local_lexical_navigation(tmp_path: Path) -> 
         assert connection.execute("PRAGMA user_version").fetchone()[0] == (
             PROOF_SEARCH_INDEX_SCHEMA_VERSION
         )
+
+
+def test_index_build_default_capacity_is_one_gibibyte() -> None:
+    args = build_proof_search_parser().parse_args(["index", "build"])
+
+    assert DEFAULT_MAX_INDEX_BYTES == 1024 * 1024 * 1024
+    assert args.max_index_mib == 1024
 
 
 def test_v1_schema_has_both_graph_directions_and_navigation_indexes(
@@ -267,6 +276,21 @@ def test_query_is_bounded_source_linked_and_authority_labeled(tmp_path: Path) ->
     assert result["rows"][0]["candidateName"] == "Demo.bounded"
     assert result["rows"][0]["authority"] == "lexical_text"
     assert "not Lean-resolved" in result["nonclaim"]
+
+
+def test_query_rejects_incompatible_schema_before_running_query_sql(
+    tmp_path: Path,
+) -> None:
+    repo = sample_repository(tmp_path)
+    result = build_proof_search_index(repo)
+    with sqlite3.connect(result.index_path) as connection:
+        connection.execute(
+            "UPDATE metadata SET value=? WHERE key='schemaGeneration'",
+            ("obsolete-generation",),
+        )
+
+    with pytest.raises(ProofSearchIndexError, match="incompatible; rebuild"):
+        query_proof_search_index(repo, text="bounded")
 
 
 def test_module_import_and_closure_scopes_are_explicit(tmp_path: Path) -> None:

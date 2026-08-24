@@ -84,7 +84,7 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
         "--max-index-mib",
         type=_positive_integer,
         default=DEFAULT_MAX_INDEX_BYTES // (1024 * 1024),
-        help="Maximum database size in MiB; defaults to 512.",
+        help="Maximum database size in MiB; defaults to 1024.",
     )
 
     status = commands.add_parser("status", help="Inspect index identity and freshness.")
