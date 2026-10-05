@@ -1,0 +1,867 @@
+{
+  "schema": "ladon-result-manifest-v1",
+  "resultId": "poisson-fixed-epoch-exposition-20261003-r02",
+  "title": "Fixed-participation finite and sparse comparison: exact printed claims",
+  "claimInventory": {
+    "scope": "Every theorem, lemma, proposition and corollary environment in the final TeX, with components distinguishing transcript statements, conventional average-only extensions and translations. Does not inventory every equation, definition or proof step. Links carry the existing model-attributed source correspondence; exact stored target resolution does not establish informal equivalence.",
+    "coverage": "complete"
+  },
+  "claims": [
+    {
+      "id": "lem:calibration",
+      "statement": "\\begin{lemma}[Calibration]\\label{lem:calibration}\nFor each finite admissible horizon, both profiles are continuous and\nnonincreasing in $v\\geq0$. Their feasible sets are nonempty and their minima\nare attained. At a positive minimum the profile equals $\\delta$.\nAt full batch the two calibrated variances agree at a positive value\n$v_{\\mathrm{FB}}$ independent of $E$. Writing $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$,\n\\begin{equation}\\label{eq:gaussian-calibration}\n \\delta=G_\\varepsilon(a):=\n \\Phi\\!\\left(\\frac a2-\\frac\\varepsilon a\\right)\n -e^\\varepsilon\\Phi\\!\\left(-\\frac a2-\\frac\\varepsilon a\\right),\\qquad\n G_\\varepsilon'(a)=\\phi(a/2-\\varepsilon/a)>0.\n\\end{equation}\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#lem:calibration",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "finite-properties",
+        "fullbatch",
+        "gaussian-and-average"
+      ],
+      "revision": "sha256:cccbb1e3816b0cfa177fc25e5c0f0db406a409d4b3578bd039721c8c3dd466b9"
+    },
+    {
+      "id": "thm:rate-adaptive-pointwise",
+      "statement": "\\begin{theorem}[Finite-horizon comparison]\\label{thm:rate-adaptive-pointwise}\nLet $T>E>0$ be integers, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$.\nIf $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$ satisfies\n$a^2\\leq\\Lambda_{E,T}\\varepsilon$, then\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\\qquad\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S)\n \\quad(S\\geq0).\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#thm:rate-adaptive-pointwise",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "transcript",
+        "closed-symmetric",
+        "average"
+      ],
+      "revision": "sha256:ee5c3dc2796eef2df6448530372040a647f69879a3d1517320baf65a921b45ba"
+    },
+    {
+      "id": "cor:fixed-epoch-all-horizon",
+      "statement": "\\begin{corollary}[All finite horizons]\\label{cor:fixed-epoch-all-horizon}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$.\nIf $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$ satisfies\n\\begin{equation}\\label{eq:epoch-uniform-condition}\n a^2\\leq\\Lambda_E\\varepsilon,\\qquad \\Lambda_E=\\frac{6E}{3E+2},\n\\end{equation}\nthen for every integer $T>E$,\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\n\\]\nand, simultaneously for every $S\\geq0$,\n\\[\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S).\n\\]\n\\end{corollary}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#cor:fixed-epoch-all-horizon",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "transcript",
+        "average"
+      ],
+      "revision": "sha256:eee7228d05c7f5e3c071cf8b5b16416a2bb9469b8ca0c3028c6380a4aeb6f208"
+    },
+    {
+      "id": "thm:strict-interior-counterexample",
+      "statement": "\\begin{theorem}[An adjacent smaller batch can win]\\label{thm:strict-interior-counterexample}\nFor $\\Delta=1$, $E=2$, $\\varepsilon=1/4$, and $\\delta=3/4$, write\n$v_T=v_{2,T}$. Then\n\\[\n v_3\\leq\\frac5{32}<\\frac4{25}<v_2,\n \\qquad\n V_2(3,S)<V_2(2,S)\\quad\\text{for }0\\leq S\\leq\\frac9{400}.\n\\]\nThe same strict total-variance comparison holds for average-only calibration.\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#thm:strict-interior-counterexample",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "transcript",
+        "average"
+      ],
+      "revision": "sha256:f9fadaed5062e85a2dc857d97ca3ba6196886e2067470db0ae868c0890ddfc31"
+    },
+    {
+      "id": "thm:smallbatch",
+      "statement": "\\begin{theorem}[Sparse transcript calibration]\\label{thm:smallbatch}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n\\begin{equation}\\label{eq:interior}\n 0<\\delta<1-e^{-E}.\n\\end{equation}\nThen, along integer horizons,\n\\[\n \\frac\\Delta{\\sigma_{E,T}}-\\sqrt{2\\log T}\n \\longrightarrow s_{E,\\delta}:=\n \\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}E\\right).\n\\]\nConsequently,\n\\begin{align}\n \\sigma_{E,T}&\\sim\\frac\\Delta{\\sqrt{2\\log T}}\\longrightarrow0,\n \\label{eq:sigmaasymptotic}\\\\\n v_{E,T}&\\sim\\frac{\\Delta^2T}{2E^2\\log T}\\longrightarrow\\infty,\n \\label{eq:privacydivergence}\\\\\n V_E(T,S)&\\sim v_{E,T}\\qquad\\text{for each fixed }S\\geq0.\n \\label{eq:total-equivalent}\n\\end{align}\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#thm:smallbatch",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "offset",
+        "leading"
+      ],
+      "revision": "sha256:8df79dd964ef3283190ecfba2ce8477a342e8d5f4e6411250c0536d1b416d9a3"
+    },
+    {
+      "id": "cor:eventual",
+      "statement": "\\begin{corollary}[One cutoff for all energies]\\label{cor:eventual}\nUnder the hypotheses of Theorem~\\ref{thm:smallbatch}, some integer $T_0>E$\nsatisfies $V_E(E,S)<V_E(T,S)$ for every $T\\geq T_0$ and every $S\\geq0$.\n\\end{corollary}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#cor:eventual",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "uniform"
+      ],
+      "revision": "sha256:a8c24de27df4788419926b97da6b747702458d24b6eeffdb56af0cb53e9f9aad"
+    },
+    {
+      "id": "prop:average-uniform-bound",
+      "statement": "\\begin{proposition}[Average-only calibration stays bounded]\\label{prop:average-uniform-bound}\nFor integers $T\\geq E>0$, $\\Delta>0$, $\\varepsilon\\geq0$, and $0<\\delta<1$,\n\\[\n \\overline v_{E,T}\\leq\\frac{\\Delta^2}{2\\pi\\delta^2},\\qquad\n \\overline V_E(T,S)\\leq\\frac SE+\\frac{\\Delta^2}{2\\pi\\delta^2}\\quad(S\\geq0).\n\\]\n\\end{proposition}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#prop:average-uniform-bound",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "bound"
+      ],
+      "revision": "sha256:cc0bed522ec8b48a5a71ad65ad2f3dca9b6a1ca978c9f12f529ca22c360b8bcc"
+    },
+    {
+      "id": "thm:rate-adaptive-center",
+      "statement": "\\begin{theorem}[The binomial center comparison]\\label{thm:rate-adaptive-center}\nLet $T>E>0$ be integers and $h>0$. Then\n$\\Gamma_{E,T}(\\theta,h)>0$ under the following conditions:\n\\begin{equation}\\label{eq:rate-adaptive-center-condition}\n \\begin{array}{c|c}\n T>2E & \\theta\\geq c_{E,T}:=(1-2E/T)/3,\\\\\n T=2E & \\theta>0,\\\\\n E<T<2E & \\theta\\geq0.\n \\end{array}\n\\end{equation}\nAt $T=2E$ and $\\theta=0$, the gap is zero.\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#thm:rate-adaptive-center",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "positive",
+        "zero"
+      ],
+      "revision": "sha256:9b093f066003dc87e97e18291f877e11ba00a1db53d84d6a123e029879da2959"
+    },
+    {
+      "id": "lem:binomial-propagation",
+      "statement": "\\begin{lemma}[Propagation of positivity]\\label{lem:binomial-propagation}\nFix $h>0$ and $0\\leq\\theta_1<\\theta_2$. If\n$\\Gamma_{E,T}(\\theta_1,h)\\geq0$, then\n$\\Gamma_{E,T}(\\theta_2,h)>0$.\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#lem:binomial-propagation",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "propagation"
+      ],
+      "revision": "sha256:5c52778fcb60237292218360f51af37dcf904fc08dd621f68386cc5226e3809c"
+    },
+    {
+      "id": "lem:binomial-stein-polynomial",
+      "statement": "\\begin{lemma}[A binomial telescoping identity]\\label{lem:binomial-stein-polynomial}\nPut $C=T-E$. For any real $R$, define\n\\[\n A_R(z)=R^2-2Er-3c^2+z-z^2.\n\\]\nThen for every $z\\in\\R$,\n\\begin{equation}\\label{eq:binomial-cubic-stein-polynomial}\n \\begin{split}\n &(z-c)\\{R^2-(z-c)^2\\}+c(R^2-c^2)\\\\\n &\\hspace{2em}=r(E+z)A_R(z)-p(C-z)A_R(z+1).\n \\end{split}\n\\end{equation}\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#lem:binomial-stein-polynomial",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "polynomial"
+      ],
+      "revision": "sha256:b81b4650f9c694c50812aeab6b03ffa7ee80c2bb282b42541181c4fe48b9715d"
+    },
+    {
+      "id": "lem:binomial-double-cumulative",
+      "statement": "\\begin{lemma}[Nonnegativity of the hinge transform]\n\\label{lem:binomial-double-cumulative}\nIf $T>2E$, then $J(t)\\geq0$ for every $t\\geq0$, and\n$J((1-c)^2)>0$.\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#lem:binomial-double-cumulative",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "hinge",
+        "strict"
+      ],
+      "revision": "sha256:3d55f0d8a30ffb2f2a3e55a4f8c5b04c9c2288383dcd56cd7cfe4b05900df498"
+    },
+    {
+      "id": "lem:binomial-reflected-zero",
+      "statement": "\\begin{lemma}[The zero-center sign]\\label{lem:binomial-reflected-zero}\nFor $h>0$, the gap $\\Gamma_{E,T}(0,h)$ is negative when $T>2E$, zero when\n$T=2E$, and positive when $E<T<2E$.\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#lem:binomial-reflected-zero",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "signs"
+      ],
+      "revision": "sha256:cae79d0f3054e45fc4d2cf290fb1fa14ae3bcce53e1b003aa219b6b00faf04a6"
+    },
+    {
+      "id": "lem:strict-average-endpoint",
+      "statement": "\\begin{lemma}[Improving the threshold at half rate]\\label{lem:strict-average-endpoint}\nLet $E\\in\\N_{>0}$, $a>0$, and $K\\sim\\operatorname{Binomial}(2E,1/2)$.\nLet $Q=\\Normal(0,1)$, and let $P$ be the mixture whose conditional law\ngiven $K=k$ is $\\Normal(ak/E,1)$. With $\\varepsilon=a^2/2$,\n\\[\n H_{e^\\varepsilon}(P, Q)\n >\\frac12-e^\\varepsilon\\overline\\Phi(a).\n\\]\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#lem:strict-average-endpoint",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "endpoint"
+      ],
+      "revision": "sha256:20575d4f24a60118960fbf692b9f2681b55079b0a8345ab9d232b85a62e2e893"
+    },
+    {
+      "id": "thm:accountant-limit",
+      "statement": "\\begin{theorem}[The fixed-participation profile limit]\\label{thm:accountant-limit}\nLet $\\rho>0$, $\\Delta>0$, and $\\varepsilon\\geq0$. Suppose\n$q_T\\in[0,1]$, $Tq_T\\to\\rho$, $\\sigma_T>0$ eventually, and\n\\[\n \\frac{\\Delta}{\\sigma_T}-\\sqrt{2\\log T}\\longrightarrow s\\in\\R.\n\\]\nThen\n\\[\n \\AO_S(\\sigma_T,\\Delta,q_T,T,\\varepsilon)\n \\longrightarrow1-\\exp\\{-\\rho\\Phi(s)\\}.\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#thm:accountant-limit",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "profile"
+      ],
+      "revision": "sha256:19c78ea70cdf0c1a41957ca2f35114def5a65746b2b059e4107852af06bb0eba"
+    },
+    {
+      "id": "thm:fixed-participation-calibration",
+      "statement": "\\begin{theorem}[Fixed-participation calibration]\n\\label{thm:fixed-participation-calibration}\nLet $\\rho>0$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n$0<\\delta<1-e^{-\\rho}$. Suppose $q_T\\in[0,1]$ and $Tq_T\\to\\rho$, and define\n\\[\n \\sigma_T^{\\mathrm{cal}}:=\\inf\\left\\{\\sigma\\geq0:\n \\AO_S(\\sigma,\\Delta,q_T,T,\\varepsilon)\\leq\\delta\\right\\}.\n\\]\nThen $\\sigma_T^{\\mathrm{cal}}>0$ eventually, and\n\\[\n \\frac{\\Delta}{\\sigma_T^{\\mathrm{cal}}}-\\sqrt{2\\log T}\n \\longrightarrow s_{\\rho,\\delta}:=\n \\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}\\rho\\right).\n\\]\nFor the capped exact-budget schedule $q_T=\\min\\{1,\\rho/T\\}$, it follows that\n\\[\n \\frac{\\sigma_T^{\\mathrm{cal}}\\sqrt{2\\log(1/q_T)}}\\Delta\\longrightarrow1.\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition_offset_proposal.tex#thm:fixed-participation-calibration",
+        "digest": "sha256:ccd63ec6ef2b2e00d564dc0203afd5248b79396722169e82fc145b91f1c8f746"
+      },
+      "components": [
+        "offset",
+        "capped",
+        "positive"
+      ],
+      "revision": "sha256:6779676736b2ea47cce2a7b3eedadf083e821a444a56f0bb9d9af70d25235333"
+    }
+  ],
+  "targets": [
+    {
+      "id": "fullbatch",
+      "name": "Mf.DP.poissonFixedEpochPrivacyVariance_fullBatch_eq_base_sq",
+      "typeText": "∀ (epoch : ℕ) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : ℝ) (sensitivity_pos : 0 < sensitivity)\n  (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_one : delta < 1),\n  Mf.DP.poissonFixedEpochPrivacyVarianceOfStddev (Mf.DP.PoissonFixedEpochPoint.fullBatch epoch epoch_pos)\n      ↑(Mf.DP.poissonFixedEpochCalibratedStddev (Mf.DP.PoissonFixedEpochPoint.fullBatch epoch epoch_pos) sensitivity\n          epsilon delta) =\n    Mf.DP.fullBatchGaussianBaseStddev sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one ^\n      2",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochVariance.lean",
+        "digest": "sha256:7df2853825f9c7728607de78d1fda0eb1ae46a675350dcf07065f623c83188ca",
+        "projectRevision": "capture-state:sha256:bb6fb61ace8b418be2949d044b618289dbb5e23faac5b58cb0d8627d3f4fa0b2"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:58133d41769e6c297902b760c7278b08d87397e307678d79de1621b3b00c7f52"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:d978d0148ff6be3f93c46930b49ac2ef801cbc288aefe2c4da1974c02adc837a",
+        "subjectId": "declaration:sha256:aba9e2ee4cc4d055c7d11c8df21895aa2bc225918904a76790709470aff9b584"
+      },
+      "revision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa"
+    },
+    {
+      "id": "point-privacy",
+      "name": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_exactCriticalSignalSquareCondition",
+      "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (sensitivity epsilon delta : ℝ),\n  point.epoch < point.horizon →\n    ∀ (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1),\n      Mf.DP.poissonFixedEpochExactCriticalSignalSquareCondition point epsilon\n          (Mf.DP.poissonFixedEpochStandardizedSignal sensitivity\n            ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n                hDeltaLtOne)) →\n        ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n              hDeltaLtOne) <\n          Mf.DP.poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochPointwiseDominanceDomain.lean",
+        "digest": "sha256:88db8d26189787583e57c4fbd881671d3068ca74cec72cd8ae6cda3610e92d43",
+        "projectRevision": "capture-state:sha256:4913bdc76ce05ed6c055bbe1dac62b94b2ea80ab6a26bb4852ebd526e91e334b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:f2da313f39205b649a47dbff890541b01c1e69612bef840fa63de9f9fe692d39"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:29ef2949681060f67bdfe8cae11d85f92e789c34f506facbb682f46dc29abeb3",
+        "subjectId": "declaration:sha256:f30cfe770d4919a49cfa99a56c6ae06feabed31594a2a261194e8c5c41daa3c0"
+      },
+      "revision": "sha256:9282b5fa607890bf653cebfdec185279ada5f5fb778781c968597cdde42e70b1"
+    },
+    {
+      "id": "point-total",
+      "name": "Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_of_exactCriticalSignalSquareCondition",
+      "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (sensitivity epsilon delta energy : ℝ),\n  point.epoch < point.horizon →\n    ∀ (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1),\n      0 ≤ energy →\n        Mf.DP.poissonFixedEpochExactCriticalSignalSquareCondition point epsilon\n            (Mf.DP.poissonFixedEpochStandardizedSignal sensitivity\n              ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n                  hDeltaLtOne)) →\n          Mf.DP.poissonFixedEpochTotalAverageVariance (Mf.DP.PoissonFixedEpochPoint.fullBatch point.epoch ⋯) sensitivity\n              epsilon delta energy <\n            Mf.DP.poissonFixedEpochTotalAverageVariance point sensitivity epsilon delta energy",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochPointwiseDominanceDomain.lean",
+        "digest": "sha256:88db8d26189787583e57c4fbd881671d3068ca74cec72cd8ae6cda3610e92d43",
+        "projectRevision": "capture-state:sha256:4913bdc76ce05ed6c055bbe1dac62b94b2ea80ab6a26bb4852ebd526e91e334b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:f2da313f39205b649a47dbff890541b01c1e69612bef840fa63de9f9fe692d39"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:89b1c86aac62066f609411b5971803689de16c40566dda2a11f9766603893363",
+        "subjectId": "declaration:sha256:fbbff8eddf79b567dea62b79b71d7b0d7930c6baf0ef7ecec337b50d42391c99"
+      },
+      "revision": "sha256:bb517de2a7f00d1201af3f2d4de5472f35227dc125185fee19e7a934a4c3a865"
+    },
+    {
+      "id": "uniform-privacy",
+      "name": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_epochUniformSignal",
+      "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (sensitivity epsilon delta : ℝ),\n  point.epoch < point.horizon →\n    ∀ (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1),\n      Mf.DP.poissonFixedEpochStandardizedSignal sensitivity\n              ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n                  hDeltaLtOne) ^\n            2 ≤\n          Mf.DP.poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon →\n        ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n              hDeltaLtOne) <\n          Mf.DP.poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochEpochUniformDomain.lean",
+        "digest": "sha256:bf8bcc8d4715f3947932f6cf715645cafc6a1f3a16d2b39d7fe9a0766c4d13b5",
+        "projectRevision": "capture-state:sha256:8e6560bf04ebd1322e080d881683bb8f26e2e45ee4a8aa7fc991847a3c7304ec"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:8050d2a63500088bdf3b5f5e72c0eaaef93714d012b604e5b7b1ac96727d43fd"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:6605dc3a325e80b0a17f65bd68907cbccee144ce687cebc9ce077d3204ee48e3",
+        "subjectId": "declaration:sha256:87746a8efccc846af637babe5124d930cfeda0f78436b5d3cdd7cd36a9f1228d"
+      },
+      "revision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370"
+    },
+    {
+      "id": "uniform-total",
+      "name": "Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_epochUniformSignal",
+      "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (sensitivity epsilon delta energy : ℝ),\n  point.epoch < point.horizon →\n    ∀ (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1),\n      0 ≤ energy →\n        Mf.DP.poissonFixedEpochStandardizedSignal sensitivity\n                ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯\n                    hDeltaPos hDeltaLtOne) ^\n              2 ≤\n            Mf.DP.poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon →\n          Mf.DP.poissonFixedEpochTotalAverageVariance (Mf.DP.PoissonFixedEpochPoint.fullBatch point.epoch ⋯) sensitivity\n              epsilon delta energy <\n            Mf.DP.poissonFixedEpochTotalAverageVariance point sensitivity epsilon delta energy",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochEpochUniformDomain.lean",
+        "digest": "sha256:bf8bcc8d4715f3947932f6cf715645cafc6a1f3a16d2b39d7fe9a0766c4d13b5",
+        "projectRevision": "capture-state:sha256:8e6560bf04ebd1322e080d881683bb8f26e2e45ee4a8aa7fc991847a3c7304ec"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:8050d2a63500088bdf3b5f5e72c0eaaef93714d012b604e5b7b1ac96727d43fd"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:1e5f125e34f7e0443b64c0c9d8eb237691505cb8f9d40ad58df4e62698aaaf5b",
+        "subjectId": "declaration:sha256:1e42069bb8bb2a06e7b9243bac2bb1cef6e85be484c62ea116adb90542b41129"
+      },
+      "revision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f"
+    },
+    {
+      "id": "reversal-upper",
+      "name": "Mf.DP.strictInterior_calibratedPrivacyVariance_le_five_thirty_seconds",
+      "typeText": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance Mf.DP.strictInteriorPoint 1 (1 / 4) (3 / 4) ≤ 5 / 32",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean",
+        "digest": "sha256:387069bd0b1358b5e404ac0fa3e0bc5af469cc23425c35932d36294e501972cc",
+        "projectRevision": "capture-state:sha256:7182c1ac5b0c40395b1227b94390c4eae6e00a0c055d54bfcba69c956623a090"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:0206c60fa305aca0162d9a704e70d5507e3c3c19e1238a25f60cde29b5d62fed"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:b22ddc29897a73ec336f0af602a3ca801169cdbb0ccf14c2e305d8eea9833072",
+        "subjectId": "declaration:sha256:7ccb213ef8ff8f45f1babc7ca6726b424edf24c3f9ee2432ea78445ceafb6422"
+      },
+      "revision": "sha256:4c022dee56ae24257767034edf4fd6355e3e9a19521b0add1a988eb1e84f6d5c"
+    },
+    {
+      "id": "reversal-lower",
+      "name": "Mf.DP.PoissonFixedEpochFullBatchFourTwentyFifthsBracket.four_twenty_fifths_lt_calibrated_sq",
+      "typeText": "4 / 25 < Mf.DP.fullBatchGaussianBaseStddev 1 (1 / 4) (3 / 4) ⋯ ⋯ ⋯ ⋯ ^ 2",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochFullBatchFourTwentyFifthsBracket.lean",
+        "digest": "sha256:9b2de149a9f7a6fd3de5e869d7347ce2c111e550e568e65c82a16fdfa45f86ce",
+        "projectRevision": "capture-state:sha256:8b192cebc5e281914ab5024efbc4cffc32c17b2da220a9f5475c0a77ba99f0b7"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:1a9f56a652da21c0220ae85396129a156ad3d4f25a2087f477cfad6d312f9e05"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:eb1f59e9b9fbe5e66167e0f9e05f67434139c9085666775874f83dcea6e61164",
+        "subjectId": "declaration:sha256:f7251309c924c682badbb0fd5be821ac59af507263d116475bb8ef3224a7ceb7"
+      },
+      "revision": "sha256:a296c4b73a1c41fe7a5879c8bbb1d793206769428d85c379125c92daa2d1e96f"
+    },
+    {
+      "id": "reversal-total",
+      "name": "Mf.DP.strictInterior_totalVariance_lt_fullBatch_of_energy_le_nine_four_hundred",
+      "typeText": "∀ (energy : ℝ),\n  0 ≤ energy →\n    energy ≤ 9 / 400 →\n      Mf.DP.poissonFixedEpochTotalAverageVariance Mf.DP.strictInteriorPoint 1 (1 / 4) (3 / 4) energy <\n        Mf.DP.poissonFixedEpochTotalAverageVariance (Mf.DP.PoissonFixedEpochPoint.fullBatch 2 ⋯) 1 (1 / 4) (3 / 4)\n          energy",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean",
+        "digest": "sha256:387069bd0b1358b5e404ac0fa3e0bc5af469cc23425c35932d36294e501972cc",
+        "projectRevision": "capture-state:sha256:7182c1ac5b0c40395b1227b94390c4eae6e00a0c055d54bfcba69c956623a090"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:0206c60fa305aca0162d9a704e70d5507e3c3c19e1238a25f60cde29b5d62fed"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:248414b318e639481c5984b158751e33a447ca23f5be989c778649124565aee5",
+        "subjectId": "declaration:sha256:02a85fb103ac50aae7985a806a7d9a2cd5161d70b76ca89113048018caf8f25f"
+      },
+      "revision": "sha256:44142b822c8811af69dd7cc6295ec4e428cd8f90779644f260c1545caedd1d40"
+    },
+    {
+      "id": "raw-ratio",
+      "name": "Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_smallRate_ratio_one",
+      "typeText": "∀ (epoch : ℕ) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : ℝ),\n  0 < sensitivity →\n    0 ≤ epsilon →\n      0 < delta →\n        delta < 1 - Real.exp (-↑epoch) →\n          Filter.Tendsto\n            (fun extra =>\n              ↑(Mf.DP.poissonFixedEpochCalibratedStddev (Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra)\n                      sensitivity epsilon delta) *\n                  √(2 * Real.log (1 / ↑(Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra).samplingRate)) /\n                sensitivity)\n            Filter.atTop (nhds 1)",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "capture-state:sha256:3c9428b241a02fdf7a2c43e926f08f7278d1791caf1a848273fae5e3b8fade62"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:7b0a2546a6f4b2cf65f6ab214bdd6ff69bd47ee92e822b9717d7e61d883a3c20"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:66ef1d091ef36116c878af261b6a5fbe48a09b774e080998eb2f3d8bc5179205",
+        "subjectId": "declaration:sha256:b06580fce519e0dccd57fd902dda2c449fc613052c31de4295312018c1203eea"
+      },
+      "revision": "sha256:6536560e4507b9400296884915c61a09bfa49ddec64fa6716e0db4275f8db5c9"
+    },
+    {
+      "id": "raw-zero",
+      "name": "Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_zero",
+      "typeText": "∀ (epoch : ℕ) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : ℝ),\n  0 < sensitivity →\n    0 ≤ epsilon →\n      0 < delta →\n        delta < 1 - Real.exp (-↑epoch) →\n          Filter.Tendsto\n            (fun extra =>\n              ↑(Mf.DP.poissonFixedEpochCalibratedStddev (Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra)\n                  sensitivity epsilon delta))\n            Filter.atTop (nhds 0)",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "capture-state:sha256:3c9428b241a02fdf7a2c43e926f08f7278d1791caf1a848273fae5e3b8fade62"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:7b0a2546a6f4b2cf65f6ab214bdd6ff69bd47ee92e822b9717d7e61d883a3c20"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:3d6846b06613848f95debc02725a5415911850b81fb958cb5ffd2d22569d182a",
+        "subjectId": "declaration:sha256:8cc454b5e61e70d0e7d0301874afe73208ee204e1d9e51a20022896551548174"
+      },
+      "revision": "sha256:c8c24b20876b57947bae2d25df103327efbb81e8cba6508de10d04d1327f49a6"
+    },
+    {
+      "id": "variance-ratio",
+      "name": "Mf.DP.tendsto_poissonFixedEpochPrivacyVariance_div_leadingTerm_one",
+      "typeText": "∀ (epoch : ℕ) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : ℝ),\n  0 < sensitivity →\n    0 ≤ epsilon →\n      0 < delta →\n        delta < 1 - Real.exp (-↑epoch) →\n          Filter.Tendsto\n            (fun extra =>\n              Mf.DP.poissonFixedEpochCalibratedPrivacyVariance\n                  (Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra) sensitivity epsilon delta /\n                Mf.DP.fixedParticipationPrivacyVarianceLeadingTerm (↑epoch)\n                  (↑(Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra).samplingRate) sensitivity)\n            Filter.atTop (nhds 1)",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "capture-state:sha256:3c9428b241a02fdf7a2c43e926f08f7278d1791caf1a848273fae5e3b8fade62"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:7b0a2546a6f4b2cf65f6ab214bdd6ff69bd47ee92e822b9717d7e61d883a3c20"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:cb4daab10e479b49aeaa1393c6a93e45dba90d4ccfae2f207a4a673eb23a1028",
+        "subjectId": "declaration:sha256:0fbf3d61f31c542d118c216a75c75d1d8e5c834ee1648539cb8b0cabd5880cc3"
+      },
+      "revision": "sha256:0594358f856a7cc9cbc2395cad7e0c2bd18cbcb2a0a5cc43c76d3269c4dd3f99"
+    },
+    {
+      "id": "variance-infinity",
+      "name": "Mf.DP.tendsto_poissonFixedEpochPrivacyVariance_atTop",
+      "typeText": "∀ (epoch : ℕ) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : ℝ),\n  0 < sensitivity →\n    0 ≤ epsilon →\n      0 < delta →\n        delta < 1 - Real.exp (-↑epoch) →\n          Filter.Tendsto\n            (fun extra =>\n              Mf.DP.poissonFixedEpochPrivacyVarianceOfStddev\n                (Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra)\n                ↑(Mf.DP.poissonFixedEpochCalibratedStddev (Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra)\n                    sensitivity epsilon delta))\n            Filter.atTop Filter.atTop",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "capture-state:sha256:3c9428b241a02fdf7a2c43e926f08f7278d1791caf1a848273fae5e3b8fade62"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:7b0a2546a6f4b2cf65f6ab214bdd6ff69bd47ee92e822b9717d7e61d883a3c20"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:333620683225bde92dda5ac3cec1df423e70d8d7045e89378d80280c593f5ddf",
+        "subjectId": "declaration:sha256:2583d0ae0733e7049b3ef0fe96e9459dcff716774c765808c4079735a2b2278d"
+      },
+      "revision": "sha256:8d8bb01f3524ca497beb831a50486e0b72c61e454abe5b63b6f348248eec3c1b"
+    },
+    {
+      "id": "total-ratio",
+      "name": "Mf.DP.tendsto_poissonFixedEpochTotalAverageVariance_div_leadingTerm_one",
+      "typeText": "∀ (epoch : ℕ) (epoch_pos : 0 < epoch) (sensitivity epsilon delta energy : ℝ),\n  0 < sensitivity →\n    0 ≤ epsilon →\n      0 < delta →\n        delta < 1 - Real.exp (-↑epoch) →\n          Filter.Tendsto\n            (fun extra =>\n              Mf.DP.poissonFixedEpochTotalAverageVariance (Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra)\n                  sensitivity epsilon delta energy /\n                Mf.DP.fixedParticipationPrivacyVarianceLeadingTerm (↑epoch)\n                  (↑(Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra).samplingRate) sensitivity)\n            Filter.atTop (nhds 1)",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "capture-state:sha256:3c9428b241a02fdf7a2c43e926f08f7278d1791caf1a848273fae5e3b8fade62"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:7b0a2546a6f4b2cf65f6ab214bdd6ff69bd47ee92e822b9717d7e61d883a3c20"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:971f6930979395695826d617d8b98866e40f9e9e39bcbb3817baefb87bb1a860",
+        "subjectId": "declaration:sha256:bc4bb4eadc646e655c4e9cf7cb3d15ac1fd29a330cfa52810906c18d6a14c084"
+      },
+      "revision": "sha256:50481877c636bf8ff7b6fb6960b029b74ed494ce550bb233dceca5c59e816505"
+    },
+    {
+      "id": "uniform-eventual",
+      "name": "Mf.DP.eventually_poissonFixedEpoch_fullBatch_lt_totalAverageVariance_uniform_energy",
+      "typeText": "∀ (epoch : ℕ) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : ℝ),\n  0 < sensitivity →\n    0 ≤ epsilon →\n      0 < delta →\n        delta < 1 - Real.exp (-↑epoch) →\n          ∀ᶠ (extra : ℕ) in Filter.atTop,\n            ∀ (energy : ℝ),\n              0 ≤ energy →\n                Mf.DP.poissonFixedEpochTotalAverageVariance (Mf.DP.PoissonFixedEpochPoint.fullBatch epoch epoch_pos)\n                    sensitivity epsilon delta energy <\n                  Mf.DP.poissonFixedEpochTotalAverageVariance\n                    (Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra) sensitivity epsilon delta energy",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "capture-state:sha256:3c9428b241a02fdf7a2c43e926f08f7278d1791caf1a848273fae5e3b8fade62"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:7b0a2546a6f4b2cf65f6ab214bdd6ff69bd47ee92e822b9717d7e61d883a3c20"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:f03319e55adc261bff26514a0cc9506dfa9881ef5784a118d25bcaddf170c155",
+        "subjectId": "declaration:sha256:04d261cc125a727cadffbfebd985e04619d462775792681dad86e6a5bb71a5ab"
+      },
+      "revision": "sha256:8a2f73ac46e844d9911eef871aff0ecdd666882520a00ba2da1afee316c9f3b1"
+    },
+    {
+      "id": "center-positive",
+      "name": "Mf.DP.fixedEpochCenterGap_pos_of_centerDominanceCondition",
+      "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (scale theta : ℝ),\n  point.epoch < point.horizon →\n    0 < scale →\n      Mf.DP.poissonFixedEpochCenterDominanceCondition point theta → 0 < Mf.DP.fixedEpochCenterGap point scale theta",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochCenterCriterion.lean",
+        "digest": "sha256:49eb89379f1fbec548478966597a5d523938ba58a735dcb7863a685100b8d9bc",
+        "projectRevision": "capture-state:sha256:9e237b01ea466261869440f15f1cdc8b04f3527f0bd157a44cbb59d9cd6369d7"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:5ad9063e3061ff77b34755518991678713aa49204397b6ef9acd83564cb4a9fd"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:0a786d75cef94ebdc356a28b1fe64e6e21b20a2f902eed99490d686570e18a9f",
+        "subjectId": "declaration:sha256:dabaf425febb4f702f0cc3cc7d0eb2c2b30684347c6d30b33bf4869be6aa74f0"
+      },
+      "revision": "sha256:f55d8398d4ababee950940b561609abe10c110f127733a4c9c0ed6e34b0b2aff"
+    },
+    {
+      "id": "center-zero",
+      "name": "Mf.DP.fixedEpochCenterGap_eq_zero_of_horizon_eq_two_epoch_zero_center",
+      "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (scale : ℝ),\n  point.horizon = 2 * point.epoch → Mf.DP.fixedEpochCenterGap point scale 0 = 0",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochCenterCriterion.lean",
+        "digest": "sha256:49eb89379f1fbec548478966597a5d523938ba58a735dcb7863a685100b8d9bc",
+        "projectRevision": "capture-state:sha256:9e237b01ea466261869440f15f1cdc8b04f3527f0bd157a44cbb59d9cd6369d7"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:5ad9063e3061ff77b34755518991678713aa49204397b6ef9acd83564cb4a9fd"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:4c1a114873bb2018146bb1b6b9c7f40a5d059ebdb294f55d0c34ac3359b78aae",
+        "subjectId": "declaration:sha256:d24b6a1d760a45e98b818239d9075e4f6de1b1b990ff4d6b339fe01918db098e"
+      },
+      "revision": "sha256:c7d5b122daefa9dc2886a87c9637ee0e002ed8d30b549552ef9dfbc3e0607437"
+    },
+    {
+      "id": "propagation",
+      "name": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+      "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (h boundary query : ℝ),\n  point.epoch < point.horizon →\n    0 < h →\n      0 ≤ boundary →\n        boundary < query → 0 ≤ Mf.DP.fixedEpochCenterGap point h boundary → 0 < Mf.DP.fixedEpochCenterGap point h query",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochCenterGapPropagation.lean",
+        "digest": "sha256:7c8705d47510f00dab5076c09172b9748c07622d8381a49f09fa7adfdadc97c0",
+        "projectRevision": "capture-state:sha256:a2d0b570f9b5d479619abb83cc559b878fd5a39918601c7e3f34187679a88ef5"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:87f76d57fba0ade0d9dcc63011453700e77f0fcf284e3137e896c8cc44d25b9e"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:1571e8c67c754164d78c370ff9d886ad6b4a83a081b2cb8566dd684454849f22",
+        "subjectId": "declaration:sha256:a780e6639f3e340c05450840441508284d0a3cafd16f5887c1779be82a838246"
+      },
+      "revision": "sha256:d070fc3b5ce1a5f6be3ba02478282c14683332339ad76afbdb00a7282f1261f8"
+    },
+    {
+      "id": "polynomial",
+      "name": "Mf.DP.binomialSkewBoundary_boundarySteinPolynomial_identity",
+      "typeText": "∀ (epoch complement : ℕ),\n  0 < epoch + complement →\n    ∀ (radius centered : ℝ),\n      have total := ↑epoch + ↑complement;\n      have rate := ↑epoch / total;\n      have complementRate := ↑complement / total;\n      have boundary := (↑complement - ↑epoch) / (3 * total);\n      have steinPotential := fun value =>\n        radius ^ 2 - 2 * ↑epoch * complementRate - 3 * boundary ^ 2 + value - value ^ 2;\n      (centered - boundary) * ((centered - boundary) ^ 2 - radius ^ 2) - boundary * (radius ^ 2 - boundary ^ 2) =\n        rate * (↑complement - centered) * steinPotential (centered + 1) -\n          complementRate * (↑epoch + centered) * steinPotential centered",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochBinomialSkewBoundary.lean",
+        "digest": "sha256:8e78ca9846b6f614ac3fbac802fc8ed7cd1bfb7329d7faed0dfed216469528b9",
+        "projectRevision": "capture-state:sha256:fbada67f54a8105fb1f19ebef27b2b8dd986bff6a8d8b0603d92febee3a8cd2f"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:c911232de3f09aacaebccec9893bb7a62a3cb43c007a3e769796fc2f2e2db6b5"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:33dc2904a6190b009eba9b0c0b4c0cfe525686ecdb73eb81d4b32a9160c42183",
+        "subjectId": "declaration:sha256:68c28f26f314de37fce67db094953ae90e27d57389fc22da46306f9e4dc0ef80"
+      },
+      "revision": "sha256:37d60120ec4c1c981ccf7088ca18adaea2f825235430e7710fe9cdd529989092"
+    },
+    {
+      "id": "hinge-nonnegative",
+      "name": "Mf.DP.binomialSkewBoundary_boundaryDoubleCumulative_nonneg",
+      "typeText": "∀ (epoch complement : ℕ),\n  0 < epoch →\n    epoch ≤ complement →\n      ∀ (radius : ℝ), 0 ≤ radius → 0 ≤ Mf.DP.binomialSkewBoundary_boundaryDoubleCumulative epoch complement radius",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochBoundaryDoubleCumulative.lean",
+        "digest": "sha256:28069941382e5544fe697582567eb1c2ec83707b8337b7adf93456a95989d0c2",
+        "projectRevision": "capture-state:sha256:948e0ac2a4245e2c6215beb7ed65352f301ff8fdbfaffadda6e01881a57af221"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:ea41a1fcbe7a6f3e2e823d7ed2b97ac92e01eb0881dbbe8a7bb50307bd8ec283"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:e1bd34ca5de7dd40d91d04a56917d7f934371ac163efc958719ac574876dee54",
+        "subjectId": "declaration:sha256:5642a63300d748a442c24af80f5798c99bad4210dff3785dbc2e6d4ed88aea86"
+      },
+      "revision": "sha256:9af9796c9f9f7a7a2f3c11f833cd4b235a188c65d6cfc955aef12cbc726cf034"
+    },
+    {
+      "id": "hinge-positive",
+      "name": "Mf.DP.FixedEpochBoundarySignedLaplace.boundaryDoubleCumulative_firstPositiveKnot_pos",
+      "typeText": "∀ (epoch complement : ℕ),\n  0 < epoch →\n    epoch < complement →\n      have total := ↑epoch + ↑complement;\n      have boundary := (↑complement - ↑epoch) / (3 * total);\n      0 < Mf.DP.binomialSkewBoundary_boundaryDoubleCumulative epoch complement (1 - boundary)",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochBoundarySignedLaplace.lean",
+        "digest": "sha256:7dc78cb19fb8d13f5448c66e16e2e5757acb70ec755ccfe73201eccc1871e4d4",
+        "projectRevision": "capture-state:sha256:1d77098de2121f2333297e1d4369e26cad9cde2d4365ba158d1ed4ce2fcd9a5d"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:d5bf7fc01dc4c4a8ab6a1450c045dc7361423e15cb3a08eb2430eaa19813e769"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:945a7ca4973cc5926e7df3112dd5f5665023bfa2b35fd784e6889228d99cdd14",
+        "subjectId": "declaration:sha256:36ff14fc55972eac33cbafe767863778127257575567ce8a0125c7e59e0d753d"
+      },
+      "revision": "sha256:13fdd87763a261c9e339134ea2b7b4bd1ed9c7ae1a65b2f64cf9682e546c4af7"
+    },
+    {
+      "id": "zero-low",
+      "name": "Mf.DP.fixedMeanZeroCenterGap_neg_of_epoch_lt_complement",
+      "typeText": "∀ (epoch complement : ℕ) (scale : ℝ),\n  0 < epoch → epoch < complement → 0 < scale → Mf.DP.fixedMeanZeroCenterGap epoch complement scale < 0",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochReflectedZeroCenter.lean",
+        "digest": "sha256:bb3762a51d8a0384bfdce74583b0f0574cc28c394965008b0ba3ac7849289e5f",
+        "projectRevision": "capture-state:sha256:fcf9a79514c7f38e6e25f4cbf51e0f9e948bfd9d701f5e4e7a891ad1116801c7"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:6c622c0160f9ad9d4c93de3d50b559adf5c93a265cedc3cffc2287b0ce309870"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:18dea925fb29bd449ee7cde2d6fd5154857501b17890316af3d886ebe7653dbf",
+        "subjectId": "declaration:sha256:10b7695f25ba3e435bcd92a5f144faa7aae469aae524d5e0877965e81bfa5b71"
+      },
+      "revision": "sha256:5344c50a056ff0a82970ace12e2780ee6c8c818e30de8d151fcdb40b079a1664"
+    },
+    {
+      "id": "zero-high",
+      "name": "Mf.DP.fixedMeanZeroCenterGap_pos_of_complement_lt_epoch",
+      "typeText": "∀ (epoch complement : ℕ) (scale : ℝ),\n  0 < complement → complement < epoch → 0 < scale → 0 < Mf.DP.fixedMeanZeroCenterGap epoch complement scale",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochReflectedZeroCenter.lean",
+        "digest": "sha256:bb3762a51d8a0384bfdce74583b0f0574cc28c394965008b0ba3ac7849289e5f",
+        "projectRevision": "capture-state:sha256:fcf9a79514c7f38e6e25f4cbf51e0f9e948bfd9d701f5e4e7a891ad1116801c7"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:6c622c0160f9ad9d4c93de3d50b559adf5c93a265cedc3cffc2287b0ce309870"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:62f81b4dd22f27f4a0731d68f40e421a0ab6f76338d4c6c2a46d74c8b1114c1a",
+        "subjectId": "declaration:sha256:b5ba60c68ab3f22b4ee44545a1bf434661c7eecebad34c8b8dc1a443aa9e64b6"
+      },
+      "revision": "sha256:205bde70268116365596db90e6f220f1cbd9684987473a9664213009f6865d90"
+    },
+    {
+      "id": "profile-limit",
+      "name": "Mf.DP.tendsto_sampledGaussianProductProfileStddev_finiteOffset",
+      "typeText": "∀ (schedule : Mf.DP.FixedParticipationSchedule) (sensitivity : ℝ) (noiseStddev : ℕ → NNReal) (offset epsilon : ℝ),\n  0 < sensitivity →\n    0 ≤ epsilon →\n      (∀ᶠ (horizon : ℕ) in Filter.atTop, 0 < noiseStddev horizon) →\n        Filter.Tendsto (fun horizon => sensitivity / ↑(noiseStddev horizon) - Mf.DP.gaussianCriticalScale horizon)\n            Filter.atTop (nhds offset) →\n          Filter.Tendsto\n            (fun horizon =>\n              Mf.DP.sampledGaussianProductProfileStddev horizon (schedule.samplingRate horizon) ⋯ sensitivity\n                (noiseStddev horizon) epsilon)\n            Filter.atTop\n            (nhds (ENNReal.ofReal (1 - Real.exp (-↑schedule.participationBudget * Mf.DP.stdNormalCDFReal offset))))",
+      "source": {
+        "path": "Mf/DP/FixedParticipationGaussianAccounting.lean",
+        "digest": "sha256:c2da34b048b1c5b37180a9e4da3cc6b62d89182628fa9b45e5eb773cd10b133d",
+        "projectRevision": "capture-state:sha256:68213e5db068e5e56be5e88155ff4f3cdc808e4c03baddfa92973590b9466720"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:af2af4873fd968fb4f6d6976f51ef330f8e11045ba9002c3c989054270ab82fa"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:1f196d304bf170b6fdfe464bd184b8f9e303bad598a4e8e3015646f56fe4ada6",
+        "subjectId": "declaration:sha256:2a08314d37cb55aebd0afd742ebf2d0eb8eeba27dd573ad2fab86940483bb979"
+      },
+      "revision": "sha256:38d1919ba72d0ae45f049ae988b026083a176ace1e5c334d4a451a574de43c75"
+    },
+    {
+      "id": "offset-limit",
+      "name": "Mf.DP.tendsto_fixedParticipationCalibratedStddev_offset",
+      "typeText": "∀ (schedule : Mf.DP.FixedParticipationSchedule) (sensitivity epsilon delta : ℝ),\n  0 < sensitivity →\n    0 ≤ epsilon →\n      0 < delta →\n        delta < 1 - Real.exp (-↑schedule.participationBudget) →\n          Filter.Tendsto\n            (fun horizon =>\n              sensitivity / ↑(Mf.DP.fixedParticipationCalibratedStddev schedule sensitivity epsilon delta horizon) -\n                Mf.DP.gaussianCriticalScale horizon)\n            Filter.atTop (nhds (Mf.DP.fixedParticipationTargetOffset (↑schedule.participationBudget) delta))",
+      "source": {
+        "path": "Mf/DP/FixedParticipationGaussianCalibrationAsymptotics.lean",
+        "digest": "sha256:0f23d72d33f81e123aad9e260cbeb294724451923aabd5cb467b9ea628df76c8",
+        "projectRevision": "capture-state:sha256:978db13bbe7645f42b770a5554d4ecf161f831668f9318ffc48971a5d3263f07"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:4cb2e616475d04541e4fa873980389d936727d488e105ef8849c4ebe45ffbc8d"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:6ec449f8a4484f99067b86f9cca1bd4a4fa51bfc1b34ca9bd531eda6be83519f",
+        "subjectId": "declaration:sha256:79ef02906d9c0d7e91721cc5b65d8e2d14dea437fd953ff292733c5250821559"
+      },
+      "revision": "sha256:5143027dee53cad453059af2bde568d23cac14c8c71dcb5de336535e3faed83b"
+    },
+    {
+      "id": "capped-ratio",
+      "name": "Mf.DP.tendsto_cappedFixedParticipationCalibratedStddev_smallRate_ratio_one",
+      "typeText": "∀ (participationBudget : NNReal) (hBudget : 0 < participationBudget) (sensitivity epsilon delta : ℝ),\n  0 < sensitivity →\n    0 ≤ epsilon →\n      0 < delta →\n        delta < 1 - Real.exp (-↑participationBudget) →\n          Filter.Tendsto\n            (fun horizon =>\n              ↑(Mf.DP.fixedParticipationCalibratedStddev\n                      (Mf.DP.cappedFixedParticipationSchedule participationBudget hBudget) sensitivity epsilon delta\n                      horizon) *\n                  √(2 * Real.log (1 / ↑(Mf.DP.cappedParticipationRate participationBudget horizon))) /\n                sensitivity)\n            Filter.atTop (nhds 1)",
+      "source": {
+        "path": "Mf/DP/FixedParticipationGaussianCalibrationAsymptotics.lean",
+        "digest": "sha256:0f23d72d33f81e123aad9e260cbeb294724451923aabd5cb467b9ea628df76c8",
+        "projectRevision": "capture-state:sha256:978db13bbe7645f42b770a5554d4ecf161f831668f9318ffc48971a5d3263f07"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:4cb2e616475d04541e4fa873980389d936727d488e105ef8849c4ebe45ffbc8d"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:972ca8baa529dc45955a1e201e8b01149aa07fcf2c641aabb66b8e108fdd26a8",
+        "subjectId": "declaration:sha256:1d14ca441b5a324333423c9f226f6a418bbd4319c62d09808a0e6dea62940aaa"
+      },
+      "revision": "sha256:8fbee428c02d0a4ece60971ebb428717cf46e72285f1b5fcda2490900d87161e"
+    }
+  ],
+  "links": [
+    {
+      "id": "component-01-captured",
+      "claimId": "lem:calibration",
+      "componentIds": [
+        "fullbatch"
+      ],
+      "targetIds": [
+        "fullbatch"
+      ]
+    },
+    {
+      "id": "component-03-captured",
+      "claimId": "thm:rate-adaptive-pointwise",
+      "componentIds": [
+        "transcript"
+      ],
+      "targetIds": [
+        "point-privacy",
+        "point-total",
+        "fullbatch"
+      ]
+    },
+    {
+      "id": "component-06-captured",
+      "claimId": "cor:fixed-epoch-all-horizon",
+      "componentIds": [
+        "transcript"
+      ],
+      "targetIds": [
+        "uniform-privacy",
+        "uniform-total",
+        "fullbatch"
+      ]
+    },
+    {
+      "id": "component-08-captured",
+      "claimId": "thm:strict-interior-counterexample",
+      "componentIds": [
+        "transcript"
+      ],
+      "targetIds": [
+        "reversal-upper",
+        "reversal-lower",
+        "reversal-total",
+        "fullbatch"
+      ]
+    },
+    {
+      "id": "component-10-captured",
+      "claimId": "thm:smallbatch",
+      "componentIds": [
+        "offset"
+      ],
+      "targetIds": [
+        "offset-limit"
+      ]
+    },
+    {
+      "id": "component-11-captured",
+      "claimId": "thm:smallbatch",
+      "componentIds": [
+        "leading"
+      ],
+      "targetIds": [
+        "raw-ratio",
+        "raw-zero",
+        "variance-ratio",
+        "variance-infinity",
+        "total-ratio"
+      ]
+    },
+    {
+      "id": "component-12-captured",
+      "claimId": "cor:eventual",
+      "componentIds": [
+        "uniform"
+      ],
+      "targetIds": [
+        "uniform-eventual"
+      ]
+    },
+    {
+      "id": "component-14-captured",
+      "claimId": "thm:rate-adaptive-center",
+      "componentIds": [
+        "positive"
+      ],
+      "targetIds": [
+        "center-positive"
+      ]
+    },
+    {
+      "id": "component-15-captured",
+      "claimId": "thm:rate-adaptive-center",
+      "componentIds": [
+        "zero"
+      ],
+      "targetIds": [
+        "center-zero"
+      ]
+    },
+    {
+      "id": "component-16-captured",
+      "claimId": "lem:binomial-propagation",
+      "componentIds": [
+        "propagation"
+      ],
+      "targetIds": [
+        "propagation"
+      ]
+    },
+    {
+      "id": "component-17-captured",
+      "claimId": "lem:binomial-stein-polynomial",
+      "componentIds": [
+        "polynomial"
+      ],
+      "targetIds": [
+        "polynomial"
+      ]
+    },
+    {
+      "id": "component-18-captured",
+      "claimId": "lem:binomial-double-cumulative",
+      "componentIds": [
+        "hinge"
+      ],
+      "targetIds": [
+        "hinge-nonnegative"
+      ]
+    },
+    {
+      "id": "component-19-captured",
+      "claimId": "lem:binomial-double-cumulative",
+      "componentIds": [
+        "strict"
+      ],
+      "targetIds": [
+        "hinge-positive"
+      ]
+    },
+    {
+      "id": "component-20-captured",
+      "claimId": "lem:binomial-reflected-zero",
+      "componentIds": [
+        "signs"
+      ],
+      "targetIds": [
+        "zero-low",
+        "center-zero",
+        "zero-high"
+      ]
+    },
+    {
+      "id": "component-22-captured",
+      "claimId": "thm:accountant-limit",
+      "componentIds": [
+        "profile"
+      ],
+      "targetIds": [
+        "profile-limit"
+      ]
+    },
+    {
+      "id": "component-23-captured",
+      "claimId": "thm:fixed-participation-calibration",
+      "componentIds": [
+        "offset"
+      ],
+      "targetIds": [
+        "offset-limit"
+      ]
+    },
+    {
+      "id": "component-24-captured",
+      "claimId": "thm:fixed-participation-calibration",
+      "componentIds": [
+        "capped"
+      ],
+      "targetIds": [
+        "capped-ratio"
+      ]
+    }
+  ],
+  "reviews": [],
+  "revision": "sha256:94676300d319a8b3ef363d754622dce7020897ef197d4cd4a922bb9482a1a642",
+  "previousRevision": "sha256:86c84ae22be0adfc1d75831064146a1aceb139ea8205d97821bda16a691fe257"
+}

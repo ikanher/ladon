@@ -1,0 +1,29 @@
+% Reviewer editorial proposal for r09; not adopted or inserted into a manuscript.
+% Replace the transition after Theorem thm:smallbatch and before cor:eventual.
+% Keep the existing bracketing explanation below; do not also retain the old
+% sentence "The privacy variance alone eventually exceeds ... giving:".
+% This replacement targets the original transition in ORIGINAL_TRANSITION.tex.
+% If merging with the separate offset proposal, retain its calibration-identity
+% and horizon-substitution explanation; this clarification does not replace it.
+% Existing labels and fixed-parameter hypotheses are reused, not redefined.
+The exact profile limit is inverted by bracketing the calibrated noise between
+$\Delta/(\sqrt{2\log T}+s_{E,\delta}\pm\eta)$ for each $\eta>0$.
+The general profile limit and this inversion are proved in the appendix.
+
+The divergence in~\eqref{eq:privacydivergence} concerns the Gaussian
+variance of the $E$-normalized estimator, not the noise variance of one
+release. Since the raw noise is recalibrated at every horizon, the factor
+$T$ alone does not imply that $v_{E,T}=T\sigma_{E,T}^2/E^2$ diverges.
+Under the fixed-parameter hypotheses above, the theorem gives
+$\sigma_{E,T}\sim\Delta/\sqrt{2\log T}$ and hence
+$v_{E,T}\sim\Delta^2T/(2E^2\log T)\to\infty$.
+Thus, for sufficiently large transcript horizons, the privacy variance alone
+exceeds the fixed full-batch variance $v_{\mathrm{FB}}$; the nonnegative
+sampling term makes the same comparison hold for every $S\geq0$.
+This is an eventual comparison, not an assertion of optimality at every finite
+horizon. If only the final average is disclosed and calibration is performed
+for that output instead, Proposition~\ref{prop:average-uniform-bound} provides
+a uniform upper bound. That bound is neither a limiting formula nor a privacy
+guarantee for additionally disclosed individual releases.
+
+The resulting comparison is stated in the following corollary.

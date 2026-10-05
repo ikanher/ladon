@@ -1,0 +1,169 @@
+--- before-r09-editorial/COMPANION.md
++++ COMPANION.md
+@@ -1,10 +1,9 @@
+ # Why the general participation limit gives the fixed-epoch offset
+ 
+-This is a draft companion to the offset part of the fixed-epoch exposition's
+-“Sparse transcript calibration” theorem. It explains the specialization rather
+-than replacing the proof of the general participation limit. A reader asked why divergence needs to be proved; the explanation below has
+-been revised in response. The reader acknowledged the response and asked to continue; editorial adoption
+-and mathematical understanding have not been independently established.
++This companion explains the offset part of the fixed-epoch exposition's
++“Sparse transcript calibration” theorem, and why shrinking noise per release
++can coexist with diverging variance of the final estimate. It specializes an
++existing general limit rather than replacing that limit's analytical proof.
+ 
+ Fix a positive integer epoch budget $E$. With $T\ge E$ releases, sampling each
+ contribution independently at rate $q=E/T$ keeps its expected total participation
+@@ -17,29 +16,53 @@
+ two-sided transcript privacy profile is at most $\delta$.
+ 
+ The surrounding theorem also states that the privacy variance of the normalized
+-estimate diverges. Why is that worth proving? The normalization is by the fixed
+-participation budget $E$, so the transcript-calibrated contribution is
++estimate diverges. Why is that worth proving? This estimator divides the sum of
++releases by $E$, not by $T$: $Tq=E$ makes it an unbiased estimate of the full
++query sum. Its transcript-calibrated Gaussian variance is
+ 
+ $$
+ v_{E,T}=\frac{T\sigma_{E,T}^{2}}{E^{2}}.
+ $$
+ 
+ If the per-release noise were fixed, divergence would be immediate. But it is
+-recalibrated for each horizon and actually tends to zero. Growing $T$ alone
+-therefore does not settle the behavior of this product: a noise scale of order
+-$T^{-1/2}$ could keep it bounded. The substantive result establishes the calibrated decay
+-$\sigma_{E,T}\sim\Delta/\sqrt{2\log T}$ under the stated hypotheses. Consequently,
+-$v_{E,T}\sim\Delta^2T/(2E^2\log T)\to\infty$.
++recalibrated for each horizon and tends to zero. Growing $T$ alone therefore
++does not settle the product: the hypothetical noise choice $\sigma_T=c/\sqrt T$
++would give $T\sigma_T^2/E^2=c^2/E^2$. This is an algebraic example, not a
++feasible transcript calibration under the stated privacy conditions.
+ 
+-This gives a reason for the divergence statement's place in a full-batch
+-comparison: the full-batch privacy variance is a fixed finite value, so sufficiently
+-large transcript horizons eventually exceed it. The conclusion also distinguishes
+-public outputs. If only the final average is released and noise is calibrated
+-for that output, the exposition gives the uniform bound
+-$\overline v_{E,T}\le\Delta^2/(2\pi\delta^2)$. More releases do not by themselves
+-force that calibrated variance to diverge. These consequences are conventional
+-explanatory deductions and manuscript claims; this companion does not promote
+-their separate formal-coverage assessments.
++The theorem proves substantially more than divergence. Writing
++$b_T=\sqrt{2\log T}$, its finite offset limit gives
++$\Delta/\sigma_{E,T}=b_T+s_{E,\delta}+o(1)$. Dividing by $b_T\to\infty$
++and taking reciprocals gives $\sigma_{E,T}\sim\Delta/\sqrt{2\log T}$.
++Therefore $v_{E,T}\sim\Delta^2T/(2E^2\log T)\to\infty$. The divergence is
++an elementary consequence once the calibrated scale is known; the offset
++additionally identifies the finite correction to the standardized shift.
++
++Divergence alone also has a shorter argument. If the normalized variance were
++bounded by a fixed $M>0$, the raw noise would be at most $E\sqrt{M/T}$.
++In the canonical transcript, the event that some release exceeds $\Delta/2$
++would then have vanishing probability without the differing record, but
++probability tending to $1-e^{-E}$ when the record can be sampled. The latter
++is the limiting probability of at least one selection. Gaussian tail bounds
++make the noise errors vanish even across all $T$ coordinates. Since
++$\delta<1-e^{-E}$ and $\varepsilon$ is fixed, for every $M>0$ all variances
++at most $M$ are infeasible once $T$ is sufficiently large. This proves divergence,
++but not its sharp rate or the offset constant.
++
++This explains the divergence statement's place in a full-batch comparison.
++The full-batch variance $v_{\mathrm{FB}}$ is fixed and finite, so the transcript
++privacy variance alone eventually exceeds it. The sampling contribution
++$(1-E/T)S/E$ is nonnegative. Thus one sufficiently large horizon cutoff works
++for every $S\ge0$. This is not a claim of full-batch optimality at every
++non-full horizon.
++
++Public outputs must remain distinct. If only the final average is disclosed
++and noise is calibrated for that output, the exposition gives
++$\overline v_{E,T}\le\Delta^2/(2\pi\delta^2)$ uniformly in $T$. This is a
++feasibility bound, not a limit formula or a comparison with full batch. It
++provides no guarantee for additionally disclosed individual releases. The
++variance and divergence arguments here are conventional mathematical reasoning;
++they do not update separate formal-coverage assessments.
+ 
+ The result describes the offset after subtracting the Gaussian critical scale:
+ 
+@@ -55,8 +78,8 @@
+ finite. All parameters are fixed in this limit. In particular, the theorem does
+ not allow $E$, $\varepsilon$, or $\delta$ to vary with $T$.
+ 
+-The underlying fixed-participation theorem explains the constant. For expected
+-participation budget $\rho>0$, a standardized shift of the form
++The underlying fixed-participation theorem explains the constant. For a schedule with
++$Tq_T\to\rho>0$, a standardized shift of the form
+ $\Delta/\sigma_T=\sqrt{2\log T}+s+o(1)$ has limiting transcript privacy profile
+ 
+ $$
+@@ -108,3 +131,15 @@
+ [Exact source/support and ordinary checking route](SOURCE_SUPPORT.md) accompany
+ this draft. A reader can question any step above directly; no model account or
+ Ladon command is required to read it or propose a correction.
++
++## Status of this explanation
++
++This revision incorporates the r09 reviewer’s editorial proposal and responds
++to the recorded divergence question. The shorter divergence argument above is
++conventional reasoning supplied by that reviewer, not a new Lean-checked result
++or a claim of novelty.
++The user's earlier acknowledgment authorized continuation; it does not establish
++understanding of the full argument or adoption of this new text. The historical
++compilation and assessment concern their named sources and manuscript version,
++not this Markdown companion. No new Lean run or formal binding accompanies the
++additional conventional divergence argument.
+--- before-r09-editorial/PROPOSED_PAPER_PARAGRAPH.tex
++++ PROPOSED_PAPER_PARAGRAPH.tex
+@@ -1,10 +1,29 @@
+-% Editorial proposal only; not inserted in the mathematical project's manuscript.
+-% Suggested location: after Theorem thm:smallbatch or its explanatory paragraph.
+-The divergence is not a consequence of the growing horizon alone. The raw noise
+-is recalibrated for each horizon and tends to zero; what matters is its rate of
+-decay, since $v_{E,T}=T\sigma_{E,T}^2/E^2$. The theorem shows that this rate is
+-$\sigma_{E,T}\sim\Delta/\sqrt{2\log T}$, giving
+-$v_{E,T}\sim\Delta^2T/(2E^2\log T)\to\infty$. This supplies eventual dominance
+-by full batch. The conclusion depends on the public output: average-only
+-calibration instead admits the uniform bound in
+-Proposition~\ref{prop:average-uniform-bound}.
++% Reviewer editorial proposal for r09; not adopted or inserted into a manuscript.
++% Replace the transition after Theorem thm:smallbatch and before cor:eventual.
++% Keep the existing bracketing explanation below; do not also retain the old
++% sentence "The privacy variance alone eventually exceeds ... giving:".
++% This replacement targets the original transition in ORIGINAL_TRANSITION.tex.
++% If merging with the separate offset proposal, retain its calibration-identity
++% and horizon-substitution explanation; this clarification does not replace it.
++% Existing labels and fixed-parameter hypotheses are reused, not redefined.
++The exact profile limit is inverted by bracketing the calibrated noise between
++$\Delta/(\sqrt{2\log T}+s_{E,\delta}\pm\eta)$ for each $\eta>0$.
++The general profile limit and this inversion are proved in the appendix.
++
++The divergence in~\eqref{eq:privacydivergence} concerns the Gaussian
++variance of the $E$-normalized estimator, not the noise variance of one
++release. Since the raw noise is recalibrated at every horizon, the factor
++$T$ alone does not imply that $v_{E,T}=T\sigma_{E,T}^2/E^2$ diverges.
++Under the fixed-parameter hypotheses above, the theorem gives
++$\sigma_{E,T}\sim\Delta/\sqrt{2\log T}$ and hence
++$v_{E,T}\sim\Delta^2T/(2E^2\log T)\to\infty$.
++Thus, for sufficiently large transcript horizons, the privacy variance alone
++exceeds the fixed full-batch variance $v_{\mathrm{FB}}$; the nonnegative
++sampling term makes the same comparison hold for every $S\geq0$.
++This is an eventual comparison, not an assertion of optimality at every finite
++horizon. If only the final average is disclosed and calibration is performed
++for that output instead, Proposition~\ref{prop:average-uniform-bound} provides
++a uniform upper bound. That bound is neither a limiting formula nor a privacy
++guarantee for additionally disclosed individual releases.
++
++The resulting comparison is stated in the following corollary.
+--- before-r09-editorial/SOURCE_SUPPORT.md
++++ SOURCE_SUPPORT.md
+@@ -1,4 +1,10 @@
+ # Draft scope and exact supporting sources
++
++For this companion’s offline supporting-source copies, start with the
++[archive-local supporting sources](SOURCE_SUPPORT_PACKET.md). The absolute
++workspace links below identify the originating files; they are not portable
++archive links. The build commands require the external full mathematical project,
++including the audit module and imports omitted from this archive.
+ 
+ The user selected the fixed-epoch material after r08. This companion focuses on
+ its offset specialization; it is a new model-authored explanation, not an

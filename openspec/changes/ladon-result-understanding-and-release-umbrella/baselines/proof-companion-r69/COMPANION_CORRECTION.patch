@@ -1,0 +1,46 @@
+--- COMPANION_BEFORE_QUESTION.md
++++ COMPANION.md
+@@ -2,8 +2,9 @@
+ 
+ This is a draft companion to the offset part of the fixed-epoch exposition's
+ “Sparse transcript calibration” theorem. It explains the specialization rather
+-than replacing the proof of the general participation limit. It has not yet
+-undergone a reader correction round.
++than replacing the proof of the general participation limit. A reader asked why divergence needs to be proved; the explanation below has
++been revised in response. The reader acknowledged the response and asked to continue; editorial adoption
++and mathematical understanding have not been independently established.
+ 
+ Fix a positive integer epoch budget $E$. With $T\ge E$ releases, sampling each
+ contribution independently at rate $q=E/T$ keeps its expected total participation
+@@ -14,6 +15,31 @@
+ sensitivity $\Delta>0$, fixed $\varepsilon\ge0$, and target
+ $0<\delta<1-e^{-E}$. It is the infimum of nonnegative standard deviations whose
+ two-sided transcript privacy profile is at most $\delta$.
++
++The surrounding theorem also states that the privacy variance of the normalized
++estimate diverges. Why is that worth proving? The normalization is by the fixed
++participation budget $E$, so the transcript-calibrated contribution is
++
++$$
++v_{E,T}=\frac{T\sigma_{E,T}^{2}}{E^{2}}.
++$$
++
++If the per-release noise were fixed, divergence would be immediate. But it is
++recalibrated for each horizon and actually tends to zero. Growing $T$ alone
++therefore does not settle the behavior of this product: a noise scale of order
++$T^{-1/2}$ could keep it bounded. The substantive result establishes the calibrated decay
++$\sigma_{E,T}\sim\Delta/\sqrt{2\log T}$ under the stated hypotheses. Consequently,
++$v_{E,T}\sim\Delta^2T/(2E^2\log T)\to\infty$.
++
++This gives a reason for the divergence statement's place in a full-batch
++comparison: the full-batch privacy variance is a fixed finite value, so sufficiently
++large transcript horizons eventually exceed it. The conclusion also distinguishes
++public outputs. If only the final average is released and noise is calibrated
++for that output, the exposition gives the uniform bound
++$\overline v_{E,T}\le\Delta^2/(2\pi\delta^2)$. More releases do not by themselves
++force that calibrated variance to diverge. These consequences are conventional
++explanatory deductions and manuscript claims; this companion does not promote
++their separate formal-coverage assessments.
+ 
+ The result describes the offset after subtracting the Gaussian critical scale:
+ 

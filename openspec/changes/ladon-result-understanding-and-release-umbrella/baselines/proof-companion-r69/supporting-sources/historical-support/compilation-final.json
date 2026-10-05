@@ -1,0 +1,36 @@
+{
+  "status": "normal-build-and-recipe-passed",
+  "source": "Mf/DP/PoissonFixedEpochOffset.lean",
+  "declaration": "Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_offset",
+  "sourceDigest": "sha256:859e9694147bd05203feca6241ad9ce388f2016f24e4576285c3279a30ca2993",
+  "toolchain": "leanprover/lean4:v4.33.0",
+  "lakeManifestDigest": "sha256:56c1b71846349db8473a42af6d1f5979e07e9f3f248eb9ae2510cfb59c94465d",
+  "cwd": "/home/codex/projects/lean/matrix-factorization",
+  "commands": [
+    {
+      "command": "lake build Mf.DP.PoissonFixedEpochOffset Mf.DP.PoissonFixedEpochOffsetAudit Mf.DP.PoissonFixedEpochLargeBatchOptimality Mf.DP.PoissonFixedEpochLargeBatchOptimalityAudit",
+      "exitCode": 0
+    },
+    {
+      "command": "lake env lean Mf/DP/PoissonFixedEpochOffset.lean",
+      "exitCode": 0
+    },
+    {
+      "command": "lake env lean Mf/DP/PoissonFixedEpochOffsetAudit.lean",
+      "exitCode": 0
+    }
+  ],
+  "axiomOutput": "Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_offset (epoch : ℕ) (epoch_pos : 0 < epoch)\n  (sensitivity epsilon delta : ℝ) (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon)\n  (delta_pos : 0 < delta) (delta_lt_boundary : delta < 1 - Real.exp (-↑epoch)) :\n  Filter.Tendsto\n    (fun extra =>\n      sensitivity /\n          ↑(Mf.DP.poissonFixedEpochCalibratedStddev (Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra)\n              sensitivity epsilon delta) -\n        √(2 * Real.log ↑(epoch + extra)))\n    Filter.atTop (nhds (Mf.DP.standardNormalQuantile (-Real.log (1 - delta) / ↑epoch)))\n'Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_offset' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+  "allowedAxioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "normalBuildOutputDigest": "sha256:9c964d9ad9220f19047d8cd3bcfbcc39ece8fcab319287dc69b28d2dd871c97b",
+  "normalBuildWallSeconds": 16.29,
+  "normalBuildMaximumProcessRSSGiB": 6.573787689208984,
+  "directWallSeconds": 2.92,
+  "directMaximumProcessRSSGiB": 6.498706817626953,
+  "resourceScope": "maximum process RSS reported by time, not aggregate tree RSS",
+  "maintainerAdoption": "pending"
+}
