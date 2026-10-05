@@ -1,0 +1,126 @@
+
+== strict radon/vulture checks ==
+radon/vulture: clean
+
+== scoped ruff ==
++ /home/codex/projects/ladon/.venv/bin/python -m ruff check src tests scripts
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/ladon/_canonical_population.py:6:1
+   |
+ 4 |   population's handles cannot claim membership in this validation scope.
+ 5 |   """
+ 6 | / from dataclasses import dataclass
+ 7 | | from types import MappingProxyType
+ 8 | |
+ 9 | | from ladon.proofir_v3 import (
+10 | |     MAX_ARTIFACT_BYTES, MAX_ARTIFACTS, MAX_BATCH_BYTES, ProofIRV3Error,
+11 | |     _fail, _resolve_batch_limits, _validate_external_references, _validate_owned_batch,
+12 | | )
+   | |_^
+help: Organize imports
+   |
+9  | from ladon.proofir_v3 import (
+   -     MAX_ARTIFACT_BYTES, MAX_ARTIFACTS, MAX_BATCH_BYTES, ProofIRV3Error,
+   -     _fail, _resolve_batch_limits, _validate_external_references, _validate_owned_batch,
+10 +     MAX_ARTIFACT_BYTES,
+11 +     MAX_ARTIFACTS,
+12 +     MAX_BATCH_BYTES,
+13 +     ProofIRV3Error,
+14 +     _fail,
+15 +     _resolve_batch_limits,
+16 +     _validate_external_references,
+17 +     _validate_owned_batch,
+18 | )
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> src/ladon/result_resolution.py:7:1
+   |
+ 5 |   review assertions and current working-tree freshness remain independent.
+ 6 |   """
+ 7 | / from __future__ import annotations
+ 8 | |
+ 9 | | from collections import Counter, defaultdict
+10 | | from typing import Any
+11 | |
+12 | | from ladon.proofir_attachment_policy import resolve_source_map_anchor
+13 | | from ladon._canonical_population import _CanonicalPopulation
+14 | | from ladon.proofir_v3 import ProofIRV3Error
+15 | | from ladon.result_manifest import validate_result_manifest
+16 | | from ladon.result_manifest_io import MAX_RESULT_BYTES, ResultManifestError, canonical_json
+17 | | from ladon.result_manifest_summary import manifest_summary
+18 | | from ladon.stored_candidate_type import candidate_type_evidence
+   | |_______________________________________________________________^
+help: Organize imports
+   |
+11 |
+12 + from ladon._canonical_population import _CanonicalPopulation
+13 | from ladon.proofir_attachment_policy import resolve_source_map_anchor
+   - from ladon._canonical_population import _CanonicalPopulation
+14 | from ladon.proofir_v3 import ProofIRV3Error
+   |
+
+F401 [*] `ladon.proofir_v3.ProofIRV3Error` imported but unused
+ --> tests/test_canonical_population_reuse.py:7:30
+  |
+5 | from support.semantic_evidence import semantic_evidence
+6 |
+7 | from ladon.proofir_v3 import ProofIRV3Error, detached_content_id, validate_envelope_batch
+  |                              ^^^^^^^^^^^^^^
+8 | from ladon.result_resolution import _catalog
+  |
+help: Remove unused import: `ladon.proofir_v3.ProofIRV3Error`
+  |
+6 |
+  - from ladon.proofir_v3 import ProofIRV3Error, detached_content_id, validate_envelope_batch
+7 + from ladon.proofir_v3 import detached_content_id, validate_envelope_batch
+8 | from ladon.result_resolution import _catalog
+  |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> tests/test_canonical_population_reuse.py:30:12
+   |
+28 |     try:
+29 |         _catalog([environment, check])
+30 |     except Exception as error:
+   |            ^^^^^^^^^
+31 |         assert "invalid supplied canonical evidence" in str(error)
+32 |     else:
+   |
+
+RUF059 Unpacked variable `guide` is never used
+  --> tests/test_result_canonical_reuse.py:44:26
+   |
+43 | def test_no_receipt_and_malformed_unselected_population_keep_legacy_semantics():
+44 |     manifest, artifacts, guide = guide_inputs()
+   |                          ^^^^^
+45 |     artifacts = copy.deepcopy(artifacts)
+46 |     check_env, check = semantic_evidence("population-reuse-no-receipt")[0]
+   |
+help: Prefix it with an underscore or any other dummy variable pattern
+
+S110 `try`-`except`-`pass` detected, consider logging the exception
+  --> tests/test_result_canonical_reuse.py:62:5
+   |
+60 |       try:
+61 |           inspect_result_manifest(manifest, malformed, section="targets")
+62 | /     except Exception:
+63 | |         pass
+   | |____________^
+64 |       else:
+65 |           raise AssertionError("selected inspection skipped malformed off-page canonical input")
+   |
+
+BLE001 Do not catch blind exception: `Exception`
+  --> tests/test_result_canonical_reuse.py:62:12
+   |
+60 |     try:
+61 |         inspect_result_manifest(manifest, malformed, section="targets")
+62 |     except Exception:
+   |            ^^^^^^^^^
+63 |         pass
+64 |     else:
+   |
+
+Found 7 errors.
+[*] 3 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).

@@ -1,0 +1,302 @@
+........................................................................ [  7%]
+........................................................................ [ 14%]
+.............................................FF.............F.........F. [ 21%]
+.........FF.................F.F.................................F....... [ 28%]
+........................................................................ [ 36%]
+........................................................................ [ 43%]
+........................................................................ [ 50%]
+........................................................................ [ 57%]
+........................................................................ [ 65%]
+........................................................................ [ 72%]
+........................................................................ [ 79%]
+........................................................................ [ 86%]
+........................................................................ [ 94%]
+...........................................................              [100%]
+=================================== FAILURES ===================================
+__________ test_projection_source_contains_no_silent_conflict_clause ___________
+
+    def test_projection_source_contains_no_silent_conflict_clause() -> None:
+>       source = Path("src/ladon/proofir_sqlite_v3.py").read_text(encoding="utf-8").upper()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_sqlite_native_contract.py:642: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('src/ladon/proofir_sqlite_v3.py'), mode = 'r', buffering = -1
+encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'src/ladon/proofir_sqlite_v3.py'
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_______ test_normalized_rows_are_deterministic_and_provenance_preserving _______
+
+    def test_normalized_rows_are_deterministic_and_provenance_preserving() -> None:
+        vector = json.loads(
+>           Path("tests/fixtures/proofir_v3_parity/normalized-row-vector.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+/home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_sqlite_rows.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('tests/fixtures/proofir_v3_parity/normalized-row-vector.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'tests/fixtures/proofir_v3_parity/normalized-row-vector.json'
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1013: FileNotFoundError
+________ test_canonical_vectors_freeze_bytes_hashes_and_numeric_profile ________
+
+    def test_canonical_vectors_freeze_bytes_hashes_and_numeric_profile() -> None:
+>       vectors = json.loads(CANONICAL_VECTORS.read_text(encoding="utf-8"))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3.py:69: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('tests/fixtures/proofir_v3_parity/canonical-vectors-v1.json')
+mode = 'r', buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'tests/fixtures/proofir_v3_parity/canonical-vectors-v1.json'
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1013: FileNotFoundError
+________ test_ordinary_cli_contract_is_machine_readable_and_native_only ________
+
+    def test_ordinary_cli_contract_is_machine_readable_and_native_only() -> None:
+        contract = json.loads(
+>           Path("docs/proofir-v3-cli-contract.json").read_text(encoding="utf-8")
+        )
+
+/home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_cli_contract.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('docs/proofir-v3-cli-contract.json'), mode = 'r'
+buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'docs/proofir-v3-cli-contract.json'
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1013: FileNotFoundError
+__________ test_every_kind_is_named_in_the_language_neutral_inventory __________
+
+    def test_every_kind_is_named_in_the_language_neutral_inventory() -> None:
+        import json
+        from pathlib import Path
+    
+        inventory = json.loads(
+>           Path("docs/proofir-v3-corpus-inventory.json").read_text(encoding="utf-8")
+        )
+
+/home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_corpus_complete.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('docs/proofir-v3-corpus-inventory.json'), mode = 'r'
+buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'docs/proofir-v3-corpus-inventory.json'
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1013: FileNotFoundError
+__ test_every_r03_vector_fails_single_and_batch_validation_before_projection ___
+
+    def test_every_r03_vector_fails_single_and_batch_validation_before_projection() -> None:
+        import json
+        from pathlib import Path
+    
+        vectors = json.loads(
+>           Path("tests/fixtures/proofir_v3_r03_adversarial.json").read_text(encoding="utf-8")
+        )
+
+/home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_corpus_complete.py:68: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('tests/fixtures/proofir_v3_r03_adversarial.json'), mode = 'r'
+buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'tests/fixtures/proofir_v3_r03_adversarial.json'
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1013: FileNotFoundError
+______ test_corpus_inventory_names_every_registered_kind_and_freeze_seams ______
+
+    def test_corpus_inventory_names_every_registered_kind_and_freeze_seams() -> None:
+>       inventory = Path("docs/proofir-v3-corpus-inventory.md").read_text(encoding="utf-8")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_hardening.py:125: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('docs/proofir-v3-corpus-inventory.md'), mode = 'r'
+buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'docs/proofir-v3-corpus-inventory.md'
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1013: FileNotFoundError
+_____ test_validation_authority_has_one_dispatch_entry_per_registered_kind _____
+
+    def test_validation_authority_has_one_dispatch_entry_per_registered_kind() -> None:
+>       authority = Path("docs/proofir-v3-validation-authority.md").read_text(encoding="utf-8")
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+/home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_hardening.py:152: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('docs/proofir-v3-validation-authority.md'), mode = 'r'
+buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'docs/proofir-v3-validation-authority.md'
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1013: FileNotFoundError
+______ test_r03_bundle_inventory_is_complete_and_every_vector_is_rejected ______
+
+    def test_r03_bundle_inventory_is_complete_and_every_vector_is_rejected() -> None:
+        vectors = json.loads(
+>           Path("tests/fixtures/proofir_v3_r03_adversarial.json").read_text(
+                encoding="utf-8"
+            )
+        )
+
+/home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_r03_adversarial_vectors.py:74: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1027: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('tests/fixtures/proofir_v3_r03_adversarial.json'), mode = 'r'
+buffering = -1, encoding = 'utf-8', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed to by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: 'tests/fixtures/proofir_v3_r03_adversarial.json'
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/pathlib.py:1013: FileNotFoundError
+=========================== short test summary info ============================
+FAILED ../home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_sqlite_native_contract.py::test_projection_source_contains_no_silent_conflict_clause
+FAILED ../home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_sqlite_rows.py::test_normalized_rows_are_deterministic_and_provenance_preserving
+FAILED ../home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3.py::test_canonical_vectors_freeze_bytes_hashes_and_numeric_profile
+FAILED ../home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_cli_contract.py::test_ordinary_cli_contract_is_machine_readable_and_native_only
+FAILED ../home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_corpus_complete.py::test_every_kind_is_named_in_the_language_neutral_inventory
+FAILED ../home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_corpus_complete.py::test_every_r03_vector_fails_single_and_batch_validation_before_projection
+FAILED ../home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_hardening.py::test_corpus_inventory_names_every_registered_kind_and_freeze_seams
+FAILED ../home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_hardening.py::test_validation_authority_has_one_dispatch_entry_per_registered_kind
+FAILED ../home/codex/projects/ladon/.codex/state/canonical-reuse-r68/candidate/tests/test_proofir_v3_r03_adversarial_vectors.py::test_r03_bundle_inventory_is_complete_and_every_vector_is_rejected
+9 failed, 986 passed in 14.85s

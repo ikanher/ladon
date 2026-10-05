@@ -1,0 +1,359 @@
+--- /dev/null
++++ r68/src/ladon/_canonical_population.py
+@@ -0,0 +1,67 @@
++"""Private request-owned canonical artifacts and exact subset closure.
++
++Construction always validates raw occurrences. Detached copies and another
++population's handles cannot claim membership in this validation scope.
++"""
++from dataclasses import dataclass
++from types import MappingProxyType
++
++from ladon.proofir_v3 import (
++    MAX_ARTIFACT_BYTES,
++    MAX_ARTIFACTS,
++    MAX_BATCH_BYTES,
++    ProofIRV3Error,
++    _fail,
++    _resolve_batch_limits,
++    _validate_external_references,
++    _validate_owned_batch,
++)
++
++
++@dataclass(frozen=True, init=False)
++class _CanonicalPopulation:
++    artifacts: tuple
++    sizes: tuple
++    _members: MappingProxyType
++    _by_id: MappingProxyType
++
++    def __init__(self, values, **bounds):
++        artifacts, sizes = _validate_owned_batch(values, **bounds)
++        object.__setattr__(self, 'artifacts', artifacts)
++        object.__setattr__(self, 'sizes', sizes)
++        object.__setattr__(self, '_members', MappingProxyType({
++            id(artifact): (artifact, size) for artifact, size in zip(artifacts, sizes, strict=True)
++        }))
++        object.__setattr__(self, '_by_id', MappingProxyType({
++            artifact.content_id: artifact for artifact in artifacts
++        }))
++
++    def member(self, artifact_id):
++        return self._by_id[artifact_id]
++
++    def validate_subset(self, artifacts, *, max_artifact_bytes=MAX_ARTIFACT_BYTES,
++                        max_batch_bytes=MAX_BATCH_BYTES, max_artifacts=MAX_ARTIFACTS):
++        """Validate the exact subset scope without preparing envelopes again."""
++        if type(artifacts) is not list:
++            raise ProofIRV3Error('v3 envelope batch must be an array')
++        artifact_limit, batch_limit = _resolve_batch_limits(
++            None, max_artifact_bytes, max_batch_bytes, max_artifacts)
++        if len(artifacts) > max_artifacts:
++            _fail('reference-valid', 'batch-item-limit', '',
++                  f'v3 envelope batch exceeds item limit: {max_artifacts}')
++        subset, total = {}, 0
++        for artifact in artifacts:
++            member = self._members.get(id(artifact))
++            if member is None or member[0] is not artifact:
++                raise ProofIRV3Error('artifact is not a member of this canonical population')
++            size = member[1]
++            if size > artifact_limit:
++                _fail('reference-valid', 'artifact-byte-limit', '',
++                      f'v3 envelope exceeds artifact byte limit: {artifact_limit}')
++            total += size
++            if total > batch_limit:
++                _fail('reference-valid', 'batch-byte-limit', '',
++                      f'v3 envelope batch exceeds aggregate byte limit: {batch_limit}')
++            subset[artifact.content_id] = artifact.payload
++        for owner_id, artifact in subset.items():
++            _validate_external_references(owner_id, artifact, subset)
+--- r65/src/ladon/proofir_v3.py
++++ r68/src/ladon/proofir_v3.py
+@@ -397,6 +397,16 @@
+     mutating a store while discovering a dangling cross-artifact edge.
+     """
+ 
++    artifacts, _ = _validate_owned_batch(
++        values, max_bytes=max_bytes, max_artifact_bytes=max_artifact_bytes,
++        max_batch_bytes=max_batch_bytes, max_artifacts=max_artifacts,
++    )
++    return artifacts
++
++
++def _validate_owned_batch(values, *, max_bytes=None, max_artifact_bytes=MAX_ARTIFACT_BYTES,
++                          max_batch_bytes=MAX_BATCH_BYTES, max_artifacts=MAX_ARTIFACTS):
++    """Prepare every occurrence once; retain sizes for private subset preflight."""
+     if type(values) is not list:
+         raise ProofIRV3Error("v3 envelope batch must be an array")
+     max_artifact_bytes, max_batch_bytes = _resolve_batch_limits(
+@@ -405,7 +415,8 @@
+     owned_values, artifacts = _preflight_batch(values, max_artifact_bytes, max_batch_bytes, max_artifacts)
+     for owner_id, artifact in artifacts.items():
+         _validate_external_references(owner_id, artifact, artifacts)
+-    return tuple(_validate_owned_envelope(value, encoded) for value, encoded in owned_values)
++    return (tuple(_validate_owned_envelope(value, encoded) for value, encoded in owned_values),
++            tuple(len(encoded) for _, encoded in owned_values))
+ 
+ 
+ def _validate_envelope_shape(value: Any) -> None:
+@@ -1040,14 +1051,14 @@
+ def _external_references(value: Any, pointer: str) -> list[tuple[str, dict[str, Any]]]:
+     """Return every explicit external subject reference in deterministic order."""
+ 
+-    if isinstance(value, dict):
++    if isinstance(value, Mapping):
+         if set(value) == {"artifactRef", "kind", "localId"}:
+             return [(pointer, value)]
+         rows: list[tuple[str, dict[str, Any]]] = []
+         for key in sorted(value):
+             rows.extend(_external_references(value[key], pointer + "/" + _escape(key)))
+         return rows
+-    if isinstance(value, list):
++    if isinstance(value, (list, tuple)):
+         rows = []
+         for index, item in enumerate(value):
+             rows.extend(_external_references(item, pointer + f"/{index}"))
+@@ -1160,7 +1171,8 @@
+             artifact,
+         )
+     target_subjects = {
+-        _subject_descriptor(subject, pointer="/subjectRefs")
++        _subject_descriptor(subject if isinstance(subject, dict) else _thaw(subject),
++                            pointer="/subjectRefs")
+         for subject in target["subjectRefs"]
+     }
+     if (reference["kind"], reference["localId"]) not in target_subjects:
+--- r65/src/ladon/result_resolution.py
++++ r68/src/ladon/result_resolution.py
+@@ -9,8 +9,9 @@
+ from collections import Counter, defaultdict
+ from typing import Any
+ 
++from ladon._canonical_population import _CanonicalPopulation
+ from ladon.proofir_attachment_policy import resolve_source_map_anchor
+-from ladon.proofir_v3 import ProofIRV3Error, validate_envelope_batch
++from ladon.proofir_v3 import ProofIRV3Error
+ from ladon.result_manifest import validate_result_manifest
+ from ladon.result_manifest_io import MAX_RESULT_BYTES, ResultManifestError, canonical_json
+ from ladon.result_manifest_summary import manifest_summary
+@@ -37,7 +38,11 @@
+     Callers own manifest validation. Canonical batch validation and attachment
+     policy stay here so result inspection and resolution use identical rules.
+     """
+-    catalog, environments, anchors = _catalog(artifacts)
++    return _resolve_population_targets(manifest, _result_population(artifacts))
++
++
++def _resolve_population_targets(manifest, population):
++    catalog, environments, anchors = _catalog_from_population(population)
+     return catalog, [_resolve_target(t, catalog, environments, anchors)
+                      for t in manifest['targets']]
+ 
+@@ -73,11 +78,19 @@
+     return selected_targets, selected_links
+ 
+ 
+-def _catalog(artifacts):
++def _result_population(artifacts):
+     try:
+-        validated = [v.to_dict() for v in validate_envelope_batch(artifacts)]
++        return _CanonicalPopulation(artifacts)
+     except (ProofIRV3Error, ValueError, TypeError, KeyError) as exc:
+         raise ResultManifestError('invalid supplied canonical evidence') from exc
++
++
++def _catalog(artifacts):
++    return _catalog_from_population(_result_population(artifacts))
++
++
++def _catalog_from_population(population):
++    validated = [v.to_dict() for v in population.artifacts]
+     catalog = {a['artifactId']: a for a in validated}
+     environments = defaultdict(list)
+     anchors = defaultdict(list)
+--- r65/src/ladon/result_dossier.py
++++ r68/src/ladon/result_dossier.py
+@@ -6,10 +6,10 @@
+ 
+ from ladon.result_assessments import validate_result_assessments
+ from ladon.result_inspection_cards import manifest_cards
+-from ladon.result_inspection_checks import checking_cards, project_checking_cards
++from ladon.result_inspection_checks import _checking_cards_owned, project_checking_cards
+ from ladon.result_lineage import lineage_sections
+ from ladon.result_lineage_inputs import validate_lineage_inputs
+-from ladon.result_resolution import resolve_result_targets
++from ladon.result_resolution import _resolve_population_targets, _result_population
+ 
+ 
+ @dataclass
+@@ -30,9 +30,10 @@
+     """Resolve a validated manifest; validate all supplied checks and stores."""
+     companion = validate_result_assessments(assessments, manifest) if assessments is not None else None
+     lineage = validate_lineage_inputs(lineage_inputs, manifest) if lineage_inputs is not None else None
+-    catalog, resolved = resolve_result_targets(manifest, artifacts)
++    population = _result_population(artifacts)
++    catalog, resolved = _resolve_population_targets(manifest, population)
+     resolutions = {row['targetId']: row for row in resolved}
+-    checks = checking_cards(manifest, catalog, resolutions, target_ids=target_ids)
++    checks = _checking_cards_owned(manifest, catalog, resolutions, population, target_ids=target_ids)
+     sections = manifest_cards(manifest, resolutions, companion)
+     stored = lineage_sections(manifest, resolutions, lineage, lineage_base,
+                               reference_base=lineage_reference_base)
+--- r65/src/ladon/result_inspection_checks.py
++++ r68/src/ladon/result_inspection_checks.py
+@@ -5,7 +5,7 @@
+ from collections.abc import Mapping, Sequence
+ from copy import deepcopy
+ 
+-from ladon.evidence_receipt_readers import stored_check_receipt
++from ladon.evidence_receipt_readers import _stored_check_receipt_owned, stored_check_receipt
+ from ladon.result_manifest_io import ResultManifestError
+ 
+ 
+@@ -34,6 +34,17 @@
+     """Validate every check, but postpone display allocation until pagination."""
+     receipts = {key: _receipt(artifact, catalog) for key, artifact in sorted(catalog.items())
+                 if artifact['artifactKind'] == 'proofir.check-run'}
++    return _cards_from_receipts(manifest, catalog, resolutions, receipts, target_ids)
++
++
++def _checking_cards_owned(manifest, catalog, resolutions, population, *, target_ids=None):
++    receipts = {key: _owned_receipt(population, key, artifact, catalog)
++                for key, artifact in sorted(catalog.items())
++                if artifact['artifactKind'] == 'proofir.check-run'}
++    return _cards_from_receipts(manifest, catalog, resolutions, receipts, target_ids)
++
++
++def _cards_from_receipts(manifest, catalog, resolutions, receipts, target_ids):
+     targets = manifest['targets']
+     if target_ids is not None:
+         targets = [t for t in targets if t['id'] in target_ids]
+@@ -58,6 +69,16 @@
+     try:
+         return stored_check_receipt(artifact, projection_kind='dossier',
+                                     environment_artifacts=_input_environments(artifact, catalog))
++    except (ValueError, TypeError, KeyError, AttributeError) as error:
++        raise ResultManifestError('invalid stored check receipt or canonical owner') from error
++
++
++def _owned_receipt(population, key, artifact, catalog):
++    try:
++        environments = [population.member(row['artifactId'])
++                        for row in _input_environments(artifact, catalog)]
++        return _stored_check_receipt_owned(population, population.member(key),
++                                          environments, projection_kind='dossier')
+     except (ValueError, TypeError, KeyError, AttributeError) as error:
+         raise ResultManifestError('invalid stored check receipt or canonical owner') from error
+ 
+--- r65/src/ladon/evidence_receipt_readers.py
++++ r68/src/ladon/evidence_receipt_readers.py
+@@ -15,6 +15,7 @@
+ from ladon.proofir_v3 import validate_envelope
+ from ladon.semantic_execution_binding import (
+     UNRECORDED_EXECUTION,
++    _validate_recorded_execution_owned,
+     project_recorded_execution_receipt,
+     validate_recorded_execution_binding,
+ )
+@@ -33,22 +34,45 @@
+         if receipt is None:
+             return None
+         canonical = validate_envelope(dict(artifact)).to_dict()
+-        payload = canonical["payload"]
+-        if (
+-            canonical["artifactKind"] != "proofir.check-run"
+-            or receipt.get("environmentRef") != canonical["environmentRef"]
+-            or receipt.get("checkRunRef") != payload.get("checkRunId")
+-            or receipt.get("authorityBasis") != payload.get("guarantee", {}).get("authorityBasis")
+-        ):
+-            raise ValueError("stored receipt does not match its canonical check owner")
+-        validate_evidence_receipt(receipt)
+-        validate_stored_observation_receipt(canonical, receipt)
++        _validate_stored_owner(canonical, receipt)
+         recorded = validate_recorded_execution_binding(canonical, receipt, environment_artifacts)
+         return project_recorded_execution_receipt(
+             receipt, projection_kind=projection_kind, recorded=recorded,
+         )
+     except (TypeError, KeyError, AttributeError) as error:
+         raise ValueError("stored check receipt or owner is malformed") from error
++
++
++def _validate_stored_owner(canonical, receipt):
++    payload = canonical["payload"]
++    if (
++        canonical["artifactKind"] != "proofir.check-run"
++        or receipt.get("environmentRef") != canonical["environmentRef"]
++        or receipt.get("checkRunRef") != payload.get("checkRunId")
++        or receipt.get("authorityBasis") != payload.get("guarantee", {}).get("authorityBasis")
++    ):
++        raise ValueError("stored receipt does not match its canonical check owner")
++    validate_evidence_receipt(receipt)
++    validate_stored_observation_receipt(canonical, receipt)
++
++
++def _stored_check_receipt_owned(population, check, environments, *, projection_kind):
++    """Consume only the canonical owner's exact request members."""
++    # Verify membership even for the receipt-free branch, without widening closure.
++    if population.member(check.content_id) is not check:
++        raise ValueError('check is not an owned canonical population member')
++    canonical = check.to_dict()
++    try:
++        observation = canonical.get('extensions', {}).get('ladon.process-observation/v1', {})
++        receipt = observation.get('evidenceReceipt')
++        if receipt is None:
++            return None
++        _validate_stored_owner(canonical, receipt)
++        recorded = _validate_recorded_execution_owned(population, check, receipt, environments)
++        return project_recorded_execution_receipt(
++            receipt, projection_kind=projection_kind, recorded=recorded)
++    except (TypeError, KeyError, AttributeError) as error:
++        raise ValueError('stored check receipt or owner is malformed') from error
+ 
+ 
+ def stored_query_receipt(
+--- r65/src/ladon/semantic_execution_binding.py
++++ r68/src/ladon/semantic_execution_binding.py
+@@ -49,6 +49,10 @@
+         raise SemanticProjectionError('execution binding has ambiguous environment inputs')
+     environment = environments[0]
+     _validate_environment_input(check, environment)
++    return _validate_recorded_context(check, receipt, environment)
++
++
++def _validate_recorded_context(check, receipt, environment):
+     options = environment['payload']['options']
+     worker_recorded = _validate_observed_worker_identity(check, options)
+     if 'toolchainContext' not in options or options['toolchainContext'] == 'ambient-unbound':
+@@ -63,6 +67,11 @@
+ 
+ 
+ def _validate_environment_input(check: Mapping[str, Any], environment: Mapping[str, Any]) -> None:
++    _validate_environment_association(check, environment)
++    validate_envelope_batch([dict(environment), dict(check)])
++
++
++def _validate_environment_association(check, environment):
+     inputs = check['payload']['inputs']
+     if (
+         environment.get('artifactKind') != 'proofir.environment'
+@@ -71,7 +80,18 @@
+         or inputs['environmentRef'] != check['environmentRef']
+     ):
+         raise SemanticProjectionError('execution environment is not the exact declared input owner')
+-    validate_envelope_batch([dict(environment), dict(check)])
++
++
++def _validate_recorded_execution_owned(population, check, receipt, environments):
++    if not environments:
++        return False
++    if len(environments) != 1:
++        raise SemanticProjectionError('execution binding has ambiguous environment inputs')
++    environment = environments[0]
++    canonical = check.payload
++    _validate_environment_association(canonical, environment.payload)
++    population.validate_subset([environment, check])
++    return _validate_recorded_context(canonical, receipt, environment.payload)
+ 
+ 
+ def _recorded_context(recorded: Any) -> Mapping[str, Any]:
