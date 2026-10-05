@@ -1,7 +1,7 @@
 # proofir-observation-authority-and-coverage-core Specification
 
 ## Purpose
-TBD - created by archiving change proofir-observation-authority-and-coverage-core. Update Purpose after archive.
+Describe semantic observations with explicit subjects, environments, producers, authority, guarantees, and limitations. Keep evidence dimensions independent and bind checker observations and coverage to their exact inputs and populations.
 ## Requirements
 ### Requirement: Typed evidence observations
 Every semantic evidence record SHALL identify its producer, subject, environment, observation kind, result, guarantee scope, authority basis, limitations, and supporting artifact.

@@ -37,6 +37,23 @@ Canonicalization SHALL produce identical bytes and detached content IDs across s
 ### Requirement: Bounded stable validation
 Validation SHALL bound input, output, nesting, collections, strings, and reference work and SHALL emit deterministic stage, code, pointer, and ordering.
 
+The compiled-module inventory of a native environment SHALL support up to
+32,768 entries without truncation. This exception SHALL apply only to the root
+environment payload's `compiledModules` collection or that payload within a
+root native `proofir.environment` envelope, including detached-ID hashing.
+Other collections SHALL retain the 10,000-item limit. The 8 MiB artifact and
+32 MiB batch limits, descendant validation and canonical spelling SHALL remain
+unchanged. Environment readers SHALL reject repeated compiled-module names.
+
+#### Scenario: A real Lean environment imports more than 10,000 modules
+- **WHEN** an environment has 10,517 distinct compiled modules within the byte limits
+- **THEN** canonical production, validation, storage and reading preserve every module identity
+- **AND** Python and Rust canonical bytes and content IDs agree
+
+#### Scenario: An unrelated collection borrows an environment field name
+- **WHEN** an oversized ordinary or nested collection is called `compiledModules`
+- **THEN** it retains the ordinary collection limit rather than inheriting the root environment exception
+
 #### Scenario: Output cap is exceeded
 - **WHEN** a canonical or inspection result would exceed its configured output limit
 - **THEN** no partial destination replaces the prior file and the terminal result reports the bound

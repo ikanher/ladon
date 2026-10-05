@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "schema": "ladon-child-acceptance-inventory-v1",
+  "umbrella": "ladon-authority-safe-verified-discovery-umbrella",
+  "child": "ladon-proof-discovery-correctness-repairs",
+  "exitClass": "installed-scope-freshness-and-type-evidence-honest-discovery",
+  "evidenceRole": "acceptance-plan",
+  "task": "2.12",
+  "ledger": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/children/dependency-ledger.json",
+  "childSpecification": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/children/ladon-proof-discovery-correctness-repairs.md",
+  "pathBase": "repository-root",
+  "requiredRuntimes": [
+    "py311",
+    "py312"
+  ],
+  "pythonVersions": {
+    "py311": "3.11",
+    "py312": "3.12"
+  },
+  "requiredEnvironment": {
+    "LADON_REQUIRE_EXECUTION_NONLEAKAGE": "1",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+  },
+  "allowSkippedTests": false,
+  "requiredInstallation": {
+    "sameTrackedCandidate": true,
+    "sameWheelDigestAcrossRuntimes": true,
+    "requireInstalledPackageImports": true,
+    "interpreterArguments": [
+      "-I"
+    ],
+    "unsetEnvironment": [
+      "PYTHONPATH",
+      "PYTHONHOME",
+      "PYTEST_ADDOPTS"
+    ],
+    "consoleEnvironmentVariable": "LADON_CONSOLE",
+    "workingDirectory": "isolated tracked candidate checkout; imports must resolve inside the installed environment and outside that checkout",
+    "testSource": "exact tracked candidate",
+    "noImplicitNetworkOrBuild": true
+  },
+  "requiredLeanFixture": {
+    "directory": "tests/fixtures/lean_integration",
+    "pinFile": "tests/fixtures/lean_integration/lean-toolchain",
+    "pin": "leanprover/lean4:v4.32.1",
+    "compiledModule": "tests/fixtures/lean_integration/.lake/build/lib/lean/LadonFixture.olean",
+    "preparation": "Build this pinned tracked fixture explicitly before acceptance; tests must not download or repair dependencies.",
+    "unavailablePolicy": "Incomplete qualification, never an implicit skip or a successful authority exit."
+  },
+  "requiredPlatform": {
+    "executionPosture": "trusted-repository-only",
+    "processAccounting": "/proc must be available for required RSS qualification",
+    "missingRequiredCapability": "Incomplete qualification"
+  },
+  "requirements": {
+    "attributable-type": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-proof-discovery-correctness-repairs/spec.md",
+      "requirement": "Explanation compares attributable candidate-type evidence",
+      "tasks": [
+        "2.1",
+        "2.2",
+        "2.3",
+        "2.4"
+      ]
+    },
+    "lexical-interface": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-proof-discovery-correctness-repairs/spec.md",
+      "requirement": "Lexical type-text discovery has an honest versioned interface",
+      "tasks": [
+        "2.5",
+        "2.10",
+        "2.11"
+      ]
+    },
+    "scoped-population": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-proof-discovery-correctness-repairs/spec.md",
+      "requirement": "Every accepted search scope constrains the population",
+      "tasks": [
+        "2.6",
+        "2.7"
+      ]
+    },
+    "enforced-freshness": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-proof-discovery-correctness-repairs/spec.md",
+      "requirement": "Freshness requests are enforced rather than echoed",
+      "tasks": [
+        "2.8",
+        "2.9"
+      ]
+    },
+    "installed-regressions": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-proof-discovery-correctness-repairs/spec.md",
+      "requirement": "Reproduced discovery defects are installed regressions",
+      "tasks": [
+        "1.3",
+        "2.12"
+      ]
+    }
+  },
+  "categories": [
+    {
+      "categoryId": "type-and-interface",
+      "coveredRequirements": [
+        "attributable-type",
+        "lexical-interface"
+      ],
+      "testTargets": [
+        "tests/test_discovery_correctness_contract.py",
+        "tests/test_proof_difference.py",
+        "tests/test_proof_search_type.py",
+        "tests/test_semantic_build_mode.py",
+        "tests/test_supported_feature_matrix.py"
+      ]
+    },
+    {
+      "categoryId": "population-and-generation",
+      "coveredRequirements": [
+        "scoped-population",
+        "enforced-freshness"
+      ],
+      "testTargets": [
+        "tests/test_authority_safe_discovery_regressions.py",
+        "tests/test_proof_search_index.py",
+        "tests/test_proof_search_name_v2.py",
+        "tests/test_verified_discovery.py",
+        "tests/test_discovery_scope_lean_integration.py"
+      ]
+    },
+    {
+      "categoryId": "installed-command-and-bounds",
+      "coveredRequirements": [
+        "installed-regressions",
+        "lexical-interface",
+        "attributable-type",
+        "scoped-population",
+        "enforced-freshness"
+      ],
+      "testTargets": [
+        "tests/test_proofir_v3_installed_workflow_contract.py",
+        "tests/test_proof_search_installed_v3_contract.py",
+        "tests/test_proof_search_invocation_contract.py",
+        "tests/test_proof_search_operational_contract.py",
+        "tests/test_proof_search_progress_contract.py",
+        "tests/test_proof_search_cancellation_contract.py",
+        "tests/test_proof_search_baselines.py",
+        "tests/test_proof_search_consumers.py",
+        "tests/test_proof_search_constructor.py",
+        "tests/test_child_acceptance_runner_plan.py"
+      ]
+    }
+  ],
+  "pytestTargets": [
+    "tests/test_authority_safe_discovery_regressions.py",
+    "tests/test_child_acceptance_runner_plan.py",
+    "tests/test_discovery_correctness_contract.py",
+    "tests/test_discovery_scope_lean_integration.py",
+    "tests/test_proof_difference.py",
+    "tests/test_proof_search_baselines.py",
+    "tests/test_proof_search_cancellation_contract.py",
+    "tests/test_proof_search_constructor.py",
+    "tests/test_proof_search_consumers.py",
+    "tests/test_proof_search_index.py",
+    "tests/test_proof_search_installed_v3_contract.py",
+    "tests/test_proof_search_invocation_contract.py",
+    "tests/test_proof_search_name_v2.py",
+    "tests/test_proof_search_operational_contract.py",
+    "tests/test_proof_search_progress_contract.py",
+    "tests/test_proof_search_type.py",
+    "tests/test_proofir_v3_installed_workflow_contract.py",
+    "tests/test_semantic_build_mode.py",
+    "tests/test_supported_feature_matrix.py",
+    "tests/test_verified_discovery.py"
+  ],
+  "suites": [
+    {
+      "suiteId": "correctness-acceptance",
+      "coveredRequirements": [
+        "attributable-type",
+        "lexical-interface",
+        "scoped-population",
+        "enforced-freshness",
+        "installed-regressions"
+      ],
+      "testTargets": [
+        "tests/test_authority_safe_discovery_regressions.py",
+        "tests/test_child_acceptance_runner_plan.py",
+        "tests/test_discovery_correctness_contract.py",
+        "tests/test_discovery_scope_lean_integration.py",
+        "tests/test_proof_difference.py",
+        "tests/test_proof_search_baselines.py",
+        "tests/test_proof_search_cancellation_contract.py",
+        "tests/test_proof_search_constructor.py",
+        "tests/test_proof_search_consumers.py",
+        "tests/test_proof_search_index.py",
+        "tests/test_proof_search_installed_v3_contract.py",
+        "tests/test_proof_search_invocation_contract.py",
+        "tests/test_proof_search_name_v2.py",
+        "tests/test_proof_search_operational_contract.py",
+        "tests/test_proof_search_progress_contract.py",
+        "tests/test_proof_search_type.py",
+        "tests/test_proofir_v3_installed_workflow_contract.py",
+        "tests/test_semantic_build_mode.py",
+        "tests/test_supported_feature_matrix.py",
+        "tests/test_verified_discovery.py"
+      ]
+    }
+  ],
+  "requiredSourceChecks": [],
+  "evidenceRequirements": [
+    "Validate the inventory schema, ledger child/exitClass, requirement references and existence of every selected test file and node before launch.",
+    "Collect the deduplicated union exactly once per required runtime and record expanded parameterized node identities; an omitted target, collection error, skip, xfail, failure or error is incomplete qualification.",
+    "Record candidate revision, wheel digest, installed package and console identities, Python versions, Lean pin/executables, exact argv/cwd/environment policy and per-runtime reports.",
+    "Record command outcomes and evidence digests for the required source checks separately from pytest outcomes.",
+    "Emit a separate candidate-bound child exit receipt only after all required executions and source checks complete; this inventory is not such a receipt."
+  ],
+  "nonClaims": [
+    "This acceptance plan is not an execution result or child exit receipt.",
+    "Lexical query results and structural explanation do not establish Lean applicability; verified freshness verifies index/source generation only.",
+    "Historical original-defect reproductions are retrospective; only new regression captures establish pre-edit chronology.",
+    "A correctness-child receipt alone does not establish the authority, integration, vertical-slice, external evaluation or public release exits.",
+    "No external repository, optional layer, daemon, new ProofIR family or Rust expansion is required."
+  ],
+  "runnerPath": "scripts/run_child_acceptance.py",
+  "inventoryPath": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/children/correctness-acceptance-inventory.json"
+}

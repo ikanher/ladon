@@ -1,7 +1,7 @@
 # ladon-python-quality Specification
 
 ## Purpose
-TBD - created by archiving change ladon-clean-core-radon-gate. Update Purpose after archive.
+Maintain Ladon's tested clean core through strict Python quality checks and explicit module responsibilities. Preserve module-DAG reporting and make unsupported legacy features visible without importing the legacy monolith.
 ## Requirements
 ### Requirement: Ladon SHALL provide a strict Python quality gate
 

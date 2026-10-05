@@ -1,7 +1,7 @@
 # ladon-openspec-state-reconciliation Specification
 
 ## Purpose
-TBD - created by archiving change ladon-openspec-state-reconciliation. Update Purpose after archive.
+Keep OpenSpec status, ownership, archives, and product documentation consistent with recorded implementation evidence. Preserve historical decisions and expose unresolved work through repeatable backlog and state-hygiene checks.
 ## Requirements
 ### Requirement: Evidence-backed reconciliation ledger
 Every legacy status or archive decision SHALL be recorded with disposition,

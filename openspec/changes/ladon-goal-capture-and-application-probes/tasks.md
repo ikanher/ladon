@@ -1,17 +1,27 @@
-## 1. Goal And Context Capture
+## 1. Read the application outcome without evidence navigation
 
-- [ ] 1.1 Add supervised Lean source-position capture for the current goal, local declarations, imports, namespace, options, and source fingerprint.
-- [ ] 1.2 Normalize local binder identity and map captured locals back to source spans without treating pretty-printed names as stable identity.
-- [ ] 1.3 Reject stale or ambiguous locations with explicit diagnostics and no silent fallback to a different goal.
+- [x] 1.1 Expose existing residual propositions before receipt metadata in compact text/JSON, retaining omissions and exact references; verify the fixed-epoch boundary-gap residual and text/JSON meaning parity through the ordinary CLI and document exploration limits.
+- [x] 1.2 Bind residuals to observed ordered local contexts and expose the selected declaration's elaborated type, explicit/implicit parameters and instance binders without a necessary-assumption claim; verify dependent/introduced-local cases and version any strict protocol changes explicitly.
+- [x] 1.3 Document and test the captured-goal/explicit-completion CLI input and output contract, preserving existing hand-written exploration and optional scratch behavior; verify incompatible historical receipts cannot supply new completion evidence.
 
-## 2. Scratch Application Probes
+## 2. Preserve the actual source goal and replay its completed application
 
-- [ ] 2.1 Normalize relevant Lean compiler diagnostics into structured unsolved-goal, type-mismatch, unknown-name, timeout, and infrastructure classes.
-- [ ] 2.2 Generate isolated temporary examples from captured context and a candidate route without modifying the target repository.
-- [ ] 2.3 Compile probes through the existing process supervisor and return reproducible inputs, bounded output, and cleanup status.
+- [x] 2.1 Implement the bounded source-capture feasibility slice from the design using a dependent-context, local-let/notation and multiple-goal fixture; demonstrate exact source/range/environment and local identity binding or retain an explicit unsupported result before expanding completion.
+- [x] 2.2 Expose pinned source-position capture and parsed compiler-diagnostic queries, preserving binder order, scopes/options/imports and caller-supplied versus elaborated evidence; verify nested sections, stale bytes, ambiguous goals and unsupported contexts fail explicitly, and document source selection.
+- [x] 2.3 Add explicit completion against the preserved captured goal, including independent temporary compiler replay and transitive placeholder/axiom policy evidence; verify valid, residual, wrong-goal, changed-source, admitted-dependency, allowed-axiom and missing-coverage outcomes without editing production sources, and document the success boundary.
 
-## 3. Verification
+## 3. Verify the ordinary application handoff
 
-- [ ] 3.1 Expose goal capture and probe execution through the shared CLI contract.
-- [ ] 3.2 Add fixtures for nested namespaces, local notation, sections, stale locations, multiple goals, successful probes, rejected probes, and timeouts.
-- [ ] 3.3 Strictly validate this change and run focused context-fidelity, isolation, and process-tree gates.
+- [x] 3.1 Verify installed CLI capture-to-discovery-to-completion on the fixed-epoch complete and missing-premise contexts without supplying the lemma name, retaining exact commands, failures, source/environment identities and resource use.
+- [x] 3.2 Run integration gates for source/context fidelity, scratch isolation, process-tree cleanup and timeout/memory/output failure classification; verify no silent goal reconstruction or false completion and document supported profiles.
+- [x] 3.3 Run strict OpenSpec validation, required quality and isolated installed-distribution gates on supported runtimes for the changed candidate; link its acceptance evidence without renewing r52 or claiming comparative usefulness.
+
+## Current implementation evidence
+
+Tasks 1.1, 1.2, 2.1 and 2.2 are qualified in [application-r54](evidence/application-r54/REPORT.md), [application-context-r57](evidence/application-context-r57/REPORT.md), [source-capture-r55](evidence/source-capture-r55/REPORT.md) and [source-goal-cli-r56](evidence/source-goal-cli-r56/REPORT.md). The latest application-context candidate `985ea9e1d39818c9b4aee705aa687aae6e6b7662` passed 3,092 maintained tests and 140 isolated portable contracts on each supported Python runtime. Versioned residual contexts and full declaration binders preserve their observed scope; the report records installed-helper and CLI evidence reuse, failed attempts, independent audit and actual resources. These engineering results support the selected AGMAI exposition/coverage goals without establishing an improved paragraph or reader benefit.
+
+Tasks 1.3 and 2.3 are qualified in [application-completion-r59](evidence/application-completion-r59/REPORT.md) against candidate `720d28439c4a3a1178163af3b116129cc7ed743e`: 3,134 maintained tests, 74 isolated portable contracts on each supported runtime, five installed real-Lean completion controls, and ordinary installed capture → completion/residual/text with unchanged target files. Independent replay and complete transitive trust are mandatory before completion. [Completion feasibility r58](evidence/application-completion-r58/REPORT.md) and its [used-value supplement](evidence/completion-values-r58/REPORT.md) remain prerequisite evidence; r59 records failures, review and resource use separately.
+
+Tasks 3.1–3.3 are qualified in [application-handoff-r60](evidence/application-handoff-r60/REPORT.md) on the unchanged r59 runtime candidate. Installed fixed-epoch A completes against its captured goal with independent replay and permitted transitive axioms; B retains exactly the missing boundary-sign premise in JSON and text. The stale index failure, public selected-source index workaround, 10,523-module import inventory, exact commands, actual resource limits and required distribution/Lean/benchmark gates are preserved. This is module-scoped root-operated integration, not a blind reader or unrestricted discovery result.
+
+All nine scoped application tasks are complete. The parent [result-understanding umbrella](../ladon-result-understanding-and-release-umbrella/tasks.md) remains active: next is task 9.1's selected-component premise/scope view and focused exposition review, then short application/exposition reader tasks with a competent same-guide baseline. Selected-goal completion does not establish an enclosing production theorem or prose correspondence. Historical r52/r03 performance and usefulness remain unrenewed; no improved paragraph, reader benefit or human understanding is established by these engineering gates.

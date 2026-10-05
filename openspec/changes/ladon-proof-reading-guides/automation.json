@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-proof-reading-guides",
+  "commands": [
+    "openspec validate ladon-proof-reading-guides --strict",
+    "uv run --locked --reinstall-package ladon pytest -q tests/test_result_*.py",
+    "git diff --check"
+  ]
+}

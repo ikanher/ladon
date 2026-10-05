@@ -1,7 +1,7 @@
 # ladon-pipeline Specification
 
 ## Purpose
-TBD - created by archiving change ladon-pipeline-phase-boundaries-timing. Update Purpose after archive.
+Expose named analysis and reporting phases with stable timing metadata. Keep pure analysis separate from side effects while preserving report compatibility and a small, locally testable pipeline.
 ## Requirements
 ### Requirement: Ladon SHALL expose named pipeline phases
 

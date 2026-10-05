@@ -1,7 +1,7 @@
 # proofir-content-environment-and-subject-identity Specification
 
 ## Purpose
-TBD - created by archiving change proofir-content-environment-and-subject-identity. Update Purpose after archive.
+Provide stable canonical content identities, exact environment references, and typed subject references. Keep observation identity separate from content identity and validate opaque Lean fingerprints without implementing Lean term semantics in core readers.
 ## Requirements
 ### Requirement: Separate content and observation identities
 The system SHALL distinguish canonical content artifact identity from path/generation observation identity and SHALL keep unchanged content stable across database generations.

@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "milestoneId": "ladon-result-claim-correspondence:offline",
+  "status": "passed",
+  "recordedAt": "2026-10-02",
+  "baseCommit": "d64f475e23a7339c91aa280ff6e6679c27607875",
+  "candidateKind": "working-tree-file-inventory",
+  "implementationFingerprint": "sha256:d6ea0d7d353e8f5d0e6a02b7a376d18516d3131b1fdee8e993f3a9c6f83b9429",
+  "files": [
+    {
+      "path": "src/ladon/_result_manifest_shape.py",
+      "sha256": "7d6d016f1a8cf846a586307d140123c8a77c3c36421e75cc518c4a1ecdb56ac4"
+    },
+    {
+      "path": "src/ladon/cli.py",
+      "sha256": "7662f536f5f0a82ab9cd85348ca79c5658fa73b3d1ed149f6d431f16489f94d7"
+    },
+    {
+      "path": "src/ladon/entrypoint.py",
+      "sha256": "db8a4fad4c75abfee4148489cf24f51468290c3a39a02f5206e889a308ff9b7f"
+    },
+    {
+      "path": "src/ladon/result_cli.py",
+      "sha256": "909bbe93665eb78b4c6f6c34e52f246a3644bbbad3c607b16156ac3387f965f6"
+    },
+    {
+      "path": "src/ladon/result_manifest.py",
+      "sha256": "dd31b8ff5276310406cbcfff6f069012575419cbb9083c8ec2967b80ada40c97"
+    },
+    {
+      "path": "src/ladon/result_manifest_io.py",
+      "sha256": "459f1cbe3cce7f1a6aefeac40768e94395d7f9b493bc04d6c849b0480bac62e5"
+    },
+    {
+      "path": "src/ladon/result_manifest_summary.py",
+      "sha256": "3f2677f55ce33b19d549dc31152e3f855f5eeacd6060e530d6b69cf2bd142d14"
+    },
+    {
+      "path": "src/ladon/schemas/ladon-result-manifest-v1.schema.json",
+      "sha256": "e8d7cc437c99747a6e516d2981f6ea22b64565031a045d69eb82677edd3f2bf4"
+    },
+    {
+      "path": "tests/fixtures/result_manifest/finite-map.json",
+      "sha256": "4b70c147a2ee0418ef5184363fc01447e17ae9abf33c4661c30b5bcb0a3a3fe4"
+    },
+    {
+      "path": "tests/test_result_cli.py",
+      "sha256": "58c7cc4b410ecbf66b435e1d3b309c0d6ccadfb329cefed03efb2a20ea7ca298"
+    },
+    {
+      "path": "tests/test_result_manifest.py",
+      "sha256": "faa6ff054e8cfc40b673ec7e08ebcd4d08176d30dae7947f86ccabb050b32883"
+    }
+  ],
+  "checks": [
+    {
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "outcome": "passed",
+      "testsPassed": 1758,
+      "elapsedTestSeconds": 183.99
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q tests/test_result_manifest.py tests/test_result_cli.py",
+      "outcome": "passed",
+      "testsPassed": 53
+    },
+    {
+      "command": "uv build --offline; install wheel with uv pip install --offline --no-deps; run installed ladon result validate outside checkout",
+      "outcome": "passed",
+      "wheelSha256": "9c3ea5027d5d13c1d16a70fd3a1a7bb349694dbcf69ae9d0c6d63a705f7f76e4",
+      "posture": "Python audit hook forbids socket events, subprocess execution, and source-checkout reads; not an OS sandbox"
+    },
+    {
+      "command": "openspec validate ladon-result-understanding-and-release-umbrella --strict; openspec validate ladon-result-claim-correspondence --strict",
+      "outcome": "passed"
+    },
+    {
+      "command": "dependency graph, source/spec paths, scoped OpenSpec hygiene and whitespace inspection",
+      "outcome": "passed"
+    }
+  ],
+  "limitations": [
+    "Canonical Lean/ProofIR target resolution not implemented; all links remain unresolved.",
+    "Full authority-safe and verified-discovery exit receipts are unavailable for this candidate.",
+    "Working-tree wheel smoke is not a clean tracked-candidate release gate.",
+    "Runtime validation performed on Python 3.11; Python 3.12 matrix remains a full integration requirement.",
+    "Qualitative feedback came from the implementation-session LLM, not an independent reviewer.",
+    "Comparative metrics remain deferred by user instruction."
+  ]
+}

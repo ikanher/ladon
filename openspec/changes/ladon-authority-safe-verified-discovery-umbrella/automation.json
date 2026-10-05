@@ -3,11 +3,24 @@
   "change": "ladon-authority-safe-verified-discovery-umbrella",
   "commands": [
     "openspec validate ladon-authority-safe-verified-discovery-umbrella --strict",
+    "uv run --locked pytest -q tests/test_execution_environment_policy.py tests/test_final_execution_environment.py tests/test_source_enumeration_context.py tests/test_lean_toolchain.py tests/test_semantic_lean_execution.py tests/test_authority_safe_discovery_regressions.py",
+    "LADON_REQUIRE_EXECUTION_NONLEAKAGE=1 uv run --locked pytest -q tests/test_execution_nonleakage_scanner.py tests/test_execution_nonleakage_failures.py tests/test_execution_nonleakage_discovery.py tests/test_execution_nonleakage_lean_integration.py",
     "uv run --locked pytest -q tests/test_proof_difference.py tests/test_proof_search_type.py tests/test_proof_search_installed_v3_contract.py",
+    "uv run --locked pytest -q tests/test_verified_discovery.py tests/test_discovery_scope_lean_integration.py",
+    "uv run --locked pytest -q tests/test_execution_posture.py tests/test_doctor_cli.py tests/test_evidence_transition_corpus.py tests/test_evidence_receipt.py tests/test_stored_evidence_receipt_cli.py tests/test_release_gate_common.py",
     "uv run --locked pytest -q tests/test_lean_toolchain.py tests/test_semantic_candidate_security_contract.py tests/test_semantic_candidate_worker_v3_contract.py tests/test_proofir_result_dimensions.py tests/test_proofir_projection_corpus.py tests/test_proofir_derivation_queries.py",
+    "uv run --locked pytest -q tests/test_evidence_receipt_readers.py tests/test_proofir_query_contracts.py tests/test_theorem_lineage_query.py tests/test_theorem_lineage_projection.py tests/test_theorem_lineage_hardening.py tests/test_semantic_projection_hardening.py",
+    "uv run --locked pytest -q tests/test_aggregate_derivation_receipts.py tests/test_semantic_result_projection.py tests/test_semantic_cli_projection.py tests/test_proofir_derivation_queries.py tests/test_proofir_derivation_scc.py",
+    "uv run --locked pytest -q tests/test_stored_receipt_ownership.py tests/test_rejected_context_ownership.py tests/test_evidence_receipt_readers.py tests/test_stored_evidence_receipt_cli.py tests/test_semantic_observation_closure.py",
+    "uv run --locked pytest -q tests/test_historical_execution_binding.py tests/test_evidence_receipt.py tests/test_proofir_query_contracts.py",
+    "uv run --locked pytest -q tests/test_semantic_binding_projection.py tests/test_semantic_result_projection.py tests/test_semantic_projection_hardening.py tests/test_aggregate_derivation_receipts.py tests/test_semantic_observation_closure.py",
+    "uv run --locked pytest -q tests/test_semantic_weak_receipt_boundary.py tests/test_semantic_observation_closure.py tests/test_evidence_receipt_readers.py tests/test_semantic_cli_projection.py",
+    "uv run --locked pytest -q tests/test_receipt_projection_paths.py tests/test_evidence_transition_corpus.py tests/test_evidence_receipt.py",
+    "uv run --locked pytest -q tests/test_proofir_derivation.py tests/test_proofir_derivation_queries.py tests/test_proofir_derivation_scc.py tests/test_proofir_observations.py tests/test_aggregate_derivation_receipts.py",
     "uv run --locked python scripts/generate_supported_feature_matrix.py --verify-tests",
     "uv run --locked python scripts/installed_distribution_smoke.py --candidate worktree",
     "uv run --locked python scripts/python_quality.py --strict",
-    "git diff --check"
+    "git diff --check",
+    "uv run --locked pytest -q tests/test_authority_expansion_freeze.py tests/test_release_gate_common.py tests/test_child_acceptance_runner_plan.py"
   ]
 }

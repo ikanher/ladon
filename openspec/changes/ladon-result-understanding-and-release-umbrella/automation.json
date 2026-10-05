@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-result-understanding-and-release-umbrella",
+  "validationScope": "umbrella-artifacts-and-offline-child",
+  "commands": [
+    "openspec validate ladon-result-understanding-and-release-umbrella --strict",
+    "openspec validate ladon-result-claim-correspondence --strict",
+    "uv run --locked pytest -q tests/test_result_manifest.py tests/test_result_cli.py",
+    "git diff --check -- openspec/changes/ladon-result-understanding-and-release-umbrella"
+  ]
+}

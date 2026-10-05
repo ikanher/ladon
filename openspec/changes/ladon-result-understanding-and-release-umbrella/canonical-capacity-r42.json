@@ -1,0 +1,222 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "ladon-canonical-capacity-qualification",
+  "date": "2026-10-03",
+  "status": "qualified-for-recorded-capacity-and-consumer-scope",
+  "scope": "Root canonical environment module capacity expansion across producer, Python/Rust encoders, payload validation, registry and result resolution.",
+  "candidate": {
+    "sourceInventorySha256": "369abf9b88ba5ccf85ef0aba369d39edc9da3785cfe393385bf9306a232c9948",
+    "sourceHead": "d64f475e23a7339c91aa280ff6e6679c27607875",
+    "sourceDirty": true,
+    "candidate": "/tmp/ladon-capacity-r42-2xqzcq1y/candidate",
+    "rootIndexSha256": "840bfe9d261ad6afa25c36c7311ad86677a1c437e84044826cbf0791370afc04"
+  },
+  "wheel": {
+    "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/ladon-0.2.0-py3-none-any.whl",
+    "digest": "sha256:ceea3812be33e5b983eafa61a1b61b4e0c5bd625aead803ae1c9c787d2407f00",
+    "bytes": 963938
+  },
+  "sourceInventory": {
+    "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/source-inventory.json",
+    "digest": "sha256:369abf9b88ba5ccf85ef0aba369d39edc9da3785cfe393385bf9306a232c9948",
+    "bytes": 363143
+  },
+  "codeSnapshotCheck": {
+    "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/code-snapshot-check.json",
+    "digest": "sha256:cfed27e84c26a6199433cb0720fd3a54c045a7f867b92c2cc9dd43aa2afb4f6f",
+    "bytes": 43
+  },
+  "productionFiles": [
+    "src/ladon/proofir_v3.py",
+    "src/ladon/proofir_v3_payloads.py",
+    "src/ladon/semantic_candidate_worker.py",
+    "rust/proofir-core/src/lib.rs"
+  ],
+  "contract": {
+    "maxCompiledModules": 32768,
+    "compiledModuleScope": "Only root environment payload or environment-envelope payload; descendants and arbitrary nested lookalikes retain generic bounds.",
+    "maxGenericCollectionItems": 10000,
+    "maxArtifactBytes": 8388608,
+    "maxBatchBytes": 33554432,
+    "duplicateModuleNames": "rejected by payload validator",
+    "canonicalEncoding": "unchanged",
+    "compatibility": "Old readers may reject environments above 10,000 modules; duplicate-name envelopes previously accepted by the payload validator now fail."
+  },
+  "verification": [
+    {
+      "command": "uv run --locked python scripts/python_quality.py --strict",
+      "exitCode": 0,
+      "passed": 2709,
+      "log": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/ladon-capacity-quality.log",
+        "digest": "sha256:6adc92bb8b2ab585b4e8f6aa54bf1c530b3ba095eb7caba77f40be7798fb2f31",
+        "bytes": 3344
+      }
+    },
+    {
+      "command": "cargo test --workspace --locked",
+      "cwd": "/home/codex/projects/ladon/rust",
+      "exitCode": 0,
+      "log": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/ladon-capacity-rust-green.log",
+        "digest": "sha256:74044247064e0a47991e97b11e932e1a1e2f1633464bce134361ad40a21d404f",
+        "bytes": 4757
+      }
+    },
+    {
+      "runtime": "py311",
+      "passed": 536,
+      "exitCode": 0,
+      "command": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/py311-contracts.command.json",
+        "digest": "sha256:726a803a7c4ac206ce87d2a385069395365640144b326081a8d081d4987d399c",
+        "bytes": 4872
+      },
+      "log": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/py311-contracts.log",
+        "digest": "sha256:f9ae9c12662a68868ebc8bad213f0d1b97542f9a7b5feecdd611d32994ece76c",
+        "bytes": 661
+      }
+    },
+    {
+      "runtime": "py312",
+      "passed": 536,
+      "exitCode": 0,
+      "command": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/py312-contracts.command.json",
+        "digest": "sha256:c4663a150d880a9499fbc075a051ad0b484ab3fb7a172330d32ce26b92d27653",
+        "bytes": 4873
+      },
+      "log": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/py312-contracts.log",
+        "digest": "sha256:1e46ce716fab9cb891f2a956bf8cad1e7e24fc1383e675e19f91605f54693a15",
+        "bytes": 661
+      }
+    },
+    {
+      "command": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/clean-gate-pinned.command.json",
+        "digest": "sha256:0435827601e6ffc9b73e8c64dd5b9615007989c4ca904bad92d1de6b1bb172ff",
+        "bytes": 296
+      },
+      "exitCode": 0,
+      "log": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/clean-gate-pinned.log",
+        "digest": "sha256:8cf38a645af3c7e79a77f8a00ce43fff387b7e687ac1e1112c2511e66165826c",
+        "bytes": 17837
+      }
+    },
+    {
+      "command": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/lean-integration-gate-pinned.command.json",
+        "digest": "sha256:a8e0241d91e991d2fe37af2d185c15625fac9f9d049407fa9135ba6415e6cac3",
+        "bytes": 316
+      },
+      "exitCode": 0,
+      "log": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/lean-integration-gate-pinned.log",
+        "digest": "sha256:37a709d64bcf4208a4d0066252b32e7a3e46b3d8ecfa10450a8e394a3c9d7b94",
+        "bytes": 2784
+      }
+    },
+    {
+      "check": "Independent integrated code audit, 21 Python and 2 Rust tests",
+      "boardPost": 30,
+      "status": "no actionable findings",
+      "evidence": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/independent-audit-and-followup.json",
+        "digest": "sha256:f99d981a4945d130bdf01ce3910c006565213edc342394b36601ef1efadf1787",
+        "bytes": 11511
+      }
+    },
+    {
+      "check": "Actual canonical registry persistence",
+      "evidence": {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/registry-persistence.json",
+        "digest": "sha256:2fd9528bb73611d340a32feca93e80b6dd1521f7276d409e9a1c8c0ffe3d4e3f",
+        "bytes": 685
+      }
+    }
+  ],
+  "failedAttempts": {
+    "logs": [
+      {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/clean-gate.log",
+        "digest": "sha256:ce0a3d548df93acc8b208fda46ea71f24e6a8df0265c4dc6aec2aae927d44415",
+        "bytes": 8378
+      },
+      {
+        "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/lean-integration-gate.log",
+        "digest": "sha256:1fc30dd021e94adf3d66be6ca6a3d52be9b230d9edc38f9e4f2ea83439f3b6a7",
+        "bytes": 3295
+      }
+    ],
+    "cause": "Sanitized HOME plus Elan shim resolution caused a second Lean download; the helper environment drops ELAN_HOME and extraction hit a storage quota.",
+    "diagnostic": {
+      "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/gate-debug/report.json",
+      "digest": "sha256:09df42a732de9129583a8d9f3a3192f426d1df4ef4aeed47c7f6f9cf55832755",
+      "bytes": 97426
+    },
+    "correction": "Use the existing pinned Lean 4.32.1 bin directory as PATH prefix for the fixture gates. Minimal reproduction and both unchanged gates pass; no production source or checks were weakened.",
+    "minimalReproduction": {
+      "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/gate-debug-pinned/command.json",
+      "digest": "sha256:9f6e2450d7b3ebba254a3282dc2999b30d73b454f6351cdad83dfaedba20ba8a",
+      "bytes": 441
+    }
+  },
+  "realProject": {
+    "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/summary.json",
+    "digest": "sha256:305f233fc6700c9d8f3cb0c01842c5b306000e9f27518f8d60d32558e70ba7d6",
+    "bytes": 26499
+  },
+  "sourceAnchorFollowup": {
+    "boardPosts": [
+      32,
+      33,
+      34,
+      35,
+      36
+    ],
+    "status": "tiny Lean probe confirms imported owner/ranges but disproves current-source freshness from ranges alone; producer requires exact source-byte association",
+    "probe": {
+      "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/source-anchor-probe/pinned-path/summary.json",
+      "digest": "sha256:0441195a9f262ce871d8ef69db0308319695a4897d8b112ea0384640c7fd9b8b",
+      "bytes": 434
+    },
+    "evidence": {
+      "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/independent-audit-and-followup.json",
+      "digest": "sha256:f99d981a4945d130bdf01ce3910c006565213edc342394b36601ef1efadf1787",
+      "bytes": 11511
+    }
+  },
+  "metadataChecks": {
+    "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/final-checks.json",
+    "digest": "sha256:85ffbe5959d316aae5dd5e1a5916b53c69bcb6a3ac0019cce8a86a02c6b624be",
+    "bytes": 1026
+  },
+  "installedPackageMatch": {
+    "path": "/home/codex/projects/lean/matrix-factorization/latex/lean/poisson_fixed_epoch_exposition_evidence_r02/canonical-capacity-r42/verification/installed-wheel-match.json",
+    "digest": "sha256:86cca1c2d735ecaea26466be94457e1b0ea1669c2a477efbc59939259d30f439",
+    "bytes": 261
+  },
+  "rootPreservation": {
+    "head": "d64f475e23a7339c91aa280ff6e6679c27607875",
+    "indexDigest": "sha256:840bfe9d261ad6afa25c36c7311ad86677a1c437e84044826cbf0791370afc04"
+  },
+  "umbrellaProgress": {
+    "complete": 11,
+    "total": 50,
+    "newTasksChecked": 0
+  },
+  "nonclaims": [
+    "No cache-clean theorem replay.",
+    "No informal/formal correspondence approval.",
+    "No canonical source-map artifact was emitted; the single target remains unresolved.",
+    "Other 24 pending targets are not captured.",
+    "Before/after observation covers selected files, Git-status bytes and package metadata, not all dependency/cache bytes.",
+    "No exposition regeneration or modification of the original r02 manifest.",
+    "No full umbrella completion or public release.",
+    "Historical r41 child qualification is not silently extended to these new bytes.",
+    "This report does not supply upstream independent maintainer labels or historical ordering evidence."
+  ]
+}

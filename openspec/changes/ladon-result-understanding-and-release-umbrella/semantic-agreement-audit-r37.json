@@ -1,0 +1,728 @@
+{
+  "schemaVersion": 1,
+  "status": "comparison-recorded-with-explicit-open-gaps",
+  "candidateCommit": "3f182566c19afe82f8029685fe77f20759582d4c",
+  "qualification": {
+    "path": "/home/codex/projects/ladon/openspec/changes/ladon-result-understanding-and-release-umbrella/integration-requalification-r37.json",
+    "digest": "sha256:35827a902de27ca087199203d6e8f6d9a1156a06a89017cbf569e2c8da00ae99"
+  },
+  "boundaries": [
+    {
+      "boundary": "candidate type, population and freshness",
+      "spec": {
+        "path": "/home/codex/projects/ladon/openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-proof-discovery-correctness-repairs/spec.md",
+        "digest": "sha256:47343a21f1ef66a3153b47d68d6122a44385343a39f2d808f7b82b316e181110"
+      },
+      "owners": [
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/proof_search_type.py",
+          "digest": "sha256:c4573f034a9cc2304102c19a3136a98ed89138489267fac512a558e282922271"
+        },
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/proof_search_explain.py",
+          "digest": "sha256:27d51c69bfe04850a82d513ba3cb5fb1355c70ee08b15c21e33281c9cac29e74"
+        }
+      ],
+      "passedNodes": {
+        "py311": [
+          "tests/test_authority_safe_discovery_regressions.py::test_explain_compares_indexed_type_not_declaration_name",
+          "tests/test_authority_safe_discovery_regressions.py::test_explain_returns_bounded_match_evidence_for_ambiguous_candidates",
+          "tests/test_authority_safe_discovery_regressions.py::test_explain_preserves_freshness_without_index_storage_dump[fresh]",
+          "tests/test_authority_safe_discovery_regressions.py::test_explain_preserves_freshness_without_index_storage_dump[stale]",
+          "tests/test_authority_safe_discovery_regressions.py::test_explain_preserves_freshness_without_index_storage_dump[unavailable]",
+          "tests/test_authority_safe_discovery_regressions.py::test_type_text_scope_requires_a_population_root",
+          "tests/test_authority_safe_discovery_regressions.py::test_type_text_module_scope_requires_and_uses_module_filter",
+          "tests/test_authority_safe_discovery_regressions.py::test_type_text_freshness_verification_is_not_echoed",
+          "tests/test_authority_safe_discovery_regressions.py::test_authority_cannot_promote_to_explicit_pinned[ambient-selected-application-check-explicit-pinned-application-check]",
+          "tests/test_authority_safe_discovery_regressions.py::test_authority_cannot_promote_to_explicit_pinned[not-assessed-explicit-pinned-application-check]",
+          "tests/test_authority_safe_discovery_regressions.py::test_toolchain_preflight_uses_worker_environment",
+          "tests/test_proof_search_type.py::test_type_search_returns_lexical_shortlist_and_diagnostics",
+          "tests/test_proof_search_type.py::test_retired_type_alias_fails_before_index_access",
+          "tests/test_proof_search_type.py::test_warm_sqlite_shortlist_has_bounded_latency",
+          "tests/test_proof_search_type.py::test_type_text_verify_includes_index_generation_evidence",
+          "tests/test_proof_search_type.py::test_type_text_module_scope_reports_population_evidence",
+          "tests/test_proof_search_type.py::test_type_text_reports_field_contributions_and_bounded_omissions",
+          "tests/test_proof_search_type.py::test_type_text_matching_is_literal_and_case_consistent"
+        ],
+        "py312": [
+          "tests/test_authority_safe_discovery_regressions.py::test_explain_compares_indexed_type_not_declaration_name",
+          "tests/test_authority_safe_discovery_regressions.py::test_explain_returns_bounded_match_evidence_for_ambiguous_candidates",
+          "tests/test_authority_safe_discovery_regressions.py::test_explain_preserves_freshness_without_index_storage_dump[fresh]",
+          "tests/test_authority_safe_discovery_regressions.py::test_explain_preserves_freshness_without_index_storage_dump[stale]",
+          "tests/test_authority_safe_discovery_regressions.py::test_explain_preserves_freshness_without_index_storage_dump[unavailable]",
+          "tests/test_authority_safe_discovery_regressions.py::test_type_text_scope_requires_a_population_root",
+          "tests/test_authority_safe_discovery_regressions.py::test_type_text_module_scope_requires_and_uses_module_filter",
+          "tests/test_authority_safe_discovery_regressions.py::test_type_text_freshness_verification_is_not_echoed",
+          "tests/test_authority_safe_discovery_regressions.py::test_authority_cannot_promote_to_explicit_pinned[ambient-selected-application-check-explicit-pinned-application-check]",
+          "tests/test_authority_safe_discovery_regressions.py::test_authority_cannot_promote_to_explicit_pinned[not-assessed-explicit-pinned-application-check]",
+          "tests/test_authority_safe_discovery_regressions.py::test_toolchain_preflight_uses_worker_environment",
+          "tests/test_proof_search_type.py::test_type_search_returns_lexical_shortlist_and_diagnostics",
+          "tests/test_proof_search_type.py::test_retired_type_alias_fails_before_index_access",
+          "tests/test_proof_search_type.py::test_warm_sqlite_shortlist_has_bounded_latency",
+          "tests/test_proof_search_type.py::test_type_text_verify_includes_index_generation_evidence",
+          "tests/test_proof_search_type.py::test_type_text_module_scope_reports_population_evidence",
+          "tests/test_proof_search_type.py::test_type_text_reports_field_contributions_and_bounded_omissions",
+          "tests/test_proof_search_type.py::test_type_text_matching_is_literal_and_case_consistent"
+        ]
+      }
+    },
+    {
+      "boundary": "one execution context and independent posture",
+      "spec": {
+        "path": "/home/codex/projects/ladon/openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-execution-authority-integrity/spec.md",
+        "digest": "sha256:ba17853044b31e0e0e32f5c82ad5534f83971c94da52bcac4ebe4a4020adede5"
+      },
+      "owners": [
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/lean_toolchain.py",
+          "digest": "sha256:3dcddd3ba3a571f601d83031b94b1fe00c090428248f2ac9e9314f2dfeb4aa75"
+        },
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/execution_posture.py",
+          "digest": "sha256:af7fbd370d27fc4bf80d1c9964e5d7ca14d5bc30ba7362c400113610bd804a12"
+        }
+      ],
+      "passedNodes": {
+        "py311": [
+          "tests/test_execution_posture.py::test_api_rejects_required_isolation_before_execution[SemanticCandidateRequest]",
+          "tests/test_execution_posture.py::test_api_rejects_required_isolation_before_execution[DiscoveryRequest]",
+          "tests/test_execution_posture.py::test_cli_isolation_rejection_precedes_preflight_and_publication[operation0]",
+          "tests/test_execution_posture.py::test_cli_isolation_rejection_precedes_preflight_and_publication[operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-llm-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-llm-operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-review-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-review-operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-audit-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-audit-operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-llm-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-llm-operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-review-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-review-operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-audit-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-audit-operation1]",
+          "tests/test_final_execution_environment.py::test_version_preflight_and_worker_receive_the_same_final_environment",
+          "tests/test_final_execution_environment.py::test_direct_execution_cannot_mutate_the_final_environment",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[verification-addition]",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[verification-deletion]",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[verification-symlink-retarget]",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[preparation-addition]",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[preparation-deletion]",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[preparation-symlink-retarget]",
+          "tests/test_final_execution_environment.py::test_caller_library_path_cannot_replace_or_taint_derived_context",
+          "tests/test_final_execution_environment.py::test_direct_context_rejects_forged_derived_library_path",
+          "tests/test_final_execution_environment.py::test_worker_rejects_a_repository_different_from_its_bound_context",
+          "tests/test_final_execution_environment.py::test_worker_cannot_publish_after_compiled_library_roots_change[single]",
+          "tests/test_final_execution_environment.py::test_worker_cannot_publish_after_compiled_library_roots_change[batch]",
+          "tests/test_final_execution_environment.py::test_worker_cannot_publish_after_compiled_library_roots_change[scratch]"
+        ],
+        "py312": [
+          "tests/test_execution_posture.py::test_api_rejects_required_isolation_before_execution[SemanticCandidateRequest]",
+          "tests/test_execution_posture.py::test_api_rejects_required_isolation_before_execution[DiscoveryRequest]",
+          "tests/test_execution_posture.py::test_cli_isolation_rejection_precedes_preflight_and_publication[operation0]",
+          "tests/test_execution_posture.py::test_cli_isolation_rejection_precedes_preflight_and_publication[operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-llm-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-llm-operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-review-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-review-operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-audit-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[json-audit-operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-llm-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-llm-operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-review-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-review-operation1]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-audit-operation0]",
+          "tests/test_execution_posture.py::test_installed_console_fails_closed_before_explicit_tools[text-audit-operation1]",
+          "tests/test_final_execution_environment.py::test_version_preflight_and_worker_receive_the_same_final_environment",
+          "tests/test_final_execution_environment.py::test_direct_execution_cannot_mutate_the_final_environment",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[verification-addition]",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[verification-deletion]",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[verification-symlink-retarget]",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[preparation-addition]",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[preparation-deletion]",
+          "tests/test_final_execution_environment.py::test_changed_compiled_library_roots_fail_closed[preparation-symlink-retarget]",
+          "tests/test_final_execution_environment.py::test_caller_library_path_cannot_replace_or_taint_derived_context",
+          "tests/test_final_execution_environment.py::test_direct_context_rejects_forged_derived_library_path",
+          "tests/test_final_execution_environment.py::test_worker_rejects_a_repository_different_from_its_bound_context",
+          "tests/test_final_execution_environment.py::test_worker_cannot_publish_after_compiled_library_roots_change[single]",
+          "tests/test_final_execution_environment.py::test_worker_cannot_publish_after_compiled_library_roots_change[batch]",
+          "tests/test_final_execution_environment.py::test_worker_cannot_publish_after_compiled_library_roots_change[scratch]"
+        ]
+      }
+    },
+    {
+      "boundary": "seven independent non-escalating evidence axes",
+      "spec": {
+        "path": "/home/codex/projects/ladon/openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/proofir-observation-authority-and-coverage-core/spec.md",
+        "digest": "sha256:c07c59171e507a163fb5b42970ac65ddaa2d04121557ded93b5c99216769656f"
+      },
+      "owners": [
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/evidence_dimensions.py",
+          "digest": "sha256:779afa8e6cce23a5131f260b35144020d079e7a8410208d9aa464457a841a0dc"
+        },
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/evidence_receipt.py",
+          "digest": "sha256:d65234e2bd5b1bc3cc47cf631dcceee59f3d9046fd5b08b8d5310afa7f60db18"
+        }
+      ],
+      "passedNodes": {
+        "py311": [
+          "tests/test_evidence_transition_corpus.py::test_each_declared_axis_pair_and_projection_has_an_enforced_decision",
+          "tests/test_evidence_transition_corpus.py::test_full_state_product_rejects_contradictory_evidence",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[aggregate]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[canonical-artifact]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[dossier]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[json-renderer]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[live-result]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[sqlite-row]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[text-renderer]",
+          "tests/test_evidence_transition_corpus.py::test_readers_cannot_retain_live_observation[sqlite-row]",
+          "tests/test_evidence_transition_corpus.py::test_readers_cannot_retain_live_observation[dossier]",
+          "tests/test_evidence_transition_corpus.py::test_readers_cannot_retain_live_observation[aggregate]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[accepted]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[residual]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[rejected]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[partial-process]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[failed-process]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[invalid]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[absent]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[query]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[missing-query]",
+          "tests/test_receipt_projection_paths.py::test_lost_execution_binding_cannot_be_recovered_by_any_later_boundary[accepted]",
+          "tests/test_receipt_projection_paths.py::test_lost_execution_binding_cannot_be_recovered_by_any_later_boundary[residual]",
+          "tests/test_receipt_projection_paths.py::test_lost_execution_binding_cannot_be_recovered_by_any_later_boundary[rejected]",
+          "tests/test_receipt_projection_paths.py::test_lost_execution_binding_cannot_be_recovered_by_any_later_boundary[partial-process]"
+        ],
+        "py312": [
+          "tests/test_evidence_transition_corpus.py::test_each_declared_axis_pair_and_projection_has_an_enforced_decision",
+          "tests/test_evidence_transition_corpus.py::test_full_state_product_rejects_contradictory_evidence",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[aggregate]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[canonical-artifact]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[dossier]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[json-renderer]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[live-result]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[sqlite-row]",
+          "tests/test_evidence_transition_corpus.py::test_no_projection_promotes_execution_or_freshness[text-renderer]",
+          "tests/test_evidence_transition_corpus.py::test_readers_cannot_retain_live_observation[sqlite-row]",
+          "tests/test_evidence_transition_corpus.py::test_readers_cannot_retain_live_observation[dossier]",
+          "tests/test_evidence_transition_corpus.py::test_readers_cannot_retain_live_observation[aggregate]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[accepted]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[residual]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[rejected]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[partial-process]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[failed-process]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[invalid]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[absent]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[query]",
+          "tests/test_receipt_projection_paths.py::test_all_three_boundary_paths_preserve_scope_and_exact_receipt_identity[missing-query]",
+          "tests/test_receipt_projection_paths.py::test_lost_execution_binding_cannot_be_recovered_by_any_later_boundary[accepted]",
+          "tests/test_receipt_projection_paths.py::test_lost_execution_binding_cannot_be_recovered_by_any_later_boundary[residual]",
+          "tests/test_receipt_projection_paths.py::test_lost_execution_binding_cannot_be_recovered_by_any_later_boundary[rejected]",
+          "tests/test_receipt_projection_paths.py::test_lost_execution_binding_cannot_be_recovered_by_any_later_boundary[partial-process]"
+        ]
+      }
+    },
+    {
+      "boundary": "bounded iterative derivation",
+      "spec": {
+        "path": "/home/codex/projects/ladon/openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/proofir-derivation-hypergraph-semantics/spec.md",
+        "digest": "sha256:eadf4ac63cecdd23e33682eef859712d13cddc4eb701c5ab92716f8b39dc0090"
+      },
+      "owners": [
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/_proofir_derivation_solver.py",
+          "digest": "sha256:e3ad43c10ea75842b2420dfd0bbe87fe670a21aeca852b652eba1fa05c08e190"
+        },
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/_proofir_derivation_slice.py",
+          "digest": "sha256:03f567ed57b1660174917aeed9a503723e37cd6b7c2b0b6b593299b02c46c172"
+        }
+      ],
+      "passedNodes": {
+        "py311": [
+          "tests/test_proofir_derivation.py::test_evaluation_rejects_an_unresolved_external_owner",
+          "tests/test_proofir_derivation.py::test_successful_or_alternative_does_not_leak_failed_branch_residuals",
+          "tests/test_proofir_derivation.py::test_structural_satisfaction_does_not_claim_checker_acceptance",
+          "tests/test_proofir_derivation_scc.py::test_recursive_derivation_requires_and_exposes_exact_declared_scc",
+          "tests/test_proofir_derivation_scc.py::test_recursive_scc_metadata_must_match_the_actual_cycle",
+          "tests/test_proofir_derivation_scc.py::test_acyclic_derivation_cannot_smuggle_recursion_metadata",
+          "tests/test_proofir_derivation_scc.py::test_scc_analysis_is_bounded_without_publishing_partial_components",
+          "tests/test_proofir_derivation_scc.py::test_scc_output_limit_returns_only_a_digest_bearing_header",
+          "tests/test_proofir_derivation_scc.py::test_singleton_self_loop_is_an_explicit_recursive_component",
+          "tests/test_proofir_derivation_scc.py::test_acyclic_scc_analysis_is_explicitly_not_recursive",
+          "tests/test_proofir_derivation_scc.py::test_non_derivation_artifacts_cannot_enter_scc_analysis[plan_artifact]",
+          "tests/test_proofir_derivation_scc.py::test_non_derivation_artifacts_cannot_enter_scc_analysis[attempt_log_artifact]",
+          "tests/test_proofir_derivation_scc.py::test_recursive_cycle_is_never_promoted_to_structural_satisfaction[available0]",
+          "tests/test_proofir_derivation_scc.py::test_recursive_cycle_is_never_promoted_to_structural_satisfaction[available1]"
+        ],
+        "py312": [
+          "tests/test_proofir_derivation.py::test_evaluation_rejects_an_unresolved_external_owner",
+          "tests/test_proofir_derivation.py::test_successful_or_alternative_does_not_leak_failed_branch_residuals",
+          "tests/test_proofir_derivation.py::test_structural_satisfaction_does_not_claim_checker_acceptance",
+          "tests/test_proofir_derivation_scc.py::test_recursive_derivation_requires_and_exposes_exact_declared_scc",
+          "tests/test_proofir_derivation_scc.py::test_recursive_scc_metadata_must_match_the_actual_cycle",
+          "tests/test_proofir_derivation_scc.py::test_acyclic_derivation_cannot_smuggle_recursion_metadata",
+          "tests/test_proofir_derivation_scc.py::test_scc_analysis_is_bounded_without_publishing_partial_components",
+          "tests/test_proofir_derivation_scc.py::test_scc_output_limit_returns_only_a_digest_bearing_header",
+          "tests/test_proofir_derivation_scc.py::test_singleton_self_loop_is_an_explicit_recursive_component",
+          "tests/test_proofir_derivation_scc.py::test_acyclic_scc_analysis_is_explicitly_not_recursive",
+          "tests/test_proofir_derivation_scc.py::test_non_derivation_artifacts_cannot_enter_scc_analysis[plan_artifact]",
+          "tests/test_proofir_derivation_scc.py::test_non_derivation_artifacts_cannot_enter_scc_analysis[attempt_log_artifact]",
+          "tests/test_proofir_derivation_scc.py::test_recursive_cycle_is_never_promoted_to_structural_satisfaction[available0]",
+          "tests/test_proofir_derivation_scc.py::test_recursive_cycle_is_never_promoted_to_structural_satisfaction[available1]"
+        ]
+      }
+    },
+    {
+      "boundary": "exact application, residuals and independent scratch",
+      "spec": {
+        "path": "/home/codex/projects/ladon/openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-verified-discovery-loop/spec.md",
+        "digest": "sha256:7a65c273b23e8155719dfc354dd81597a2899274f3629fdc0ab58a29ff797d4b"
+      },
+      "owners": [
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/semantic_observation_closure.py",
+          "digest": "sha256:9cd2a811b6f46fb7f2e40f50fcfa9c19ca52ac5b88bc72e1c0e7e80699d5e3f8"
+        },
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/_semantic_observation_contract.py",
+          "digest": "sha256:c373bc434e52c85806fd40149d2e8fbf3b96280905ba04855a15be02830e5214"
+        },
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/semantic_local_context.py",
+          "digest": "sha256:b02a20ffa05ddfb8cca3068cb5aec349f9da273ec4226b433143729912e03a5c"
+        }
+      ],
+      "passedNodes": {
+        "py311": [
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_0]",
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_1]",
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_2]",
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_3]",
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_4]",
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_5]",
+          "tests/test_discovery_local_context.py::test_installed_discovery_preserves_context_and_exact_application[locals_0-value = value-LadonFixture.fixtureIdentity-accepted-residuals0]",
+          "tests/test_discovery_local_context.py::test_installed_discovery_preserves_context_and_exact_application[locals_1-P-id-accepted-residuals1]",
+          "tests/test_discovery_local_context.py::test_installed_discovery_preserves_context_and_exact_application[locals_2-P \\u2227 Q-And.intro-applicable-with-residuals-residuals2]",
+          "tests/test_discovery_local_context.py::test_printed_notation_does_not_reject_an_exact_structural_constant_type[Real-\\u211d]",
+          "tests/test_discovery_local_context.py::test_printed_notation_does_not_reject_an_exact_structural_constant_type[Nat-\\u2115]",
+          "tests/test_discovery_local_context.py::test_printed_notation_does_not_reject_an_exact_structural_constant_type[Int-\\u2124]",
+          "tests/test_discovery_local_context.py::test_unicode_type_spelling_cannot_hide_a_wrong_structural_constant",
+          "tests/test_discovery_vertical_pipeline.py::test_installed_pipeline_finds_explains_compiles_and_rejects",
+          "tests/test_semantic_observation_closure.py::test_direct_projector_rejects_status_check_artifact_contradiction",
+          "tests/test_semantic_observation_closure.py::test_direct_projector_rejects_authority_and_completeness_contradictions",
+          "tests/test_semantic_observation_closure.py::test_direct_projector_rejects_receipt_outcome_and_local_context_contradictions",
+          "tests/test_semantic_observation_closure.py::test_projector_binds_requested_notation_to_the_owned_structural_context",
+          "tests/test_semantic_observation_closure.py::test_scratch_notation_requires_the_resolved_parent_structural_context",
+          "tests/test_semantic_observation_closure.py::test_candidate_goal_subject_closes_receipt_module_and_goal[goal-False]",
+          "tests/test_semantic_observation_closure.py::test_candidate_goal_subject_closes_receipt_module_and_goal[module-Foreign]",
+          "tests/test_semantic_observation_closure.py::test_check_operation_class_is_closed",
+          "tests/test_semantic_observation_closure.py::test_weak_failure_receipt_is_bound_to_candidate_and_request",
+          "tests/test_semantic_observation_closure.py::test_discovery_rejects_cross_environment_check_pairing",
+          "tests/test_semantic_observation_closure.py::test_omitted_candidate_must_resolve_before_population_accounting",
+          "tests/test_semantic_observation_closure.py::test_discovery_rejects_duplicate_canonical_candidate_names",
+          "tests/test_semantic_observation_closure.py::test_discovery_requires_canonical_population_bounds[request-maxCandidates]",
+          "tests/test_semantic_observation_closure.py::test_discovery_requires_canonical_population_bounds[coverage-shortlisted]",
+          "tests/test_semantic_observation_closure.py::test_discovery_requires_canonical_population_bounds[coverage-truncated]",
+          "tests/test_semantic_observation_closure.py::test_omitted_candidate_scratch_must_resolve_before_card_selection",
+          "tests/test_semantic_observation_closure.py::test_result_subject_failure_stage_and_application_shape_are_closed",
+          "tests/test_semantic_observation_closure.py::test_goal_and_rejected_declaration_results_use_their_exact_owned_subjects",
+          "tests/test_semantic_observation_closure.py::test_failure_diagnostics_cannot_be_borrowed_from_an_unrelated_result",
+          "tests/test_semantic_observation_closure.py::test_candidate_and_scratch_status_vocabularies_are_closed",
+          "tests/test_semantic_observation_closure.py::test_provisional_prefix_remains_process_observation_with_partial_completeness",
+          "tests/test_semantic_observation_closure.py::test_real_partial_rejected_batch_artifact_projects_with_exact_application_owner",
+          "tests/test_semantic_observation_closure.py::test_discovery_availability_and_coverage_are_derived_from_full_population",
+          "tests/test_semantic_observation_closure.py::test_compact_projection_rejects_wrong_schema_and_producer_identities",
+          "tests/test_semantic_observation_closure.py::test_scratch_failure_requires_attributable_failure_stage",
+          "tests/test_semantic_observation_closure.py::test_scratch_failure_status_is_bound_to_its_exact_diagnostic[output-limited]",
+          "tests/test_semantic_observation_closure.py::test_scratch_failure_status_is_bound_to_its_exact_diagnostic[memory-limited]",
+          "tests/test_semantic_observation_closure.py::test_scratch_failure_status_is_bound_to_its_exact_diagnostic[process-failed]"
+        ],
+        "py312": [
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_0]",
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_1]",
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_2]",
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_3]",
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_4]",
+          "tests/test_discovery_local_context.py::test_invalid_local_context_is_rejected_before_toolchain_probe[locals_5]",
+          "tests/test_discovery_local_context.py::test_installed_discovery_preserves_context_and_exact_application[locals_0-value = value-LadonFixture.fixtureIdentity-accepted-residuals0]",
+          "tests/test_discovery_local_context.py::test_installed_discovery_preserves_context_and_exact_application[locals_1-P-id-accepted-residuals1]",
+          "tests/test_discovery_local_context.py::test_installed_discovery_preserves_context_and_exact_application[locals_2-P \\u2227 Q-And.intro-applicable-with-residuals-residuals2]",
+          "tests/test_discovery_local_context.py::test_printed_notation_does_not_reject_an_exact_structural_constant_type[Real-\\u211d]",
+          "tests/test_discovery_local_context.py::test_printed_notation_does_not_reject_an_exact_structural_constant_type[Nat-\\u2115]",
+          "tests/test_discovery_local_context.py::test_printed_notation_does_not_reject_an_exact_structural_constant_type[Int-\\u2124]",
+          "tests/test_discovery_local_context.py::test_unicode_type_spelling_cannot_hide_a_wrong_structural_constant",
+          "tests/test_discovery_vertical_pipeline.py::test_installed_pipeline_finds_explains_compiles_and_rejects",
+          "tests/test_semantic_observation_closure.py::test_direct_projector_rejects_status_check_artifact_contradiction",
+          "tests/test_semantic_observation_closure.py::test_direct_projector_rejects_authority_and_completeness_contradictions",
+          "tests/test_semantic_observation_closure.py::test_direct_projector_rejects_receipt_outcome_and_local_context_contradictions",
+          "tests/test_semantic_observation_closure.py::test_projector_binds_requested_notation_to_the_owned_structural_context",
+          "tests/test_semantic_observation_closure.py::test_scratch_notation_requires_the_resolved_parent_structural_context",
+          "tests/test_semantic_observation_closure.py::test_candidate_goal_subject_closes_receipt_module_and_goal[goal-False]",
+          "tests/test_semantic_observation_closure.py::test_candidate_goal_subject_closes_receipt_module_and_goal[module-Foreign]",
+          "tests/test_semantic_observation_closure.py::test_check_operation_class_is_closed",
+          "tests/test_semantic_observation_closure.py::test_weak_failure_receipt_is_bound_to_candidate_and_request",
+          "tests/test_semantic_observation_closure.py::test_discovery_rejects_cross_environment_check_pairing",
+          "tests/test_semantic_observation_closure.py::test_omitted_candidate_must_resolve_before_population_accounting",
+          "tests/test_semantic_observation_closure.py::test_discovery_rejects_duplicate_canonical_candidate_names",
+          "tests/test_semantic_observation_closure.py::test_discovery_requires_canonical_population_bounds[request-maxCandidates]",
+          "tests/test_semantic_observation_closure.py::test_discovery_requires_canonical_population_bounds[coverage-shortlisted]",
+          "tests/test_semantic_observation_closure.py::test_discovery_requires_canonical_population_bounds[coverage-truncated]",
+          "tests/test_semantic_observation_closure.py::test_omitted_candidate_scratch_must_resolve_before_card_selection",
+          "tests/test_semantic_observation_closure.py::test_result_subject_failure_stage_and_application_shape_are_closed",
+          "tests/test_semantic_observation_closure.py::test_goal_and_rejected_declaration_results_use_their_exact_owned_subjects",
+          "tests/test_semantic_observation_closure.py::test_failure_diagnostics_cannot_be_borrowed_from_an_unrelated_result",
+          "tests/test_semantic_observation_closure.py::test_candidate_and_scratch_status_vocabularies_are_closed",
+          "tests/test_semantic_observation_closure.py::test_provisional_prefix_remains_process_observation_with_partial_completeness",
+          "tests/test_semantic_observation_closure.py::test_real_partial_rejected_batch_artifact_projects_with_exact_application_owner",
+          "tests/test_semantic_observation_closure.py::test_discovery_availability_and_coverage_are_derived_from_full_population",
+          "tests/test_semantic_observation_closure.py::test_compact_projection_rejects_wrong_schema_and_producer_identities",
+          "tests/test_semantic_observation_closure.py::test_scratch_failure_requires_attributable_failure_stage",
+          "tests/test_semantic_observation_closure.py::test_scratch_failure_status_is_bound_to_its_exact_diagnostic[output-limited]",
+          "tests/test_semantic_observation_closure.py::test_scratch_failure_status_is_bound_to_its_exact_diagnostic[memory-limited]",
+          "tests/test_semantic_observation_closure.py::test_scratch_failure_status_is_bound_to_its_exact_diagnostic[process-failed]"
+        ]
+      }
+    },
+    {
+      "boundary": "same-candidate conjunctive integration",
+      "spec": {
+        "path": "/home/codex/projects/ladon/openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-authority-safe-release-gate/spec.md",
+        "digest": "sha256:a78536a74f0cab282585f9ef0d78fe14b81e128ad84152a9a27b9f1b6b069a1c"
+      },
+      "owners": [
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/integration_acceptance.py",
+          "digest": "sha256:11b7ff74c20b30784dcd498d81bc95714824583134e30d4914784306695235f7"
+        },
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/child_acceptance.py",
+          "digest": "sha256:3c0704efeacc731af44608c0fd459e612849c28febf19a062f5c533f8e199820"
+        }
+      ],
+      "passedNodes": {
+        "py311": [
+          "tests/test_child_acceptance.py::test_complete_byte_bound_bundle_is_accepted",
+          "tests/test_child_acceptance.py::test_network_required_profile_rejects_unobserved_isolation",
+          "tests/test_child_acceptance.py::test_evidence_files_must_exist_and_match_their_recorded_bytes[missing]",
+          "tests/test_child_acceptance.py::test_evidence_files_must_exist_and_match_their_recorded_bytes[changed]",
+          "tests/test_child_acceptance.py::test_evidence_files_must_exist_and_match_their_recorded_bytes[symlink]",
+          "tests/test_child_acceptance.py::test_evidence_files_must_exist_and_match_their_recorded_bytes[duplicate-descriptor]",
+          "tests/test_child_acceptance.py::test_rehashed_receipt_cannot_name_unavailable_provenance[producerIdentity]",
+          "tests/test_child_acceptance.py::test_rehashed_receipt_cannot_name_unavailable_provenance[environmentRef]",
+          "tests/test_child_acceptance.py::test_rehashed_receipt_cannot_name_unavailable_provenance[inventoryArtifactRef]",
+          "tests/test_child_acceptance.py::test_rehashed_receipt_cannot_name_unavailable_provenance[sourceChecksArtifactRef]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[installedPackageMembers-bad_value0]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[installedPackageMembers-bad_value1]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[environmentRequirements-bad_value2]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[pythonVersion-bad_value3]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[isolatedPython-False]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[isolatedPython-false]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[exitCode-False]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[importOrigin-/different-installation/ladon/__init__.py]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[importOrigin-relative/site-packages/ladon/__init__.py]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[commandVector-bad_value9]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[candidateIdentity-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[sourceTreeIdentity-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[wheelDigest-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[environmentRef-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_child_acceptance.py::test_import_origin_inside_candidate_checkout_is_rejected",
+          "tests/test_child_acceptance.py::test_complete_unique_suite_runtime_matrix_is_required[missing]",
+          "tests/test_child_acceptance.py::test_complete_unique_suite_runtime_matrix_is_required[duplicate]",
+          "tests/test_child_acceptance.py::test_complete_unique_suite_runtime_matrix_is_required[unexpected-suite]",
+          "tests/test_child_acceptance.py::test_complete_unique_suite_runtime_matrix_is_required[unexpected-runtime]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[skip]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[failure]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[collection-error]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[nonzero-exit]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[overselection]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[empty-collected]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[missing-target]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[duplicate-collected]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[missing-passed]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[changed-targets]",
+          "tests/test_child_acceptance.py::test_inventory_is_selected_separately_from_the_receipt",
+          "tests/test_child_acceptance.py::test_command_evidence_digest_binds_the_actual_result_artifact_bytes",
+          "tests/test_child_acceptance.py::test_coherently_rebound_wheel_still_must_match_the_selected_source_manifest",
+          "tests/test_child_acceptance.py::test_approved_producer_and_complete_collection_are_required[deselected]",
+          "tests/test_child_acceptance.py::test_approved_producer_and_complete_collection_are_required[keyword-option]",
+          "tests/test_child_acceptance.py::test_approved_producer_and_complete_collection_are_required[inline-code]",
+          "tests/test_child_acceptance.py::test_approved_producer_and_complete_collection_are_required[ambient-options]",
+          "tests/test_child_acceptance.py::test_named_pipe_evidence_is_rejected_without_waiting",
+          "tests/test_child_acceptance.py::test_nonfinite_or_duplicate_json_evidence_is_rejected[{\"value\":NaN}]",
+          "tests/test_child_acceptance.py::test_nonfinite_or_duplicate_json_evidence_is_rejected[{\"value\":Infinity}]",
+          "tests/test_child_acceptance.py::test_nonfinite_or_duplicate_json_evidence_is_rejected[{\"value\":1,\"value\":2}]",
+          "tests/test_child_acceptance.py::test_source_assertions_are_recomputed_from_actual_bytes[duplicate-owner]",
+          "tests/test_child_acceptance.py::test_source_assertions_are_recomputed_from_actual_bytes[legacy]",
+          "tests/test_child_acceptance.py::test_source_assertions_are_recomputed_from_actual_bytes[recursion]",
+          "tests/test_child_acceptance.py::test_source_assertions_are_recomputed_from_actual_bytes[quux]",
+          "tests/test_child_acceptance.py::test_source_assertions_are_recomputed_from_actual_bytes[dispatch]",
+          "tests/test_child_acceptance.py::test_recorded_interpreter_must_match_the_selected_environment_profile",
+          "tests/test_child_acceptance.py::test_source_quality_command_uses_a_selected_interpreter",
+          "tests/test_integration_acceptance.py::test_complete_prerequisites_are_candidate_bound",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[missing-gate]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[duplicate-gate]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[failed-exit]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[boolean-exit]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[failed-status]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[wrong-candidate]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[wrong-cwd]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[wrong-wheel]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[changed-command]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[missing-log]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[empty-log]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[unreviewed-extra-gate]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[new-record-field]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[output-inside-candidate]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[relative-output]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[output-traversal]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[missing-inventory-gate]"
+        ],
+        "py312": [
+          "tests/test_child_acceptance.py::test_complete_byte_bound_bundle_is_accepted",
+          "tests/test_child_acceptance.py::test_network_required_profile_rejects_unobserved_isolation",
+          "tests/test_child_acceptance.py::test_evidence_files_must_exist_and_match_their_recorded_bytes[missing]",
+          "tests/test_child_acceptance.py::test_evidence_files_must_exist_and_match_their_recorded_bytes[changed]",
+          "tests/test_child_acceptance.py::test_evidence_files_must_exist_and_match_their_recorded_bytes[symlink]",
+          "tests/test_child_acceptance.py::test_evidence_files_must_exist_and_match_their_recorded_bytes[duplicate-descriptor]",
+          "tests/test_child_acceptance.py::test_rehashed_receipt_cannot_name_unavailable_provenance[producerIdentity]",
+          "tests/test_child_acceptance.py::test_rehashed_receipt_cannot_name_unavailable_provenance[environmentRef]",
+          "tests/test_child_acceptance.py::test_rehashed_receipt_cannot_name_unavailable_provenance[inventoryArtifactRef]",
+          "tests/test_child_acceptance.py::test_rehashed_receipt_cannot_name_unavailable_provenance[sourceChecksArtifactRef]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[installedPackageMembers-bad_value0]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[installedPackageMembers-bad_value1]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[environmentRequirements-bad_value2]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[pythonVersion-bad_value3]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[isolatedPython-False]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[isolatedPython-false]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[exitCode-False]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[importOrigin-/different-installation/ladon/__init__.py]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[importOrigin-relative/site-packages/ladon/__init__.py]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[commandVector-bad_value9]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[candidateIdentity-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[sourceTreeIdentity-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[wheelDigest-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_child_acceptance.py::test_rehashed_result_cannot_change_the_selected_execution_scope[environmentRef-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_child_acceptance.py::test_import_origin_inside_candidate_checkout_is_rejected",
+          "tests/test_child_acceptance.py::test_complete_unique_suite_runtime_matrix_is_required[missing]",
+          "tests/test_child_acceptance.py::test_complete_unique_suite_runtime_matrix_is_required[duplicate]",
+          "tests/test_child_acceptance.py::test_complete_unique_suite_runtime_matrix_is_required[unexpected-suite]",
+          "tests/test_child_acceptance.py::test_complete_unique_suite_runtime_matrix_is_required[unexpected-runtime]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[skip]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[failure]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[collection-error]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[nonzero-exit]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[overselection]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[empty-collected]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[missing-target]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[duplicate-collected]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[missing-passed]",
+          "tests/test_child_acceptance.py::test_actual_collection_and_outcomes_must_cover_exactly_selected_targets[changed-targets]",
+          "tests/test_child_acceptance.py::test_inventory_is_selected_separately_from_the_receipt",
+          "tests/test_child_acceptance.py::test_command_evidence_digest_binds_the_actual_result_artifact_bytes",
+          "tests/test_child_acceptance.py::test_coherently_rebound_wheel_still_must_match_the_selected_source_manifest",
+          "tests/test_child_acceptance.py::test_approved_producer_and_complete_collection_are_required[deselected]",
+          "tests/test_child_acceptance.py::test_approved_producer_and_complete_collection_are_required[keyword-option]",
+          "tests/test_child_acceptance.py::test_approved_producer_and_complete_collection_are_required[inline-code]",
+          "tests/test_child_acceptance.py::test_approved_producer_and_complete_collection_are_required[ambient-options]",
+          "tests/test_child_acceptance.py::test_named_pipe_evidence_is_rejected_without_waiting",
+          "tests/test_child_acceptance.py::test_nonfinite_or_duplicate_json_evidence_is_rejected[{\"value\":NaN}]",
+          "tests/test_child_acceptance.py::test_nonfinite_or_duplicate_json_evidence_is_rejected[{\"value\":Infinity}]",
+          "tests/test_child_acceptance.py::test_nonfinite_or_duplicate_json_evidence_is_rejected[{\"value\":1,\"value\":2}]",
+          "tests/test_child_acceptance.py::test_source_assertions_are_recomputed_from_actual_bytes[duplicate-owner]",
+          "tests/test_child_acceptance.py::test_source_assertions_are_recomputed_from_actual_bytes[legacy]",
+          "tests/test_child_acceptance.py::test_source_assertions_are_recomputed_from_actual_bytes[recursion]",
+          "tests/test_child_acceptance.py::test_source_assertions_are_recomputed_from_actual_bytes[quux]",
+          "tests/test_child_acceptance.py::test_source_assertions_are_recomputed_from_actual_bytes[dispatch]",
+          "tests/test_child_acceptance.py::test_recorded_interpreter_must_match_the_selected_environment_profile",
+          "tests/test_child_acceptance.py::test_source_quality_command_uses_a_selected_interpreter",
+          "tests/test_integration_acceptance.py::test_complete_prerequisites_are_candidate_bound",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[missing-gate]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[duplicate-gate]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[failed-exit]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[boolean-exit]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[failed-status]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[wrong-candidate]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[wrong-cwd]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[wrong-wheel]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[changed-command]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[missing-log]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[empty-log]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[unreviewed-extra-gate]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[new-record-field]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[output-inside-candidate]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[relative-output]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[output-traversal]",
+          "tests/test_integration_acceptance.py::test_prerequisite_promotion_rejects_incomplete_or_mismatched_records[missing-inventory-gate]"
+        ]
+      }
+    },
+    {
+      "boundary": "evidence-backed contract readiness and separate external outcomes",
+      "spec": {
+        "path": "/home/codex/projects/ladon/openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-capability-readiness-and-external-evaluation/spec.md",
+        "digest": "sha256:77a6816b638045ebacdbcdea6e0419a66f89f76a602186373dd74d9055abc800"
+      },
+      "owners": [
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/readiness.py",
+          "digest": "sha256:fda88940247c8036095d03dc08f7452d29616ba4adf8998e91984cab565e731f"
+        },
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/readiness_evidence.py",
+          "digest": "sha256:d5d652a77f839fd9ef03b16789865fd38bd77099af26e7e7f466bd29805e7cec"
+        },
+        {
+          "path": "/home/codex/projects/ladon/src/ladon/evaluation_metrics.py",
+          "digest": "sha256:a50a023bcc1666c1f217d9bb9375e821ca3931023e60d3e3d54c4282e4a6d0f2"
+        }
+      ],
+      "passedNodes": {
+        "py311": [
+          "tests/test_evaluation_execution.py::test_real_baseline_runs_the_registered_goal_and_replays_suggestions[exact?]",
+          "tests/test_evaluation_execution.py::test_real_baseline_runs_the_registered_goal_and_replays_suggestions[apply?]",
+          "tests/test_evaluation_execution.py::test_real_baseline_runs_the_registered_goal_and_replays_suggestions[#check]",
+          "tests/test_evaluation_execution.py::test_real_baseline_runs_the_registered_goal_and_replays_suggestions[rg]",
+          "tests/test_evaluation_execution.py::test_real_baseline_runs_the_registered_goal_and_replays_suggestions[editor-search]",
+          "tests/test_evaluation_execution.py::test_resource_failures_and_changed_capture_bytes_remain_observed",
+          "tests/test_evaluation_execution.py::test_ordinary_ladon_adapter_preserves_rejections_and_measures_closed_candidates",
+          "tests/test_evaluation_execution.py::test_closed_alternatives_are_not_invalid_because_the_label_set_is_incomplete",
+          "tests/test_evaluation_execution.py::test_partial_and_unassessed_suggestions_are_separate_from_incorrect_proofs",
+          "tests/test_evaluation_execution.py::test_suggestion_parser_keeps_explicit_reflexivity_and_native_term_suggestions",
+          "tests/test_evaluation_execution.py::test_missing_import_dependency_does_not_count_as_an_invalid_suggestion",
+          "tests/test_evaluation_execution.py::test_nonzero_discovery_exit_preserves_terminal_unassessed_rows",
+          "tests/test_evaluation_execution.py::test_partial_terminal_payload_cannot_promote_a_closed_prefix",
+          "tests/test_readiness.py::test_digest_labels_without_resolved_bytes_cannot_promote",
+          "tests/test_readiness.py::test_readiness_demotes_stale_evidence",
+          "tests/test_readiness.py::test_readiness_rejects_status_without_command_and_outcome",
+          "tests/test_readiness.py::test_readiness_rejects_help_only_external_evidence",
+          "tests/test_readiness.py::test_recorded_contract_promotes_without_inventing_external_outcomes",
+          "tests/test_readiness.py::test_rehashed_metadata_cannot_change_recorded_execution[candidateCommit-2222222222222222222222222222222222222222]",
+          "tests/test_readiness.py::test_rehashed_metadata_cannot_change_recorded_execution[candidateIdentity-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_readiness.py::test_rehashed_metadata_cannot_change_recorded_execution[command-ladon --help]",
+          "tests/test_readiness.py::test_rehashed_metadata_cannot_change_recorded_execution[commandVector-bad3]",
+          "tests/test_readiness.py::test_rehashed_metadata_cannot_change_recorded_execution[receiptArtifactRef-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_readiness.py::test_help_only_or_unexecuted_named_nodes_demote[tests/test_alpha.py::test_help]",
+          "tests/test_readiness.py::test_help_only_or_unexecuted_named_nodes_demote[tests/test_alpha.py::test_not_collected]",
+          "tests/test_readiness.py::test_stale_verified_execution_demotes_without_relabeling",
+          "tests/test_readiness.py::test_fresh_metadata_timestamp_cannot_refresh_an_old_execution",
+          "tests/test_readiness.py::test_readiness_rejects_future_naive_and_malformed_age_evidence",
+          "tests/test_supported_feature_matrix.py::test_matrix_profiles_and_semantic_requirements_have_collectable_nodes",
+          "tests/test_supported_feature_matrix.py::test_committed_matrix_matches_generator",
+          "tests/test_supported_feature_matrix.py::test_missing_execution_evidence_demotes_every_feature",
+          "tests/test_supported_feature_matrix.py::test_generator_uses_resolved_candidate_evidence_and_demotes_missing_nodes",
+          "tests/test_supported_feature_matrix.py::test_candidate_markdown_keeps_commands_timestamps_and_execution_limitations"
+        ],
+        "py312": [
+          "tests/test_evaluation_execution.py::test_real_baseline_runs_the_registered_goal_and_replays_suggestions[exact?]",
+          "tests/test_evaluation_execution.py::test_real_baseline_runs_the_registered_goal_and_replays_suggestions[apply?]",
+          "tests/test_evaluation_execution.py::test_real_baseline_runs_the_registered_goal_and_replays_suggestions[#check]",
+          "tests/test_evaluation_execution.py::test_real_baseline_runs_the_registered_goal_and_replays_suggestions[rg]",
+          "tests/test_evaluation_execution.py::test_real_baseline_runs_the_registered_goal_and_replays_suggestions[editor-search]",
+          "tests/test_evaluation_execution.py::test_resource_failures_and_changed_capture_bytes_remain_observed",
+          "tests/test_evaluation_execution.py::test_ordinary_ladon_adapter_preserves_rejections_and_measures_closed_candidates",
+          "tests/test_evaluation_execution.py::test_closed_alternatives_are_not_invalid_because_the_label_set_is_incomplete",
+          "tests/test_evaluation_execution.py::test_partial_and_unassessed_suggestions_are_separate_from_incorrect_proofs",
+          "tests/test_evaluation_execution.py::test_suggestion_parser_keeps_explicit_reflexivity_and_native_term_suggestions",
+          "tests/test_evaluation_execution.py::test_missing_import_dependency_does_not_count_as_an_invalid_suggestion",
+          "tests/test_evaluation_execution.py::test_nonzero_discovery_exit_preserves_terminal_unassessed_rows",
+          "tests/test_evaluation_execution.py::test_partial_terminal_payload_cannot_promote_a_closed_prefix",
+          "tests/test_readiness.py::test_digest_labels_without_resolved_bytes_cannot_promote",
+          "tests/test_readiness.py::test_readiness_demotes_stale_evidence",
+          "tests/test_readiness.py::test_readiness_rejects_status_without_command_and_outcome",
+          "tests/test_readiness.py::test_readiness_rejects_help_only_external_evidence",
+          "tests/test_readiness.py::test_recorded_contract_promotes_without_inventing_external_outcomes",
+          "tests/test_readiness.py::test_rehashed_metadata_cannot_change_recorded_execution[candidateCommit-2222222222222222222222222222222222222222]",
+          "tests/test_readiness.py::test_rehashed_metadata_cannot_change_recorded_execution[candidateIdentity-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_readiness.py::test_rehashed_metadata_cannot_change_recorded_execution[command-ladon --help]",
+          "tests/test_readiness.py::test_rehashed_metadata_cannot_change_recorded_execution[commandVector-bad3]",
+          "tests/test_readiness.py::test_rehashed_metadata_cannot_change_recorded_execution[receiptArtifactRef-sha256:0000000000000000000000000000000000000000000000000000000000000000]",
+          "tests/test_readiness.py::test_help_only_or_unexecuted_named_nodes_demote[tests/test_alpha.py::test_help]",
+          "tests/test_readiness.py::test_help_only_or_unexecuted_named_nodes_demote[tests/test_alpha.py::test_not_collected]",
+          "tests/test_readiness.py::test_stale_verified_execution_demotes_without_relabeling",
+          "tests/test_readiness.py::test_fresh_metadata_timestamp_cannot_refresh_an_old_execution",
+          "tests/test_readiness.py::test_readiness_rejects_future_naive_and_malformed_age_evidence",
+          "tests/test_supported_feature_matrix.py::test_matrix_profiles_and_semantic_requirements_have_collectable_nodes",
+          "tests/test_supported_feature_matrix.py::test_committed_matrix_matches_generator",
+          "tests/test_supported_feature_matrix.py::test_missing_execution_evidence_demotes_every_feature",
+          "tests/test_supported_feature_matrix.py::test_generator_uses_resolved_candidate_evidence_and_demotes_missing_nodes",
+          "tests/test_supported_feature_matrix.py::test_candidate_markdown_keeps_commands_timestamps_and_execution_limitations"
+        ]
+      }
+    }
+  ],
+  "schemaArtifacts": [
+    {
+      "path": "/tmp/ladon-isolation-authority-vetts2n2/candidate/src/ladon/schemas/ladon-analysis-bundle-v1.schema.json",
+      "digest": "sha256:29e99a2529d395978f6c895b673d3582e90b54f7a25a106a9ebe690ab86ce748"
+    },
+    {
+      "path": "/tmp/ladon-isolation-authority-vetts2n2/candidate/src/ladon/schemas/ladon-analysis-runset-state-v1.schema.json",
+      "digest": "sha256:67314d2096cd1e461d99a382b946436b0f9d9207892955a055551f7f8d475cad"
+    },
+    {
+      "path": "/tmp/ladon-isolation-authority-vetts2n2/candidate/src/ladon/schemas/ladon-analysis-runset-v1.schema.json",
+      "digest": "sha256:c1c30131e93abbc8bde6b39c47136715d0db53922691f74e1c546408a9c6e2ca"
+    },
+    {
+      "path": "/tmp/ladon-isolation-authority-vetts2n2/candidate/src/ladon/schemas/ladon-benchmark-manifest-v1.schema.json",
+      "digest": "sha256:2060911c01384a6a9164073fa6c7ec64477725aea5358f62ca02bfbeca84ed15"
+    },
+    {
+      "path": "/tmp/ladon-isolation-authority-vetts2n2/candidate/src/ladon/schemas/ladon-proof-search-type-text-result-v2.schema.json",
+      "digest": "sha256:0440e281e44bb492f4cffc08b2b443fafcb7c43c9079fb09a074c6637c738acb"
+    },
+    {
+      "path": "/tmp/ladon-isolation-authority-vetts2n2/candidate/src/ladon/schemas/ladon-report-v2.schema.json",
+      "digest": "sha256:8f35bce982a3b912d258d10b2cdf586dfd0224de4547dc43f521bb6f5692687d"
+    },
+    {
+      "path": "/tmp/ladon-isolation-authority-vetts2n2/candidate/src/ladon/schemas/ladon-report-v3.schema.json",
+      "digest": "sha256:f7760375d50071dda70c5af0ceaa96ea36d0a08242a6d1961f3c96bdf4405b3c"
+    },
+    {
+      "path": "/tmp/ladon-isolation-authority-vetts2n2/candidate/src/ladon/schemas/ladon-result-manifest-v1.schema.json",
+      "digest": "sha256:e8d7cc437c99747a6e516d2981f6ea22b64565031a045d69eb82677edd3f2bf4"
+    }
+  ],
+  "currentDocumentation": [
+    {
+      "path": "/home/codex/projects/ladon/README.md",
+      "digest": "sha256:f6519b4f252c6dcebfa083059c2cd1717d04cb54bbada9be4e1e1c7ff5b7d7e0"
+    },
+    {
+      "path": "/home/codex/projects/ladon/docs/PRODUCT_SCOPE.md",
+      "digest": "sha256:e9f5a764962928df4ac4ad84e783a57bc1bea4fe2f6d5934fb5bece3c85743d3"
+    },
+    {
+      "path": "/home/codex/projects/ladon/docs/READINESS_EVALUATION.md",
+      "digest": "sha256:20fddd3b4b99189a0e762de92f489f7969dab9fb4e1e741ecf9eb948c21fb53a"
+    },
+    {
+      "path": "/home/codex/projects/ladon/docs/MEASURED_ALPHA_PROFILE.md",
+      "digest": "sha256:aaf4eaf6e6e09bbf82cc922c12193aa0ade2b994b8a9af4ddde5b9b6d0c7293f"
+    },
+    {
+      "path": "/home/codex/projects/ladon/docs/REPRODUCIBILITY.md",
+      "digest": "sha256:6cd00b959d76fa01b0ff2d36274afd66b72601afe0c42cab0febddaa1fe6faa7"
+    },
+    {
+      "path": "/home/codex/projects/ladon/skills/ladon/SKILL.md",
+      "digest": "sha256:ba5f84da90ca3b904648f92889457cb1598cb022a15cb11a254543462ba5ab49"
+    }
+  ],
+  "readinessMatrix": {
+    "path": "/home/codex/projects/ladon/openspec/changes/ladon-result-understanding-and-release-umbrella/readiness-matrix-r37.json",
+    "digest": "sha256:e25c2bcc2de37865bdb2354e2ed48be2ce8a24c7e32d5afeb10ed47f1ac9f9e2"
+  },
+  "knownGaps": [
+    "Task 6.8 independent architecture labels absent.",
+    "Task 7.1 historical start-order claim cannot be established by current receipts.",
+    "External-outcome and owner-decision admission remain explicitly unsupported and fail closed; no higher level is issued."
+  ],
+  "nonclaims": [
+    "This comparison does not certify full umbrella conformance, human understanding, producer authenticity or OS isolation.",
+    "Historical source/propagation reports retain their original candidate scopes; current selected tests are linked separately.",
+    "Current profile documentation is a post-candidate evidence interpretation and is not claimed to be packaged in the r37 wheel."
+  ]
+}

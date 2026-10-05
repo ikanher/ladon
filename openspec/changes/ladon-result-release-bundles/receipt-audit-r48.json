@@ -1,0 +1,113 @@
+{
+  "candidateCommit": "15835d5f0a499e13d658c5bf26933c8456f0e37c",
+  "candidateIdentity": "sha256:9b1086cbfc3c9bd77a6511efc10631b9b96f5b1c12318eeb89ea29bedb46b2cc",
+  "checks": [
+    {
+      "detail": "Core prerequisite file digests match bytes for claim, umbrella integration, dossier, and guide; all four status fields passed.",
+      "id": "receipt-chain",
+      "status": "passed"
+    },
+    {
+      "detail": "Core, compatible claim/dossier/guide receipts, immutable candidate checkout, source manifest, wheel and installed Python 3.11/3.12 runtime identities agree; 3,873 tracked candidate files match the source manifest.",
+      "id": "candidate-identity",
+      "status": "passed"
+    },
+    {
+      "detail": "54 recorded commands all exit 0; stdout/stderr sizes match records; max stdout 29,754 bytes. Input hashes are unchanged and all 94 selected source inputs rehash to the pre-run inventory (49,990,546 bytes).",
+      "id": "field-command-record",
+      "status": "passed"
+    },
+    {
+      "detail": "Repeated archive digest is sha256:72f2e4ae073fbe2e551c8c54d8d2beb70858b4c843a82f282e0e421b31d4fed5; archive/directory parity true; cursor relocation preserves archive digest; all 9 guide and 9 dossier JSON/text section pairs report parity.",
+      "id": "determinism-and-views",
+      "status": "passed"
+    },
+    {
+      "detail": "Selected SQLite fixture is 27,336,704 bytes (6,674 pages at 4,096 bytes); integrity_check ok, no foreign-key violations, selected projection identities/rows match the source under documented normalization.",
+      "id": "selected-lineage-fixture",
+      "status": "passed"
+    },
+    {
+      "detail": "Views used the installed candidate module with source checkout and Lean project hidden; network-only namespace has loopback interface and IPv4/IPv6 connect failures 101. This supports offline supplied-evidence inspection, not broader sandbox claims.",
+      "id": "offline-detached-scope",
+      "status": "passed"
+    },
+    {
+      "detail": "Reports retain checking not-assessed, replay not-run, replay coverage unknown, source freshness not-assessed, missing predecessor and external Lean dependencies; current guide traversal is first pages only.",
+      "id": "scope-and-nonclaims",
+      "status": "passed"
+    }
+  ],
+  "fieldEvidence": {
+    "archiveBytes": 50022372,
+    "canonicalArtifacts": 89,
+    "commands": 54,
+    "dossierSections": 9,
+    "dossierTextJsonParity": 9,
+    "exitCodes": [
+      0
+    ],
+    "expandedBytes": 50011916,
+    "guideSections": 9,
+    "guideTextJsonParity": 9,
+    "inputsUnchanged": true,
+    "lineageDatabaseBytes": 27336704,
+    "payloadFiles": 94,
+    "selectedInputs": 94
+  },
+  "issues": [],
+  "limitations": [
+    "Audit validates receipt binding and reported field artifacts; it does not establish producer authenticity, theorem correctness, correspondence correctness, freshness, replay, or human review.",
+    "Guide traversal exercised first pages only; full guide traversal remains historical.",
+    "No Lean execution, network retrieval, or heavy test suite rerun was performed for this audit."
+  ],
+  "receiptDigests": {
+    "candidateIdentity": {
+      "path": "openspec/changes/ladon-result-release-bundles/evidence/bundle-r48/qualification/candidate-identity-r48.json",
+      "sha256": "sha256:fd15c3e7cb1d74406fdfe7bd0965e43be7198cf15b292fdf14fb98e9762932ff"
+    },
+    "claimCorrespondence": {
+      "path": "openspec/changes/ladon-result-claim-correspondence/full-acceptance-r48.json",
+      "receiptExpectedDigest": "sha256:169069fa3387146a069f4d19be726701a0c8e25d3ed20e6ed6c237f9ee0719d9",
+      "sha256": "sha256:169069fa3387146a069f4d19be726701a0c8e25d3ed20e6ed6c237f9ee0719d9"
+    },
+    "coreAcceptance": {
+      "path": "openspec/changes/ladon-result-release-bundles/core-acceptance-r48.json",
+      "sha256": "sha256:a09b0fa03c7f9b16baf0bb983316612d2e973ed122f6c2bdd19199d84abc496f"
+    },
+    "environment": {
+      "path": "openspec/changes/ladon-result-release-bundles/evidence/bundle-r48/qualification/environment-r48.json",
+      "sha256": "sha256:04ef9418fec2bbb3dd96156c8c90e5e3d673a27098f01e94211d1a3f31303b07"
+    },
+    "fieldRunReport": {
+      "path": "openspec/changes/ladon-result-release-bundles/evidence/bundle-r48/field/field-run-report.json",
+      "sha256": "sha256:2585d3f5f1ed61ff3a8a1da1b7840a12fdbfac27cc9fd4fca55f1352298de11d"
+    },
+    "formalizationDossier": {
+      "path": "openspec/changes/ladon-result-formalization-dossier/full-acceptance-r48.json",
+      "receiptExpectedDigest": "sha256:2e91b5245b6da84e7144cb835e52798435ca9d27c4fecff8422ee702dfd31bcb",
+      "sha256": "sha256:2e91b5245b6da84e7144cb835e52798435ca9d27c4fecff8422ee702dfd31bcb"
+    },
+    "integrationAndDiscovery": {
+      "path": "openspec/changes/ladon-result-understanding-and-release-umbrella/integration-requalification-r48.json",
+      "receiptExpectedDigest": "sha256:2b24de4086b013513ec0766aa6d0beb088b2ebc3c5dd4c22346bfad376d47578",
+      "sha256": "sha256:2b24de4086b013513ec0766aa6d0beb088b2ebc3c5dd4c22346bfad376d47578"
+    },
+    "readingGuides": {
+      "path": "openspec/changes/ladon-proof-reading-guides/full-acceptance-r48.json",
+      "receiptExpectedDigest": "sha256:5eef590d0034dd92056d0cf94fd210bd4f9a361fa3fcc2290cb50984591c4900",
+      "sha256": "sha256:5eef590d0034dd92056d0cf94fd210bd4f9a361fa3fcc2290cb50984591c4900"
+    },
+    "rootReplayReport": {
+      "path": "openspec/changes/ladon-result-release-bundles/evidence/bundle-r48/root-replay-report.json",
+      "sha256": "sha256:71c60771b8dfef48d1a217b572d37bda70f95515b8c4d4235369a961a48d7f8a"
+    },
+    "sourceManifest": {
+      "path": "openspec/changes/ladon-result-release-bundles/evidence/bundle-r48/qualification/source-manifest-r48.json",
+      "sha256": "sha256:961a0f297b16a95281a4e53f20add24ae51382247ef8797a566c794310d23cd2"
+    }
+  },
+  "schema": "ladon-bundle-r48-receipt-audit-v1",
+  "scope": "Independent receipt and raw field evidence audit for core acceptance r48; no heavy qualification suite rerun.",
+  "status": "passed"
+}

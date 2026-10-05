@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-result-release-bundles",
+  "commands": [
+    "openspec validate ladon-result-release-bundles --strict",
+    "uv run --locked --reinstall-package ladon pytest -q tests/test_result_*.py",
+    "git diff --check"
+  ]
+}

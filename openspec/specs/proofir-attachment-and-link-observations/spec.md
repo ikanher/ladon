@@ -1,7 +1,7 @@
 # proofir-attachment-and-link-observations Specification
 
 ## Purpose
-TBD - created by archiving change proofir-attachment-and-link-observations. Update Purpose after archive.
+Resolve attachments consistently across bridge and SQLite ingestion while retaining candidates, evidence, rejection reasons, and selection decisions. Keep diagnostic name matches separate from selected attachments and preserve attribution for artifact links.
 ## Requirements
 ### Requirement: One versioned attachment resolver
 Bridge and SQLite ingestion SHALL use the same versioned resolver and candidate ordering.

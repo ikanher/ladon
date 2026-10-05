@@ -1,7 +1,7 @@
 # ladon-root-matrix Specification
 
 ## Purpose
-TBD - created by archiving change ladon-root-matrix-lean-expansion. Update Purpose after archive.
+Use Lean-backed calibration owner roots where declaration graphs provide useful review information in the root matrix.
 ## Requirements
 ### Requirement: Lean-Backed Owner Matrix Entries
 

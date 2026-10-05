@@ -1,7 +1,7 @@
 # ladon-proof-xray-staging Specification
 
 ## Purpose
-TBD - created by archiving change ladon-proof-xray-staging. Update Purpose after archive.
+Accept optional proof-xray witness rows with explicit authority and backend metadata. Keep reporting safe when witnesses are absent; staging does not establish authority beyond the supplied evidence.
 ## Requirements
 ### Requirement: Proof-xray witness rows
 The system SHALL accept optional proof-xray rows with authority labels and

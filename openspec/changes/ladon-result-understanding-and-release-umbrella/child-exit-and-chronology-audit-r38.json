@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "status": "partial-verification-with-explicit-historical-gap",
+  "recordedAt": "2026-10-03T08:19:45.733887+00:00",
+  "candidateCommit": "3f182566c19afe82f8029685fe77f20759582d4c",
+  "ledger": {
+    "path": "/home/codex/projects/ladon/openspec/changes/ladon-authority-safe-verified-discovery-umbrella/children/dependency-ledger.json",
+    "digest": "sha256:586f91aa181b1e0d18c33d7ee54a66c3adb8c8d4e1b98a290cebf19be68e6167"
+  },
+  "children": [
+    {
+      "child": "ladon-proof-discovery-correctness-repairs",
+      "exitClass": "installed-scope-freshness-and-type-evidence-honest-discovery",
+      "currentExit": "verified against ledger and inventory",
+      "receipt": {
+        "path": "/tmp/ladon-prerequisite-finish-37s2vir4/integration-bundle-r37/correctness-receipt.json",
+        "digest": "sha256:43bd5f8bb8042bfb5ebb4c58904d0c7b4da709cc650f559ab238a35714713ba1"
+      },
+      "receiptIdentity": "sha256:db69bc538e0b01195126abd13e291fb30378f3b6618c4c24e23024c69ba8a048",
+      "startAfter": [],
+      "historicalStartOrder": "not established; no independent child-start event record"
+    },
+    {
+      "child": "ladon-execution-authority-integrity",
+      "exitClass": "single-context-secret-safe-non-escalating-evidence-receipts",
+      "currentExit": "verified against ledger and inventory",
+      "receipt": {
+        "path": "/tmp/ladon-prerequisite-finish-37s2vir4/integration-bundle-r37/authority-receipt.json",
+        "digest": "sha256:6ee8b545ff1915358c9fe4d65293529db3b46f524246b46e00031b5c494738a7"
+      },
+      "receiptIdentity": "sha256:646bc09b2359ba27a7820a6c3d79bb0b6328a8763d169e4865d393d580a85d2a",
+      "startAfter": [],
+      "historicalStartOrder": "not established; no independent child-start event record"
+    },
+    {
+      "child": "ladon-authority-safe-release-gate",
+      "exitClass": "same-candidate-conjunctive-authority-safe-integration",
+      "currentExit": "verified against ledger and inventory",
+      "receipt": {
+        "path": "/tmp/ladon-prerequisite-finish-37s2vir4/integration-bundle-r37/integration-receipt.json",
+        "digest": "sha256:43793f994b1c0a814db12086bda0f85c847a69ee424b09ad98b0a88a18744a9c"
+      },
+      "receiptIdentity": "sha256:0a85bcc40105ed4e0e94bb2d452aea48bf3d77e90a872b3caf878ff66e571416",
+      "startAfter": [
+        "ladon-proof-discovery-correctness-repairs",
+        "ladon-execution-authority-integrity"
+      ],
+      "historicalStartOrder": "not established; no independent child-start event record"
+    },
+    {
+      "child": "ladon-verified-discovery-loop",
+      "exitClass": "installed-bounded-goal-context-to-attributable-compiled-application",
+      "currentExit": "verified against ledger and inventory",
+      "receipt": {
+        "path": "/tmp/ladon-prerequisite-finish-37s2vir4/integration-bundle-r37/discovery-receipt.json",
+        "digest": "sha256:bf8e95ad74291094cc4a7f33d70277cb10f38eef64d1cebfa977815e019ea913"
+      },
+      "receiptIdentity": "sha256:661087d8766951354420b603f192a8d2d7df4de943cbd6894f03547de4047d7e",
+      "startAfter": [
+        "ladon-authority-safe-release-gate"
+      ],
+      "historicalStartOrder": "not established; no independent child-start event record"
+    },
+    {
+      "child": "ladon-capability-readiness-and-external-evaluation",
+      "exitClass": "machine-evidenced-held-out-capability-readiness",
+      "currentExit": "unmet; registered external outcomes and independent architecture labels incomplete",
+      "startAfter": [
+        "ladon-verified-discovery-loop"
+      ],
+      "receipt": null,
+      "historicalStartOrder": "not established"
+    }
+  ],
+  "historicalEvidence": {
+    "baseCommit": "d64f475e23a7339c91aa280ff6e6679c27607875",
+    "committerTimestamp": "2026-08-24T16:07:32+03:00",
+    "prototypePath": "src/ladon/verified_discovery.py",
+    "prototypeByteCount": 26469,
+    "prototypeDigest": "sha256:ec774d714dbe59cc264fb6fbd09761efbe841b8f3e9f4debb4dcad2794e32523",
+    "priorChronology": {
+      "path": "/tmp/ladon-prerequisite-finish-37s2vir4/chronology.json",
+      "digest": "sha256:0ecb35b6a1d935cff307cf906fab93e0522ef9dc41ec11151dad75c2b92d0be4"
+    }
+  },
+  "task7_1Satisfied": false,
+  "requiredRemainingEvidence": [
+    "Independent start-event records for the declared child work, or an explicit owner-reviewed requirement/exception decision."
+  ],
+  "nonclaims": [
+    "Presence of an earlier prototype does not identify the formal start event of a later child change.",
+    "Current same-candidate exits establish present qualification, not past start order.",
+    "No missing chronology is fabricated or waived; readiness child has no invented exit."
+  ]
+}

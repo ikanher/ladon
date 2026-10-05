@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-result-formalization-dossier",
+  "validationScope": "offline-inspection-core; full-child-exit-pending",
+  "commands": [
+    "openspec validate ladon-result-formalization-dossier --strict",
+    "uv run --locked pytest -q tests/test_result_*.py",
+    "git diff --check"
+  ]
+}
