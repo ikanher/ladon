@@ -36,3 +36,7 @@ cross-language corpus covers diagnostics, normalized rows, SQLite plans, and
 bounded graph queries. A release may roll back by disabling the Rust adapter;
 canonical artifacts and the Python SQLite projection remain authoritative and
 rebuildable. Rust accepts opaque Lean payloads and never invokes Lean or Quux.
+
+Candidate-specific integration qualification is described in
+[Authority-safe integration](AUTHORITY_SAFE_INTEGRATION.md). Passing the two child receipts alone
+does not close integration or the experimental verified-discovery exit.

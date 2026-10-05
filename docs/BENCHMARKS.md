@@ -21,12 +21,23 @@ measurement begins.
 
 The versioned manifest is
 `tests/fixtures/benchmark_harness/manifest-v1.json`; its packaged schema is
-`ladon/schemas/ladon-benchmark-manifest-v1.schema.json`. Required cases cover:
+`ladon/schemas/ladon-benchmark-manifest-v1.schema.json`.
+
+The frozen analyzer contract uses report v2. Its commands explicitly select
+`--report-version v2` so CLI default changes cannot silently change the schema
+or the oracle input. They select inventory scope because the labels describe
+the full fixture. Source-index caching is bypassed for these comparisons so
+cold and equivalent runs perform the same work; the Lean helper cache remains
+enabled for its separate cold/warm and invalidation checks. Normalized bytes
+exclude phase/helper timings and the recorded resource wall time, while
+resource limits, outcomes, coverage, and authority remain part of the comparison.
+
+Required cases cover:
 
 - text-backed structural signals, including seeded internal/external missing
   imports, generated-aware fan populations, facade and namespace behavior,
   architecture/source-pattern rows, and declaration masking;
-- Lean-backed declaration surfaces through a deterministic Lake stand-in,
+- Lean-backed declaration surfaces through deterministic Lake and Lean stand-ins,
   including theorem, definition, axiom, opaque, unsafe, statement, direct
   type/value dependency, and parser-only negative cases;
 - report-v2 schema validity, normalized byte determinism, JSON/text semantic
@@ -95,3 +106,11 @@ Ladon benchmark or drift target.
 Live rows must record repository revision, toolchain, and environment
 provenance. Their changing module counts and top nodes are observational drift,
 never portable correctness gates.
+
+## Registered discovery evaluation
+
+The prerequisite umbrella freezes discovery subjects before comparison with
+Lean native search and textual baselines. See [Readiness and evaluation](READINESS_EVALUATION.md)
+for corpus exclusions, independent replay, separate metrics and unavailable
+external evidence. The frozen exposition baseline remains an immutable offline
+comparison, not held-out promotion data.

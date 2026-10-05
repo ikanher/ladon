@@ -20,3 +20,7 @@ accepts explicit `--lake-path`/`--lean-path` selection.
 These checks establish local integrity and projection behavior only.  They do
 not establish theorem truth, kernel authority for ambient toolchains, or
 compatibility with the separate Quux repository.
+
+Candidate-specific integration qualification is described in
+[Authority-safe integration](AUTHORITY_SAFE_INTEGRATION.md). Passing the two child receipts alone
+does not close integration or the experimental verified-discovery exit.

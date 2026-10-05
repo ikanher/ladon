@@ -1,20 +1,24 @@
-# Ladon is an experimental Lean codebase quality tool, e.g. "radon" for Lean.
+# Ladon: claim and evidence utilities beside Lean
 
-Ladon is a host-side analyzer for Lean projects. The current clean core reads
-Lean source text, can optionally ask Lean for root-file declaration candidates,
-reports module/declaration graph structure, and keeps Python quality gates
-strict enough that analyzer code stays small and testable.
+Ladon helps callers find bounded declaration shortlists, check candidates
+against proposition goals and ordered local hypotheses with Lean, and inspect
+the resulting evidence. Architecture review is a secondary workflow; stored
+evidence and theorem lineage support auditing.
 
 Ladon is not a proof checker. Declaration edges, source ranges, source hashes,
 packet diagnostics, and native ProofIR v3 projections are review-routing
 evidence only. Theorem truth and proof correctness must come from Lean or an
 explicit check-run observation naming its checker and exact environment.
 
-The near-term supported product is deliberately narrow: architecture review,
-semantic declaration discovery with explicit candidate checks, and stored
-evidence/theorem-lineage inspection. Atlas, runset/reportset, theorem-capsule,
+The active maintenance route starts with [ordinary Lean tools](docs/ORDINARY_LEAN_HANDOFF.md).
+Existing declaration discovery and explicit candidate checks remain available.
+Further interface expansion is frozen; comparative benefit remains unestablished.
+Architecture review and stored evidence/theorem-lineage inspection remain
+available with their own evidence boundaries. Atlas, runset/reportset, theorem-capsule,
 and bridge surfaces are optional layers. See [Product scope](docs/PRODUCT_SCOPE.md)
 and the generated [supported-feature matrix](docs/SUPPORTED_FEATURE_MATRIX.md).
+The [measured alpha profile](docs/MEASURED_ALPHA_PROFILE.md) separates candidate
+contract support from external results and release readiness.
 
 ## Setup and support
 
@@ -41,6 +45,28 @@ See [Theorem capsules](docs/THEOREM_CAPSULES.md) for exact theorem planning,
 module-prefix packaging, clean-room Lean replay, and the guarantee boundary.
 
 ## Usage
+
+Experimental claim-manifest validation is available without loading Lean:
+
+```bash
+uv run --locked ladon result validate /path/to/result.json
+```
+
+This checks declared revisions, internal links, and review currency. Canonical
+theorem evidence remains unresolved. See [Result manifests](docs/RESULT_MANIFEST.md)
+for the schema, example, and current implementation boundary.
+
+Use `ladon result inspect /path/to/result.json` for bounded component cards.
+Explicit `--artifact` inputs add stored checker observations; `--assessments`
+adds versioned, attributed component reasons. Inspection keeps checking scope,
+correspondence and unavailable trust evidence separate.
+Use `--section evidence` for the exact-subject dossier, or `--lineage-inputs`
+for explicit stored dependency captures with their own freshness and coverage.
+
+Use `ladon result guide /path/to/result.json --guide-inputs /path/to/guide.json`
+for authored reading steps, source-linked lemma statements, citations, and
+revision-scoped explanation and attribution reviews. See
+[Proof reading guides](docs/RESULT_GUIDES.md) for the companion and examples.
 
 From this repository:
 
@@ -432,10 +458,40 @@ ladon proof-search discover --repo-root . --module Project.Owner \
 
 JSON results preserve freshness, authority, bounds, omissions, and nonclaims;
 lexical/SQLite shortlist rows are never presented as Lean verification.
+The retired `search type` command returns a migration diagnostic; use
+`search type-text`, whose JSON contract is
+`ladon-proof-search-type-text-result-v2`. It matches literal substrings with
+SQLite's ASCII case folding and exposes field contributions, population
+coverage, result and diagnostic caps, lower-bound counts, and omissions.
+`--freshness verify` checks index/source generations without checking a
+candidate with Lean. Explanation compares a uniquely attributable indexed
+Lean-rendered type with the goal; missing, ambiguous, empty, truncated,
+lexical-only or stale type evidence is unavailable. `explain --module` filters
+the candidate's owning module. An available structural explanation still
+requires explicit `check candidate` or `discover` to assess applicability.
+A normal index is lexical, so its type evidence alone cannot provide an
+available explanation. After a candidate check, select its stored type with
+`explain --check-artifact <artifactRef> --check-local-id <localId>` and the
+same `--evidence-store`. This read preserves a stored receipt; it does not
+rerun Lean or transfer applicability to a new goal. Repeat `discover --local
+NAME:TYPE` to supply ordered dependent hypotheses, such as `--local P:Prop
+--local h:P --goal P`.
+Repository-owned agent guidance is in [the Ladon skill](skills/ladon/SKILL.md).
 Semantic checks default to compact `llm` output: full artifacts are registered
 outside the target repository and can be expanded with `proof-search evidence
 semantic-artifact`, `semantic-environment`, or `semantic-check`. Discovery does
 not run scratch replay unless `--scratch-mode advisory` is selected.
+
+Compact text shows each projected remaining proposition before its candidate's
+receipt, followed by qualified evidence expansion references and projection
+omissions. For example, `?hBoundaryGap` in an application may leave
+`0 ≤ Mf.DP.fixedEpochCenterGap point h boundary`. That application is incomplete;
+the residual says what this application still needs, without establishing that
+the goal is false or that every proof requires this premise. Text and JSON expose
+the same projected evidence. Omitted rows or clipped propositions require exact
+evidence expansion; absence from a compact page is not absence from the check.
+An exploratory accepted application remains separate from independent compiler
+replay and from requested source-bound completion, which is still planned.
 
 Run the project-local quality command from this repository:
 
@@ -465,3 +521,11 @@ adding more heuristics.
 ## LLM Disclaimer
 
 This is close to 100% AI assisted code. Much of it is even "vibe-coded", i.e. not looking at the generated code. This is evolved on the side when developing some experimental Lean code and trying to keep the codebase clean.
+
+Candidate-specific integration qualification is described in
+[Authority-safe integration](docs/AUTHORITY_SAFE_INTEGRATION.md). Passing the two child receipts alone
+does not close integration or the experimental verified-discovery exit.
+
+Portable result handoffs use the experimental [core bundle workflow](docs/RESULT_BUNDLES.md):
+explicit file selection, atomic export, integrity verification and detached dossier/guide inspection.
+Integrity, stored checking evidence and attributed reviews remain separate.

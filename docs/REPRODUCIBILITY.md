@@ -12,7 +12,9 @@ input. The authoritative inventory is:
 - `tests/fixtures/**` as inert data, including test-shaped files that pytest
   must not collect;
 - `README.md`, `docs/**`, `.github/**`, and OpenSpec artifacts as maintained
-  documentation, workflow, and change metadata.
+  documentation, workflow, and change metadata;
+- `skills/**` for maintained Ladon skill instructions. Host-owned `.codex/**`
+  is excluded.
 
 The clean-candidate gate compares `git ls-files` with required input roots,
 rejects an untracked required input, materializes an explicit candidate outside
@@ -20,6 +22,11 @@ the checkout, and compares nonempty live/candidate pytest collection. It then
 runs locked bootstrap, strict quality, constrained package build, and the
 requested installed checks without using the original virtual environment,
 `PYTHONPATH`, or home directory.
+
+When Lake is available, the gate explicitly builds its tracked pinned Lean test
+fixture before running tests. The isolated HOME retains configured or inferred
+Elan and Rust compiler/cache locations. Required documentation checks read only
+Ladon's maintained files, without a sibling skill repository.
 
 The following paths are deliberately outside Ladon's maintained product input:
 
@@ -90,3 +97,12 @@ sdist/wheel artifacts for technical verification but do not publish them. A
 future distribution authorization must add the granted license text and
 matching package metadata before any publication step is enabled. Technical
 alpha readiness does not imply permission to distribute.
+
+The [measured alpha profile](MEASURED_ALPHA_PROFILE.md) records the exact
+qualified candidate and the remaining external-evaluation gaps. A successful
+technical gate does not complete the prerequisite umbrella or qualify a newer
+working tree. Candidate-specific receipts retain their original scope.
+
+Candidate-specific integration qualification is described in
+[Authority-safe integration](AUTHORITY_SAFE_INTEGRATION.md). Passing the two child receipts alone
+does not close integration or the experimental verified-discovery exit.
