@@ -15,6 +15,7 @@ from ladon.evidence_receipt import (
 from ladon.proofir_v3 import validate_envelope
 from ladon.semantic_execution_binding import (
     UNRECORDED_EXECUTION,
+    _validate_recorded_execution_owned,
     project_recorded_execution_receipt,
     validate_recorded_execution_binding,
 )
@@ -33,22 +34,45 @@ def stored_check_receipt(
         if receipt is None:
             return None
         canonical = validate_envelope(dict(artifact)).to_dict()
-        payload = canonical["payload"]
-        if (
-            canonical["artifactKind"] != "proofir.check-run"
-            or receipt.get("environmentRef") != canonical["environmentRef"]
-            or receipt.get("checkRunRef") != payload.get("checkRunId")
-            or receipt.get("authorityBasis") != payload.get("guarantee", {}).get("authorityBasis")
-        ):
-            raise ValueError("stored receipt does not match its canonical check owner")
-        validate_evidence_receipt(receipt)
-        validate_stored_observation_receipt(canonical, receipt)
+        _validate_stored_owner(canonical, receipt)
         recorded = validate_recorded_execution_binding(canonical, receipt, environment_artifacts)
         return project_recorded_execution_receipt(
             receipt, projection_kind=projection_kind, recorded=recorded,
         )
     except (TypeError, KeyError, AttributeError) as error:
         raise ValueError("stored check receipt or owner is malformed") from error
+
+
+def _validate_stored_owner(canonical, receipt):
+    payload = canonical["payload"]
+    if (
+        canonical["artifactKind"] != "proofir.check-run"
+        or receipt.get("environmentRef") != canonical["environmentRef"]
+        or receipt.get("checkRunRef") != payload.get("checkRunId")
+        or receipt.get("authorityBasis") != payload.get("guarantee", {}).get("authorityBasis")
+    ):
+        raise ValueError("stored receipt does not match its canonical check owner")
+    validate_evidence_receipt(receipt)
+    validate_stored_observation_receipt(canonical, receipt)
+
+
+def _stored_check_receipt_owned(population, check, environments, *, projection_kind):
+    """Consume only the canonical owner's exact request members."""
+    # Verify membership even for the receipt-free branch, without widening closure.
+    if population.member(check.content_id) is not check:
+        raise ValueError('check is not an owned canonical population member')
+    canonical = check.to_dict()
+    try:
+        observation = canonical.get('extensions', {}).get('ladon.process-observation/v1', {})
+        receipt = observation.get('evidenceReceipt')
+        if receipt is None:
+            return None
+        _validate_stored_owner(canonical, receipt)
+        recorded = _validate_recorded_execution_owned(population, check, receipt, environments)
+        return project_recorded_execution_receipt(
+            receipt, projection_kind=projection_kind, recorded=recorded)
+    except (TypeError, KeyError, AttributeError) as error:
+        raise ValueError('stored check receipt or owner is malformed') from error
 
 
 def stored_query_receipt(

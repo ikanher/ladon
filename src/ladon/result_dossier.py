@@ -6,10 +6,10 @@ from pathlib import Path
 
 from ladon.result_assessments import validate_result_assessments
 from ladon.result_inspection_cards import manifest_cards
-from ladon.result_inspection_checks import checking_cards, project_checking_cards
+from ladon.result_inspection_checks import _checking_cards_owned, project_checking_cards
 from ladon.result_lineage import lineage_sections
 from ladon.result_lineage_inputs import validate_lineage_inputs
-from ladon.result_resolution import resolve_result_targets
+from ladon.result_resolution import _resolve_population_targets, _result_population
 
 
 @dataclass
@@ -30,9 +30,10 @@ def prepare_dossier(manifest, artifacts, *, assessments=None, lineage_inputs=Non
     """Resolve a validated manifest; validate all supplied checks and stores."""
     companion = validate_result_assessments(assessments, manifest) if assessments is not None else None
     lineage = validate_lineage_inputs(lineage_inputs, manifest) if lineage_inputs is not None else None
-    catalog, resolved = resolve_result_targets(manifest, artifacts)
+    population = _result_population(artifacts)
+    catalog, resolved = _resolve_population_targets(manifest, population)
     resolutions = {row['targetId']: row for row in resolved}
-    checks = checking_cards(manifest, catalog, resolutions, target_ids=target_ids)
+    checks = _checking_cards_owned(manifest, catalog, resolutions, population, target_ids=target_ids)
     sections = manifest_cards(manifest, resolutions, companion)
     stored = lineage_sections(manifest, resolutions, lineage, lineage_base,
                               reference_base=lineage_reference_base)

@@ -397,6 +397,16 @@ def validate_envelope_batch(
     mutating a store while discovering a dangling cross-artifact edge.
     """
 
+    artifacts, _ = _validate_owned_batch(
+        values, max_bytes=max_bytes, max_artifact_bytes=max_artifact_bytes,
+        max_batch_bytes=max_batch_bytes, max_artifacts=max_artifacts,
+    )
+    return artifacts
+
+
+def _validate_owned_batch(values, *, max_bytes=None, max_artifact_bytes=MAX_ARTIFACT_BYTES,
+                          max_batch_bytes=MAX_BATCH_BYTES, max_artifacts=MAX_ARTIFACTS):
+    """Prepare every occurrence once; retain sizes for private subset preflight."""
     if type(values) is not list:
         raise ProofIRV3Error("v3 envelope batch must be an array")
     max_artifact_bytes, max_batch_bytes = _resolve_batch_limits(
@@ -405,7 +415,8 @@ def validate_envelope_batch(
     owned_values, artifacts = _preflight_batch(values, max_artifact_bytes, max_batch_bytes, max_artifacts)
     for owner_id, artifact in artifacts.items():
         _validate_external_references(owner_id, artifact, artifacts)
-    return tuple(_validate_owned_envelope(value, encoded) for value, encoded in owned_values)
+    return (tuple(_validate_owned_envelope(value, encoded) for value, encoded in owned_values),
+            tuple(len(encoded) for _, encoded in owned_values))
 
 
 def _validate_envelope_shape(value: Any) -> None:
@@ -1040,14 +1051,14 @@ def _validate_subject_references(value: Mapping[str, Any]) -> None:
 def _external_references(value: Any, pointer: str) -> list[tuple[str, dict[str, Any]]]:
     """Return every explicit external subject reference in deterministic order."""
 
-    if isinstance(value, dict):
+    if isinstance(value, Mapping):
         if set(value) == {"artifactRef", "kind", "localId"}:
             return [(pointer, value)]
         rows: list[tuple[str, dict[str, Any]]] = []
         for key in sorted(value):
             rows.extend(_external_references(value[key], pointer + "/" + _escape(key)))
         return rows
-    if isinstance(value, list):
+    if isinstance(value, (list, tuple)):
         rows = []
         for index, item in enumerate(value):
             rows.extend(_external_references(item, pointer + f"/{index}"))
@@ -1160,7 +1171,8 @@ def _validate_one_external_reference(
             artifact,
         )
     target_subjects = {
-        _subject_descriptor(subject, pointer="/subjectRefs")
+        _subject_descriptor(subject if isinstance(subject, dict) else _thaw(subject),
+                            pointer="/subjectRefs")
         for subject in target["subjectRefs"]
     }
     if (reference["kind"], reference["localId"]) not in target_subjects:

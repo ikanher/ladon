@@ -49,6 +49,10 @@ def validate_recorded_execution_binding(
         raise SemanticProjectionError('execution binding has ambiguous environment inputs')
     environment = environments[0]
     _validate_environment_input(check, environment)
+    return _validate_recorded_context(check, receipt, environment)
+
+
+def _validate_recorded_context(check, receipt, environment):
     options = environment['payload']['options']
     worker_recorded = _validate_observed_worker_identity(check, options)
     if 'toolchainContext' not in options or options['toolchainContext'] == 'ambient-unbound':
@@ -63,6 +67,11 @@ def validate_recorded_execution_binding(
 
 
 def _validate_environment_input(check: Mapping[str, Any], environment: Mapping[str, Any]) -> None:
+    _validate_environment_association(check, environment)
+    validate_envelope_batch([dict(environment), dict(check)])
+
+
+def _validate_environment_association(check, environment):
     inputs = check['payload']['inputs']
     if (
         environment.get('artifactKind') != 'proofir.environment'
@@ -71,7 +80,18 @@ def _validate_environment_input(check: Mapping[str, Any], environment: Mapping[s
         or inputs['environmentRef'] != check['environmentRef']
     ):
         raise SemanticProjectionError('execution environment is not the exact declared input owner')
-    validate_envelope_batch([dict(environment), dict(check)])
+
+
+def _validate_recorded_execution_owned(population, check, receipt, environments):
+    if not environments:
+        return False
+    if len(environments) != 1:
+        raise SemanticProjectionError('execution binding has ambiguous environment inputs')
+    environment = environments[0]
+    canonical = check.payload
+    _validate_environment_association(canonical, environment.payload)
+    population.validate_subset([environment, check])
+    return _validate_recorded_context(canonical, receipt, environment.payload)
 
 
 def _recorded_context(recorded: Any) -> Mapping[str, Any]:

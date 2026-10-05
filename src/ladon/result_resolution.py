@@ -9,8 +9,9 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from typing import Any
 
+from ladon._canonical_population import _CanonicalPopulation
 from ladon.proofir_attachment_policy import resolve_source_map_anchor
-from ladon.proofir_v3 import ProofIRV3Error, validate_envelope_batch
+from ladon.proofir_v3 import ProofIRV3Error
 from ladon.result_manifest import validate_result_manifest
 from ladon.result_manifest_io import MAX_RESULT_BYTES, ResultManifestError, canonical_json
 from ladon.result_manifest_summary import manifest_summary
@@ -37,7 +38,11 @@ def resolve_result_targets(manifest, artifacts):
     Callers own manifest validation. Canonical batch validation and attachment
     policy stay here so result inspection and resolution use identical rules.
     """
-    catalog, environments, anchors = _catalog(artifacts)
+    return _resolve_population_targets(manifest, _result_population(artifacts))
+
+
+def _resolve_population_targets(manifest, population):
+    catalog, environments, anchors = _catalog_from_population(population)
     return catalog, [_resolve_target(t, catalog, environments, anchors)
                      for t in manifest['targets']]
 
@@ -73,11 +78,19 @@ def _selected_rows(targets, links, manifest, target_id):
     return selected_targets, selected_links
 
 
-def _catalog(artifacts):
+def _result_population(artifacts):
     try:
-        validated = [v.to_dict() for v in validate_envelope_batch(artifacts)]
+        return _CanonicalPopulation(artifacts)
     except (ProofIRV3Error, ValueError, TypeError, KeyError) as exc:
         raise ResultManifestError('invalid supplied canonical evidence') from exc
+
+
+def _catalog(artifacts):
+    return _catalog_from_population(_result_population(artifacts))
+
+
+def _catalog_from_population(population):
+    validated = [v.to_dict() for v in population.artifacts]
     catalog = {a['artifactId']: a for a in validated}
     environments = defaultdict(list)
     anchors = defaultdict(list)

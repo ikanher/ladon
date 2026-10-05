@@ -5,7 +5,7 @@ from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
 
-from ladon.evidence_receipt_readers import stored_check_receipt
+from ladon.evidence_receipt_readers import _stored_check_receipt_owned, stored_check_receipt
 from ladon.result_manifest_io import ResultManifestError
 
 
@@ -34,6 +34,17 @@ def checking_cards(manifest, catalog, resolutions, *, target_ids=None):
     """Validate every check, but postpone display allocation until pagination."""
     receipts = {key: _receipt(artifact, catalog) for key, artifact in sorted(catalog.items())
                 if artifact['artifactKind'] == 'proofir.check-run'}
+    return _cards_from_receipts(manifest, catalog, resolutions, receipts, target_ids)
+
+
+def _checking_cards_owned(manifest, catalog, resolutions, population, *, target_ids=None):
+    receipts = {key: _owned_receipt(population, key, artifact, catalog)
+                for key, artifact in sorted(catalog.items())
+                if artifact['artifactKind'] == 'proofir.check-run'}
+    return _cards_from_receipts(manifest, catalog, resolutions, receipts, target_ids)
+
+
+def _cards_from_receipts(manifest, catalog, resolutions, receipts, target_ids):
     targets = manifest['targets']
     if target_ids is not None:
         targets = [t for t in targets if t['id'] in target_ids]
@@ -58,6 +69,16 @@ def _receipt(artifact, catalog):
     try:
         return stored_check_receipt(artifact, projection_kind='dossier',
                                     environment_artifacts=_input_environments(artifact, catalog))
+    except (ValueError, TypeError, KeyError, AttributeError) as error:
+        raise ResultManifestError('invalid stored check receipt or canonical owner') from error
+
+
+def _owned_receipt(population, key, artifact, catalog):
+    try:
+        environments = [population.member(row['artifactId'])
+                        for row in _input_environments(artifact, catalog)]
+        return _stored_check_receipt_owned(population, population.member(key),
+                                          environments, projection_kind='dossier')
     except (ValueError, TypeError, KeyError, AttributeError) as error:
         raise ResultManifestError('invalid stored check receipt or canonical owner') from error
 
