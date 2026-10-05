@@ -1,0 +1,23 @@
+{"argv": ["uv", "run", "--locked", "python", "scripts/ladon_benchmarks.py", "--candidate", "03a64c9f0ef056777dc9c192cceebbeacb03d04a", "--required", "--output", "/home/codex/.cache/ladon-qualification-r46/ladon-dossier-r46-ppjcv52s/full-qualification/prerequisites-r46/benchmarks.json"], "cwd": "/home/codex/.cache/ladon-qualification-r46/ladon-dossier-r46-ppjcv52s/candidate"}
++ /home/codex/miniconda3/bin/uv build --force-pep517 --build-constraints /home/codex/.cache/ladon-qualification-r46/ladon-candidate-ulnwni1e/source/build-constraints.txt --out-dir /home/codex/.cache/ladon-qualification-r46/ladon-benchmarks-v7gwk85h/dist --clear .
+Building source distribution...
+Building wheel from source distribution...
+Successfully built /home/codex/.cache/ladon-qualification-r46/ladon-benchmarks-v7gwk85h/dist/ladon-0.2.0.tar.gz
+Successfully built /home/codex/.cache/ladon-qualification-r46/ladon-benchmarks-v7gwk85h/dist/ladon-0.2.0-py3-none-any.whl
++ /home/codex/miniconda3/bin/uv venv --python /home/codex/.cache/ladon-qualification-r46/ladon-dossier-r46-ppjcv52s/candidate/.venv/bin/python3 /home/codex/.cache/ladon-qualification-r46/ladon-benchmarks-v7gwk85h/installed
+Using CPython 3.11.15 interpreter at: /home/codex/.cache/ladon-qualification-r46/ladon-dossier-r46-ppjcv52s/candidate/.venv/bin/python3
+Creating virtual environment at: installed
+Activate with: source installed/bin/activate
++ /home/codex/miniconda3/bin/uv pip install --python /home/codex/.cache/ladon-qualification-r46/ladon-benchmarks-v7gwk85h/installed/bin/python /home/codex/.cache/ladon-qualification-r46/ladon-benchmarks-v7gwk85h/dist/ladon-0.2.0-py3-none-any.whl
+Using Python 3.11.15 environment at: installed
+Resolved 1 package in 1ms
+Prepared 1 package in 4ms
+Installed 1 package in 3ms
+ + ladon==0.2.0 (from file:///home/codex/.cache/ladon-qualification-r46/ladon-benchmarks-v7gwk85h/dist/ladon-0.2.0-py3-none-any.whl)
++ /home/codex/miniconda3/bin/uv pip check --python /home/codex/.cache/ladon-qualification-r46/ladon-benchmarks-v7gwk85h/installed/bin/python
+Using Python 3.11.15 environment at: installed
+Checked 1 package in 0.21ms
+All installed packages are compatible
++ /home/codex/.cache/ladon-qualification-r46/ladon-benchmarks-v7gwk85h/installed/bin/python -c from importlib import resources; print(resources.files('ladon').joinpath('lean', 'ladon_parser_helper.lean'))
+benchmark results: /home/codex/.cache/ladon-qualification-r46/ladon-dossier-r46-ppjcv52s/full-qualification/prerequisites-r46/benchmarks.json
+benchmark summary: correctness failures=0; coverage=17/17; cold=0.423s; warm=0.308s; peak-rss=44.156MiB; warm-cache-hits=1; stability failures=0

@@ -1,0 +1,178 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+_________ test_unsafe_trust_is_not_a_declared_mathematical_assumption __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_unsafe_trust_is_not_a_dec0')
+
+    def test_unsafe_trust_is_not_a_declared_mathematical_assumption(tmp_path):
+        manifest, artifacts, companion, db, inserted = _lineage_fixture(tmp_path)
+        with sqlite3.connect(db) as conn:
+            conn.execute('INSERT INTO lineage_trust VALUES (?,?,?,?)',
+                         (inserted['closureId'], 'unsafe_reference', 'value', 'Demo.proof'))
+            conn.execute('INSERT INTO lineage_trust VALUES (?,?,?,?)',
+                         (inserted['closureId'], 'sorryAx', 'value', 'Demo.proof'))
+>       rows = _inspect(manifest, artifacts, companion, tmp_path, section='assumptions')['rows']
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_lineage_boundaries.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manifest = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+artifacts = [{'artifactId': 'sha256:89e64f31d0afb4d377e93b344b137c8a7f08bb7db86a58caee2695cd3a2a44fa', 'artifactKind': 'proofir.en...'expected': 1, ...}, 'environmentRef': 'sha256:12792a5761866d4f9493155f79ec2aaef3d3b4d9b07d436cf1932a00097c374d', ...}]
+companion = {'entries': [{'closureId': '56a164f831b936ac2ed27eccdbde9b51620d2008d5e8940410c615baa27d638c', 'database': 'lineage.sq...af89dee399f853ccda8869cc858937752a76539', 'resultId': 'finite-map-example', 'schema': 'ladon-result-lineage-inputs-v1'}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_unsafe_trust_is_not_a_dec0')
+kwargs = {'section': 'assumptions'}
+
+    def _inspect(manifest, artifacts, companion, tmp_path, **kwargs):
+>       return inspect_result_manifest(manifest, artifacts, lineage_inputs=companion,
+                                       lineage_base=tmp_path, **kwargs)
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'lineage_inputs'
+
+tests/test_result_lineage.py:54: TypeError
+_________ test_historical_selection_never_claims_current_observations __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_historical_selection_neve0')
+
+    def test_historical_selection_never_claims_current_observations(tmp_path):
+        manifest, artifacts, companion, _db, _inserted = _lineage_fixture(tmp_path)
+        companion['entries'][0]['targetRevision'] = 'sha256:' + '0' * 64
+>       row = _inspect(manifest, artifacts, companion, tmp_path, section='lineage')['rows'][0]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_lineage_boundaries.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manifest = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+artifacts = [{'artifactId': 'sha256:89e64f31d0afb4d377e93b344b137c8a7f08bb7db86a58caee2695cd3a2a44fa', 'artifactKind': 'proofir.en...'expected': 1, ...}, 'environmentRef': 'sha256:12792a5761866d4f9493155f79ec2aaef3d3b4d9b07d436cf1932a00097c374d', ...}]
+companion = {'entries': [{'closureId': '56a164f831b936ac2ed27eccdbde9b51620d2008d5e8940410c615baa27d638c', 'database': 'lineage.sq...af89dee399f853ccda8869cc858937752a76539', 'resultId': 'finite-map-example', 'schema': 'ladon-result-lineage-inputs-v1'}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_historical_selection_neve0')
+kwargs = {'section': 'lineage'}
+
+    def _inspect(manifest, artifacts, companion, tmp_path, **kwargs):
+>       return inspect_result_manifest(manifest, artifacts, lineage_inputs=companion,
+                                       lineage_base=tmp_path, **kwargs)
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'lineage_inputs'
+
+tests/test_result_lineage.py:54: TypeError
+____________ test_wrong_closure_cannot_use_active_same_name_capture ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_wrong_closure_cannot_use_0')
+
+    def test_wrong_closure_cannot_use_active_same_name_capture(tmp_path):
+        manifest, artifacts, companion, _db, _inserted = _lineage_fixture(tmp_path)
+        companion['entries'][0]['closureId'] = 'other-closure'
+>       row = _inspect(manifest, artifacts, companion, tmp_path, section='lineage')['rows'][0]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_lineage_boundaries.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manifest = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+artifacts = [{'artifactId': 'sha256:89e64f31d0afb4d377e93b344b137c8a7f08bb7db86a58caee2695cd3a2a44fa', 'artifactKind': 'proofir.en...'expected': 1, ...}, 'environmentRef': 'sha256:12792a5761866d4f9493155f79ec2aaef3d3b4d9b07d436cf1932a00097c374d', ...}]
+companion = {'entries': [{'closureId': 'other-closure', 'database': 'lineage.sqlite3', 'id': 'lineage-demo', 'identity': {'base_ge...af89dee399f853ccda8869cc858937752a76539', 'resultId': 'finite-map-example', 'schema': 'ladon-result-lineage-inputs-v1'}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_wrong_closure_cannot_use_0')
+kwargs = {'section': 'lineage'}
+
+    def _inspect(manifest, artifacts, companion, tmp_path, **kwargs):
+>       return inspect_result_manifest(manifest, artifacts, lineage_inputs=companion,
+                                       lineage_base=tmp_path, **kwargs)
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'lineage_inputs'
+
+tests/test_result_lineage.py:54: TypeError
+________ test_malformed_store_is_validated_even_when_hidden_by_section _________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_malformed_store_is_valida0')
+
+    def test_malformed_store_is_validated_even_when_hidden_by_section(tmp_path):
+        manifest, artifacts, companion, db, _inserted = _lineage_fixture(tmp_path)
+        db.write_bytes(b'not a sqlite database')
+        with pytest.raises(ResultManifestError, match='lineage'):
+>           _inspect(manifest, artifacts, companion, tmp_path, section='components')
+
+tests/test_result_lineage_boundaries.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manifest = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+artifacts = [{'artifactId': 'sha256:89e64f31d0afb4d377e93b344b137c8a7f08bb7db86a58caee2695cd3a2a44fa', 'artifactKind': 'proofir.en...'expected': 1, ...}, 'environmentRef': 'sha256:12792a5761866d4f9493155f79ec2aaef3d3b4d9b07d436cf1932a00097c374d', ...}]
+companion = {'entries': [{'closureId': '56a164f831b936ac2ed27eccdbde9b51620d2008d5e8940410c615baa27d638c', 'database': 'lineage.sq...af89dee399f853ccda8869cc858937752a76539', 'resultId': 'finite-map-example', 'schema': 'ladon-result-lineage-inputs-v1'}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_malformed_store_is_valida0')
+kwargs = {'section': 'components'}
+
+    def _inspect(manifest, artifacts, companion, tmp_path, **kwargs):
+>       return inspect_result_manifest(manifest, artifacts, lineage_inputs=companion,
+                                       lineage_base=tmp_path, **kwargs)
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'lineage_inputs'
+
+tests/test_result_lineage.py:54: TypeError
+_______ test_missing_store_does_not_make_a_current_selection_historical ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_missing_store_does_not_ma0')
+
+    def test_missing_store_does_not_make_a_current_selection_historical(tmp_path):
+        manifest, artifacts, companion, db, _inserted = _lineage_fixture(tmp_path)
+        db.unlink()
+>       row = _inspect(manifest, artifacts, companion, tmp_path, section='lineage')['rows'][0]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_lineage_boundaries.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manifest = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+artifacts = [{'artifactId': 'sha256:89e64f31d0afb4d377e93b344b137c8a7f08bb7db86a58caee2695cd3a2a44fa', 'artifactKind': 'proofir.en...'expected': 1, ...}, 'environmentRef': 'sha256:12792a5761866d4f9493155f79ec2aaef3d3b4d9b07d436cf1932a00097c374d', ...}]
+companion = {'entries': [{'closureId': '56a164f831b936ac2ed27eccdbde9b51620d2008d5e8940410c615baa27d638c', 'database': 'lineage.sq...af89dee399f853ccda8869cc858937752a76539', 'resultId': 'finite-map-example', 'schema': 'ladon-result-lineage-inputs-v1'}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_missing_store_does_not_ma0')
+kwargs = {'section': 'lineage'}
+
+    def _inspect(manifest, artifacts, companion, tmp_path, **kwargs):
+>       return inspect_result_manifest(manifest, artifacts, lineage_inputs=companion,
+                                       lineage_base=tmp_path, **kwargs)
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'lineage_inputs'
+
+tests/test_result_lineage.py:54: TypeError
+_____________ test_clipped_trust_fields_keep_exact_store_drilldown _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_clipped_trust_fields_keep0')
+
+    def test_clipped_trust_fields_keep_exact_store_drilldown(tmp_path):
+        manifest, artifacts, companion, db, inserted = _lineage_fixture(tmp_path)
+        with sqlite3.connect(db) as conn:
+>           conn.execute('UPDATE lineage_trust SET scope=? WHERE closure_id=?',
+                         ('λ' * 5000, inserted['closureId']))
+E           sqlite3.IntegrityError: CHECK constraint failed: scope IN ('type', 'value', 'declaration')
+
+tests/test_result_lineage_boundaries.py:63: IntegrityError
+_______ test_identity_drift_is_retained_independently_of_correspondence ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_identity_drift_is_retaine0')
+
+    def test_identity_drift_is_retained_independently_of_correspondence(tmp_path):
+        manifest, artifacts, companion, _db, _inserted = _lineage_fixture(tmp_path)
+        changed = copy.deepcopy(companion)
+        changed['entries'][0]['identity']['toolchain_identity'] = 'another toolchain'
+>       result = _inspect(manifest, artifacts, changed, tmp_path, section='lineage')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_lineage_boundaries.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manifest = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+artifacts = [{'artifactId': 'sha256:89e64f31d0afb4d377e93b344b137c8a7f08bb7db86a58caee2695cd3a2a44fa', 'artifactKind': 'proofir.en...'expected': 1, ...}, 'environmentRef': 'sha256:12792a5761866d4f9493155f79ec2aaef3d3b4d9b07d436cf1932a00097c374d', ...}]
+companion = {'entries': [{'closureId': '56a164f831b936ac2ed27eccdbde9b51620d2008d5e8940410c615baa27d638c', 'database': 'lineage.sq...af89dee399f853ccda8869cc858937752a76539', 'resultId': 'finite-map-example', 'schema': 'ladon-result-lineage-inputs-v1'}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_identity_drift_is_retaine0')
+kwargs = {'section': 'lineage'}
+
+    def _inspect(manifest, artifacts, companion, tmp_path, **kwargs):
+>       return inspect_result_manifest(manifest, artifacts, lineage_inputs=companion,
+                                       lineage_base=tmp_path, **kwargs)
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'lineage_inputs'
+
+tests/test_result_lineage.py:54: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_result_lineage_boundaries.py::test_unsafe_trust_is_not_a_declared_mathematical_assumption
+FAILED tests/test_result_lineage_boundaries.py::test_historical_selection_never_claims_current_observations
+FAILED tests/test_result_lineage_boundaries.py::test_wrong_closure_cannot_use_active_same_name_capture
+FAILED tests/test_result_lineage_boundaries.py::test_malformed_store_is_validated_even_when_hidden_by_section
+FAILED tests/test_result_lineage_boundaries.py::test_missing_store_does_not_make_a_current_selection_historical
+FAILED tests/test_result_lineage_boundaries.py::test_clipped_trust_fields_keep_exact_store_drilldown
+FAILED tests/test_result_lineage_boundaries.py::test_identity_drift_is_retained_independently_of_correspondence
+7 failed in 0.15s

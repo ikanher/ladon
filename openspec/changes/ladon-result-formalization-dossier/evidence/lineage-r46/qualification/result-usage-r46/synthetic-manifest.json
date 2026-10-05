@@ -1,0 +1,89 @@
+{
+  "schema": "ladon-result-manifest-v1",
+  "resultId": "finite-map-example",
+  "title": "Illustrative claim with an additional finiteness assumption",
+  "claimInventory": {
+    "scope": "One illustrative paper statement; not a checked formalization.",
+    "coverage": "complete"
+  },
+  "claims": [
+    {
+      "id": "paper-theorem-1",
+      "statement": "Every injective self-map is surjective.",
+      "document": {
+        "locator": "example-paper#theorem-1",
+        "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "components": [
+        "implication",
+        "unrestricted-domain"
+      ],
+      "revision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1"
+    }
+  ],
+  "targets": [
+    {
+      "id": "finite-map",
+      "name": "Demo.proof",
+      "typeText": "True",
+      "source": {
+        "path": "Demo.lean",
+        "digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "projectRevision": "declared-archive-r05"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.20.0",
+        "digest": "sha256:12792a5761866d4f9493155f79ec2aaef3d3b4d9b07d436cf1932a00097c374d"
+      },
+      "revision": "sha256:27c24007555cff4cf22fd0759ba0bde76903446ad6cc13a7ab2bfd918277c7d9",
+      "subjectRef": {
+        "artifactId": "sha256:e39dcbab3e07ac938d982a626d9b85e32e1d1d6b1477a62d828b209b72f787fb",
+        "subjectId": "declaration:sha256:29f4ac4cf3a0b3e922fe14b62c643c82eaf993ac62c6058be7f487e6573ffeab"
+      }
+    }
+  ],
+  "links": [
+    {
+      "id": "mapping-1",
+      "claimId": "paper-theorem-1",
+      "componentIds": [
+        "implication"
+      ],
+      "targetIds": [
+        "finite-map"
+      ]
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-1",
+      "linkId": "mapping-1",
+      "linkDigest": "sha256:902df6d9d43c9384ceef299ff5393a05efb245735d1ded8dc7eaf1e38cdfb200",
+      "claimRevision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "reviewer": {
+        "id": "illustrative-model-review",
+        "kind": "model"
+      },
+      "method": "Supplied statement comparison; no Lean or canonical evidence loaded.",
+      "timestamp": "2026-10-02T09:00:00Z",
+      "rationale": "The supplied formal type assumes a finite domain; the informal statement does not. All source/environment digests in this fixture are illustrative.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "assumption",
+          "claimAnchor": "example-paper#theorem-1",
+          "formalAnchor": "Example.lean: supplied type [Finite \u03b1]",
+          "description": "Finiteness is an additional hypothesis.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    }
+  ],
+  "revision": "sha256:f829d0aef939c18665e509796af89dee399f853ccda8869cc858937752a76539"
+}

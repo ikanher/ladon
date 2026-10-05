@@ -1,0 +1,162 @@
+F.FFF.                                                                   [100%]
+=================================== FAILURES ===================================
+______________ test_field_author_attribution_is_retained_verbatim ______________
+
+    def test_field_author_attribution_is_retained_verbatim():
+        value = manifest()
+        row = assessment(value['claims'][0], 'unrestricted-domain')
+        row['author']['id'] = 'OpenAI Codex, implementation agent'
+        data = companion(value, [row])
+>       assert validate_result_assessments(data, value)['assessments'][0]['author'] == row['author']
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_inspection_hardening.py:18: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/result_assessments.py:41: in validate_result_assessments
+    validate_document_shape(value, schema)
+src/ladon/_result_manifest_shape.py:35: in validate_document_shape
+    _node(value, schema, schema["$defs"], "$")
+src/ladon/_result_manifest_shape.py:42: in _node
+    validators[spec["type"]](value, spec, definitions, path)
+src/ladon/_result_manifest_shape.py:58: in _object
+    _node(child, properties[key], definitions, f"{path}.{key}")
+src/ladon/_result_manifest_shape.py:42: in _node
+    validators[spec["type"]](value, spec, definitions, path)
+src/ladon/_result_manifest_shape.py:67: in _array
+    _node(child, spec["items"], definitions, f"{path}[{index}]")
+src/ladon/_result_manifest_shape.py:42: in _node
+    validators[spec["type"]](value, spec, definitions, path)
+src/ladon/_result_manifest_shape.py:58: in _object
+    _node(child, properties[key], definitions, f"{path}.{key}")
+src/ladon/_result_manifest_shape.py:42: in _node
+    validators[spec["type"]](value, spec, definitions, path)
+src/ladon/_result_manifest_shape.py:58: in _object
+    _node(child, properties[key], definitions, f"{path}.{key}")
+src/ladon/_result_manifest_shape.py:42: in _node
+    validators[spec["type"]](value, spec, definitions, path)
+src/ladon/_result_manifest_shape.py:83: in _string
+    _string_format(value, spec, path)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = 'OpenAI Codex, implementation agent'
+spec = {'maxLength': 256, 'minLength': 1, 'pattern': '^[A-Za-z0-9][A-Za-z0-9._:-]*$', 'type': 'string', ...}
+path = '$.assessments[0].author.id'
+
+    def _string_format(value: str, spec: dict, path: str) -> None:
+        if "pattern" in spec and re.fullmatch(spec["pattern"], value) is None:
+>           raise ResultManifestError(f"{path}: invalid string format")
+E           ladon.result_manifest_io.ResultManifestError: $.assessments[0].author.id: invalid string format
+
+src/ladon/_result_manifest_shape.py:88: ResultManifestError
+______ test_long_inventory_scope_remains_inspectable_with_exact_reference ______
+
+    def test_long_inventory_scope_remains_inspectable_with_exact_reference():
+        value = manifest()
+        value['claimInventory']['scope'] = 'x' * 65536
+        value['revision'] = content_revision('manifest', value)
+>       result = inspect_result_manifest(value, [])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_inspection_hardening.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/result_inspection.py:21: in inspect_result_manifest
+    manifest = validate_result_manifest(manifest)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/result_manifest.py:25: in validate_result_manifest
+    validate_shape(value)
+src/ladon/_result_manifest_shape.py:30: in validate_shape
+    validate_document_shape(value, schema)
+src/ladon/_result_manifest_shape.py:35: in validate_document_shape
+    _node(value, schema, schema["$defs"], "$")
+src/ladon/_result_manifest_shape.py:42: in _node
+    validators[spec["type"]](value, spec, definitions, path)
+src/ladon/_result_manifest_shape.py:58: in _object
+    _node(child, properties[key], definitions, f"{path}.{key}")
+src/ladon/_result_manifest_shape.py:42: in _node
+    validators[spec["type"]](value, spec, definitions, path)
+src/ladon/_result_manifest_shape.py:58: in _object
+    _node(child, properties[key], definitions, f"{path}.{key}")
+src/ladon/_result_manifest_shape.py:42: in _node
+    validators[spec["type"]](value, spec, definitions, path)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+spec = {'maxLength': 4096, 'minLength': 1, 'type': 'string', 'x-maxUtf8Bytes': 4096}
+_definitions = {'claim': {'additionalProperties': False, 'properties': {'components': {'items': {'maxLength': 128, 'minLength': 1, 'p... 'minLength': 1, 'type': 'string', 'x-maxUtf8Bytes': 4096}}, 'required': ['locator', 'digest'], 'type': 'object'}, ...}
+path = '$.claimInventory.scope'
+
+    def _string(value: Any, spec: dict, _definitions: dict, path: str) -> None:
+        if not isinstance(value, str):
+            raise ResultManifestError(f"{path}: expected string")
+        try:
+            size = len(value.encode("utf-8"))
+        except UnicodeError as exc:
+            raise ResultManifestError(f"{path}: invalid Unicode") from exc
+        if not spec.get("minLength", 0) <= len(value) <= spec.get("maxLength", 65536):
+>           raise ResultManifestError(f"{path}: text length limit violated")
+E           ladon.result_manifest_io.ResultManifestError: $.claimInventory.scope: text length limit violated
+
+src/ladon/_result_manifest_shape.py:80: ResultManifestError
+__ test_nonchecking_view_validates_receipts_without_constructing_check_cards ___
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x756d0324c890>
+
+    def test_nonchecking_view_validates_receipts_without_constructing_check_cards(monkeypatch):
+        import ladon.result_inspection_checks as checks
+    
+        def forbidden(*_args, **_kwargs):
+            raise AssertionError('unselected check card was constructed')
+        monkeypatch.setattr(checks, '_check_card', forbidden)
+>       result = inspect_result_manifest(manifest(), check_inputs(), section='claims')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_inspection_hardening.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/result_inspection.py:27: in inspect_result_manifest
+    checks = checking_cards(manifest, catalog, resolutions)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/result_inspection_checks.py:20: in checking_cards
+    return [_check_card(index, artifact_id, artifact, catalog, resolutions)
+src/ladon/result_inspection_checks.py:20: in <listcomp>
+    return [_check_card(index, artifact_id, artifact, catalog, resolutions)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+_args = ((defaultdict(<class 'list'>, {'Example.injective_surjective': [{'environment': {'digest': 'sha256:3333333333333333333...ective_surjective', 'projectRevisionBasis': 'producer-declared', 'reason': 'canonical-subject-reference-absent', ...}})
+_kwargs = {}
+
+    def forbidden(*_args, **_kwargs):
+>       raise AssertionError('unselected check card was constructed')
+E       AssertionError: unselected check card was constructed
+
+tests/test_result_inspection_hardening.py:42: AssertionError
+___________________ test_checking_builds_only_requested_page ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x756d02345b90>
+
+    def test_checking_builds_only_requested_page(monkeypatch):
+        import ladon.result_inspection_checks as checks
+    
+        artifacts = []
+        for index in range(20):
+            batch = check_inputs(str(index))
+            artifacts.extend(batch if not artifacts else [batch[1]])
+        original = checks._check_card
+        calls = []
+        def record(*args, **kwargs):
+            calls.append(1)
+            return original(*args, **kwargs)
+        monkeypatch.setattr(checks, '_check_card', record)
+        page = inspect_result_manifest(manifest(), artifacts, section='checking', limit=1)
+        assert page['pagination']['total'] == 20
+>       assert len(calls) == 1
+E       assert 20 == 1
+E        +  where 20 = len([1, 1, 1, 1, 1, 1, ...])
+
+tests/test_result_inspection_hardening.py:63: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_result_inspection_hardening.py::test_field_author_attribution_is_retained_verbatim
+FAILED tests/test_result_inspection_hardening.py::test_long_inventory_scope_remains_inspectable_with_exact_reference
+FAILED tests/test_result_inspection_hardening.py::test_nonchecking_view_validates_receipts_without_constructing_check_cards
+FAILED tests/test_result_inspection_hardening.py::test_checking_builds_only_requested_page
+4 failed, 2 passed in 0.18s

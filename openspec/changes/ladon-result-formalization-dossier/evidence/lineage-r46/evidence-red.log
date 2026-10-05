@@ -1,0 +1,52 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+__ test_evidence_section_retains_exact_declaration_owner_and_unknown_coverage __
+
+    def test_evidence_section_retains_exact_declaration_owner_and_unknown_coverage():
+        manifest, artifacts = inputs()
+>       result = inspect_result_manifest(manifest, artifacts, section='evidence')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_evidence_section.py:14: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/result_inspection.py:22: in inspect_result_manifest
+    _selection(manifest, section, claim_id, target_id, limit)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manifest = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+section = 'evidence', claim_id = None, target_id = None, limit = 20
+
+    def _selection(manifest, section, claim_id, target_id, limit):
+        if section not in SECTIONS:
+>           raise ResultManifestError('unknown inspection section')
+E           ladon.result_manifest_io.ResultManifestError: unknown inspection section
+
+src/ladon/result_inspection.py:41: ResultManifestError
+____________ test_unresolved_target_cannot_attach_same_name_dossier ____________
+
+    def test_unresolved_target_cannot_attach_same_name_dossier():
+        manifest, artifacts = inputs()
+        manifest['targets'][0]['source']['digest'] = 'sha256:' + '0' * 64
+        seal(manifest)
+>       row = inspect_result_manifest(manifest, artifacts, section='evidence')['rows'][0]
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_evidence_section.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/result_inspection.py:22: in inspect_result_manifest
+    _selection(manifest, section, claim_id, target_id, limit)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+manifest = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+section = 'evidence', claim_id = None, target_id = None, limit = 20
+
+    def _selection(manifest, section, claim_id, target_id, limit):
+        if section not in SECTIONS:
+>           raise ResultManifestError('unknown inspection section')
+E           ladon.result_manifest_io.ResultManifestError: unknown inspection section
+
+src/ladon/result_inspection.py:41: ResultManifestError
+=========================== short test summary info ============================
+FAILED tests/test_result_evidence_section.py::test_evidence_section_retains_exact_declaration_owner_and_unknown_coverage
+FAILED tests/test_result_evidence_section.py::test_unresolved_target_cannot_attach_same_name_dossier
+2 failed in 0.08s

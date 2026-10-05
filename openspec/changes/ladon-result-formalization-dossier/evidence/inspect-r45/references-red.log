@@ -1,0 +1,42 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+____________ test_omitted_component_assessments_reference_companion ____________
+
+    def test_omitted_component_assessments_reference_companion():
+        value = manifest()
+        rows = [{**assessment(value['claims'][0], 'implication', targets=['finite-map']), 'id': f'a-{i}'}
+                for i in range(15)]
+        result = inspect_result_manifest(value, [], assessments=companion(value, rows))
+        card = result['rows'][0]
+        omission = next(row for row in card['fieldOmissions'] if row['path'] == '/assessments')
+>       assert omission['reference']['input'] == 'assessments'
+E       AssertionError: assert 'manifest' == 'assessments'
+E         
+E         - assessments
+E         + manifest
+
+tests/test_result_inspection_references.py:17: AssertionError
+____________ test_omitted_check_bindings_reference_manifest_targets ____________
+
+    def test_omitted_check_bindings_reference_manifest_targets():
+        value = manifest()
+        artifacts = check_inputs()
+        target_owned_by_check(value, artifacts)
+        original = value['targets'][0]
+        value['targets'] = [{**copy.deepcopy(original), 'id': f'target-{i}'} for i in range(20)]
+        value['links'][0]['targetIds'] = [t['id'] for t in value['targets']]
+        value['reviews'] = []
+        seal(value)
+        result = inspect_result_manifest(value, artifacts, section='checking')
+        omission = next(row for row in result['rows'][0]['fieldOmissions'] if row['path'] == '/targetBindings')
+>       assert omission['reference']['input'] == 'manifest'
+E       AssertionError: assert 'canonical' == 'manifest'
+E         
+E         - manifest
+E         + canonical
+
+tests/test_result_inspection_references.py:32: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_result_inspection_references.py::test_omitted_component_assessments_reference_companion
+FAILED tests/test_result_inspection_references.py::test_omitted_check_bindings_reference_manifest_targets
+2 failed in 0.09s

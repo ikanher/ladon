@@ -1,0 +1,130 @@
+.......F...................                                              [100%]
+=================================== FAILURES ===================================
+____________ test_many_selections_share_one_acquisition_byte_budget ____________
+
+entry = {'closureId': '56a164f831b936ac2ed27eccdbde9b51620d2008d5e8940410c615baa27d638c', 'database': 'lineage.sqlite3', 'id':...tion', 'configuration_fingerprint': 'configuration', 'helper_identity': 'helper', 'repository': '/tmp/demo', ...}, ...}
+theorem = 'Demo.proof'
+base = PosixPath('/tmp/pytest-of-codex/pytest-728/test_many_selections_share_one0')
+budget = {'bytes': 12078, 'rows': 27}
+
+    def read_lineage_selection(entry, theorem, base, budget=None):
+        """Read a consistent snapshot, preserving both exact selection and owner status."""
+        path = (Path(base) / entry['database']).resolve()
+        try:
+            metadata = path.stat()
+        except FileNotFoundError:
+            return {'status': 'unavailable', 'reason': 'database-unavailable', 'database': str(path)}
+        if not stat.S_ISREG(metadata.st_mode):
+            raise ResultManifestError('lineage database must be a regular file')
+        try:
+            connection = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=5)
+            connection.row_factory = sqlite3.Row
+            try:
+                connection.execute('BEGIN')
+>               snapshot = _snapshot(connection, entry, theorem, budget if budget is not None else {'bytes': 0, 'rows': 0})
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/ladon/result_lineage_store.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/result_lineage_store.py:58: in _snapshot
+    tables = {table: _rows(connection, table, closure_id, budget) for table in _ORDER}
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/result_lineage_store.py:58: in <dictcomp>
+    tables = {table: _rows(connection, table, closure_id, budget) for table in _ORDER}
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/result_lineage_store.py:97: in _rows
+    _charge(row, budget)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+row = {'closure_id': '56a164f831b936ac2ed27eccdbde9b51620d2008d5e8940410c615baa27d638c', 'compiler_generated': 0, 'declared_axiom': 0, 'external_frontier': 1, ...}
+budget = {'bytes': 12078, 'rows': 27}
+
+    def _charge(row, budget):
+        if row is None:
+            return
+        if any(isinstance(v, str) and len(v.encode()) > 65536 for v in row.values()):
+            raise ResultManifestError('lineage field exceeds 64 KiB input limit')
+        budget['bytes'] += len(canonical_json(row))
+        budget['rows'] += 1
+        if budget['bytes'] > MAX_ACQUIRED_BYTES or budget['rows'] > 100_000:
+>           raise ResultManifestError('lineage aggregate acquisition byte/row limit exceeded')
+E           ladon.result_manifest_io.ResultManifestError: lineage aggregate acquisition byte/row limit exceeded
+
+src/ladon/result_lineage_store.py:118: ResultManifestError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-728/test_many_selections_share_one0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7c319419a010>
+
+    def test_many_selections_share_one_acquisition_byte_budget(tmp_path, monkeypatch):
+        manifest, artifacts, companion, _db, _inserted = _lineage_fixture(tmp_path)
+        for n in range(12):
+            entry = copy.deepcopy(companion['entries'][0])
+            entry['id'] = f'capture-{n}'
+            companion['entries'].append(entry)
+        monkeypatch.setattr(result_lineage_store, 'MAX_ACQUIRED_BYTES', 12000, raising=False)
+        with pytest.raises(ResultManifestError, match='lineage.*(byte|limit)'):
+>           _inspect(manifest, artifacts, companion, tmp_path, section='components')
+
+tests/test_result_lineage_acquisition.py:45: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_result_lineage.py:54: in _inspect
+    return inspect_result_manifest(manifest, artifacts, lineage_inputs=companion,
+src/ladon/result_inspection.py:35: in inspect_result_manifest
+    stored = lineage_sections(manifest, resolutions, lineage, lineage_base)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/result_lineage.py:28: in lineage_sections
+    snapshot = read_lineage_selection(entry, target['name'], base, budget)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entry = {'closureId': '56a164f831b936ac2ed27eccdbde9b51620d2008d5e8940410c615baa27d638c', 'database': 'lineage.sqlite3', 'id':...tion', 'configuration_fingerprint': 'configuration', 'helper_identity': 'helper', 'repository': '/tmp/demo', ...}, ...}
+theorem = 'Demo.proof'
+base = PosixPath('/tmp/pytest-of-codex/pytest-728/test_many_selections_share_one0')
+budget = {'bytes': 12078, 'rows': 27}
+
+    def read_lineage_selection(entry, theorem, base, budget=None):
+        """Read a consistent snapshot, preserving both exact selection and owner status."""
+        path = (Path(base) / entry['database']).resolve()
+        try:
+            metadata = path.stat()
+        except FileNotFoundError:
+            return {'status': 'unavailable', 'reason': 'database-unavailable', 'database': str(path)}
+        if not stat.S_ISREG(metadata.st_mode):
+            raise ResultManifestError('lineage database must be a regular file')
+        try:
+            connection = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True, timeout=5)
+            connection.row_factory = sqlite3.Row
+            try:
+                connection.execute('BEGIN')
+                snapshot = _snapshot(connection, entry, theorem, budget if budget is not None else {'bytes': 0, 'rows': 0})
+            finally:
+                connection.close()
+        except (sqlite3.Error, ValueError, TypeError, KeyError) as exc:
+>           raise ResultManifestError('malformed selected lineage database') from exc
+E           ladon.result_manifest_io.ResultManifestError: malformed selected lineage database
+
+src/ladon/result_lineage_store.py:44: ResultManifestError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-728/test_many_selections_share_one0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7c319419a010>
+
+    def test_many_selections_share_one_acquisition_byte_budget(tmp_path, monkeypatch):
+        manifest, artifacts, companion, _db, _inserted = _lineage_fixture(tmp_path)
+        for n in range(12):
+            entry = copy.deepcopy(companion['entries'][0])
+            entry['id'] = f'capture-{n}'
+            companion['entries'].append(entry)
+        monkeypatch.setattr(result_lineage_store, 'MAX_ACQUIRED_BYTES', 12000, raising=False)
+>       with pytest.raises(ResultManifestError, match='lineage.*(byte|limit)'):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'lineage.*(byte|limit)'
+E         Actual message: 'malformed selected lineage database'
+
+tests/test_result_lineage_acquisition.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_result_lineage_acquisition.py::test_many_selections_share_one_acquisition_byte_budget
+1 failed, 26 passed in 0.39s

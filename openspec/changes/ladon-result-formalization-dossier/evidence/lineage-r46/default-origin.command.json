@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/home/codex/miniconda3/bin/python",
+    "-I",
+    "-c",
+    "import ladon,json,sys,zipfile,hashlib\nfrom pathlib import Path\nbase=Path(ladon.__file__).parent\nassert 'site-packages' in str(base),base\nwith zipfile.ZipFile(sys.argv[1]) as z:\n names=[n for n in z.namelist() if n.startswith('ladon/') and not n.endswith('/')]\n for n in names: assert z.read(n)==(base.parent/n).read_bytes(),n\nprint(json.dumps({'moduleOrigin':str(base),'verifiedWheelFiles':len(names),'pythonVersion':sys.version},indent=2))\n",
+    "/home/codex/.cache/ladon-qualification-r46/ladon-dossier-r46-ppjcv52s/dist/ladon-0.2.0-py3-none-any.whl"
+  ],
+  "cwd": "/tmp",
+  "exitCode": 0
+}

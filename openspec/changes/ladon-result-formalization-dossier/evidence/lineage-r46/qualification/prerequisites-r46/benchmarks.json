@@ -1,0 +1,1115 @@
+{
+  "artifactKind": "ladon_signal_benchmark_results",
+  "cases": [
+    {
+      "cache": {
+        "applicable": false,
+        "reason": "text backend has no Lean helper cache"
+      },
+      "command": [
+        "ladon",
+        "--repo-root",
+        "{fixture}",
+        "--root",
+        "Pkg.lean",
+        "--scope",
+        "inventory",
+        "--no-cache",
+        "--report-version",
+        "v2",
+        "--format",
+        "json",
+        "--output",
+        "{output}",
+        "--generated-at-utc",
+        "2026-07-25T00:00:00+00:00"
+      ],
+      "correctness": {
+        "byKind": {
+          "architecture_policy": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "facade_classification": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "fan_population": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 2
+          },
+          "finding_deduplication": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 1,
+            "truePositive": 1
+          },
+          "generated_attribution": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "missing_internal_import": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 1,
+            "truePositive": 2
+          },
+          "source_pattern": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 1,
+            "truePositive": 2
+          },
+          "text_declaration_axiom": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "text_declaration_def": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "text_declaration_masking": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": null,
+            "recall": null,
+            "trueNegative": 2,
+            "truePositive": 0
+          },
+          "text_declaration_opaque": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "text_declaration_theorem": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "text_declaration_unsafe": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "trust_footprint": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          }
+        },
+        "externalAbsentFalsePositives": 0,
+        "missingInternalRecall": {
+          "expected": [
+            "Pkg.Missing"
+          ],
+          "hits": [
+            "Pkg.Missing"
+          ],
+          "misses": [],
+          "observed": [
+            "Pkg.Missing"
+          ],
+          "recall": 1.0
+        },
+        "oracles": [
+          {
+            "expected": true,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=missing_internal_import expected=True observed=True",
+            "observed": true,
+            "passed": true,
+            "signal": "missing_internal_import"
+          },
+          {
+            "expected": false,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=missing_internal_import expected=False observed=False",
+            "observed": false,
+            "passed": true,
+            "signal": "missing_internal_import"
+          },
+          {
+            "expected": true,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=missing_internal_import expected=True observed=True",
+            "observed": true,
+            "passed": true,
+            "signal": "missing_internal_import"
+          },
+          {
+            "expected": 6,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=fan_population_count expected=6 observed={'count': 6, 'population': 'all_importers_to_all_targets', 'authority': 'module_import_graph'}",
+            "observed": {
+              "authority": "module_import_graph",
+              "count": 6,
+              "population": "all_importers_to_all_targets"
+            },
+            "passed": true,
+            "signal": "fan_population_count"
+          },
+          {
+            "expected": 1,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=fan_population_count expected=1 observed={'count': 1, 'population': 'handwritten_importers_to_handwritten_targets', 'authority': 'module_import_graph'}",
+            "observed": {
+              "authority": "module_import_graph",
+              "count": 1,
+              "population": "handwritten_importers_to_handwritten_targets"
+            },
+            "passed": true,
+            "signal": "fan_population_count"
+          },
+          {
+            "expected": 5,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=fan_population_count expected=5 observed={'count': 5, 'population': 'generated_importers_to_all_targets', 'authority': 'module_import_graph'}",
+            "observed": {
+              "authority": "module_import_graph",
+              "count": 5,
+              "population": "generated_importers_to_all_targets"
+            },
+            "passed": true,
+            "signal": "fan_population_count"
+          },
+          {
+            "expected": 1,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=finding_count expected=1 observed=1",
+            "observed": 1,
+            "passed": true,
+            "signal": "finding_count"
+          },
+          {
+            "expected": 0,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=finding_count expected=0 observed=0",
+            "observed": 0,
+            "passed": true,
+            "signal": "finding_count"
+          },
+          {
+            "expected": true,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=text_declaration expected=True observed=True",
+            "observed": true,
+            "passed": true,
+            "signal": "text_declaration"
+          },
+          {
+            "expected": true,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=text_declaration expected=True observed=True",
+            "observed": true,
+            "passed": true,
+            "signal": "text_declaration"
+          },
+          {
+            "expected": true,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=text_declaration expected=True observed=True",
+            "observed": true,
+            "passed": true,
+            "signal": "text_declaration"
+          },
+          {
+            "expected": true,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=text_declaration expected=True observed=True",
+            "observed": true,
+            "passed": true,
+            "signal": "text_declaration"
+          },
+          {
+            "expected": true,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=text_declaration expected=True observed=True",
+            "observed": true,
+            "passed": true,
+            "signal": "text_declaration"
+          },
+          {
+            "expected": false,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=text_declaration expected=False observed=False",
+            "observed": false,
+            "passed": true,
+            "signal": "text_declaration"
+          },
+          {
+            "expected": false,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=text_declaration expected=False observed=False",
+            "observed": false,
+            "passed": true,
+            "signal": "text_declaration"
+          },
+          {
+            "expected": true,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=lexical_marker expected=True observed=True",
+            "observed": true,
+            "passed": true,
+            "signal": "lexical_marker"
+          },
+          {
+            "expected": 1,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=facade_subtype_count expected=1 observed=1",
+            "observed": 1,
+            "passed": true,
+            "signal": "facade_subtype_count"
+          },
+          {
+            "expected": 6,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=architecture_pair_count expected=6 observed=6",
+            "observed": 6,
+            "passed": true,
+            "signal": "architecture_pair_count"
+          },
+          {
+            "expected": 1,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=source_pattern_match_count expected=1 observed=1",
+            "observed": 1,
+            "passed": true,
+            "signal": "source_pattern_match_count"
+          },
+          {
+            "expected": 0,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=source_pattern_match_count expected=0 observed=0",
+            "observed": 0,
+            "passed": true,
+            "signal": "source_pattern_match_count"
+          },
+          {
+            "expected": 1,
+            "fixture": "text-structural-signals",
+            "message": "passed: fixture=text-structural-signals signal=source_pattern_match_count expected=1 observed=1",
+            "observed": 1,
+            "passed": true,
+            "signal": "source_pattern_match_count"
+          }
+        ]
+      },
+      "coverage": {
+        "coverage": 1.0,
+        "expectedCount": 8,
+        "hitCount": 8
+      },
+      "id": "text-structural-signals",
+      "memory": {
+        "budgetMiB": 512.0,
+        "peakRssMiB": 40.848,
+        "supported": true
+      },
+      "passed": true,
+      "process": {
+        "coldDescendantCount": 0,
+        "helperLaunchBudget": 12,
+        "helperLaunchesCold": 0,
+        "helperLaunchesWarm": 0
+      },
+      "reportVersion": "ladon-report-v2",
+      "runtime": {
+        "coldBudgetSeconds": 20.0,
+        "coldWallSeconds": 0.422789,
+        "warmBudgetSeconds": 20.0,
+        "warmWallSeconds": 0.226134
+      },
+      "stability": {
+        "budgetContext": "ladon-report-v2",
+        "jsonBudgetBytes": 2000000,
+        "jsonBytes": 1235898,
+        "normalizedBytesEqual": true,
+        "passed": true,
+        "schemaValid": true,
+        "semanticParity": {
+          "checkedFacts": 3,
+          "missingFacts": [],
+          "passed": true
+        },
+        "sizeBudgetsPassed": true,
+        "textBudgetBytes": 500000,
+        "textBytes": 14712
+      }
+    },
+    {
+      "cache": {
+        "applicable": true,
+        "coldHelperLaunches": 1,
+        "warmHelperLaunches": 0,
+        "warmHit": true
+      },
+      "command": [
+        "ladon",
+        "--repo-root",
+        "{fixture}",
+        "--root",
+        "Pkg/Surface/Deep.lean",
+        "--build",
+        "--extraction-backend",
+        "lean",
+        "--lean-extraction-scope",
+        "inventory",
+        "--lean-cache-dir",
+        "{cache}",
+        "--scope",
+        "inventory",
+        "--no-cache",
+        "--report-version",
+        "v2",
+        "--format",
+        "json",
+        "--output",
+        "{output}",
+        "--generated-at-utc",
+        "2026-07-25T00:00:00+00:00"
+      ],
+      "correctness": {
+        "byKind": {
+          "elaborated_declaration_kind": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 2
+          },
+          "elaborated_declaration_surface": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 1,
+            "truePositive": 2
+          },
+          "elaborated_trust_footprint": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "elaborated_type_dependency": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          },
+          "elaborated_value_dependency": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 1,
+            "truePositive": 1
+          },
+          "namespace_drift": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 1,
+            "truePositive": 2
+          },
+          "proof_similarity": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 1,
+            "truePositive": 2
+          }
+        },
+        "externalAbsentFalsePositives": 0,
+        "missingInternalRecall": {
+          "expected": [],
+          "hits": [],
+          "misses": [],
+          "observed": [],
+          "recall": null
+        },
+        "oracles": [
+          {
+            "expected": false,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=namespace_drift expected=False observed={'present': False, 'declarationCount': None, 'authority': None}",
+            "observed": {
+              "authority": null,
+              "declarationCount": null,
+              "present": false
+            },
+            "passed": true,
+            "signal": "namespace_drift"
+          },
+          {
+            "expected": true,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=namespace_drift expected=True observed={'present': True, 'declarationCount': 2, 'authority': 'source_declaration_inventory'}",
+            "observed": {
+              "authority": "source_declaration_inventory",
+              "declarationCount": 2,
+              "present": true
+            },
+            "passed": true,
+            "signal": "namespace_drift"
+          },
+          {
+            "expected": true,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=namespace_drift expected=True observed={'present': True, 'declarationCount': 2, 'authority': 'source_declaration_inventory'}",
+            "observed": {
+              "authority": "source_declaration_inventory",
+              "declarationCount": 2,
+              "present": true
+            },
+            "passed": true,
+            "signal": "namespace_drift"
+          },
+          {
+            "expected": {
+              "coarse_only": true,
+              "promoted": false,
+              "similarity_score": 0.5
+            },
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=proof_similarity_state expected={'similarity_score': 0.5, 'coarse_only': True, 'promoted': False} observed={'similarity_score': 0.5, 'coarse_only': True, 'promoted': False}",
+            "observed": {
+              "coarse_only": true,
+              "promoted": false,
+              "similarity_score": 0.5
+            },
+            "passed": true,
+            "signal": "proof_similarity_state"
+          },
+          {
+            "expected": {
+              "max_concrete_identifier_overlap": 1.0,
+              "promoted": true
+            },
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=proof_similarity_state expected={'max_concrete_identifier_overlap': 1.0, 'promoted': True} observed={'max_concrete_identifier_overlap': 1.0, 'promoted': True}",
+            "observed": {
+              "max_concrete_identifier_overlap": 1.0,
+              "promoted": true
+            },
+            "passed": true,
+            "signal": "proof_similarity_state"
+          },
+          {
+            "expected": {
+              "coarse_only_cap": 0.5,
+              "promoted": false,
+              "similarity_score": 0.5
+            },
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=proof_similarity_state expected={'similarity_score': 0.5, 'coarse_only_cap': 0.5, 'promoted': False} observed={'similarity_score': 0.5, 'coarse_only_cap': 0.5, 'promoted': False}",
+            "observed": {
+              "coarse_only_cap": 0.5,
+              "promoted": false,
+              "similarity_score": 0.5
+            },
+            "passed": true,
+            "signal": "proof_similarity_state"
+          },
+          {
+            "expected": true,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=declaration_required_fields expected=True observed={'present': True, 'missingFields': [], 'mismatchedFields': {}}",
+            "observed": {
+              "mismatchedFields": {},
+              "missingFields": [],
+              "present": true
+            },
+            "passed": true,
+            "signal": "declaration_required_fields"
+          },
+          {
+            "expected": true,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=declaration_required_fields expected=True observed={'present': True, 'missingFields': [], 'mismatchedFields': {}}",
+            "observed": {
+              "mismatchedFields": {},
+              "missingFields": [],
+              "present": true
+            },
+            "passed": true,
+            "signal": "declaration_required_fields"
+          },
+          {
+            "expected": true,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=declaration_required_fields expected=True observed={'present': True, 'missingFields': [], 'mismatchedFields': {}}",
+            "observed": {
+              "mismatchedFields": {},
+              "missingFields": [],
+              "present": true
+            },
+            "passed": true,
+            "signal": "declaration_required_fields"
+          },
+          {
+            "expected": true,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=declaration_required_fields expected=True observed={'present': True, 'missingFields': [], 'mismatchedFields': {}}",
+            "observed": {
+              "mismatchedFields": {},
+              "missingFields": [],
+              "present": true
+            },
+            "passed": true,
+            "signal": "declaration_required_fields"
+          },
+          {
+            "expected": true,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=declaration_required_fields expected=True observed={'present': True, 'missingFields': [], 'mismatchedFields': {}}",
+            "observed": {
+              "mismatchedFields": {},
+              "missingFields": [],
+              "present": true
+            },
+            "passed": true,
+            "signal": "declaration_required_fields"
+          },
+          {
+            "expected": true,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=direct_dependency expected=True observed={'present': True, 'authority': 'lean_environment', 'parserCandidateOnly': False}",
+            "observed": {
+              "authority": "lean_environment",
+              "parserCandidateOnly": false,
+              "present": true
+            },
+            "passed": true,
+            "signal": "direct_dependency"
+          },
+          {
+            "expected": true,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=direct_dependency expected=True observed={'present': True, 'authority': 'lean_environment', 'parserCandidateOnly': False}",
+            "observed": {
+              "authority": "lean_environment",
+              "parserCandidateOnly": false,
+              "present": true
+            },
+            "passed": true,
+            "signal": "direct_dependency"
+          },
+          {
+            "expected": false,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=direct_dependency expected=False observed={'present': False, 'authority': 'lean_environment', 'parserCandidateOnly': True}",
+            "observed": {
+              "authority": "lean_environment",
+              "parserCandidateOnly": true,
+              "present": false
+            },
+            "passed": true,
+            "signal": "direct_dependency"
+          },
+          {
+            "expected": false,
+            "fixture": "lean-declaration-signals",
+            "message": "passed: fixture=lean-declaration-signals signal=direct_dependency expected=False observed={'present': False, 'authority': 'lean_environment', 'parserCandidateOnly': True}",
+            "observed": {
+              "authority": "lean_environment",
+              "parserCandidateOnly": true,
+              "present": false
+            },
+            "passed": true,
+            "signal": "direct_dependency"
+          }
+        ]
+      },
+      "coverage": {
+        "coverage": 1.0,
+        "expectedCount": 9,
+        "hitCount": 9
+      },
+      "id": "lean-declaration-signals",
+      "memory": {
+        "budgetMiB": 512.0,
+        "peakRssMiB": 44.156,
+        "supported": true
+      },
+      "passed": true,
+      "process": {
+        "coldDescendantCount": 5,
+        "helperLaunchBudget": 12,
+        "helperLaunchesCold": 1,
+        "helperLaunchesWarm": 0
+      },
+      "reportVersion": "ladon-report-v2",
+      "runtime": {
+        "coldBudgetSeconds": 20.0,
+        "coldWallSeconds": 0.322912,
+        "warmBudgetSeconds": 20.0,
+        "warmWallSeconds": 0.308088
+      },
+      "stability": {
+        "budgetContext": "ladon-report-v2",
+        "jsonBudgetBytes": 2000000,
+        "jsonBytes": 483634,
+        "normalizedBytesEqual": true,
+        "passed": true,
+        "schemaValid": true,
+        "semanticParity": {
+          "checkedFacts": 3,
+          "missingFacts": [],
+          "passed": true
+        },
+        "sizeBudgetsPassed": true,
+        "textBudgetBytes": 500000,
+        "textBytes": 7194
+      }
+    },
+    {
+      "cache": {
+        "applicable": false,
+        "reason": "text backend has no Lean helper cache"
+      },
+      "command": [
+        "ladon",
+        "--repo-root",
+        "{fixture}",
+        "--root",
+        "Tiny.lean",
+        "--scope",
+        "inventory",
+        "--no-cache",
+        "--report-version",
+        "v2",
+        "--format",
+        "json",
+        "--output",
+        "{output}",
+        "--generated-at-utc",
+        "2026-07-25T00:00:00+00:00"
+      ],
+      "correctness": {
+        "byKind": {
+          "facade_classification": {
+            "falseNegative": 0,
+            "falsePositive": 0,
+            "precision": 1.0,
+            "recall": 1.0,
+            "trueNegative": 0,
+            "truePositive": 1
+          }
+        },
+        "externalAbsentFalsePositives": 0,
+        "missingInternalRecall": {
+          "expected": [],
+          "hits": [],
+          "misses": [],
+          "observed": [],
+          "recall": null
+        },
+        "oracles": [
+          {
+            "expected": 1,
+            "fixture": "tiny-report-contract",
+            "message": "passed: fixture=tiny-report-contract signal=facade_subtype_count expected=1 observed=1",
+            "observed": 1,
+            "passed": true,
+            "signal": "facade_subtype_count"
+          }
+        ]
+      },
+      "coverage": {
+        "coverage": null,
+        "expectedCount": 0,
+        "hitCount": 0
+      },
+      "id": "tiny-report-contract",
+      "memory": {
+        "budgetMiB": 512.0,
+        "peakRssMiB": 33.91,
+        "supported": true
+      },
+      "passed": true,
+      "process": {
+        "coldDescendantCount": 0,
+        "helperLaunchBudget": 12,
+        "helperLaunchesCold": 0,
+        "helperLaunchesWarm": 0
+      },
+      "reportVersion": "ladon-report-v2",
+      "runtime": {
+        "coldBudgetSeconds": 20.0,
+        "coldWallSeconds": 0.182449,
+        "warmBudgetSeconds": 20.0,
+        "warmWallSeconds": 0.185917
+      },
+      "stability": {
+        "budgetContext": "ladon-report-v2",
+        "jsonBudgetBytes": 2000000,
+        "jsonBytes": 222513,
+        "normalizedBytesEqual": true,
+        "passed": true,
+        "schemaValid": true,
+        "semanticParity": {
+          "checkedFacts": 3,
+          "missingFacts": [],
+          "passed": true
+        },
+        "sizeBudgetsPassed": true,
+        "textBudgetBytes": 500000,
+        "textBytes": 4700
+      }
+    }
+  ],
+  "controlEvidence": [
+    {
+      "class": "positive",
+      "expected": true,
+      "id": "cache.warm-hit",
+      "metricFamily": "cache",
+      "observed": true,
+      "passed": true,
+      "rationale": "An unchanged installed-CLI inventory run must reuse its valid parser cache.",
+      "signalKind": "cache_hit"
+    },
+    {
+      "class": "intentional_negative",
+      "expected": 0,
+      "id": "cache.unchanged-no-helper",
+      "metricFamily": "cache",
+      "observed": 0,
+      "passed": true,
+      "rationale": "An unchanged warm run must not relaunch the parser helper.",
+      "signalKind": "cache_invalidation"
+    },
+    {
+      "class": "boundary",
+      "expected": {
+        "helper": "helper_changed",
+        "imported_source": "transitive_import_changed",
+        "lake_manifest": "lake_state_changed",
+        "source": "source_changed",
+        "toolchain": "toolchain_changed"
+      },
+      "id": "cache.fingerprint-boundary",
+      "metricFamily": "cache",
+      "observed": {
+        "helper": "helper_changed",
+        "imported_source": "transitive_import_changed",
+        "lake_manifest": "lake_state_changed",
+        "source": "source_changed",
+        "toolchain": "toolchain_changed"
+      },
+      "passed": true,
+      "rationale": "Each required fingerprint input has its own inspectable invalidation reason.",
+      "signalKind": "cache_invalidation"
+    },
+    {
+      "class": "positive",
+      "expected": true,
+      "id": "process.timeout-prefix",
+      "metricFamily": "process",
+      "observed": true,
+      "passed": true,
+      "rationale": "A timed-out batch retains its completed prefix in a partial report.",
+      "signalKind": "timeout_control"
+    },
+    {
+      "class": "intentional_negative",
+      "expected": false,
+      "id": "process.timeout-no-orphan",
+      "metricFamily": "process",
+      "observed": false,
+      "passed": true,
+      "rationale": "The timeout path must leave no live descendant process.",
+      "signalKind": "timeout_control"
+    },
+    {
+      "class": "boundary",
+      "expected": true,
+      "id": "process.cleanup-boundary",
+      "metricFamily": "process",
+      "observed": true,
+      "passed": true,
+      "rationale": "Timeout and caller cancellation both satisfy the committed cleanup deadline.",
+      "signalKind": "timeout_control"
+    },
+    {
+      "class": "positive",
+      "expected": true,
+      "id": "report.schema-valid",
+      "metricFamily": "stability",
+      "observed": true,
+      "passed": true,
+      "rationale": "Every installed product report validates against the packaged report-v2 schema.",
+      "signalKind": "report_contract"
+    },
+    {
+      "class": "intentional_negative",
+      "expected": 0,
+      "id": "report.no-normalized-drift",
+      "metricFamily": "stability",
+      "observed": 0,
+      "passed": true,
+      "rationale": "Equivalent explicit-metadata runs have no normalized byte mismatch.",
+      "signalKind": "report_contract"
+    },
+    {
+      "class": "boundary",
+      "expected": true,
+      "id": "report.size-boundary",
+      "metricFamily": "stability",
+      "observed": true,
+      "passed": true,
+      "rationale": "Canonical JSON and text representations remain below broad synthetic size ceilings.",
+      "signalKind": "report_contract"
+    }
+  ],
+  "environment": {
+    "descendantCount": {
+      "method": "linux_proc_ppid_sampling",
+      "supported": true
+    },
+    "peakRss": {
+      "method": "linux_proc_tree_sampling",
+      "supported": true
+    },
+    "platform": "Linux-7.0.0-34-generic-x86_64-with-glibc2.43",
+    "python": "3.11.15"
+  },
+  "manifest": {
+    "productVersion": "0.1.0-alpha",
+    "reportVersion": "ladon-report-v2",
+    "schemaVersion": 1
+  },
+  "metricFamilies": {
+    "cache": {
+      "applicableCaseCount": 1,
+      "failedInvalidationCases": 0,
+      "invalidationCases": 5,
+      "warmHitCount": 1
+    },
+    "correctness": {
+      "failedOracleCount": 0
+    },
+    "coverage": {
+      "expectedCount": 17,
+      "hitCount": 17
+    },
+    "memory": {
+      "maxPeakRssMiB": 44.156
+    },
+    "process": {
+      "cancellationPassed": true,
+      "maxHelperLaunches": 1,
+      "timeoutPassed": true
+    },
+    "runtime": {
+      "maxColdWallSeconds": 0.422789,
+      "maxWarmWallSeconds": 0.308088
+    },
+    "stability": {
+      "failedCaseCount": 0
+    }
+  },
+  "nonClaims": [
+    "Benchmark results characterize labeled Ladon behavior, not Lean theorem truth.",
+    "Resource ceilings are broad synthetic regression bounds, not throughput guarantees.",
+    "No composite repository-quality, proof-quality, or model-quality score is computed."
+  ],
+  "passed": true,
+  "promotionReadiness": [
+    {
+      "classes": [
+        "boundary",
+        "intentional_negative",
+        "positive"
+      ],
+      "missingClasses": [],
+      "promotionFamily": "cache_runtime",
+      "ready": true
+    },
+    {
+      "classes": [
+        "boundary",
+        "intentional_negative",
+        "positive"
+      ],
+      "missingClasses": [],
+      "promotionFamily": "elaborated_declaration_surface",
+      "ready": true
+    },
+    {
+      "classes": [
+        "boundary",
+        "intentional_negative",
+        "positive"
+      ],
+      "missingClasses": [],
+      "promotionFamily": "elaborated_dependency_authority",
+      "ready": true
+    },
+    {
+      "classes": [
+        "boundary",
+        "intentional_negative",
+        "positive"
+      ],
+      "missingClasses": [],
+      "promotionFamily": "missing_internal_import",
+      "ready": true
+    },
+    {
+      "classes": [
+        "boundary",
+        "intentional_negative",
+        "positive"
+      ],
+      "missingClasses": [],
+      "promotionFamily": "namespace_drift",
+      "ready": true
+    },
+    {
+      "classes": [
+        "boundary",
+        "intentional_negative",
+        "positive"
+      ],
+      "missingClasses": [],
+      "promotionFamily": "process_control",
+      "ready": true
+    },
+    {
+      "classes": [
+        "boundary",
+        "intentional_negative",
+        "positive"
+      ],
+      "missingClasses": [],
+      "promotionFamily": "proof_similarity",
+      "ready": true
+    },
+    {
+      "classes": [
+        "boundary",
+        "intentional_negative",
+        "positive"
+      ],
+      "missingClasses": [],
+      "promotionFamily": "report_contract",
+      "ready": true
+    },
+    {
+      "classes": [
+        "boundary",
+        "intentional_negative",
+        "positive"
+      ],
+      "missingClasses": [],
+      "promotionFamily": "source_pattern",
+      "ready": true
+    }
+  ],
+  "runtimeControls": {
+    "cacheInvalidation": [
+      {
+        "expectedReason": "source_changed",
+        "input": "source",
+        "observedReason": "source_changed",
+        "passed": true
+      },
+      {
+        "expectedReason": "helper_changed",
+        "input": "helper",
+        "observedReason": "helper_changed",
+        "passed": true
+      },
+      {
+        "expectedReason": "toolchain_changed",
+        "input": "toolchain",
+        "observedReason": "toolchain_changed",
+        "passed": true
+      },
+      {
+        "expectedReason": "lake_state_changed",
+        "input": "lake_manifest",
+        "observedReason": "lake_state_changed",
+        "passed": true
+      },
+      {
+        "expectedReason": "transitive_import_changed",
+        "input": "imported_source",
+        "observedReason": "transitive_import_changed",
+        "passed": true
+      }
+    ],
+    "cancellation": {
+      "childStarted": true,
+      "cleanupBudgetSeconds": 5.0,
+      "orphanPresent": false,
+      "passed": true,
+      "returncode": 143,
+      "stderr": "",
+      "stdoutEmpty": true,
+      "wallSeconds": 0.247344
+    },
+    "passed": true,
+    "timeout": {
+      "cleanupBudgetSeconds": 5.0,
+      "orphanPresent": false,
+      "partialReportPresent": true,
+      "passed": true,
+      "returncode": 1,
+      "timedOutBatches": 1,
+      "wallSeconds": 0.611407
+    }
+  },
+  "schemaVersion": 1
+}

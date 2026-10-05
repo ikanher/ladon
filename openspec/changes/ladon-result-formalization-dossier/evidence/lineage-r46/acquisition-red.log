@@ -1,0 +1,41 @@
+F.F                                                                      [100%]
+=================================== FAILURES ===================================
+________ test_truncated_omissions_are_retained_without_becoming_axioms _________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-727/test_truncated_omissions_are_r0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ec0bd759c10>
+
+    def test_truncated_omissions_are_retained_without_becoming_axioms(tmp_path, monkeypatch):
+        manifest, artifacts, companion, db, inserted = _lineage_fixture(tmp_path)
+        with sqlite3.connect(db) as conn:
+            for n in range(3):
+                conn.execute('INSERT INTO lineage_omissions VALUES (?,?,?,?,?)',
+                             (inserted['closureId'], 'test-facet', str(n), 'unavailable', '{}'))
+        monkeypatch.setattr(result_lineage_store, 'ROW_LIMIT', 1)
+        assumptions = _inspect(manifest, artifacts, companion, tmp_path, section='assumptions')
+>       assert not any(r.get('reason') == 'stored-acquisition-truncated' and
+                       'lineage_omissions' in str(r.get('references')) for r in assumptions['rows'])
+E       assert not True
+E        +  where True = any(<generator object test_truncated_omissions_are_retained_without_becoming_axioms.<locals>.<genexpr> at 0x7ec0bd7513f0>)
+
+tests/test_result_lineage_acquisition.py:22: AssertionError
+____________ test_many_selections_share_one_acquisition_byte_budget ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-727/test_many_selections_share_one0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ec0bd758e90>
+
+    def test_many_selections_share_one_acquisition_byte_budget(tmp_path, monkeypatch):
+        manifest, artifacts, companion, _db, _inserted = _lineage_fixture(tmp_path)
+        for n in range(12):
+            entry = copy.deepcopy(companion['entries'][0])
+            entry['id'] = f'capture-{n}'
+            companion['entries'].append(entry)
+        monkeypatch.setattr(result_lineage_store, 'MAX_ACQUIRED_BYTES', 12000, raising=False)
+>       with pytest.raises(ResultManifestError, match='lineage.*(byte|limit)'):
+E       Failed: DID NOT RAISE <class 'ladon.result_manifest_io.ResultManifestError'>
+
+tests/test_result_lineage_acquisition.py:44: Failed
+=========================== short test summary info ============================
+FAILED tests/test_result_lineage_acquisition.py::test_truncated_omissions_are_retained_without_becoming_axioms
+FAILED tests/test_result_lineage_acquisition.py::test_many_selections_share_one_acquisition_byte_budget
+2 failed, 1 passed in 0.12s

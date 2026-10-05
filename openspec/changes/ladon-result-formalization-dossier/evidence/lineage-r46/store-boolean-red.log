@@ -1,0 +1,50 @@
+...FF.                                                                   [100%]
+=================================== FAILURES ===================================
+_ test_malformed_summary_domains_fail_before_owner_promotion[UPDATE lineage_nodes SET compiler_generated=2] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-734/test_malformed_summary_domains3')
+statement = 'UPDATE lineage_nodes SET compiler_generated=2'
+
+    @pytest.mark.parametrize('statement', [
+        "UPDATE lineage_edges SET kind='unexpected-kind'",
+        "UPDATE lineage_trust SET scope='unexpected-scope'",
+        'UPDATE lineage_nodes SET project_owned=12',
+        'UPDATE lineage_nodes SET compiler_generated=2',
+        'UPDATE lineage_nodes SET unsafe=2',
+        "UPDATE lineage_closures SET authority='lexical-only'",
+    ])
+    def test_malformed_summary_domains_fail_before_owner_promotion(tmp_path, statement):
+        manifest, artifacts, companion, db, _inserted = _lineage_fixture(tmp_path)
+        with sqlite3.connect(db) as conn:
+            conn.execute('PRAGMA ignore_check_constraints=ON')
+            conn.execute(statement)
+>       with pytest.raises(ResultManifestError, match='lineage'):
+E       Failed: DID NOT RAISE <class 'ladon.result_manifest_io.ResultManifestError'>
+
+tests/test_result_lineage_store_contract.py:25: Failed
+_ test_malformed_summary_domains_fail_before_owner_promotion[UPDATE lineage_nodes SET unsafe=2] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-734/test_malformed_summary_domains4')
+statement = 'UPDATE lineage_nodes SET unsafe=2'
+
+    @pytest.mark.parametrize('statement', [
+        "UPDATE lineage_edges SET kind='unexpected-kind'",
+        "UPDATE lineage_trust SET scope='unexpected-scope'",
+        'UPDATE lineage_nodes SET project_owned=12',
+        'UPDATE lineage_nodes SET compiler_generated=2',
+        'UPDATE lineage_nodes SET unsafe=2',
+        "UPDATE lineage_closures SET authority='lexical-only'",
+    ])
+    def test_malformed_summary_domains_fail_before_owner_promotion(tmp_path, statement):
+        manifest, artifacts, companion, db, _inserted = _lineage_fixture(tmp_path)
+        with sqlite3.connect(db) as conn:
+            conn.execute('PRAGMA ignore_check_constraints=ON')
+            conn.execute(statement)
+>       with pytest.raises(ResultManifestError, match='lineage'):
+E       Failed: DID NOT RAISE <class 'ladon.result_manifest_io.ResultManifestError'>
+
+tests/test_result_lineage_store_contract.py:25: Failed
+=========================== short test summary info ============================
+FAILED tests/test_result_lineage_store_contract.py::test_malformed_summary_domains_fail_before_owner_promotion[UPDATE lineage_nodes SET compiler_generated=2]
+FAILED tests/test_result_lineage_store_contract.py::test_malformed_summary_domains_fail_before_owner_promotion[UPDATE lineage_nodes SET unsafe=2]
+2 failed, 4 passed in 0.13s

@@ -1,0 +1,110 @@
+FFF.                                                                     [100%]
+=================================== FAILURES ===================================
+_____ test_exact_subject_query_accepts_declarations_as_well_as_statements ______
+
+    def test_exact_subject_query_accepts_declarations_as_well_as_statements():
+        import sqlite3
+    
+        derivation = native_artifacts()["proofir.derivation"]
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+        project_envelopes(connection, [derivation])
+    
+        declaration = {
+            "ownerArtifactId": derivation["artifactId"],
+            "kind": "declaration",
+            "localId": "declaration:rule",
+        }
+>       dossier = _subject_query(connection, declaration)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_subject_evidence.py:49: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x766f1cecbc40>
+subject = {'kind': 'declaration', 'localId': 'declaration:rule', 'ownerArtifactId': 'sha256:89caaaad13eb46cf2225259eb12c9c67a52cf8da41b26365b403ea63b17d4fc7'}
+
+    def _subject_query(connection, subject, *, limit=20):
+        query = getattr(queries, "query_v3_subject_evidence", None)
+>       assert callable(query), (
+            "the dossier owner lacks query_v3_subject_evidence(connection, "
+            "{ownerArtifactId, kind, localId}, limit=...)"
+        )
+E       AssertionError: the dossier owner lacks query_v3_subject_evidence(connection, {ownerArtifactId, kind, localId}, limit=...)
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_result_subject_evidence.py:29: AssertionError
+_____ test_identical_local_ids_from_different_owners_never_borrow_evidence _____
+
+    def test_identical_local_ids_from_different_owners_never_borrow_evidence():
+        connection, first, second = _connection_with_claims()
+        first_subject = {
+            "ownerArtifactId": first["artifactId"],
+            "kind": "statement",
+            "localId": "statement:goal",
+        }
+        second_subject = {**first_subject, "ownerArtifactId": second["artifactId"]}
+    
+>       first_dossier = _subject_query(connection, first_subject)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_subject_evidence.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x766f1c5c49a0>
+subject = {'kind': 'statement', 'localId': 'statement:goal', 'ownerArtifactId': 'sha256:e62c49f67a336d0be01dec6fd2f79ac9c23c003c133b036d1acda60c25fd86a7'}
+
+    def _subject_query(connection, subject, *, limit=20):
+        query = getattr(queries, "query_v3_subject_evidence", None)
+>       assert callable(query), (
+            "the dossier owner lacks query_v3_subject_evidence(connection, "
+            "{ownerArtifactId, kind, localId}, limit=...)"
+        )
+E       AssertionError: the dossier owner lacks query_v3_subject_evidence(connection, {ownerArtifactId, kind, localId}, limit=...)
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_result_subject_evidence.py:29: AssertionError
+__________ test_exact_subject_does_not_promote_theorem_name_coverage ___________
+
+    def test_exact_subject_does_not_promote_theorem_name_coverage():
+        connection, artifact, _other = _connection_with_claims()
+        # The owner reports theorem-name coverage, but that selector cannot certify
+        # that coverage applies to an independently selected exact subject.
+        connection.execute(
+            "UPDATE proofir_v3_coverage SET population_kind='theorem-evidence', "
+            "selector_json=? WHERE content_artifact_id=?",
+            (json.dumps({"theorem": "statement:goal"}, separators=(",", ":")), artifact["artifactId"]),
+        )
+        subject = {
+            "ownerArtifactId": artifact["artifactId"],
+            "kind": "statement",
+            "localId": "statement:goal",
+        }
+    
+>       dossier = _subject_query(connection, subject)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_subject_evidence.py:103: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x766f1c5c5210>
+subject = {'kind': 'statement', 'localId': 'statement:goal', 'ownerArtifactId': 'sha256:e62c49f67a336d0be01dec6fd2f79ac9c23c003c133b036d1acda60c25fd86a7'}
+
+    def _subject_query(connection, subject, *, limit=20):
+        query = getattr(queries, "query_v3_subject_evidence", None)
+>       assert callable(query), (
+            "the dossier owner lacks query_v3_subject_evidence(connection, "
+            "{ownerArtifactId, kind, localId}, limit=...)"
+        )
+E       AssertionError: the dossier owner lacks query_v3_subject_evidence(connection, {ownerArtifactId, kind, localId}, limit=...)
+E       assert False
+E        +  where False = callable(None)
+
+tests/test_result_subject_evidence.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_result_subject_evidence.py::test_exact_subject_query_accepts_declarations_as_well_as_statements
+FAILED tests/test_result_subject_evidence.py::test_identical_local_ids_from_different_owners_never_borrow_evidence
+FAILED tests/test_result_subject_evidence.py::test_exact_subject_does_not_promote_theorem_name_coverage
+3 failed, 1 passed in 0.07s
