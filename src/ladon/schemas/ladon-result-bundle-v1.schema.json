@@ -1,0 +1,332 @@
+{
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "x-maxUtf8Bytes": 128,
+      "const": "ladon-result-bundle-v1"
+    },
+    "profile": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "x-maxUtf8Bytes": 256,
+      "enum": [
+        "core-v1"
+      ]
+    },
+    "resultId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "x-maxUtf8Bytes": 128
+    },
+    "revision": {
+      "$ref": "#/$defs/digest"
+    },
+    "manifest": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "x-maxUtf8Bytes": 128,
+      "const": "manifest.json"
+    },
+    "inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/id"
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "x-maxUtf8Bytes": 256,
+            "enum": [
+              "manifest",
+              "artifact",
+              "guide",
+              "assessments",
+              "lineage",
+              "lineage-database",
+              "predecessor",
+              "attachment",
+              "review",
+              "capsule"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "x-maxUtf8Bytes": 4096
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9223372036854775807
+          },
+          "sha256": {
+            "$ref": "#/$defs/digest"
+          },
+          "review": {
+            "$ref": "#/$defs/review"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "path",
+          "bytes",
+          "sha256"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 10000
+    },
+    "omissions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/$defs/id"
+          },
+          "role": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "x-maxUtf8Bytes": 256,
+            "enum": [
+              "artifact",
+              "guide",
+              "assessments",
+              "lineage",
+              "lineage-database",
+              "predecessor",
+              "attachment",
+              "review",
+              "capsule"
+            ]
+          },
+          "disclosure": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "x-maxUtf8Bytes": 256,
+            "enum": [
+              "supplied",
+              "redacted",
+              "unavailable",
+              "not-collected"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "x-maxUtf8Bytes": 4096
+          },
+          "review": {
+            "$ref": "#/$defs/review"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "disclosure",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 0,
+      "maxItems": 10000
+    },
+    "supplier": {
+      "$ref": "#/$defs/supplier"
+    },
+    "lineageBindings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/binding"
+      },
+      "minItems": 0,
+      "maxItems": 1000
+    },
+    "identifiers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/identifier"
+      },
+      "minItems": 0,
+      "maxItems": 1000
+    },
+    "externalDependencies": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dependency"
+      },
+      "minItems": 0,
+      "maxItems": 1000
+    }
+  },
+  "required": [
+    "schema",
+    "profile",
+    "resultId",
+    "revision",
+    "manifest",
+    "inventory",
+    "omissions",
+    "supplier",
+    "lineageBindings",
+    "identifiers",
+    "externalDependencies"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "x-maxUtf8Bytes": 128,
+      "pattern": "[A-Za-z0-9][A-Za-z0-9._:-]*"
+    },
+    "digest": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 71,
+      "x-maxUtf8Bytes": 71,
+      "pattern": "sha256:[0-9a-f]{64}"
+    },
+    "supplier": {
+      "type": "object",
+      "properties": {
+        "identity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "x-maxUtf8Bytes": 512
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256,
+          "enum": [
+            "human",
+            "model",
+            "tool"
+          ]
+        }
+      },
+      "required": [
+        "identity",
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "entryId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        "databaseId": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "entryId",
+        "databaseId"
+      ],
+      "additionalProperties": false
+    },
+    "identifier": {
+      "type": "object",
+      "properties": {
+        "scheme": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        }
+      },
+      "required": [
+        "scheme",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "dependency": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "kind": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "x-maxUtf8Bytes": 128
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "$ref": "#/$defs/supplier"
+        },
+        "subjectRevision": {
+          "$ref": "#/$defs/digest"
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        }
+      },
+      "required": [
+        "author",
+        "subjectRevision",
+        "scope"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

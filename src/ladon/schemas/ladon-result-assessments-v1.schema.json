@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ladon:result-assessments:v1",
+  "title": "Attributed result assessments v1",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "ladon-result-assessments-v1"
+    },
+    "resultId": {
+      "$ref": "#/$defs/entityId"
+    },
+    "manifestRevision": {
+      "$ref": "#/$defs/revision"
+    },
+    "assessments": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 10000,
+      "items": {
+        "$ref": "#/$defs/assessment"
+      }
+    }
+  },
+  "required": [
+    "schema",
+    "resultId",
+    "manifestRevision",
+    "assessments"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "entityId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "x-maxUtf8Bytes": 256,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]*$"
+    },
+    "revision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 71,
+      "x-maxUtf8Bytes": 71,
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 65536,
+      "x-maxUtf8Bytes": 65536
+    },
+    "textList": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 10000,
+      "items": {
+        "$ref": "#/$defs/text"
+      }
+    },
+    "targetRevision": {
+      "type": "object",
+      "properties": {
+        "targetId": {
+          "$ref": "#/$defs/entityId"
+        },
+        "revision": {
+          "$ref": "#/$defs/revision"
+        }
+      },
+      "required": [
+        "targetId",
+        "revision"
+      ],
+      "additionalProperties": false
+    },
+    "author": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "human",
+            "model",
+            "tool"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "assessment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/entityId"
+        },
+        "claimId": {
+          "$ref": "#/$defs/entityId"
+        },
+        "componentId": {
+          "$ref": "#/$defs/entityId"
+        },
+        "claimRevision": {
+          "$ref": "#/$defs/revision"
+        },
+        "targetRevisions": {
+          "type": "array",
+          "minItems": 0,
+          "maxItems": 10000,
+          "items": {
+            "$ref": "#/$defs/targetRevision"
+          }
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "conventional-only",
+            "unassessed",
+            "source-correspondence",
+            "unresolved-target",
+            "reported-implication-without-checked-adapter"
+          ]
+        },
+        "author": {
+          "$ref": "#/$defs/author"
+        },
+        "basis": {
+          "$ref": "#/$defs/text"
+        },
+        "scope": {
+          "$ref": "#/$defs/text"
+        },
+        "differences": {
+          "$ref": "#/$defs/textList"
+        },
+        "evidenceRefs": {
+          "$ref": "#/$defs/textList"
+        }
+      },
+      "required": [
+        "id",
+        "claimId",
+        "componentId",
+        "claimRevision",
+        "targetRevisions",
+        "kind",
+        "author",
+        "basis",
+        "scope",
+        "differences",
+        "evidenceRefs"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

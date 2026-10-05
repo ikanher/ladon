@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:ladon:result-guide:v1",
+  "title": "Attributed result guide inputs v1",
+  "type": "object",
+  "properties": {
+    "schema": {"type": "string", "const": "ladon-result-guide-v1"},
+    "resultId": {"$ref": "#/$defs/id"},
+    "manifestRevision": {"$ref": "#/$defs/revision"},
+    "steps": {"type": "array", "minItems": 0, "maxItems": 10000, "items": {"$ref": "#/$defs/step"}},
+    "citations": {"type": "array", "minItems": 0, "maxItems": 10000, "items": {"$ref": "#/$defs/citation"}},
+    "reviews": {"type": "array", "minItems": 0, "maxItems": 10000, "items": {"$ref": "#/$defs/review"}}
+  },
+  "required": ["schema", "resultId", "manifestRevision", "steps", "citations", "reviews"],
+  "additionalProperties": false,
+  "$defs": {
+    "id": {"type": "string", "minLength": 1, "maxLength": 256, "x-maxUtf8Bytes": 256},
+    "revision": {"type": "string", "minLength": 71, "maxLength": 71, "x-maxUtf8Bytes": 71, "pattern": "^sha256:[0-9a-f]{64}$"},
+    "text": {"type": "string", "minLength": 1, "maxLength": 65536, "x-maxUtf8Bytes": 65536},
+    "actor": {
+      "type": "object", "properties": {
+        "identity": {"type": "string", "minLength": 1, "maxLength": 1024, "x-maxUtf8Bytes": 1024},
+        "kind": {"type": "string", "enum": ["human", "model", "tool"]}
+      }, "required": ["identity", "kind"], "additionalProperties": false
+    },
+    "targetRevision": {
+      "type": "object", "properties": {"targetId": {"$ref": "#/$defs/id"}, "revision": {"$ref": "#/$defs/revision"}},
+      "required": ["targetId", "revision"], "additionalProperties": false
+    },
+    "source": {
+      "type": "object", "properties": {"locator": {"$ref": "#/$defs/text"}, "digest": {"$ref": "#/$defs/revision"}},
+      "required": ["locator", "digest"], "additionalProperties": false
+    },
+    "prerequisite": {
+      "type": "object", "properties": {"stepId": {"$ref": "#/$defs/id"}, "revision": {"$ref": "#/$defs/revision"}},
+      "required": ["stepId", "revision"], "additionalProperties": false
+    },
+    "step": {
+      "type": "object", "properties": {
+        "id": {"$ref": "#/$defs/id"}, "revision": {"$ref": "#/$defs/revision"},
+        "claimId": {"$ref": "#/$defs/id"}, "claimRevision": {"$ref": "#/$defs/revision"},
+        "targetRevisions": {"type": "array", "minItems": 0, "maxItems": 10000, "items": {"$ref": "#/$defs/targetRevision"}},
+        "purpose": {"$ref": "#/$defs/text"}, "explanation": {"$ref": "#/$defs/text"},
+        "sources": {"type": "array", "minItems": 1, "maxItems": 10000, "items": {"$ref": "#/$defs/source"}},
+        "author": {"$ref": "#/$defs/actor"},
+        "prerequisites": {"type": "array", "minItems": 0, "maxItems": 10000, "items": {"$ref": "#/$defs/prerequisite"}}
+      }, "required": ["id", "revision", "claimId", "claimRevision", "targetRevisions", "purpose", "explanation", "sources", "author", "prerequisites"], "additionalProperties": false
+    },
+    "work": {
+      "type": "object", "properties": {
+        "id": {"$ref": "#/$defs/id"}, "title": {"$ref": "#/$defs/text"},
+        "authors": {"type": "array", "minItems": 0, "maxItems": 10000, "items": {"$ref": "#/$defs/text"}},
+        "url": {"$ref": "#/$defs/text"}, "persistentId": {"$ref": "#/$defs/text"}
+      }, "required": ["id", "title", "authors"], "additionalProperties": false
+    },
+    "citation": {
+      "type": "object", "properties": {
+        "id": {"$ref": "#/$defs/id"}, "revision": {"$ref": "#/$defs/revision"},
+        "stepId": {"$ref": "#/$defs/id"}, "stepRevision": {"$ref": "#/$defs/revision"},
+        "work": {"$ref": "#/$defs/work"}, "locator": {"$ref": "#/$defs/text"},
+        "relationship": {"type": "string", "enum": ["background", "uses-result", "related-method", "attribution-claim"]},
+        "assertion": {"$ref": "#/$defs/text"}, "submitter": {"type": "string", "minLength": 1, "maxLength": 1024, "x-maxUtf8Bytes": 1024}
+      }, "required": ["id", "revision", "stepId", "stepRevision", "work", "locator", "relationship", "assertion", "submitter"], "additionalProperties": false
+    },
+    "review": {
+      "type": "object", "properties": {
+        "id": {"$ref": "#/$defs/id"}, "scope": {"type": "string", "enum": ["explanation", "attribution"]},
+        "stepId": {"$ref": "#/$defs/id"}, "stepRevision": {"$ref": "#/$defs/revision"},
+        "targetRevisions": {"type": "array", "minItems": 0, "maxItems": 10000, "items": {"$ref": "#/$defs/targetRevision"}},
+        "reviewer": {"$ref": "#/$defs/actor"},
+        "citationId": {"$ref": "#/$defs/id"}, "citationRevision": {"$ref": "#/$defs/revision"},
+        "status": {"type": "string", "enum": ["approved", "with-differences", "disputed"]},
+        "rationale": {"$ref": "#/$defs/text"}, "timestamp": {"type": "string", "minLength": 20, "maxLength": 64, "x-maxUtf8Bytes": 64, "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}[Tt]\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:[Zz]|[+-]\\d{2}:\\d{2})$"}
+      }, "required": ["id", "scope", "stepId", "stepRevision", "targetRevisions", "reviewer", "status", "rationale", "timestamp"], "additionalProperties": false
+    }
+  }
+}

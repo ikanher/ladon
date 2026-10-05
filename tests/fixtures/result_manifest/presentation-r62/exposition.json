@@ -1,0 +1,777 @@
+{
+  "header": {
+    "availableSections": [
+      "steps",
+      "citations",
+      "reviews",
+      "correspondence",
+      "targets",
+      "checking",
+      "assumptions",
+      "lineage",
+      "evidence",
+      "exposition"
+    ],
+    "axes": {
+      "attribution": "guide-reviews",
+      "checking": "stored-operations-only",
+      "correspondence": "manifest-reviews",
+      "explanation": "guide-reviews",
+      "proofCoverage": "unknown",
+      "sourceFreshness": "not-assessed"
+    },
+    "guideStatus": "available",
+    "inputBinding": "sha256:b4f8c829935953cff58b6a452ee4ac1f1540eb1df5cdf796117c24c70066b756",
+    "limitations": [
+      "authored-order-is-not-a-derivation",
+      "reviews-are-self-attributed",
+      "declaration-dependencies-are-structural-navigation",
+      "citations-do-not-establish-priority",
+      "guide-does-not-run-checks"
+    ],
+    "operation": "guide",
+    "query": {
+      "claim": "cor:fixed-epoch-all-horizon",
+      "component": "average",
+      "limit": 20,
+      "projectionVersion": 2,
+      "section": "exposition",
+      "target": null
+    },
+    "readingOrder": "authored",
+    "resultId": "poisson-fixed-epoch-exposition-20261003-r02",
+    "reuseApplicability": "not-checked",
+    "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+    "schema": "ladon-result-guide-view-v1",
+    "scope": "offline-supplied-evidence",
+    "section": "exposition",
+    "status": "guided"
+  },
+  "row": {
+    "paragraph": {
+      "author": {
+        "identity": "root-labelled-synthetic-control",
+        "kind": "model"
+      },
+      "claimId": "cor:fixed-epoch-all-horizon",
+      "claimRevision": "sha256:0108f8bad055aabc20a15fde2fed178bec5d26a78e097a8113a6d68967beea83",
+      "explanation": "The supplied uniform transcript targets formally establish both transcript and average-only optimality under the sufficient condition.",
+      "id": "conditional-all-horizons",
+      "prerequisites": [],
+      "purpose": "Start with the usable positive result.",
+      "revision": "sha256:27371752c9cef2a36a2b491e9442ed12b59c2e72da1e1abbe89543c474c2beb1",
+      "sources": [
+        {
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#cor:fixed-epoch-all-horizon"
+        },
+        {
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#sec:near-full"
+        }
+      ],
+      "targetRevisions": [
+        {
+          "revision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370",
+          "targetId": "uniform-privacy"
+        },
+        {
+          "revision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f",
+          "targetId": "uniform-total"
+        },
+        {
+          "revision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa",
+          "targetId": "fullbatch"
+        }
+      ],
+      "currency": "current",
+      "authority": "attributed-annotation",
+      "identityAuthentication": "not-assessed",
+      "references": {
+        "": {
+          "input": "guide-inputs",
+          "revision": "sha256:9e55ad8c801753ea29a1d1d57674f542c6c780ddf1260b77d98361086a07d9da",
+          "pointer": "/steps/0"
+        },
+        "/targetBindings": {
+          "input": "guide-inputs",
+          "revision": "sha256:9e55ad8c801753ea29a1d1d57674f542c6c780ddf1260b77d98361086a07d9da",
+          "pointer": "/steps/0/targetRevisions",
+          "appendPath": false
+        }
+      },
+      "stepId": "conditional-all-horizons",
+      "position": 1,
+      "targetBindings": [
+        {
+          "targetId": "uniform-privacy",
+          "requestedRevision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370",
+          "currentRevision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370",
+          "status": "current",
+          "statementAvailability": "supplied",
+          "hypotheses": {
+            "status": "unavailable",
+            "reason": "no-structured-hypotheses-extraction"
+          },
+          "reuseApplicability": "not-checked",
+          "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (sensitivity epsilon delta : ℝ),\n  point.epoch < point.horizon →\n    ∀ (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1),\n      Mf.DP.poissonFixedEpochStandardizedSignal sensitivity\n              ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n                  hDeltaLtOne) ^\n            2 ≤\n          Mf.DP.poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon →\n        ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n              hDeltaLtOne) <\n          Mf.DP.poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta",
+          "source": {
+            "digest": "sha256:bf8bcc8d4715f3947932f6cf715645cafc6a1f3a16d2b39d7fe9a0766c4d13b5",
+            "path": "Mf/DP/PoissonFixedEpochEpochUniformDomain.lean",
+            "projectRevision": "capture-state:sha256:8e6560bf04ebd1322e080d881683bb8f26e2e45ee4a8aa7fc991847a3c7304ec"
+          },
+          "resolution": {
+            "targetId": "uniform-privacy",
+            "targetRevision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370",
+            "name": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_epochUniformSignal",
+            "status": "resolved",
+            "reason": "exact-stored-subject-environment-type-source",
+            "subjectRef": {
+              "artifactId": "sha256:6605dc3a325e80b0a17f65bd68907cbccee144ce687cebc9ce077d3204ee48e3",
+              "subjectId": "declaration:sha256:87746a8efccc846af637babe5124d930cfeda0f78436b5d3cdd7cd36a9f1228d"
+            },
+            "sourceFreshness": "not-assessed",
+            "checking": "not-assessed",
+            "projectRevisionBasis": "producer-declared",
+            "sourceAnchor": {
+              "artifactId": "sha256:7bca433991e11c5c5b420118cda44d425a6f87414ab1c8c08916d7761ac7bcc6",
+              "index": 0,
+              "basis": "environment-fingerprint"
+            }
+          },
+          "sourceFreshness": "not-assessed",
+          "references": {
+            "/typeText": {
+              "input": "manifest",
+              "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+              "pointer": "/targets/3/typeText"
+            },
+            "/source": {
+              "input": "manifest",
+              "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+              "pointer": "/targets/3/source"
+            },
+            "/resolution": {
+              "input": "manifest",
+              "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+              "pointer": "/targets/3",
+              "appendPath": false
+            }
+          }
+        },
+        {
+          "targetId": "uniform-total",
+          "requestedRevision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f",
+          "currentRevision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f",
+          "status": "current",
+          "statementAvailability": "supplied",
+          "hypotheses": {
+            "status": "unavailable",
+            "reason": "no-structured-hypotheses-extraction"
+          },
+          "reuseApplicability": "not-checked",
+          "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (sensitivity epsilon delta energy : ℝ),\n  point.epoch < point.horizon →\n    ∀ (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1),\n      0 ≤ energy →\n        Mf.DP.poissonFixedEpochStandardizedSignal sensitivity\n                ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯\n                    hDeltaPos hDeltaLtOne) ^\n              2 ≤\n            Mf.DP.poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon →\n          Mf.DP.poissonFixedEpochTotalAverageVariance (Mf.DP.PoissonFixedEpochPoint.fullBatch point.epoch ⋯) sensitivity\n              epsilon delta energy <\n            Mf.DP.poissonFixedEpochTotalAverageVariance point sensitivity epsilon delta energy",
+          "source": {
+            "digest": "sha256:bf8bcc8d4715f3947932f6cf715645cafc6a1f3a16d2b39d7fe9a0766c4d13b5",
+            "path": "Mf/DP/PoissonFixedEpochEpochUniformDomain.lean",
+            "projectRevision": "capture-state:sha256:8e6560bf04ebd1322e080d881683bb8f26e2e45ee4a8aa7fc991847a3c7304ec"
+          },
+          "resolution": {
+            "targetId": "uniform-total",
+            "targetRevision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f",
+            "name": "Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_epochUniformSignal",
+            "status": "resolved",
+            "reason": "exact-stored-subject-environment-type-source",
+            "subjectRef": {
+              "artifactId": "sha256:1e5f125e34f7e0443b64c0c9d8eb237691505cb8f9d40ad58df4e62698aaaf5b",
+              "subjectId": "declaration:sha256:1e42069bb8bb2a06e7b9243bac2bb1cef6e85be484c62ea116adb90542b41129"
+            },
+            "sourceFreshness": "not-assessed",
+            "checking": "not-assessed",
+            "projectRevisionBasis": "producer-declared",
+            "sourceAnchor": {
+              "artifactId": "sha256:4422ed130b790ded6343c676cc42ef91a50aec3ed91ed94869b3e4635186fb9e",
+              "index": 0,
+              "basis": "environment-fingerprint"
+            }
+          },
+          "sourceFreshness": "not-assessed",
+          "references": {
+            "/typeText": {
+              "input": "manifest",
+              "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+              "pointer": "/targets/4/typeText"
+            },
+            "/source": {
+              "input": "manifest",
+              "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+              "pointer": "/targets/4/source"
+            },
+            "/resolution": {
+              "input": "manifest",
+              "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+              "pointer": "/targets/4",
+              "appendPath": false
+            }
+          }
+        },
+        {
+          "targetId": "fullbatch",
+          "requestedRevision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa",
+          "currentRevision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa",
+          "status": "current",
+          "statementAvailability": "supplied",
+          "hypotheses": {
+            "status": "unavailable",
+            "reason": "no-structured-hypotheses-extraction"
+          },
+          "reuseApplicability": "not-checked",
+          "typeText": "∀ (epoch : ℕ) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : ℝ) (sensitivity_pos : 0 < sensitivity)\n  (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_one : delta < 1),\n  Mf.DP.poissonFixedEpochPrivacyVarianceOfStddev (Mf.DP.PoissonFixedEpochPoint.fullBatch epoch epoch_pos)\n      ↑(Mf.DP.poissonFixedEpochCalibratedStddev (Mf.DP.PoissonFixedEpochPoint.fullBatch epoch epoch_pos) sensitivity\n          epsilon delta) =\n    Mf.DP.fullBatchGaussianBaseStddev sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one ^\n      2",
+          "source": {
+            "digest": "sha256:7df2853825f9c7728607de78d1fda0eb1ae46a675350dcf07065f623c83188ca",
+            "path": "Mf/DP/PoissonFixedEpochVariance.lean",
+            "projectRevision": "capture-state:sha256:bb6fb61ace8b418be2949d044b618289dbb5e23faac5b58cb0d8627d3f4fa0b2"
+          },
+          "resolution": {
+            "targetId": "fullbatch",
+            "targetRevision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa",
+            "name": "Mf.DP.poissonFixedEpochPrivacyVariance_fullBatch_eq_base_sq",
+            "status": "resolved",
+            "reason": "exact-stored-subject-environment-type-source",
+            "subjectRef": {
+              "artifactId": "sha256:d978d0148ff6be3f93c46930b49ac2ef801cbc288aefe2c4da1974c02adc837a",
+              "subjectId": "declaration:sha256:aba9e2ee4cc4d055c7d11c8df21895aa2bc225918904a76790709470aff9b584"
+            },
+            "sourceFreshness": "not-assessed",
+            "checking": "not-assessed",
+            "projectRevisionBasis": "producer-declared",
+            "sourceAnchor": {
+              "artifactId": "sha256:db26c7522e2a376039de2a8f8fd541070029d2cacd1f453f8a5b564295b8f616",
+              "index": 0,
+              "basis": "environment-fingerprint"
+            }
+          },
+          "sourceFreshness": "not-assessed",
+          "references": {
+            "/typeText": {
+              "input": "manifest",
+              "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+              "pointer": "/targets/0/typeText"
+            },
+            "/source": {
+              "input": "manifest",
+              "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+              "pointer": "/targets/0/source"
+            },
+            "/resolution": {
+              "input": "manifest",
+              "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+              "pointer": "/targets/0",
+              "appendPath": false
+            }
+          }
+        }
+      ]
+    },
+    "references": {
+      "/supportingStatements": {
+        "input": "guide-inputs",
+        "revision": "sha256:9e55ad8c801753ea29a1d1d57674f542c6c780ddf1260b77d98361086a07d9da",
+        "pointer": "/steps/0/targetRevisions",
+        "appendPath": false
+      },
+      "/reviews": {
+        "input": "guide-inputs",
+        "revision": "sha256:9e55ad8c801753ea29a1d1d57674f542c6c780ddf1260b77d98361086a07d9da",
+        "pointer": "/reviews",
+        "appendPath": false
+      },
+      "/recheckNotices": {
+        "input": "guide-inputs",
+        "revision": "sha256:9e55ad8c801753ea29a1d1d57674f542c6c780ddf1260b77d98361086a07d9da",
+        "pointer": "",
+        "appendPath": false
+      }
+    },
+    "selectedComponent": {
+      "claimId": "cor:fixed-epoch-all-horizon",
+      "claimRevision": "sha256:0108f8bad055aabc20a15fde2fed178bec5d26a78e097a8113a6d68967beea83",
+      "componentId": "average",
+      "statement": "\\begin{corollary}[All finite horizons]\\label{cor:fixed-epoch-all-horizon}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$.\nIf $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$ satisfies\n\\begin{equation}\\label{eq:epoch-uniform-condition}\n a^2\\leq\\Lambda_E\\varepsilon,\\qquad \\Lambda_E=\\frac{6E}{3E+2},\n\\end{equation}\nthen for every integer $T>E$,\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\n\\]\nand, simultaneously for every $S\\geq0$,\n\\[\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S).\n\\]\n\\end{corollary}",
+      "document": {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#cor:fixed-epoch-all-horizon"
+      },
+      "mapping": {
+        "status": "unmapped",
+        "targetIds": []
+      },
+      "resolution": {
+        "statuses": {}
+      },
+      "assessmentStatus": "reported",
+      "assessments": [
+        {
+          "author": {
+            "id": "OpenAI Codex, implementation agent",
+            "kind": "model"
+          },
+          "basis": "Inspected exact r05 source signatures and current mathematical derivation; model-attributed correspondence, not independent certification.",
+          "claimId": "cor:fixed-epoch-all-horizon",
+          "claimRevision": "sha256:0108f8bad055aabc20a15fde2fed178bec5d26a78e097a8113a6d68967beea83",
+          "componentId": "average",
+          "differences": [],
+          "evidenceRefs": [
+            "sha256:58530882c214bcaf0a339523ac0af6e20a22802e0e20ce987cf30f96389e8e55#/components/7"
+          ],
+          "id": "component-assessment-7",
+          "kind": "conventional-only",
+          "scope": "Average-only strengthening",
+          "targetRevisions": [],
+          "currency": "current",
+          "authority": "attributed-component-assessment",
+          "reviewerAuthentication": "not-assessed",
+          "references": {
+            "": {
+              "input": "assessments",
+              "revision": "sha256:c465e7b5f5f8504758266a657ce694b13037f5a130c162da3cf5934608c86404",
+              "pointer": "/assessments/7"
+            },
+            "/scope": {
+              "input": "assessments",
+              "revision": "sha256:c465e7b5f5f8504758266a657ce694b13037f5a130c162da3cf5934608c86404",
+              "pointer": "/assessments/7/scope"
+            },
+            "/author": {
+              "input": "assessments",
+              "revision": "sha256:c465e7b5f5f8504758266a657ce694b13037f5a130c162da3cf5934608c86404",
+              "pointer": "/assessments/7/author"
+            }
+          }
+        }
+      ],
+      "correspondence": {
+        "status": "not-reviewed",
+        "reviews": []
+      },
+      "checking": "inspect-checking-section",
+      "expositionReview": "not-assessed",
+      "attributionReview": "not-assessed",
+      "references": {
+        "/statement": {
+          "input": "manifest",
+          "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+          "pointer": "/claims/2/statement"
+        },
+        "/document": {
+          "input": "manifest",
+          "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+          "pointer": "/claims/2/document"
+        },
+        "/mapping": {
+          "input": "manifest",
+          "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+          "pointer": "/links",
+          "appendPath": false
+        },
+        "/correspondence/reviews": {
+          "input": "manifest",
+          "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+          "pointer": "/reviews",
+          "appendPath": false
+        },
+        "": {
+          "input": "manifest",
+          "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+          "pointer": "/claims/2",
+          "appendPath": false
+        },
+        "/assessments": {
+          "input": "assessments",
+          "revision": "sha256:c465e7b5f5f8504758266a657ce694b13037f5a130c162da3cf5934608c86404",
+          "pointer": "/assessments",
+          "appendPath": false
+        },
+        "/wholeClaimStatement": {
+          "input": "manifest",
+          "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+          "pointer": "/claims/2/statement"
+        },
+        "/mappingSources": {
+          "input": "manifest",
+          "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+          "pointer": "/links",
+          "appendPath": false
+        }
+      },
+      "wholeClaimStatement": "\\begin{corollary}[All finite horizons]\\label{cor:fixed-epoch-all-horizon}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$.\nIf $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$ satisfies\n\\begin{equation}\\label{eq:epoch-uniform-condition}\n a^2\\leq\\Lambda_E\\varepsilon,\\qquad \\Lambda_E=\\frac{6E}{3E+2},\n\\end{equation}\nthen for every integer $T>E$,\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\n\\]\nand, simultaneously for every $S\\geq0$,\n\\[\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S).\n\\]\n\\end{corollary}",
+      "statementScope": "whole-claim-context",
+      "componentScope": {
+        "status": "reported",
+        "basis": "attributed-assessment-scopes-not-extracted-statements",
+        "descriptions": [
+          {
+            "assessmentId": "component-assessment-7",
+            "scope": "Average-only strengthening",
+            "author": {
+              "id": "OpenAI Codex, implementation agent",
+              "kind": "model"
+            },
+            "currency": "current"
+          }
+        ],
+        "references": {
+          "/descriptions": {
+            "input": "assessments",
+            "revision": "sha256:c465e7b5f5f8504758266a657ce694b13037f5a130c162da3cf5934608c86404",
+            "pointer": "/assessments",
+            "appendPath": false
+          },
+          "/descriptions/0": {
+            "input": "assessments",
+            "revision": "sha256:c465e7b5f5f8504758266a657ce694b13037f5a130c162da3cf5934608c86404",
+            "pointer": "/assessments/7"
+          },
+          "/descriptions/0/assessmentId": {
+            "input": "assessments",
+            "revision": "sha256:c465e7b5f5f8504758266a657ce694b13037f5a130c162da3cf5934608c86404",
+            "pointer": "/assessments/7/id"
+          },
+          "/descriptions/0/scope": {
+            "input": "assessments",
+            "revision": "sha256:c465e7b5f5f8504758266a657ce694b13037f5a130c162da3cf5934608c86404",
+            "pointer": "/assessments/7/scope"
+          },
+          "/descriptions/0/author": {
+            "input": "assessments",
+            "revision": "sha256:c465e7b5f5f8504758266a657ce694b13037f5a130c162da3cf5934608c86404",
+            "pointer": "/assessments/7/author"
+          }
+        }
+      },
+      "claimComponentCoverage": {
+        "mapped": 1,
+        "unmapped": 1,
+        "components": [
+          {
+            "componentId": "transcript",
+            "mappingStatus": "mapped",
+            "targetIds": [
+              "fullbatch",
+              "uniform-privacy",
+              "uniform-total"
+            ]
+          },
+          {
+            "componentId": "average",
+            "mappingStatus": "unmapped",
+            "targetIds": []
+          }
+        ],
+        "references": {
+          "/components": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/claims/2/components",
+            "appendPath": false
+          },
+          "/mappingSources": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/links",
+            "appendPath": false
+          },
+          "/components/0/targetIds": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/links",
+            "appendPath": false
+          },
+          "/components/1/targetIds": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/links",
+            "appendPath": false
+          }
+        }
+      },
+      "formalStatements": [],
+      "mappingSources": [],
+      "associationBasis": "caller-selected-component-not-correspondence-review"
+    },
+    "supportingStatements": [
+      {
+        "targetId": "uniform-privacy",
+        "targetRevision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370",
+        "name": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_epochUniformSignal",
+        "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (sensitivity epsilon delta : ℝ),\n  point.epoch < point.horizon →\n    ∀ (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1),\n      Mf.DP.poissonFixedEpochStandardizedSignal sensitivity\n              ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n                  hDeltaLtOne) ^\n            2 ≤\n          Mf.DP.poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon →\n        ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n              hDeltaLtOne) <\n          Mf.DP.poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta",
+        "statementAuthority": "stored-canonical-type-text",
+        "resolution": {
+          "targetId": "uniform-privacy",
+          "targetRevision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370",
+          "name": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_epochUniformSignal",
+          "status": "resolved",
+          "reason": "exact-stored-subject-environment-type-source",
+          "subjectRef": {
+            "artifactId": "sha256:6605dc3a325e80b0a17f65bd68907cbccee144ce687cebc9ce077d3204ee48e3",
+            "subjectId": "declaration:sha256:87746a8efccc846af637babe5124d930cfeda0f78436b5d3cdd7cd36a9f1228d"
+          },
+          "sourceFreshness": "not-assessed",
+          "checking": "not-assessed",
+          "projectRevisionBasis": "producer-declared",
+          "sourceAnchor": {
+            "artifactId": "sha256:7bca433991e11c5c5b420118cda44d425a6f87414ab1c8c08916d7761ac7bcc6",
+            "index": 0,
+            "basis": "environment-fingerprint"
+          }
+        },
+        "parameters": {
+          "status": "unavailable",
+          "reason": "no-bound-structured-declaration-observation"
+        },
+        "checkingScope": "inspect-checking-section",
+        "reuseApplicability": "not-checked",
+        "source": {
+          "digest": "sha256:bf8bcc8d4715f3947932f6cf715645cafc6a1f3a16d2b39d7fe9a0766c4d13b5",
+          "path": "Mf/DP/PoissonFixedEpochEpochUniformDomain.lean",
+          "projectRevision": "capture-state:sha256:8e6560bf04ebd1322e080d881683bb8f26e2e45ee4a8aa7fc991847a3c7304ec"
+        },
+        "relationship": "guide-support-not-component-correspondence",
+        "references": {
+          "": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/3"
+          },
+          "/targetId": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/3/id"
+          },
+          "/targetRevision": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/3/revision"
+          },
+          "/name": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/3/name"
+          },
+          "/typeText": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/3/typeText"
+          },
+          "/source": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/3/source"
+          },
+          "/resolution": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/3",
+            "appendPath": false
+          }
+        }
+      },
+      {
+        "targetId": "uniform-total",
+        "targetRevision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f",
+        "name": "Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_epochUniformSignal",
+        "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (sensitivity epsilon delta energy : ℝ),\n  point.epoch < point.horizon →\n    ∀ (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1),\n      0 ≤ energy →\n        Mf.DP.poissonFixedEpochStandardizedSignal sensitivity\n                ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯\n                    hDeltaPos hDeltaLtOne) ^\n              2 ≤\n            Mf.DP.poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon →\n          Mf.DP.poissonFixedEpochTotalAverageVariance (Mf.DP.PoissonFixedEpochPoint.fullBatch point.epoch ⋯) sensitivity\n              epsilon delta energy <\n            Mf.DP.poissonFixedEpochTotalAverageVariance point sensitivity epsilon delta energy",
+        "statementAuthority": "stored-canonical-type-text",
+        "resolution": {
+          "targetId": "uniform-total",
+          "targetRevision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f",
+          "name": "Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_epochUniformSignal",
+          "status": "resolved",
+          "reason": "exact-stored-subject-environment-type-source",
+          "subjectRef": {
+            "artifactId": "sha256:1e5f125e34f7e0443b64c0c9d8eb237691505cb8f9d40ad58df4e62698aaaf5b",
+            "subjectId": "declaration:sha256:1e42069bb8bb2a06e7b9243bac2bb1cef6e85be484c62ea116adb90542b41129"
+          },
+          "sourceFreshness": "not-assessed",
+          "checking": "not-assessed",
+          "projectRevisionBasis": "producer-declared",
+          "sourceAnchor": {
+            "artifactId": "sha256:4422ed130b790ded6343c676cc42ef91a50aec3ed91ed94869b3e4635186fb9e",
+            "index": 0,
+            "basis": "environment-fingerprint"
+          }
+        },
+        "parameters": {
+          "status": "unavailable",
+          "reason": "no-bound-structured-declaration-observation"
+        },
+        "checkingScope": "inspect-checking-section",
+        "reuseApplicability": "not-checked",
+        "source": {
+          "digest": "sha256:bf8bcc8d4715f3947932f6cf715645cafc6a1f3a16d2b39d7fe9a0766c4d13b5",
+          "path": "Mf/DP/PoissonFixedEpochEpochUniformDomain.lean",
+          "projectRevision": "capture-state:sha256:8e6560bf04ebd1322e080d881683bb8f26e2e45ee4a8aa7fc991847a3c7304ec"
+        },
+        "relationship": "guide-support-not-component-correspondence",
+        "references": {
+          "": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/4"
+          },
+          "/targetId": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/4/id"
+          },
+          "/targetRevision": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/4/revision"
+          },
+          "/name": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/4/name"
+          },
+          "/typeText": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/4/typeText"
+          },
+          "/source": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/4/source"
+          },
+          "/resolution": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/4",
+            "appendPath": false
+          }
+        }
+      },
+      {
+        "targetId": "fullbatch",
+        "targetRevision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa",
+        "name": "Mf.DP.poissonFixedEpochPrivacyVariance_fullBatch_eq_base_sq",
+        "typeText": "∀ (epoch : ℕ) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : ℝ) (sensitivity_pos : 0 < sensitivity)\n  (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_one : delta < 1),\n  Mf.DP.poissonFixedEpochPrivacyVarianceOfStddev (Mf.DP.PoissonFixedEpochPoint.fullBatch epoch epoch_pos)\n      ↑(Mf.DP.poissonFixedEpochCalibratedStddev (Mf.DP.PoissonFixedEpochPoint.fullBatch epoch epoch_pos) sensitivity\n          epsilon delta) =\n    Mf.DP.fullBatchGaussianBaseStddev sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one ^\n      2",
+        "statementAuthority": "stored-canonical-type-text",
+        "resolution": {
+          "targetId": "fullbatch",
+          "targetRevision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa",
+          "name": "Mf.DP.poissonFixedEpochPrivacyVariance_fullBatch_eq_base_sq",
+          "status": "resolved",
+          "reason": "exact-stored-subject-environment-type-source",
+          "subjectRef": {
+            "artifactId": "sha256:d978d0148ff6be3f93c46930b49ac2ef801cbc288aefe2c4da1974c02adc837a",
+            "subjectId": "declaration:sha256:aba9e2ee4cc4d055c7d11c8df21895aa2bc225918904a76790709470aff9b584"
+          },
+          "sourceFreshness": "not-assessed",
+          "checking": "not-assessed",
+          "projectRevisionBasis": "producer-declared",
+          "sourceAnchor": {
+            "artifactId": "sha256:db26c7522e2a376039de2a8f8fd541070029d2cacd1f453f8a5b564295b8f616",
+            "index": 0,
+            "basis": "environment-fingerprint"
+          }
+        },
+        "parameters": {
+          "status": "unavailable",
+          "reason": "no-bound-structured-declaration-observation"
+        },
+        "checkingScope": "inspect-checking-section",
+        "reuseApplicability": "not-checked",
+        "source": {
+          "digest": "sha256:7df2853825f9c7728607de78d1fda0eb1ae46a675350dcf07065f623c83188ca",
+          "path": "Mf/DP/PoissonFixedEpochVariance.lean",
+          "projectRevision": "capture-state:sha256:bb6fb61ace8b418be2949d044b618289dbb5e23faac5b58cb0d8627d3f4fa0b2"
+        },
+        "relationship": "guide-support-not-component-correspondence",
+        "references": {
+          "": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/0"
+          },
+          "/targetId": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/0/id"
+          },
+          "/targetRevision": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/0/revision"
+          },
+          "/name": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/0/name"
+          },
+          "/typeText": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/0/typeText"
+          },
+          "/source": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/0/source"
+          },
+          "/resolution": {
+            "input": "manifest",
+            "revision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+            "pointer": "/targets/0",
+            "appendPath": false
+          }
+        }
+      }
+    ],
+    "reviews": [
+      {
+        "id": "synthetic-broadened-average",
+        "rationale": "Synthetic altered control: the average component has no formal mapping. Keep the transcript conclusion scoped to its bindings and describe the average-only strengthening as conventional exposition according to the supplied assessment; unformalized does not mean false.",
+        "reviewer": {
+          "identity": "root-labelled-control-not-independent-review",
+          "kind": "model"
+        },
+        "scope": "explanation",
+        "status": "with-differences",
+        "stepId": "conditional-all-horizons",
+        "stepRevision": "sha256:27371752c9cef2a36a2b491e9442ed12b59c2e72da1e1abbe89543c474c2beb1",
+        "targetRevisions": [
+          {
+            "revision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370",
+            "targetId": "uniform-privacy"
+          },
+          {
+            "revision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f",
+            "targetId": "uniform-total"
+          },
+          {
+            "revision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa",
+            "targetId": "fullbatch"
+          }
+        ],
+        "timestamp": "2026-10-05T00:00:00Z",
+        "currency": "current",
+        "authority": "attributed-review",
+        "identityAuthentication": "not-assessed",
+        "references": {
+          "": {
+            "input": "guide-inputs",
+            "revision": "sha256:9e55ad8c801753ea29a1d1d57674f542c6c780ddf1260b77d98361086a07d9da",
+            "pointer": "/reviews/0"
+          }
+        }
+      }
+    ],
+    "reviewStatus": "current-attributed-reviews",
+    "recheckNotices": [],
+    "checkingScope": "explicit-application-operation-required",
+    "reuseApplicability": "not-checked",
+    "mathematicalVerdict": "not-inferred"
+  }
+}

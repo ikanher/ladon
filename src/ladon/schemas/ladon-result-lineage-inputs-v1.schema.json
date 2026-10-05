@@ -1,0 +1,149 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ladon.invalid/schemas/ladon-result-lineage-inputs-v1.schema.json",
+  "title": "Ladon result lineage inputs v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "resultId",
+    "manifestRevision",
+    "entries"
+  ],
+  "properties": {
+    "schema": {
+      "const": "ladon-result-lineage-inputs-v1",
+      "type": "string",
+      "x-maxUtf8Bytes": 256
+    },
+    "resultId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "x-maxUtf8Bytes": 512
+    },
+    "manifestRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "x-maxUtf8Bytes": 512,
+      "pattern": "sha256:[0-9a-f]{64}"
+    },
+    "entries": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "$ref": "#/$defs/entry"
+      },
+      "minItems": 0
+    }
+  },
+  "$defs": {
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "source_fingerprint",
+        "configuration_fingerprint",
+        "toolchain_identity",
+        "base_generation_identity",
+        "helper_identity",
+        "schema_generation"
+      ],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "source_fingerprint": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "configuration_fingerprint": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "toolchain_identity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "base_generation_identity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "helper_identity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        },
+        "schema_generation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "targetId",
+        "targetRevision",
+        "database",
+        "closureId",
+        "identity"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        "targetId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        "targetRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096,
+          "pattern": "sha256:[0-9a-f]{64}"
+        },
+        "database": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096,
+          "x-maxUtf8Bytes": 4096,
+          "pattern": "[^\\u0000]+"
+        },
+        "closureId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "x-maxUtf8Bytes": 256
+        },
+        "identity": {
+          "$ref": "#/$defs/identity"
+        }
+      }
+    }
+  }
+}
