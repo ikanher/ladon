@@ -1,0 +1,100 @@
+{
+  "schema": "ladon-architecture-diagnostic-preregistration-v1",
+  "registeredAt": "2026-10-03T08:17:02.880734+00:00",
+  "candidateCommit": "3f182566c19afe82f8029685fe77f20759582d4c",
+  "priorPreregistrationIdentity": "sha256:40f40dd5ccca6efbc95373b31502ee7cfd8f2b3b4feb2ca45a21e15c8d1ca93b",
+  "priorExecutionPath": "architecture-execution-v1.json",
+  "purpose": "Post-timeout diagnostic and unlabeled review preparation; not a replacement of the registered 60-second study or held-out promotion.",
+  "sources": [
+    {
+      "id": "matrix-calibration",
+      "root": "/home/codex/projects/lean/matrix-factorization",
+      "pathBase": "absolute-local-optional",
+      "optional": true,
+      "split": "calibration",
+      "toolchain": "leanprover/lean4:v4.33.0",
+      "gitCommit": "193f8bcea30940d2dbb295c0b1a89f90bffcff1a",
+      "sourceSnapshot": "sha256:bd8e71b5fffc3d9d972d29ba8b4b0fd3a295c97c168db4194f925b621d011a54",
+      "files": {
+        "Mf/DP/PoissonFixedEpochHalfSignalDeltaThreshold.lean": "sha256:0ca49f1480a94335b0e70d7539d46f0a22b6cb59f9bb23e99eea2374b7ea9e8d",
+        "lean-toolchain": "sha256:302cd63c54178885b89e669f33b38f12f4dd7ae7e5cac537b3203e3768d8fb2b",
+        "lakefile.toml": "sha256:1287716922019c39e946bd1964d7b911ba9c12510bda1f72212b5449790f7b3f"
+      },
+      "revisionPolicy": "Exact commit plus selected-source snapshot; snapshots without Git never imply a clean commit.",
+      "unavailablePolicy": "Report unavailable or drift without downloads, rebuilding target code, required-CI failure or fabricated outcomes.",
+      "snapshotChecks": {
+        "Mf/DP/PoissonFixedEpochHalfSignalDeltaThreshold.lean": true,
+        "lean-toolchain": true,
+        "lakefile.toml": true,
+        "gitCommit": true
+      }
+    },
+    {
+      "id": "mathlib-heldout",
+      "root": "/home/codex/projects/lean/matrix-factorization/.lake/packages/mathlib",
+      "pathBase": "absolute-local-optional",
+      "optional": true,
+      "split": "held-out",
+      "toolchain": "leanprover/lean4:v4.33.0",
+      "gitCommit": "db584cd6d46c92f209a44c0f1c829460d327499d",
+      "sourceSnapshot": "sha256:f940a9cf9ee9a28c97d2441662a3054092ac3198e344b28816d17ffdb9cda084",
+      "files": {
+        "Mathlib/Data/Nat/GCD/Basic.lean": "sha256:c46b9173200adac93cefa0f8d9ee02306930771a1960796335c32455f719c3ac",
+        "lean-toolchain": "sha256:302cd63c54178885b89e669f33b38f12f4dd7ae7e5cac537b3203e3768d8fb2b",
+        "lakefile.lean": "sha256:9618b4491ba2a0ce2edde2cd29a6ff12974ccec5b331773ad0ae679cbebbc857"
+      },
+      "revisionPolicy": "Exact commit plus selected-source snapshot; snapshots without Git never imply a clean commit.",
+      "unavailablePolicy": "Report unavailable or drift without downloads, rebuilding target code, required-CI failure or fabricated outcomes.",
+      "snapshotChecks": {
+        "Mathlib/Data/Nat/GCD/Basic.lean": true,
+        "lean-toolchain": true,
+        "lakefile.lean": true,
+        "gitCommit": true
+      }
+    }
+  ],
+  "roots": [
+    {
+      "repository": "matrix-calibration",
+      "sourceFile": "Mf/DP/PoissonFixedEpochHalfSignalDeltaThreshold.lean"
+    },
+    {
+      "repository": "mathlib-heldout",
+      "sourceFile": "Mathlib/Data/Nat/GCD/Basic.lean"
+    }
+  ],
+  "execution": {
+    "backend": "text",
+    "build": false,
+    "cache": false,
+    "network": "disabled via bwrap",
+    "timeoutSeconds": 300,
+    "maxRssBytes": 34359738368,
+    "maxOutputBytes": 2097152,
+    "progress": "json"
+  },
+  "selection": {
+    "maxFindingsPerRepository": 6,
+    "order": [
+      "severity:error-warning-info",
+      "finding-id",
+      "subject/path",
+      "source-line"
+    ],
+    "exclude": [
+      "toolchain diagnostics",
+      "no-policy information",
+      "environment availability diagnostics"
+    ],
+    "sampling": "Deterministic bounded finding sample; no cherry-picking after results. Precision applies to this sample only."
+  },
+  "independentLabels": {
+    "status": "pending",
+    "reviewer": null,
+    "correct": null,
+    "actionable": null,
+    "nonclaim": "Implementing-agent or LLM judgments are not independent maintainer labels."
+  },
+  "status": "preregistered-before-execution",
+  "preregistrationIdentity": "sha256:2b2b0a0550561b4a3ae9219089a2fd9c24eaf29c7ba0cae98563e2e4e7e91d7d"
+}
