@@ -15,6 +15,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Dispatch proof-search without importing the general analyzer first."""
 
     arguments = list(sys.argv[1:] if argv is None else argv)
+    if arguments and arguments[0] == "result":
+        from ladon.result_cli import result_main
+
+        return result_main(arguments[1:])
     lightweight = _dispatch_lightweight(arguments)
     if lightweight is not None:
         return lightweight
@@ -67,15 +71,23 @@ def version_main(arguments: Sequence[str], *, force_json: bool = False) -> int:
 def doctor_main(arguments: Sequence[str]) -> int:
     """Emit read-only installation and bounded repository readiness data."""
     if not _doctor_arguments_valid(arguments):
-        print("ladon doctor: supported options are --json and --repo-root PATH", file=sys.stderr)
+        print(
+            "ladon doctor: supported options are --json, --repo-root PATH, and --require-isolation",
+            file=sys.stderr,
+        )
         return 2
     repo_root = _doctor_repo_root(arguments)
-    payload = _doctor_payload(repo_root)
+    payload = _doctor_payload(repo_root, require_isolation="--require-isolation" in arguments)
     if "--json" in arguments:
         print(json.dumps(payload, sort_keys=True, separators=(",", ":")))
     else:
         print(
             f"Ladon {payload['installed']['version']}; Python {payload['installed']['python']}; pin={'present' if payload['readiness']['repositoryPinPresent'] else 'missing'}"
+        )
+        print(
+            f"Target isolation: {payload['posture']['initializerIsolation']}; "
+            f"required={payload['posture']['isolationRequired']}; "
+            f"policySatisfied={payload['posture']['policySatisfied']}"
         )
     return 0
 
@@ -85,7 +97,7 @@ def _doctor_arguments_valid(arguments: Sequence[str]) -> bool:
     index = 0
     while index < len(arguments):
         arg = arguments[index]
-        if arg == "--json":
+        if arg in {"--json", "--require-isolation"}:
             index += 1
             continue
         if arg.startswith("--repo-root="):
@@ -113,7 +125,9 @@ def _doctor_repo_root(arguments: Sequence[str]) -> Path:
     return Path.cwd()
 
 
-def _doctor_payload(repo_root: Path) -> dict[str, object]:
+def _doctor_payload(repo_root: Path, *, require_isolation: bool = False) -> dict[str, object]:
+    from ladon.execution_posture import target_execution_posture
+
     pin = repo_root / "lean-toolchain"
     try:
         version = metadata.version("ladon")
@@ -139,13 +153,7 @@ def _doctor_payload(repo_root: Path) -> dict[str, object]:
             if pin.is_file()
             else None,
         },
-        "posture": {
-            "targetExecution": "not-run",
-            "targetTrustRequirement": "trusted-repository-only",
-            "initializerIsolation": "absent",
-            "network": "not-assessed",
-            "environment": "sanitized-by-worker",
-        },
+        "posture": target_execution_posture(require_isolation=require_isolation),
         "readiness": {"repositoryPinPresent": pin.is_file(), "preflight": "not-run"},
         "nonclaims": [
             "Doctor does not execute Lean, Lake, repository code, or target analysis.",

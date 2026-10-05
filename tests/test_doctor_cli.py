@@ -20,3 +20,14 @@ def test_doctor_json_is_read_only_and_reports_pin(tmp_path, capsys) -> None:
 def test_doctor_rejects_missing_repo_root_value(capsys) -> None:
     assert main(["doctor", "--repo-root"]) == 2
     assert "supported options" in capsys.readouterr().err
+
+
+def test_doctor_reports_required_isolation_without_target_execution(tmp_path, capsys) -> None:
+    assert main(["doctor", "--json", "--repo-root", str(tmp_path), "--require-isolation"]) == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["posture"]["isolationRequired"] is True
+    assert payload["posture"]["policySatisfied"] is False
+    assert payload["posture"]["diagnosticCode"] == "target-isolation-unavailable"
+    assert payload["posture"]["targetExecution"] == "not-run"
+    assert payload["readiness"]["preflight"] == "not-run"
+    assert not list(tmp_path.iterdir())

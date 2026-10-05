@@ -17,6 +17,8 @@ from ladon.cli_execution import (
     EXIT_SUCCESS,
     write_output_file,
 )
+from ladon.evidence_receipt import project_evidence_receipt
+from ladon.evidence_receipt_readers import receipt_text_lines
 from ladon.lean_toolchain import LeanToolchainError, resolve_toolchain_context
 from ladon.proof_search_constructor import (
     ConstructorRequest,
@@ -27,6 +29,7 @@ from ladon.proof_search_consumers import ConsumerRequest, query_consumers
 from ladon.proof_search_discovery_cli import dispatch_discover, register_discover_parser
 from ladon.proof_search_evidence_cli import dispatch_evidence
 from ladon.proof_search_explain import dispatch_explain as _dispatch_explain_impl
+from ladon.proof_search_goal_cli import dispatch_goal, register_goal_parser, render_goal_text
 from ladon.proof_search_index import (
     DEFAULT_MAX_INDEX_BYTES,
     SUPPORTED_INDEX_SCOPES,
@@ -37,10 +40,14 @@ from ladon.proof_search_index import (
     query_proof_search_index,
 )
 from ladon.proof_search_semantic_cli import (
+    SEMANTIC_TEXT_SCHEMAS,
     add_semantic_output_options,
     add_semantic_registry_options,
+    add_target_execution_options,
     deliver_semantic_payload,
+    enforce_semantic_execution_policy,
     render_semantic_candidates,
+    render_semantic_omissions,
 )
 from ladon.proof_search_terminal import (
     bounded_message,
@@ -184,17 +191,20 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     )
     type_search.add_argument("--root", action="append", default=[])
     type_search.add_argument("--limit", type=_bounded_limit, default=20)
-    type_search.add_argument("--diagnostic-limit", type=_bounded_limit, default=0)
+    type_search.add_argument("--diagnostic-limit", type=_diagnostic_limit, default=0)
     type_search.add_argument("--freshness", choices=("verify", "stored"), default="stored")
-    explain = operations.add_parser("explain", help="Explain a bounded candidate/goal difference.")
+    explain = operations.add_parser("explain", help="Compare one indexed candidate type with a goal (structural evidence only).")
     _add_repository_options(explain)
     _add_output_options(explain)
     explain.add_argument("--goal", required=True)
     explain.add_argument("--candidate", required=True)
-    explain.add_argument("--module")
+    explain.add_argument("--module", help="Restrict exact candidate lookup to this owning module.")
     explain.add_argument("--assumption", action="append", default=[])
     explain.add_argument("--suggestion-cap", type=_bounded_limit, default=10)
     explain.add_argument("--freshness", choices=("verify", "stored"), default="stored")
+    explain.add_argument("--check-artifact", help="Explicit stored check artifact supplying the candidate type.")
+    explain.add_argument("--check-local-id", help="Artifact-qualified check-run local ID.")
+    add_semantic_registry_options(explain, _positive_integer)
     explain.add_argument(
         "--raw-signature",
         action="store_true",
@@ -226,6 +236,7 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     constructor.add_argument("--argument", action="append", default=[])
     constructor.add_argument("--limit", type=_bounded_limit, default=100)
     constructor.add_argument("--freshness", choices=("verify", "stored"), default="stored")
+    register_goal_parser(operations, _add_repository_options, _add_output_options)
     check = operations.add_parser("check", help="Run an explicit bounded Lean checker operation.")
     check_commands = check.add_subparsers(dest="check_operation", required=True)
     candidate = check_commands.add_parser(
@@ -239,12 +250,13 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     _add_repository_options(candidate)
     _add_output_options(candidate)
     add_semantic_output_options(candidate, _positive_integer)
+    add_target_execution_options(candidate)
     candidate.add_argument("--module", required=True)
     candidate.add_argument("--goal", required=True)
     candidate.add_argument("--candidate", required=True)
     candidate.add_argument("--timeout-seconds", type=float, default=120.0)
     candidate.add_argument("--max-output-mib", type=_positive_integer, default=8)
-    candidate.add_argument("--max-rss-mib", type=_positive_integer, default=4096)
+    candidate.add_argument("--max-rss-mib", type=_positive_integer, default=32768)
     candidate.add_argument(
         "--toolchain-mode",
         choices=("ambient", "explicit"),
@@ -253,6 +265,35 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     )
     candidate.add_argument("--lake-path", type=Path)
     candidate.add_argument("--lean-path", type=Path)
+
+    source = check_commands.add_parser(
+        "source",
+        help="Associate a fresh source observation with one exact compiled owner.",
+        description=(
+            "Observe source and compiled coherence using scratch outputs. "
+            "This operation does not run the candidate checker."
+        ),
+    )
+    _add_repository_options(source)
+    _add_output_options(source)
+    add_target_execution_options(source)
+    source.add_argument("--module", required=True)
+    source.add_argument("--source", dest="source_path", required=True)
+    source.add_argument("--candidate", required=True)
+    source.add_argument("--subject-artifact", required=True)
+    source.add_argument("--artifact", type=Path, action="append", default=[])
+    source.add_argument("--setup", dest="setup_path", type=Path)
+    source.add_argument("--timeout-seconds", type=float, default=120.0)
+    source.add_argument("--max-output-mib", type=_positive_integer, default=8)
+    source.add_argument("--max-rss-mib", type=_positive_integer, default=32768)
+    source.add_argument(
+        "--toolchain-mode",
+        choices=("explicit",),
+        default="explicit",
+        help="Source association requires pinned explicit Lean and Lake executables.",
+    )
+    source.add_argument("--lake-path", type=Path, required=True)
+    source.add_argument("--lean-path", type=Path, required=True)
     return parser
 
 
@@ -356,12 +397,12 @@ def _emit_progress(
 
 
 def _operation_from_args(args: argparse.Namespace) -> str:
-    index_operation = getattr(args, "index_operation", None)
-    check_operation = getattr(args, "check_operation", None)
     top_operation = getattr(args, "proof_search_operation", "unknown")
-    if check_operation:
-        return f"{top_operation}.{check_operation}"
-    return f"{top_operation}.{index_operation}" if index_operation else top_operation
+    for selector in ("check_operation", "goal_operation", "index_operation"):
+        selected = getattr(args, selector, None)
+        if selected:
+            return f"{top_operation}.{selected}"
+    return top_operation
 
 
 def _operation_from_tokens(arguments: Sequence[str]) -> str:
@@ -370,7 +411,7 @@ def _operation_from_tokens(arguments: Sequence[str]) -> str:
     if not arguments:
         return "unknown"
     top_operation = arguments[0]
-    if top_operation in {"index", "search", "check"} and len(arguments) > 1:
+    if top_operation in {"index", "search", "check", "goal"} and len(arguments) > 1:
         return f"{top_operation}.{arguments[1]}"
     return top_operation
 
@@ -392,6 +433,7 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
         "discover": lambda args, repo_root, index_path: dispatch_discover(
             args, repo_root, index_path
         ),
+        "goal": lambda args, repo_root, index_path: dispatch_goal(args, repo_root),
     }
     handler = handlers.get(args.proof_search_operation)
     if handler is None:
@@ -399,7 +441,10 @@ def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
             f"unsupported proof-search operation {args.proof_search_operation!r}"
         )
     payload = handler(args, repo_root, index_path)
-    if args.proof_search_operation in {"check", "discover"}:
+    if args.proof_search_operation == "discover" or (
+        args.proof_search_operation == "check"
+        and getattr(args, "check_operation", None) == "candidate"
+    ):
         return deliver_semantic_payload(args, repo_root, payload)
     return payload
 
@@ -444,8 +489,13 @@ def _dispatch_check_adapter(
 
 
 def _dispatch_check(args: argparse.Namespace, repo_root: Path) -> Mapping[str, Any]:
-    """Run the sole explicit Lean-backed proof-search operation."""
+    """Dispatch one explicit Lean-backed proof-search operation."""
 
+    enforce_semantic_execution_policy(args)
+    if args.check_operation == "source":
+        from ladon.source_association_cli import dispatch_source_association
+
+        return dispatch_source_association(args, repo_root)
     if args.check_operation != "candidate":
         raise ProofSearchIndexError("unsupported checker operation")
     try:
@@ -464,6 +514,7 @@ def _dispatch_check(args: argparse.Namespace, repo_root: Path) -> Mapping[str, A
             max_output_bytes=args.max_output_mib * 1024 * 1024,
             max_rss_bytes=args.max_rss_mib * 1024 * 1024,
             toolchain=toolchain,
+            require_isolation=getattr(args, "require_isolation", False),
         )
     except LeanToolchainError as error:
         raise ProofSearchIndexError(
@@ -588,6 +639,8 @@ def _write_payload(
     output: str,
     output_format: str,
 ) -> None:
+    if payload.get("evidenceReceipt") is not None:
+        project_evidence_receipt(payload["evidenceReceipt"], projection_kind="json-renderer")
     content = (
         json.dumps(payload, sort_keys=True, indent=2, ensure_ascii=False) + "\n"
         if output_format == "json"
@@ -600,10 +653,39 @@ def _write_payload(
 
 
 def _render_text(payload: Mapping[str, Any]) -> str:
+    if payload.get("schema") == "ladon-source-goal-completion-result-v1":
+        from ladon.source_goal_completion_cli import render_completion_text
+
+        return render_completion_text(payload)
+    if payload.get("schema") in {
+        "ladon-source-goal-query-result-v1", "ladon-source-goal-capture-result-v1",
+    }:
+        return render_goal_text(payload)
+    if payload.get("schema") == "ladon-source-association-v1":
+        return _render_source_association(payload)
     lines = _render_header(payload)
+    if payload.get("schema") in {
+        "ladon-semantic-candidate-check-result-v1", "ladon-verified-discovery-result-v1",
+    }:
+        lines.append("audit source: original observations; execution binding is not revalidated in this view.")
     lines.extend(_render_core_rows(payload))
+    if payload.get("schema") in SEMANTIC_TEXT_SCHEMAS:
+        lines.extend(render_semantic_omissions(payload))
     lines.extend(_render_evidence_sections(payload))
     lines.extend(_render_warnings(payload))
+    return "\n".join(lines) + "\n"
+
+
+def _render_source_association(payload: Mapping[str, Any]) -> str:
+    """Render the independent source result without semantic projection."""
+
+    lines = [
+        f"proof-search check.source: {payload.get('status', 'unknown')}",
+        f"schema: {payload.get('schema')}",
+        f"operation: {payload.get('operation')}",
+    ]
+    for key in sorted(set(payload) - {"schema", "operation", "status"}):
+        lines.append(f"{key}: {json.dumps(payload[key], sort_keys=True, ensure_ascii=False)}")
     return "\n".join(lines) + "\n"
 
 
@@ -637,16 +719,26 @@ def _render_core_rows(payload: Mapping[str, Any]) -> list[str]:
         lines.append(f"truncated: {str(bool(payload.get('truncated'))).lower()}")
     candidates = payload.get("candidates")
     if isinstance(candidates, list):
-        lines.extend(render_semantic_candidates(candidates))
+        lines.extend(render_semantic_candidates(
+            candidates, include_projected_evidence=payload.get("schema") in SEMANTIC_TEXT_SCHEMAS
+        ))
         lines.append(f"candidates: {len(candidates)}")
     candidate = payload.get("candidate")
     if isinstance(candidate, Mapping):
-        lines.extend(render_semantic_candidates([candidate]))
+        lines.extend(render_semantic_candidates(
+            [candidate], include_projected_evidence=payload.get("schema") in SEMANTIC_TEXT_SCHEMAS
+        ))
     return lines
 
 
 def _render_evidence_sections(payload: Mapping[str, Any]) -> list[str]:
     lines = _render_tabular_sections(payload)
+    lines.extend(receipt_text_lines(payload.get("evidenceReceipt")))
+    for name in ("observations", "checks"):
+        section = payload.get(name, {})
+        if isinstance(section, Mapping):
+            for row in section.get("rows", []):
+                lines.extend(receipt_text_lines(row.get("evidenceReceipt")))
     lines.extend(_render_paths(payload))
     lines.extend(_render_coverage(payload))
     return lines
@@ -732,6 +824,16 @@ def _render_query_rows(rows: list[Any]) -> list[str]:
             f"- {name} [{row.get('kind', 'unknown')}; {row.get('authority', 'unknown')}] {location}"
         )
     return rendered
+
+
+def _diagnostic_limit(value: str) -> int:
+    try:
+        parsed = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("diagnostic limit must be an integer") from exc
+    if not 0 <= parsed <= 1000:
+        raise argparse.ArgumentTypeError("diagnostic limit must be between 0 and 1000")
+    return parsed
 
 
 def _bounded_limit(value: str) -> int:

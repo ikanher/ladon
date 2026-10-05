@@ -89,6 +89,7 @@ UNSUPPORTED_OPTIONS = {
 PUBLIC_COMMAND_HELP = """\
 commands:
   doctor    Emit read-only installation and repository readiness diagnostics.
+  result    Validate an experimental result manifest without loading Lean evidence.
   theorem   Plan, materialize, and independently replay theorem capsules.
   proof-search  Build and query local Lean proof-navigation evidence.
   proofir       Validate, canonicalize, or inspect ProofIR artifacts.
@@ -376,6 +377,10 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Run one clean-core Ladon analysis and return a process status code."""
 
     arguments = list(argv) if argv is not None else sys.argv[1:]
+    if arguments and arguments[0] == "result":
+        from ladon.result_cli import result_main
+
+        return result_main(arguments[1:])
     delegated = delegated_command(arguments)
     if delegated is not None:
         return delegated

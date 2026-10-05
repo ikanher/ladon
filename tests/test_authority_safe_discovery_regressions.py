@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sqlite3
 from pathlib import Path
 
@@ -83,6 +84,44 @@ def test_explain_returns_bounded_match_evidence_for_ambiguous_candidates(tmp_pat
     assert result["candidateMatchesTruncated"] is True
     assert result["candidateMatches"][0]["path"] == "Demo.lean"
     assert result["candidateMatches"][0]["generationEvidence"]["freshness"] == "stored"
+
+
+@pytest.mark.parametrize("freshness", ["fresh", "stale", "unavailable"])
+def test_explain_preserves_freshness_without_index_storage_dump(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, freshness: str
+) -> None:
+    database = tmp_path / "proof.sqlite"
+    _declaration_database(database)
+    with sqlite3.connect(database) as connection:
+        connection.execute("UPDATE declarations SET type_status='lexical-signature'")
+    evidence = {
+        "freshness": freshness, "status": "available",
+        "generationIdentity": "stored-generation",
+        "currentGenerationIdentity": "current-generation",
+        "sourceFingerprint": "source", "configurationFingerprint": "configuration",
+        "toolchainIdentity": "lean-pin", "indexSchema": 5,
+        "indexPath": str(database), "evidenceStatus": "lexical-fallback",
+        "nonclaim": "Navigation evidence only.",
+    }
+    status = {**evidence, "storage": {"schema": "x" * 50_000}, "lookupIndexes": ["internal"]}
+    monkeypatch.setattr(
+        "ladon.proof_search_explain.inspect_proof_search_index", lambda *_args, **_kwargs: status
+    )
+    args = argparse.Namespace(
+        goal="True", candidate="Demo.proof", module="Demo", assumption=[],
+        suggestion_cap=1, freshness="verify", raw_signature=False,
+    )
+    result = _dispatch_explain(args, tmp_path, database)
+    assert result["status"] == "unavailable"
+    assert result["freshnessEvidence"] == evidence
+    assert len(json.dumps(result)) < 4_000
+    if freshness == "fresh":
+        assert result["reason"] == "indexed type is not structurally rendered"
+        assert result["candidateMatches"][0]["generationEvidence"] == evidence
+    else:
+        assert result["reason"] == "candidate index is stale or unavailable"
+        assert result["candidateMatches"] == []
+    assert status["storage"]["schema"] == "x" * 50_000
 
 
 def test_type_text_scope_requires_a_population_root() -> None:

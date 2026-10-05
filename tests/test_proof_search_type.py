@@ -17,7 +17,7 @@ def test_type_search_returns_lexical_shortlist_and_diagnostics(tmp_path: Path, c
     status = main(["proof-search", "search", "type-text", "--repo-root", str(tmp_path), "--pattern", "Nat", "--limit", "1", "--diagnostic-limit", "1", "--format", "json"])
     payload = json.loads(capsys.readouterr().out)
     assert status == 0
-    assert payload["schema"] == "ladon-proof-search-type-result-v1"
+    assert payload["schema"] == "ladon-proof-search-type-text-result-v2"
     assert payload["results"][0]["authority"] == "lexical_shortlist"
     assert "Nat" in payload["results"][0]["typeText"]
     assert payload["freshness"] == "stored"

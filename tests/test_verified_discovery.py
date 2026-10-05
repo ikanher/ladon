@@ -167,7 +167,7 @@ def test_discovery_check_failure_is_unassessed_and_bounded() -> None:
     assert result["candidates"][0]["check"]["status"] == "unassessed"
 
 
-def test_discovery_cli_marks_caller_context_as_unsupported() -> None:
+def test_discovery_cli_documents_ordered_caller_context() -> None:
     parser = build_proof_search_parser()
     args = build_proof_search_parser().parse_args(
         [
@@ -194,7 +194,7 @@ def test_discovery_cli_marks_caller_context_as_unsupported() -> None:
         action for action in parser._actions if isinstance(action, argparse._SubParsersAction)
     )
     help_text = " ".join(subparsers.choices["discover"].format_help().split())
-    assert "Unsupported in the proposition-discovery testing profile" in help_text
+    assert "Ordered caller-local declaration NAME:TYPE" in help_text
 
 
 def test_semantic_request_retains_discovery_local_context() -> None:
@@ -389,6 +389,43 @@ def test_discovery_isolates_batch_and_scratch_failures() -> None:
     )
     assert scratch_failed["status"] == "available"
     assert scratch_failed["candidates"][0]["check"]["scratch"]["status"] == "failed"
+
+
+@pytest.mark.parametrize(
+    ("scope", "roots", "expected"),
+    [
+        ("repository", [], {"Main.localFact", "Helpers.useful"}),
+        ("project", [], {"Main.localFact", "Helpers.useful"}),
+        ("module", ["Helpers"], {"Helpers.useful"}),
+        ("namespace", ["Helpers"], {"Helpers.useful"}),
+        ("file", ["Helpers.lean"], {"Helpers.useful"}),
+        ("imports", ["Main"], {"Main.localFact", "Helpers.useful"}),
+        ("closure", ["Main"], {"Main.localFact", "Helpers.useful"}),
+        ("neighborhood", ["Helpers"], {"Main.localFact", "Helpers.useful"}),
+        ("external", [], set()),
+    ],
+)
+def test_discovery_checking_module_does_not_filter_shortlist_scope(
+    tmp_path: Path, scope: str, roots: list[str], expected: set[str]
+) -> None:
+    (tmp_path / "Helpers.lean").write_text(
+        "namespace Helpers\ntheorem useful : True := True.intro\nend Helpers\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "Main.lean").write_text(
+        "import Helpers\nnamespace Main\ntheorem localFact : True := True.intro\nend Main\n",
+        encoding="utf-8",
+    )
+    build_proof_search_index(tmp_path)
+    args = argparse.Namespace(
+        pattern="True", module="Main", scope=scope, root=roots,
+        max_candidates=20, freshness="stored",
+    )
+
+    rows, evidence = _type_text_shortlist(args, tmp_path, None)
+
+    assert {row["candidateName"] for row in rows} == expected
+    assert evidence["coverage"]["scope"]["kind"] == scope
 
 
 def test_discovery_shortlist_mode_reuses_type_text_scope_and_coverage(tmp_path: Path) -> None:
