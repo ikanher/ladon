@@ -10,6 +10,8 @@ import re
 from datetime import UTC, datetime
 from typing import Any
 
+from ladon.readiness_evidence import verify_readiness_evidence
+
 READINESS_LEVELS = (
     "experimental",
     "contract-supported",
@@ -26,8 +28,13 @@ EVIDENCE_FIELDS = {
 }
 
 
-def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -> dict[str, Any]:
-    """Return the highest level whose named evidence is present and fresh."""
+def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None,
+                     evidence_root=None, inventories=None, test_requirements=None) -> dict[str, Any]:
+    """Promote only fresh claims resolved against independently selected contracts.
+
+    Without an evidence root and test requirements the result is experimental.
+    Recorded bytes establish local integrity, not producer authenticity.
+    """
     current = now or datetime.now(UTC)
     if current.utcoffset() is None:
         current = current.replace(tzinfo=UTC)
@@ -50,11 +57,12 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
     }
     level = "experimental"
     reasons: list[str] = []
+    validation_issues = _validate_evidence(evidence, evidence_root, inventories, test_requirements)
     for candidate in READINESS_LEVELS[1:]:
         missing = [
             name
             for name in requirements[candidate]
-            if not _fresh_pass(evidence.get(name), current, EVIDENCE_FIELDS[name])
+            if name in validation_issues or not _fresh_pass(evidence.get(name), current, EVIDENCE_FIELDS[name])
         ]
         if missing:
             reasons.extend(f"{candidate}: missing or stale {name}" for name in missing)
@@ -69,6 +77,7 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
         "level": level,
         "evidence": evidence,
         "reasons": reasons,
+        "validationIssues": validation_issues,
         "evaluatedAt": current.isoformat(),
         "nonclaims": [
             "Readiness is not proof authority and does not grant public distribution rights."
@@ -76,15 +85,27 @@ def assess_readiness(evidence: dict[str, Any], *, now: datetime | None = None) -
     }
 
 
+def _validate_evidence(evidence, root, inventories, requirements) -> dict[str, str]:
+    issues = {}
+    for name in EVIDENCE_FIELDS:
+        try:
+            verify_readiness_evidence(name, evidence.get(name), root, inventories, requirements)
+        except (ValueError, TypeError, KeyError, OSError, AttributeError) as error:
+            issues[name] = str(error)
+    return issues
+
+
 def _common_provenance(
     evidence: dict[str, Any], names: tuple[str, ...]
-) -> tuple[str, str, str, str] | None:
+) -> tuple[str, ...] | None:
     values = {
         (
             str(evidence[name]["sourceTreeIdentity"]),
             str(evidence[name]["environmentRef"]),
             str(evidence[name]["producerIdentity"]),
             str(evidence[name]["workingDirectory"]),
+            str(evidence[name]["candidateIdentity"]),
+            str(evidence[name]["wheelDigest"]),
         )
         for name in names
         if isinstance(evidence.get(name), dict)
@@ -103,7 +124,7 @@ def _fresh_pass(value: Any, now: datetime, required_fields: tuple[str, ...]) -> 
         max_age = float(value.get("maxAgeSeconds", 86_400))
     except (TypeError, ValueError):
         return False
-    if observed.utcoffset() is None or not math.isfinite(max_age) or max_age <= 0:
+    if observed.utcoffset() is None or not math.isfinite(max_age) or not 0 < max_age <= 30 * 86_400:
         return False
     age = (now - observed).total_seconds()
     return 0 <= age <= max_age

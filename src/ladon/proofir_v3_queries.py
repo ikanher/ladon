@@ -6,6 +6,7 @@ import json
 import sqlite3
 from typing import Any
 
+from ladon.evidence_receipt_readers import stored_check_receipt, stored_query_receipt
 from ladon.proofir_fingerprint_registry import is_exact_scheme
 
 # The registry is deliberately explicit: a scheme is searchable only after its
@@ -13,6 +14,16 @@ from ladon.proofir_fingerprint_registry import is_exact_scheme
 # structural/v2 fingerprints are exact within one Lean environment and therefore
 # are a supported search key, but are never silently equated with lean-expr/v1.
 MAX_QUERY_LIMIT = 10_000
+
+# Select exact input content owners within each bounded row query. Environment
+# identity alone can name multiple producer artifacts and cannot choose the input.
+_INPUT_ENVIRONMENTS = (
+    "COALESCE((SELECT json_group_array(json(environment.canonical_json)) "
+    "FROM proofir_v3_artifacts AS environment "
+    "JOIN json_each(artifact.canonical_json,'$.payload.inputs.artifactRefs') AS input_ref "
+    "ON environment.content_artifact_id=input_ref.value "
+    "WHERE environment.artifact_kind='proofir.environment'),'[]')"
+)
 
 
 def _validate_limit(limit: int) -> None:
@@ -83,12 +94,47 @@ def query_v3_theorem_evidence(
     if not _has_table(connection, "proofir_v3_subjects"):
         return _unavailable(theorem, limit)
     subjects = _subjects(connection, theorem, limit)
+    return _dossier(connection, theorem, subjects, limit, _coverage(connection, theorem, limit))
+
+
+def query_v3_subject_evidence(
+    connection: sqlite3.Connection, subject: dict[str, str], *, limit: int,
+) -> dict[str, Any]:
+    """Select one exact owner/kind/local subject, without a theorem-name fallback."""
+    _validate_limit(limit)
+    if (not isinstance(subject, dict)
+            or set(subject) != {"ownerArtifactId", "kind", "localId"}
+            or any(not isinstance(v, str) or not v for v in subject.values())
+            or subject["kind"] not in {"declaration", "statement"}):
+        raise ValueError("exact subject requires ownerArtifactId, declaration/statement kind and localId")
+    subjects = []
+    if _has_table(connection, "proofir_v3_subjects"):
+        row = connection.execute(
+            "SELECT artifact.environment_ref FROM proofir_v3_subjects AS subject "
+            "JOIN proofir_v3_artifacts AS artifact ON "
+            "artifact.content_artifact_id=subject.owner_content_artifact_id "
+            "WHERE subject.owner_content_artifact_id=? AND subject.subject_kind=? AND subject.local_id=?",
+            (subject["ownerArtifactId"], subject["kind"], subject["localId"]),
+        ).fetchone()
+        if row is not None:
+            subjects.append({**subject, "environmentRef": row[0]})
+    else:
+        return _unavailable(subject["localId"], limit)
+    # Existing coverage selectors are theorem names, not exact owner identities.
+    result = _dossier(connection, subject["localId"], subjects, limit, [])
+    result.update(schema="ladon-proofir-v3-subject-evidence-v1", subject=dict(subject))
+    result["coverage"]["reason"] = "no exact subject selector"
+    return result
+
+
+def _dossier(connection, theorem, subjects, limit, coverage):
+    """Share evidence projection while keeping the selection owners separate."""
     claims = _claims(connection, subjects, limit)
     observations = _observations(connection, subjects, limit)
+    checks = _check_runs(connection, subjects, limit)
     derivations = _derivations(connection, subjects, limit)
     attachments = _attachments(connection, subjects, limit)
     navigation = _navigation(connection, subjects, limit)
-    coverage = _coverage(connection, theorem, limit)
     omissions = _omissions(connection, _artifact_ids(coverage), limit)
     coverage_section = _section(coverage, limit)
     if coverage:
@@ -100,6 +146,7 @@ def query_v3_theorem_evidence(
         "subjects": _section(subjects, limit),
         "claims": _section(claims, limit),
         "observations": _section(observations, limit),
+        "checks": _section(checks, limit),
         "derivations": _section(derivations, limit),
         "attachments": _section(attachments, limit),
         "navigation": _section(navigation, limit),
@@ -114,13 +161,14 @@ def query_v3_theorem_evidence(
         "schema": "ladon-proofir-v3-theorem-evidence-v1",
         "theorem": theorem,
         "status": "observed" if subjects else "not-observed",
+        "evidenceReceipt": stored_query_receipt("theorem-evidence", theorem, observed=bool(subjects)),
         **sections,
         "coverage": coverage_section,
         "omissions": _section(omissions, limit),
         "limitations": _section(
             _limitations_for_artifacts(
                 connection,
-                _artifact_ids(claims + observations + derivations + attachments + navigation),
+                _artifact_ids(claims + observations + checks + derivations + attachments + navigation),
             ),
             limit,
         ),
@@ -234,6 +282,35 @@ def _claims(
     ]
 
 
+def _check_runs(
+    connection: sqlite3.Connection, subjects: list[dict[str, Any]], limit: int,
+) -> list[dict[str, Any]]:
+    """Return distinct canonical checks associated with the visible exact subjects."""
+
+    where, parameters = _subject_predicate(
+        connection, subjects[:limit], "member.owner_content_artifact_id",
+        "member.subject_kind", "member.subject_local_id",
+    )
+    rows = connection.execute(
+        "SELECT DISTINCT check_run.content_artifact_id,check_run.check_run_id,"
+        "check_run.operation,check_run.authority_basis,check_run.guarantee_scope,artifact.canonical_json,"
+        f"{_INPUT_ENVIRONMENTS} "
+        "FROM proofir_v3_check_runs AS check_run JOIN proofir_v3_artifacts AS artifact "
+        "ON artifact.content_artifact_id=check_run.content_artifact_id "
+        "JOIN proofir_v3_artifact_subjects AS member ON member.content_artifact_id=check_run.content_artifact_id "
+        f"WHERE {where} ORDER BY check_run.content_artifact_id,check_run.check_run_id LIMIT ?",
+        (*parameters, limit + 1),
+    )
+    return [
+        {"artifactId": row[0], "checkRunId": row[1], "operation": row[2],
+         "authorityBasis": row[3], "guaranteeScope": row[4],
+         "evidenceReceipt": stored_check_receipt(
+             json.loads(row[5]), projection_kind="dossier", environment_artifacts=json.loads(row[6]),
+         )}
+        for row in rows
+    ]
+
+
 def _observations(
     connection: sqlite3.Connection, subjects: list[dict[str, Any]], limit: int
 ) -> list[dict[str, Any]]:
@@ -243,7 +320,8 @@ def _observations(
         "SELECT observation.observation_id,observation.content_artifact_id,"
         "observation.observation_kind,observation.result,observation.authority_basis,"
         "observation.guarantee_scope,observation.details_json,observation.dimensions_json,"
-        "artifact.environment_ref,artifact.canonical_json,observation.source_pointer "
+        "artifact.environment_ref,artifact.canonical_json,observation.source_pointer,"
+        f"{_INPUT_ENVIRONMENTS} "
         "FROM proofir_v3_observations AS observation JOIN proofir_v3_artifacts AS artifact "
         "ON artifact.content_artifact_id=observation.content_artifact_id "
         f"WHERE {where} ORDER BY observation.observation_id LIMIT ?",
@@ -251,7 +329,10 @@ def _observations(
     )
     for row in rows:
         artifact = json.loads(row[9])
-        result.append({"observationId": row[0], "artifactId": row[1], "kind": row[2], "result": row[3], "authorityBasis": row[4], "guaranteeScope": row[5], "details": json.loads(row[6]), "dimensions": json.loads(row[7]), "environmentRef": row[8], "producer": artifact["producer"], "supportingArtifactId": row[1], "limitations": artifact["limitations"], "sourcePointer": row[10]})
+        reader_receipt = stored_check_receipt(
+            artifact, projection_kind="dossier", environment_artifacts=json.loads(row[11]),
+        )
+        result.append({"evidenceReceipt": reader_receipt, "observationId": row[0], "artifactId": row[1], "kind": row[2], "result": row[3], "authorityBasis": row[4], "guaranteeScope": row[5], "details": json.loads(row[6]), "dimensions": json.loads(row[7]), "environmentRef": row[8], "producer": artifact["producer"], "supportingArtifactId": row[1], "limitations": artifact["limitations"], "sourcePointer": row[10]})
     return result
 
 
@@ -406,15 +487,16 @@ def _artifact_ids(rows: list[dict[str, Any]]) -> list[str]:
 def _limitations_for_artifacts(
     connection: sqlite3.Connection, artifact_ids: list[str]
 ) -> list[dict[str, str]]:
+    artifacts = connection.execute(
+        "SELECT canonical_json FROM proofir_v3_artifacts "
+        "WHERE content_artifact_id IN (SELECT value FROM json_each(?)) "
+        "ORDER BY content_artifact_id",
+        (json.dumps(artifact_ids),),
+    )
     rows = {
         row["id"]: row
-        for artifact_id in artifact_ids
-        for row in json.loads(
-            connection.execute(
-                "SELECT canonical_json FROM proofir_v3_artifacts WHERE content_artifact_id=?",
-                (artifact_id,),
-            ).fetchone()[0]
-        ).get("limitations", [])
+        for artifact in artifacts
+        for row in json.loads(artifact[0]).get("limitations", [])
     }
     rows.setdefault(
         "evidence-not-theorem-truth",
@@ -456,9 +538,11 @@ def _unavailable(theorem: str, limit: int) -> dict[str, Any]:
         "schema": "ladon-proofir-v3-theorem-evidence-v1",
         "theorem": theorem,
         "status": "unavailable",
+        "evidenceReceipt": stored_query_receipt("theorem-evidence", theorem, observed=False),
         "subjects": _section([], limit),
         "claims": _section([], limit),
         "observations": _section([], limit),
+        "checks": _section([], limit),
         "derivations": _section([], limit),
         "attachments": _section([], limit),
         "coverage": unavailable_coverage,
@@ -481,6 +565,7 @@ def _has_table(connection: sqlite3.Connection, table: str) -> bool:
 __all__ = [
     "query_v3_artifacts",
     "query_v3_semantic_candidates",
+    "query_v3_subject_evidence",
     "query_v3_theorem_evidence",
     "query_v3_triage",
 ]

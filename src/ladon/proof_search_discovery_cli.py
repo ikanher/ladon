@@ -5,11 +5,16 @@ from __future__ import annotations
 import argparse
 import sqlite3
 from collections.abc import Mapping
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
 from ladon.lean_toolchain import LeanToolchainError, resolve_toolchain_context
 from ladon.proof_search_index import ProofSearchIndexError
+from ladon.proof_search_semantic_cli import (
+    add_target_execution_options,
+    enforce_semantic_execution_policy,
+)
 from ladon.proof_search_type import TypeSearchRequest, query_type_shortlist
 from ladon.proof_search_type_cli import type_text_freshness
 from ladon.semantic_candidate_batch_worker import check_semantic_candidates
@@ -36,7 +41,11 @@ def register_discover_parser(
     add_repository_options(discover)
     add_output_options(discover)
     add_semantic_output_options(discover)
-    discover.add_argument("--module", required=True)
+    add_target_execution_options(discover)
+    discover.add_argument(
+        "--module", required=True,
+        help="Module used to check the goal; shortlist selection uses --scope and --root.",
+    )
     discover.add_argument("--goal", required=True)
     discover.add_argument("--candidate", action="append", default=[])
     discover.add_argument(
@@ -46,7 +55,7 @@ def register_discover_parser(
         "--local",
         action="append",
         default=[],
-        help=("Unsupported in the proposition-discovery testing profile; any use fails closed."),
+        help="Ordered caller-local declaration NAME:TYPE; repeat for dependent hypotheses.",
     )
     discover.add_argument("--max-candidates", type=bounded_limit, default=20)
     discover.add_argument("--batch-size", type=bounded_limit, default=8)
@@ -55,7 +64,7 @@ def register_discover_parser(
     discover.add_argument("--freshness", choices=("stored", "verify"), default="stored")
     discover.add_argument("--timeout-seconds", type=float, default=120.0)
     discover.add_argument("--max-output-mib", type=positive_integer, default=8)
-    discover.add_argument("--max-rss-mib", type=positive_integer, default=4096)
+    discover.add_argument("--max-rss-mib", type=positive_integer, default=32768)
     discover.add_argument("--toolchain-mode", choices=("ambient", "explicit"), default="ambient")
     discover.add_argument("--lake-path", type=Path)
     discover.add_argument("--lean-path", type=Path)
@@ -73,18 +82,9 @@ def register_discover_parser(
 def dispatch_discover(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None = None
 ) -> dict[str, Any]:
-    if args.local:
-        raise ProofSearchIndexError(
-            "caller local context is unavailable in the proposition-discovery testing profile"
-        )
+    enforce_semantic_execution_policy(args)
     _validate_explicit_candidates(args.candidate)
     try:
-        toolchain = resolve_toolchain_context(
-            repo_root.resolve(),
-            lake_path=args.lake_path,
-            lean_path=args.lean_path,
-            selection_mode=args.toolchain_mode,
-        )
         request = DiscoveryRequest(
             repo_root.resolve(),
             args.module,
@@ -98,8 +98,16 @@ def dispatch_discover(
             args.scope,
             tuple(args.root),
             args.freshness,
-            toolchain.context_identity if toolchain else None,
+            None,
+            require_isolation=getattr(args, "require_isolation", False),
         )
+        toolchain = resolve_toolchain_context(
+            repo_root.resolve(),
+            lake_path=args.lake_path,
+            lean_path=args.lean_path,
+            selection_mode=args.toolchain_mode,
+        )
+        request = replace(request, execution_context_ref=toolchain.context_identity if toolchain else None)
     except LeanToolchainError as error:
         raise ProofSearchIndexError(
             str(error),
@@ -107,7 +115,7 @@ def dispatch_discover(
             code="toolchain-unavailable",
             remediation="Run 'ladon doctor --json' and correct the reported Lean/Lake posture.",
         ) from error
-    except ValueError as error:
+    except (ValueError, TypeError) as error:
         raise ProofSearchIndexError(str(error)) from error
     shortlist_evidence: dict[str, Any] = {"source": "explicit-candidates"}
     if args.candidate:
@@ -146,7 +154,7 @@ def _type_text_shortlist(
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     request = TypeSearchRequest(
         pattern=args.pattern,
-        module=args.module,
+        # The checking environment is independent of candidate selection scope.
         scope=args.scope,
         roots=tuple(args.root),
         limit=args.max_candidates,
@@ -200,6 +208,7 @@ def request_to_semantic(request: DiscoveryRequest, toolchain: Any) -> Any:
         toolchain=toolchain,
         local_context=request.local_context,
         execution_context_ref=request.execution_context_ref,
+        require_isolation=request.require_isolation,
     )
 
 

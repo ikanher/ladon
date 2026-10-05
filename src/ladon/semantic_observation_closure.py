@@ -157,6 +157,8 @@ def _resolve_observation(
     status = str(check.get("status", "unknown"))
     validate_status(status, scratch)
     receipt_value = check.get("evidenceReceipt")
+    if receipt_value is not None and not isinstance(receipt_value, Mapping):
+        raise SemanticProjectionError("semantic observation has invalid evidence receipt shape")
     receipt = receipt_value if isinstance(receipt_value, Mapping) else None
     if receipt is not None:
         validate_canonical_receipt(receipt)
@@ -164,12 +166,21 @@ def _resolve_observation(
     if not requires_evidence:
         if receipt is not None:
             validate_weak_observation(check, receipt, candidate, status, request)
-        return ResolvedSemanticObservation(candidate, status, None, None, None, None)
+        return ResolvedSemanticObservation(candidate, status, None, None, None, None, scratch)
     if receipt is None:
         raise SemanticProjectionError(
             f"checker-backed semantic observation for {candidate} has no evidence receipt"
         )
     evidence = resolve_observation_evidence(check, receipt, registry)
+    parent_artifact = None
+    if parent is not None:
+        validate_scratch_parent(
+            check,
+            parent.environment_ref,
+            parent.check_run_id,
+            evidence.environment_ref,
+        )
+        parent_artifact = registry.get(parent.check_artifact_ref)
     validate_observation_semantics(
         check,
         receipt,
@@ -178,14 +189,8 @@ def _resolve_observation(
         status,
         request=request,
         scratch=scratch,
+        parent_check_artifact=parent_artifact,
     )
-    if parent is not None:
-        validate_scratch_parent(
-            check,
-            parent.environment_ref,
-            parent.check_run_id,
-            evidence.environment_ref,
-        )
     return ResolvedSemanticObservation(
         candidate=candidate,
         status=status,

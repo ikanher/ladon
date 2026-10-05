@@ -25,6 +25,8 @@ class TypeSearchRequest:
     def __post_init__(self) -> None:
         if not self.pattern.strip() or self.limit < 1 or self.limit > 1000:
             raise ValueError("type search pattern and limit are required")
+        if type(self.diagnostic_limit) is not int or not 0 <= self.diagnostic_limit <= 1000:
+            raise ValueError("type-text diagnostic limit must be an integer between 0 and 1000")
         _validate_type_scope(self.scope, self.module, self.namespace, self.roots)
         if self.freshness not in {"stored", "verify"}:
             raise ValueError("type-text freshness must be stored or verify")
@@ -58,14 +60,18 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
         (*values, request.limit + request.diagnostic_limit + 1),
     ).fetchall()
     verification = verifier(tuple(str(row[2]) for row in rows[: request.limit]), request.pattern) if verifier else {}
-    result_rows, diagnostics = _result_rows(rows, request, verification)
+    if any(verification.values()):
+        raise ValueError("type-text freshness verifier cannot supply candidate verification")
+    result_rows, diagnostics = _result_rows(rows, request)
     truncated = len(rows) > request.limit + request.diagnostic_limit
     omission_rows = _omissions(scope_evidence, truncated, len(rows), request)
     field_counts = _field_counts(result_rows)
     return {
-        "schema": "ladon-proof-search-type-result-v1",
-        "operation": "search-type",
+        "schema": "ladon-proof-search-type-text-result-v2",
+        "schemaVersion": 2,
+        "operation": "search-type-text",
         "matchMode": "type-text-overlap",
+        "matchingPolicy": "literal-substring-sqlite-ascii-lower",
         "status": "available",
         "freshness": "verified-fresh" if request.freshness == "verify" else "stored",
         "results": result_rows,
@@ -97,11 +103,8 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
 def _result_rows(
     rows: Sequence[sqlite3.Row],
     request: TypeSearchRequest,
-    verification: Mapping[str, Mapping[str, Any]],
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     result_rows = [_result_row(row, request.pattern) for row in rows[: request.limit]]
-    for item in result_rows:
-        item.update(verification.get(str(item["candidateName"]), {}))
     diagnostics = [
         {"declarationId": row[0], "candidateName": row[2], "reason": "shortlist_not_verified"}
         for row in rows[request.limit : request.limit + request.diagnostic_limit]
@@ -140,7 +143,7 @@ def _result_row(row: sqlite3.Row, pattern: str) -> dict[str, Any]:
     """Expose bounded type evidence without returning unbounded source text."""
 
     field_contributions = {
-        field: pattern.casefold() in str(value or "").casefold()
+        field: _sqlite_lower(pattern) in _sqlite_lower(str(value or ""))
         for field, value in (
             ("renderedType", row[12]),
             ("conclusionText", row[13]),
@@ -169,6 +172,11 @@ def _result_row(row: sqlite3.Row, pattern: str) -> dict[str, Any]:
     }
 
 
+def _sqlite_lower(value: str) -> str:
+    """Mirror SQLite's built-in lower(), which folds ASCII letters only."""
+    return value.translate(str.maketrans("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"))
+
+
 def _type_text_predicate(
     connection: sqlite3.Connection, request: TypeSearchRequest
 ) -> tuple[list[str], list[Any], dict[str, Any]]:
@@ -187,8 +195,8 @@ def _type_text_predicate(
             clauses.append(clause)
             values.append(value)
     if request.namespace:
-        clauses.append("(d.namespace = ? OR d.namespace LIKE ?)")
-        values.extend((request.namespace, f"{request.namespace}.%"))
+        clauses.append("(d.namespace = ? OR instr(d.namespace, ?) = 1)")
+        values.extend((request.namespace, f"{request.namespace}."))
     return clauses, values, scope_evidence
 
 
@@ -207,14 +215,21 @@ def _scope_predicate(
         else:
             clauses.append("1 = 0")
     if request.scope == "namespace" and roots:
-        clauses.append("(d.namespace = ? OR d.namespace LIKE ?)")
-        values.extend((roots[0], f"{roots[0]}.%"))
+        clause, namespace_values = _namespace_population(roots)
+        clauses.append(clause)
+        values.extend(namespace_values)
     if request.scope == "file":
         placeholders = ",".join("?" for _ in roots)
         clauses.append(f"d.path IN ({placeholders})")
         values.extend(roots)
     evidence = {"kind": request.scope, "roots": list(roots), "omissions": omissions, "modules": len(modules) if modules is not None else None}
     return clauses, values, evidence
+
+
+def _namespace_population(roots: tuple[str, ...]) -> tuple[str, list[str]]:
+    clause = "(" + " OR ".join("(d.namespace = ? OR instr(d.namespace, ?) = 1)" for _ in roots) + ")"
+    values = [value for root in roots for value in (root, f"{root}.")]
+    return clause, values
 
 
 def _scope_roots(request: TypeSearchRequest) -> tuple[str, ...]:

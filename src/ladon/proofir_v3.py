@@ -32,6 +32,7 @@ MAX_ARTIFACTS = 10_000
 MAX_CANONICAL_BYTES = MAX_ARTIFACT_BYTES
 MAX_DEPTH = 64
 MAX_COLLECTION_ITEMS = 10_000
+MAX_COMPILED_MODULES = 32_768
 MAX_STRING_BYTES = 1 * 1024 * 1024
 REQUIRED_ENVELOPE_KEYS = frozenset(
     {
@@ -153,9 +154,15 @@ def canonical_bytes(value: Any, *, max_bytes: int = MAX_CANONICAL_BYTES) -> byte
     if not isinstance(max_bytes, int) or isinstance(max_bytes, bool) or max_bytes <= 0:
         raise ProofIRV3Error(
             "invalid canonical byte bound",
-            ProofIRV3Diagnostic("envelope-valid", "invalid-bound", "", "canonical byte bound must be positive"),
+            ProofIRV3Diagnostic(
+                "envelope-valid", "invalid-bound", "", "canonical byte bound must be positive"
+            ),
         )
-    _validate_bounds(value)
+    _validate_bounds(
+        value,
+        manifest_context=_is_environment_manifest(value),
+        envelope_context=_is_environment_envelope(value),
+    )
     try:
         encoded = json.dumps(
             value,
@@ -168,16 +175,19 @@ def canonical_bytes(value: Any, *, max_bytes: int = MAX_CANONICAL_BYTES) -> byte
         code = "invalid-unicode" if isinstance(exc, UnicodeError) else "invalid-canonical-value"
         raise ProofIRV3Error(
             f"value is not canonically representable: {exc}",
-            ProofIRV3Diagnostic("envelope-valid", code, "", "value is not canonically representable"),
+            ProofIRV3Diagnostic(
+                "envelope-valid", code, "", "value is not canonically representable"
+            ),
         ) from exc
     if len(encoded) > max_bytes:
-        raise ProofIRV3Error(
-            f"canonical payload exceeds byte limit: {len(encoded)} > {max_bytes}"
-        )
+        raise ProofIRV3Error(f"canonical payload exceeds byte limit: {len(encoded)} > {max_bytes}")
     return encoded
 
 
-def _validate_bounds(value: Any, *, depth: int = 0) -> None:
+
+def _validate_bounds(
+    value: Any, *, depth: int = 0, manifest_context: bool = False, envelope_context: bool = False
+) -> None:
     """Enforce the bounded cross-language JSON profile recursively.
 
     Rejection happens before serialization so Python-only values cannot acquire a
@@ -199,14 +209,19 @@ def _validate_bounds(value: Any, *, depth: int = 0) -> None:
     if isinstance(value, tuple):
         raise ProofIRV3Error("tuples are not part of the canonical JSON profile")
     if isinstance(value, list):
-        _validate_list_bounds(value, depth)
+        _validate_list_bounds(
+            value,
+            depth,
+            max_items=MAX_COMPILED_MODULES if manifest_context else MAX_COLLECTION_ITEMS,
+        )
         return
     if isinstance(value, dict):
-        _validate_object_bounds(value, depth)
+        _validate_object_bounds(
+            value, depth, manifest_context=manifest_context, envelope_context=envelope_context
+        )
         return
-    raise ProofIRV3Error(
-        f"value of type {type(value).__name__} is not canonically representable"
-    )
+    raise ProofIRV3Error(f"value of type {type(value).__name__} is not canonically representable")
+
 
 
 def _validate_string_bound(value: str) -> None:
@@ -240,14 +255,23 @@ def _reject_float(value: float) -> NoReturn:
     )
 
 
-def _validate_list_bounds(value: list[Any], depth: int) -> None:
-    if len(value) > MAX_COLLECTION_ITEMS:
-        raise ProofIRV3Error(f"collection exceeds item limit: {MAX_COLLECTION_ITEMS}")
+def _validate_list_bounds(
+    value: list[Any], depth: int, *, max_items: int = MAX_COLLECTION_ITEMS
+) -> None:
+    if len(value) > max_items:
+        raise ProofIRV3Error(f"collection exceeds item limit: {max_items}")
     for item in value:
         _validate_bounds(item, depth=depth + 1)
 
 
-def _validate_object_bounds(value: dict[Any, Any], depth: int) -> None:
+
+def _validate_object_bounds(
+    value: dict[Any, Any],
+    depth: int,
+    *,
+    manifest_context: bool = False,
+    envelope_context: bool = False,
+) -> None:
     """Validate object cardinality, string-only keys, and descendant depth.
 
     String-key enforcement prevents Python mappings from canonicalizing differently
@@ -260,7 +284,44 @@ def _validate_object_bounds(value: dict[Any, Any], depth: int) -> None:
         if not isinstance(key, str):
             raise ProofIRV3Error("object keys must be strings in the canonical profile")
         _validate_bounds(key, depth=depth + 1)
-        _validate_bounds(item, depth=depth + 1)
+        child_manifest_context = (
+            envelope_context and key == "payload" and _is_environment_manifest(item)
+        )
+        child_large_modules = manifest_context and key == "compiledModules"
+        _validate_bounds(
+            item, depth=depth + 1, manifest_context=(child_manifest_context or child_large_modules)
+        )
+
+
+
+
+def _is_environment_manifest(value: Any) -> bool:
+    return (
+        isinstance(value, dict)
+        and len(value) == 7
+        and set(value)
+        == {
+            "prover",
+            "toolchain",
+            "dependencies",
+            "compiledModules",
+            "options",
+            "trust",
+            "fingerprintScheme",
+        }
+        and isinstance(value.get("compiledModules"), list)
+    )
+
+
+
+def _is_environment_envelope(value: Any) -> bool:
+    return (
+        isinstance(value, dict)
+        and value.get("proofirVersion") == PROOFIR_V3_VERSION
+        and value.get("artifactKind") == "proofir.environment"
+        and _is_environment_manifest(value.get("payload"))
+    )
+
 
 
 def detached_content_id(envelope: Mapping[str, Any]) -> str:
@@ -281,16 +342,42 @@ def validate_envelope(
 
     if max_bytes is not None:
         max_artifact_bytes = max_bytes
-    _validate_envelope_shape(value)
-    canonical_bytes(value, max_bytes=max_artifact_bytes)
-    detached = dict(value)
-    detached.pop("artifactId", None)
-    expected = (
-        "sha256:"
-        + hashlib.sha256(canonical_bytes(detached, max_bytes=max_artifact_bytes)).hexdigest()
-    )
+    owned, encoded = _prepare_envelope(value, max_artifact_bytes)
+    return _validate_owned_envelope(owned, encoded)
+
+
+def _prepare_envelope(value: Any, max_artifact_bytes: int) -> tuple[dict[str, Any], bytes]:
+    """Own the serialized tree before validating its semantics and identity."""
+    try:
+        encoded = canonical_bytes(value, max_bytes=max_artifact_bytes)
+    except ProofIRV3Error:
+        # Keep the established shape-first diagnostic on malformed inputs.
+        _validate_envelope_shape(value)
+        raise
+    owned = json.loads(encoded, object_pairs_hook=_own_object_pairs)
+    _validate_envelope_shape(owned)
+    # Recheck the parsed tree: custom input hooks need not preserve its profile.
+    encoded = canonical_bytes(owned, max_bytes=max_artifact_bytes)
+    return owned, encoded
+
+
+def _own_object_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    owned = dict(pairs)
+    if len(owned) != len(pairs):
+        raise ProofIRV3Error("duplicate serialized object key")
+    return owned
+
+
+def _validate_owned_envelope(value: dict[str, Any], encoded: bytes) -> ProofIRV3Artifact:
+    # Closed envelope keys sort artifactId first. Both tree and encoding were
+    # prepared together, and removing this field cannot enlarge profile bounds.
+    prefix = b'{"artifactId":' + json.dumps(value["artifactId"]).encode() + b','
+    if not encoded.startswith(prefix):
+        raise ProofIRV3Error("prepared envelope has inconsistent canonical encoding")
+    detached = b'{' + encoded[len(prefix):]
+    expected = "sha256:" + hashlib.sha256(detached).hexdigest()
     _validate_declared_id(value, expected)
-    return ProofIRV3Artifact(_freeze(copy.deepcopy(value)), expected)
+    return ProofIRV3Artifact(_freeze(value), expected)
 
 
 def validate_envelope_batch(
@@ -310,18 +397,15 @@ def validate_envelope_batch(
     mutating a store while discovering a dangling cross-artifact edge.
     """
 
-    if not isinstance(values, list):
+    if type(values) is not list:
         raise ProofIRV3Error("v3 envelope batch must be an array")
     max_artifact_bytes, max_batch_bytes = _resolve_batch_limits(
         max_bytes, max_artifact_bytes, max_batch_bytes, max_artifacts
     )
-    artifacts = _preflight_batch(values, max_artifact_bytes, max_batch_bytes, max_artifacts)
+    owned_values, artifacts = _preflight_batch(values, max_artifact_bytes, max_batch_bytes, max_artifacts)
     for owner_id, artifact in artifacts.items():
         _validate_external_references(owner_id, artifact, artifacts)
-    return tuple(
-        validate_envelope(value, max_artifact_bytes=max_artifact_bytes)
-        for value in values
-    )
+    return tuple(_validate_owned_envelope(value, encoded) for value, encoded in owned_values)
 
 
 def _validate_envelope_shape(value: Any) -> None:
@@ -1236,6 +1320,7 @@ __all__ = [
     "MAX_BATCH_BYTES",
     "MAX_CANONICAL_BYTES",
     "MAX_COLLECTION_ITEMS",
+    "MAX_COMPILED_MODULES",
     "MAX_DEPTH",
     "MAX_STRING_BYTES",
     "PROOFIR_V3_VERSION",

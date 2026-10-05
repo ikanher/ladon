@@ -13,7 +13,6 @@ AUTHORITY_SELECTIONS = frozenset(
     }
 )
 ANALYSIS_COMPLETENESS = frozenset({"complete", "partial", "invalid", "not-assessed"})
-_COMPLETENESS_RANK = {"not-assessed": 0, "partial": 1, "complete": 2, "invalid": -1}
 
 
 def derive_analysis_completeness(
@@ -40,13 +39,14 @@ def project_dimensions(
     *,
     parent_authority: str | None = None,
     parent_completeness: str | None = None,
+    projection_kind: str = "json-renderer",
 ) -> tuple[str, str]:
     """Validate a projection and reject authority/completeness escalation."""
     _validate_dimensions(authority, completeness, parent_authority, parent_completeness)
     if parent_authority is not None or parent_completeness is not None:
         parent = _projection_dimensions(parent_authority, parent_completeness)
         child = _projection_dimensions(authority, completeness)
-        validate_transition(parent, child)
+        validate_transition(parent, child, projection_kind=projection_kind)
     return authority, completeness
 
 

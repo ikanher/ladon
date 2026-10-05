@@ -13,7 +13,7 @@ from ladon.theorem_lineage_projection import (
     TheoremLineageProjectionError,
     project_lineage,
 )
-from ladon.theorem_lineage_query import LineageQuery
+from ladon.theorem_lineage_query import LineageQuery, query_lineage
 
 
 def test_route_projection_is_authoritative_and_render_neutral() -> None:
@@ -61,6 +61,7 @@ def test_bottleneck_projection_explains_missing_bounded_route(monkeypatch) -> No
         "ladon.theorem_lineage_projection.query_lineage",
         lambda *_args: {
             "status": "available",
+            "evidenceReceipt": query_lineage(connection, identity, LineageQuery(theorem="Demo.target"))["evidenceReceipt"],
             "nodes": [],
             "routes": [],
             "nonclaim": "bounded fixture",

@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ladon-proof-search-type-text-result-v2.schema.json",
+  "title": "Bounded lexical type-text shortlist",
+  "type": "object",
+  "required": ["schema", "schemaVersion", "operation", "matchMode", "matchingPolicy", "status", "freshness", "results", "matched", "matchedExact", "returned", "diagnostics", "query", "coverage", "truncated", "omissions", "nonclaims"],
+  "properties": {
+    "schema": {"const": "ladon-proof-search-type-text-result-v2"},
+    "schemaVersion": {"const": 2},
+    "operation": {"const": "search-type-text"},
+    "matchMode": {"const": "type-text-overlap"},
+    "matchingPolicy": {"const": "literal-substring-sqlite-ascii-lower"},
+    "status": {"const": "available"},
+    "freshness": {"enum": ["stored", "verified-fresh"]},
+    "freshnessEvidence": {"type": "object"},
+    "results": {"type": "array", "maxItems": 1000, "items": {"$ref": "#/$defs/row"}},
+    "matched": {"type": "integer", "minimum": 0, "maximum": 2001},
+    "matchedExact": {"type": "boolean"},
+    "returned": {"type": "integer", "minimum": 0, "maximum": 1000},
+    "diagnostics": {"type": "array", "maxItems": 1000, "items": {"type": "object", "required": ["declarationId", "candidateName", "reason"]}},
+    "query": {"type": "object", "required": ["pattern", "scope", "module", "namespace", "package", "freshness"]},
+    "coverage": {
+      "type": "object",
+      "required": ["shortlistMatchedLowerBound", "returned", "diagnosticReturned", "cap", "diagnosticCap", "populationComplete", "rowEvidenceComplete", "authority", "scope", "fieldContributionCounts"],
+      "properties": {
+        "shortlistMatchedLowerBound": {"type": "integer", "minimum": 0, "maximum": 2001},
+        "returned": {"type": "integer", "minimum": 0, "maximum": 1000},
+        "diagnosticReturned": {"type": "integer", "minimum": 0, "maximum": 1000},
+        "cap": {"type": "integer", "minimum": 1, "maximum": 1000},
+        "diagnosticCap": {"type": "integer", "minimum": 0, "maximum": 1000},
+        "populationComplete": {"type": "boolean"},
+        "rowEvidenceComplete": {"type": "boolean"},
+        "authority": {"const": "sqlite_lexical_shortlist"},
+        "scope": {"type": "object", "required": ["kind", "roots", "omissions", "modules"]},
+        "fieldContributionCounts": {"$ref": "#/$defs/counts"}
+      }
+    },
+    "truncated": {"type": "boolean"},
+    "omissions": {"type": "array", "items": {"type": "object"}},
+    "nonclaims": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+  },
+  "$defs": {
+    "counts": {
+      "type": "object", "required": ["renderedType", "conclusionText", "typeText"],
+      "additionalProperties": false,
+      "properties": {
+        "renderedType": {"type": "integer", "minimum": 0, "maximum": 1000},
+        "conclusionText": {"type": "integer", "minimum": 0, "maximum": 1000},
+        "typeText": {"type": "integer", "minimum": 0, "maximum": 1000}
+      }
+    },
+    "row": {
+      "type": "object",
+      "required": ["declarationId", "name", "candidateName", "namespace", "module", "package", "path", "line", "authority", "verification", "typeStatus", "typeText", "typeTextBytes", "typeTextTruncated", "renderedType", "conclusionText", "fieldContributions", "bucket"],
+      "properties": {
+        "authority": {"const": "lexical_shortlist"},
+        "verification": {"const": "not_requested"},
+        "typeTextBytes": {"type": "integer", "minimum": 0},
+        "typeTextTruncated": {"type": "boolean"},
+        "typeText": {"type": ["string", "null"]},
+        "fieldContributions": {
+          "type": "object", "required": ["renderedType", "conclusionText", "typeText"],
+          "additionalProperties": false,
+          "properties": {"renderedType": {"type": "boolean"}, "conclusionText": {"type": "boolean"}, "typeText": {"type": "boolean"}}
+        },
+        "bucket": {"const": "text-overlap"}
+      }
+    }
+  }
+}

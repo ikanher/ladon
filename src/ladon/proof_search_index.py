@@ -301,6 +301,7 @@ def inspect_proof_search_index(
         "schemaVersion": _integer_metadata(metadata, "schemaVersion"),
         "schemaGeneration": metadata.get("schemaGeneration"),
         "generationIdentity": metadata.get("generationIdentity"),
+        "helperIdentity": metadata.get("helperIdentity"),
         "currentGenerationIdentity": current_generation,
         "freshness": freshness,
         "evidenceStatus": metadata.get("evidenceStatus", "unknown"),

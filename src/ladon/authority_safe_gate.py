@@ -9,13 +9,28 @@ import hashlib
 import json
 import re
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
+
+from ladon.child_acceptance import validate_child_bundle
+
+CHILD_EXIT_CLASSES = {
+    "correctness": "installed-scope-freshness-and-type-evidence-honest-discovery",
+    "authority": "single-context-secret-safe-non-escalating-evidence-receipts",
+}
 
 
 def evaluate_authority_safe_gate(
-    correctness: Mapping[str, Any], authority: Mapping[str, Any]
+    correctness: Mapping[str, Any], authority: Mapping[str, Any], *,
+    evidence_root: Path | None = None,
+    inventories: Mapping[str, Mapping[str, Any]] | None = None,
 ) -> dict[str, Any]:
-    """Require matching successful child receipts before integration claims."""
+    """Require both complete child bundles from the same release scope.
+
+    Receipt metadata alone cannot establish suite coverage or artifact contents.
+    The caller supplies the expected acceptance inventories independently of the
+    receipts, and the bundle validator resolves their required evidence bytes.
+    """
     correctness_error = _validate_child(correctness, "correctness")
     authority_error = _validate_child(authority, "authority")
     if correctness_error or authority_error:
@@ -38,8 +53,8 @@ def evaluate_authority_safe_gate(
         authority.get("workingDirectory"),
     ):
         return _result("failed", "child receipts do not identify the same release scope")
-    if correctness.get("status") != "passed" or authority.get("status") != "passed":
-        return _result("failed", "both correctness and authority child gates must pass")
+    if error := _bundle_error(correctness, authority, evidence_root, inventories):
+        return _result("failed", error)
     return {
         "schema": "ladon-authority-safe-gate-v1",
         "status": "passed",
@@ -54,6 +69,27 @@ def evaluate_authority_safe_gate(
 
 def _result(status: str, reason: str) -> dict[str, Any]:
     return {"schema": "ladon-authority-safe-gate-v1", "status": status, "reason": reason}
+
+
+def _bundle_error(
+    correctness: Mapping[str, Any], authority: Mapping[str, Any],
+    evidence_root: Path | None,
+    inventories: Mapping[str, Mapping[str, Any]] | None,
+) -> str | None:
+    """Resolve both independently required child bundles before conjunction."""
+    if evidence_root is None or not isinstance(inventories, Mapping):
+        return "child evidence root and acceptance inventories are required; metadata is insufficient"
+    for role, receipt in (("correctness", correctness), ("authority", authority)):
+        inventory = inventories.get(role)
+        if not isinstance(inventory, Mapping):
+            return f"{role} acceptance inventory is required"
+        if inventory.get("exitClass") != CHILD_EXIT_CLASSES[role]:
+            return f"{role} acceptance inventory has the wrong exit class"
+        try:
+            validate_child_bundle(receipt, bundle_root=evidence_root, inventory=inventory)
+        except ValueError as error:
+            return f"{role} child evidence is invalid: {error}"
+    return None
 
 
 def _validate_child(receipt: Mapping[str, Any], expected_exit: str) -> str | None:
@@ -71,9 +107,13 @@ def _validate_child(receipt: Mapping[str, Any], expected_exit: str) -> str | Non
 
 
 def _child_shape_error(receipt: Mapping[str, Any], expected_exit: str) -> str | None:
+    if not isinstance(receipt, Mapping):
+        return f"{expected_exit} child receipt must be an object"
     if receipt.get("schema") != "ladon-child-exit-receipt-v1":
         return f"{expected_exit} child receipt has an unsupported schema"
-    if receipt.get("exitClass") != expected_exit:
+    if receipt.get("exitClass") == expected_exit:
+        return f"{expected_exit} child receipt uses a legacy shorthand; a full exit class is required"
+    if receipt.get("exitClass") != CHILD_EXIT_CLASSES[expected_exit]:
         return f"{expected_exit} child receipt has the wrong exit class"
     if receipt.get("status") != "passed":
         return f"{expected_exit} child receipt did not pass"
@@ -142,4 +182,4 @@ def _receipt_identity(receipt: Mapping[str, Any]) -> str:
     return "sha256:" + hashlib.sha256(encoded).hexdigest()
 
 
-__all__ = ["evaluate_authority_safe_gate"]
+__all__ = ["CHILD_EXIT_CLASSES", "evaluate_authority_safe_gate"]

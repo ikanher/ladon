@@ -16,8 +16,12 @@ from ladon._semantic_observation_support import (
     non_null_values,
     singleton_string,
 )
-from ladon.evidence_receipt import build_evidence_receipt
+from ladon.evidence_receipt import project_evidence_receipt, validate_evidence_receipt
 from ladon.proofir_v3 import ProofIRV3Error, validate_envelope_batch
+from ladon.semantic_execution_binding import (
+    project_recorded_execution_receipt,
+    validate_recorded_execution_binding,
+)
 from ladon.semantic_projection_core import SemanticProjectionError
 
 
@@ -27,6 +31,7 @@ class ResolvedObservationEvidence:
     check_artifact: Mapping[str, Any]
     environment_ref: str
     environment_artifact: Mapping[str, Any]
+    execution_binding_recorded: bool
 
 
 def requires_canonical_evidence(
@@ -80,28 +85,13 @@ def _unattributed_scratch_failure(
 
 
 def validate_canonical_receipt(receipt: Mapping[str, Any]) -> None:
-    subject = mapping(receipt.get("subject"), "semantic evidence receipt has no subject")
-    limitations = _receipt_limitations(receipt)
+    _receipt_limitations(receipt)
     try:
-        canonical = build_evidence_receipt(
-            subject=subject,
-            execution_binding=str(receipt.get("executionBinding")),
-            observation_state=str(receipt.get("observationState")),
-            operation_outcome=str(receipt.get("operationOutcome")),
-            authority_basis=str(receipt.get("authorityBasis")),
-            analysis_completeness=str(receipt.get("analysisCompleteness")),
-            source_freshness=str(receipt.get("sourceFreshness")),
-            environment_match=str(receipt.get("environmentMatch")),
-            environment_ref=receipt.get("environmentRef"),
-            check_run_ref=receipt.get("checkRunRef"),
-            limitations=limitations,
-        )
+        validate_evidence_receipt(receipt)
     except (TypeError, ValueError) as error:
         raise SemanticProjectionError(
             f"semantic evidence receipt is invalid: {error}"
         ) from error
-    if dict(receipt) != canonical:
-        raise SemanticProjectionError("semantic evidence receipt is not canonical")
 
 
 def _receipt_limitations(receipt: Mapping[str, Any]) -> list[str]:
@@ -124,11 +114,35 @@ def resolve_observation_evidence(
     )
     _validate_registered_pair(environment, check_artifact)
     _validate_receipt_binding(check, receipt, check_artifact)
+    recorded = validate_recorded_execution_binding(check_artifact, receipt, [environment])
     return ResolvedObservationEvidence(
         check_run_id,
         check_artifact,
         environment_ref,
         environment,
+        recorded,
+    )
+
+
+def project_observation_receipt(
+    check: Mapping[str, Any], receipt: Mapping[str, Any],
+    registry: Mapping[str, Mapping[str, Any]], *, projection_kind: str,
+) -> dict[str, Any]:
+    """Project a check's validated historical binding without modifying its owner.
+
+    Population validation owns semantic status and context checks before cards
+    are selected. Canonical references resolve through the same evidence owner;
+    a weak failure without a check remains a non-checker observation.
+    """
+    if not receipt:
+        return {}
+    referenced = _check_referenced(check) or _receipt_referenced(receipt)
+    if not referenced and not artifact_rows(check, "proofir.check-run"):
+        return project_evidence_receipt(receipt, projection_kind=projection_kind)
+    evidence = resolve_observation_evidence(check, receipt, registry)
+    return project_recorded_execution_receipt(
+        receipt, recorded=evidence.execution_binding_recorded,
+        projection_kind=projection_kind,
     )
 
 
@@ -355,6 +369,7 @@ def _require_embedded_matches_registered(
 
 __all__ = [
     "ResolvedObservationEvidence",
+    "project_observation_receipt",
     "requires_canonical_evidence",
     "resolve_observation_evidence",
     "validate_canonical_receipt",

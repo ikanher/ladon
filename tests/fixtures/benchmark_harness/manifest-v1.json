@@ -35,6 +35,11 @@
         "{fixture}",
         "--root",
         "Pkg.lean",
+        "--scope",
+        "inventory",
+        "--no-cache",
+        "--report-version",
+        "v2",
         "--format",
         "json",
         "--output",
@@ -154,14 +159,28 @@
           "metricFamily": "correctness",
           "signalKind": "finding_deduplication",
           "expectedOutcome": "exact",
-          "authority": "module_import_graph",
-          "rationale": "Equivalent generic and handwritten raw rows remain measured while promotion uses the more specific population once.",
+          "authority": "module_import_graph_and_population_policy",
+          "rationale": "Equivalent generic and target-owned raw rows remain measured while promotion uses the evidence-backed target-owned population once; legacy non-generated tags do not imply human authorship.",
+          "oracle": {
+            "signal": "finding_count",
+            "kind": "target_owned_module_fan_in_hotspot",
+            "subject": "Pkg.CoreShared",
+            "promotionPopulation": "target_owned_importers_to_target_owned_targets",
+            "expected": 1
+          }
+        },
+        {
+          "id": "fan-in.no-legacy-promotion",
+          "class": "intentional_negative",
+          "metricFamily": "correctness",
+          "signalKind": "finding_deduplication",
+          "expectedOutcome": "absent",
+          "rationale": "The deprecated non-generated-tag compatibility table must not independently promote a handwritten finding.",
           "oracle": {
             "signal": "finding_count",
             "kind": "handwritten_module_fan_in_hotspot",
             "subject": "Pkg.CoreShared",
-            "promotionPopulation": "handwritten_importers_to_handwritten_targets",
-            "expected": 1
+            "expected": 0
           }
         },
         {
@@ -385,6 +404,11 @@
         "inventory",
         "--lean-cache-dir",
         "{cache}",
+        "--scope",
+        "inventory",
+        "--no-cache",
+        "--report-version",
+        "v2",
         "--format",
         "json",
         "--output",
@@ -730,6 +754,11 @@
         "{fixture}",
         "--root",
         "Tiny.lean",
+        "--scope",
+        "inventory",
+        "--no-cache",
+        "--report-version",
+        "v2",
         "--format",
         "json",
         "--output",

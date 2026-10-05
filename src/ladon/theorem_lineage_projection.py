@@ -8,6 +8,7 @@ import sqlite3
 from dataclasses import dataclass
 from typing import Any
 
+from ladon.evidence_receipt import project_evidence_receipt
 from ladon.theorem_lineage_algorithms import (
     AlgorithmInputError,
     compute_dominators,
@@ -129,6 +130,7 @@ def _base_payload(
     return {
         **result,
         "projection": query.view,
+        "evidenceReceipt": project_evidence_receipt(result["evidenceReceipt"], projection_kind="aggregate"),
         "nodes": nodes,
         "edges": [{"source": source, "target": target} for source, target in edges],
         "routes": routes,

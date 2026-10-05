@@ -27,6 +27,7 @@ from ladon.proofir_observations import (
     EvidenceDimensions,
 )
 from ladon.proofir_v3 import (
+    MAX_COMPILED_MODULES,
     SAFE_INTEGER_MAX,
     _closed_object,
     _digest,
@@ -176,6 +177,19 @@ def _validate_environment_modules(p: Mapping[str, Any], value: Mapping[str, Any]
                 _require_nonempty_string(item, f"{pointer}/{key}", value, key)
             if not _digest(row["digest"]):
                 _invalid_field(value, f"{pointer}/digest", "digest must be a sha256 digest")
+    _validate_compiled_module_identities(p["compiledModules"], value)
+
+
+def _validate_compiled_module_identities(rows, value) -> None:
+    if len(rows) > MAX_COMPILED_MODULES:
+        _invalid_field(value, "/payload/compiledModules",
+                       f"compiledModules exceeds item limit: {MAX_COMPILED_MODULES}")
+    seen: set[str] = set()
+    for index, row in enumerate(rows):
+        if row["module"] in seen:
+            _invalid_field(value, f"/payload/compiledModules/{index}/module",
+                           "environment repeats a module identity")
+        seen.add(row["module"])
 
 
 def _validate_environment_policy(p: Mapping[str, Any], value: Mapping[str, Any]) -> None:

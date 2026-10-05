@@ -72,6 +72,12 @@ def semantic_payload_failed(operation: str, payload: Mapping[str, Any]) -> bool:
         return bool(coverage["operationalFailure"])
     if operation == "check.candidate":
         return payload.get("status") not in _SEMANTIC_TERMINAL_RESULTS
+    if operation == "check.source":
+        return payload.get("status") != "associated"
+    if operation in {"goal.capture", "goal.diagnostic"}:
+        return payload.get("status") != "captured"
+    if operation == "goal.complete":
+        return payload.get("status") not in {"completed", "incomplete", "rejected", "trust-rejected"}
     if operation != "discover":
         return False
     candidates = payload.get("candidates")

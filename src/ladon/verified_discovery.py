@@ -19,6 +19,7 @@ from pathlib import Path
 from typing import Any
 
 from ladon.evidence_receipt import build_evidence_receipt
+from ladon.execution_posture import require_target_execution_policy
 from ladon.proofir_v3 import validate_envelope_batch
 from ladon.scratch_replay import replay_scratch
 from ladon.semantic_candidate_limits import (
@@ -39,12 +40,14 @@ from ladon.semantic_candidate_worker import (
     _compact,
     _digest_file,
     _envelope,
+    _valid_local_name,
+    _validate_request_goal,
+    _validate_request_identity,
     check_semantic_candidate,
 )
+from ladon.semantic_local_context import validate_local_context
 
 DISCOVERY_SCHEMA = "ladon-verified-discovery-result-v1"
-MAX_LOCAL_CONTEXT_ROWS = 256
-MAX_LOCAL_CONTEXT_BYTES = 1024 * 1024
 
 
 @dataclass(frozen=True)
@@ -57,33 +60,25 @@ class DiscoveryRequest:
     batch_size: int = 8
     timeout_seconds: float = 120.0
     max_output_bytes: int = 8 * 1024 * 1024
-    max_rss_bytes: int = 4 * 1024 * 1024 * 1024
+    max_rss_bytes: int = 32 * 1024 * 1024 * 1024
     scope: str = "repository"
     roots: tuple[str, ...] = ()
     freshness: str = "stored"
     execution_context_ref: str | None = None
+    require_isolation: bool = False
 
     def __post_init__(self) -> None:
+        require_target_execution_policy(require_isolation=self.require_isolation)
         if not self.module or not self.goal:
             raise ValueError("discovery requires module and goal")
+        _validate_request_identity(self.module, "batch-placeholder")
+        _validate_request_goal(self.goal)
         validate_transport_text(self.module, self.goal)
         _validate_discovery_bounds(self)
         _validate_discovery_scope(self.scope, self.roots, self.freshness)
-        if len(self.local_context) > MAX_LOCAL_CONTEXT_ROWS:
-            raise ValueError("local context exceeds the supported row cap")
-        context_bytes = 0
-        context_names: set[str] = set()
-        for row in self.local_context:
-            if not row.get("name") or not row.get("type"):
-                raise ValueError("local context rows require name and type")
-            if any(char.isspace() or ord(char) < 32 or char in ":(){};" for char in row["name"]):
-                raise ValueError("local context row has an unsafe name")
-            if row["name"] in context_names:
-                raise ValueError("local context contains duplicate names")
-            context_names.add(row["name"])
-            context_bytes += len(row["name"].encode()) + len(row["type"].encode())
-        if context_bytes > MAX_LOCAL_CONTEXT_BYTES:
-            raise ValueError("local context exceeds the supported byte cap")
+        validate_local_context(
+            self.local_context, valid_name=_valid_local_name, validate_type=_validate_request_goal,
+        )
 
 
 def _validate_discovery_bounds(request: DiscoveryRequest) -> None:
@@ -482,6 +477,7 @@ def semantic_checker(request: DiscoveryRequest, toolchain: Any = None) -> Checke
                 toolchain=toolchain,
                 local_context=request.local_context,
                 execution_context_ref=request.execution_context_ref,
+                require_isolation=request.require_isolation,
             )
         )
 

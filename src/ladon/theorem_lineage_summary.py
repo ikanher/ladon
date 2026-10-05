@@ -6,6 +6,7 @@ import sqlite3
 import time
 from typing import Any
 
+from ladon.theorem_lineage_query import lineage_query_receipt
 from ladon.theorem_lineage_store import LineageIdentity, inspect_lineage_closure
 
 
@@ -26,6 +27,7 @@ def summarize_lineage(
             "theorem": theorem,
             "reason": status.get("reason", status["status"]),
             "authority": "unavailable",
+            "evidenceReceipt": lineage_query_receipt(status, theorem, projection_kind="aggregate"),
             "elapsedSeconds": round(time.monotonic() - started, 6),
             "nonclaim": _NONCLAIM,
         }
@@ -67,6 +69,7 @@ def summarize_lineage(
         "closureId": closure_id,
         "authority": "lean_environment",
         "freshness": "fresh",
+        "evidenceReceipt": lineage_query_receipt(status, theorem, projection_kind="aggregate"),
         "nodes": {"total": int(nodes[0]), "projectOwned": int(nodes[1]), "externalFrontier": int(nodes[2]), "declaredAxioms": int(nodes[3])},
         "edges": {str(row[0]): int(row[1]) for row in edges},
         "ownership": [{"projectOwned": bool(row[0]), "externalFrontier": bool(row[1]), "count": int(row[2])} for row in ownership],

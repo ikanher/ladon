@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from ladon.lean_toolchain import LeanToolchainContext, LeanToolchainError
+from ladon.lean_toolchain import LeanToolchainContext, LeanToolchainError, compiled_library_roots
 from ladon.semantic_lean_execution import (
     DirectLeanPreflightError,
     prepare_direct_lean_execution,
@@ -18,6 +18,10 @@ def _toolchain(root: Path) -> LeanToolchainContext:
     lean = root / "lean"
     lake.write_bytes(b"lake")
     lean.write_bytes(b"lean")
+    roots = compiled_library_roots(root)
+    environment = {"PATH": str(root)}
+    if roots:
+        environment["LEAN_PATH"] = os.pathsep.join(str(path) for path in roots)
     return LeanToolchainContext(
         root.resolve(),
         lake.resolve(),
@@ -31,7 +35,8 @@ def _toolchain(root: Path) -> LeanToolchainContext:
         None,
         "explicit",
         ("PATH",),
-        {"PATH": str(root)},
+        environment,
+        roots,
     )
 
 

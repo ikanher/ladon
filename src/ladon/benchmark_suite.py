@@ -152,7 +152,7 @@ def install_fake_lake(
                 "    arg.endswith('ladon_elaborated_helper.lean') for arg in sys.argv",
                 "):",
                 "    payloads = json.loads(Path(",
-                "        os.environ['LADON_BENCH_ELABORATED_PAYLOAD']",
+                f"        os.environ.get('LADON_BENCH_ELABORATED_PAYLOAD', {str(fixture / 'fake-elaborated-payloads.json')!r})",
                 "    ).read_text(encoding='utf-8'))",
                 "    module = sys.argv[-2]",
                 "    print(json.dumps(payloads[module]))",
@@ -160,12 +160,14 @@ def install_fake_lake(
                 "if '--batch' not in sys.argv:",
                 "    print('Lean (version 4.32.1, portable benchmark)')",
                 "    raise SystemExit(0)",
-                "log = Path(os.environ['LADON_BENCH_HELPER_LOG'])",
+                f"log = Path(os.environ.get('LADON_BENCH_HELPER_LOG', {str(helper_log)!r}))",
                 "with log.open('a', encoding='utf-8') as stream:",
                 "    stream.write('helper\\n')",
                 "request = json.loads(Path(sys.argv[-1]).read_text(encoding='utf-8'))",
-                "template = json.loads(Path(os.environ['LADON_BENCH_HELPER_PAYLOAD']).read_text(encoding='utf-8'))",
-                "mode = os.environ.get('LADON_BENCH_FAKE_MODE', 'success')",
+                f"template = json.loads(Path(os.environ.get('LADON_BENCH_HELPER_PAYLOAD', {str(fixture / 'fake-helper-payload.json')!r})).read_text(encoding='utf-8'))",
+                f"control_path = Path({str(case_root / 'fake-control.json')!r})",
+                "control = json.loads(control_path.read_text()) if control_path.is_file() else {}",
+                "mode = os.environ.get('LADON_BENCH_FAKE_MODE', control.get('mode', 'success'))",
                 "for index, row in enumerate(request['modules']):",
                 "    payload = dict(template)",
                 "    if row['module'] != 'Pkg.Surface.Deep':",
@@ -181,7 +183,7 @@ def install_fake_lake(
                 "    }, sort_keys=True), flush=True)",
                 "    if mode == 'timeout' and index == 0:",
                 "        child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])",
-                "        Path(os.environ['LADON_BENCH_CHILD_PID']).write_text(str(child.pid), encoding='utf-8')",
+                "        Path(os.environ.get('LADON_BENCH_CHILD_PID', control.get('childPid', ''))).write_text(str(child.pid), encoding='utf-8')",
                 "        time.sleep(60)",
                 "print(json.dumps({",
                 "    'frame': 'summary',",
@@ -198,6 +200,14 @@ def install_fake_lake(
         encoding="utf-8",
     )
     lake.chmod(lake.stat().st_mode | stat.S_IXUSR)
+    lean = fake_bin / "lean"
+    lean.write_text(
+        f"#!{sys.executable}\nimport os\nimport sys\nfrom pathlib import Path\n"
+        "lake = str(Path(__file__).with_name('lake'))\n"
+        "os.execv(lake, [lake, 'env', 'lean', *sys.argv[1:]])\n",
+        encoding="utf-8",
+    )
+    lean.chmod(lean.stat().st_mode | stat.S_IXUSR)
     environment["PATH"] = str(fake_bin) + os.pathsep + environment.get("PATH", "")
     environment["LADON_BENCH_HELPER_LOG"] = str(helper_log)
     environment["LADON_BENCH_HELPER_PAYLOAD"] = str(
@@ -345,7 +355,8 @@ def require_success(case: Mapping[str, Any], measured: MeasuredProcess) -> None:
         return
     detail = measured.stderr.strip() or measured.stdout.strip()
     raise BenchmarkFailure(
-        f"{case['id']}: installed ladon failed ({measured.returncode}): {detail}"
+        f"{case['id']}: installed ladon failed ({measured.returncode}, "
+        f"timedOut={measured.timed_out}, wallSeconds={measured.wall_seconds:.3f}): {detail}"
     )
 
 

@@ -200,6 +200,7 @@ def _project_candidate_row(
         registry,
         omissions,
         pointer=f"/candidates/{index}",
+        receipt_projection="aggregate",
     )
 
 

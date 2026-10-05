@@ -260,8 +260,8 @@ def _add_namespace_filter(query: _DeclarationQuery, roots: tuple[str, ...]) -> N
         raise ValueError("namespace scope requires at least one --root")
     clauses = []
     for root in roots:
-        clauses.append("(d.namespace = ? OR d.namespace LIKE ?)")
-        query.values.extend((root, f"{_escape_like(root)}.%"))
+        clauses.append("(d.namespace = ? OR instr(d.namespace, ?) = 1)")
+        query.values.extend((root, f"{root}."))
     query.clauses.append("(" + " OR ".join(clauses) + ")")
 
 

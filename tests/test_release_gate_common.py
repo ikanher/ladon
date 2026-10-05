@@ -22,6 +22,7 @@ from release_gate_distribution import parse_package_resource
 from release_gate_runtime import (
     absolute_maintainer_paths,
     assert_lock_unchanged,
+    prepare_candidate_lean_fixture,
     pytest_node_ids,
     sanitized_environment,
 )
@@ -39,6 +40,47 @@ def load_common():
         pytest_node_ids=pytest_node_ids,
         sanitized_environment=sanitized_environment,
     )
+
+
+def test_clean_candidate_prepares_only_its_own_pinned_lean_fixture(tmp_path, monkeypatch) -> None:
+    import release_gate_runtime
+
+    fixture = tmp_path / "tests" / "fixtures" / "lean_integration"
+    fixture.mkdir(parents=True)
+    (fixture / "lean-toolchain").write_text("leanprover/lean4:v4.32.1\n")
+    calls = []
+    environment = {"PATH": "/selected-toolchain"}
+    monkeypatch.setattr(release_gate_runtime.shutil, "which", lambda name, path: "/selected-toolchain/lake")
+    monkeypatch.setattr(release_gate_runtime, "run_checked", lambda command, **kwargs: calls.append((command, kwargs)))
+    prepare_candidate_lean_fixture(tmp_path, environment)
+    assert calls == [(["/selected-toolchain/lake", "build"], {"cwd": fixture, "environment": environment})]
+
+
+def test_clean_candidate_without_lake_keeps_python_only_gate(tmp_path, monkeypatch) -> None:
+    import release_gate_runtime
+
+    monkeypatch.setattr(release_gate_runtime.shutil, "which", lambda name, path: None)
+    prepare_candidate_lean_fixture(tmp_path, {"PATH": "/without-lean"})
+    assert not list(tmp_path.iterdir())
+
+
+def test_sanitized_home_retains_explicit_rust_toolchain_and_cache(tmp_path, monkeypatch) -> None:
+    from release_gate_runtime import preserve_rust_toolchain_locations
+
+    original_home = tmp_path / "original-home"
+    original_home.mkdir()
+    for directory in (".cargo", ".rustup"):
+        (original_home / directory).mkdir()
+    environment = {"HOME": str(tmp_path / "isolated-home")}
+    preserve_rust_toolchain_locations({"HOME": str(original_home)}, environment)
+    assert environment == {
+        "HOME": str(tmp_path / "isolated-home"),
+        "CARGO_HOME": str(original_home / ".cargo"),
+        "RUSTUP_HOME": str(original_home / ".rustup"),
+    }
+    preserve_rust_toolchain_locations({"RUSTUP_HOME": "/configured-rust", "CARGO_HOME": "/configured-cargo"}, environment)
+    assert environment["RUSTUP_HOME"] == "/configured-rust"
+    assert environment["CARGO_HOME"] == "/configured-cargo"
 
 
 def initialize_candidate_repo(tmp_path: Path) -> Path:
@@ -97,6 +139,19 @@ def test_worktree_rejects_untracked_required_input(tmp_path: Path) -> None:
         common.GateError, match="untracked required candidate inputs"
     ), common.materialize_candidate("worktree", repository):
             pass
+
+
+@pytest.mark.parametrize('relative', [
+    'skills/ladon/SKILL.md', 'docs/hidden.md', 'src/ladon/schemas/hidden.json',
+    'scripts/hidden_helper.py', 'tests/fixtures/hidden.json',
+], ids=['skill', 'documentation', 'schema', 'helper', 'fixture'])
+def test_worktree_rejects_every_maintained_input_root(tmp_path: Path, relative: str) -> None:
+    repository = initialize_candidate_repo(tmp_path)
+    path = repository / relative
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text('required input\n')
+    with pytest.raises(GateError, match='untracked required candidate inputs'), materialize_candidate('worktree', repository):
+        pass
 
 
 def test_treeish_rejects_dirty_stale_head(tmp_path: Path) -> None:

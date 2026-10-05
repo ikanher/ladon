@@ -62,7 +62,22 @@ def sanitized_environment(runtime_root: Path, candidate_root: Path) -> dict[str,
     elan_home = inferred_elan_home(original)
     if elan_home:
         environment["ELAN_HOME"] = elan_home
+    preserve_rust_toolchain_locations(original, environment)
     return environment
+
+
+def preserve_rust_toolchain_locations(
+    original: Mapping[str, str], environment: dict[str, str],
+) -> None:
+    """Keep explicit compiler/cache locations when the gate replaces HOME."""
+
+    for key, directory in (("RUSTUP_HOME", ".rustup"), ("CARGO_HOME", ".cargo")):
+        if original.get(key):
+            environment[key] = original[key]
+        elif original.get("HOME"):
+            location = Path(original["HOME"]) / directory
+            if location.is_dir():
+                environment[key] = str(location)
 
 
 def remove_host_python_state(environment: dict[str, str]) -> None:
@@ -255,6 +270,7 @@ def run_candidate_quality(
 ) -> None:
     """Run the locked strict quality and maintained test gate."""
 
+    prepare_candidate_lean_fixture(candidate_root, environment)
     run_checked(
         [
             uv_executable(),
@@ -268,6 +284,20 @@ def run_candidate_quality(
         cwd=candidate_root,
         environment=environment,
     )
+
+
+def prepare_candidate_lean_fixture(
+    candidate_root: Path, environment: Mapping[str, str],
+) -> None:
+    """Explicitly build the tracked test fixture when Lean tests can run."""
+
+    lake = shutil.which("lake", path=environment.get("PATH", ""))
+    if lake is None:
+        return
+    fixture = candidate_root / "tests" / "fixtures" / "lean_integration"
+    if not (fixture / "lean-toolchain").is_file():
+        raise GateError("candidate omits the pinned Lean integration fixture")
+    run_checked([lake, "build"], cwd=fixture, environment=environment)
 
 
 def candidate_audit_files(candidate_root: Path) -> Iterator[Path]:

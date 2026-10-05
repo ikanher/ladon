@@ -8,10 +8,12 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from ladon.evidence_receipt_readers import derivation_query_receipt
 from ladon.proof_search_index import ProofSearchIndexError, default_proof_search_index_path
 from ladon.proof_search_semantic_cli import dispatch_semantic_evidence
 from ladon.proofir_derivation import (
     DerivationQueryBounds,
+    _fit_output,
     analyze_alternatives,
     complete_derivation_slice,
     navigation_path,
@@ -34,7 +36,12 @@ def dispatch_evidence(
     with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
         connection.row_factory = sqlite3.Row
         if args.kind == "theorem":
-            return query_v3_theorem_evidence(connection, args.name, limit=args.limit)
+            try:
+                return query_v3_theorem_evidence(connection, args.name, limit=args.limit)
+            except (ValueError, ProofIRV3Error) as error:
+                raise ProofSearchIndexError(
+                    str(error), exit_class="operational", code="invalid-stored-evidence-receipt",
+                ) from error
         if args.kind == "artifact":
             return {
                 "schema": "ladon-proofir-v3-artifact-evidence-v1",
@@ -53,27 +60,46 @@ def _dispatch_stored_derivation(connection: Any, args: Any) -> Mapping[str, Any]
         raise ProofSearchIndexError("route evidence requires --start")
     target_text = _parse_typed_statement(args.end)
     start_text = _parse_typed_statement(args.start) if args.kind == "route" else None
-    row = connection.execute(
-        "SELECT artifact_kind,canonical_json FROM proofir_v3_artifacts "
-        "WHERE content_artifact_id=?",
-        (args.name,),
-    ).fetchone()
-    if row is None:
-        raise ProofSearchIndexError(f"stored derivation artifact not found: {args.name}")
-    if row[0] != "proofir.derivation":
-        raise ProofSearchIndexError("stored evidence artifact is not a proofir.derivation")
-    try:
-        artifact = validate_envelope(json.loads(row[1])).to_dict()
-    except (json.JSONDecodeError, ProofIRV3Error) as exc:
-        raise ProofSearchIndexError(f"stored derivation artifact is invalid: {exc}") from exc
+    checked = _read_stored_derivation(connection, args.name)
+    artifact = checked.to_dict()
     target = _resolve_statement_ref(target_text, artifact)
     start = _resolve_statement_ref(start_text, artifact) if start_text is not None else None
     bounds = _derivation_query_bounds(args.limit)
     if args.kind == "route":
-        return navigation_path(artifact, start, target, bounds=bounds)
-    if args.kind == "slice":
-        return complete_derivation_slice(artifact, target, bounds=bounds)
-    return analyze_alternatives(artifact, target, bounds=bounds)
+        result = navigation_path(artifact, start, target, bounds=bounds)
+    elif args.kind == "slice":
+        result = complete_derivation_slice(artifact, target, bounds=bounds)
+    else:
+        result = analyze_alternatives(artifact, target, bounds=bounds)
+    request = {
+        "queryKind": result["queryKind"], "artifactRef": checked.content_id,
+        "targetRef": target, "startRef": start, "bounds": bounds.to_dict(),
+    }
+    result["evidenceReceipt"] = derivation_query_receipt(
+        checked.content_id, request, invalid=result["status"] == "invalid",
+    )
+    return _fit_output(result, bounds.max_output_bytes)
+
+
+def _read_stored_derivation(connection: Any, artifact_ref: str) -> Any:
+    """Validate stored content against the exact lookup owner before traversal."""
+
+    row = connection.execute(
+        "SELECT artifact_kind,canonical_json FROM proofir_v3_artifacts "
+        "WHERE content_artifact_id=?",
+        (artifact_ref,),
+    ).fetchone()
+    if row is None:
+        raise ProofSearchIndexError(f"stored derivation artifact not found: {artifact_ref}")
+    if row[0] != "proofir.derivation":
+        raise ProofSearchIndexError("stored evidence artifact is not a proofir.derivation")
+    try:
+        checked = validate_envelope(json.loads(row[1]))
+    except (json.JSONDecodeError, ProofIRV3Error) as exc:
+        raise ProofSearchIndexError(f"stored derivation artifact is invalid: {exc}") from exc
+    if checked.content_id != artifact_ref:
+        raise ProofSearchIndexError("stored derivation artifact content owner does not match its lookup identity")
+    return checked
 
 
 def _parse_typed_statement(value: str | None) -> str:

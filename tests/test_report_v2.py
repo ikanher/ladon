@@ -563,6 +563,26 @@ def test_normalized_bytes_ignore_registered_phase_and_helper_timings() -> None:
     )
 
 
+def test_normalized_resource_wall_time_preserves_limits_and_outcomes() -> None:
+    first = canonical_payload()
+    second = canonical_payload()
+    for payload, wall_time in ((first, 1.0), (second, 2.0)):
+        payload["phases"]["module_dag"]["data"]["run_resources"] = {
+            "observed": {"observedWallSeconds": wall_time, "moduleCount": 3},
+            "limits": {"wallSeconds": 10.0},
+            "status": "accepted",
+        }
+    original = json.loads(json.dumps(second))
+    assert canonical_json_bytes(first, normalize_timings=True) == canonical_json_bytes(
+        second, normalize_timings=True,
+    )
+    assert second == original
+    second["phases"]["module_dag"]["data"]["run_resources"]["limits"]["wallSeconds"] = 20.0
+    assert canonical_json_bytes(first, normalize_timings=True) != canonical_json_bytes(
+        second, normalize_timings=True,
+    )
+
+
 def test_text_uses_typed_findings_and_reports_omitted_rows() -> None:
     source = {
         "metadata": {

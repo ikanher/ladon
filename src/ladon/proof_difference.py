@@ -117,7 +117,10 @@ def _difference_payload(
         "normalization": {"identity": "raw-signature-v1" if request.raw_signature else "binder-peeling-v1", "originalCandidate": request.candidate, "peeledConclusion": conclusion, "peeledBinders": list(binders)},
         "coverage": {"authority": "binder-aware_structural_analysis", "suggestionCap": request.suggestion_cap},
         "routeCard": route.as_dict(),
-        "nonclaims": ["Structural difference analysis is not proof-term verification or Lean applicability."],
+        "nonclaims": [
+            "Structural difference analysis is not proof-term verification or Lean applicability.",
+            "Use proof-search check or discover for explicit Lean candidate checking.",
+        ],
     }
 
 

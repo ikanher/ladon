@@ -39,6 +39,7 @@ def build_scratch_source(
     introduced_context: Sequence[Mapping[str, str]] = (),
 ) -> str:
     """Return exact source for an independent closed application replay."""
+    candidate = candidate.replace("\n", "\n    ")
     if introduced_context and goal.lstrip().startswith(("∀", "forall")):
         intros = "\n".join(f"  intro {row['name']}" for row in introduced_context)
         binders = " ".join(f"({row['name']} : {row['type']})" for row in local_context)

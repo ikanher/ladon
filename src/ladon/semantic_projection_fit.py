@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 from collections.abc import Mapping
 from typing import Any
 
@@ -21,8 +22,10 @@ _OMISSION_LEDGER_LIMIT = 24
 def finalize_projection(payload: dict[str, Any], maximum: int) -> dict[str, Any]:
     """Fit, identify, and enforce one projection's public byte cap."""
 
-    fit_projection(payload, maximum - 128)
-    _bound_omission_ledger(payload, _OMISSION_LEDGER_LIMIT)
+    payload, ready = _compact_application_ledger(payload, maximum - 128)
+    if not ready:
+        fit_projection(payload, maximum - 128)
+        _bound_omission_ledger(payload, _OMISSION_LEDGER_LIMIT)
     if not _fits(payload, maximum - 128):
         payload = _minimal_projection(payload)
     payload["projection"]["projectionIdentity"] = identity(payload)
@@ -32,6 +35,23 @@ def finalize_projection(payload: dict[str, Any], maximum: int) -> dict[str, Any]
             f"semantic {payload['operation']} projection exceeds its {maximum}-byte cap"
         )
     return payload
+
+
+def _compact_application_ledger(payload, maximum):
+    candidate = payload.get("candidate")
+    if not isinstance(candidate, Mapping):
+        return payload, False
+    check = candidate.get("check")
+    if not isinstance(check, Mapping) or check.get("applicationObservationVersion") != 4:
+        return payload, False
+    # Try a bounded disclosure ledger before discarding the mathematical view.
+    # Preserve original population counts, and leave the original untouched if
+    # the candidate still cannot fit. Larger inputs use the existing fallback.
+    compact = copy.deepcopy(payload)
+    _bound_omission_ledger(compact, 5)
+    if _fits(compact, maximum):
+        return compact, True
+    return payload, False
 
 
 def fit_projection(payload: dict[str, Any], maximum: int) -> None:
@@ -227,6 +247,7 @@ def _minimal_candidate(card: Mapping[str, Any]) -> dict[str, Any]:
         "check": {
             "status": check.get("status"),
             "authority": check.get("authority"),
+            "executionBindingLimitation": check.get("executionBindingLimitation"),
             "environmentRef": check.get("environmentRef"),
             "checkRunRef": check.get("checkRunRef"),
             "scratch": _minimal_scratch(check.get("scratch")),
@@ -234,6 +255,9 @@ def _minimal_candidate(card: Mapping[str, Any]) -> dict[str, Any]:
     }
     _copy_minimal_identity_text(
         result["check"], "receiptIdentity", check.get("receiptIdentity"), 128
+    )
+    _copy_minimal_identity_text(
+        result["check"], "sourceReceiptIdentity", check.get("sourceReceiptIdentity"), 128
     )
     return result
 
@@ -253,7 +277,11 @@ def _minimal_scratch(value: Any) -> dict[str, Any] | None:
         return None
     return {
         field: value.get(field)
-        for field in ("status", "environmentRef", "checkRunRef")
+        for field in (
+            "status", "environmentRef", "checkRunRef", "authority",
+            "receiptIdentity", "sourceReceiptIdentity",
+            "executionBindingLimitation",
+        )
     }
 
 

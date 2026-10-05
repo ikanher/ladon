@@ -159,6 +159,62 @@ def test_direct_projector_rejects_receipt_outcome_and_local_context_contradictio
         project_semantic_result(_direct(check), projection="llm", registered_artifacts=registry)
 
 
+def test_projector_binds_requested_notation_to_the_owned_structural_context() -> None:
+    check, registry = _check('notation', local_context=({'name': 'epsilon', 'type': 'ℝ'},))
+    check['callerLocalContext'] = [{'name': 'epsilon', 'type': 'Real'}]
+    row = {'localId': 'local:0', 'userName': 'epsilon', 'binderInfo': 'default',
+           'typeDisplay': 'ℝ', 'typeStructural': 'Lean.Expr.const `Real []',
+           'valueDisplay': '', 'valueStructural': '', 'dependencies': [], 'origin': 'goal-introduced'}
+
+    def replace_context(artifact):
+        for subject in artifact['subjectRefs']:
+            if subject['kind'] == 'candidate-application':
+                subject['searchShape']['localContext'] = [dict(row)]
+
+    _mutate_check_artifact(check, registry, replace_context)
+    result = project_semantic_result(_direct(check), projection='llm', registered_artifacts=registry)
+    assert result['status'] == 'accepted'
+    row['typeStructural'] = 'Lean.Expr.const `Bool []'
+    _mutate_check_artifact(check, registry, replace_context)
+    with pytest.raises(SemanticProjectionError, match='requested prefix'):
+        project_semantic_result(_direct(check), projection='llm', registered_artifacts=registry)
+
+
+def test_scratch_notation_requires_the_resolved_parent_structural_context() -> None:
+    from ladon.verified_discovery import DiscoveryRequest, _scratch_evidence
+
+    check, registry = _check('scratch-notation', local_context=({'name': 'epsilon', 'type': 'ℝ'},))
+    check['callerLocalContext'] = [{'name': 'epsilon', 'type': 'Real'}]
+    row = {'localId': 'local:0', 'userName': 'epsilon', 'binderInfo': 'default',
+           'typeDisplay': 'ℝ', 'typeStructural': 'Lean.Expr.const `Real []',
+           'valueDisplay': '', 'valueStructural': '', 'dependencies': [], 'origin': 'goal-introduced'}
+
+    def replace_context(artifact):
+        for subject in artifact['subjectRefs']:
+            if subject['kind'] == 'candidate-application':
+                subject['searchShape']['localContext'] = [dict(row)]
+
+    _mutate_check_artifact(check, registry, replace_context)
+    subject = check['evidenceReceipt']['subject']
+    request = DiscoveryRequest(Path('/repo'), subject['module'], subject['goal'],
+                               local_context=({'name': 'epsilon', 'type': 'Real'},))
+    scratch = _scratch_evidence(request, subject['candidate'], check,
+        {'status': 'compiled', 'applicationTerm': check['applicationTerm'],
+         'sourceDigest': 'sha256:' + 'a' * 64, 'outputDigest': 'sha256:' + 'b' * 64}, None)
+    check['scratch'] = scratch
+    registry.update({artifact['artifactId']: artifact for artifact in scratch['artifacts']})
+    result = project_semantic_result(_direct(check), projection='llm', registered_artifacts=registry)
+    assert result['status'] == 'accepted'
+    from ladon.semantic_observation_closure import validate_semantic_observation_population
+
+    observations = validate_semantic_observation_population(_direct(check), registry)
+    assert observations[-1].scratch and observations[-1].status == 'compiled'
+    assert scratch['evidenceReceipt']['subject']['localContext'] == [{'name': 'epsilon', 'type': 'ℝ'}]
+    scratch['parentCheckRunRef'] = 'check:' + 'f' * 64
+    with pytest.raises(SemanticProjectionError, match='parent candidate'):
+        project_semantic_result(_direct(check), projection='llm', registered_artifacts=registry)
+
+
 @pytest.mark.parametrize(("field", "value"), [("goal", "False"), ("module", "Foreign")])
 def test_candidate_goal_subject_closes_receipt_module_and_goal(
     field: str, value: str

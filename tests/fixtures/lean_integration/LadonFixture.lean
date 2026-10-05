@@ -11,6 +11,10 @@ theorem identité (value : Nat) : value = value := rfl
 
 theorem twoIdentity (x y : Nat) : x = x := rfl
 
+structure ProjectionPoint where
+  epoch : Nat
+  horizon : Nat
+
 theorem fixtureUsesCore : Core.value = Helper.identity Core.value := by
   rfl
 

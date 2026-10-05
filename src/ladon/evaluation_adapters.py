@@ -19,13 +19,14 @@ class EvaluationAdapter:
             "name": self.name,
             "command": self.command,
             "available": self.available,
+            "availabilityBasis": "executable presence only; repository execution still requires observation",
             "nonclaims": list(self.nonclaims),
         }
 
 
 def build_evaluation_adapters(repo_root: Path) -> tuple[EvaluationAdapter, ...]:
     """Describe comparable methods without treating unavailable tools as failures."""
-    lean_available = shutil.which("lake") is not None
+    lean_available = (repo_root / 'lean-toolchain').is_file() and shutil.which("lake") is not None
     rg_available = shutil.which("rg") is not None
     return (
         EvaluationAdapter("ladon", "ladon proof-search discover", True, ("Ladon output is bounded observation evidence.",)),
@@ -38,7 +39,10 @@ def build_evaluation_adapters(repo_root: Path) -> tuple[EvaluationAdapter, ...]:
 
 
 def evaluate_retrieval(found: set[str], expected: set[str]) -> dict[str, object]:
-    """Compute recall and incorrect-suggestion rate without hiding empty sets."""
+    """Report label agreement; incomplete labels cannot establish suggestion correctness.
+
+    Use evaluation_metrics for independently replayed suggestion outcomes.
+    """
     true_positive = len(found & expected)
     false_positive = len(found - expected)
     return {
@@ -48,7 +52,9 @@ def evaluate_retrieval(found: set[str], expected: set[str]) -> dict[str, object]
         "falsePositive": false_positive,
         "recall": true_positive / len(expected) if expected else None,
         "recallStatus": "assessed" if expected else "not-assessed",
-        "incorrectSuggestionRate": false_positive / len(found) if found else 0.0,
+        "labelMismatchRate": false_positive / len(found) if found else None,
+        "incorrectSuggestionRate": None,
+        "incorrectSuggestionStatus": "requires-independent-Lean-replay",
     }
 
 

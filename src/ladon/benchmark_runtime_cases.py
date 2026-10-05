@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import signal
 import subprocess
@@ -130,7 +131,12 @@ def apply_cache_mutation(
 
     path = mutation_path(fixture, installed_helper, mutation)
     original = path.read_bytes()
-    path.write_bytes(original + f"\nbenchmark-mutation:{mutation}\n".encode())
+    if mutation == "lake_manifest":
+        manifest = json.loads(original)
+        manifest["benchmarkMutation"] = mutation
+        path.write_text(json.dumps(manifest, sort_keys=True) + "\n", encoding="utf-8")
+    else:
+        path.write_bytes(original + f"\nbenchmark-mutation:{mutation}\n".encode())
     return lambda: path.write_bytes(original)
 
 
@@ -292,6 +298,9 @@ def control_context(
     child_pid = context.root / "child.pid"
     mutable_environment = dict(context.environment)
     mutable_environment["LADON_BENCH_FAKE_MODE"] = "timeout"
+    (context.root / "fake-control.json").write_text(
+        json.dumps({"mode": "timeout", "childPid": str(child_pid)}), encoding="utf-8",
+    )
     mutable_environment["LADON_BENCH_CHILD_PID"] = str(child_pid)
     context = type(context)(
         case=context.case,

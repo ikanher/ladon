@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from ladon.analysis.authority_freeze import inspect_authority_freeze
 from ladon.analysis.openspec_hygiene import summarize_openspec_hygiene
 
 DELTA_HEADER_RE = re.compile(
@@ -22,6 +23,7 @@ def summarize_openspec_backlog(openspec_root: Path) -> dict[str, Any]:
     """Return operational backlog findings for an OpenSpec root."""
 
     hygiene = summarize_openspec_hygiene(openspec_root)
+    freeze = inspect_authority_freeze(openspec_root)
     changes_root = openspec_root / "changes"
     active_change_ids = {
         path.name
@@ -29,6 +31,7 @@ def summarize_openspec_backlog(openspec_root: Path) -> dict[str, Any]:
         if path.is_dir() and path.joinpath(".openspec.yaml").is_file()
     } if changes_root.is_dir() else set()
     referenced_change_ids = active_change_ids | archived_change_ids(changes_root / "archive")
+    referenced_change_ids.update(freeze["localChildPlans"])
     packets = [
         packet_summary(openspec_root, row, referenced_change_ids)
         for row in hygiene["changes"]
@@ -39,12 +42,14 @@ def summarize_openspec_backlog(openspec_root: Path) -> dict[str, Any]:
         for finding in packet["findings"]
     ]
     findings.extend(reconciliation_ledger_findings(openspec_root, hygiene["changes"]))
+    findings.extend(freeze["findings"])
     return {
         "openspec_root": str(openspec_root),
         "change_count": len(packets),
         "finding_count": len(findings),
         "packets": packets,
         "findings": findings,
+        "expansion_freeze": freeze,
     }
 
 

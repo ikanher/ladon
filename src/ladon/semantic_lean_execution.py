@@ -4,13 +4,19 @@ from __future__ import annotations
 
 import json
 import os
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import MappingProxyType
 
-from ladon.lean_toolchain import LeanToolchainContext, LeanToolchainError
+from ladon.lean_toolchain import (
+    MAX_COMPILED_LIBRARY_ROOTS,
+    LeanToolchainContext,
+    LeanToolchainError,
+    compiled_library_roots,
+    sanitize_execution_environment,
+)
 
-MAX_COMPILED_LIBRARY_ROOTS = 2048
 MAX_LAKE_MANIFEST_BYTES = 16 * 1024 * 1024
 
 
@@ -27,8 +33,11 @@ class DirectLeanExecution:
     """One direct executable and read-only compiled-library search environment."""
 
     command: tuple[str, ...]
-    environment: dict[str, str]
+    environment: Mapping[str, str]
     library_roots: tuple[Path, ...]
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "environment", MappingProxyType(dict(self.environment)))
 
 
 def prepare_direct_lean_execution(
@@ -41,34 +50,27 @@ def prepare_direct_lean_execution(
     """Fail closed when an explicit check lacks its precompiled target module."""
 
     root = repo_root.resolve()
+    if toolchain is not None and root != toolchain.repo_root:
+        raise LeanToolchainError("execution repository does not match toolchain context")
     _require_manifest_package_directories(root)
-    library_roots = _compiled_library_roots(root)
-    modules = (
-        ()
-        if module is None
-        else ((module,) if isinstance(module, str) else tuple(module))
-    )
+    library_roots = compiled_library_roots(root)
+    if toolchain is not None and library_roots != toolchain.library_roots:
+        raise LeanToolchainError("compiled library roots changed after context creation")
     require_compiled = (
         toolchain is not None
         if require_compiled_module is None
         else require_compiled_module
     )
     if require_compiled:
-        if not modules:
-            raise DirectLeanPreflightError(
-                "compiled-module-unavailable",
-                "mutation-free execution requires at least one compiled module",
-            )
-        for module_name in modules:
-            _require_compiled_module(module_name, library_roots)
+        _require_compiled_modules(module, library_roots)
     if toolchain is not None:
         command = (str(toolchain.lean_path),)
         environment = dict(toolchain.environment)
     else:
         command = ("lean",)
         environment = _ambient_environment()
-    if library_roots:
-        environment["LEAN_PATH"] = os.pathsep.join(str(path) for path in library_roots)
+        if library_roots:
+            environment["LEAN_PATH"] = os.pathsep.join(str(path) for path in library_roots)
     return DirectLeanExecution(command, environment, library_roots)
 
 
@@ -145,30 +147,17 @@ def _missing_git_package_directories(
     return missing
 
 
-def _compiled_library_roots(repo_root: Path) -> tuple[Path, ...]:
-    roots: list[Path] = []
-    local = repo_root / ".lake" / "build" / "lib" / "lean"
-    if local.is_dir():
-        roots.append(local.resolve())
-    packages = repo_root / ".lake" / "packages"
-    if packages.is_dir():
-        try:
-            children = sorted(packages.iterdir(), key=lambda path: path.name)
-        except OSError as exc:
-            raise LeanToolchainError("cannot inspect compiled Lake package roots") from exc
-        if len(children) > MAX_COMPILED_LIBRARY_ROOTS:
-            raise LeanToolchainError(
-                "compiled Lake package population exceeds the supported root limit"
-            )
-        for package in children:
-            if len(package.name.encode()) > 255:
-                raise LeanToolchainError("compiled Lake package name exceeds the byte limit")
-            candidate = package / ".lake" / "build" / "lib" / "lean"
-            if candidate.is_dir():
-                roots.append(candidate.resolve())
-    if len(roots) > MAX_COMPILED_LIBRARY_ROOTS:
-        raise LeanToolchainError("compiled Lean library population exceeds the root limit")
-    return tuple(dict.fromkeys(roots))
+def _require_compiled_modules(
+    module: str | Sequence[str] | None, roots: tuple[Path, ...],
+) -> None:
+    modules = () if module is None else ((module,) if isinstance(module, str) else tuple(module))
+    if not modules:
+        raise DirectLeanPreflightError(
+            "compiled-module-unavailable",
+            "mutation-free execution requires at least one compiled module",
+        )
+    for module_name in modules:
+        _require_compiled_module(module_name, roots)
 
 
 def _require_compiled_module(module: str, roots: tuple[Path, ...]) -> None:
@@ -183,8 +172,7 @@ def _require_compiled_module(module: str, roots: tuple[Path, ...]) -> None:
 
 
 def _ambient_environment() -> dict[str, str]:
-    allowed = {"PATH", "HOME", "TMPDIR", "USER", "LANG", "LC_ALL"}
-    return {key: value for key, value in os.environ.items() if key in allowed}
+    return sanitize_execution_environment()
 
 
 __all__ = [

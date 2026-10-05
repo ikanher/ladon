@@ -7,6 +7,7 @@ import time
 from dataclasses import dataclass
 from typing import Any
 
+from ladon.evidence_receipt_readers import stored_query_receipt
 from ladon.theorem_lineage_store import LineageIdentity, inspect_lineage_closure
 
 
@@ -70,6 +71,7 @@ def query_lineage(
             "reason": status.get("reason", status["status"]),
             "theorem": query.theorem,
             "authority": "unavailable",
+            "evidenceReceipt": lineage_query_receipt(status, query.theorem),
             "query": _query_payload(query),
             "elapsedSeconds": round(time.monotonic() - started, 6),
             "nonclaim": _NONCLAIM,
@@ -98,6 +100,7 @@ def query_lineage(
         "closureId": closure_id,
         "authority": "lean_environment",
         "freshness": "fresh",
+        "evidenceReceipt": lineage_query_receipt(status, query.theorem),
         "query": _query_payload(query),
         "bounds": {
             "maxDepth": query.max_depth,
@@ -461,3 +464,15 @@ _NONCLAIM = (
 
 
 __all__ = ["LineageQuery", "TheoremLineageQueryError", "query_lineage"]
+
+
+def lineage_query_receipt(status: dict[str, Any], theorem: str, *, projection_kind: str = "sqlite-row") -> dict[str, Any]:
+    """Keep dependency acquisition distinct from an attributable theorem check."""
+
+    closure_id = status.get("closureId")
+    freshness = {"fresh": "fresh", "stale-source": "stale"}.get(status["status"], "not-assessed")
+    return stored_query_receipt(
+        "theorem-lineage", theorem, observed=closure_id is not None,
+        source_ref="lineage:" + closure_id if closure_id is not None else None,
+        source_freshness=freshness, projection_kind=projection_kind,
+    )

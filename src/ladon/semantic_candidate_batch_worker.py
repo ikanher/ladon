@@ -28,6 +28,7 @@ from ladon.semantic_candidate_limits import (
 from ladon.semantic_candidate_worker import (
     DEFAULT_HELPER,
     SEMANTIC_BATCH_PROTOCOL,
+    SEMANTIC_BATCH_PROTOCOL_V4,
     SEMANTIC_PROTOCOL,
     TRUSTED_TARGET_LIMITATION,
     UNIVERSE_POLICY,
@@ -241,7 +242,7 @@ def _parse_batch_worker_payload(
     header = frames[0]
     _validate_batch_header(header, request, request_id)
     rows, terminal, prefix_diagnostic = _validated_batch_prefix(
-        frames[1:], request_id, candidates, header["localContext"]
+        frames[1:], request_id, candidates, header["localContext"], protocol=header["protocol"],
     )
     if decode_diagnostic:
         terminal = False
@@ -306,13 +307,14 @@ def _validated_batch_prefix(
     request_id: str,
     candidates: Sequence[str],
     local_context: Sequence[Mapping[str, Any]],
+    *, protocol: str = SEMANTIC_BATCH_PROTOCOL,
 ) -> tuple[list[dict[str, Any]], bool, str | None]:
     rows: list[dict[str, Any]] = []
     terminal = False
     diagnostic: str | None = None
     for sequence, frame in enumerate(frames, start=1):
         try:
-            _validate_prefix_frame(frame, request_id, sequence)
+            _validate_prefix_frame(frame, request_id, sequence, protocol=protocol)
         except (TypeError, ValueError) as error:
             if not rows:
                 raise
@@ -360,17 +362,17 @@ def _validated_prefix_row(
     frame: Mapping[str, Any], candidate: str, local_context: Sequence[Mapping[str, Any]]
 ) -> dict[str, Any]:
     row = frame["row"]
-    _validate_batch_row(row, candidate, local_context)
+    _validate_batch_row(row, candidate, local_context, protocol=str(frame.get("protocol", SEMANTIC_BATCH_PROTOCOL)))
     return dict(row)
 
 
-def _validate_prefix_frame(frame: Mapping[str, Any], request_id: str, sequence: int) -> None:
+def _validate_prefix_frame(frame: Mapping[str, Any], request_id: str, sequence: int, *, protocol: str = SEMANTIC_BATCH_PROTOCOL) -> None:
     common = {"protocol", "frameVersion", "frameKind", "sequence", "terminal", "requestId"}
     kind = frame.get("frameKind")
     expected = common | ({"row"} if kind == "candidate" else {"completed", "total"})
     if (
         set(frame) != expected
-        or frame.get("protocol") != SEMANTIC_BATCH_PROTOCOL
+        or frame.get("protocol") != protocol
         or frame.get("frameVersion") != 1
         or frame.get("requestId") != request_id
         or frame.get("sequence") != sequence
@@ -415,7 +417,7 @@ def _validate_batch_required_fields(payload: Mapping[str, Any]) -> None:
 def _validate_batch_frame(
     payload: Mapping[str, Any], request: SemanticCandidateRequest, request_id: str
 ) -> None:
-    if payload.get("protocol") != SEMANTIC_BATCH_PROTOCOL or payload.get("requestId") != request_id:
+    if payload.get("protocol") not in {SEMANTIC_BATCH_PROTOCOL, SEMANTIC_BATCH_PROTOCOL_V4} or payload.get("requestId") != request_id:
         raise ValueError("Lean semantic helper returned an invalid batch identity")
     if payload.get("executionContextRef") != _execution_context_ref(request):
         raise ValueError("Lean semantic helper returned a mismatched execution context")
@@ -478,25 +480,28 @@ def _validate_batch_semantic_population(
             "localContext": payload.get("localContext"),
         }
     )
-    validate_observed_local_context(payload["localContext"], request.local_context)
+    validate_observed_local_context(
+        payload["localContext"], request.local_context,
+        allow_shadowed_names=payload["protocol"] == SEMANTIC_BATCH_PROTOCOL_V4,
+    )
 
 
-def _validate_batch_rows(rows: list[Any], candidates: Sequence[str]) -> None:
+def _validate_batch_rows(rows: list[Any], candidates: Sequence[str], *, protocol: str = SEMANTIC_BATCH_PROTOCOL) -> None:
     names = [row.get("candidate") for row in rows if isinstance(row, dict)]
     if names != list(candidates):
         raise ValueError("Lean semantic helper returned a reordered or incomplete candidate batch")
     for row, candidate in zip(rows, candidates):
-        _validate_batch_row(row, candidate)
+        _validate_batch_row(row, candidate, protocol=protocol)
 
 
 def _validate_batch_row(
-    row: Any, candidate: str, local_context: Sequence[Mapping[str, Any]] = ()
+    row: Any, candidate: str, local_context: Sequence[Mapping[str, Any]] = (), *, protocol: str = SEMANTIC_BATCH_PROTOCOL
 ) -> None:
-    _validate_batch_row_shape(row, candidate)
-    _validate_batch_row_evidence(row, candidate, local_context)
+    _validate_batch_row_shape(row, candidate, protocol)
+    _validate_batch_row_evidence(row, candidate, local_context, protocol)
 
 
-def _validate_batch_row_shape(row: Any, candidate: str) -> None:
+def _validate_batch_row_shape(row: Any, candidate: str, protocol: str = SEMANTIC_BATCH_PROTOCOL) -> None:
     fields = {
         "candidate",
         "status",
@@ -508,6 +513,8 @@ def _validate_batch_row_shape(row: Any, candidate: str) -> None:
         "failureStage",
         "diagnostic",
     }
+    if protocol == SEMANTIC_BATCH_PROTOCOL_V4:
+        fields |= {"residualContexts", "declarationBinders"}
     if not isinstance(row, dict) or set(row) != fields:
         raise ValueError("Lean semantic helper returned an invalid candidate row shape")
     if row["candidate"] != candidate or row["status"] not in {
@@ -525,7 +532,7 @@ def _validate_batch_row_shape(row: Any, candidate: str) -> None:
 
 
 def _validate_batch_row_evidence(
-    row: Mapping[str, Any], candidate: str, local_context: Sequence[Mapping[str, Any]] = ()
+    row: Mapping[str, Any], candidate: str, local_context: Sequence[Mapping[str, Any]] = (), protocol: str = SEMANTIC_BATCH_PROTOCOL
 ) -> None:
     _validate_application_rows(
         {
@@ -533,6 +540,7 @@ def _validate_batch_row_evidence(
             "dischargedHypotheses": row["dischargedHypotheses"],
             "residualPremises": row["residualPremises"],
             "localContext": list(local_context),
+            **({"protocol": protocol, "residualContexts": row["residualContexts"], "declarationBinders": row["declarationBinders"]} if protocol == SEMANTIC_BATCH_PROTOCOL_V4 else {}),
         }
     )
     if row["status"] == "rejected":
@@ -554,6 +562,8 @@ def _validate_rejected_row(row: Mapping[str, Any]) -> None:
         or row["dischargedHypotheses"]
         or row["substitutions"]
         or row["residualPremises"]
+        or row.get("residualContexts", [])
+        or row.get("declarationBinders", [])
     ):
         raise ValueError("rejected candidate row carries accepted evidence")
     if row["failureStage"] not in {
@@ -765,7 +775,7 @@ def _materialize_batch_row(
         )
         validate_envelope_batch(list(artifacts))
         receipt = artifacts[1]["extensions"]["ladon.process-observation/v1"]["evidenceReceipt"]
-        return {
+        result = {
             **dict(row),
             "callerLocalContext": [dict(item) for item in request.local_context],
             "environmentRef": environment["environmentRef"],
@@ -773,8 +783,20 @@ def _materialize_batch_row(
             "evidenceReceipt": receipt,
             "artifacts": list(artifacts),
         }
+        if single["protocol"] == SEMANTIC_BATCH_PROTOCOL_V4:
+            result.update({
+                "applicationObservationVersion": 4,
+                "semanticProtocol": SEMANTIC_BATCH_PROTOCOL_V4,
+                "selectedDeclaration": {
+                    "name": row["candidateSubject"]["name"],
+                    "typeDisplay": row["candidateSubject"]["typeDisplay"],
+                    "typeStructural": row["candidateSubject"]["typeStructural"],
+                    "binders": row["declarationBinders"],
+                },
+            })
+        return result
     rejection_payload = {
-        "protocol": SEMANTIC_PROTOCOL,
+        "protocol": payload["protocol"] if payload["protocol"] == SEMANTIC_BATCH_PROTOCOL_V4 else SEMANTIC_PROTOCOL,
         "frameVersion": 1,
         "sequence": 0,
         "terminal": True,
@@ -931,8 +953,8 @@ def _synthetic_subject(kind: str, display: str) -> dict[str, Any]:
 
 
 def _single_payload(payload: Mapping[str, Any], row: Mapping[str, Any]) -> dict[str, Any]:
-    return {
-        "protocol": SEMANTIC_PROTOCOL,
+    result = {
+        "protocol": payload["protocol"],
         "frameVersion": 1,
         "sequence": 0,
         "terminal": True,
@@ -952,6 +974,10 @@ def _single_payload(payload: Mapping[str, Any], row: Mapping[str, Any]) -> dict[
         "residualPremises": row["residualPremises"],
         "localContext": payload["localContext"],
     }
+    if payload["protocol"] == SEMANTIC_BATCH_PROTOCOL_V4:
+        result["residualContexts"] = row["residualContexts"]
+        result["declarationBinders"] = row["declarationBinders"]
+    return result
 
 
-__all__ = ["SemanticCandidateBatchCheck", "check_semantic_candidates"]
+__all__ = ["SEMANTIC_BATCH_PROTOCOL_V4", "SemanticCandidateBatchCheck", "check_semantic_candidates"]

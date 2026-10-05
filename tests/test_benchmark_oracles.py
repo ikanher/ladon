@@ -35,9 +35,31 @@ from ladon.benchmark_metrics import (
     extraction_coverage,
     known_case_recall,
 )
+from ladon.benchmark_suite import install_fake_lake
 from ladon.ir import LeanDeclaration, LeanImport, LeanModule
 
 FIXTURE_ROOT = Path(__file__).parent / "fixtures" / "benchmark_oracles"
+
+
+def test_fake_lean_handles_direct_version_and_batch_execution(tmp_path: Path) -> None:
+    fixture = Path(__file__).parent / "fixtures" / "benchmark_harness" / "lean_signals"
+    environment: dict[str, str] = {}
+    install_fake_lake(tmp_path, fixture, tmp_path / "helper.log", environment)
+    lean = tmp_path / "bin" / "lean"
+    version = subprocess.run([str(lean), "--version"], env={}, capture_output=True, text=True, timeout=10, check=False)
+    assert version.returncode == 0
+    assert "portable benchmark" in version.stdout
+    request = tmp_path / "request.json"
+    request.write_text(json.dumps({"protocolVersion": 2, "modules": [
+        {"requestIndex": 0, "module": "Pkg.Surface.Deep", "file": "Pkg/Surface/Deep.lean"},
+    ]}))
+    completed = subprocess.run([str(lean), "--batch", str(request)], env={}, capture_output=True, text=True, timeout=10, check=False)
+    assert completed.returncode == 0, completed.stderr
+    frames = [json.loads(line) for line in completed.stdout.splitlines()]
+    assert frames[0]["frame"] == "module"
+    assert frames[0]["module"] == "Pkg.Surface.Deep"
+    assert frames[1]["frame"] == "summary"
+    assert frames[1]["completed"] == 1
 HARNESS_ROOT = Path(__file__).parent / "fixtures" / "benchmark_harness"
 CLAIM_AUTHORITY_ROOT = Path(__file__).parent / "fixtures" / "claim_authority"
 

@@ -215,5 +215,10 @@ def _zero_named_runtime_fields(raw: Any) -> None:
         return
     if "helperElapsedSeconds" in raw:
         raw["helperElapsedSeconds"] = 0.0
+    resources = raw.get("run_resources")
+    if isinstance(resources, dict):
+        observed = resources.get("observed")
+        if isinstance(observed, dict) and "observedWallSeconds" in observed:
+            observed["observedWallSeconds"] = 0.0
     for value in raw.values():
         _zero_named_runtime_fields(value)

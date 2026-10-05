@@ -24,27 +24,25 @@ def resolve_limits(
 
 def preflight(
     values: list[dict[str, Any]], artifact_limit: int, batch_limit: int, count_limit: int
-) -> dict[str, dict[str, Any]]:
-    from ladon.proofir_v3 import _fail, _validate_envelope_shape, canonical_bytes
+) -> tuple[list[tuple[dict[str, Any], bytes]], dict[str, dict[str, Any]]]:
+    from ladon.proofir_v3 import _fail, _prepare_envelope
 
     if len(values) > count_limit:
         _fail("reference-valid", "batch-item-limit", "", f"v3 envelope batch exceeds item limit: {count_limit}")
     artifacts: dict[str, dict[str, Any]] = {}
+    encodings: dict[str, bytes] = {}
+    rows: list[tuple[dict[str, Any], bytes]] = []
     total_bytes = 0
     for value in values:
-        _validate_envelope_shape(value)
-        total_bytes += len(canonical_bytes(value, max_bytes=artifact_limit))
+        owned, encoded = _prepare_envelope(value, artifact_limit)
+        total_bytes += len(encoded)
         if total_bytes > batch_limit:
             _fail("reference-valid", "batch-byte-limit", "", f"v3 envelope batch exceeds aggregate byte limit: {batch_limit}")
-        _record(artifacts, value)
-    return artifacts
-
-
-def _record(artifacts: dict[str, dict[str, Any]], value: dict[str, Any]) -> None:
-    from ladon.proofir_v3 import _fail, canonical_bytes
-
-    artifact_id = str(value["artifactId"])
-    prior = artifacts.get(artifact_id)
-    if prior is not None and canonical_bytes(prior) != canonical_bytes(value):
-        _fail("reference-valid", "duplicate-batch-artifact-id", "/artifactId", "different artifacts share a declared artifact ID", value)
-    artifacts[artifact_id] = value
+        artifact_id = owned["artifactId"]
+        prior = encodings.get(artifact_id)
+        if prior is not None and prior != encoded:
+            _fail("reference-valid", "duplicate-batch-artifact-id", "/artifactId", "different artifacts share a declared artifact ID", owned)
+        artifacts[artifact_id] = owned
+        encodings[artifact_id] = encoded
+        rows.append((owned, encoded))
+    return rows, artifacts

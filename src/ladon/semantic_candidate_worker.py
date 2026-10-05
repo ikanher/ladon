@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from ladon.evidence_receipt import build_evidence_receipt
+from ladon.execution_posture import require_target_execution_policy
 from ladon.lean_toolchain import (
     LeanToolchainContext,
     LeanToolchainError,
@@ -32,13 +33,19 @@ from ladon.process_supervisor import ProcessResult, run_bounded_target_process
 from ladon.proofir_fingerprint_registry import SCHEMES
 from ladon.proofir_result_dimensions import derive_analysis_completeness
 from ladon.proofir_v3 import (
+    MAX_COMPILED_MODULES,
     ProofIRV3Artifact,
     canonical_bytes,
     make_envelope,
     validate_envelope,
     validate_envelope_batch,
 )
-from ladon.semantic_candidate_limits import validate_semantic_bounds, validate_transport_text
+from ladon.semantic_application_context import validate_application_observation
+from ladon.semantic_candidate_limits import (
+    MAX_COMPILED_ENVIRONMENT_BYTES,
+    validate_semantic_bounds,
+    validate_transport_text,
+)
 from ladon.semantic_candidate_protocol import (
     decode_single_frame,
 )
@@ -63,6 +70,8 @@ from ladon.semantic_local_context import (
 
 SEMANTIC_PROTOCOL = "ladon-lean-semantic-v3/check-candidate"
 SEMANTIC_BATCH_PROTOCOL = "ladon-lean-semantic-v3/check-candidates"
+SEMANTIC_PROTOCOL_V4 = "ladon-lean-semantic-v4/check-candidate"
+SEMANTIC_BATCH_PROTOCOL_V4 = "ladon-lean-semantic-v4/check-candidates"
 SEMANTIC_FRAME_PREFIX = "LADON_FRAME "
 UNIVERSE_POLICY = "lean-level-mvar-succ-zero/v1"
 FINGERPRINT_SCHEME = {"name": "lean-expr-structural", "version": "2"}
@@ -71,8 +80,7 @@ if (FINGERPRINT_SCHEME["name"], FINGERPRINT_SCHEME["version"]) not in SCHEMES:
 DEFAULT_HELPER = Path(
     str(resources.files("ladon").joinpath("lean", "ladon_semantic_candidate_helper.lean"))
 )
-MAX_IMPORTED_MODULES = 10_000
-MAX_COMPILED_ENVIRONMENT_BYTES = 4 * 1024 * 1024 * 1024
+MAX_IMPORTED_MODULES = MAX_COMPILED_MODULES
 MAX_EVIDENCE_FILE_BYTES = 512 * 1024 * 1024
 MAX_FAILURE_DIAGNOSTIC_BYTES = 64 * 1024
 TRUSTED_TARGET_LIMITATION = "Target modules may execute repository-controlled initializers; this observation is authority-scoped to trusted target code."
@@ -89,12 +97,14 @@ class SemanticCandidateRequest:
     candidate: str
     timeout_seconds: float = 120.0
     max_output_bytes: int = 8 * 1024 * 1024
-    max_rss_bytes: int = 4 * 1024 * 1024 * 1024
+    max_rss_bytes: int = 32 * 1024 * 1024 * 1024
     toolchain: LeanToolchainContext | None = None
     local_context: tuple[Mapping[str, str], ...] = ()
     execution_context_ref: str | None = None
+    require_isolation: bool = False
 
     def __post_init__(self) -> None:
+        require_target_execution_policy(require_isolation=self.require_isolation)
         _validate_request_identity(self.module, self.candidate)
         _validate_request_goal(self.goal)
         validate_transport_text(self.module, self.goal, self.candidate)
@@ -163,6 +173,9 @@ class SemanticCandidateCheck:
     failure_stage: str | None = None
     environment_ref: str | None = None
     check_run_id: str | None = None
+    residual_contexts: tuple[Mapping[str, Any], ...] | None = None
+    selected_declaration: Mapping[str, Any] | None = None
+    semantic_protocol: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         environment_ref = _result_environment_ref(
@@ -183,6 +196,7 @@ class SemanticCandidateCheck:
             "callerLocalContext": [dict(row) for row in self.caller_local_context],
             "substitutions": [dict(row) for row in self.substitutions],
             "residualPremises": [dict(row) for row in self.residual_premises],
+            **({"residualContexts": [dict(row) for row in self.residual_contexts], "selectedDeclaration": dict(self.selected_declaration), "semanticProtocol": self.semantic_protocol, "applicationObservationVersion": 4} if self.residual_contexts is not None and self.selected_declaration is not None else {}),
             "failureStage": self.failure_stage,
             "environmentRef": environment_ref,
             "checkRunRef": _artifact_qualified_check_run_ref(
@@ -427,6 +441,9 @@ def check_semantic_candidate(
         caller_local_context=tuple(request.local_context),
         substitutions=tuple(payload["substitutions"]),
         residual_premises=tuple(payload["residualPremises"]),
+        residual_contexts=tuple(payload["residualContexts"]) if payload.get("protocol") in {SEMANTIC_PROTOCOL_V4, SEMANTIC_BATCH_PROTOCOL_V4} else None,
+        selected_declaration=({"name": payload["candidate"]["name"], "typeDisplay": payload["candidate"]["typeDisplay"], "typeStructural": payload["candidate"]["typeStructural"], "binders": payload["declarationBinders"]} if payload.get("protocol") in {SEMANTIC_PROTOCOL_V4, SEMANTIC_BATCH_PROTOCOL_V4} else None),
+        semantic_protocol=payload.get("protocol") if payload.get("protocol") in {SEMANTIC_PROTOCOL_V4, SEMANTIC_BATCH_PROTOCOL_V4} else None,
         environment_ref=str(artifacts[0]["environmentRef"]),
         check_run_id=str(artifacts[1]["payload"]["checkRunId"]),
     )
@@ -627,7 +644,10 @@ def _parse_worker_payload(
     payload = _decode_single_frame(stdout)
     _validate_worker_frame(payload, request, request_id)
     _validate_worker_collections(payload)
-    validate_observed_local_context(payload["localContext"], request.local_context)
+    validate_observed_local_context(
+        payload["localContext"], request.local_context,
+        allow_shadowed_names=payload["protocol"] == SEMANTIC_PROTOCOL_V4,
+    )
     _validate_worker_identity(payload, request)
     _validate_application_rows(payload)
     _validate_discharged_hypotheses(payload)
@@ -660,7 +680,7 @@ def _validate_rejected_worker_payload(
     }
     if set(payload) != required:
         raise ValueError("Lean semantic helper returned an invalid rejection frame")
-    if payload["protocol"] != SEMANTIC_PROTOCOL or payload["requestId"] != request_id:
+    if payload["protocol"] not in {SEMANTIC_PROTOCOL, SEMANTIC_PROTOCOL_V4} or payload["requestId"] != request_id:
         raise ValueError("Lean semantic helper returned an unrelated rejection frame")
     if payload["executionContextRef"] != _execution_context_ref(request):
         raise ValueError("Lean semantic helper returned a mismatched execution context")
@@ -683,7 +703,10 @@ def _validate_rejected_worker_payload(
         raise ValueError("Lean semantic helper returned an empty rejection diagnostic")
     if not isinstance(payload["localContext"], list):
         raise TypeError("Lean semantic helper returned malformed rejection context")
-    validate_observed_local_context(payload["localContext"], request.local_context)
+    validate_observed_local_context(
+        payload["localContext"], request.local_context,
+        allow_shadowed_names=payload["protocol"] == SEMANTIC_PROTOCOL_V4,
+    )
     identity_payload = {
         **payload,
         "candidate": {
@@ -698,7 +721,8 @@ def _validate_rejected_worker_payload(
 def _validate_worker_frame(
     payload: Mapping[str, Any], request: SemanticCandidateRequest, request_id: str
 ) -> None:
-    if payload.get("protocol") != SEMANTIC_PROTOCOL:
+    protocol = payload.get("protocol")
+    if protocol not in {SEMANTIC_PROTOCOL, SEMANTIC_PROTOCOL_V4}:
         raise ValueError("Lean semantic helper emitted an unsupported protocol")
     required = {
         "frameVersion",
@@ -721,6 +745,12 @@ def _validate_worker_frame(
         "residualPremises",
         "localContext",
     }
+    if protocol == SEMANTIC_PROTOCOL_V4:
+        required |= {"residualContexts", "declarationBinders"}
+        if not {"residualContexts", "declarationBinders"} <= set(payload):
+            raise ValueError("v4 frame omitted residualContexts or declarationBinders")
+        if set(payload) != required | {"protocol"}:
+            raise ValueError("Lean semantic v4 frame contains missing or unknown observation fields")
     if not required <= set(payload):
         raise ValueError("Lean semantic helper omitted required evidence fields")
     if payload["requestId"] != request_id:
@@ -744,6 +774,8 @@ def _validate_worker_collections(payload: Mapping[str, Any]) -> None:
     ):
         if not isinstance(payload[field], list):
             raise TypeError(f"Lean semantic helper field {field} must be an array")
+    if payload.get("protocol") == SEMANTIC_PROTOCOL_V4:
+        _validate_application_rows(payload, protocol=SEMANTIC_PROTOCOL_V4)
     if not isinstance(payload["applicationTerm"], str) or not payload["applicationTerm"]:
         raise ValueError("Lean semantic helper returned an invalid application term")
 
@@ -851,6 +883,9 @@ def _accepted_artifacts(
         payload["dischargedHypotheses"],
         payload.get("applicationTerm"),
         residual_rows=payload["residualPremises"],
+        residual_contexts=payload.get("residualContexts"),
+        selected_declaration=({"name": payload["candidate"]["name"], "typeDisplay": payload["candidate"]["typeDisplay"], "typeStructural": payload["candidate"]["typeStructural"], "binders": payload["declarationBinders"]} if payload.get("protocol") in {SEMANTIC_PROTOCOL_V4, SEMANTIC_BATCH_PROTOCOL_V4} else None),
+        semantic_protocol=payload.get("protocol") if payload.get("protocol") in {SEMANTIC_PROTOCOL_V4, SEMANTIC_BATCH_PROTOCOL_V4} else None,
     )
     check = _check_artifact(
         request,
@@ -909,6 +944,7 @@ def _rejected_artifacts(
         else _environment_artifact(request.repo_root, payload, request.toolchain)
     )
     env_ref = str(environment["environmentRef"])
+    context = _context_subject(env_ref, payload["localContext"])
     statement = _subject("statement", payload["probe"])
     statement["searchShape"] = {
         "declarationName": request.candidate,
@@ -941,6 +977,8 @@ def _rejected_artifacts(
             "maxRssBytes": request.max_rss_bytes,
         },
     }
+    if payload.get("protocol") in {SEMANTIC_PROTOCOL_V4, SEMANTIC_BATCH_PROTOCOL_V4}:
+        observation.update(semanticProtocol=payload["protocol"], applicationObservationVersion=4)
     check_id = "check:" + _digest_bytes(canonical_bytes(observation))[7:]
     receipt = _receipt_for_check(
         request,
@@ -956,7 +994,7 @@ def _rejected_artifacts(
     artifact = _envelope(
         "proofir.check-run",
         env_ref,
-        [statement, declaration, check_subject],
+        [statement, declaration, context, check_subject],
         {
             "checkRunId": check_id,
             "checker": {
@@ -968,7 +1006,7 @@ def _rejected_artifacts(
             "operation": "exact-candidate-elaboration",
             "inputs": {
                 "environmentRef": env_ref,
-                "subjectRefs": [_compact(statement), _compact(declaration)],
+                "subjectRefs": [_compact(statement), _compact(declaration), _compact(context)],
                 "artifactRefs": [str(environment["artifactId"])],
             },
             "results": [
@@ -1027,9 +1065,11 @@ def _environment_artifact(
         seen_modules.add(module)
         path = Path(str(row["oleanPath"])).resolve(strict=True)
         size = path.stat().st_size
+        if size > MAX_EVIDENCE_FILE_BYTES:
+            raise ValueError("Lean semantic environment exceeds its compiled-byte limit (per-file)")
+        if total_bytes + size > MAX_COMPILED_ENVIRONMENT_BYTES:
+            raise ValueError("Lean semantic environment exceeds its compiled-byte limit (aggregate)")
         total_bytes += size
-        if size > MAX_EVIDENCE_FILE_BYTES or total_bytes > MAX_COMPILED_ENVIRONMENT_BYTES:
-            raise ValueError("Lean semantic environment exceeds its compiled-byte limit")
         compiled.append({"module": str(row["module"]), "digest": _digest_file(path)})
     compiled.sort(key=lambda row: (row["module"], row["digest"]))
     dependencies = []
@@ -1066,6 +1106,7 @@ def _environment_artifact(
         "options": {
             "autoImplicit": False,
             "universeClosurePolicy": str(payload["universePolicy"]),
+            "observedLeanExecutableDigest": _digest_file(Path(str(payload["executablePath"]))),
             "toolchainContext": (
                 json.dumps(toolchain.to_dict(), sort_keys=True, separators=(",", ":"))
                 if toolchain
@@ -1089,12 +1130,20 @@ def _subject(kind: str, row: Mapping[str, Any]) -> dict[str, Any]:
     else:
         digest = _digest_text(structural)
         scheme = dict(FINGERPRINT_SCHEME)
-    return {
+    result = {
         "kind": kind,
         "localId": f"{kind}:{digest}",
         "fingerprint": {"scheme": scheme, "digest": digest},
         "display": str(row["name"] if kind == "declaration" else row["typeDisplay"]),
     }
+
+    if kind == "declaration":
+        result["searchShape"] = {
+            "renderedType": str(row["typeDisplay"]), "typeStructural": structural,
+            "typeStatus": "unavailable" if structural.startswith("unresolved:") else "lean-rendered",
+            "typeTextTruncated": False,
+        }
+    return result
 
 
 def _application_subject(
@@ -1107,6 +1156,9 @@ def _application_subject(
     application_term: str | None = None,
     *,
     residual_rows: list[Mapping[str, Any]] | None = None,
+    residual_contexts: list[Mapping[str, Any]] | None = None,
+    selected_declaration: Mapping[str, Any] | None = None,
+    semantic_protocol: str | None = None,
 ) -> dict[str, Any]:
     substitutions_value = [dict(row) for row in (substitutions or [])]
     discharged_value = [dict(row) for row in (discharged_hypotheses or [])]
@@ -1116,6 +1168,10 @@ def _application_subject(
         if isinstance(context_shape, Mapping)
         else []
     )
+    versioned = _application_observation_inputs(
+        declaration, residual_rows, residual_contexts, selected_declaration, semantic_protocol,
+    )
+    v4 = bool(versioned)
     digest = _digest_bytes(
         canonical_bytes(
             {
@@ -1132,6 +1188,9 @@ def _application_subject(
                 "localContext": context["localId"] if context is not None else None,
                 "dischargedHypotheses": discharged_value,
                 "applicationTerm": application_term,
+                **({"applicationObservationVersion": 4, "semanticProtocol": semantic_protocol,
+                    "residualContexts": [{"goalId": row["goalId"], "localContext": [_identity_local(local) for local in row["localContext"]]} for row in (residual_contexts or [])],
+                    "selectedDeclaration": {"name": selected_declaration.get("name"), "typeStructural": selected_declaration.get("typeStructural"), "binders": [_identity_local(row) for row in selected_declaration.get("binders", [])]}} if v4 and selected_declaration is not None else {}),
             }
         )
     )
@@ -1139,7 +1198,7 @@ def _application_subject(
         "kind": "candidate-application",
         "localId": f"candidate-application:{digest}",
         "fingerprint": {
-            "scheme": {"name": "lean-candidate-application", "version": "1"},
+            "scheme": {"name": "lean-candidate-application", "version": "2" if v4 else "1"},
             "digest": digest,
         },
         "display": "candidate application",
@@ -1150,8 +1209,36 @@ def _application_subject(
             "residualPremises": [dict(row) for row in (residual_rows or [])],
             "dischargedHypotheses": discharged_value,
             "localContext": [dict(row) for row in ordered_locals],
+            **({"applicationObservationVersion": 4, "semanticProtocol": semantic_protocol,
+                "residualContexts": [dict(row) for row in (residual_contexts or [])],
+                "selectedDeclaration": dict(selected_declaration)} if v4 and selected_declaration is not None else {}),
         },
     }
+
+
+def _identity_local(row: Mapping[str, Any]) -> dict[str, Any]:
+    return {key: row[key] for key in ("localId", "binderInfo", "typeStructural", "valueStructural", "dependencies", "origin")}
+
+
+def _application_observation_inputs(declaration, residual_rows, contexts, selected, protocol):
+    supplied = [contexts is not None, selected is not None, protocol is not None]
+    if not any(supplied):
+        return {}
+    if not all(supplied):
+        raise ValueError("v4 application observation inputs must be supplied together")
+    observation = {
+        "applicationObservationVersion": 4, "semanticProtocol": protocol,
+        "residualContexts": contexts, "selectedDeclaration": selected,
+        "residualPremises": residual_rows or [],
+    }
+    validate_application_observation(observation)
+    expected = _subject("declaration", selected)
+    if _identity_subject(expected) != _identity_subject(declaration):
+        raise ValueError("v4 selected declaration belongs to a different application owner")
+    shape = declaration.get("searchShape", {})
+    if shape.get("renderedType") != selected["typeDisplay"]:
+        raise ValueError("v4 selected declaration display differs from its owned type")
+    return observation
 
 
 def _context_subject(
@@ -1250,6 +1337,7 @@ def _check_artifact(
         "candidate": request.candidate,
         "applicationDigest": str(application["fingerprint"]["digest"]),
         "environmentRef": environment_ref,
+        **({"semanticProtocol": payload["protocol"], "applicationObservationVersion": 4} if payload.get("protocol") in {SEMANTIC_PROTOCOL_V4, SEMANTIC_BATCH_PROTOCOL_V4} else {}),
     }
     check_id = "check:" + _digest_bytes(canonical_bytes(observation))[7:]
     observation["evidenceReceipt"] = _receipt_for_check(
@@ -1571,6 +1659,8 @@ def _digest_file(path: Path) -> str:
 __all__ = [
     "DEFAULT_HELPER",
     "SEMANTIC_BATCH_PROTOCOL",
+    "SEMANTIC_BATCH_PROTOCOL_V4",
+    "SEMANTIC_PROTOCOL_V4",
     "SemanticCandidateCheck",
     "SemanticCandidateRequest",
     "check_semantic_candidate",

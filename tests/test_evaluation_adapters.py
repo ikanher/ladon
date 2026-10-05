@@ -14,11 +14,17 @@ def test_evaluation_adapters_report_availability_and_nonclaims() -> None:
 def test_retrieval_metrics_keep_incorrect_suggestions_separate() -> None:
     metrics = evaluate_retrieval({"good", "wrong"}, {"good"})
     assert metrics["recall"] == 1.0
-    assert metrics["incorrectSuggestionRate"] == 0.5
+    assert metrics["labelMismatchRate"] == 0.5
+    assert metrics["incorrectSuggestionRate"] is None
 
 
 def test_retrieval_recall_is_not_assessed_without_expected_labels() -> None:
     metrics = evaluate_retrieval({"wrong"}, set())
     assert metrics["recall"] is None
     assert metrics["recallStatus"] == "not-assessed"
-    assert metrics["incorrectSuggestionRate"] == 1.0
+    assert metrics["labelMismatchRate"] == 1.0
+
+
+def test_label_only_metrics_do_not_claim_verified_suggestion_errors() -> None:
+    metrics = evaluate_retrieval({'unlabeled-alternative'}, {'labeled-proof'})
+    assert metrics['incorrectSuggestionRate'] is None

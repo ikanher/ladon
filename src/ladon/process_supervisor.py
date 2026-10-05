@@ -14,7 +14,7 @@ import subprocess
 import tempfile
 import threading
 from collections.abc import Callable, Iterator, Mapping, Sequence
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from time import monotonic
@@ -134,8 +134,9 @@ def run_bounded_target_process(
     terminate_grace_seconds: float = TERMINATE_GRACE_SECONDS,
     env: Mapping[str, str] | None = None,
     max_rss_bytes: int | None = None,
+    input_bytes: bytes | None = None,
 ) -> ProcessResult:
-    """Run a process group with file-backed, size-limited captured output."""
+    """Run a bounded process group, optionally with finite file-backed stdin."""
 
     if timeout_seconds <= 0:
         raise ValueError("target-process timeout must be greater than zero")
@@ -143,13 +144,19 @@ def run_bounded_target_process(
         raise ValueError("target-process output limit must be greater than zero")
     if max_rss_bytes is not None and max_rss_bytes <= 0:
         raise ValueError("target-process RSS limit must be greater than zero")
+    if input_bytes is not None and not isinstance(input_bytes, bytes):
+        raise TypeError("target-process stdin input must be bytes")
     normalized = tuple(str(part) for part in command)
     raise_if_cancelled(cancel_event)
     started = monotonic()
-    with tempfile.TemporaryFile() as stdout_file, tempfile.TemporaryFile() as stderr_file:
+    with ExitStack() as temp_files:
+        stdout_file = temp_files.enter_context(tempfile.TemporaryFile())
+        stderr_file = temp_files.enter_context(tempfile.TemporaryFile())
+        stdin_file = temp_files.enter_context(_file_backed_stdin(input_bytes))
         process = subprocess.Popen(
             normalized,
             cwd=cwd,
+            stdin=stdin_file,
             stdout=stdout_file,
             stderr=stderr_file,
             start_new_session=True,
@@ -173,17 +180,28 @@ def run_bounded_target_process(
             stderr_file,
             max_output_bytes,
         )
-    return ProcessResult(
-        normalized,
-        process.returncode if process.returncode is not None else -signal.SIGKILL,
-        stdout,
-        stderr,
-        monotonic() - started,
-        timed_out=timed_out,
-        output_limited=output_limited,
-        memory_limited=memory_limited,
-        peak_rss_bytes=peak_rss_bytes,
-    )
+        return ProcessResult(
+            normalized,
+            process.returncode if process.returncode is not None else -signal.SIGKILL,
+            stdout,
+            stderr,
+            monotonic() - started,
+            timed_out=timed_out,
+            output_limited=output_limited,
+            memory_limited=memory_limited,
+            peak_rss_bytes=peak_rss_bytes,
+        )
+
+
+@contextmanager
+def _file_backed_stdin(input_bytes: bytes | None) -> Iterator[IO[bytes] | None]:
+    if input_bytes is None:
+        yield None
+        return
+    with tempfile.TemporaryFile() as stream:
+        stream.write(input_bytes)
+        stream.seek(0)
+        yield stream
 
 
 def _supervise_file_backed_process(

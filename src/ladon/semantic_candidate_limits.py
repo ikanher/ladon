@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 
 MAX_SEMANTIC_TIMEOUT_SECONDS = 600.0
+MAX_COMPILED_ENVIRONMENT_BYTES = 16 * 1024 * 1024 * 1024
 MAX_SEMANTIC_OUTPUT_BYTES = 64 * 1024 * 1024
 MAX_SEMANTIC_RSS_BYTES = 64 * 1024 * 1024 * 1024
 MAX_SEMANTIC_TERM_BYTES = 64 * 1024
@@ -56,6 +57,7 @@ def validate_transport_text(module: str, goal: str, candidate: str | None = None
 
 
 __all__ = [
+    "MAX_COMPILED_ENVIRONMENT_BYTES",
     "MAX_DISCOVERY_BATCH_SIZE",
     "MAX_DISCOVERY_CANDIDATES",
     "MAX_DISCOVERY_PROCESS_SECONDS",

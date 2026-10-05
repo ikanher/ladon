@@ -6,6 +6,7 @@ use sha2::{Digest, Sha256};
 pub const VERSION: &str = "3.0";
 pub const MAX_DEPTH: usize = 64;
 pub const MAX_ITEMS: usize = 10_000;
+pub const MAX_COMPILED_MODULES: usize = 32_768;
 pub const MAX_STRING_BYTES: usize = 1_048_576;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -329,13 +330,39 @@ impl std::fmt::Display for ProofIrError {
 impl std::error::Error for ProofIrError {}
 
 pub fn canonical_bytes(value: &Value) -> Result<Vec<u8>, ProofIrError> {
-    check_bounds(value, 0)?;
+    let root_environment = is_environment_manifest(value) || is_environment_envelope(value);
+    check_bounds(value, 0, root_environment)?;
     let mut out = Vec::new();
     write_canonical(value, &mut out)?;
     Ok(out)
 }
 
-fn check_bounds(v: &Value, depth: usize) -> Result<(), ProofIrError> {
+fn is_environment_manifest(value: &Value) -> bool {
+    let Some(object) = value.as_object() else {
+        return false;
+    };
+    object.len() == 7
+        && [
+            "prover",
+            "toolchain",
+            "dependencies",
+            "compiledModules",
+            "options",
+            "trust",
+            "fingerprintScheme",
+        ]
+        .iter()
+        .all(|key| object.contains_key(*key))
+        && object.get("compiledModules").is_some_and(Value::is_array)
+}
+
+fn is_environment_envelope(value: &Value) -> bool {
+    value.get("proofirVersion").and_then(Value::as_str) == Some(VERSION)
+        && value.get("artifactKind").and_then(Value::as_str) == Some("proofir.environment")
+        && value.get("payload").is_some_and(is_environment_manifest)
+}
+
+fn check_bounds(v: &Value, depth: usize, root_environment: bool) -> Result<(), ProofIrError> {
     if depth > MAX_DEPTH {
         return Err(ProofIrError(
             "canonical payload exceeds nesting limit".into(),
@@ -346,11 +373,23 @@ fn check_bounds(v: &Value, depth: usize) -> Result<(), ProofIrError> {
             Err(ProofIrError("string exceeds byte limit".into()))
         }
         Value::Array(xs) => {
-            if xs.len() > MAX_ITEMS {
-                return Err(ProofIrError("collection exceeds item limit".into()));
+            let limit = if root_environment {
+                MAX_COMPILED_MODULES
+            } else {
+                MAX_ITEMS
+            };
+            if xs.len() > limit {
+                return Err(ProofIrError(
+                    if root_environment {
+                        "compiledModules exceeds item limit"
+                    } else {
+                        "collection exceeds item limit"
+                    }
+                    .into(),
+                ));
             }
             for x in xs {
-                check_bounds(x, depth + 1)?;
+                check_bounds(x, depth + 1, false)?;
             }
             Ok(())
         }
@@ -358,9 +397,13 @@ fn check_bounds(v: &Value, depth: usize) -> Result<(), ProofIrError> {
             if m.len() > MAX_ITEMS {
                 return Err(ProofIrError("object exceeds item limit".into()));
             }
+            let is_root_manifest = root_environment && is_environment_manifest(v);
+            let is_root_envelope = root_environment && is_environment_envelope(v);
             for (k, x) in m {
-                check_bounds(&Value::String(k.clone()), depth + 1)?;
-                check_bounds(x, depth + 1)?;
+                check_bounds(&Value::String(k.clone()), depth + 1, false)?;
+                let module_rows = (is_root_manifest && k == "compiledModules")
+                    || (is_root_envelope && k == "payload");
+                check_bounds(x, depth + 1, module_rows)?;
             }
             Ok(())
         }

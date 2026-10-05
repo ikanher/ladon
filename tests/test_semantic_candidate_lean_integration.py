@@ -14,6 +14,33 @@ ROOT = Path(__file__).parents[1]
 FIXTURE = ROOT / "tests" / "fixtures" / "lean_integration"
 
 
+@pytest.mark.skipif(shutil.which('lake') is None, reason='Lean toolchain unavailable')
+def test_default_ambient_scratch_receipt_is_expandable(tmp_path: Path) -> None:
+    store = tmp_path / 'evidence.sqlite'
+    command = [sys.executable, '-m', 'ladon.entrypoint', 'proof-search', 'discover',
+               '--repo-root', str(FIXTURE), '--module', 'LadonFixture',
+               '--goal', '∀ value : Nat, value = value', '--candidate', 'LadonFixture.fixtureIdentity',
+               '--scratch-mode', 'advisory', '--toolchain-mode', 'ambient',
+               '--evidence-store', str(store), '--format', 'json']
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=60, check=False)
+    assert result.returncode == 0, result.stderr
+    scratch = json.loads(result.stdout)['candidates'][0]['check']['scratch']
+    assert scratch['status'] == 'compiled'
+    assert scratch['authority']['executionBinding'] == 'ambient-observed'
+    assert scratch['authority']['authorityBasis'] == 'process-observation'
+    assert scratch['authority']['analysisCompleteness'] == 'partial'
+    reference = scratch['checkRunRef']
+    command = [sys.executable, '-m', 'ladon.entrypoint', 'proof-search', 'evidence', 'semantic-check',
+               reference['artifactRef'], '--local-id', reference['localId'], '--repo-root', str(FIXTURE),
+               '--evidence-store', str(store), '--format', 'json']
+    result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=10, check=False)
+    assert result.returncode == 0, result.stderr
+    receipt = json.loads(result.stdout)['evidenceReceipt']
+    assert receipt['executionBinding'] == 'ambient-observed'
+    assert receipt['authorityBasis'] == 'process-observation'
+    assert receipt['analysisCompleteness'] == 'partial'
+
+
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
 def test_installed_cli_emits_batch_closed_semantic_evidence() -> None:
     completed = subprocess.run(
@@ -219,7 +246,7 @@ def test_discovery_default_is_compact_and_does_not_replay_scratch(tmp_path: Path
 
 
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
-def test_testing_profile_rejects_caller_local_context() -> None:
+def test_installed_cli_accepts_caller_local_context() -> None:
     completed = subprocess.run(
         [
             sys.executable,
@@ -251,11 +278,10 @@ def test_testing_profile_rejects_caller_local_context() -> None:
         capture_output=True,
         check=False,
     )
-    assert completed.returncode == 2
-    assert completed.stdout == ""
-    payload = json.loads(completed.stderr)
-    assert payload["exitClass"] == "invocation"
-    assert payload["status"] == "failed"
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload['request']['localContext'] == [{'name': 'value', 'type': 'Nat'}]
+    assert payload['candidates'][0]['check']['status'] == 'accepted'
 
 
 @pytest.mark.skipif(shutil.which("lake") is None, reason="Lean toolchain unavailable")
@@ -362,6 +388,10 @@ def test_theorem_query_accepts_worker_candidate_declaration_name() -> None:
     dossier = query_v3_theorem_evidence(connection, "LadonFixture.fixtureIdentity", limit=20)
     assert dossier["status"] == "observed"
     assert dossier["subjects"]["returned"] >= 1
+    receipt = dossier["checks"]["rows"][0]["evidenceReceipt"]
+    assert receipt["observationState"] == "stored"
+    assert receipt["operationOutcome"] == "accepted"
+    assert receipt["checkRunRef"] == result.evidence_receipt["checkRunRef"]
 
 
 def _explicit_fixture_toolchain() -> object:

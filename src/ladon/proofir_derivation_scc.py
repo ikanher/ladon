@@ -5,7 +5,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ladon.proofir_derivation import (
+from ladon._proofir_derivation_core import (
     DerivationQueryBounds,
     RefKey,
     _Budget,

@@ -42,7 +42,7 @@ def test_environment_module_limit_diagnostic_reports_observed_and_allowed(
 
     with pytest.raises(
         ValueError,
-        match=r"10,001 imported modules; evidence limit is 10,000",
+        match=rf"{MAX_IMPORTED_MODULES + 1:,} imported modules; evidence limit is {MAX_IMPORTED_MODULES:,}",
     ):
         _environment_artifact(tmp_path, payload)
 
@@ -134,7 +134,7 @@ def _assert_process_bounds(artifacts: tuple[dict[str, Any], ...]) -> None:
     assert check["extensions"]["ladon.process-observation/v1"]["bounds"] == {
         "timeoutMs": 120000,
         "maxOutputBytes": 8 * 1024 * 1024,
-        "maxRssBytes": 4 * 1024 * 1024 * 1024,
+        "maxRssBytes": 32 * 1024 * 1024 * 1024,
     }
     assert (
         check["extensions"]["ladon.process-observation/v1"]["evidenceReceipt"]["schema"]
@@ -284,6 +284,9 @@ def test_rejected_worker_result_owns_and_qualifies_its_check_run(
         "localId": result.artifacts[1]["payload"]["checkRunId"],
     }
     _assert_owned_check_run(result.artifacts[1])
+    context = next(row for row in result.artifacts[1]['subjectRefs'] if row['kind'] == 'local-context')
+    assert context['searchShape']['orderedLocals'] == rejected['localContext']
+    assert {'kind': 'local-context', 'localId': context['localId']} in result.artifacts[1]['payload']['inputs']['subjectRefs']
     validate_envelope_batch(list(result.artifacts))
 
 

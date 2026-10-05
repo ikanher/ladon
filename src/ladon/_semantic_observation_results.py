@@ -6,6 +6,10 @@ from collections.abc import Mapping
 from typing import Any
 
 from ladon._semantic_observation_support import artifact_payload, mapping
+from ladon.semantic_application_context import (
+    APPLICATION_OBSERVATION_FIELDS,
+    validate_application_observation,
+)
 from ladon.semantic_projection_core import SemanticProjectionError
 
 
@@ -249,6 +253,30 @@ def _validate_transparent_application_shape(
     _validate_application_subject(
         check, receipt, matching[0], candidate, scratch, provisional
     )
+    _validate_selected_declaration_owner(matching[0], check_artifact, scratch)
+
+
+def _validate_selected_declaration_owner(subject, check_artifact, scratch) -> None:
+    shape = subject.get("searchShape")
+    if not scratch and isinstance(shape, Mapping) and shape.get("applicationObservationVersion") == 4:
+        selected = shape.get("selectedDeclaration")
+        subjects = check_artifact.get("subjectRefs")
+        declarations = [row for row in subjects if _selected_declaration_matches(row, selected)] if isinstance(subjects, list) else []
+        if len(declarations) != 1:
+            raise SemanticProjectionError("v4 selected declaration is not uniquely owned by the check artifact")
+
+
+def _selected_declaration_matches(row, selected) -> bool:
+    if not isinstance(row, Mapping) or not isinstance(selected, Mapping):
+        return False
+    shape = row.get("searchShape")
+    return (
+        row.get("kind") == "declaration"
+        and row.get("display") == selected.get("name")
+        and isinstance(shape, Mapping)
+        and shape.get("renderedType") == selected.get("typeDisplay")
+        and shape.get("typeStructural") == selected.get("typeStructural")
+    )
 
 
 def _application_result_refs(
@@ -312,6 +340,13 @@ def _validate_candidate_shape(
         "dischargedHypotheses",
     ):
         _require_shape_field(check, shape, field)
+    if any(field in shape or field in check for field in APPLICATION_OBSERVATION_FIELDS):
+        for field in APPLICATION_OBSERVATION_FIELDS:
+            _require_shape_field(check, shape, field)
+        try:
+            validate_application_observation(shape)
+        except (ValueError, TypeError) as error:
+            raise SemanticProjectionError(str(error)) from error
     _validate_application_context(receipt, shape, prefix=False)
 
 

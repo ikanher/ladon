@@ -22,6 +22,7 @@ REQUIRED_INPUT_PATHS = (
     "openspec",
     "pyproject.toml",
     "scripts",
+    "skills",
     "src",
     "tests",
     "uv.lock",

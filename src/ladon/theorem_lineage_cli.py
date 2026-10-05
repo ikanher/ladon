@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from ladon.cli_execution import EXIT_OPERATIONAL, EXIT_SUCCESS, write_output_file
+from ladon.evidence_receipt import project_evidence_receipt
+from ladon.evidence_receipt_readers import receipt_text_lines
 from ladon.proof_search_index import (
     capture_repository_snapshot,
     default_proof_search_index_path,
@@ -21,7 +23,7 @@ from ladon.sqlite_publication import (
 )
 from ladon.theorem_capsule_planning import plan_theorem_capsule
 from ladon.theorem_lineage_projection import ProjectionQuery, project_lineage
-from ladon.theorem_lineage_query import LineageQuery
+from ladon.theorem_lineage_query import LineageQuery, lineage_query_receipt
 from ladon.theorem_lineage_store import LineageIdentity, ingest_theorem_lineage
 from ladon.theorem_lineage_summary import summarize_lineage
 
@@ -71,6 +73,7 @@ def _run_lineage_command(
             )
         elif args.refresh == "never" and closure_status["status"] != "fresh":
             result = {"schema": "ladon-theorem-lineage-result-v1", "operation": "lineage", "status": "unavailable", "theorem": args.theorem, "reason": closure_status.get("reason", closure_status["status"]), "refresh": {"policy": args.refresh, "performed": False}, "nonclaim": "No lexical or alternative-proof fallback is used."}
+            result["evidenceReceipt"] = lineage_query_receipt(closure_status, args.theorem)
             code = _write_result(result, args)
             terminal_emitted = True
             return code
@@ -138,6 +141,10 @@ def _closure_status(connection: sqlite3.Connection, identity: LineageIdentity, t
 
 
 def _write_result(result: dict[str, Any], args: Any) -> int:
+    result = dict(result)
+    result["evidenceReceipt"] = project_evidence_receipt(
+        result["evidenceReceipt"], projection_kind="json-renderer",
+    )
     if args.format == "json":
         content = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
     else:
@@ -161,6 +168,7 @@ def _progress(phase: str, detail: str) -> None:
 
 def _render_text(result: dict[str, Any]) -> str:
     lines = [f"Theorem lineage: {result.get('theorem', '')}", f"Status: {result.get('status', '')}"]
+    lines.extend(receipt_text_lines(result.get("evidenceReceipt")))
     for route in result.get("routes", []):
         lines.append("  " + " -> ".join(route["nodes"]))
     bottlenecks = result.get("bottlenecks", {}).get("chain", [])

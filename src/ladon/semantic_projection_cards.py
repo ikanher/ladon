@@ -5,6 +5,10 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from ladon._semantic_observation_evidence import project_observation_receipt
+from ladon.evidence_receipt import project_evidence_receipt
+from ladon.semantic_application_cards import application_context_cards, selected_declaration_card
+from ladon.semantic_execution_binding import UNRECORDED_EXECUTION
 from ladon.semantic_projection_core import (
     SemanticProjectionError,
     bounded_text,
@@ -30,6 +34,7 @@ def candidate_card(
     omissions: list[dict[str, Any]],
     *,
     pointer: str,
+    receipt_projection: str = "json-renderer",
 ) -> dict[str, Any]:
     """Project one canonical candidate observation."""
 
@@ -52,6 +57,7 @@ def candidate_card(
             registry,
             omissions,
             pointer,
+            receipt_projection,
         ),
     }
     return result
@@ -66,7 +72,12 @@ def _check_card(
     registry: Mapping[str, Mapping[str, Any]],
     omissions: list[dict[str, Any]],
     pointer: str,
+    receipt_projection: str,
 ) -> dict[str, Any]:
+    source_receipt = evidence_receipt
+    evidence_receipt = project_observation_receipt(
+        check, evidence_receipt, registry, projection_kind=receipt_projection,
+    )
     result: dict[str, Any] = {
         "status": str(check.get("status", "unknown")),
         "applicationTerm": optional_text(
@@ -93,17 +104,29 @@ def _check_card(
             f"{pointer}/check/dischargedHypotheses",
         ),
         "failure": _failure(check, projection, omissions, f"{pointer}/check/failure"),
-        "authority": _authority(evidence_receipt, check),
+        "authority": _authority(evidence_receipt),
         "environmentRef": environment,
         "checkRunRef": check_run,
+        "receiptIdentity": evidence_receipt.get("receiptIdentity"),
+        "sourceReceiptIdentity": source_receipt.get("receiptIdentity"),
+        "executionBindingLimitation": _binding_limitation(evidence_receipt),
         "scratch": _scratch_summary(
             check.get("scratch"),
             projection,
             registry,
             omissions,
             f"{pointer}/check/scratch",
+            receipt_projection,
         ),
     }
+    if check.get("applicationObservationVersion") == 4:
+        result["applicationObservationVersion"] = 4
+        result["semanticProtocol"] = optional_text(check.get("semanticProtocol"), 128, omissions, f"{pointer}/check/semanticProtocol")
+        result["residualContexts"] = application_context_cards(check, projection, omissions, f"{pointer}/check/residualContexts")
+        result["selectedDeclaration"] = selected_declaration_card(check.get("selectedDeclaration"), projection, omissions, f"{pointer}/check/selectedDeclaration")
+    else:
+        omit(omissions, f"{pointer}/check/residualContexts", "canonical-field-unavailable", 1)
+        omit(omissions, f"{pointer}/check/selectedDeclaration", "canonical-field-unavailable", 1)
     if projection == "review":
         result["resourceAccounting"] = safe_mapping(
             check.get("resourceAccounting"),
@@ -111,7 +134,6 @@ def _check_card(
             omissions,
             f"{pointer}/check/resourceAccounting",
         )
-        result["receiptIdentity"] = evidence_receipt.get("receiptIdentity")
     return result
 
 
@@ -207,18 +229,25 @@ def _semantic_rows(
     return result
 
 
-def _authority(receipt_row: Mapping[str, Any], check: Mapping[str, Any]) -> dict[str, Any]:
+def _authority(receipt_row: Mapping[str, Any]) -> dict[str, Any]:
+    if receipt_row:
+        receipt_row = project_evidence_receipt(receipt_row, projection_kind="json-renderer")
     return {
         "executionBinding": receipt_row.get("executionBinding"),
         "observationState": receipt_row.get("observationState"),
         "operationOutcome": receipt_row.get("operationOutcome"),
         "authorityBasis": receipt_row.get("authorityBasis"),
-        "analysisCompleteness": receipt_row.get(
-            "analysisCompleteness", check.get("analysisCompleteness")
-        ),
+        "analysisCompleteness": receipt_row.get("analysisCompleteness"),
         "sourceFreshness": receipt_row.get("sourceFreshness"),
         "environmentMatch": receipt_row.get("environmentMatch"),
     }
+
+
+def _binding_limitation(receipt_row: Mapping[str, Any]) -> str | None:
+    """Expose the finite weakening reason even when the receipt body is omitted."""
+    if UNRECORDED_EXECUTION in receipt_row.get("limitations", ()):
+        return UNRECORDED_EXECUTION
+    return None
 
 
 def _failure(
@@ -245,14 +274,23 @@ def _scratch_summary(
     registry: Mapping[str, Mapping[str, Any]],
     omissions: list[dict[str, Any]],
     pointer: str,
+    receipt_projection: str,
 ) -> dict[str, Any] | None:
     if not isinstance(value, Mapping):
         return None
-    environment, check_run = evidence_refs(value, receipt(value), registry)
+    source_receipt = receipt(value)
+    projected_receipt = project_observation_receipt(
+        value, source_receipt, registry, projection_kind=receipt_projection,
+    )
+    environment, check_run = evidence_refs(value, source_receipt, registry)
     result = {
         "status": str(value.get("status", "unknown")),
         "environmentRef": environment,
         "checkRunRef": check_run,
+        "authority": _authority(projected_receipt),
+        "receiptIdentity": projected_receipt.get("receiptIdentity"),
+        "sourceReceiptIdentity": source_receipt.get("receiptIdentity"),
+        "executionBindingLimitation": _binding_limitation(projected_receipt),
     }
     _copy_scratch_diagnostic(value, result, projection, omissions, pointer)
     if environment is None and check_run is None:

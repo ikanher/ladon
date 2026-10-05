@@ -95,6 +95,6 @@ def test_installed_legacy_and_type_diagnostics_are_bounded(
         "1",
         *common,
     )
-    assert diagnostics["schema"] == "ladon-proof-search-type-result-v1"
+    assert diagnostics["schema"] == "ladon-proof-search-type-text-result-v2"
     assert diagnostics["coverage"]["authority"] == "sqlite_lexical_shortlist"
     assert diagnostics["nonclaims"]

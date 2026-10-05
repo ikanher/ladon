@@ -17,17 +17,23 @@ from pathlib import Path
 from types import MappingProxyType
 
 from ladon.process_supervisor import run_bounded_target_process
+from ladon.source_enumeration import (
+    SourceEnumerationContext,
+    SourceEnumerationError,
+    resolve_source_enumeration,
+)
 
 _RELEASE = re.compile(r"(?<![0-9])([0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.]+)?)(?![0-9])")
 _COMMIT = re.compile(r"\bcommit\s+([0-9a-f]{7,64})\b", re.IGNORECASE)
 PREFLIGHT_TIMEOUT_SECONDS = 10.0
 PREFLIGHT_MAX_OUTPUT_BYTES = 64 * 1024
-SOURCE_LIST_MAX_OUTPUT_BYTES = 16 * 1024 * 1024
 SOURCE_FILE_LIMIT = 100_000
 SOURCE_PATH_BYTE_LIMIT = 4096
 SOURCE_PATH_DEPTH_LIMIT = 64
 SOURCE_FILE_BYTE_LIMIT = 64 * 1024 * 1024
 SOURCE_TOTAL_BYTE_LIMIT = 4 * 1024 * 1024 * 1024
+MAX_COMPILED_LIBRARY_ROOTS = 2048
+EXECUTION_ENVIRONMENT_KEYS = frozenset({"PATH", "HOME", "TMPDIR", "USER", "LANG", "LC_ALL"})
 
 
 class LeanToolchainError(ValueError):
@@ -60,8 +66,20 @@ class LeanToolchainContext:
     selection_mode: str
     environment_keys: tuple[str, ...]
     environment: Mapping[str, str]
+    library_roots: tuple[Path, ...] = ()
+    source_enumeration: SourceEnumerationContext | None = None
 
     def __post_init__(self) -> None:
+        if set(self.environment) - (EXECUTION_ENVIRONMENT_KEYS | {"LEAN_PATH"}):
+            raise LeanToolchainError("execution context contains unsupported environment keys")
+        expected_path = os.pathsep.join(str(path) for path in self.library_roots) or None
+        if self.environment.get("LEAN_PATH") != expected_path:
+            raise LeanToolchainError("execution context library path does not match its roots")
+        if self.source_enumeration is not None and (
+            self.source_enumeration.environment != self.environment
+        ):
+            raise LeanToolchainError("source enumeration environment differs from execution context")
+        object.__setattr__(self, "library_roots", tuple(self.library_roots))
         object.__setattr__(self, "environment", MappingProxyType(dict(self.environment)))
         object.__setattr__(self, "environment_keys", tuple(sorted(self.environment)))
         if self.selection_mode not in {"explicit", "ambient"}:
@@ -77,6 +95,9 @@ class LeanToolchainContext:
 
     def to_dict(self) -> dict[str, object]:
         return {
+            "executionContextVersion": 2,
+            "libraryRoots": [str(path) for path in self.library_roots],
+            "sourceEnumeration": self.source_enumeration.to_dict() if self.source_enumeration else None,
             "repositoryRoot": str(self.repo_root),
             "lakePath": str(self.lake_path),
             "leanPath": str(self.lean_path),
@@ -96,6 +117,9 @@ class LeanToolchainContext:
     def context_identity(self) -> str:
         """Digest the exact non-secret execution context without exposing values."""
         payload = {
+            "executionContextVersion": 2,
+            "libraryRoots": [str(path) for path in self.library_roots],
+            "sourceEnumeration": self.source_enumeration.to_dict() if self.source_enumeration else None,
             "repositoryRoot": str(self.repo_root),
             "lakePath": str(self.lake_path),
             "leanPath": str(self.lean_path),
@@ -110,6 +134,14 @@ class LeanToolchainContext:
         }
         encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
         return "sha256:" + hashlib.sha256(encoded).hexdigest()
+
+
+def sanitize_execution_environment(
+    environment: Mapping[str, str] | None = None,
+) -> dict[str, str]:
+    """Copy the base allowlist; only None selects the current host environment."""
+    source = os.environ if environment is None else environment
+    return {key: value for key, value in source.items() if key in EXECUTION_ENVIRONMENT_KEYS}
 
 
 def resolve_toolchain_context(
@@ -130,12 +162,20 @@ def resolve_toolchain_context(
         raise LeanToolchainError("repository toolchain pin is empty")
     if selection_mode == "explicit" and (lake_path is None or lean_path is None):
         raise LeanToolchainError("explicit toolchain selection requires lake and lean paths")
-    source_env = dict(environment or os.environ)
-    allowed = {"PATH", "HOME", "TMPDIR", "USER", "LANG", "LC_ALL"}
-    sanitized = {key: value for key, value in source_env.items() if key in allowed}
-    lake = _resolve_executable(lake_path, "lake", source_env)
-    lean = _resolve_executable(lean_path, "lean", source_env)
+    selection = MappingProxyType(sanitize_execution_environment(environment))
+    lake = _resolve_executable(lake_path, "lake", selection)
+    lean = _resolve_executable(lean_path, "lean", selection)
+    sanitized = dict(selection)
     sanitized["PATH"] = str(lake.parent) + os.pathsep + str(lean.parent)
+    library_roots = compiled_library_roots(root)
+    if library_roots:
+        sanitized["LEAN_PATH"] = os.pathsep.join(str(path) for path in library_roots)
+    sanitized = MappingProxyType(sanitized)
+    try:
+        enumeration = resolve_source_enumeration(selection, sanitized)
+    except SourceEnumerationError as exc:
+        raise LeanToolchainError(str(exc)) from exc
+    lake_identity, lean_identity = _identity(lake), _identity(lean)
     lake_version = _version(lake, root, sanitized)
     lean_version = _version(lean, root, sanitized)
     expected = _pinned_release(pin_content)
@@ -143,21 +183,25 @@ def resolve_toolchain_context(
         raise LeanToolchainError(
             f"toolchain pin mismatch: expected {expected}, lake={lake_version!r}, lean={lean_version!r}"
         )
-    return LeanToolchainContext(
+    context = LeanToolchainContext(
         root,
         lake,
         lean,
         pin_content,
         "sha256:" + hashlib.sha256(pin_content.encode()).hexdigest(),
-        _identity(lake),
-        _identity(lean),
-        _source_tree_identity(root),
+        lake_identity,
+        lean_identity,
+        _source_tree_identity(root, enumeration),
         expected,
         _reported_commit(lean_version),
         selection_mode,
         tuple(sorted(sanitized)),
         sanitized,
+        library_roots,
+        enumeration,
     )
+    verify_toolchain_identities(context)
+    return context
 
 
 def _resolve_executable(path: Path | None, name: str, environment: Mapping[str, str]) -> Path:
@@ -214,10 +258,10 @@ def _identity(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def _source_tree_identity(root: Path) -> str:
+def _source_tree_identity(root: Path, enumeration: SourceEnumerationContext | None) -> str:
     digest = hashlib.sha256()
     total_bytes = 0
-    paths = _source_material_paths(root)
+    paths = _source_material_paths(root, enumeration)
     if len(paths) > SOURCE_FILE_LIMIT:
         raise LeanToolchainError(f"source identity exceeds the {SOURCE_FILE_LIMIT}-file limit")
     for relative in paths:
@@ -247,42 +291,17 @@ def _source_tree_identity(root: Path) -> str:
     return "sha256:" + digest.hexdigest()
 
 
-def _source_material_paths(root: Path) -> tuple[str, ...]:
-    git = shutil.which("git")
-    if git is not None:
-        result = run_bounded_target_process(
-            (
-                str(Path(git).resolve()),
-                "-C",
-                str(root),
-                "ls-files",
-                "-z",
-                "--cached",
-                "--others",
-                "--exclude-standard",
-            ),
-            cwd=root,
-            env=_source_list_environment(Path(git)),
-            timeout_seconds=PREFLIGHT_TIMEOUT_SECONDS,
-            max_output_bytes=SOURCE_LIST_MAX_OUTPUT_BYTES,
-            max_rss_bytes=256 * 1024 * 1024,
-        )
-        if result.succeeded:
-            return _filter_source_material(result.stdout.split("\0"))
-        if result.output_limited:
-            raise LeanToolchainError("VCS-visible source path list exceeds its byte limit")
-        if "not a git repository" not in result.stderr.lower():
-            detail = (result.stderr or result.stdout).strip() or "git ls-files failed"
-            raise LeanToolchainError(f"cannot enumerate VCS-visible source material: {detail}")
+def _source_material_paths(
+    root: Path, enumeration: SourceEnumerationContext | None,
+) -> tuple[str, ...]:
+    if enumeration is not None:
+        try:
+            paths = enumeration.paths(root)
+        except SourceEnumerationError as exc:
+            raise LeanToolchainError(str(exc)) from exc
+        if paths is not None:
+            return _filter_source_material(paths)
     return _fallback_source_material_paths(root)
-
-
-def _source_list_environment(git: Path) -> dict[str, str]:
-    environment = {"PATH": str(git.resolve().parent)}
-    for key in ("HOME", "LANG", "LC_ALL", "TMPDIR", "USER"):
-        if key in os.environ:
-            environment[key] = os.environ[key]
-    return environment
 
 
 def _filter_source_material(paths: Iterable[str]) -> tuple[str, ...]:
@@ -307,11 +326,12 @@ def _is_source_material(relative: str) -> bool:
 
 
 def _validate_source_relative_path(relative: str) -> str:
-    normalized = Path(relative).as_posix()
-    parts = Path(normalized).parts
+    path = Path(relative)
+    normalized = path.as_posix()
+    parts = path.parts
     if (
         not normalized
-        or Path(normalized).is_absolute()
+        or path.is_absolute()
         or ".." in parts
         or len(parts) > SOURCE_PATH_DEPTH_LIMIT
         or len(normalized.encode()) > SOURCE_PATH_BYTE_LIMIT
@@ -495,8 +515,37 @@ def _fallback_source_material_paths(root: Path) -> tuple[str, ...]:
     return tuple(selected)
 
 
+def compiled_library_roots(repo_root: Path) -> tuple[Path, ...]:
+    """Resolve a bounded, ordered search path from existing Lake build directories."""
+    roots: list[Path] = []
+    local = repo_root / ".lake" / "build" / "lib" / "lean"
+    if local.is_dir():
+        roots.append(local.resolve())
+    packages = repo_root / ".lake" / "packages"
+    if packages.is_dir():
+        try:
+            children = sorted(packages.iterdir(), key=lambda path: path.name)
+        except OSError as exc:
+            raise LeanToolchainError("cannot inspect compiled Lake package roots") from exc
+        if len(children) > MAX_COMPILED_LIBRARY_ROOTS:
+            raise LeanToolchainError(
+                "compiled Lake package population exceeds the supported root limit"
+            )
+        for package in children:
+            if len(package.name.encode()) > 255:
+                raise LeanToolchainError("compiled Lake package name exceeds the byte limit")
+            candidate = package / ".lake" / "build" / "lib" / "lean"
+            if candidate.is_dir():
+                roots.append(candidate.resolve())
+    if len(roots) > MAX_COMPILED_LIBRARY_ROOTS:
+        raise LeanToolchainError("compiled Lean library population exceeds the root limit")
+    return tuple(dict.fromkeys(roots))
+
+
 def verify_toolchain_identities(context: LeanToolchainContext) -> None:
     """Fail when selected pin or executable bytes changed after context creation."""
+    if compiled_library_roots(context.repo_root) != context.library_roots:
+        raise LeanToolchainError("compiled library roots changed after context creation")
     observed = {
         "lake": _identity(context.lake_path),
         "lean": _identity(context.lean_path),
@@ -512,7 +561,7 @@ def verify_toolchain_identities(context: LeanToolchainContext) -> None:
         changed.append("lean-toolchain")
     if changed:
         raise LeanToolchainError("toolchain executable identity changed: " + ", ".join(changed))
-    if _source_tree_identity(context.repo_root) != context.source_tree_identity:
+    if _source_tree_identity(context.repo_root, context.source_enumeration) != context.source_tree_identity:
         raise LeanToolchainError("source tree identity changed")
 
 

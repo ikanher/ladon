@@ -17,7 +17,6 @@ from ladon.proof_search_type import TypeSearchRequest, query_type_shortlist
 def dispatch_type_text(
     args: Any, repo_root: Path, index_path: Path | None
 ) -> dict[str, Any]:
-    evidence = type_text_freshness(args, repo_root, index_path)
     request = TypeSearchRequest(
         pattern=args.pattern,
         module=args.module,
@@ -29,6 +28,7 @@ def dispatch_type_text(
         diagnostic_limit=args.diagnostic_limit,
         freshness=args.freshness,
     )
+    evidence = type_text_freshness(args, repo_root, index_path)
     path = index_path or default_proof_search_index_path(repo_root)
     with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
         connection.row_factory = sqlite3.Row
@@ -52,7 +52,7 @@ def type_text_freshness(
         raise ProofSearchIndexError("type-text index is stale or unavailable")
     fields = (
         "generationIdentity", "currentGenerationIdentity", "sourceFingerprint",
-        "configurationFingerprint", "toolchainIdentity", "indexSchema",
+        "configurationFingerprint", "toolchainIdentity", "helperIdentity", "indexSchema",
     )
     return {key: status.get(key) for key in fields if status.get(key) is not None}
 

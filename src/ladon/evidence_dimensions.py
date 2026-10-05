@@ -54,7 +54,7 @@ _TRANSITIONS = {
         "unknown": frozenset({"unknown", "not-assessed"}),
         "not-assessed": frozenset({"not-assessed"}),
     },
-        "authorityBasis": {
+    "authorityBasis": {
         "kernel-check": AUTHORITY_BASES,
         "elaborator-check": frozenset(
             {
@@ -95,6 +95,16 @@ _ATTRS = {
     "analysisCompleteness": "analysis_completeness",
 }
 
+_PROJECTION_OBSERVATIONS = {
+    "live-result": OBSERVATION_STATES,
+    "canonical-artifact": OBSERVATION_STATES,
+    "sqlite-row": OBSERVATION_STATES - {"live"},
+    "dossier": OBSERVATION_STATES - {"live"},
+    "aggregate": frozenset({"derived", "failed", "absent"}),
+    "json-renderer": OBSERVATION_STATES,
+    "text-renderer": OBSERVATION_STATES,
+}
+
 
 @dataclass(frozen=True)
 class EvidenceDimensions:
@@ -121,8 +131,15 @@ class EvidenceDimensions:
                 raise ValueError(f"unsupported evidence dimension {name}: {value}")
 
 
-def validate_transition(parent: EvidenceDimensions, child: EvidenceDimensions) -> None:
+def validate_transition(
+    parent: EvidenceDimensions,
+    child: EvidenceDimensions,
+    *,
+    projection_kind: str = "json-renderer",
+) -> None:
     """Reject transitions that strengthen an observation or authority axis."""
+    if projection_kind not in _PROJECTION_OBSERVATIONS:
+        raise ValueError(f"unregistered evidence projection: {projection_kind}")
     violations = _state_violations(parent)
     violations.extend(
         _transition_error(axis, parent_value, child_value)
@@ -131,6 +148,8 @@ def validate_transition(parent: EvidenceDimensions, child: EvidenceDimensions) -
         and (child_value := getattr(child, attribute)) not in _TRANSITIONS[axis][parent_value]
     )
     violations.extend(_state_violations(child))
+    if child.observation_state not in _PROJECTION_OBSERVATIONS[projection_kind]:
+        violations.append(f"{projection_kind} cannot report {child.observation_state} observations")
     if violations:
         raise ValueError("; ".join(violations))
 
@@ -147,6 +166,10 @@ def transition_matrix() -> dict[str, Any]:
                 },
             }
             for axis, transitions in _TRANSITIONS.items()
+        },
+        "projections": {
+            kind: {"observationStates": sorted(states)}
+            for kind, states in sorted(_PROJECTION_OBSERVATIONS.items())
         },
     }
 
