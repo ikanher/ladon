@@ -1,0 +1,38 @@
+{"argv": ["uv", "run", "--locked", "python", "scripts/lean_integration_gate.py", "--candidate", "15835d5f0a499e13d658c5bf26933c8456f0e37c", "--required"], "cwd": "/home/codex/.cache/ladon-qualification-r48/ladon-bundles-r48-ouvuyuvz/candidate"}
++ /home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lake --version
+reference toolchain: Lake version 5.0.0-src+f054605 (Lean version 4.32.1)
++ /home/codex/miniconda3/bin/uv build --force-pep517 --build-constraints /home/codex/.cache/ladon-qualification-r48/ladon-candidate-tbra66yo/source/build-constraints.txt --out-dir /home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/dist --clear .
+Building source distribution...
+Building wheel from source distribution...
+Successfully built /home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/dist/ladon-0.2.0.tar.gz
+Successfully built /home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/dist/ladon-0.2.0-py3-none-any.whl
++ /home/codex/miniconda3/bin/uv venv --python /home/codex/.cache/ladon-qualification-r48/ladon-bundles-r48-ouvuyuvz/candidate/.venv/bin/python3 /home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/installed
+Using CPython 3.11.15 interpreter at: /home/codex/.cache/ladon-qualification-r48/ladon-bundles-r48-ouvuyuvz/candidate/.venv/bin/python3
+Creating virtual environment at: installed
+Activate with: source installed/bin/activate
++ /home/codex/miniconda3/bin/uv pip install --python /home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/installed/bin/python /home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/dist/ladon-0.2.0-py3-none-any.whl
+Using Python 3.11.15 environment at: installed
+Resolved 1 package in 1ms
+Prepared 1 package in 5ms
+Installed 1 package in 3ms
+ + ladon==0.2.0 (from file:///home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/dist/ladon-0.2.0-py3-none-any.whl)
++ /home/codex/miniconda3/bin/uv pip check --python /home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/installed/bin/python
+Using Python 3.11.15 environment at: installed
+Checked 1 package in 0.23ms
+All installed packages are compatible
++ /home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/installed/bin/python -c from importlib import resources
+from pathlib import Path
+import json
+import ladon
+import sys
+origin = Path(ladon.__file__).resolve()
+prefix = Path(sys.prefix).resolve()
+helper = resources.files('ladon').joinpath('lean', 'ladon_parser_helper.lean')
+semantic_helper = resources.files('ladon').joinpath('lean', 'ladon_semantic_candidate_helper.lean')
+assert origin.is_relative_to(prefix), (origin, prefix)
+assert helper.is_file(), helper
+assert semantic_helper.is_file(), semantic_helper
+print(json.dumps({'origin': str(origin), 'helper': str(helper), 'semanticHelper': str(semantic_helper)}))
+{"origin": "/home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/installed/lib/python3.11/site-packages/ladon/__init__.py", "helper": "/home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/installed/lib/python3.11/site-packages/ladon/lean/ladon_parser_helper.lean", "semanticHelper": "/home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/installed/lib/python3.11/site-packages/ladon/lean/ladon_semantic_candidate_helper.lean"}
++ /home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/installed/bin/ladon --repo-root /home/codex/.cache/ladon-qualification-r48/ladon-candidate-tbra66yo/source/tests/fixtures/lean_integration --root LadonFixture.lean --build --extraction-backend lean --format json --output /home/codex/.cache/ladon-qualification-r48/ladon-lean-gate-43ffi3d5/lean-integration-report.json
+lean integration gate: PASS

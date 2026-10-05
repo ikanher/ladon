@@ -1,0 +1,95 @@
+{
+  "status": "passed",
+  "metadataCommands": [
+    {
+      "id": "openspec",
+      "argv": [
+        "openspec",
+        "validate",
+        "--all",
+        "--strict",
+        "--no-interactive"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "exitCode": 0
+    },
+    {
+      "id": "backlog",
+      "argv": [
+        "uv",
+        "run",
+        "--locked",
+        "python",
+        "scripts/ladon_openspec_backlog.py",
+        "--openspec-root",
+        "openspec",
+        "--check",
+        "--output-json",
+        "/home/codex/projects/ladon/.codex/state/bundles-r48/backlog-final.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "exitCode": 0
+    },
+    {
+      "id": "hygiene",
+      "argv": [
+        "uv",
+        "run",
+        "--locked",
+        "python",
+        "scripts/ladon_openspec_hygiene.py",
+        "--openspec-root",
+        "openspec",
+        "--check",
+        "--output-json",
+        "/home/codex/projects/ladon/.codex/state/bundles-r48/hygiene-final.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "exitCode": 0
+    },
+    {
+      "id": "diff",
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "exitCode": 0
+    }
+  ],
+  "implementationFilesChecked": 839,
+  "implementationMismatches": [],
+  "acceptanceLinks": [
+    {
+      "key": "fullEvidence",
+      "path": "/home/codex/projects/ladon/openspec/changes/ladon-result-claim-correspondence/full-acceptance-r48.json",
+      "digestMatches": true,
+      "identityMatches": true,
+      "status": "passed"
+    },
+    {
+      "key": "dossierEvidence",
+      "path": "/home/codex/projects/ladon/openspec/changes/ladon-result-formalization-dossier/full-acceptance-r48.json",
+      "digestMatches": true,
+      "identityMatches": true,
+      "status": "passed"
+    },
+    {
+      "key": "guideEvidence",
+      "path": "/home/codex/projects/ladon/openspec/changes/ladon-proof-reading-guides/full-acceptance-r48.json",
+      "digestMatches": true,
+      "identityMatches": true,
+      "status": "passed"
+    },
+    {
+      "key": "coreBundleEvidence",
+      "path": "/home/codex/projects/ladon/openspec/changes/ladon-result-release-bundles/core-acceptance-r48.json",
+      "digestMatches": true,
+      "identityMatches": true,
+      "status": "passed"
+    }
+  ],
+  "headUnchanged": true,
+  "indexUnchanged": true
+}

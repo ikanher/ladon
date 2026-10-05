@@ -1,0 +1,589 @@
+{
+  "schemaVersion": 1,
+  "schema": "ladon-child-acceptance-inventory-v1",
+  "umbrella": "ladon-authority-safe-verified-discovery-umbrella",
+  "child": "ladon-execution-authority-integrity",
+  "exitClass": "single-context-secret-safe-non-escalating-evidence-receipts",
+  "evidenceRole": "acceptance-plan",
+  "task": "3.16",
+  "ledger": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/children/dependency-ledger.json",
+  "childSpecification": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/children/ladon-execution-authority-integrity.md",
+  "pathBase": "repository-root",
+  "requiredRuntimes": [
+    "py311",
+    "py312"
+  ],
+  "pythonVersions": {
+    "py311": "3.11",
+    "py312": "3.12"
+  },
+  "requiredEnvironment": {
+    "LADON_REQUIRE_EXECUTION_NONLEAKAGE": "1",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+  },
+  "allowSkippedTests": false,
+  "requiredInstallation": {
+    "sameTrackedCandidate": true,
+    "sameWheelDigestAcrossRuntimes": true,
+    "requireInstalledPackageImports": true,
+    "interpreterArguments": [
+      "-I"
+    ],
+    "unsetEnvironment": [
+      "PYTHONPATH",
+      "PYTHONHOME",
+      "PYTEST_ADDOPTS"
+    ],
+    "consoleEnvironmentVariable": "LADON_CONSOLE",
+    "workingDirectory": "isolated tracked candidate checkout; imports must resolve inside the installed environment and outside that checkout",
+    "testSource": "exact tracked candidate",
+    "noImplicitNetworkOrBuild": true
+  },
+  "requiredLeanFixture": {
+    "directory": "tests/fixtures/lean_integration",
+    "pinFile": "tests/fixtures/lean_integration/lean-toolchain",
+    "pin": "leanprover/lean4:v4.32.1",
+    "compiledModule": "tests/fixtures/lean_integration/.lake/build/lib/lean/LadonFixture.olean",
+    "preparation": "Build this pinned tracked fixture explicitly before acceptance; tests must not download or repair dependencies.",
+    "unavailablePolicy": "Incomplete qualification, never an implicit skip or a successful authority exit."
+  },
+  "requiredPlatform": {
+    "executionPosture": "trusted-repository-only",
+    "processAccounting": "/proc must be available for required RSS qualification",
+    "missingRequiredCapability": "Incomplete qualification"
+  },
+  "requirements": {
+    "single-context": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-execution-authority-integrity/spec.md",
+      "requirement": "One immutable execution context governs preflight and worker launch",
+      "tasks": [
+        "3.1",
+        "3.2",
+        "3.4"
+      ]
+    },
+    "context-fingerprints": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-execution-authority-integrity/spec.md",
+      "requirement": "Execution fingerprints are exact and non-secret",
+      "tasks": [
+        "3.3",
+        "3.5"
+      ]
+    },
+    "receipt-model": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-execution-authority-integrity/spec.md",
+      "requirement": "Evidence receipt preserves independent dimensions",
+      "tasks": [
+        "3.6",
+        "3.9"
+      ]
+    },
+    "projection-integrity": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-execution-authority-integrity/spec.md",
+      "requirement": "Authority integrity is tested across every projection boundary",
+      "tasks": [
+        "3.10",
+        "3.11"
+      ]
+    },
+    "doctor-posture": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-execution-authority-integrity/spec.md",
+      "requirement": "Installed diagnostics expose posture without executing target code",
+      "tasks": [
+        "3.12",
+        "3.13"
+      ]
+    },
+    "installed-adversarial": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-execution-authority-integrity/spec.md",
+      "requirement": "Execution-integrity adversarial tests run from an installed wheel",
+      "tasks": [
+        "3.16"
+      ]
+    },
+    "orthogonal-dimensions": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/proofir-observation-authority-and-coverage-core/spec.md",
+      "requirement": "Orthogonal evidence dimensions",
+      "tasks": [
+        "3.6",
+        "3.7"
+      ]
+    },
+    "exact-observations": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/proofir-observation-authority-and-coverage-core/spec.md",
+      "requirement": "Exact checker observations",
+      "tasks": [
+        "3.3",
+        "3.9",
+        "3.10"
+      ]
+    },
+    "non-escalating-transitions": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/proofir-observation-authority-and-coverage-core/spec.md",
+      "requirement": "Evidence transitions are explicit and non-escalating",
+      "tasks": [
+        "3.7",
+        "3.8",
+        "3.11"
+      ]
+    },
+    "closed-completeness": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/proofir-observation-authority-and-coverage-core/spec.md",
+      "requirement": "Analysis completeness uses a closed explicit state",
+      "tasks": [
+        "3.6",
+        "3.7",
+        "3.11"
+      ]
+    },
+    "bounded-derivation-queries": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/proofir-derivation-hypergraph-semantics/spec.md",
+      "requirement": "Distinct bounded graph queries",
+      "tasks": [
+        "3.14"
+      ]
+    },
+    "single-traversal": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/proofir-derivation-hypergraph-semantics/spec.md",
+      "requirement": "One authoritative slice traversal implementation",
+      "tasks": [
+        "3.14",
+        "3.15"
+      ]
+    },
+    "ladon-owned-stack-safety": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/proofir-derivation-hypergraph-semantics/spec.md",
+      "requirement": "Stack safety remains Ladon-owned",
+      "tasks": [
+        "3.14",
+        "3.15"
+      ]
+    }
+  },
+  "categories": [
+    {
+      "categoryId": "model",
+      "coveredRequirements": [
+        "receipt-model",
+        "orthogonal-dimensions",
+        "exact-observations",
+        "closed-completeness"
+      ],
+      "testTargets": [
+        "tests/test_evidence_dimensions.py",
+        "tests/test_evidence_receipt.py",
+        "tests/test_proofir_result_dimensions.py",
+        "tests/test_proofir_observations.py",
+        "tests/test_proofir_identity_models.py",
+        "tests/test_proofir_declaration_application_identity.py",
+        "tests/test_proofir_native_v3_contract.py",
+        "tests/test_semantic_observation_closure.py"
+      ],
+      "scope": "Closed evidence axes, typed subjects, exact canonical ownership, immutable native envelopes and independently scoped observations."
+    },
+    {
+      "categoryId": "transitions",
+      "coveredRequirements": [
+        "non-escalating-transitions",
+        "projection-integrity",
+        "closed-completeness"
+      ],
+      "testTargets": [
+        "tests/test_evidence_transition_corpus.py",
+        "tests/test_proofir_projection_corpus.py",
+        "tests/test_receipt_projection_paths.py",
+        "tests/test_semantic_binding_projection.py",
+        "tests/test_semantic_weak_receipt_boundary.py"
+      ],
+      "scope": "Finite transition/state corpus, composed projection paths, lost historical binding, omitted corrupt children and weak/raw boundaries."
+    },
+    {
+      "categoryId": "security",
+      "coveredRequirements": [
+        "single-context",
+        "context-fingerprints",
+        "doctor-posture",
+        "installed-adversarial"
+      ],
+      "testTargets": [
+        "tests/test_execution_environment_policy.py",
+        "tests/test_final_execution_environment.py",
+        "tests/test_source_enumeration_context.py",
+        "tests/test_lean_toolchain.py",
+        "tests/test_semantic_lean_execution.py",
+        "tests/test_execution_posture.py",
+        "tests/test_execution_nonleakage_scanner.py",
+        "tests/test_execution_nonleakage_failures.py",
+        "tests/test_execution_nonleakage_discovery.py",
+        "tests/test_semantic_candidate_security_contract.py",
+        "tests/test_semantic_candidate_framed_protocol.py",
+        "tests/test_semantic_candidate_worker_v3_contract.py",
+        "tests/test_authority_safe_discovery_regressions.py::test_authority_cannot_promote_to_explicit_pinned",
+        "tests/test_authority_safe_discovery_regressions.py::test_toolchain_preflight_uses_worker_environment"
+      ],
+      "scope": "Captured selection and final environment, explicit-empty input, path and executable mutations, secret filtering, framed identity, transport injection and fail-closed posture. Only the two authority tests are selected from the mixed correctness/authority regression file."
+    },
+    {
+      "categoryId": "process",
+      "coveredRequirements": [
+        "single-context",
+        "context-fingerprints",
+        "exact-observations",
+        "installed-adversarial"
+      ],
+      "testTargets": [
+        "tests/test_process_supervisor.py",
+        "tests/test_semantic_candidate_batch_worker.py",
+        "tests/test_scratch_replay.py",
+        "tests/test_proof_search_operational_contract.py",
+        "tests/test_proofir_v3_terminal_contract.py",
+        "tests/test_execution_nonleakage_failures.py",
+        "tests/test_final_execution_environment.py"
+      ],
+      "scope": "Process-group cancellation and cleanup, finite time/output/RSS, failed preflight and workers, retained batch prefixes, independent scratch observations and terminal diagnostics."
+    },
+    {
+      "categoryId": "persistence",
+      "coveredRequirements": [
+        "receipt-model",
+        "projection-integrity",
+        "non-escalating-transitions",
+        "exact-observations"
+      ],
+      "testTargets": [
+        "tests/test_semantic_evidence_registry.py",
+        "tests/test_semantic_result_delivery.py",
+        "tests/test_stored_receipt_ownership.py",
+        "tests/test_rejected_context_ownership.py",
+        "tests/test_historical_execution_binding.py",
+        "tests/test_proofir_sqlite_native_contract.py",
+        "tests/test_proofir_sqlite_rows.py",
+        "tests/test_proofir_v3_integration.py",
+        "tests/test_stored_evidence_receipt_cli.py"
+      ],
+      "scope": "Atomic content-owned registration, exact references, rollback, SQLite projection, rejection-context ownership, historical selection metadata and live-to-stored weakening without canonical mutation."
+    },
+    {
+      "categoryId": "dossier",
+      "coveredRequirements": [
+        "projection-integrity",
+        "non-escalating-transitions",
+        "closed-completeness"
+      ],
+      "testTargets": [
+        "tests/test_evidence_receipt_readers.py",
+        "tests/test_proofir_query_contracts.py",
+        "tests/test_theorem_lineage_query.py",
+        "tests/test_theorem_lineage_projection.py",
+        "tests/test_theorem_lineage_hardening.py",
+        "tests/test_theorem_lineage_store.py",
+        "tests/test_historical_execution_binding.py",
+        "tests/test_proofir_v3_installed_workflow_contract.py::test_installed_dossier_reports_coverage_and_limitations"
+      ],
+      "scope": "Bounded exact-owner dossier lookups and stored lineage readers; absent/stale evidence, nonchecker query receipts, aggregate weakening and attributable limitations. No live external-project refresh is required."
+    },
+    {
+      "categoryId": "renderers",
+      "coveredRequirements": [
+        "projection-integrity",
+        "non-escalating-transitions",
+        "context-fingerprints",
+        "closed-completeness"
+      ],
+      "testTargets": [
+        "tests/test_semantic_result_projection.py",
+        "tests/test_semantic_cli_projection.py",
+        "tests/test_semantic_projection_hardening.py",
+        "tests/test_semantic_binding_projection.py",
+        "tests/test_semantic_weak_receipt_boundary.py",
+        "tests/test_evidence_receipt_readers.py",
+        "tests/test_aggregate_derivation_receipts.py",
+        "tests/test_execution_nonleakage_lean_integration.py"
+      ],
+      "scope": "Audit, compact and review JSON/text, minimal bounded views, population omissions, separate scratch receipts, unchanged raw-source records and discarded-input scans including generated files and SQLite/WAL."
+    },
+    {
+      "categoryId": "derivation",
+      "coveredRequirements": [
+        "bounded-derivation-queries",
+        "single-traversal",
+        "ladon-owned-stack-safety",
+        "projection-integrity"
+      ],
+      "testTargets": [
+        "tests/test_proofir_derivation.py",
+        "tests/test_proofir_derivation_queries.py",
+        "tests/test_proofir_derivation_scc.py",
+        "tests/test_aggregate_derivation_receipts.py",
+        "tests/test_proof_search_installed_v3_contract.py",
+        "tests/test_proofir_query_contracts.py",
+        "tests/test_bounded_graph.py"
+      ],
+      "scope": "AND/OR and repeated-premise semantics, stable alternatives, residual/occurrence accounting, exact bounds, deep stack-safe traversal, SCC closure and structural nonclaims. Required source checks supplement these behavioral tests."
+    },
+    {
+      "categoryId": "doctor",
+      "coveredRequirements": [
+        "doctor-posture",
+        "installed-adversarial"
+      ],
+      "testTargets": [
+        "tests/test_doctor_cli.py",
+        "tests/test_execution_posture.py"
+      ],
+      "scope": "Read-only installed diagnostics, pin/posture reporting, no target execution and rejection before preflight or publication when isolation is required."
+    },
+    {
+      "categoryId": "installed-adversarial",
+      "coveredRequirements": [
+        "installed-adversarial",
+        "projection-integrity",
+        "doctor-posture",
+        "context-fingerprints"
+      ],
+      "testTargets": [
+        "tests/test_execution_posture.py",
+        "tests/test_stored_evidence_receipt_cli.py",
+        "tests/test_stored_receipt_ownership.py",
+        "tests/test_historical_execution_binding.py",
+        "tests/test_evidence_receipt_readers.py",
+        "tests/test_aggregate_derivation_receipts.py",
+        "tests/test_proof_search_installed_v3_contract.py",
+        "tests/test_proofir_v3_installed_cli.py",
+        "tests/test_proofir_v3_installed_workflow_contract.py::test_installed_dossier_reports_coverage_and_limitations"
+      ],
+      "scope": "Ordinary installed commands reject rehashed ownership/binding contradictions, preserve stored receipt dimensions and read-only structural scope, and fail closed on unavailable posture. Every category also runs against the same installed candidate."
+    },
+    {
+      "categoryId": "real-lean",
+      "coveredRequirements": [
+        "single-context",
+        "context-fingerprints",
+        "exact-observations",
+        "installed-adversarial",
+        "projection-integrity"
+      ],
+      "testTargets": [
+        "tests/test_semantic_candidate_security_contract.py",
+        "tests/test_semantic_candidate_lean_integration.py",
+        "tests/test_semantic_candidate_residual_integration.py",
+        "tests/test_execution_nonleakage_lean_integration.py"
+      ],
+      "scope": "Pinned portable fixture exercises accepted, rejected and residual applications, exact local context, explicit/ambient selection, batch and scratch evidence, canonical persistence and installed nonleakage. These cases do not assert the independent discovery-child exit."
+    }
+  ],
+  "pytestTargets": [
+    "tests/test_aggregate_derivation_receipts.py",
+    "tests/test_authority_safe_discovery_regressions.py::test_authority_cannot_promote_to_explicit_pinned",
+    "tests/test_authority_safe_discovery_regressions.py::test_toolchain_preflight_uses_worker_environment",
+    "tests/test_bounded_graph.py",
+    "tests/test_doctor_cli.py",
+    "tests/test_evidence_dimensions.py",
+    "tests/test_evidence_receipt.py",
+    "tests/test_evidence_receipt_readers.py",
+    "tests/test_evidence_transition_corpus.py",
+    "tests/test_execution_environment_policy.py",
+    "tests/test_execution_nonleakage_discovery.py",
+    "tests/test_execution_nonleakage_failures.py",
+    "tests/test_execution_nonleakage_lean_integration.py",
+    "tests/test_execution_nonleakage_scanner.py",
+    "tests/test_execution_posture.py",
+    "tests/test_final_execution_environment.py",
+    "tests/test_historical_execution_binding.py",
+    "tests/test_lean_toolchain.py",
+    "tests/test_process_supervisor.py",
+    "tests/test_proof_search_installed_v3_contract.py",
+    "tests/test_proof_search_operational_contract.py",
+    "tests/test_proofir_declaration_application_identity.py",
+    "tests/test_proofir_derivation.py",
+    "tests/test_proofir_derivation_queries.py",
+    "tests/test_proofir_derivation_scc.py",
+    "tests/test_proofir_identity_models.py",
+    "tests/test_proofir_native_v3_contract.py",
+    "tests/test_proofir_observations.py",
+    "tests/test_proofir_projection_corpus.py",
+    "tests/test_proofir_query_contracts.py",
+    "tests/test_proofir_result_dimensions.py",
+    "tests/test_proofir_sqlite_native_contract.py",
+    "tests/test_proofir_sqlite_rows.py",
+    "tests/test_proofir_v3_installed_cli.py",
+    "tests/test_proofir_v3_installed_workflow_contract.py::test_installed_dossier_reports_coverage_and_limitations",
+    "tests/test_proofir_v3_integration.py",
+    "tests/test_proofir_v3_terminal_contract.py",
+    "tests/test_receipt_projection_paths.py",
+    "tests/test_rejected_context_ownership.py",
+    "tests/test_scratch_replay.py",
+    "tests/test_semantic_binding_projection.py",
+    "tests/test_semantic_candidate_batch_worker.py",
+    "tests/test_semantic_candidate_framed_protocol.py",
+    "tests/test_semantic_candidate_lean_integration.py",
+    "tests/test_semantic_candidate_residual_integration.py",
+    "tests/test_semantic_candidate_security_contract.py",
+    "tests/test_semantic_candidate_worker_v3_contract.py",
+    "tests/test_semantic_cli_projection.py",
+    "tests/test_semantic_evidence_registry.py",
+    "tests/test_semantic_lean_execution.py",
+    "tests/test_semantic_observation_closure.py",
+    "tests/test_semantic_projection_hardening.py",
+    "tests/test_semantic_result_delivery.py",
+    "tests/test_semantic_result_projection.py",
+    "tests/test_semantic_weak_receipt_boundary.py",
+    "tests/test_source_enumeration_context.py",
+    "tests/test_stored_evidence_receipt_cli.py",
+    "tests/test_stored_receipt_ownership.py",
+    "tests/test_theorem_lineage_hardening.py",
+    "tests/test_theorem_lineage_projection.py",
+    "tests/test_theorem_lineage_query.py",
+    "tests/test_theorem_lineage_store.py"
+  ],
+  "suites": [
+    {
+      "suiteId": "authority-acceptance",
+      "testTargets": [
+        "tests/test_aggregate_derivation_receipts.py",
+        "tests/test_authority_safe_discovery_regressions.py::test_authority_cannot_promote_to_explicit_pinned",
+        "tests/test_authority_safe_discovery_regressions.py::test_toolchain_preflight_uses_worker_environment",
+        "tests/test_bounded_graph.py",
+        "tests/test_doctor_cli.py",
+        "tests/test_evidence_dimensions.py",
+        "tests/test_evidence_receipt.py",
+        "tests/test_evidence_receipt_readers.py",
+        "tests/test_evidence_transition_corpus.py",
+        "tests/test_execution_environment_policy.py",
+        "tests/test_execution_nonleakage_discovery.py",
+        "tests/test_execution_nonleakage_failures.py",
+        "tests/test_execution_nonleakage_lean_integration.py",
+        "tests/test_execution_nonleakage_scanner.py",
+        "tests/test_execution_posture.py",
+        "tests/test_final_execution_environment.py",
+        "tests/test_historical_execution_binding.py",
+        "tests/test_lean_toolchain.py",
+        "tests/test_process_supervisor.py",
+        "tests/test_proof_search_installed_v3_contract.py",
+        "tests/test_proof_search_operational_contract.py",
+        "tests/test_proofir_declaration_application_identity.py",
+        "tests/test_proofir_derivation.py",
+        "tests/test_proofir_derivation_queries.py",
+        "tests/test_proofir_derivation_scc.py",
+        "tests/test_proofir_identity_models.py",
+        "tests/test_proofir_native_v3_contract.py",
+        "tests/test_proofir_observations.py",
+        "tests/test_proofir_projection_corpus.py",
+        "tests/test_proofir_query_contracts.py",
+        "tests/test_proofir_result_dimensions.py",
+        "tests/test_proofir_sqlite_native_contract.py",
+        "tests/test_proofir_sqlite_rows.py",
+        "tests/test_proofir_v3_installed_cli.py",
+        "tests/test_proofir_v3_installed_workflow_contract.py::test_installed_dossier_reports_coverage_and_limitations",
+        "tests/test_proofir_v3_integration.py",
+        "tests/test_proofir_v3_terminal_contract.py",
+        "tests/test_receipt_projection_paths.py",
+        "tests/test_rejected_context_ownership.py",
+        "tests/test_scratch_replay.py",
+        "tests/test_semantic_binding_projection.py",
+        "tests/test_semantic_candidate_batch_worker.py",
+        "tests/test_semantic_candidate_framed_protocol.py",
+        "tests/test_semantic_candidate_lean_integration.py",
+        "tests/test_semantic_candidate_residual_integration.py",
+        "tests/test_semantic_candidate_security_contract.py",
+        "tests/test_semantic_candidate_worker_v3_contract.py",
+        "tests/test_semantic_cli_projection.py",
+        "tests/test_semantic_evidence_registry.py",
+        "tests/test_semantic_lean_execution.py",
+        "tests/test_semantic_observation_closure.py",
+        "tests/test_semantic_projection_hardening.py",
+        "tests/test_semantic_result_delivery.py",
+        "tests/test_semantic_result_projection.py",
+        "tests/test_semantic_weak_receipt_boundary.py",
+        "tests/test_source_enumeration_context.py",
+        "tests/test_stored_evidence_receipt_cli.py",
+        "tests/test_stored_receipt_ownership.py",
+        "tests/test_theorem_lineage_hardening.py",
+        "tests/test_theorem_lineage_projection.py",
+        "tests/test_theorem_lineage_query.py",
+        "tests/test_theorem_lineage_store.py"
+      ]
+    }
+  ],
+  "requiredSourceChecks": [
+    {
+      "checkId": "single-iterative-slice-owner",
+      "coveredRequirements": [
+        "single-traversal",
+        "ladon-owned-stack-safety"
+      ],
+      "files": [
+        "src/ladon/proofir_derivation.py",
+        "src/ladon/_proofir_derivation_core.py",
+        "src/ladon/_proofir_derivation_solver.py",
+        "src/ladon/_proofir_derivation_slice.py",
+        "src/ladon/proofir_derivation_scc.py"
+      ],
+      "assertions": [
+        "The only production _Slicer definition is in src/ladon/_proofir_derivation_slice.py.",
+        "_Slicer.run dispatches to the owned _expand_iterative traversal.",
+        "No legacy expand or _expand_step traversal definition remains in these owners.",
+        "No owner changes the Python recursion limit or imports Quux."
+      ]
+    },
+    {
+      "checkId": "derivation-owner-quality",
+      "coveredRequirements": [
+        "single-traversal",
+        "ladon-owned-stack-safety"
+      ],
+      "files": [
+        "src/ladon/proofir_derivation.py",
+        "src/ladon/_proofir_derivation_core.py",
+        "src/ladon/_proofir_derivation_solver.py",
+        "src/ladon/_proofir_derivation_slice.py",
+        "src/ladon/proofir_derivation_scc.py"
+      ],
+      "assertions": [
+        "These owners have no reviewed-schema-hotspot suppression.",
+        "Run scoped Ruff, strict radon and vulture checks directly on these owners under the candidate's maintained quality policy."
+      ]
+    }
+  ],
+  "evidenceRequirements": [
+    "Validate the inventory schema, ledger child/exitClass, requirement references and existence of every selected test file and node before launch.",
+    "Collect the deduplicated union exactly once per required runtime and record expanded parameterized node identities; an omitted target, collection error, skip, xfail, failure or error is incomplete qualification.",
+    "Record candidate revision, wheel digest, installed package and console identities, Python versions, Lean pin/executables, exact argv/cwd/environment policy and per-runtime reports.",
+    "Record command outcomes and evidence digests for the required source checks separately from pytest outcomes.",
+    "Emit a separate candidate-bound child exit receipt only after all required executions and source checks complete; this inventory is not such a receipt."
+  ],
+  "nonClaims": [
+    "This inventory contains no execution result, passed status or child exit receipt.",
+    "Authority-child acceptance alone does not establish the correctness-child, same-candidate integration, discovery, readiness, benchmark or public release exits.",
+    "Finite transition/model tests and discarded-input scans do not prove operating-system isolation or secrecy against arbitrary trusted target code, files or allowed public paths.",
+    "The final environment binds compiled-library root paths, not every compiled .olean byte; source identity is captured after version probes.",
+    "Structural derivation completion and stored lineage remain nonchecker observations; application acceptance does not prove residual goals or unqualified theorem truth.",
+    "Historical evidence keeps its recorded identity and limitations; new qualification cannot retroactively supply pre-change TDD chronology.",
+    "No external repository, downloaded review bundle, optional atlas/runset/reportset/capsule feature, Rust expansion or new ProofIR family is a prerequisite."
+  ],
+  "runnerPath": "scripts/run_child_acceptance.py",
+  "inventoryPath": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/children/authority-acceptance-inventory.json",
+  "sourceQualityArgvTails": [
+    [
+      "-I",
+      "-m",
+      "ruff",
+      "check",
+      "src/ladon/proofir_derivation.py",
+      "src/ladon/_proofir_derivation_core.py",
+      "src/ladon/_proofir_derivation_solver.py",
+      "src/ladon/_proofir_derivation_slice.py",
+      "src/ladon/proofir_derivation_scc.py"
+    ],
+    [
+      "-I",
+      "-c",
+      "from pathlib import Path; import sys; from ladon.quality import strict_quality_issues, format_issue; issues = strict_quality_issues([Path(p) for p in sys.argv[1:]]); print('\\n'.join(format_issue(i) for i in issues) or 'radon/vulture: clean'); sys.exit(bool(issues))",
+      "src/ladon/proofir_derivation.py",
+      "src/ladon/_proofir_derivation_core.py",
+      "src/ladon/_proofir_derivation_solver.py",
+      "src/ladon/_proofir_derivation_slice.py",
+      "src/ladon/proofir_derivation_scc.py"
+    ]
+  ]
+}

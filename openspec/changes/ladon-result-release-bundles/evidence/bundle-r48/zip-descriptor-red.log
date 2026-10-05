@@ -1,0 +1,55 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_unsigned_descriptor_crc_can_equal_signature _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-781/test_unsigned_descriptor_crc_c0')
+
+    def test_unsigned_descriptor_crc_can_equal_signature(tmp_path):
+        payload = bytes.fromhex('ac0a7ad5')
+        buffer = _Unseekable()
+        with zipfile.ZipFile(buffer, 'w') as archive:
+            archive.writestr('item', payload)
+        raw = bytearray(buffer.getvalue())
+        descriptor = raw.index(b'PK\x07\x08')
+        assert raw[descriptor:descriptor + 8] == b'PK\x07\x08PK\x07\x08'
+        del raw[descriptor:descriptor + 4]
+        end = raw.index(b'PK\x05\x06')
+        central = struct.unpack_from('<I', raw, end + 16)[0]
+        struct.pack_into('<I', raw, end + 16, central - 4)
+        path = tmp_path / 'legal.zip'
+        path.write_bytes(raw)
+        with zipfile.ZipFile(path) as archive:
+            assert archive.read('item') == payload
+        destination = tmp_path / 'stage'
+        destination.mkdir()
+>       extract_bundle_archive(path, destination, max_bytes=10000, max_members=10)
+
+tests/test_result_bundle_zip_descriptor.py:28: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/result_bundle_archive.py:198: in extract_bundle_archive
+    validate_zip_layout(raw, infos)
+src/ladon/result_bundle_zip_layout.py:85: in validate_zip_layout
+    offset = _local_end(raw, info, offset, central)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/result_bundle_zip_layout.py:76: in _local_end
+    return _descriptor(raw, info) if flags & 8 else end
+           ^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+raw = <_io.BufferedReader name=13>
+info = <ZipInfo filename='item' filemode='?rw-------' file_size=4>
+
+    def _descriptor(raw, info):
+        first = _read(raw, 4)
+        if first == b'PK\x07\x08':
+            values = struct.unpack('<3I', _read(raw, 12))
+        else:
+            values = struct.unpack('<3I', first + _read(raw, 8))
+        if values != (info.CRC, info.compress_size, info.file_size):
+>           raise ResultManifestError('ZIP descriptor disagrees with member')
+E           ladon.result_manifest_io.ResultManifestError: ZIP descriptor disagrees with member
+
+src/ladon/result_bundle_zip_layout.py:55: ResultManifestError
+=========================== short test summary info ============================
+FAILED tests/test_result_bundle_zip_descriptor.py::test_unsigned_descriptor_crc_can_equal_signature
+1 failed in 0.09s

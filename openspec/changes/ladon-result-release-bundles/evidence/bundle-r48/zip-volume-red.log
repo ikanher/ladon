@@ -1,0 +1,19 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________________ test_nonzero_member_volume_is_rejected ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-776/test_nonzero_member_volume_is_0')
+
+    def test_nonzero_member_volume_is_rejected(tmp_path):
+        bundle = _export(tmp_path)
+        raw = bytearray(bundle.read_bytes())
+        offset = raw.index(b'PK\x01\x02')
+        struct.pack_into('<H', raw, offset + 34, 1)
+        bundle.write_bytes(raw)
+>       with pytest.raises(ResultManifestError):
+E       Failed: DID NOT RAISE <class 'ladon.result_manifest_io.ResultManifestError'>
+
+tests/test_result_bundle_zip_volume.py:17: Failed
+=========================== short test summary info ============================
+FAILED tests/test_result_bundle_zip_volume.py::test_nonzero_member_volume_is_rejected
+1 failed in 0.08s

@@ -1,0 +1,66 @@
+FFF.....                                                                 [100%]
+=================================== FAILURES ===================================
+_______ test_archive_cannot_hide_expansion_behind_a_false_zero_length[0] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-766/test_archive_cannot_hide_expan0')
+compression = 0
+
+    @pytest.mark.parametrize('compression', [zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED])
+    def test_archive_cannot_hide_expansion_behind_a_false_zero_length(tmp_path, compression):
+        path = tmp_path / 'bad.zip'
+        with zipfile.ZipFile(path, 'w', compression=compression) as archive:
+            archive.writestr('hidden', b'x' * 50000)
+        raw = bytearray(path.read_bytes())
+        local = raw.index(b'PK\x03\x04')
+        central = raw.index(b'PK\x01\x02')
+        for offset in (local + 14, local + 22, central + 16, central + 24):
+            struct.pack_into('<I', raw, offset, 0)
+        path.write_bytes(raw)
+        stage = tmp_path / 'stage'
+        stage.mkdir()
+>       with pytest.raises(ResultManifestError):
+E       Failed: DID NOT RAISE <class 'ladon.result_manifest_io.ResultManifestError'>
+
+tests/test_result_bundle_hardening.py:30: Failed
+_______ test_archive_cannot_hide_expansion_behind_a_false_zero_length[8] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-766/test_archive_cannot_hide_expan1')
+compression = 8
+
+    @pytest.mark.parametrize('compression', [zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED])
+    def test_archive_cannot_hide_expansion_behind_a_false_zero_length(tmp_path, compression):
+        path = tmp_path / 'bad.zip'
+        with zipfile.ZipFile(path, 'w', compression=compression) as archive:
+            archive.writestr('hidden', b'x' * 50000)
+        raw = bytearray(path.read_bytes())
+        local = raw.index(b'PK\x03\x04')
+        central = raw.index(b'PK\x01\x02')
+        for offset in (local + 14, local + 22, central + 16, central + 24):
+            struct.pack_into('<I', raw, offset, 0)
+        path.write_bytes(raw)
+        stage = tmp_path / 'stage'
+        stage.mkdir()
+>       with pytest.raises(ResultManifestError):
+E       Failed: DID NOT RAISE <class 'ladon.result_manifest_io.ResultManifestError'>
+
+tests/test_result_bundle_hardening.py:30: Failed
+______________ test_archive_rejects_aliasing_directory_components ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-766/test_archive_rejects_aliasing_0')
+
+    def test_archive_rejects_aliasing_directory_components(tmp_path):
+        path = tmp_path / 'case.zip'
+        with zipfile.ZipFile(path, 'w') as archive:
+            archive.writestr('A/one', b'one')
+            archive.writestr('a/two', b'two')
+        stage = tmp_path / 'stage'
+        stage.mkdir()
+>       with pytest.raises(ResultManifestError):
+E       Failed: DID NOT RAISE <class 'ladon.result_manifest_io.ResultManifestError'>
+
+tests/test_result_bundle_hardening.py:41: Failed
+=========================== short test summary info ============================
+FAILED tests/test_result_bundle_hardening.py::test_archive_cannot_hide_expansion_behind_a_false_zero_length[0]
+FAILED tests/test_result_bundle_hardening.py::test_archive_cannot_hide_expansion_behind_a_false_zero_length[8]
+FAILED tests/test_result_bundle_hardening.py::test_archive_rejects_aliasing_directory_components
+3 failed, 5 passed in 0.16s

@@ -1,0 +1,38 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_unindexed_local_members_are_rejected_before_extraction_publication[suffix] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-771/test_unindexed_local_members_a0')
+placement = 'suffix'
+
+    @pytest.mark.parametrize('placement', ['suffix', 'prefix'])
+    def test_unindexed_local_members_are_rejected_before_extraction_publication(tmp_path, placement):
+        bundle = _export(tmp_path)
+        original = bundle.read_bytes()
+        raw = original + _orphan() if placement == 'suffix' else _orphan() + original
+        bundle.write_bytes(raw)
+        destination = tmp_path / 'unpublished'
+>       with pytest.raises(ResultManifestError):
+E       Failed: DID NOT RAISE <class 'ladon.result_manifest_io.ResultManifestError'>
+
+tests/test_result_bundle_zip_layout.py:26: Failed
+_ test_unindexed_local_members_are_rejected_before_extraction_publication[prefix] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-771/test_unindexed_local_members_a1')
+placement = 'prefix'
+
+    @pytest.mark.parametrize('placement', ['suffix', 'prefix'])
+    def test_unindexed_local_members_are_rejected_before_extraction_publication(tmp_path, placement):
+        bundle = _export(tmp_path)
+        original = bundle.read_bytes()
+        raw = original + _orphan() if placement == 'suffix' else _orphan() + original
+        bundle.write_bytes(raw)
+        destination = tmp_path / 'unpublished'
+>       with pytest.raises(ResultManifestError):
+E       Failed: DID NOT RAISE <class 'ladon.result_manifest_io.ResultManifestError'>
+
+tests/test_result_bundle_zip_layout.py:26: Failed
+=========================== short test summary info ============================
+FAILED tests/test_result_bundle_zip_layout.py::test_unindexed_local_members_are_rejected_before_extraction_publication[suffix]
+FAILED tests/test_result_bundle_zip_layout.py::test_unindexed_local_members_are_rejected_before_extraction_publication[prefix]
+2 failed in 0.09s

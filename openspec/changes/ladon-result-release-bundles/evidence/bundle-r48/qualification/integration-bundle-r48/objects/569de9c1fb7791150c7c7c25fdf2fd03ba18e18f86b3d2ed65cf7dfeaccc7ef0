@@ -1,0 +1,173 @@
+{
+  "schemaVersion": 1,
+  "schema": "ladon-child-acceptance-inventory-v1",
+  "umbrella": "ladon-authority-safe-verified-discovery-umbrella",
+  "child": "ladon-verified-discovery-loop",
+  "exitClass": "installed-bounded-goal-context-to-attributable-compiled-application",
+  "evidenceRole": "acceptance-plan",
+  "task": "5.15",
+  "ledger": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/children/dependency-ledger.json",
+  "childSpecification": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/children/ladon-verified-discovery-loop.md",
+  "pathBase": "repository-root",
+  "requiredRuntimes": [
+    "py311",
+    "py312"
+  ],
+  "pythonVersions": {
+    "py311": "3.11",
+    "py312": "3.12"
+  },
+  "requiredEnvironment": {
+    "LADON_REQUIRE_EXECUTION_NONLEAKAGE": "1",
+    "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1"
+  },
+  "allowSkippedTests": false,
+  "requiredInstallation": {
+    "sameTrackedCandidate": true,
+    "sameWheelDigestAcrossRuntimes": true,
+    "requireInstalledPackageImports": true,
+    "interpreterArguments": [
+      "-I"
+    ],
+    "unsetEnvironment": [
+      "PYTHONPATH",
+      "PYTHONHOME",
+      "PYTEST_ADDOPTS"
+    ],
+    "consoleEnvironmentVariable": "LADON_CONSOLE",
+    "workingDirectory": "isolated tracked candidate checkout; imports must resolve inside the installed environment and outside that checkout",
+    "testSource": "exact tracked candidate",
+    "noImplicitNetworkOrBuild": true
+  },
+  "requiredLeanFixture": {
+    "directory": "tests/fixtures/lean_integration",
+    "pinFile": "tests/fixtures/lean_integration/lean-toolchain",
+    "pin": "leanprover/lean4:v4.32.1",
+    "compiledModule": "tests/fixtures/lean_integration/.lake/build/lib/lean/LadonFixture.olean",
+    "preparation": "Build this pinned tracked fixture explicitly before acceptance; tests must not download or repair dependencies.",
+    "unavailablePolicy": "Incomplete qualification, never an implicit skip or a successful authority exit."
+  },
+  "requiredPlatform": {
+    "executionPosture": "trusted-repository-only",
+    "processAccounting": "/proc must be available for required RSS qualification",
+    "missingRequiredCapability": "Incomplete qualification",
+    "networkDisabled": true
+  },
+  "requirements": {
+    "bounded-request": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-verified-discovery-loop/spec.md",
+      "requirement": "Verified discovery accepts an exact bounded request",
+      "tasks": [
+        "5.1",
+        "5.2"
+      ]
+    },
+    "vertical-discovery": {
+      "spec": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/specs/ladon-verified-discovery-loop/spec.md",
+      "requirement": "The vertical slice has installed end-to-end acceptance",
+      "tasks": [
+        "5.3",
+        "5.4",
+        "5.5",
+        "5.6",
+        "5.7",
+        "5.8",
+        "5.9",
+        "5.10",
+        "5.11",
+        "5.12",
+        "5.13",
+        "5.14",
+        "5.15"
+      ]
+    }
+  },
+  "categories": [
+    {
+      "categoryId": "installed-network-disabled-discovery",
+      "coveredRequirements": [
+        "bounded-request",
+        "vertical-discovery"
+      ],
+      "testTargets": [
+        "tests/test_acceptance_network.py",
+        "tests/test_child_acceptance_runner_plan.py",
+        "tests/test_discovery_local_context.py",
+        "tests/test_discovery_scope_lean_integration.py",
+        "tests/test_discovery_vertical_pipeline.py",
+        "tests/test_execution_nonleakage_discovery.py",
+        "tests/test_execution_posture.py",
+        "tests/test_proof_search_invocation_contract.py",
+        "tests/test_resource_watchdog.py",
+        "tests/test_semantic_candidate_batch_worker.py",
+        "tests/test_semantic_candidate_framed_protocol.py",
+        "tests/test_semantic_candidate_lean_integration.py",
+        "tests/test_semantic_candidate_residual_integration.py",
+        "tests/test_semantic_candidate_security_contract.py",
+        "tests/test_stored_candidate_type.py",
+        "tests/test_verified_discovery.py"
+      ]
+    }
+  ],
+  "pytestTargets": [
+    "tests/test_acceptance_network.py",
+    "tests/test_child_acceptance_runner_plan.py",
+    "tests/test_discovery_local_context.py",
+    "tests/test_discovery_scope_lean_integration.py",
+    "tests/test_discovery_vertical_pipeline.py",
+    "tests/test_execution_nonleakage_discovery.py",
+    "tests/test_execution_posture.py",
+    "tests/test_proof_search_invocation_contract.py",
+    "tests/test_resource_watchdog.py",
+    "tests/test_semantic_candidate_batch_worker.py",
+    "tests/test_semantic_candidate_framed_protocol.py",
+    "tests/test_semantic_candidate_lean_integration.py",
+    "tests/test_semantic_candidate_residual_integration.py",
+    "tests/test_semantic_candidate_security_contract.py",
+    "tests/test_stored_candidate_type.py",
+    "tests/test_verified_discovery.py"
+  ],
+  "suites": [
+    {
+      "suiteId": "discovery-acceptance",
+      "coveredRequirements": [
+        "bounded-request",
+        "vertical-discovery"
+      ],
+      "testTargets": [
+        "tests/test_acceptance_network.py",
+        "tests/test_child_acceptance_runner_plan.py",
+        "tests/test_discovery_local_context.py",
+        "tests/test_discovery_scope_lean_integration.py",
+        "tests/test_discovery_vertical_pipeline.py",
+        "tests/test_execution_nonleakage_discovery.py",
+        "tests/test_execution_posture.py",
+        "tests/test_proof_search_invocation_contract.py",
+        "tests/test_resource_watchdog.py",
+        "tests/test_semantic_candidate_batch_worker.py",
+        "tests/test_semantic_candidate_framed_protocol.py",
+        "tests/test_semantic_candidate_lean_integration.py",
+        "tests/test_semantic_candidate_residual_integration.py",
+        "tests/test_semantic_candidate_security_contract.py",
+        "tests/test_stored_candidate_type.py",
+        "tests/test_verified_discovery.py"
+      ]
+    }
+  ],
+  "requiredSourceChecks": [],
+  "evidenceRequirements": [
+    "Validate the inventory schema, ledger child/exitClass, requirement references and existence of every selected test file and node before launch.",
+    "Collect the deduplicated union exactly once per required runtime and record expanded parameterized node identities; an omitted target, collection error, skip, xfail, failure or error is incomplete qualification.",
+    "Record candidate revision, wheel digest, installed package and console identities, Python versions, Lean pin/executables, exact argv/cwd/environment policy and per-runtime reports.",
+    "Record command outcomes and evidence digests for the required source checks separately from pytest outcomes.",
+    "Emit a separate candidate-bound child exit receipt only after all required executions and source checks complete; this inventory is not such a receipt."
+  ],
+  "nonClaims": [
+    "This plan is not an execution result or child exit receipt.",
+    "Network qualification observes a separate loopback-only namespace and unreachable reserved IPv4/IPv6 destinations; it does not establish filesystem or initializer isolation.",
+    "Accepted residuals are partial applications. Scratch compilation is an independent recorded operation. Stored type explanation does not transfer applicability to a new goal.",
+    "No external repository, optional layer, daemon, new ProofIR family or Rust expansion is required."
+  ],
+  "runnerPath": "scripts/run_child_acceptance.py",
+  "inventoryPath": "openspec/changes/ladon-authority-safe-verified-discovery-umbrella/children/discovery-acceptance-inventory.json"
+}
