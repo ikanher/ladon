@@ -1,0 +1,409 @@
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:33:theorem fixedEpochCenterGap_eq_zero_of_horizon_eq_two_epoch_zero_center
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:36:    fixedEpochCenterGap point scale 0 = 0 := by
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:55:  have hGapZero : fixedEpochCenterGap point scale 0 =
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:61:    unfold fixedEpochCenterGap fixedMeanZeroCenterGap
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:72:theorem fixedEpochCenterGap_pos_of_centerDominanceCondition
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:76:    0 < fixedEpochCenterGap point scale theta := by
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:110:      exact FixedEpochBoundarySignedLaplace.fixedEpochCenterGap_skewBoundary_pos
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:126:          0 ≤ fixedEpochCenterGap point scale
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:129:        have hGlobal := fixedEpochCenterGap_max_zero_skewBoundary_nonneg
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:132:      exact fixedEpochCenterGap_pos_of_boundary_nonneg point scale
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:143:        simpa [fixedEpochCenterGap, poissonTraceCountAverage] using
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:145:      · have hBoundaryGap : 0 ≤ fixedEpochCenterGap point scale 0 := by
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:146:          have hGlobal := fixedEpochCenterGap_max_zero_skewBoundary_nonneg
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:162:        exact fixedEpochCenterGap_pos_of_boundary_nonneg point scale 0 theta
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:177:      have hBoundaryGap : 0 ≤ fixedEpochCenterGap point scale 0 := by
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:178:        have hGlobal := fixedEpochCenterGap_max_zero_skewBoundary_nonneg
+Mf/DP/PoissonFixedEpochCenterCriterion.lean:181:      exact fixedEpochCenterGap_pos_of_boundary_nonneg point scale 0 theta
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:6:# Fixed-center propagation for finite Poisson-participation traces
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:13:propagates to a strict gap at every larger center.
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:26:def fixedEpochCenterGap
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:62:theorem hasDerivAt_fixedEpochCenterGap
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:64:    HasDerivAt (fixedEpochCenterGap point h)
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:105:  have hFunction : fixedEpochCenterGap point h =
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:224:needed by `gap_pos_of_boundary_nonneg`. -/
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:312:theorem tendsto_fixedEpochCenterGap_atTop_zero
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:314:    Tendsto (fixedEpochCenterGap point h) atTop (nhds 0) := by
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:349:  unfold fixedEpochCenterGap
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:355:theorem gap_pos_of_boundary_nonneg
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:427:/-- Fixed-`h` center propagation for the exact finite trace.  A nonnegative
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:430:theorem fixedEpochCenterGap_pos_of_boundary_nonneg
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:434:    (hBoundaryGap : 0 ≤ fixedEpochCenterGap point h boundary) :
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:435:    0 < fixedEpochCenterGap point h query := by
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:436:  apply gap_pos_of_boundary_nonneg
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:437:    (fixedEpochCenterGap point h)
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:446:  · exact hasDerivAt_fixedEpochCenterGap point h
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:448:  · exact tendsto_fixedEpochCenterGap_atTop_zero point h hh
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:452:theorem fixedEpochCenterGap_eq_countTestAverage_sub
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:455:    fixedEpochCenterGap point ((signal : Real) / point.epoch)
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:464:  unfold fixedEpochCenterGap poissonTraceCountAverage fixedEpochGaussianCountTest
+import Mf.DP.PoissonFixedEpochTraceSignalInterpolation
+import Mf.Probability.StandardGaussianTailBounds
+import Mathlib.Analysis.Convex.Slope
+
+/-!
+# Fixed-center propagation for finite Poisson-participation traces
+
+For a fixed positive Gaussian signal scale, this module studies the gap
+between the exact finite participation-count average and its value at the
+deterministic mean.  An exponential tilt controls the center derivative.
+Strict convexity of that tilt, its strict deficit at zero, and the vanishing
+right-center limit show that a nonnegative gap at one nonnegative boundary
+propagates to a strict gap at every larger center.
+-/
+
+open Filter Set
+open scoped BigOperators Topology
+
+noncomputable section
+
+set_option autoImplicit false
+
+namespace Mf.DP
+
+/-- Fixed-`h` center gap for the exact finite participation trace. -/
+def fixedEpochCenterGap
+    (point : PoissonFixedEpochPoint) (h theta : ℝ) : ℝ :=
+  ∑ trace : ParticipationTrace point.horizon,
+      poissonTraceProb (point.samplingRate : ℝ) trace *
+        stdNormalCDFReal
+          (h * ((participationCount trace : ℝ) - point.epoch - theta)) -
+    stdNormalCDFReal (-h * theta)
+
+/-- Exponential tilt controlling the sign of the center derivative. -/
+def fixedEpochCenterTilt
+    (point : PoissonFixedEpochPoint) (h theta : ℝ) : ℝ :=
+  ∑ trace : ParticipationTrace point.horizon,
+    poissonTraceProb (point.samplingRate : ℝ) trace *
+      Real.exp
+        ((h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) * theta -
+          h ^ 2 * ((participationCount trace : ℝ) - point.epoch) ^ 2 / 2)
+
+def fixedEpochCenterTiltDerivative
+    (point : PoissonFixedEpochPoint) (h theta : ℝ) : ℝ :=
+  ∑ trace : ParticipationTrace point.horizon,
+    poissonTraceProb (point.samplingRate : ℝ) trace *
+      (h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) *
+      Real.exp
+        ((h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) * theta -
+          h ^ 2 * ((participationCount trace : ℝ) - point.epoch) ^ 2 / 2)
+
+def fixedEpochCenterTiltSecond
+    (point : PoissonFixedEpochPoint) (h theta : ℝ) : ℝ :=
+  ∑ trace : ParticipationTrace point.horizon,
+    poissonTraceProb (point.samplingRate : ℝ) trace *
+      (h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) ^ 2 *
+      Real.exp
+        ((h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) * theta -
+          h ^ 2 * ((participationCount trace : ℝ) - point.epoch) ^ 2 / 2)
+
+/-- Exact finite differentiation of the center gap. -/
+theorem hasDerivAt_fixedEpochCenterGap
+    (point : PoissonFixedEpochPoint) (h theta : ℝ) :
+    HasDerivAt (fixedEpochCenterGap point h)
+      (h * stdNormalPdfReal (h * theta) *
+        (1 - fixedEpochCenterTilt point h theta)) theta := by
+  have hSum : HasDerivAt
+      (fun current : ℝ =>
+        ∑ trace : ParticipationTrace point.horizon,
+          poissonTraceProb (point.samplingRate : ℝ) trace *
+            stdNormalCDFReal
+              (h * ((participationCount trace : ℝ) - point.epoch - current)))
+      (∑ trace : ParticipationTrace point.horizon,
+        poissonTraceProb (point.samplingRate : ℝ) trace *
+          (-h * stdNormalPdfReal
+            (h * ((participationCount trace : ℝ) - point.epoch - theta)))) theta := by
+    apply HasDerivAt.fun_sum
+    intro trace _htrace
+    have hArgument : HasDerivAt
+        (fun current : ℝ =>
+          h * ((participationCount trace : ℝ) - point.epoch - current))
+        (-h) theta := by
+      have hRaw := ((hasDerivAt_const theta
+        ((participationCount trace : ℝ) - point.epoch)).sub
+          (hasDerivAt_id' theta)).const_mul h
+      convert hRaw using 1
+      all_goals first | rfl | ring
+    have hCdf := (hasDerivAt_stdNormalCDFReal
+      (h * ((participationCount trace : ℝ) - point.epoch - theta))).comp
+        theta hArgument
+    have hWeighted := hCdf.const_mul
+      (poissonTraceProb (point.samplingRate : ℝ) trace)
+    convert hWeighted using 1
+    all_goals first | rfl | ring
+  have hBase : HasDerivAt (fun current : ℝ => stdNormalCDFReal (-h * current))
+      (-h * stdNormalPdfReal (h * theta)) theta := by
+    have hArgument : HasDerivAt (fun current : ℝ => -h * current) (-h) theta := by
+      convert (hasDerivAt_id' theta).const_mul (-h) using 1
+      all_goals first | rfl | ring
+    have hCdf := (hasDerivAt_stdNormalCDFReal (-h * theta)).comp theta hArgument
+    convert hCdf using 1
+    all_goals first | rfl | (rw [show -h * theta = -(h * theta) by ring,
+      stdNormalPdfReal_neg]; ring)
+  have hRaw := hSum.sub hBase
+  have hFunction : fixedEpochCenterGap point h =
+      (fun current : ℝ =>
+        ∑ trace : ParticipationTrace point.horizon,
+          poissonTraceProb (point.samplingRate : ℝ) trace *
+            stdNormalCDFReal
+              (h * ((participationCount trace : ℝ) - point.epoch - current))) -
+        fun current : ℝ => stdNormalCDFReal (-h * current) := by
+    rfl
+  rw [hFunction]
+  have hSumFactor : (∑ trace : ParticipationTrace point.horizon,
+      poissonTraceProb (point.samplingRate : ℝ) trace *
+        (-h * stdNormalPdfReal
+          (h * ((participationCount trace : ℝ) - point.epoch - theta)))) =
+    -h * stdNormalPdfReal (h * theta) *
+      fixedEpochCenterTilt point h theta := by
+      unfold fixedEpochCenterTilt
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro trace _
+      rw [show
+        h * ((participationCount trace : ℝ) - point.epoch - theta) =
+          -(h * theta) + h *
+            ((participationCount trace : ℝ) - point.epoch) by ring]
+      rw [stdNormalPdfReal_displacement_factor]
+      rw [show
+        h * theta *
+              (h * ((participationCount trace : ℝ) - point.epoch)) -
+            (h * ((participationCount trace : ℝ) - point.epoch)) ^ 2 / 2 =
+          (h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) * theta -
+            h ^ 2 * ((participationCount trace : ℝ) - point.epoch) ^ 2 / 2 by ring]
+      ring
+  rw [hSumFactor] at hRaw
+  have hDerivative :
+      -h * stdNormalPdfReal (h * theta) * fixedEpochCenterTilt point h theta -
+          -h * stdNormalPdfReal (h * theta) =
+        h * stdNormalPdfReal (h * theta) *
+          (1 - fixedEpochCenterTilt point h theta) := by
+    ring
+  rw [hDerivative] at hRaw
+  exact hRaw
+
+/-- First derivative of the exponential tilt. -/
+theorem hasDerivAt_fixedEpochCenterTilt
+    (point : PoissonFixedEpochPoint) (h theta : ℝ) :
+    HasDerivAt (fixedEpochCenterTilt point h)
+      (fixedEpochCenterTiltDerivative point h theta) theta := by
+  unfold fixedEpochCenterTilt
+  unfold fixedEpochCenterTiltDerivative
+  apply HasDerivAt.fun_sum
+  intro trace _htrace
+  have hArg : HasDerivAt
+      (fun current : ℝ =>
+        (h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) * current -
+          h ^ 2 * ((participationCount trace : ℝ) - point.epoch) ^ 2 / 2)
+      (h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) theta := by
+    have hRaw := ((hasDerivAt_id' theta).const_mul
+      (h ^ 2 * ((participationCount trace : ℝ) - point.epoch))).sub_const
+        (h ^ 2 * ((participationCount trace : ℝ) - point.epoch) ^ 2 / 2)
+    simpa only [mul_one] using hRaw
+  have hExp := (Real.hasDerivAt_exp _).comp theta hArg
+  have hWeighted := hExp.const_mul
+    (poissonTraceProb (point.samplingRate : ℝ) trace)
+  convert hWeighted using 1
+  all_goals first | rfl | ring
+
+/-- Second derivative of the exponential tilt. -/
+theorem hasDerivAt_fixedEpochCenterTiltDerivative
+    (point : PoissonFixedEpochPoint) (h theta : ℝ) :
+    HasDerivAt (fixedEpochCenterTiltDerivative point h)
+      (fixedEpochCenterTiltSecond point h theta) theta := by
+  unfold fixedEpochCenterTiltDerivative fixedEpochCenterTiltSecond
+  apply HasDerivAt.fun_sum
+  intro trace _htrace
+  let coefficient : ℝ :=
+    h ^ 2 * ((participationCount trace : ℝ) - point.epoch)
+  let offset : ℝ :=
+    h ^ 2 * ((participationCount trace : ℝ) - point.epoch) ^ 2 / 2
+  have hArgument : HasDerivAt
+      (fun current : ℝ => coefficient * current - offset) coefficient theta := by
+    simpa only [mul_one] using
+      ((hasDerivAt_id' theta).const_mul coefficient).sub_const offset
+  have hExp := (Real.hasDerivAt_exp _).comp theta hArgument
+  have hWeighted := (hExp.const_mul coefficient).const_mul
+    (poissonTraceProb (point.samplingRate : ℝ) trace)
+  dsimp [coefficient, offset] at hWeighted ⊢
+  convert hWeighted using 1
+  all_goals first | rfl | ring
+
+/-- Every non-full fixed-epoch trace has a strictly convex center tilt. -/
+theorem fixedEpochCenterTiltSecond_pos
+    (point : PoissonFixedEpochPoint) (h theta : ℝ)
+    (hNonFull : point.epoch < point.horizon) (hh : 0 < h) :
+    0 < fixedEpochCenterTiltSecond point h theta := by
+  unfold fixedEpochCenterTiltSecond
+  rw [Finset.sum_pos_iff_of_nonneg]
+  · refine ⟨trueTrace point.horizon, Finset.mem_univ _, ?_⟩
+    have hRatePos : 0 < (point.samplingRate : ℝ) := by
+      exact_mod_cast point.samplingRate_pos
+    have hTrueWeight : 0 < poissonTraceProb (point.samplingRate : ℝ)
+        (trueTrace point.horizon) := by
+      unfold poissonTraceProb trueTrace
+      apply Finset.prod_pos
+      intro i _
+      simp only [↓reduceIte, NNReal.coe_pos]
+      exact hRatePos
+    rw [participationCount_trueTrace]
+    have hCentered : 0 < (point.horizon : ℝ) - point.epoch := by
+      apply sub_pos.mpr
+      exact_mod_cast hNonFull
+    positivity
+  · intro trace _
+    have hRateNonneg : 0 ≤ (point.samplingRate : ℝ) := by positivity
+    have hRateUpper : (point.samplingRate : ℝ) ≤ 1 := by
+      exact_mod_cast point.samplingRate_le_one
+    exact mul_nonneg
+      (mul_nonneg (poissonTraceProb_nonneg hRateNonneg hRateUpper trace)
+import Mf.DP.PoissonFixedEpochCriticalBoundaryGap
+import Mf.DP.PoissonFixedEpochSkewBoundarySignalAlgebra
+
+/-!
+# Exact rate-aware center criterion
+
+The finite-binomial Gaussian count gap has three endpoint regimes.  Below
+sampling rate one half the corrected skew boundary is included; at rate one
+half the zero boundary is excluded by exact symmetry; above rate one half the
+reflected zero boundary is included.
+-/
+
+namespace Mf.DP
+
+noncomputable section
+
+set_option autoImplicit false
+
+/-- Rate-aware sufficient condition on the Gaussian center coordinate. -/
+def poissonFixedEpochCenterDominanceCondition
+    (point : PoissonFixedEpochPoint) (theta : Real) : Prop :=
+  if 2 * point.epoch < point.horizon then
+    poissonFixedEpochBinomialSkewnessBoundary
+        point.epoch point.horizon ≤ theta
+  else if point.horizon < 2 * point.epoch then
+    0 ≤ theta
+  else
+    0 < theta
+
+/-- At the symmetric half-rate point, the zero-center gap vanishes exactly.
+This is the load-bearing reason that the half-rate signal premise must be
+strict. -/
+theorem fixedEpochCenterGap_eq_zero_of_horizon_eq_two_epoch_zero_center
+    (point : PoissonFixedEpochPoint) (scale : Real)
+    (hTie : point.horizon = 2 * point.epoch) :
+    fixedEpochCenterGap point scale 0 = 0 := by
+  let complement : Nat := point.horizon - point.epoch
+  have hComplement : 0 < complement := by
+    dsimp [complement]
+    apply Nat.sub_pos_of_lt
+    rw [hTie]
+    calc
+      point.epoch < point.epoch + point.epoch :=
+        Nat.lt_add_of_pos_right point.epoch_pos
+      _ = 2 * point.epoch := by omega
+  have hHorizon : point.epoch + complement = point.horizon := by
+    dsimp [complement]
+    exact Nat.add_sub_of_le point.epoch_le_horizon
+  have hComplementEq : complement = point.epoch := by
+    dsimp [complement]
+    rw [hTie]
+    simp [Nat.mul_comm, Nat.mul_two]
+  have hGap := fixedMeanZeroCenterGap_reflect
+    point.epoch complement scale point.epoch_pos hComplement
+  have hGapZero : fixedEpochCenterGap point scale 0 =
+      fixedMeanZeroCenterGap point.epoch complement scale := by
+    have hRate : point.samplingRate =
+        (point.epoch : NNReal) / (point.epoch + complement : Nat) := by
+      unfold PoissonFixedEpochPoint.samplingRate
+      rw [hHorizon]
+    unfold fixedEpochCenterGap fixedMeanZeroCenterGap
+    rw [hRate, hHorizon]
+    simp [poissonTraceCountAverage, sub_zero, stdNormalCDFReal_zero]
+  have hGapPoint : fixedMeanZeroCenterGap point.epoch complement scale =
+      -fixedMeanZeroCenterGap point.epoch complement scale := by
+    simpa [hComplementEq] using hGap
+  linarith [hGapZero, hGapPoint]
+
+/-- The finite center gap is positive on the proved rate-aware side of the
+skew boundary, including the low- and high-rate endpoint equalities and
+excluding the symmetric zero-gap endpoint. -/
+theorem fixedEpochCenterGap_pos_of_centerDominanceCondition
+    (point : PoissonFixedEpochPoint) (scale theta : Real)
+    (hNonFull : point.epoch < point.horizon) (hScale : 0 < scale)
+    (hCenter : poissonFixedEpochCenterDominanceCondition point theta) :
+    0 < fixedEpochCenterGap point scale theta := by
+  by_cases hLowRate : 2 * point.epoch < point.horizon
+  · rw [poissonFixedEpochCenterDominanceCondition, if_pos hLowRate] at hCenter
+    let complement : Nat := point.horizon - point.epoch
+    have hComplement : 0 < complement := by
+      dsimp [complement]
+      omega
+    have hHorizon : point.epoch + complement = point.horizon := by
+      dsimp [complement]
+      omega
+    have hEpochComplement : point.epoch < complement := by
+      dsimp [complement]
+      omega
+    have hPoint :
+        FixedEpochBoundarySignedLaplace.point
+          point.epoch complement point.epoch_pos = point := by
+      cases point
+      simp only [FixedEpochBoundarySignedLaplace.point,
+        PoissonFixedEpochPoint.ofExtra]
+      congr
+    have hBoundaryEq :
+        poissonFixedEpochBinomialSkewnessBoundary
+            point.epoch point.horizon =
+          FixedEpochBoundarySignedLaplace.boundary point.epoch complement := by
+      unfold poissonFixedEpochBinomialSkewnessBoundary
+        FixedEpochBoundarySignedLaplace.boundary
+      have hHorizonReal : (0 : Real) < point.horizon := by
+        exact_mod_cast point.horizon_pos
+      rw [← hHorizon]
+      norm_num [Nat.cast_add]
+      field_simp
+      ring
+    rcases hCenter.eq_or_lt with hThetaEq | hThetaGt
+    · rw [← hThetaEq, hBoundaryEq, ← hPoint]
+      exact FixedEpochBoundarySignedLaplace.fixedEpochCenterGap_skewBoundary_pos
+        point.epoch complement point.epoch_pos hEpochComplement scale hScale
+    · have hBoundaryNonneg :
+          0 ≤ poissonFixedEpochBinomialSkewnessBoundary
+            point.epoch point.horizon := by
+        unfold poissonFixedEpochBinomialSkewnessBoundary
+        have hHorizonPos : (0 : Real) < point.horizon := by
+          exact_mod_cast point.horizon_pos
+        have hTwice : (2 : Real) * point.epoch < point.horizon := by
+          exact_mod_cast hLowRate
+        have hRate : 2 * ((point.epoch : Real) / point.horizon) < 1 := by
+          rw [show 2 * ((point.epoch : Real) / point.horizon) =
+            (2 * (point.epoch : Real)) / point.horizon by ring]
+          exact (div_lt_one hHorizonPos).2 hTwice
+        linarith
+      have hBoundaryGap :
+          0 ≤ fixedEpochCenterGap point scale
+            (poissonFixedEpochBinomialSkewnessBoundary
+              point.epoch point.horizon) := by
+        have hGlobal := fixedEpochCenterGap_max_zero_skewBoundary_nonneg
+          point scale hNonFull hScale
+        simpa [max_eq_right hBoundaryNonneg] using hGlobal
+      exact fixedEpochCenterGap_pos_of_boundary_nonneg point scale
+        (poissonFixedEpochBinomialSkewnessBoundary point.epoch point.horizon)
+        theta hNonFull hScale hBoundaryNonneg hThetaGt hBoundaryGap
+  · by_cases hHighRate : point.horizon < 2 * point.epoch
+    · rw [poissonFixedEpochCenterDominanceCondition, if_neg hLowRate,
+        if_pos hHighRate] at hCenter
+      rcases hCenter.eq_or_lt with hThetaEq | hThetaPos
+      · subst theta
+        have hHigh :=
+          stdNormalCDFReal_zero_lt_fixedEpochGaussianTraceAverage_of_half_lt_rate
+            point scale hNonFull hHighRate hScale
+        simpa [fixedEpochCenterGap, poissonTraceCountAverage] using
+          sub_pos.mpr hHigh
+      · have hBoundaryGap : 0 ≤ fixedEpochCenterGap point scale 0 := by
+          have hGlobal := fixedEpochCenterGap_max_zero_skewBoundary_nonneg
+            point scale hNonFull hScale
+          have hBoundaryNonpos :
+              poissonFixedEpochBinomialSkewnessBoundary
+                point.epoch point.horizon ≤ 0 := by

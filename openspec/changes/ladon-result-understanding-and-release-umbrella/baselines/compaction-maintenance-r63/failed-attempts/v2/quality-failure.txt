@@ -1,0 +1,52 @@
++ /home/codex/miniconda3/bin/uv lock --check
+Using CPython 3.11.15 interpreter at: /home/codex/miniconda3/bin/python3.11
+Resolved 18 packages in 0.39ms
++ /home/codex/miniconda3/bin/uv sync --locked --no-editable
+Using CPython 3.11.15 interpreter at: /home/codex/miniconda3/bin/python3.11
+Creating virtual environment at: /home/codex/.cache/ladon-clean-gate-fonuormi/environment
+Resolved 18 packages in 0.40ms
+   Building ladon @ file:///home/codex/.cache/ladon-candidate-x7w3x2ns/source
+      Built ladon @ file:///home/codex/.cache/ladon-candidate-x7w3x2ns/source
+Downloading pygments (1.2MiB)
+Downloading ruff (10.5MiB)
+ Downloaded pygments
+ Downloaded ruff
+Prepared 18 packages in 809ms
+Installed 18 packages in 4ms
+ + attrs==26.1.0
+ + colorama==0.4.6
+ + iniconfig==2.3.0
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + ladon==0.2.0 (from file:///home/codex/.cache/ladon-candidate-x7w3x2ns/source)
+ + mando==0.7.1
+ + packaging==26.2
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+ + radon==6.0.1
+ + referencing==0.37.0
+ + rpds-py==2026.6.3
+ + ruff==0.16.3
+ + six==1.17.0
+ + typing-extensions==4.16.0
+ + vulture==2.16
++ /home/codex/miniconda3/bin/uv run --locked --no-sync python -m pytest --collect-only -q
++ /home/codex/projects/ladon/.venv/bin/python3 -m pytest --collect-only -q
++ /home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lake build
+✔ [2/5] Built LadonFixture.Core (116ms)
+✔ [3/5] Built LadonFixture.Helper (116ms)
+⚠ [4/5] Built LadonFixture (129ms)
+warning: LadonFixture.lean:12:23: Variable name `y` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+Build completed successfully (5 jobs).
++ /home/codex/miniconda3/bin/uv run --locked --no-sync python scripts/python_quality.py --strict
+
+== strict radon/vulture checks ==
+
+== strict quality failures ==
+radon-cc: /home/codex/.cache/ladon-candidate-x7w3x2ns/source/src/ladon/result_inspection_page.py:29: inspect_page has radon rank C (11)
+clean checkout gate: FAIL: required command failed (1): /home/codex/miniconda3/bin/uv run --locked --no-sync python scripts/python_quality.py --strict

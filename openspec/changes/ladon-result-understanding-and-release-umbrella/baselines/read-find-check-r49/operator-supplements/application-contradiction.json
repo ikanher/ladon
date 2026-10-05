@@ -1,0 +1,299 @@
+{
+  "rawOutput": {
+    "originalPath": "/home/codex/.cache/ladon-reader-loop-r49/operator/repaired-discover-context-a.stdout",
+    "bytes": 4574460,
+    "sha256": "sha256:0beb34df994de4ce418e192aaa1a14b55b8c7b28fc7082b5910f81f715a85fb0"
+  },
+  "request": {
+    "batchSize": 8,
+    "executionContextRef": "sha256:7df1cc3de639d457f94a8060d912b8a85c7fadf061a44ad09a170fc9998e382e",
+    "freshness": "stored",
+    "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+    "localContext": [
+      {
+        "name": "point",
+        "type": "Mf.DP.PoissonFixedEpochPoint"
+      },
+      {
+        "name": "h",
+        "type": "\u211d"
+      },
+      {
+        "name": "boundary",
+        "type": "\u211d"
+      },
+      {
+        "name": "query",
+        "type": "\u211d"
+      },
+      {
+        "name": "hNonFull",
+        "type": "point.epoch < point.horizon"
+      },
+      {
+        "name": "hh",
+        "type": "0 < h"
+      },
+      {
+        "name": "hBoundaryNonneg",
+        "type": "0 \u2264 boundary"
+      },
+      {
+        "name": "hBoundaryQuery",
+        "type": "boundary < query"
+      },
+      {
+        "name": "hBoundaryGap",
+        "type": "0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary"
+      }
+    ],
+    "maxCandidates": 10,
+    "maxOutputBytes": 8388608,
+    "maxRssBytes": 34359738368,
+    "module": "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+    "roots": [
+      "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+    ],
+    "schema": "ladon-verified-discovery-request-v1",
+    "scope": "module",
+    "scratchMode": "advisory",
+    "timeoutSeconds": 90.0
+  },
+  "status": "available",
+  "candidate": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+  "check": {
+    "status": "accepted",
+    "applicationTerm": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h h query hNonFull hh hBoundaryNonneg hBoundaryQuery hBoundaryGap",
+    "substitutions": [
+      {
+        "termDisplay": "point",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 2)",
+        "variable": "point"
+      },
+      {
+        "termDisplay": "h",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 5)",
+        "variable": "h"
+      },
+      {
+        "termDisplay": "h",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 5)",
+        "variable": "boundary"
+      },
+      {
+        "termDisplay": "query",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 11)",
+        "variable": "query"
+      },
+      {
+        "termDisplay": "hNonFull",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 14)",
+        "variable": "hNonFull"
+      },
+      {
+        "termDisplay": "hh",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 17)",
+        "variable": "hh"
+      },
+      {
+        "termDisplay": "hBoundaryNonneg",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 20)",
+        "variable": "hBoundaryNonneg"
+      },
+      {
+        "termDisplay": "hBoundaryQuery",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 23)",
+        "variable": "hBoundaryQuery"
+      },
+      {
+        "termDisplay": "hBoundaryGap",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 26)",
+        "variable": "hBoundaryGap"
+      }
+    ],
+    "residualPremises": [],
+    "dischargedHypotheses": [
+      {
+        "dischargedByLocalRef": "local:4",
+        "method": "assumption-definitional-equality",
+        "premiseOrdinal": 0,
+        "premiseTypeDisplay": "point.epoch < point.horizon"
+      },
+      {
+        "dischargedByLocalRef": "local:5",
+        "method": "assumption-definitional-equality",
+        "premiseOrdinal": 1,
+        "premiseTypeDisplay": "0 < h"
+      },
+      {
+        "dischargedByLocalRef": "local:6",
+        "method": "assumption-definitional-equality",
+        "premiseOrdinal": 2,
+        "premiseTypeDisplay": "0 \u2264 boundary"
+      },
+      {
+        "dischargedByLocalRef": "local:7",
+        "method": "assumption-definitional-equality",
+        "premiseOrdinal": 3,
+        "premiseTypeDisplay": "boundary < query"
+      },
+      {
+        "dischargedByLocalRef": "local:8",
+        "method": "assumption-definitional-equality",
+        "premiseOrdinal": 4,
+        "premiseTypeDisplay": "0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary"
+      },
+      {
+        "dischargedByLocalRef": "local:1",
+        "method": "assumption-definitional-equality",
+        "premiseOrdinal": 5,
+        "premiseTypeDisplay": "\u211d"
+      }
+    ],
+    "evidenceReceipt": {
+      "analysisCompleteness": "complete",
+      "authorityBasis": "elaborator-check",
+      "checkRunRef": "check:d5e0fb59cb8c8fcb5f9c452980c29e772c70dae30305551c7a9543f0471d5c51",
+      "environmentMatch": "exact",
+      "environmentRef": "sha256:4576652c6fa44afe3d9074d27a41fb01df5785fdc6fce58c76bd202e2f84dd80",
+      "executionBinding": "explicit-pinned",
+      "limitations": [
+        "Target modules may execute repository-controlled initializers; this observation is authority-scoped to trusted target code."
+      ],
+      "observationState": "live",
+      "operationOutcome": "accepted",
+      "receiptIdentity": "sha256:8f66f109cd4722338f858e382fa2d1c737b4a3b1ff14cd28e4ac53a48ed2d990",
+      "schema": "ladon-evidence-receipt-v1",
+      "sourceFreshness": "unknown",
+      "subject": {
+        "candidate": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+        "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+        "localContext": [
+          {
+            "name": "point",
+            "type": "Mf.DP.PoissonFixedEpochPoint"
+          },
+          {
+            "name": "h",
+            "type": "\u211d"
+          },
+          {
+            "name": "boundary",
+            "type": "\u211d"
+          },
+          {
+            "name": "query",
+            "type": "\u211d"
+          },
+          {
+            "name": "hNonFull",
+            "type": "point.epoch < point.horizon"
+          },
+          {
+            "name": "hh",
+            "type": "0 < h"
+          },
+          {
+            "name": "hBoundaryNonneg",
+            "type": "0 \u2264 boundary"
+          },
+          {
+            "name": "hBoundaryQuery",
+            "type": "boundary < query"
+          },
+          {
+            "name": "hBoundaryGap",
+            "type": "0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary"
+          }
+        ],
+        "module": "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+      }
+    }
+  },
+  "scratch": {
+    "applicationTerm": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h h query hNonFull hh hBoundaryNonneg hBoundaryQuery hBoundaryGap",
+    "checkRunRef": "check:6d3c9ee97474ec1a01e7dc94c82427e28d5eb3779df29adbf634de15d92d3922",
+    "diagnostic": "/tmp/ladon-scratch-hb76tce1/Scratch.lean:4:85: error: Application type mismatch: The argument\n  hBoundaryNonneg\nhas type\n  0 \u2264 boundary\nbut is expected to have type\n  0 \u2264 h\nin the application\n  Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h h query hNonFull hh hBoundaryNonneg",
+    "environmentRef": "sha256:4576652c6fa44afe3d9074d27a41fb01df5785fdc6fce58c76bd202e2f84dd80",
+    "evidenceReceipt": {
+      "analysisCompleteness": "partial",
+      "authorityBasis": "process-observation",
+      "checkRunRef": "check:6d3c9ee97474ec1a01e7dc94c82427e28d5eb3779df29adbf634de15d92d3922",
+      "environmentMatch": "exact",
+      "environmentRef": "sha256:4576652c6fa44afe3d9074d27a41fb01df5785fdc6fce58c76bd202e2f84dd80",
+      "executionBinding": "explicit-pinned",
+      "limitations": [
+        "Target modules may execute repository-controlled initializers; this observation is authority-scoped to trusted target code."
+      ],
+      "observationState": "live",
+      "operationOutcome": "failed",
+      "receiptIdentity": "sha256:5458f76447ed97957215e1c66fcdf5881bf749f748c0a3005178dda8e098ecfb",
+      "schema": "ladon-evidence-receipt-v1",
+      "sourceFreshness": "unknown",
+      "subject": {
+        "candidate": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+        "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+        "localContext": [
+          {
+            "name": "point",
+            "type": "Mf.DP.PoissonFixedEpochPoint"
+          },
+          {
+            "name": "h",
+            "type": "\u211d"
+          },
+          {
+            "name": "boundary",
+            "type": "\u211d"
+          },
+          {
+            "name": "query",
+            "type": "\u211d"
+          },
+          {
+            "name": "hNonFull",
+            "type": "point.epoch < point.horizon"
+          },
+          {
+            "name": "hh",
+            "type": "0 < h"
+          },
+          {
+            "name": "hBoundaryNonneg",
+            "type": "0 \u2264 boundary"
+          },
+          {
+            "name": "hBoundaryQuery",
+            "type": "boundary < query"
+          },
+          {
+            "name": "hBoundaryGap",
+            "type": "0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary"
+          }
+        ],
+        "module": "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+      }
+    },
+    "outputDigest": "sha256:ea2199e3db650b7d5b53bec419d7518199287c74799b541e2688defb44e255aa",
+    "parentCheckRunRef": "check:d5e0fb59cb8c8fcb5f9c452980c29e772c70dae30305551c7a9543f0471d5c51",
+    "source": "import Mf.DP.PoissonFixedEpochCenterGapPropagation\n\nexample (point : Mf.DP.PoissonFixedEpochPoint) (h : \u211d) (boundary : \u211d) (query : \u211d) (hNonFull : point.epoch < point.horizon) (hh : 0 < h) (hBoundaryNonneg : 0 \u2264 boundary) (hBoundaryQuery : boundary < query) (hBoundaryGap : 0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary) : 0 < Mf.DP.fixedEpochCenterGap point h query := by\n  exact Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h h query hNonFull hh hBoundaryNonneg hBoundaryQuery hBoundaryGap\n",
+    "sourceDigest": "sha256:9b71c6bb79110776202b2f151b9b8763ae979bc99fabd401942b1f2290787a9e",
+    "status": "process-failed"
+  },
+  "coverage": {
+    "accepted": 1,
+    "completed": 1,
+    "failed": 0,
+    "invalidWorkerOutput": 0,
+    "memoryLimited": 0,
+    "outputLimited": 0,
+    "rejected": 0,
+    "scratchAttempted": 1,
+    "scratchCompiled": 0,
+    "shortlisted": 1,
+    "submitted": 1,
+    "timeouts": 0,
+    "truncated": false,
+    "unassessed": 0
+  }
+}

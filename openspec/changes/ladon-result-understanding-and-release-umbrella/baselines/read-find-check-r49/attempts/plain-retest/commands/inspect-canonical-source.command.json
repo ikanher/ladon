@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T09:14:30.528810+00:00",
+  "argv": [
+    "/bin/bash",
+    "-lc",
+    "python3 - <<\"PY\"\nimport json\nfor i in range(89):\n d=json.load(open(f\"assets/{i:05}.json\")); cov=d.get(\"coverage\",{}); src=d.get(\"source\",{}); text=json.dumps(d)\n if any(k in text for k in [\"CenterGapPropagation\",\"fixedEpochCenterGap\"]):\n  print(\"###\",i,d.get(\"artifactId\"),cov); print(text[:5000])\nPY"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-loop-r49/shared/evidence",
+  "exitCode": 0,
+  "elapsedSeconds": 0.2344136640895158,
+  "peakRssBytes": 27062272,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/inspect-canonical-source.stdout",
+      "bytes": 74601,
+      "sha256": "sha256:18940d0ac4012d2dcedd1fade68e285366155d532c9055256fcbd9e0700a8104"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/inspect-canonical-source.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

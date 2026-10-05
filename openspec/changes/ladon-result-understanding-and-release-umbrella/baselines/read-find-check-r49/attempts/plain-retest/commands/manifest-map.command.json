@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T09:14:19.431585+00:00",
+  "argv": [
+    "/bin/bash",
+    "-lc",
+    "python3 - <<\"PY\"\nimport json\nm=json.load(open(\"manifest.json\")); print(\"targets\",json.dumps(m[\"targets\"],indent=2)[:12000]); print(\"links\",json.dumps(m[\"links\"],indent=2)[:5000]);\nfor i in range(89):\n d=json.load(open(f\"assets/{i:05}.json\")); print(i,list(d.keys())[:5],d.get(\"title\"),d.get(\"type\"),str(d.get(\"path\",\"\"))[:100])\nPY"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-loop-r49/shared/evidence",
+  "exitCode": 0,
+  "elapsedSeconds": 0.17579224694054574,
+  "peakRssBytes": 25489408,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/manifest-map.stdout",
+      "bytes": 23262,
+      "sha256": "sha256:66b24ed786745d8bfc78d9e56e60540e9f374a90e4846cb6f8ed177d19372e99"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/manifest-map.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

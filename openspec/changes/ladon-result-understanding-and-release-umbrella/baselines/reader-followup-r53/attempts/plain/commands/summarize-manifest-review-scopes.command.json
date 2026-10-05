@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T13:11:29.482053+00:00",
+  "argv": [
+    "python",
+    "-c",
+    "import json,pathlib,sqlite3; d=pathlib.Path(\"evidence/assets\"); m=json.loads((pathlib.Path(\"evidence/manifest.json\")).read_text()); print(\"MANIFEST\",m[\"resultId\"],\"rev\",m[\"revision\"],\"prev\",m.get(\"previousRevision\"),\"claims\",len(m[\"claims\"]),\"targets\",len(m[\"targets\"]),\"links\",len(m[\"links\"]),\"manifest_reviews\",len(m[\"reviews\"])); print(\"REVIEWS\",json.dumps(m[\"reviews\"],ensure_ascii=False)); print(\"TARGETS\",json.dumps([{k:t.get(k) for k in [\"id\",\"name\",\"source\",\"environment\"]} for t in m[\"targets\"]],ensure_ascii=False)); print(\"LINKS\",json.dumps(m[\"links\"],ensure_ascii=False));\na=json.loads((d/\"00089.json\").read_text()); print(\"ASSESSMENTS\",len(a[\"assessments\"])); print(\"CENTERCAP\",*[json.dumps(x,ensure_ascii=False) for x in a[\"assessments\"] if x.get(\"claimId\")==\"lem:binomial-propagation\" or x.get(\"claimId\")==\"thm:rate-adaptive-center\"],sep=\"\\\\n\");\ng=json.loads((d/\"00092.json\").read_text()); print(\"GUIDE\",g[\"resultId\"],g[\"manifestRevision\"],\"steps\",len(g[\"steps\"]),\"reviews\",json.dumps(g[\"reviews\"]));\ncon=sqlite3.connect(d/\"00094.sqlite3\"); print(\"META\",con.execute(\"select * from metadata\").fetchall()); print(\"CLOSURE\",con.execute(\"select theorem_name,theorem_module,theorem_path,repository,semantic_status,authority,node_count,edge_count,unsupported_facets_json from lineage_closures\").fetchall()); print(\"COVERAGE\",con.execute(\"select * from evidence_coverage\").fetchall()); print(\"OMISSIONS\",con.execute(\"select * from omissions\").fetchall())"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-followup-r53/shared",
+  "exitCode": 0,
+  "elapsedSeconds": 0.058953461004421115,
+  "peakRssBytes": 9891840,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/summarize-manifest-review-scopes.stdout",
+      "bytes": 18711,
+      "sha256": "sha256:f47d2fd9d9fb4f0689e0b5387b26ecf972ece52d2fa21151ff9f4a00d7c6f636"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/summarize-manifest-review-scopes.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

@@ -1,0 +1,263 @@
+{
+  "application": {
+    "goalId": "_uniq.257",
+    "goalTypeStructural": "Lean.Expr.app\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `LT.lt [Lean.Level.zero]) (Lean.Expr.const `Real []))\n      (Lean.Expr.const `Real.instLT []))\n    (Lean.Expr.app\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `OfNat.ofNat [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.lit (Lean.Literal.natVal 0)))\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `Zero.toOfNat0 [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.const `Real.instZero []))))\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `Mf.DP.fixedEpochCenterGap []) (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 248)))\n      (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 249)))\n    (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 251)))",
+    "helper": {
+      "digest": "sha256:1582ae8b013953cbd73a87b793798d4db36d389dca1eeb1b49526c86fbd59ef1",
+      "version": "ladon-source-completion-helper-v1"
+    },
+    "originalGoal": {
+      "goalId": "_uniq.257",
+      "localContext": [
+        {
+          "binderInfo": "Lean.BinderInfo.default",
+          "dependencies": [],
+          "implementationDetail": true,
+          "localId": "_uniq.238",
+          "typeDisplay": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (h boundary query : ℝ),\n  point.epoch < point.horizon →\n    0 < h →\n      0 ≤ boundary →\n        boundary < query → 0 ≤ Mf.DP.fixedEpochCenterGap point h boundary → 0 < Mf.DP.fixedEpochCenterGap point h query",
+          "typeStructural": "Lean.Expr.forallE\n  `point\n  (Lean.Expr.const `Mf.DP.PoissonFixedEpochPoint [])\n  (Lean.Expr.forallE\n    `h\n    (Lean.Expr.const `Real [])\n    (Lean.Expr.forallE\n      `boundary\n      (Lean.Expr.const `Real [])\n      (Lean.Expr.forallE\n        `query\n        (Lean.Expr.const `Real [])\n        (Lean.Expr.forallE\n          `hNonFull\n          (Lean.Expr.app\n            (Lean.Expr.app\n              (Lean.Expr.app\n                (Lean.Expr.app (Lean.Expr.const `LT.lt [Lean.Level.zero]) (Lean.Expr.const `Nat []))\n                (Lean.Expr.const `instLTNat []))\n              (Lean.Expr.app (Lean.Expr.const `Mf.DP.PoissonFixedEpochPoint.epoch []) (Lean.Expr.bvar 3)))\n            (Lean.Expr.app (Lean.Expr.const `Mf.DP.PoissonFixedEpochPoint.horizon []) (Lean.Expr.bvar 3)))\n          (Lean.Expr.forallE\n            `hh\n            (Lean.Expr.app\n              (Lean.Expr.app\n                (Lean.Expr.app\n                  (Lean.Expr.app (Lean.Expr.const `LT.lt [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                  (Lean.Expr.const `Real.instLT []))\n                (Lean.Expr.app\n                  (Lean.Expr.app\n                    (Lean.Expr.app (Lean.Expr.const `OfNat.ofNat [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                    (Lean.Expr.lit (Lean.Literal.natVal 0)))\n                  (Lean.Expr.app\n                    (Lean.Expr.app (Lean.Expr.const `Zero.toOfNat0 [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                    (Lean.Expr.const `Real.instZero []))))\n              (Lean.Expr.bvar 3))\n            (Lean.Expr.forallE\n              `hBoundaryNonneg\n              (Lean.Expr.app\n                (Lean.Expr.app\n                  (Lean.Expr.app\n                    (Lean.Expr.app (Lean.Expr.const `LE.le [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                    (Lean.Expr.const `Real.instLE []))\n                  (Lean.Expr.app\n                    (Lean.Expr.app\n                      (Lean.Expr.app (Lean.Expr.const `OfNat.ofNat [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                      (Lean.Expr.lit (Lean.Literal.natVal 0)))\n                    (Lean.Expr.app\n                      (Lean.Expr.app (Lean.Expr.const `Zero.toOfNat0 [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                      (Lean.Expr.const `Real.instZero []))))\n                (Lean.Expr.bvar 3))\n              (Lean.Expr.forallE\n                `hBoundaryQuery\n                (Lean.Expr.app\n                  (Lean.Expr.app\n                    (Lean.Expr.app\n                      (Lean.Expr.app (Lean.Expr.const `LT.lt [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                      (Lean.Expr.const `Real.instLT []))\n                    (Lean.Expr.bvar 4))\n                  (Lean.Expr.bvar 3))\n                (Lean.Expr.forallE\n                  `hBoundaryGap\n                  (Lean.Expr.app\n                    (Lean.Expr.app\n                      (Lean.Expr.app\n                        (Lean.Expr.app (Lean.Expr.const `LE.le [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                        (Lean.Expr.const `Real.instLE []))\n                      (Lean.Expr.app\n                        (Lean.Expr.app\n                          (Lean.Expr.app (Lean.Expr.const `OfNat.ofNat [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                          (Lean.Expr.lit (Lean.Literal.natVal 0)))\n                        (Lean.Expr.app\n                          (Lean.Expr.app (Lean.Expr.const `Zero.toOfNat0 [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                          (Lean.Expr.const `Real.instZero []))))\n                    (Lean.Expr.app\n                      (Lean.Expr.app\n                        (Lean.Expr.app (Lean.Expr.const `Mf.DP.fixedEpochCenterGap []) (Lean.Expr.bvar 7))\n                        (Lean.Expr.bvar 6))\n                      (Lean.Expr.bvar 5)))\n                  (Lean.Expr.app\n                    (Lean.Expr.app\n                      (Lean.Expr.app\n                        (Lean.Expr.app (Lean.Expr.const `LT.lt [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                        (Lean.Expr.const `Real.instLT []))\n                      (Lean.Expr.app\n                        (Lean.Expr.app\n                          (Lean.Expr.app (Lean.Expr.const `OfNat.ofNat [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                          (Lean.Expr.lit (Lean.Literal.natVal 0)))\n                        (Lean.Expr.app\n                          (Lean.Expr.app (Lean.Expr.const `Zero.toOfNat0 [Lean.Level.zero]) (Lean.Expr.const `Real []))\n                          (Lean.Expr.const `Real.instZero []))))\n                    (Lean.Expr.app\n                      (Lean.Expr.app\n                        (Lean.Expr.app (Lean.Expr.const `Mf.DP.fixedEpochCenterGap []) (Lean.Expr.bvar 8))\n                        (Lean.Expr.bvar 7))\n                      (Lean.Expr.bvar 5)))\n                  (Lean.BinderInfo.default))\n                (Lean.BinderInfo.default))\n              (Lean.BinderInfo.default))\n            (Lean.BinderInfo.default))\n          (Lean.BinderInfo.default))\n        (Lean.BinderInfo.default))\n      (Lean.BinderInfo.default))\n    (Lean.BinderInfo.default))\n  (Lean.BinderInfo.default)",
+          "userName": "_example",
+          "valueDisplay": "",
+          "valueStructural": ""
+        },
+        {
+          "binderInfo": "Lean.BinderInfo.default",
+          "dependencies": [],
+          "implementationDetail": false,
+          "localId": "_uniq.248",
+          "typeDisplay": "Mf.DP.PoissonFixedEpochPoint",
+          "typeStructural": "Lean.Expr.const `Mf.DP.PoissonFixedEpochPoint []",
+          "userName": "point",
+          "valueDisplay": "",
+          "valueStructural": ""
+        },
+        {
+          "binderInfo": "Lean.BinderInfo.default",
+          "dependencies": [],
+          "implementationDetail": false,
+          "localId": "_uniq.249",
+          "typeDisplay": "ℝ",
+          "typeStructural": "Lean.Expr.const `Real []",
+          "userName": "h",
+          "valueDisplay": "",
+          "valueStructural": ""
+        },
+        {
+          "binderInfo": "Lean.BinderInfo.default",
+          "dependencies": [],
+          "implementationDetail": false,
+          "localId": "_uniq.250",
+          "typeDisplay": "ℝ",
+          "typeStructural": "Lean.Expr.const `Real []",
+          "userName": "boundary",
+          "valueDisplay": "",
+          "valueStructural": ""
+        },
+        {
+          "binderInfo": "Lean.BinderInfo.default",
+          "dependencies": [],
+          "implementationDetail": false,
+          "localId": "_uniq.251",
+          "typeDisplay": "ℝ",
+          "typeStructural": "Lean.Expr.const `Real []",
+          "userName": "query",
+          "valueDisplay": "",
+          "valueStructural": ""
+        },
+        {
+          "binderInfo": "Lean.BinderInfo.default",
+          "dependencies": [
+            "_uniq.248"
+          ],
+          "implementationDetail": false,
+          "localId": "_uniq.252",
+          "typeDisplay": "point.epoch < point.horizon",
+          "typeStructural": "Lean.Expr.app\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `LT.lt [Lean.Level.zero]) (Lean.Expr.const `Nat []))\n      (Lean.Expr.const `instLTNat []))\n    (Lean.Expr.app\n      (Lean.Expr.const `Mf.DP.PoissonFixedEpochPoint.epoch [])\n      (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 248))))\n  (Lean.Expr.app\n    (Lean.Expr.const `Mf.DP.PoissonFixedEpochPoint.horizon [])\n    (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 248)))",
+          "userName": "hNonFull",
+          "valueDisplay": "",
+          "valueStructural": ""
+        },
+        {
+          "binderInfo": "Lean.BinderInfo.default",
+          "dependencies": [
+            "_uniq.249"
+          ],
+          "implementationDetail": false,
+          "localId": "_uniq.253",
+          "typeDisplay": "0 < h",
+          "typeStructural": "Lean.Expr.app\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `LT.lt [Lean.Level.zero]) (Lean.Expr.const `Real []))\n      (Lean.Expr.const `Real.instLT []))\n    (Lean.Expr.app\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `OfNat.ofNat [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.lit (Lean.Literal.natVal 0)))\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `Zero.toOfNat0 [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.const `Real.instZero []))))\n  (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 249))",
+          "userName": "hh",
+          "valueDisplay": "",
+          "valueStructural": ""
+        },
+        {
+          "binderInfo": "Lean.BinderInfo.default",
+          "dependencies": [
+            "_uniq.250"
+          ],
+          "implementationDetail": false,
+          "localId": "_uniq.254",
+          "typeDisplay": "0 ≤ boundary",
+          "typeStructural": "Lean.Expr.app\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `LE.le [Lean.Level.zero]) (Lean.Expr.const `Real []))\n      (Lean.Expr.const `Real.instLE []))\n    (Lean.Expr.app\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `OfNat.ofNat [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.lit (Lean.Literal.natVal 0)))\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `Zero.toOfNat0 [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.const `Real.instZero []))))\n  (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 250))",
+          "userName": "hBoundaryNonneg",
+          "valueDisplay": "",
+          "valueStructural": ""
+        },
+        {
+          "binderInfo": "Lean.BinderInfo.default",
+          "dependencies": [
+            "_uniq.250",
+            "_uniq.251"
+          ],
+          "implementationDetail": false,
+          "localId": "_uniq.255",
+          "typeDisplay": "boundary < query",
+          "typeStructural": "Lean.Expr.app\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `LT.lt [Lean.Level.zero]) (Lean.Expr.const `Real []))\n      (Lean.Expr.const `Real.instLT []))\n    (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 250)))\n  (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 251))",
+          "userName": "hBoundaryQuery",
+          "valueDisplay": "",
+          "valueStructural": ""
+        },
+        {
+          "binderInfo": "Lean.BinderInfo.default",
+          "dependencies": [
+            "_uniq.248",
+            "_uniq.249",
+            "_uniq.250"
+          ],
+          "implementationDetail": false,
+          "localId": "_uniq.256",
+          "typeDisplay": "0 ≤ Mf.DP.fixedEpochCenterGap point h boundary",
+          "typeStructural": "Lean.Expr.app\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `LE.le [Lean.Level.zero]) (Lean.Expr.const `Real []))\n      (Lean.Expr.const `Real.instLE []))\n    (Lean.Expr.app\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `OfNat.ofNat [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.lit (Lean.Literal.natVal 0)))\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `Zero.toOfNat0 [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.const `Real.instZero []))))\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `Mf.DP.fixedEpochCenterGap []) (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 248)))\n      (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 249)))\n    (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 250)))",
+          "userName": "hBoundaryGap",
+          "valueDisplay": "",
+          "valueStructural": ""
+        }
+      ],
+      "typeDisplay": "0 < Mf.DP.fixedEpochCenterGap point h query",
+      "typeStructural": "Lean.Expr.app\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `LT.lt [Lean.Level.zero]) (Lean.Expr.const `Real []))\n      (Lean.Expr.const `Real.instLT []))\n    (Lean.Expr.app\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `OfNat.ofNat [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.lit (Lean.Literal.natVal 0)))\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `Zero.toOfNat0 [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.const `Real.instZero []))))\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `Mf.DP.fixedEpochCenterGap []) (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 248)))\n      (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 249)))\n    (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 251)))"
+    },
+    "residualGoals": [],
+    "status": "accepted",
+    "termDisplay": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h boundary query hNonFull hh hBoundaryNonneg hBoundaryQuery\n  hBoundaryGap",
+    "termStructural": "Lean.Expr.app\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app\n        (Lean.Expr.app\n          (Lean.Expr.app\n            (Lean.Expr.app\n              (Lean.Expr.app\n                (Lean.Expr.app\n                  (Lean.Expr.const `Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg [])\n                  (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 248)))\n                (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 249)))\n              (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 250)))\n            (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 251)))\n          (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 252)))\n        (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 253)))\n      (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 254)))\n    (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 255)))\n  (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 256))"
+  },
+  "captureId": "sha256:c6416a5fac15ecd421a425a7d63bc489c73f7edac3c30c1271abf4185701d014",
+  "diagnostic": null,
+  "operation": "complete-source-goal",
+  "processReceipts": [
+    {
+      "command": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "--run",
+        "/home/codex/.cache/ladon-qualification-r59/ladon-application-completion-r59-7ivd_ivg/py312/lib/python3.12/site-packages/ladon/lean/ladon_source_goal_helper.lean"
+      ],
+      "elapsedSeconds": 4.264273890061304,
+      "inputDigest": "sha256:d760db4e412c3105db1e16e91967067606fc0e81d1d7e972e18d82b1c3fe8262",
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 8897024000,
+      "returnCode": 0,
+      "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutDigest": "sha256:a264b2bd568cd3ce1edc36a9fc37e7a5e0c18aa1a7dca542664e65326700399f",
+      "timedOut": false
+    },
+    {
+      "command": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "--run",
+        "/home/codex/.cache/ladon-qualification-r59/ladon-application-completion-r59-7ivd_ivg/py312/lib/python3.12/site-packages/ladon/lean/ladon_source_goal_helper.lean"
+      ],
+      "elapsedSeconds": 4.039345743949525,
+      "inputDigest": "sha256:9cee907410b5abe10ee3cc953472617f55e138cf4e73d6a992acb6a91cc1b73a",
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 8920100864,
+      "returnCode": 0,
+      "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutDigest": "sha256:8026fe23a0bc7c0571eb9304bad64dad5d7b93cc7faa19b8179c2d9912f95ea2",
+      "timedOut": false
+    },
+    {
+      "command": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "--run",
+        "/home/codex/.cache/ladon-qualification-r59/ladon-application-completion-r59-7ivd_ivg/py312/lib/python3.12/site-packages/ladon/lean/ladon_source_goal_completion_helper.lean"
+      ],
+      "elapsedSeconds": 4.640848663984798,
+      "inputDigest": "sha256:54e2ea40ebe8fa6a29830e3dd16f37e2d7ee1184b501c744f1fca456a8057409",
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 8931528704,
+      "returnCode": 0,
+      "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutDigest": "sha256:49988836b8006cf0144ac813c80b110dd164f98fd1443f767daddbf49d131a26",
+      "timedOut": false
+    },
+    {
+      "command": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "/tmp/ladon-source-completion-gitv0zaz/LadonCompletion.lean"
+      ],
+      "elapsedSeconds": 2.3499414219986647,
+      "inputDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 7270199296,
+      "returnCode": 0,
+      "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutDigest": "sha256:d8f95a99418776e575b866ac50bf0e45119232777090c9a86ac6b995e2e8a5df",
+      "timedOut": false
+    }
+  ],
+  "replay": {
+    "coverage": "complete",
+    "declaration": "ladonCompletion_137606f07a2360c6953c7b088ecdfde9",
+    "declarationBodyDigest": "sha256:bfe52d36e5bc000d9623c3c4475f852276141d8c385ca75ce5498ac7a6ffe2a7",
+    "generatedSource": "import Lean\nimport Mf.DP.PoissonFixedEpochCenterGapPropagation\n\ndef ladonCompletion_137606f07a2360c6953c7b088ecdfde9 : ∀ (point : Mf.DP.PoissonFixedEpochPoint) (h boundary query : Real)\n  (hNonFull :\n    @LT.lt.{0} Nat instLTNat (Mf.DP.PoissonFixedEpochPoint.epoch point) (Mf.DP.PoissonFixedEpochPoint.horizon point))\n  (hh : @LT.lt.{0} Real Real.instLT (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) h)\n  (hBoundaryNonneg :\n    @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) boundary)\n  (hBoundaryQuery : @LT.lt.{0} Real Real.instLT boundary query)\n  (hBoundaryGap :\n    @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))\n      (Mf.DP.fixedEpochCenterGap point h boundary)),\n  @LT.lt.{0} Real Real.instLT (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))\n    (Mf.DP.fixedEpochCenterGap point h query) :=\nfun (point : Mf.DP.PoissonFixedEpochPoint) (h boundary query : Real)\n    (hNonFull :\n      @LT.lt.{0} Nat instLTNat (Mf.DP.PoissonFixedEpochPoint.epoch point) (Mf.DP.PoissonFixedEpochPoint.horizon point))\n    (hh : @LT.lt.{0} Real Real.instLT (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) h)\n    (hBoundaryNonneg :\n      @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero)) boundary)\n    (hBoundaryQuery : @LT.lt.{0} Real Real.instLT boundary query)\n    (hBoundaryGap :\n      @LE.le.{0} Real Real.instLE (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))\n        (Mf.DP.fixedEpochCenterGap point h boundary)) =>\n  Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h boundary query hNonFull hh hBoundaryNonneg hBoundaryQuery\n    hBoundaryGap\n\n-- LADON_COMPLETION_REPLAY_REQUEST {\"captureId\": \"sha256:c6416a5fac15ecd421a425a7d63bc489c73f7edac3c30c1271abf4185701d014\", \"declaration\": \"ladonCompletion_137606f07a2360c6953c7b088ecdfde9\", \"frame\": \"LADON_COMPLETION_REPLAY\", \"protocolVersion\": \"ladon-lean-source-completion-replay-v1\", \"requestId\": \"137606f07a2360c6953c7b088ecdfde9\", \"sourceDigest\": \"sha256:bfe52d36e5bc000d9623c3c4475f852276141d8c385ca75ce5498ac7a6ffe2a7\", \"termDigest\": \"sha256:7be401edacf08dbe790fb727f6db83dcc28dc11db6c3ea163ca746ead733ad07\"}\nrun_cmd do\n  let env ← Lean.getEnv\n  unless (env.checked.get.find? `ladonCompletion_137606f07a2360c6953c7b088ecdfde9).isSome do\n    throwError \"generated declaration unavailable to kernel axiom observation\"\n  let axioms ← Lean.collectAxioms `ladonCompletion_137606f07a2360c6953c7b088ecdfde9\n  let names := (axioms.map toString).qsort (fun a b => a < b)\n  let value := Lean.Json.mkObj [(\"frame\", Lean.toJson (\"LADON_COMPLETION_REPLAY\" : String)), (\"protocolVersion\", Lean.toJson (\"ladon-lean-source-completion-replay-v1\" : String)), (\"requestId\", Lean.toJson (\"137606f07a2360c6953c7b088ecdfde9\" : String)), (\"captureId\", Lean.toJson (\"sha256:c6416a5fac15ecd421a425a7d63bc489c73f7edac3c30c1271abf4185701d014\" : String)), (\"termDigest\", Lean.toJson (\"sha256:7be401edacf08dbe790fb727f6db83dcc28dc11db6c3ea163ca746ead733ad07\" : String)), (\"sourceDigest\", Lean.toJson (\"sha256:bfe52d36e5bc000d9623c3c4475f852276141d8c385ca75ce5498ac7a6ffe2a7\" : String)), (\"declaration\", Lean.toJson (\"ladonCompletion_137606f07a2360c6953c7b088ecdfde9\" : String)), (\"observedAxioms\", Lean.toJson names), (\"coverage\", Lean.toJson (\"complete\" : String))]\n  Lean.Elab.Command.liftIO <| IO.println (\"LADON_COMPLETION_REPLAY \" ++ Lean.Json.compress value)\n",
+    "observation": {
+      "captureId": "sha256:c6416a5fac15ecd421a425a7d63bc489c73f7edac3c30c1271abf4185701d014",
+      "coverage": "complete",
+      "declaration": "ladonCompletion_137606f07a2360c6953c7b088ecdfde9",
+      "frame": "LADON_COMPLETION_REPLAY",
+      "observedAxioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "protocolVersion": "ladon-lean-source-completion-replay-v1",
+      "requestId": "137606f07a2360c6953c7b088ecdfde9",
+      "sourceDigest": "sha256:bfe52d36e5bc000d9623c3c4475f852276141d8c385ca75ce5498ac7a6ffe2a7",
+      "termDigest": "sha256:7be401edacf08dbe790fb727f6db83dcc28dc11db6c3ea163ca746ead733ad07"
+    },
+    "sourceDigest": "sha256:7e7c9c4e2f6d2ba11699102095f9a937931a5a273b70f868061a45de2717e8b3",
+    "status": "accepted"
+  },
+  "resourceAccounting": {
+    "elapsedScope": "complete-original-goal-operation",
+    "elapsedSeconds": 40.40263490693178,
+    "helperElapsedSeconds": 15.294409719994292,
+    "peakRssBytes": 8931528704,
+    "peakRssScope": "supervised-lean-process-tree"
+  },
+  "schema": "ladon-source-goal-completion-result-v1",
+  "status": "completed",
+  "termDigest": "sha256:7be401edacf08dbe790fb727f6db83dcc28dc11db6c3ea163ca746ead733ad07",
+  "trust": {
+    "accepted": true,
+    "allowedAxioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "coverage": "complete",
+    "forbiddenPlaceholders": [
+      "sorryAx"
+    ],
+    "observedAxioms": [
+      "Classical.choice",
+      "Quot.sound",
+      "propext"
+    ],
+    "policy": "lean-standard-no-placeholders-v1"
+  }
+}

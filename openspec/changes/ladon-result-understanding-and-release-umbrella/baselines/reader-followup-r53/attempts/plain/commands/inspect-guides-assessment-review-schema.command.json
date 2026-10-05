@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T13:10:29.237691+00:00",
+  "argv": [
+    "python",
+    "-c",
+    "import json,pathlib,sqlite3; d=pathlib.Path(\"evidence/assets\");\nfor n in [89,90,92,93]:\n f=next(d.glob(f\"{n:05d}.*\")); raw=f.read_bytes();\n try: x=json.loads(raw); print(\"###\",f.name, \"keys\",list(x));\n except Exception as e: print(f.name,e); continue\n if n==89:\n  print(\"result\",x.get(\"resultId\"),\"revision\",x.get(\"manifestRevision\"));\n  for a in x.get(\"assessments\",[]): print(a)\n elif n==90:\n  print(json.dumps(x,ensure_ascii=False,indent=2)[:12000])\n elif n==92:\n  for s in x.get(\"steps\",[]): print(\"STEP\",json.dumps(s,ensure_ascii=False,indent=2));\n  print(\"REVIEWS\",json.dumps(x.get(\"reviews\"),ensure_ascii=False,indent=2))\n elif n==93: print(json.dumps(x,ensure_ascii=False,indent=2)[:8000])\ncon=sqlite3.connect(d/\"00094.sqlite3\"); print(\"### review-db tables\",con.execute(\"select name,sql from sqlite_master where type=\\\"table\\\" \").fetchall())\nfor t, in con.execute(\"select name from sqlite_master where type=\\\"table\\\"\"):\n print(\"TABLE\",t,\"count\",con.execute(f\"select count(*) from {t}\").fetchone()[0]); print(\"columns\",con.execute(f\"pragma table_info({t})\").fetchall())"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-followup-r53/shared",
+  "exitCode": 0,
+  "elapsedSeconds": 0.05891163204796612,
+  "peakRssBytes": 9723904,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/inspect-guides-assessment-review-schema.stdout",
+      "bytes": 78820,
+      "sha256": "sha256:4bf0470312cc36a2d725cd39bf216a0f5abc49f03c1bde68a92aa5876fa61bf8"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/inspect-guides-assessment-review-schema.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

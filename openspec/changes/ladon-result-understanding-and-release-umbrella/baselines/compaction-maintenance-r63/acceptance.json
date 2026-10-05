@@ -1,0 +1,103 @@
+{
+  "candidate": {
+    "sourceHead": "d64f475e23a7339c91aa280ff6e6679c27607875",
+    "sourceIndexSha256": "840bfe9d261ad6afa25c36c7311ad86677a1c437e84044826cbf0791370afc04",
+    "candidateCommit": "404c8f4c556c0c1306f0ed427b12e1b3431fd36f",
+    "sourceInventoryDigest": "sha256:dd7a899450c5ab4b2eebe39b53bb6359b0887330201f591f2c77b376a338446a"
+  },
+  "strictBaseline": {
+    "argv": [
+      "uv",
+      "run",
+      "--locked",
+      "python",
+      "scripts/clean_checkout_gate.py",
+      "--candidate",
+      "/home/codex/.cache/ladon-compaction-r63-q5re6swu/candidate",
+      "--baseline-only",
+      "--package-resource",
+      "ladon:lean/ladon_source_goal_completion_helper.lean",
+      "--package-resource",
+      "ladon:lean/ladon_source_goal_helper.lean"
+    ],
+    "cwd": "/home/codex/projects/ladon",
+    "exitCode": 0,
+    "elapsedSeconds": 375.3300066869706
+  },
+  "runtimeUnchanged": 364,
+  "runtimeChanged": [
+    "src/ladon/result_inspection_page.py"
+  ],
+  "requiredCommands": [
+    {
+      "command": [
+        "uv",
+        "run",
+        "--locked",
+        "python",
+        "scripts/installed_distribution_smoke.py",
+        "--candidate",
+        "/home/codex/.cache/ladon-compaction-r63-q5re6swu/candidate",
+        "--package-resource",
+        "ladon:lean/ladon_source_goal_completion_helper.lean",
+        "--package-resource",
+        "ladon:lean/ladon_source_goal_helper.lean"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 17.562634711968713,
+      "timed_out": false,
+      "output_limited": false,
+      "memory_limited": false,
+      "peak_rss_bytes": 152498176,
+      "name": "installed-distribution"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--locked",
+        "python",
+        "scripts/lean_integration_gate.py",
+        "--candidate",
+        "/home/codex/.cache/ladon-compaction-r63-q5re6swu/candidate",
+        "--required"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 4.563025371986441,
+      "timed_out": false,
+      "output_limited": false,
+      "memory_limited": false,
+      "peak_rss_bytes": 2154905600,
+      "name": "required-lean-integration"
+    },
+    {
+      "command": [
+        "uv",
+        "run",
+        "--locked",
+        "python",
+        "scripts/ladon_benchmarks.py",
+        "--candidate",
+        "/home/codex/.cache/ladon-compaction-r63-q5re6swu/candidate",
+        "--required",
+        "--output",
+        "/home/codex/.cache/ladon-compaction-r63-q5re6swu/required-portable-benchmark-results.json"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 8.964687086991034,
+      "timed_out": false,
+      "output_limited": false,
+      "memory_limited": false,
+      "peak_rss_bytes": 139644928,
+      "name": "required-portable-benchmarks"
+    }
+  ],
+  "codeAndTestsMatchSnapshot": true,
+  "rootHeadIndexPreserved": true,
+  "frozenRegistryVerified": 109,
+  "installedTestsPerRuntime": 289,
+  "maintainedTests": 3167,
+  "readerCandidate": "r62 3806c436fe68e4d5700646b649b6a6525ec14ba0, not this later maintenance build",
+  "validationScope": "Bounded presentation correctness/compatibility/packaging, not mathematical benefit",
+  "independentAuditPost": 927
+}

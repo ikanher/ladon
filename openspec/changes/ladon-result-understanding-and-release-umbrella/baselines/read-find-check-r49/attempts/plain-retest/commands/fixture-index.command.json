@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T09:16:00.592233+00:00",
+  "argv": [
+    "/bin/bash",
+    "-lc",
+    "rg -n -i \"finite.map|stale.guide|synthetic.*review|review.*stale|fixture\" --glob \"*.json\" . | head -80; python3 - <<\"PY\"\nimport json\nm=json.load(open(\"evidence/manifest.json\")); print(\"REVIEWS\",json.dumps(m.get(\"reviews\"),indent=2)[:7000]); print(\"CLAIMS\",[(c.get(\"id\"),c.get(\"title\"),c.get(\"name\")) for c in m.get(\"claims\",[]) if c.get(\"id\") in [\"cor:fixed-epoch-all-horizon\",\"thm:smallbatch\"]])\nPY"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-loop-r49/shared",
+  "exitCode": 0,
+  "elapsedSeconds": 0.11887313798069954,
+  "peakRssBytes": 4120576,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/fixture-index.stdout",
+      "bytes": 23536,
+      "sha256": "sha256:6f5e799feb5174502ddd4f3b288e3968a0e3042d2e392f69143cb265414937f1"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/fixture-index.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

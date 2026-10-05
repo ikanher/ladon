@@ -1,0 +1,888 @@
+\n### evidence/manifest.json
+{
+  "schema": "ladon-result-manifest-v1",
+  "resultId": "poisson-fixed-epoch-exposition-20261003-r02",
+  "title": "Fixed-participation finite and sparse comparison: exact printed claims",
+  "claimInventory": {
+    "scope": "Every theorem, lemma, proposition and corollary environment in the final TeX, with components distinguishing transcript statements, conventional average-only extensions and translations. Does not inventory every equation, definition or proof step. Links carry the existing model-attributed source correspondence; exact stored target resolution does not establish informal equivalence.",
+    "coverage": "complete"
+  },
+  "claims": [
+    {
+      "id": "lem:calibration",
+      "statement": "\\begin{lemma}[Calibration]\\label{lem:calibration}\nFor each finite admissible horizon, both profiles are continuous and\nnonincreasing in $v\\geq0$. Their feasible sets are nonempty and their minima\nare attained. At a positive minimum the profile equals $\\delta$.\nAt full batch the two calibrated variances agree at a positive value\n$v_{\\mathrm{FB}}$ independent of $E$. Writing $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$,\n\\begin{equation}\\label{eq:gaussian-calibration}\n \\delta=G_\\varepsilon(a):=\n \\Phi\\!\\left(\\frac a2-\\frac\\varepsilon a\\right)\n -e^\\varepsilon\\Phi\\!\\left(-\\frac a2-\\frac\\varepsilon a\\right),\\qquad\n G_\\varepsilon'(a)=\\phi(a/2-\\varepsilon/a)>0.\n\\end{equation}\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:calibration",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "finite-properties",
+        "fullbatch",
+        "gaussian-and-average"
+      ],
+      "revision": "sha256:13b61b0fcfaa45b01572aa7643711e7ce8ff724346c26e73bb8377867b31ddc5"
+    },
+    {
+      "id": "thm:rate-adaptive-pointwise",
+      "statement": "\\begin{theorem}[Finite-horizon comparison]\\label{thm:rate-adaptive-pointwise}\nLet $T>E>0$ be integers, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$.\nIf $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$ satisfies\n$a^2\\leq\\Lambda_{E,T}\\varepsilon$, then\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\\qquad\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S)\n \\quad(S\\geq0).\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:rate-adaptive-pointwise",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "transcript",
+        "closed-symmetric",
+        "average"
+      ],
+      "revision": "sha256:6983fd980402da76a16369679ae90faa0a462a01d51181873f158e269ba8042a"
+    },
+    {
+      "id": "cor:fixed-epoch-all-horizon",
+      "statement": "\\begin{corollary}[All finite horizons]\\label{cor:fixed-epoch-all-horizon}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$.\nIf $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$ satisfies\n\\begin{equation}\\label{eq:epoch-uniform-condition}\n a^2\\leq\\Lambda_E\\varepsilon,\\qquad \\Lambda_E=\\frac{6E}{3E+2},\n\\end{equation}\nthen for every integer $T>E$,\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\n\\]\nand, simultaneously for every $S\\geq0$,\n\\[\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S).\n\\]\n\\end{corollary}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#cor:fixed-epoch-all-horizon",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "transcript",
+        "average"
+      ],
+      "revision": "sha256:0108f8bad055aabc20a15fde2fed178bec5d26a78e097a8113a6d68967beea83"
+    },
+    {
+      "id": "thm:strict-interior-counterexample",
+      "statement": "\\begin{theorem}[An adjacent smaller batch can win]\\label{thm:strict-interior-counterexample}\nFor $\\Delta=1$, $E=2$, $\\varepsilon=1/4$, and $\\delta=3/4$, write\n$v_T=v_{2,T}$. Then\n\\[\n v_3\\leq\\frac5{32}<\\frac4{25}<v_2,\n \\qquad\n V_2(3,S)<V_2(2,S)\\quad\\text{for }0\\leq S\\leq\\frac9{400}.\n\\]\nThe same strict total-variance comparison holds for average-only calibration.\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:strict-interior-counterexample",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "transcript",
+        "average"
+      ],
+      "revision": "sha256:636c1150f4da72acb9f277996c4c41540d68c084dec5f7ed60943e53072b1d8b"
+    },
+    {
+      "id": "thm:smallbatch",
+      "statement": "\\begin{theorem}[Sparse transcript calibration]\\label{thm:smallbatch}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n\\begin{equation}\\label{eq:interior}\n 0<\\delta<1-e^{-E}.\n\\end{equation}\nThen, along integer horizons,\n\\[\n \\frac\\Delta{\\sigma_{E,T}}-\\sqrt{2\\log T}\n \\longrightarrow s_{E,\\delta}:=\n \\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}E\\right).\n\\]\nConsequently,\n\\begin{align}\n \\sigma_{E,T}&\\sim\\frac\\Delta{\\sqrt{2\\log T}}\\longrightarrow0,\n \\label{eq:sigmaasymptotic}\\\\\n v_{E,T}&\\sim\\frac{\\Delta^2T}{2E^2\\log T}\\longrightarrow\\infty,\n \\label{eq:privacydivergence}\\\\\n V_E(T,S)&\\sim v_{E,T}\\qquad\\text{for each fixed }S\\geq0.\n \\label{eq:total-equivalent}\n\\end{align}\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:smallbatch",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "offset",
+        "leading"
+      ],
+      "revision": "sha256:bf37f1efcf293770fba61f4b50f99a8a32d5f0425b9db71bb59e3c760afb9ec0"
+    },
+    {
+      "id": "cor:eventual",
+      "statement": "\\begin{corollary}[One cutoff for all energies]\\label{cor:eventual}\nUnder the hypotheses of Theorem~\\ref{thm:smallbatch}, some integer $T_0>E$\nsatisfies $V_E(E,S)<V_E(T,S)$ for every $T\\geq T_0$ and every $S\\geq0$.\n\\end{corollary}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#cor:eventual",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "uniform"
+      ],
+      "revision": "sha256:02f2bb6625d667b7dfca660d192372461093817fd1043929ee8cafc091e082e3"
+    },
+    {
+      "id": "prop:average-uniform-bound",
+      "statement": "\\begin{proposition}[Average-only calibration stays bounded]\\label{prop:average-uniform-bound}\nFor integers $T\\geq E>0$, $\\Delta>0$, $\\varepsilon\\geq0$, and $0<\\delta<1$,\n\\[\n \\overline v_{E,T}\\leq\\frac{\\Delta^2}{2\\pi\\delta^2},\\qquad\n \\overline V_E(T,S)\\leq\\frac SE+\\frac{\\Delta^2}{2\\pi\\delta^2}\\quad(S\\geq0).\n\\]\n\\end{proposition}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#prop:average-uniform-bound",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "bound"
+      ],
+      "revision": "sha256:98adfc1f05587ac23d55fa2bf1c0f1ee6c92d060f48da7fe21e2cb76381d8fe5"
+    },
+    {
+      "id": "thm:rate-adaptive-center",
+      "statement": "\\begin{theorem}[The binomial center comparison]\\label{thm:rate-adaptive-center}\nLet $T>E>0$ be integers and $h>0$. Then\n$\\Gamma_{E,T}(\\theta,h)>0$ under the following conditions:\n\\begin{equation}\\label{eq:rate-adaptive-center-condition}\n \\begin{array}{c|c}\n T>2E & \\theta\\geq c_{E,T}:=(1-2E/T)/3,\\\\\n T=2E & \\theta>0,\\\\\n E<T<2E & \\theta\\geq0.\n \\end{array}\n\\end{equation}\nAt $T=2E$ and $\\theta=0$, the gap is zero.\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:rate-adaptive-center",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "positive",
+        "zero"
+      ],
+      "revision": "sha256:5ec94143a489a958a3ff42a4e23ff1db84712481f7f73c79fe7f84f17294fd47"
+    },
+    {
+      "id": "lem:binomial-propagation",
+      "statement": "\\begin{lemma}[Propagation of positivity]\\label{lem:binomial-propagation}\nFix $h>0$ and $0\\leq\\theta_1<\\theta_2$. If\n$\\Gamma_{E,T}(\\theta_1,h)\\geq0$, then\n$\\Gamma_{E,T}(\\theta_2,h)>0$.\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-propagation",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "propagation"
+      ],
+      "revision": "sha256:b3cf99cfd36ca744273387be6f9ad774877318e0722087c00299943dc1ca3b18"
+    },
+    {
+      "id": "lem:binomial-stein-polynomial",
+      "statement": "\\begin{lemma}[A binomial telescoping identity]\\label{lem:binomial-stein-polynomial}\nPut $C=T-E$. For any real $R$, define\n\\[\n A_R(z)=R^2-2Er-3c^2+z-z^2.\n\\]\nThen for every $z\\in\\R$,\n\\begin{equation}\\label{eq:binomial-cubic-stein-polynomial}\n \\begin{split}\n &(z-c)\\{R^2-(z-c)^2\\}+c(R^2-c^2)\\\\\n &\\hspace{2em}=r(E+z)A_R(z)-p(C-z)A_R(z+1).\n \\end{split}\n\\end{equation}\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-stein-polynomial",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "polynomial"
+      ],
+      "revision": "sha256:74340e6f05c8612f26cb6e759f87be49a49c86622aa0301e5d3cd8a0d2ae4579"
+    },
+    {
+      "id": "lem:binomial-double-cumulative",
+      "statement": "\\begin{lemma}[Nonnegativity of the hinge transform]\n\\label{lem:binomial-double-cumulative}\nIf $T>2E$, then $J(t)\\geq0$ for every $t\\geq0$, and\n$J((1-c)^2)>0$.\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-double-cumulative",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "hinge",
+        "strict"
+      ],
+      "revision": "sha256:1dc10cffe6bd81b1f5eda04b3211d97f132de164f36240d163c205066a7f5230"
+    },
+    {
+      "id": "lem:binomial-reflected-zero",
+      "statement": "\\begin{lemma}[The zero-center sign]\\label{lem:binomial-reflected-zero}\nFor $h>0$, the gap $\\Gamma_{E,T}(0,h)$ is negative when $T>2E$, zero when\n$T=2E$, and positive when $E<T<2E$.\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-reflected-zero",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "signs"
+      ],
+      "revision": "sha256:a3c763d3a071e862ca9b15d046478e505e83ddf62a2e2382c59b4496fabcb4ee"
+    },
+    {
+      "id": "lem:strict-average-endpoint",
+      "statement": "\\begin{lemma}[Improving the threshold at half rate]\\label{lem:strict-average-endpoint}\nLet $E\\in\\N_{>0}$, $a>0$, and $K\\sim\\operatorname{Binomial}(2E,1/2)$.\nLet $Q=\\Normal(0,1)$, and let $P$ be the mixture whose conditional law\ngiven $K=k$ is $\\Normal(ak/E,1)$. With $\\varepsilon=a^2/2$,\n\\[\n H_{e^\\varepsilon}(P, Q)\n >\\frac12-e^\\varepsilon\\overline\\Phi(a).\n\\]\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:strict-average-endpoint",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "endpoint"
+      ],
+      "revision": "sha256:fabcf8ace9c947fe34509115ca2734694b3ca4c45b7026dd09e647e2d9d4300c"
+    },
+    {
+      "id": "thm:accountant-limit",
+      "statement": "\\begin{theorem}[The fixed-participation profile limit]\\label{thm:accountant-limit}\nLet $\\rho>0$, $\\Delta>0$, and $\\varepsilon\\geq0$. Suppose\n$q_T\\in[0,1]$, $Tq_T\\to\\rho$, $\\sigma_T>0$ eventually, and\n\\[\n \\frac{\\Delta}{\\sigma_T}-\\sqrt{2\\log T}\\longrightarrow s\\in\\R.\n\\]\nThen\n\\[\n \\AO_S(\\sigma_T,\\Delta,q_T,T,\\varepsilon)\n \\longrightarrow1-\\exp\\{-\\rho\\Phi(s)\\}.\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:accountant-limit",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "profile"
+      ],
+      "revision": "sha256:fa568c1b36e683ed12deb097a7cac602850a9680a928ce3b36e1b9d2b53dfe5d"
+    },
+    {
+      "id": "thm:fixed-participation-calibration",
+      "statement": "\\begin{theorem}[Fixed-participation calibration]\n\\label{thm:fixed-participation-calibration}\nLet $\\rho>0$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n$0<\\delta<1-e^{-\\rho}$. Suppose $q_T\\in[0,1]$ and $Tq_T\\to\\rho$, and define\n\\[\n \\sigma_T^{\\mathrm{cal}}:=\\inf\\left\\{\\sigma\\geq0:\n \\AO_S(\\sigma,\\Delta,q_T,T,\\varepsilon)\\leq\\delta\\right\\}.\n\\]\nThen $\\sigma_T^{\\mathrm{cal}}>0$ eventually, and\n\\[\n \\frac{\\Delta}{\\sigma_T^{\\mathrm{cal}}}-\\sqrt{2\\log T}\n \\longrightarrow s_{\\rho,\\delta}:=\n \\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}\\rho\\right).\n\\]\nFor the capped exact-budget schedule $q_T=\\min\\{1,\\rho/T\\}$, it follows that\n\\[\n \\frac{\\sigma_T^{\\mathrm{cal}}\\sqrt{2\\log(1/q_T)}}\\Delta\\longrightarrow1.\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:fixed-participation-calibration",
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+      },
+      "components": [
+        "offset",
+        "capped",
+        "positive"
+      ],
+      "revision": "sha256:29a94d4c6ed0af007291954680e81c57324c961be2adf9298233ef2e8a1240e0"
+    }
+  ],
+  "targets": [
+    {
+      "id": "fullbatch",
+      "name": "Mf.DP.poissonFixedEpochPrivacyVariance_fullBatch_eq_base_sq",
+      "typeText": "∀ (epoch : ℕ) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : ℝ) (sensitivity_pos : 0 < sensitivity)\n  (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_one : delta < 1),\n  Mf.DP.poissonFixedEpochPrivacyVarianceOfStddev (Mf.DP.PoissonFixedEpochPoint.fullBatch epoch epoch_pos)\n      ↑(Mf.DP.poissonFixedEpochCalibratedStddev (Mf.DP.PoissonFixedEpochPoint.fullBatch epoch epoch_pos) sensitivity\n          epsilon delta) =\n    Mf.DP.fullBatchGaussianBaseStddev sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one ^\n      2",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochVariance.lean",
+        "digest": "sha256:7df2853825f9c7728607de78d1fda0eb1ae46a675350dcf07065f623c83188ca",
+        "projectRevision": "capture-state:sha256:bb6fb61ace8b418be2949d044b618289dbb5e23faac5b58cb0d8627d3f4fa0b2"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:58133d41769e6c297902b760c7278b08d87397e307678d79de1621b3b00c7f52"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:d978d0148ff6be3f93c46930b49ac2ef801cbc288aefe2c4da1974c02adc837a",
+        "subjectId": "declaration:sha256:aba9e2ee4cc4d055c7d11c8df21895aa2bc225918904a76790709470aff9b584"
+      },
+      "revision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa"
+    },
+    {
+      "id": "point-privacy",
+      "name": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_exactCriticalSignalSquareCondition",
+      "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (sensitivity epsilon delta : ℝ),\n  point.epoch < point.horizon →\n    ∀ (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1),\n      Mf.DP.poissonFixedEpochExactCriticalSignalSquareCondition point epsilon\n          (Mf.DP.poissonFixedEpochStandardizedSignal sensitivity\n            ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n                hDeltaLtOne)) →\n        ↑(Mf.DP.poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity ⋯ hDeltaPos\n              hDeltaLtOne) <\n          Mf.DP.poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochPointwiseDominanceDomain.lean",
+        "digest": "sha256:88db8d26189787583e57c4fbd881671d3068ca74cec72cd8ae6cda3610e92d43",
+        "projectRevision": "capture-state:sha256:4913bdc76ce05ed6c055bbe1dac62b94b2ea80ab6a26bb4852ebd526e91e334b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:f2da313f39205b649a47dbff890541b01c1e69612bef840fa63de9f9fe692d39"
+      },
+      "subjectRef": {
+        "artifactId": "sha256:29ef2949681060f67bdfe8cae11d85f92e789c34f506facbb682f46dc29abeb3",
+        "subjectId": "declaration:sha256:f30cfe770d4919a49cfa99a56c6ae06feabed31594a2a261194e8c5c41daa3c0"
+      },
+      "revision": "sha256:9282b5fa607890bf653cebfdec185279ada5f5fb778781c968597cdde42e70b1"
+    },
+    {
+      "id": "point-total",
+      "name": "Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_of_exactCriticalSignalSquareCondition",
+      "typeText": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (sensitivity epsilon delta energy : ℝ),\n  point.epoch < point.horizon →\n    ∀ (hSensitivity : 0
+\n### evidence/bundle.json
+{
+  "externalDependencies": [
+    {
+      "id": "lean-replay-environment",
+      "kind": "lean-toolchain-and-imports",
+      "reason": "The Lean 4.33.0 compiler and imported compiled dependencies are not bundled; replay is not run."
+    }
+  ],
+  "identifiers": [],
+  "inventory": [
+    {
+      "bytes": 54260,
+      "id": "manifest",
+      "path": "manifest.json",
+      "role": "manifest",
+      "sha256": "sha256:45e04dddaf25249127753a57a0cc31c626b33778486b351da321fcc0afc998ee"
+    },
+    {
+      "bytes": 16834,
+      "id": "artifact-03a8994a57f94849e16f7eb0ecba52a4cd6698860b26356d26efe2ed16efe3e7",
+      "path": "assets/00000.json",
+      "role": "artifact",
+      "sha256": "sha256:a5fa86e2d4649f7f649b834a3dc986d95fbfb86b7390a010d3e06e7f4cff5c6a"
+    },
+    {
+      "bytes": 13777,
+      "id": "artifact-04686211b4da481150232bddc311db0d1d2576c81a1f2e85e543bafe901f2780",
+      "path": "assets/00001.json",
+      "role": "artifact",
+      "sha256": "sha256:9351de27098a9351f26c1253845953758b825239163ba26e8003fd7bc5e4e92a"
+    },
+    {
+      "bytes": 14307,
+      "id": "artifact-0545cff5f4fdf75254280cf7f4859c73e5e13770fc7d75de8172a61644969d60",
+      "path": "assets/00002.json",
+      "role": "artifact",
+      "sha256": "sha256:bf0b36ded682b9b51f3585503b88e12a007570c8c947c3f42dc4e5da80e196f4"
+    },
+    {
+      "bytes": 40013,
+      "id": "artifact-0593ed905d7cc580e3d182b55786fdf4b4a7d49383c60a4af24c196130687ebd",
+      "path": "assets/00003.json",
+      "role": "artifact",
+      "sha256": "sha256:0138a572bf59d44cfabc6dcb8563f31d56253d54a260afe533e45d56fcb1be57"
+    },
+    {
+      "bytes": 46759,
+      "id": "artifact-0836480e6b42cc0efea81bc5d2da0fdf6a2f4009d160125a176529cfc8b79208",
+      "path": "assets/00004.json",
+      "role": "artifact",
+      "sha256": "sha256:514a007b440236bb6830a2289cd06eef38f6774664de21dfc9d3f75b8528e659"
+    },
+    {
+      "bytes": 17136,
+      "id": "artifact-0a786d75cef94ebdc356a28b1fe64e6e21b20a2f902eed99490d686570e18a9f",
+      "path": "assets/00005.json",
+      "role": "artifact",
+      "sha256": "sha256:e0550d8f46298495980a6a1c7e916860ffcea1cd65dd2d4af5a2a49ea8004a2f"
+    },
+    {
+      "bytes": 7929,
+      "id": "artifact-0c16e86fc96dc24d3c415f13e692818438bf9c810d1feaaec428d0a4f9942dcc",
+      "path": "assets/00006.json",
+      "role": "artifact",
+      "sha256": "sha256:32a2dfb6ffeab8ad0b488852c4c1706dfa00dd2dec160f1c76bdeca6ebf840fa"
+    },
+    {
+      "bytes": 23642,
+      "id": "artifact-1571e8c67c754164d78c370ff9d886ad6b4a83a081b2cb8566dd684454849f22",
+      "path": "assets/00007.json",
+      "role": "artifact",
+      "sha256": "sha256:4bd59d03aee2f02f0e7e25ba8ab5e98f7021d4881b66cc7de89197387d172ce7"
+    },
+    {
+      "bytes": 17017,
+      "id": "artifact-18dea925fb29bd449ee7cde2d6fd5154857501b17890316af3d886ebe7653dbf",
+      "path": "assets/00008.json",
+      "role": "artifact",
+      "sha256": "sha256:321346e1fa3f067447be6770fa6cce5ecc74b511ca347c81672c09b60c93b164"
+    },
+    {
+      "bytes": 44716,
+      "id": "artifact-1e5f125e34f7e0443b64c0c9d8eb237691505cb8f9d40ad58df4e62698aaaf5b",
+      "path": "assets/00009.json",
+      "role": "artifact",
+      "sha256": "sha256:468096dce2ad5a20cbf4da563fa103a3d20aeadeb97d832d6c000a52cf56f582"
+    },
+    {
+      "bytes": 42963,
+      "id": "artifact-1f196d304bf170b6fdfe464bd184b8f9e303bad598a4e8e3015646f56fe4ada6",
+      "path": "assets/00010.json",
+      "role": "artifact",
+      "sha256": "sha256:7ae6bd4e89697fff9ffa5ac17a2bfc2b904020a944e9f40706a74090f9b17053"
+    },
+    {
+      "bytes": 34543,
+      "id": "artifact-239ee7fae685e59c1cf340b6e6134487dcb9c4eaca126f9316480a55b9d3be2f",
+      "path": "assets/00011.json",
+      "role": "artifact",
+      "sha256": "sha256:ee30460ee934256b3a8a14aa0a2558c7f2e278b488cdcce3f5e729c88d0be6ff"
+    },
+    {
+      "bytes": 204214,
+      "id": "artifact-243aa68e424ff0361b2eccccc0b0bbe8cfa8772563d6a16e0015d47d928de3cd",
+      "path": "assets/00012.json",
+      "role": "artifact",
+      "sha256": "sha256:d29634939547f562e4519cb59bce354e0fd06f4c35b7d41c38ae64cb1cfc7f58"
+    },
+    {
+      "bytes": 44861,
+      "id": "artifact-248414b318e639481c5984b158751e33a447ca23f5be989c778649124565aee5",
+      "path": "assets/00013.json",
+      "role": "artifact",
+      "sha256": "sha256:8af96c9ec84e01e1ece8fbaf2de442d6db0fb8c1c21161068a449574547ca655"
+    },
+    {
+      "bytes": 7803,
+      "id": "artifact-264d956d8d6d3f05a5f9ce47fd7bc28d4b3608bff18d1b4106c7dc1decd4ae0e",
+      "path": "assets/00014.json",
+      "role": "artifact",
+      "sha256": "sha256:c355e42498af23ed5346eddc40ef1539c546c72b203ea3f167d9af28b34ac53b"
+    },
+    {
+      "bytes": 1418274,
+      "id": "artifact-27054d2c7f82184fdf5010383cea09692272f798dc7b73d61addd57cf3c2425d",
+      "path": "assets/00015.json",
+      "role": "artifact",
+      "sha256": "sha256:c8fac8339a94b66bfe37495d2d78e398c6106b86f646e09126837b454a6aa058"
+    },
+    {
+      "bytes": 34957,
+      "id": "artifact-29ef2949681060f67bdfe8cae11d85f92e789c34f506facbb682f46dc29abeb3",
+      "path": "assets/00016.json",
+      "role": "artifact",
+      "sha256": "sha256:3470b09f71ba13e1057385e8b8d07de3c2d82e2d398103f6399de16909dc50e7"
+    },
+    {
+      "bytes": 15342,
+      "id": "artifact-2c468ac5cc206e6585f44436cb75f25e45b860079cc8341ee8e312fd257f4910",
+      "path": "assets/00017.json",
+      "role": "artifact",
+      "sha256": "sha256:aa11d792312b6068405cbcc972af85454a918acc13f15333844536c9cef3a4a3"
+    },
+    {
+      "bytes": 17168,
+      "id": "artifact-2d32f67b1b10600740bad26ceddbd986a17f2c90da8a422f2df5053a144c2c0e",
+      "path": "assets/00018.json",
+      "role": "artifact",
+      "sha256": "sha256:0a2df5ca18424e0e6372467efec0544874a859b4c9557ca63fc08ef36882dc67"
+    },
+    {
+      "bytes": 14992,
+      "id": "artifact-30144daaf8b98ed62332d42fadd98776629a5189d7d9710663eb6a6e09e742a0",
+      "path": "assets/00019.json",
+      "role": "artifact",
+      "sha256": "sha256:35147ac0189fb46df3cc4b2cc7876071e4f5a605f8f8d77595e85fed50279af8"
+    },
+    {
+      "bytes": 1412523,
+      "id": "artifact-328e6d35d9cd929d9ec670557d27b539dbcab800a8482207171c73451d3bd473",
+      "path": "assets/00020.json",
+      "role": "artifact",
+      "sha256": "sha256:974161fe5ad46cc0753178b5fe4c1edbc9ef442d22dd61e404eff22e5f4985df"
+    },
+    {
+      "bytes": 31077,
+      "id": "artifact-333620683225bde92dda5ac3cec1df423e70d8d7045e89378d80280c593f5ddf",
+      "path": "assets/00021.json",
+      "role": "artifact",
+      "sha256": "sha256:e5059c6beb13ae1392f78d2fd4fef175c7fe341cd0ac4915d34f161e95e3a9db"
+    },
+    {
+      "bytes": 75430,
+      "id": "artifact-33dc2904a6190b009eba9b0c0b4c0cfe525686ecdb73eb81d4b32a9160c42183",
+      "path": "assets/00022.json",
+      "role": "artifact",
+      "sha256": "sha256:546794c3cb7e01705dfd7d4a54e8ea8b4d1590a305477a0a2dd293e1bd419302"
+    },
+    {
+      "bytes": 14022,
+      "id": "artifact-36cc45cb06c9c08526065accaadbc7be3de8a6947e6b9e4b9f2e58a3acb30d48",
+      "path": "assets/00023.json",
+      "role": "artifact",
+      "sha256": "sha256:98afb81300c6795a6de00e9548d179193368448ea4cf634f0d8bade4fc58878f"
+    },
+    {
+      "bytes": 31641,
+      "id": "artifact-3d6846b06613848f95debc02725a5415911850b81fb958cb5ffd2d22569d182a",
+      "path": "assets/00024.json",
+      "role": "artifact",
+      "sha256": "sha256:b9e7686248d75dc84623756d1c89c24c3291a36c5dad70de7e4df8184e5c8c77"
+    },
+    {
+      "bytes": 1417177,
+      "id": "artifact-3f5c33b8e2dc4120bda55ad2e24d86d469f9b732775745e3b44b6ca0db2a1302",
+      "path": "assets/00025.json",
+      "role": "artifact",
+      "sha256": "sha256:999f501c813250866c521d0cdd7fe9883587bf365668da58cf7fa308cc38f76a"
+    },
+    {
+      "bytes": 10104,
+      "id": "artifact-4327831df4eec304d303a35d056e2b1e21c2d7df2c742f5e70d0d1c90c625548",
+      "path": "assets/00026.json",
+      "role": "artifact",
+      "sha256": "sha256:054f4586e54d7fedd66c50e58518fe3521c5674b526776e10087326060f19db2"
+    },
+    {
+      "bytes": 20429,
+      "id": "artifact-4422ed130b790ded6343c676cc42ef91a50aec3ed91ed94869b3e4635186fb9e",
+      "path": "assets/00027.json",
+      "role": "artifact",
+      "sha256": "sha256:2d6d43ea985382369db5267e9fd1f62dfb7af2df33a8e164a48cd86e8fc55308"
+    },
+    {
+      "bytes": 13926,
+      "id": "artifact-4c1a114873bb2018146bb1b6b9c7f40a5d059ebdb294f55d0c34ac3359b78aae",
+      "path": "assets/00028.json",
+      "role": "artifact",
+      "sha256": "sha256:0c7a650b880b363b434486e050e528e8e8d3dd16177b21220df6f2094f503109"
+    },
+    {
+      "bytes": 17252,
+      "id": "artifact-53e0b4f5687117a974f85198dcbd57478d90bd0ed3aa5716d4f525e9c688d807",
+      "path": "assets/00029.json",
+      "role": "artifact",
+      "sha256": "sha256:ac949022e2b649ebf9a734c10a29e14251379b2999b5294d469b544bd69582f3"
+    },
+    {
+      "bytes": 29212,
+      "id": "artifact-5b8d28fd0b4699e2eb8939b3a0a86e1a5d384398d945b550841829b81ea1aa22",
+      "path": "assets/00030.json",
+      "role": "artifact",
+      "sha256": "sha256:352b291fc501f21cd95d7cbb4e07e0e6f6d113a9a2177151401cbe0b0ae9ee2b"
+    },
+    {
+      "bytes": 1417618,
+      "id": "artifact-5d1994077aea031f4cc141a775bf920af287a82965e91aa094a8b7ff91dd6b46",
+      "path": "assets/00031.json",
+      "role": "artifact",
+      "sha256": "sha256:392ff728bfd545fdc1fdbeead06cca9eb3c412000677d86f0827a6ab60ce63a1"
+    },
+    {
+      "bytes": 15303,
+      "id": "artifact-5db707c0228121fb16152b56284458565038f7ca90de6a3ad5b09fb90f4b44dd",
+      "path": "assets/00032.json",
+      "role": "artifact",
+      "sha256": "sha256:7133b32e838bd581a25e9ee5cd2ac81f4fb882991b8ff4baa3119fb2f0aeea3e"
+    },
+    {
+      "bytes": 17111,
+      "id": "artifact-62f81b4dd22f27f4a0731d68f40e421a0ab6f76338d4c6c2a46d74c8b1114c1a",
+      "path": "assets/00033.json",
+      "role": "artifact",
+      "sha256": "sha256:4f436c0b2fb8843f40ec54c7406512a89a18e923697cb7d46383715c3b32d60c"
+    },
+    {
+      "bytes": 65454,
+      "id": "artifact-639d3f225e2e6eea141e261efe55a81cf2f45b842dc8eae6bcb1962fbe9ab234",
+      "path": "assets/00034.json",
+      "role": "artifact",
+      "sha256": "sha256:6a33c02ac537f1873a4d41c9c3b8c37a7662aed6f1088f012324af53da504160"
+    },
+    {
+      "bytes": 47719,
+      "id": "artifact-65e7128bf6649d9891f01227fb74cd867156c7a2b7a4f54dc199064ca9588a12",
+      "path": "assets/00035.json",
+      "role": "artifact",
+      "sha256": "sha256:b4a95bf21bae16eec9c4c226fb39e3dc2d2affc3fd0c49ca871145cd0ef7b6f6"
+    },
+    {
+      "bytes": 40744,
+      "id": "artifact-6605dc3a325e80b0a17f65bd68907cbccee144ce687cebc9ce077d3204ee48e3",
+      "path": "assets/00036.json",
+      "role": "artifact",
+      "sha256": "sha256:26ce80d320e94f64a3ab8f0c54bc13afa923073b0334bb132125d00b4b694a2b"
+    },
+    {
+      "bytes": 42202,
+      "id": "artifact-66ef1d091ef36116c878af261b6a5fbe48a09b774e080998eb2f3d8bc5179205",
+      "path": "assets/00037.json",
+      "role": "artifact",
+      "sha256": "sha256:9e46a9501260a83060e99799f84094abbb0bc3899f3b98a04b5d7adabfd4e88b"
+    },
+    {
+      "bytes": 47098,
+      "id": "artifact-68c5a16505547db2729caf0ed190de742b8efcf169db87b4b2b7e52f61bf79bc",
+      "path": "assets/00038.json",
+      "role": "artifact",
+      "sha256": "sha256:a9f387e14ef3788f3ad76b4adec953ab4730b10e47613162a2a84256b73e7848"
+    },
+    {
+      "bytes": 32472,
+      "id": "artifact-6ec449f8a4484f99067b86f9cca1bd4a4fa51bfc1b34ca9bd531eda6be83519f",
+      "path": "assets/00039.json",
+      "role": "artifact",
+      "sha256": "sha256:8a3966472492b7beafc8fd554fff0d0ac35c2c4529dd41ecbd7f24ed99f3b2a8"
+    },
+    {
+      "bytes": 38634,
+      "id": "artifact-6f71505248513ed60438b599e228d70cc37fdccc082c25bf26df6eab0a56e075",
+      "path": "assets/00040.json",
+      "role": "artifact",
+      "sha256": "sha256:8245fb2e348fdeca503c1fb04b3b0110e395a610ea2376a4514ded871601ef4a"
+    },
+    {
+      "bytes": 46742,
+      "id": "artifact-6ffa2717ab2724c7c208d7fb4a09e95ce296df42db071b6ee04e30e79adee198",
+      "path": "assets/00041.json",
+      "role": "artifact",
+      "sha256": "sha256:1d449a2326c066f9562fe25d962643122e5afe1268ef7247109638571c439201"
+    },
+    {
+      "bytes": 1427696,
+      "id": "artifact-71fb8e658216e855cd585c806f7ac063e2c69c51bcce77449b621825f60366de",
+      "path": "assets/00042.json",
+      "role": "artifact",
+      "sha256": "sha256:efd84984c6938903d4201aca1e94b961fcd51a93c3f6b8dd6f51c599a250c4f8"
+    },
+    {
+      "bytes": 1414064,
+      "id": "artifact-722d915f05fc0fe8843ab18f3d856e93f7c2fb2f07df2a628410aa1c9a962576",
+      "path": "assets/00043.json",
+      "role": "artifact",
+      "sha256": "sha256:44e9d691226f284cbf5d2f38939f1a1c919db2aef2aae3e16251f3ab94837904"
+    },
+    {
+      "bytes": 1412154,
+      "id": "artifact-75fa54e452153b8c96eb0c53171599a3cf708f877222f0f869052d909dee68ba",
+      "path": "assets/00044.json",
+      "role": "artifact",
+      "sha256": "sha256:43691e0a37452f5e3c3869bb23f4ff4e2f5f60351177e4a50d4aedc399ace8a8"
+    },
+    {
+      "bytes": 34619,
+      "id": "artifact-777ecec1a2dde4902f8956f4a4a7969bf1c51d446bc7826e3e70f0e4a610a11d",
+      "path": "assets/00045.json",
+      "role": "artifact",
+      "sha256": "sha256:4ac21bbd6444faeba33cc71818224d33ca55609055e9ddf9bb35e8daec426759"
+    },
+    {
+      "bytes": 19313,
+      "id": "artifact-7bca433991e11c5c5b420118cda44d425a6f87414ab1c8c08916d7761ac7bcc6",
+      "path": "assets/00046.json",
+      "role": "artifact",
+      "sha256": "sha256:771590afa9f482c2d3acd1cf5707750065d58feb8fa69172e8a2643b95ca33ad"
+    },
+    {
+      "bytes": 36861,
+      "id": "artifact-7f443992e8e667a6ff6c515cc18289bd757dd7e71d6e3c0735d9a20282b68b61",
+      "path": "assets/00047.json",
+      "role": "artifact",
+      "sha256": "sha256:96d85b977d3f8e46636b13b8c2d4506146ae3998c1b539d41897d2f5ca9ae88a"
+    },
+    {
+      "bytes": 35324,
+      "id": "artifact-83745365615b98df8751056f6c91e27df2fcaf0971a42d6fdfd0c5ed2ad3725d",
+      "path": "assets/00048.json",
+      "role": "artifact",
+      "sha256": "sha256:be51316564151c665320d5f8c6826b87fde10a5e893f5709048cc31358988423"
+    },
+    {
+      "bytes": 38499,
+      "id": "artifact-89b1c86aac62066f609411b5971803689de16c40566dda2a11f9766603893363",
+      "path": "assets/00049.json",
+      "role": "artifact",
+      "sha256": "sha256:d005d7a7a32da359d6a37b6eb9a11fca5387908cecf2f847459fb831119d1db6"
+    },
+    {
+      "bytes": 13051,
+      "id": "artifact-8a88cfef4396d2285e0866f5650f7c45c82017c00aae366133d482797dbf2724",
+      "path": "assets/00050.json",
+      "role": "artifact",
+      "sha256": "sha256:8ac9fee4e226884006113068d205726d255596e2b1738e830ac81ae0caa15623"
+    },
+    {
+      "bytes": 73854,
+      "id": "artifact-923848afd8b46fb998e6299d4e4357b4409947a855845e784f04dce9be5be512",
+      "path": "assets/00051.json",
+      "role": "artifact",
+      "sha256": "sha256:8abfedb184231b1999ad3821d42038a03baed7e6ecb746f02b3d85f07d77b00c"
+    },
+    {
+      "bytes": 1425582,
+      "id": "artifact-93bb08804284ddba5289d15fc3873e45f986625c089f8aa4871667c1f0ffd614",
+      "path": "assets/00052.json",
+      "role": "artifact",
+      "sha256": "sha256:a0126c23b5a40ccd5aa701d2735a3446f7a807301e9e8db7c5f195562569ae87"
+    },
+    {
+      "bytes": 22047,
+      "id": "artifact-945a7ca4973cc5926e7df3112dd5f5665023bfa2b35fd784e6889228d99cdd14",
+      "path": "assets/00053.json",
+      "role": "artifact",
+      "sha256": "sha256:c5bfda1cb29e4b772eea50098ada2bace5e7df3ad25eba1fea00dd67ae6bf8ac"
+    },
+    {
+      "bytes": 1412010,
+      "id": "artifact-95d530c27003871c9e8d68391393fe8f0860208a1c75f5136dc22e7a9b2ae308",
+      "path": "assets/00054.json",
+      "role": "artifact",
+      "sha256": "sha256:e7ee35b884f80e0e66ea474d0f8ac414e9c26e91d6cb6a9767c15e5869b46f3e"
+    },
+    {
+      "bytes": 36759,
+      "id": "artifact-971f6930979395695826d617d8b98866e40f9e9e39bcbb3817baefb87bb1a860",
+      "path": "assets/00055.json",
+      "role": "artifact",
+      "sha256": "sha256:bfdc541632de15c6f63c9fde06a299d9e216616647b04cada869acc931d5a192"
+    },
+    {
+      "bytes": 42702,
+      "id": "artifact-972ca8baa529dc45955a1e201e8b01149aa07fcf2c641aabb66b8e108fdd26a8",
+      "path": "assets/00056.json",
+      "role": "artifact",
+      "sha256": "sha256:4f8f030e1ddb25d503e8ac1e47b706fae3d1a7868cfaf19cd399ed91038b2d84"
+    },
+    {
+      "bytes": 26178,
+      "id": "artifact-9ad4efd851c9ba7ab61b12da82baf337ffb9cefa319c76036eeea0002071dcf9",
+      "path": "assets/00057.json",
+      "role": "artifact",
+      "sha256": "sha256:88c0c510219a2b1acddf8d7b3db7f121fe67cac083f4a39d7a67afd4b8f15c17"
+    },
+    {
+      "bytes": 7597,
+      "id": "artifact-a181046f66dfcaefbe645c668a8c9a7a78db0ac907d00756946b87e09ef41761",
+      "path": "assets/00058.json",
+      "role": "artifact",
+      "sha256": "sha256:21a602aefaca1862430e8f1ecbb7026aa6affe0cef6796aaaa4aa368f193496a"
+    },
+    {
+      "bytes": 15853,
+      "id": "artifact-b16b67be9ad4a4a052eebf13260972ea534cda419d06138762122c56699ddfe7",
+      "path": "assets/00059.json",
+      "role": "artifact",
+      "sha256": "sha256:988e010d3d7760cfb039977717a14da67aaeed087c4dcd0ea8f2c54583176900"
+    },
+    {
+      "bytes": 17909,
+      "id": "artifact-b22ddc29897a73ec336f0af602a3ca801169cdbb0ccf14c2e305d8eea9833072",
+      "path": "assets/00060.json",
+      "role": "artifact",
+      "sha256": "sha256:f7df6118efc087c1caa26b9f68749295a21319a4ef7d3be4dfb242b103bbb9ac"
+    },
+    {
+      "bytes": 36832,
+      "id": "artifact-b5fe8eaf99153eef3c5d67811676ea66bd26fb89e3a8c4eee01d1fcef84632bb",
+      "path": "assets/00061.json",
+      "role": "artifact",
+      "sha256": "sha256:05dd6be5976324a88f970fdcdb4fbfe93f9ca4e8db68152389e1fb96acdca26a"
+    },
+    {
+      "bytes": 41803,
+      "id": "artifact-b816389da82c4b84a95a487f40b5b8916eab90daa8139e82ef4e5cee181e2569",
+      "path": "assets/00062.json",
+      "role": "artifact",
+      "sha256": "sha256:54dd8f84f16f0352ecc9b0c325af942c4075808d666e9b1bd3f133c25c0fdded"
+    },
+    {
+      "bytes": 17092,
+      "id": "artifact-bae21344f1eb5595fdd6e95f04ee9021753f47d26f0cdcfe7297620d7ab439c8",
+      "path": "assets/00063.json",
+      "role": "arti
+\n### synthetic/README.md
+Synthetic additional-assumption and stale-review fixture. All reviews and source identities here are illustrative test records; no real exposition review is asserted. The original finite-map files are unchanged, and stale-guide.json retains an old explanation review after editing the step.
+
+\n### synthetic/finite-map.guide.json
+{
+  "schema": "ladon-result-guide-v1",
+  "resultId": "finite-map-example",
+  "manifestRevision": "sha256:1a54b5cd4498baf2b4ab4842b5e6bf773377e9376ce7e024e5431fe1b331bec4",
+  "steps": [
+    {
+      "id": "finite-domain-condition",
+      "claimId": "paper-theorem-1",
+      "claimRevision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "purpose": "Check the domain hypothesis before reusing the implication.",
+      "explanation": "The supplied formal type requires a finite domain. The informal statement omits this assumption. Finiteness makes injectivity imply surjectivity; for an infinite domain the unrestricted claim fails, as the successor self-map of the natural numbers shows. This illustrative explanation is not a Lean check or a correspondence approval.",
+      "sources": [
+        {
+          "locator": "example-paper#theorem-1",
+          "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ],
+      "author": {
+        "identity": "Ladon illustrative guide",
+        "kind": "model"
+      },
+      "prerequisites": [],
+      "revision": "sha256:fc7ea39f6d6bce5fd39859020ffd0871ec9b0ec21989cd33eee6f3e321543fcd"
+    }
+  ],
+  "citations": [],
+  "reviews": []
+}
+\n### synthetic/finite-map.json
+{
+  "schema": "ladon-result-manifest-v1",
+  "resultId": "finite-map-example",
+  "title": "Illustrative claim with an additional finiteness assumption",
+  "claimInventory": {
+    "scope": "One illustrative paper statement; not a checked formalization.",
+    "coverage": "complete"
+  },
+  "claims": [
+    {
+      "id": "paper-theorem-1",
+      "statement": "Every injective self-map is surjective.",
+      "document": {
+        "locator": "example-paper#theorem-1",
+        "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "components": [
+        "implication",
+        "unrestricted-domain"
+      ],
+      "revision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1"
+    }
+  ],
+  "targets": [
+    {
+      "id": "finite-map",
+      "name": "Example.injective_surjective",
+      "typeText": "{α : Type} → [Finite α] → (f : α → α) → Function.Injective f → Function.Surjective f",
+      "source": {
+        "path": "Example.lean",
+        "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "projectRevision": "illustrative-fixture-only"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.32.1",
+        "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+    }
+  ],
+  "links": [
+    {
+      "id": "mapping-1",
+      "claimId": "paper-theorem-1",
+      "componentIds": [
+        "implication"
+      ],
+      "targetIds": [
+        "finite-map"
+      ]
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-1",
+      "linkId": "mapping-1",
+      "linkDigest": "sha256:902df6d9d43c9384ceef299ff5393a05efb245735d1ded8dc7eaf1e38cdfb200",
+      "claimRevision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "reviewer": {
+        "id": "illustrative-model-review",
+        "kind": "model"
+      },
+      "method": "Supplied statement comparison; no Lean or canonical evidence loaded.",
+      "timestamp": "2026-10-02T09:00:00Z",
+      "rationale": "The supplied formal type assumes a finite domain; the informal statement does not. All source/environment digests in this fixture are illustrative.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "assumption",
+          "claimAnchor": "example-paper#theorem-1",
+          "formalAnchor": "Example.lean: supplied type [Finite α]",
+          "description": "Finiteness is an additional hypothesis.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    }
+  ],
+  "revision": "sha256:1a54b5cd4498baf2b4ab4842b5e6bf773377e9376ce7e024e5431fe1b331bec4"
+}
+\n### synthetic/stale-guide.json
+{
+  "schema": "ladon-result-guide-v1",
+  "resultId": "finite-map-example",
+  "manifestRevision": "sha256:1a54b5cd4498baf2b4ab4842b5e6bf773377e9376ce7e024e5431fe1b331bec4",
+  "steps": [
+    {
+      "id": "finite-domain-condition",
+      "claimId": "paper-theorem-1",
+      "claimRevision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "purpose": "Check the domain hypothesis before reusing the implication.",
+      "explanation": "The supplied formal type requires a finite domain. The informal statement omits this assumption. Finiteness makes injectivity imply surjectivity; for an infinite domain the unrestricted claim fails, as the successor self-map of the natural numbers shows. This illustrative explanation is not a Lean check or a correspondence approval. This edited version requires a fresh explanation review; all identities remain illustrative.",
+      "sources": [
+        {
+          "locator": "example-paper#theorem-1",
+          "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ],
+      "author": {
+        "identity": "Ladon illustrative guide",
+        "kind": "model"
+      },
+      "prerequisites": [],
+      "revision": "sha256:b5ebbc18ab80d270df67a314c4b20b13b494911e023f026d9f77633e48be103a"
+    }
+  ],
+  "citations": [],
+  "reviews": [
+    {
+      "id": "synthetic-old-explanation-review",
+      "scope": "explanation",
+      "stepId": "finite-domain-condition",
+      "stepRevision": "sha256:fc7ea39f6d6bce5fd39859020ffd0871ec9b0ec21989cd33eee6f3e321543fcd",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "reviewer": {
+        "identity": "Synthetic test observer, not a real reviewer",
+        "kind": "tool"
+      },
+      "status": "approved",
+      "rationale": "Synthetic currency fixture: approval refers only to the previous illustrative explanation; not mathematical or human approval.",
+      "timestamp": "2026-10-04T00:00:00Z"
+    }
+  ]
+}

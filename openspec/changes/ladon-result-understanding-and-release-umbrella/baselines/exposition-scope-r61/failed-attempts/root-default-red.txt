@@ -1,0 +1,16 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_________ test_default_component_pages_label_each_whole_claim_context __________
+tests/test_result_component_scope_default.py:14: in test_default_component_pages_label_each_whole_claim_context
+    assert row['statementScope'] == 'whole-claim-context'
+           ^^^^^^^^^^^^^^^^^^^^^
+E   KeyError: 'statementScope'
+______ test_large_sibling_omission_reference_includes_unmapped_components ______
+tests/test_result_component_scope_default.py:27: in test_large_sibling_omission_reference_includes_unmapped_components
+    result = inspect_result_manifest(value, [], claim_id=claim['id'], component_id='implication')
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+=========================== short test summary info ============================
+FAILED tests/test_result_component_scope_default.py::test_default_component_pages_label_each_whole_claim_context
+FAILED tests/test_result_component_scope_default.py::test_large_sibling_omission_reference_includes_unmapped_components
+2 failed in 0.09s

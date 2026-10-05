@@ -1,0 +1,92 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_______ test_duplicate_serialized_object_keys_are_rejected[False-False] ________
+
+batch = False, nested = False
+
+    @pytest.mark.parametrize("batch", [False, True])
+    @pytest.mark.parametrize("nested", [False, True])
+    def test_duplicate_serialized_object_keys_are_rejected(batch, nested):
+        class DuplicatePairs(dict):
+            def items(self):
+                pairs = list(super().items())
+                return pairs + [pairs[-1]]
+    
+        raw = claim_artifact()
+        if nested:
+            raw["extensions"] = DuplicatePairs(raw["extensions"])
+        else:
+            raw = DuplicatePairs(raw)
+>       with pytest.raises(ProofIRV3Error, match="duplicate serialized object key"):
+E       Failed: DID NOT RAISE <class 'ladon.proofir_v3.ProofIRV3Error'>
+
+tests/test_envelope_duplicate_serialization.py:22: Failed
+________ test_duplicate_serialized_object_keys_are_rejected[False-True] ________
+
+batch = True, nested = False
+
+    @pytest.mark.parametrize("batch", [False, True])
+    @pytest.mark.parametrize("nested", [False, True])
+    def test_duplicate_serialized_object_keys_are_rejected(batch, nested):
+        class DuplicatePairs(dict):
+            def items(self):
+                pairs = list(super().items())
+                return pairs + [pairs[-1]]
+    
+        raw = claim_artifact()
+        if nested:
+            raw["extensions"] = DuplicatePairs(raw["extensions"])
+        else:
+            raw = DuplicatePairs(raw)
+>       with pytest.raises(ProofIRV3Error, match="duplicate serialized object key"):
+E       Failed: DID NOT RAISE <class 'ladon.proofir_v3.ProofIRV3Error'>
+
+tests/test_envelope_duplicate_serialization.py:22: Failed
+________ test_duplicate_serialized_object_keys_are_rejected[True-False] ________
+
+batch = False, nested = True
+
+    @pytest.mark.parametrize("batch", [False, True])
+    @pytest.mark.parametrize("nested", [False, True])
+    def test_duplicate_serialized_object_keys_are_rejected(batch, nested):
+        class DuplicatePairs(dict):
+            def items(self):
+                pairs = list(super().items())
+                return pairs + [pairs[-1]]
+    
+        raw = claim_artifact()
+        if nested:
+            raw["extensions"] = DuplicatePairs(raw["extensions"])
+        else:
+            raw = DuplicatePairs(raw)
+>       with pytest.raises(ProofIRV3Error, match="duplicate serialized object key"):
+E       Failed: DID NOT RAISE <class 'ladon.proofir_v3.ProofIRV3Error'>
+
+tests/test_envelope_duplicate_serialization.py:22: Failed
+________ test_duplicate_serialized_object_keys_are_rejected[True-True] _________
+
+batch = True, nested = True
+
+    @pytest.mark.parametrize("batch", [False, True])
+    @pytest.mark.parametrize("nested", [False, True])
+    def test_duplicate_serialized_object_keys_are_rejected(batch, nested):
+        class DuplicatePairs(dict):
+            def items(self):
+                pairs = list(super().items())
+                return pairs + [pairs[-1]]
+    
+        raw = claim_artifact()
+        if nested:
+            raw["extensions"] = DuplicatePairs(raw["extensions"])
+        else:
+            raw = DuplicatePairs(raw)
+>       with pytest.raises(ProofIRV3Error, match="duplicate serialized object key"):
+E       Failed: DID NOT RAISE <class 'ladon.proofir_v3.ProofIRV3Error'>
+
+tests/test_envelope_duplicate_serialization.py:22: Failed
+=========================== short test summary info ============================
+FAILED tests/test_envelope_duplicate_serialization.py::test_duplicate_serialized_object_keys_are_rejected[False-False]
+FAILED tests/test_envelope_duplicate_serialization.py::test_duplicate_serialized_object_keys_are_rejected[False-True]
+FAILED tests/test_envelope_duplicate_serialization.py::test_duplicate_serialized_object_keys_are_rejected[True-False]
+FAILED tests/test_envelope_duplicate_serialization.py::test_duplicate_serialized_object_keys_are_rejected[True-True]
+4 failed in 0.04s

@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T09:15:52.766488+00:00",
+  "argv": [
+    "/bin/bash",
+    "-lc",
+    "python3 - <<\"PY\"\nimport json,collections\nG=json.load(open(\"assets/00092.json\")); print(\"GUIDE STEPS\")\nfor s in G[\"steps\"]: print(s[\"id\"],s[\"claimId\"],\"prereqs\",[x[\"stepId\"] for x in s.get(\"prerequisites\",[])],\"EXPL\",s[\"explanation\"][:450])\nprint(\"GUIDE REVIEWS\",json.dumps(G[\"reviews\"],indent=2)[:7000])\nA=json.load(open(\"assets/00089.json\")); print(\"ASSESSMENT COUNT\",len(A.get(\"assessments\",[]))); print(collections.Counter(x.get(\"kind\") for x in A.get(\"assessments\",[])))\nfor x in A.get(\"assessments\",[]):\n if x.get(\"claimId\") in [\"thm:smallbatch\",\"cor:fixed-epoch-all-horizon\"]: print(x.get(\"claimId\"),x.get(\"componentId\"),x.get(\"kind\"),x.get(\"scope\"),x.get(\"differences\"))\nPY"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-loop-r49/shared/evidence",
+  "exitCode": 0,
+  "elapsedSeconds": 0.11758223501965404,
+  "peakRssBytes": 4141056,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/guide-review-summary.stdout",
+      "bytes": 5589,
+      "sha256": "sha256:ca60522cd7212a59743727ca81cd41662858281dc7a3a2d5ee99ebcf2b749158"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/guide-review-summary.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

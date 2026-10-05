@@ -1,0 +1,299 @@
++ /home/codex/miniconda3/bin/uv lock --check
+Using CPython 3.11.15 interpreter at: /home/codex/miniconda3/bin/python3.11
+Resolved 18 packages in 0.47ms
++ /home/codex/miniconda3/bin/uv sync --locked --no-editable
+Using CPython 3.11.15 interpreter at: /home/codex/miniconda3/bin/python3.11
+Creating virtual environment at: /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/environment
+Resolved 18 packages in 0.40ms
+   Building ladon @ file:///home/codex/.cache/ladon-qualification-r49/ladon-candidate-38s_wkwa/source
+      Built ladon @ file:///home/codex/.cache/ladon-qualification-r49/ladon-candidate-38s_wkwa/source
+Downloading pygments (1.2MiB)
+Downloading ruff (10.5MiB)
+ Downloaded pygments
+ Downloaded ruff
+Prepared 18 packages in 813ms
+Installed 18 packages in 5ms
+ + attrs==26.1.0
+ + colorama==0.4.6
+ + iniconfig==2.3.0
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + ladon==0.2.0 (from file:///home/codex/.cache/ladon-qualification-r49/ladon-candidate-38s_wkwa/source)
+ + mando==0.7.1
+ + packaging==26.2
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+ + radon==6.0.1
+ + referencing==0.37.0
+ + rpds-py==2026.6.3
+ + ruff==0.16.3
+ + six==1.17.0
+ + typing-extensions==4.16.0
+ + vulture==2.16
++ /home/codex/miniconda3/bin/uv run --locked --no-sync python -m pytest --collect-only -q
++ /home/codex/projects/ladon/.venv/bin/python3 -m pytest --collect-only -q
++ /home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lake build
+✔ [2/5] Built LadonFixture.Core (123ms)
+✔ [3/5] Built LadonFixture.Helper (123ms)
+⚠ [4/5] Built LadonFixture (156ms)
+warning: LadonFixture.lean:12:23: Variable name `y` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+Build completed successfully (5 jobs).
++ /home/codex/miniconda3/bin/uv run --locked --no-sync python scripts/python_quality.py --strict
+
+== strict radon/vulture checks ==
+radon/vulture: clean
+
+== scoped ruff ==
++ /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/environment/bin/python3 -m ruff check src tests scripts
+All checks passed!
+
+== compileall ==
+
+== pytest ==
++ /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/environment/bin/python3 -m pytest -q tests
+........................................................................ [  2%]
+........................................................................ [  4%]
+........................................................................ [  7%]
+........................................................................ [  9%]
+........................................................................ [ 12%]
+........................................................................ [ 14%]
+........................................................................ [ 17%]
+........................................................................ [ 19%]
+........................................................................ [ 22%]
+........................................................................ [ 24%]
+........................................................................ [ 26%]
+........................................................................ [ 29%]
+........................................................................ [ 31%]
+........................................................................ [ 34%]
+........................................................................ [ 36%]
+........................................................................ [ 39%]
+........................................................................ [ 41%]
+........................................................................ [ 44%]
+........................................................................ [ 46%]
+........................................................................ [ 49%]
+........................................................................ [ 51%]
+........................................................................ [ 53%]
+........................................................................ [ 56%]
+........................................................................ [ 58%]
+........................................................................ [ 61%]
+........................................................................ [ 63%]
+........................................................................ [ 66%]
+........................................................................ [ 68%]
+........................................................................ [ 71%]
+........................................................................ [ 73%]
+........................................................................ [ 75%]
+........................................................................ [ 78%]
+........................................................................ [ 80%]
+........................................................................ [ 83%]
+........................................................................ [ 85%]
+........................................................................ [ 88%]
+........................................................................ [ 90%]
+........................................................................ [ 93%]
+........................................................................ [ 95%]
+........................................................................ [ 98%]
+..........................................................               [100%]
+2938 passed in 269.02s (0:04:29)
++ /home/codex/miniconda3/bin/uv build --force-pep517 --build-constraints /home/codex/.cache/ladon-qualification-r49/ladon-candidate-38s_wkwa/source/build-constraints.txt --out-dir /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/dist --clear .
+Building source distribution...
+Building wheel from source distribution...
+Successfully built /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/dist/ladon-0.2.0.tar.gz
+Successfully built /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/dist/ladon-0.2.0-py3-none-any.whl
++ /home/codex/miniconda3/bin/uv venv --python /home/codex/projects/ladon/.venv/bin/python3 /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed
+Using CPython 3.11.15 interpreter at: /home/codex/projects/ladon/.venv/bin/python3
+Creating virtual environment at: installed
+Activate with: source installed/bin/activate
++ /home/codex/miniconda3/bin/uv pip install --python /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/bin/python /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/dist/ladon-0.2.0-py3-none-any.whl
+Using Python 3.11.15 environment at: installed
+Resolved 1 package in 1ms
+Prepared 1 package in 4ms
+Installed 1 package in 3ms
+ + ladon==0.2.0 (from file:///home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/dist/ladon-0.2.0-py3-none-any.whl)
++ /home/codex/miniconda3/bin/uv pip check --python /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/bin/python
+Using Python 3.11.15 environment at: installed
+Checked 1 package in 0.19ms
+All installed packages are compatible
++ /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/bin/python -c from importlib import resources
+from pathlib import Path
+import json
+import ladon
+import sys
+origin = Path(ladon.__file__).resolve()
+prefix = Path(sys.prefix).resolve()
+helper = resources.files('ladon').joinpath('lean', 'ladon_parser_helper.lean')
+semantic_helper = resources.files('ladon').joinpath('lean', 'ladon_semantic_candidate_helper.lean')
+assert origin.is_relative_to(prefix), (origin, prefix)
+assert helper.is_file(), helper
+assert semantic_helper.is_file(), semantic_helper
+print(json.dumps({'origin': str(origin), 'helper': str(helper), 'semanticHelper': str(semantic_helper)}))
+{"origin": "/home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/lib/python3.11/site-packages/ladon/__init__.py", "helper": "/home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/lib/python3.11/site-packages/ladon/lean/ladon_parser_helper.lean", "semanticHelper": "/home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/lib/python3.11/site-packages/ladon/lean/ladon_semantic_candidate_helper.lean"}
++ /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/bin/ladon --help
++ /home/codex/miniconda3/bin/uv export --locked --only-group dev --no-emit-project --output-file /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/locked-test-requirements.txt
+Resolved 18 packages in 0.50ms
+# This file was autogenerated by uv via the following command:
+#    uv export --locked --only-group dev --no-emit-project --output-file /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/locked-test-requirements.txt
+attrs==26.1.0 \
+    --hash=sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309 \
+    --hash=sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32
+    # via
+    #   jsonschema
+    #   referencing
+colorama==0.4.6 \
+    --hash=sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44 \
+    --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
+    # via
+    #   pytest
+    #   radon
+iniconfig==2.3.0 \
+    --hash=sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730 \
+    --hash=sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12
+    # via pytest
+jsonschema==4.26.0 \
+    --hash=sha256:0c26707e2efad8aa1bfc5b7ce170f3fccc2e4918ff85989ba9ffa9facb2be326 \
+    --hash=sha256:d489f15263b8d200f8387e64b4c3a75f06629559fb73deb8fdfb525f2dab50ce
+jsonschema-specifications==2025.9.1 \
+    --hash=sha256:98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe \
+    --hash=sha256:b540987f239e745613c7a9176f3edb72b832a4ac465cf02712288397832b5e8d
+    # via jsonschema
+mando==0.7.1 \
+    --hash=sha256:18baa999b4b613faefb00eac4efadcf14f510b59b924b66e08289aa1de8c3500 \
+    --hash=sha256:26ef1d70928b6057ee3ca12583d73c63e05c49de8972d620c278a7b206581a8a
+    # via radon
+packaging==26.2 \
+    --hash=sha256:5fc45236b9446107ff2415ce77c807cee2862cb6fac22b8a73826d0693b0980e \
+    --hash=sha256:ff452ff5a3e828ce110190feff1178bb1f2ea2281fa2075aadb987c2fb221661
+    # via pytest
+pluggy==1.6.0 \
+    --hash=sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3 \
+    --hash=sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746
+    # via pytest
+pygments==2.20.0 \
+    --hash=sha256:6757cd03768053ff99f3039c1a36d6c0aa0b263438fcab17520b30a303a82b5f \
+    --hash=sha256:81a9e26dd42fd28a23a2d169d86d7ac03b46e2f8b59ed4698fb4785f946d0176
+    # via pytest
+pytest==9.0.3 \
+    --hash=sha256:2c5efc453d45394fdd706ade797c0a81091eccd1d6e4bccfcd476e2b8e0ab5d9 \
+    --hash=sha256:b86ada508af81d19edeb213c681b1d48246c1a91d304c6c81a427674c17eb91c
+radon==6.0.1 \
+    --hash=sha256:632cc032364a6f8bb1010a2f6a12d0f14bc7e5ede76585ef29dc0cecf4cd8859 \
+    --hash=sha256:d1ac0053943a893878940fedc8b19ace70386fc9c9bf0a09229a44125ebf45b5
+referencing==0.37.0 \
+    --hash=sha256:381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231 \
+    --hash=sha256:44aefc3142c5b842538163acb373e24cce6632bd54bdb01b21ad5863489f50d8
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
+rpds-py==2026.6.3 \
+    --hash=sha256:127565fead0a10943b282957bd5447804ff3160ad79f2ad2635e6d249e380680 \
+    --hash=sha256:127e08c0642d880cf32ca47ec2a4a77b901f7e2dd1ad9762adb13955d72ffcc9 \
+    --hash=sha256:168c733a7112e071bb7a66460e667edfcff06c017a3c523f7a8a8e08d0140804 \
+    --hash=sha256:1cebd1337c242e4ec2293e541f712b2da849b29f48f0c293684b71c0632625d4 \
+    --hash=sha256:1e5822dfc2f0d4ab7e745eaa6d85945069329beeccef965af3f3bb26058fcab6 \
+    --hash=sha256:22bffe6042b9bcb0822bcd1955ec00e245daf17b4344e4ed8e9551b976b63e96 \
+    --hash=sha256:270b293dae9058fc9fcedab50f13cebf46fb8ed1d1d54e0521a9da5d6b211975 \
+    --hash=sha256:2bfd04c19ddbd6640de0b51894d764bd2758854d5b75bd102d2ef10cb9c293a9 \
+    --hash=sha256:2c54a076ca4d370980ab57bc0e31df57bbe8d41340436a90ef8b1219a3cbb127 \
+    --hash=sha256:2c958bf94822e9290a40aaf2a822d4bc5c88099093e3948ad6c571eca9272e5f \
+    --hash=sha256:2c99f7e8ccb3dd6e3e4bfeac657a7b208c9bac8075f4b078c02d7404c34107fa \
+    --hash=sha256:30c6dc199b24a5e3e81d50da0f00858c5bbdb2617a750395687f4339c5818171 \
+    --hash=sha256:3a83ae6c67b7676b9878378547ca8e93ed77a580037bcbcd1d32f739e1e6089c \
+    --hash=sha256:421aba32367055614287a4292b6a17f1939c9452299f7a0209c117e990b646d4 \
+    --hash=sha256:4cf2d36a2357e4d07bb5a4f98801265327b48256867816cfd2ceb001e9754a8f \
+    --hash=sha256:501f9f04a588d6a09179368c57071301445191767c64e4b52a6aa9871f1ef5ed \
+    --hash=sha256:538949e262e46caa31ac01bdb3c1e8f642622922cacbabbae6a8445d9dc33eaf \
+    --hash=sha256:55927d532399c2c646100ff7feb48eaa940ad70f42cd68e1328f3ded9f81ca24 \
+    --hash=sha256:58eadac9cd119677b60e1cf8ac4052f35949d71b8a9e5556efccbe82533cf22a \
+    --hash=sha256:5e8d07bddee435a2ff6f1920e18feff28d0bc4533e42f4bf6927fbd073312c41 \
+    --hash=sha256:62698275682bf121181861295c9181e789030a2d516071f5b8f3c23c170cd0fc \
+    --hash=sha256:7491ee23305ac3eb59e492b6945881f5cd77a6f731061a3f25b77fd40f9e99a4 \
+    --hash=sha256:7b689145a1485c335569bd056464f3243a29af7ed3871c7be31ad624ba239bc7 \
+    --hash=sha256:7f88d653e7b3b779d71ae7454e20dcc9b6bae903f33c269db9f2be41bda3f261 \
+    --hash=sha256:83e35b57523816c8613fd0776b40cd8bb9f596b37ddd2692eb4a6bb5ab2f8c93 \
+    --hash=sha256:8bb68f03f395eb793220b45c097bd4d8c32944393da0fad8b999efac0868fc8c \
+    --hash=sha256:8d2294a31386bfa251d8c8a39472beee17db67d4f1a6eabea665d35c9a4461c3 \
+    --hash=sha256:8e65860d238379ed982fd9ba690579b5e95af2f4840f99c772816dbe573cb826 \
+    --hash=sha256:9891e594296ab9dada6551c8e7b387b2721f27a67eecd528412e8906247a7b90 \
+    --hash=sha256:9c1255b302953c86a486b81d330d5ee1d5bd937691ce271b6be0ef0e299eaab7 \
+    --hash=sha256:a0811d33247c3d6128a3001d763f2aa056bb3425204335400ac54f89eec3a0d0 \
+    --hash=sha256:a214c993455f99a89aaeadc9b21241900037adc9d97203e374d75513c5911822 \
+    --hash=sha256:a3450b693fde92133e9f51060568a4c31fcca76d5e53bbd611e689ca446517e9 \
+    --hash=sha256:acc992ab27b15f852c76755eb2ab7dce86585ddadba6fa5946e58556088845b4 \
+    --hash=sha256:b5c2dc92304aa48a4a60443b548bb12f12e119d4b72f314015e67b9e1be97fca \
+    --hash=sha256:ca6546b66be9dc4738b1b043d5ebd5488c66c578c5ff0fd0e8065313fe3afb76 \
+    --hash=sha256:db08f45aecde626498fb3df07bcf6d2ec040af42e859a4f5040d79c200342911 \
+    --hash=sha256:de3eceba0b683bcbb1ab93da016d0270df1f9ae7be716b40214c5dafac6ea45a \
+    --hash=sha256:dfcc8b909769d19db55c7cc9541eb64b9b774b1057ffffb4f1048070475bb9f9 \
+    --hash=sha256:e52655eaf81e32593abedaa4bfe33170c8cfedf3365ed9be6e11e07f148f0278 \
+    --hash=sha256:ecabd69db66de867690f9797f2f8fa27ba501bbc24540cbdbdc649cd15888ba6 \
+    --hash=sha256:f56f1695bc5c0871cbc33dc0130fcf503aab0c57dcc5a6700a4f49eba4f2652e \
+    --hash=sha256:f8f23ead891a3b762f35ab3b04623da7056545b48aa60d59957e6789914545da
+    # via
+    #   jsonschema
+    #   referencing
+ruff==0.16.3 \
+    --hash=sha256:09571e6d1288ed9be475207a3ac04ada404f1cd898104be0f6ab8d7df438575b \
+    --hash=sha256:0c5710e247a58a4521e66e124ba9a74655b414f61ba3a2e9e3811e11098f48f7 \
+    --hash=sha256:294b95c4ae0cda9388525c2047778aa758d6b8d4bb876fd4e9eaa3ebc92343eb \
+    --hash=sha256:2c18c5a101eb540010638cc1ff3c84944d3adb3df62b8d98ca8f22ba484d3413 \
+    --hash=sha256:388cdf2166642bd9b13d52b5932d3170f34f8abed7e8d9a855f1d84b83645a0a \
+    --hash=sha256:3d0c7c40c87c2a820509c31ba007968da6e1306468c067b2d82fbfdbcd0e8474 \
+    --hash=sha256:8457c44f15033c85ddbb77b15d451df9e24e4bd03b628396dd3610cedc3b8f82 \
+    --hash=sha256:9e0b1da805eb043654645d74d5de1e5ce2edc686e40790d2b86f56d71cc06a84 \
+    --hash=sha256:9f738c0fdfa8eed0b2ce7fb27ee7258208a92a68d7949e62aa15164bc7b389da \
+    --hash=sha256:a2d85c02f9b8e165d85e6779184d38c4132de12603dab59c51c28e22584f9e4d \
+    --hash=sha256:a37bdea0bbe21780f590bf437d6412c8c4e1b6cd010f91a65c2c40c5e5f5f870 \
+    --hash=sha256:b8ca152da82c1acc1fa8d5874b15951935f0eef46f10e6954c83859011b6178a \
+    --hash=sha256:c5536e3acfbf9563085aa2be7b13c629c3077e902afc5b941ac44024dbb9f506 \
+    --hash=sha256:e2ed719e14aa64d895c2ee922594a90a43c861a93f0575a95ff8c47cdbd13eb9 \
+    --hash=sha256:e76d33a347661a84b5be6d043d0347fdc745dfdcf825a8f4fed64b5e26eebdf2 \
+    --hash=sha256:e80a7d69ca2a6d1c4d352ec91458cdca6e56c83cdbcabd93e4abe1e53591d948 \
+    --hash=sha256:fb785f0be25abe69d320415cd4f833b59e17ba7613d9ba6a958023b6bceb0a50 \
+    --hash=sha256:fe155130631a2471fd2e14a7a664a4dfbd7194b8229c3d7b2a40b21178639081
+six==1.17.0 \
+    --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
+    --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
+    # via mando
+typing-extensions==4.16.0 \
+    --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 \
+    --hash=sha256:dc983d19a509c94dba722ee6abd33940f7c05a89e243c47e907eb4db6f1a43e5
+    # via referencing
+vulture==2.16 \
+    --hash=sha256:6e0f1c312cef1c87856957e5c2ca9608834a7c794c2180477f30bf0e4cc58eee \
+    --hash=sha256:f8d9f6e2af03011664a3c6c240c9765b3f392917d3135fddca6d6a68d359f717
++ /home/codex/miniconda3/bin/uv pip install --python /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/bin/python --require-hashes --requirements /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/locked-test-requirements.txt
+Using Python 3.11.15 environment at: installed
+Resolved 17 packages in 203ms
+Installed 17 packages in 5ms
+ + attrs==26.1.0
+ + colorama==0.4.6
+ + iniconfig==2.3.0
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + mando==0.7.1
+ + packaging==26.2
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+ + radon==6.0.1
+ + referencing==0.37.0
+ + rpds-py==2026.6.3
+ + ruff==0.16.3
+ + six==1.17.0
+ + typing-extensions==4.16.0
+ + vulture==2.16
++ /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/bin/python -m pytest -q --rootdir /home/codex/.cache/ladon-qualification-r49/ladon-candidate-38s_wkwa/source /home/codex/.cache/ladon-qualification-r49/ladon-candidate-38s_wkwa/source/tests/test_installed_cli_contract.py
+.............................                                            [100%]
+29 passed in 12.29s
++ /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/bin/ladon --repo-root /home/codex/.cache/ladon-qualification-r49/ladon-candidate-38s_wkwa/source/tests/fixtures/tiny_lean --root Tiny.lean --output-json /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed-report.json
+ladon: --json/--text file flags are deprecated; use --format and --output
+ladon: report v2 compatibility output omits terminal phase dispositions; use report v3 to preserve acceptance and rejection reasons
+ladon: report v2 compatibility output duplicates large phase payloads; use report v3 for canonical bounded projections
++ /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/bin/python -c from importlib import resources; import sys; path = resources.files(sys.argv[1]).joinpath(sys.argv[2]); assert path.is_file(), path; print(path) ladon.schemas ladon-result-assessments-v1.schema.json
+/home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/lib/python3.11/site-packages/ladon/schemas/ladon-result-assessments-v1.schema.json
++ /home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/bin/python -c from importlib import resources; import sys; path = resources.files(sys.argv[1]).joinpath(sys.argv[2]); assert path.is_file(), path; print(path) ladon.schemas ladon-result-lineage-inputs-v1.schema.json
+/home/codex/.cache/ladon-qualification-r49/ladon-clean-gate-c_0as_2q/installed/lib/python3.11/site-packages/ladon/schemas/ladon-result-lineage-inputs-v1.schema.json
+clean checkout gate: PASS

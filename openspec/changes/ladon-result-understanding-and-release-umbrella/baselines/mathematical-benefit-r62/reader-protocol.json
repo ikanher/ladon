@@ -1,0 +1,40 @@
+{
+  "schema": "ladon-benefit-reader-protocol-r62-v1",
+  "model": "gpt-6-luna",
+  "reasoning": "medium",
+  "sessionConfiguration": "codex exec --json --ephemeral --ignore-user-config --skip-git-repo-check -m gpt-6-luna -c model_reasoning_effort=medium -c approval_policy=never -s workspace-write; per-case external output --add-dir; no prior review/worked context",
+  "ordinaryTools": "explicit Lean4.33.0, native exact?/apply?/compiler/#print axioms, rg and shell; same ready compiled roots in both arms",
+  "candidate": {
+    "sourceHead": "d64f475e23a7339c91aa280ff6e6679c27607875",
+    "sourceIndexSha256": "840bfe9d261ad6afa25c36c7311ad86677a1c437e84044826cbf0791370afc04",
+    "candidateCommit": "3806c436fe68e4d5700646b649b6a6525ec14ba0",
+    "sourceInventoryDigest": "sha256:75cfcdd843282a5bef737b1f3fe014620d431d082ecf84affe70bfdbb7577548"
+  },
+  "taskOrder": [
+    "application-ordinary",
+    "application-augmented",
+    "exposition-ordinary",
+    "exposition-augmented"
+  ],
+  "maximumSecondsPerSession": 600,
+  "maximumTreeRssBytes": 34359738368,
+  "selectionRule": "exactly one fresh initial session per task/arm; no favorable retry/prompt/config selection",
+  "interventions": "none during initial attempt; preserve failure before any assisted continuation",
+  "automaticRecording": "outside wrapper captures complete native JSONL bytes/stderr/final output, supervisor time/treeRSS, start/completion commands and aggregated outputs, before/after source/file hashes and exact generated file copies; no diary; JSONL tool-output truncation detected/disclosed separately",
+  "recordingLimit": "native backend may bound a tool output; 40,037-byte complete preflight verified, not a general guarantee of unlimited execution stdout; keep original event stream and disclosed omissions",
+  "expectationKey": "evaluator only; valid unchanged A completed with allowed transitive axioms; B alternate allowed or exact attempted residual without impossibility; passage17 formal transcript coverage vs conventional average; passage42 unchanged; passage68 omitted boundary premise repaired with explicit narrowing",
+  "sourcePopulation": "entire declared4039-file Mf/DP subtree; original module import retained, genuine guide-mediated discovery allowed and labelled",
+  "comparison": "qualitative matched task/configuration; guide identical; no general productivity/human-understanding claim",
+  "promptHashes": {
+    "application-ordinary": "34dd919865b78b3ec39b658ea54a795b055d3a6b0aa804be5af3d7fe915a4a98",
+    "application-augmented": "06af24bde670c1dc1b18dd2a3f998af2ffefab9a228f290de97129eca69d6288",
+    "exposition-ordinary": "c99f3360a9629a213979cb17432b498006582597fbe9b689965f938140530475",
+    "exposition-augmented": "640107fca3b3fb3f62de936dec2908be3a64568c93f185dc937d197a417c313f"
+  },
+  "recorderFiles": {
+    "session_exec.py": "e1cb2a16525ef6ef19acd2b9e57280d28c5bbd47255bce4a6eac55d209e216dc",
+    "read_one.py": "595c34a4f0959efcbdf14c63bc35e9c9217d5566d382b2d47174d5cbb6ed187b",
+    "task-inventory.json": "73fad9156d37170f5a9b61afc6d864926fe5538c18fe2f548b1229851d46e318",
+    "budget.json": "e93627dae5cda936bef23883ec05499baec7475b5b4b6a1b3b2b27f6a344152d"
+  }
+}

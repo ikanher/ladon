@@ -1,0 +1,218 @@
+### synthetic/finite-map.json
+{
+  "schema": "ladon-result-manifest-v1",
+  "resultId": "finite-map-example",
+  "title": "Illustrative claim with an additional finiteness assumption",
+  "claimInventory": {
+    "scope": "One illustrative paper statement; not a checked formalization.",
+    "coverage": "complete"
+  },
+  "claims": [
+    {
+      "id": "paper-theorem-1",
+      "statement": "Every injective self-map is surjective.",
+      "document": {
+        "locator": "example-paper#theorem-1",
+        "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "components": [
+        "implication",
+        "unrestricted-domain"
+      ],
+      "revision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1"
+    }
+  ],
+  "targets": [
+    {
+      "id": "finite-map",
+      "name": "Example.injective_surjective",
+      "typeText": "{\u03b1 : Type} \u2192 [Finite \u03b1] \u2192 (f : \u03b1 \u2192 \u03b1) \u2192 Function.Injective f \u2192 Function.Surjective f",
+      "source": {
+        "path": "Example.lean",
+        "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "projectRevision": "illustrative-fixture-only"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.32.1",
+        "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+    }
+  ],
+  "links": [
+    {
+      "id": "mapping-1",
+      "claimId": "paper-theorem-1",
+      "componentIds": [
+        "implication"
+      ],
+      "targetIds": [
+        "finite-map"
+      ]
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-1",
+      "linkId": "mapping-1",
+      "linkDigest": "sha256:902df6d9d43c9384ceef299ff5393a05efb245735d1ded8dc7eaf1e38cdfb200",
+      "claimRevision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "reviewer": {
+        "id": "illustrative-model-review",
+        "kind": "model"
+      },
+      "method": "Supplied statement comparison; no Lean or canonical evidence loaded.",
+      "timestamp": "2026-10-02T09:00:00Z",
+      "rationale": "The supplied formal type assumes a finite domain; the informal statement does not. All source/environment digests in this fixture are illustrative.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "assumption",
+          "claimAnchor": "example-paper#theorem-1",
+          "formalAnchor": "Example.lean: supplied type [Finite \u03b1]",
+          "description": "Finiteness is an additional hypothesis.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    }
+  ],
+  "revision": "sha256:1a54b5cd4498baf2b4ab4842b5e6bf773377e9376ce7e024e5431fe1b331bec4"
+}
+### synthetic/finite-map.guide.json
+{
+  "schema": "ladon-result-guide-v1",
+  "resultId": "finite-map-example",
+  "manifestRevision": "sha256:1a54b5cd4498baf2b4ab4842b5e6bf773377e9376ce7e024e5431fe1b331bec4",
+  "steps": [
+    {
+      "id": "finite-domain-condition",
+      "claimId": "paper-theorem-1",
+      "claimRevision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "purpose": "Check the domain hypothesis before reusing the implication.",
+      "explanation": "The supplied formal type requires a finite domain. The informal statement omits this assumption. Finiteness makes injectivity imply surjectivity; for an infinite domain the unrestricted claim fails, as the successor self-map of the natural numbers shows. This illustrative explanation is not a Lean check or a correspondence approval.",
+      "sources": [
+        {
+          "locator": "example-paper#theorem-1",
+          "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ],
+      "author": {
+        "identity": "Ladon illustrative guide",
+        "kind": "model"
+      },
+      "prerequisites": [],
+      "revision": "sha256:fc7ea39f6d6bce5fd39859020ffd0871ec9b0ec21989cd33eee6f3e321543fcd"
+    }
+  ],
+  "citations": [],
+  "reviews": []
+}
+### synthetic/stale-guide.json
+{
+  "schema": "ladon-result-guide-v1",
+  "resultId": "finite-map-example",
+  "manifestRevision": "sha256:1a54b5cd4498baf2b4ab4842b5e6bf773377e9376ce7e024e5431fe1b331bec4",
+  "steps": [
+    {
+      "id": "finite-domain-condition",
+      "claimId": "paper-theorem-1",
+      "claimRevision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "purpose": "Check the domain hypothesis before reusing the implication.",
+      "explanation": "The supplied formal type requires a finite domain. The informal statement omits this assumption. Finiteness makes injectivity imply surjectivity; for an infinite domain the unrestricted claim fails, as the successor self-map of the natural numbers shows. This illustrative explanation is not a Lean check or a correspondence approval. This edited version requires a fresh explanation review; all identities remain illustrative.",
+      "sources": [
+        {
+          "locator": "example-paper#theorem-1",
+          "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ],
+      "author": {
+        "identity": "Ladon illustrative guide",
+        "kind": "model"
+      },
+      "prerequisites": [],
+      "revision": "sha256:b5ebbc18ab80d270df67a314c4b20b13b494911e023f026d9f77633e48be103a"
+    }
+  ],
+  "citations": [],
+  "reviews": [
+    {
+      "id": "synthetic-old-explanation-review",
+      "scope": "explanation",
+      "stepId": "finite-domain-condition",
+      "stepRevision": "sha256:fc7ea39f6d6bce5fd39859020ffd0871ec9b0ec21989cd33eee6f3e321543fcd",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "reviewer": {
+        "identity": "Synthetic test observer, not a real reviewer",
+        "kind": "tool"
+      },
+      "status": "approved",
+      "rationale": "Synthetic currency fixture: approval refers only to the previous illustrative explanation; not mathematical or human approval.",
+      "timestamp": "2026-10-04T00:00:00Z"
+    }
+  ]
+}
+###CLAIM {
+  "id": "cor:fixed-epoch-all-horizon",
+  "statement": "\\begin{corollary}[All finite horizons]\\label{cor:fixed-epoch-all-horizon}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$.\nIf $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$ satisfies\n\\begin{equation}\\label{eq:epoch-uniform-condition}\n a^2\\leq\\Lambda_E\\varepsilon,\\qquad \\Lambda_E=\\frac{6E}{3E+2},\n\\end{equation}\nthen for every integer $T>E$,\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\n\\]\nand, simultaneously for every $S\\geq0$,\n\\[\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S).\n\\]\n\\end{corollary}",
+  "document": {
+    "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#cor:fixed-epoch-all-horizon",
+    "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+  },
+  "components": [
+    "transcript",
+    "average"
+  ],
+  "revision": "sha256:0108f8bad055aabc20a15fde2fed178bec5d26a78e097a8113a6d68967beea83"
+}
+###CLAIM {
+  "id": "thm:smallbatch",
+  "statement": "\\begin{theorem}[Sparse transcript calibration]\\label{thm:smallbatch}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n\\begin{equation}\\label{eq:interior}\n 0<\\delta<1-e^{-E}.\n\\end{equation}\nThen, along integer horizons,\n\\[\n \\frac\\Delta{\\sigma_{E,T}}-\\sqrt{2\\log T}\n \\longrightarrow s_{E,\\delta}:=\n \\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}E\\right).\n\\]\nConsequently,\n\\begin{align}\n \\sigma_{E,T}&\\sim\\frac\\Delta{\\sqrt{2\\log T}}\\longrightarrow0,\n \\label{eq:sigmaasymptotic}\\\\\n v_{E,T}&\\sim\\frac{\\Delta^2T}{2E^2\\log T}\\longrightarrow\\infty,\n \\label{eq:privacydivergence}\\\\\n V_E(T,S)&\\sim v_{E,T}\\qquad\\text{for each fixed }S\\geq0.\n \\label{eq:total-equivalent}\n\\end{align}\n\\end{theorem}",
+  "document": {
+    "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:smallbatch",
+    "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+  },
+  "components": [
+    "offset",
+    "leading"
+  ],
+  "revision": "sha256:bf37f1efcf293770fba61f4b50f99a8a32d5f0425b9db71bb59e3c760afb9ec0"
+}
+### EXPOSITION HEADERS/SECTIONS
+32 \title{Full-Batch Optimality at Fixed Participation\\
+45 full-batch variance and $a=\Delta/\sqrt{v_{\mathrm{FB}}}$.
+53 profile and calibrated signal-to-noise offset. These imply eventual full-batch
+66 full-batch optimality at every finite horizon. The same argument works when
+226 The center $\theta$ measures how far the full-batch threshold lies above its
+282 tie the full-batch value, but the average's mixture likelihood ratio satisfies
+295 \begin{corollary}[All finite horizons]\label{cor:fixed-epoch-all-horizon}
+373 \begin{theorem}[Sparse transcript calibration]\label{thm:smallbatch}
+399 Under the hypotheses of Theorem~\ref{thm:smallbatch}, some integer $T_0>E$
+430 \section{Scope of the conclusions}
+508 \paragraph{Full-batch calibration.}
+509 At privacy variance $v>0$, each of the $E$ full-batch releases has variance
+928 full-batch threshold gives a tie. A slightly larger threshold already
+1193 \begin{proof}[Proof of Theorem~\ref{thm:smallbatch}]
+1398 For the full-batch lower bracket, evaluate the profile at $v=4/25$. Then

@@ -1,0 +1,57 @@
+{
+  "schema": "ladon-qualitative-reader-report-v1",
+  "author": "reader_ladon_r49",
+  "topic": "reader-r49-ladon",
+  "task": "Audit full-batch optimality evidence and check the supplied fixedEpochCenterGap goal in both ordered contexts.",
+  "selectedLemma": {
+    "name": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+    "source": "/home/codex/.cache/ladon-reader-loop-r49/shared/lean-source/Mf/DP/PoissonFixedEpochCenterGapPropagation.lean",
+    "sourceLines": "430-449",
+    "typeSummary": "For a non-full point, h > 0, boundary >= 0, boundary < query, and fixedEpochCenterGap point h boundary >= 0, conclude fixedEpochCenterGap point h query > 0.",
+    "prerequisites": ["point.epoch < point.horizon", "0 < h", "0 <= boundary", "boundary < query", "0 <= fixedEpochCenterGap point h boundary"]
+  },
+  "conclusions": {
+    "optimality": "The supplied exposition supports a conditional full-batch comparison. For T > E, Delta > 0, epsilon > 0, 0 < delta < 1, and a = Delta/sqrt(v_FB) satisfying a^2 <= Lambda_(E,T)*epsilon, its finite-horizon theorem states v_FB < average-calibrated variance <= transcript-calibrated variance and, for every S >= 0, full-batch total variance < average-calibrated total variance <= transcript-calibrated total variance. Its fixed-E all-horizon corollary uses Lambda_E = 6E/(3E+2) for every integer T > E. This is not an unconditional global-optimality statement.",
+    "counterexample": "The exposition supplies an adjacent-batch counterexample at Delta=1, E=2, epsilon=1/4, delta=3/4: v_3 <= 5/32 < 4/25 < v_2, and V_2(3,S) < V_2(2,S) for 0 <= S <= 9/400; it says the strict total-variance comparison also holds for average-only calibration.",
+    "releaseScope": "The claim inventory labels components by scope, including transcript, average, closed-symmetric, and translations. The finite-horizon theorem is tagged transcript/closed-symmetric/average; the fixed-epoch all-horizon corollary and adjacent-batch counterexample are tagged transcript/average. Keep these scopes distinct when summarizing the release.",
+    "formalAndReviewLimits": "The manifest is integrity-valid, but all 25 canonical targets are unresolved (canonical artifacts unavailable), proof coverage and transitive trust are unknown, 9 of 26 components are unmapped, and reviews are empty. Its inventory claims complete coverage of theorem/lemma/proposition/corollary environments only, not every equation, definition, or proof step. Claim links are producer-declared/model-attributed, not independently reviewed equivalence. No actual exposition approval is evidenced.",
+    "suppliedGoal": "Context A is accepted by the live explicit-pinned Lean elaborator check using the selected lemma. Context B is applicable only with residual ?hBoundaryGap. That is a missing proof obligation for this candidate/application; it is not by itself a proof that the context-B goal is false."
+  },
+  "checks": [
+    {
+      "context": "A",
+      "operation": "ladon proof-search check candidate against supplied closedGoal",
+      "result": "accepted",
+      "evidence": "/home/codex/.cache/ladon-reader-loop-r49/ladon-initial/commands/check-context-a.command.json",
+      "details": "Live elaborator check; explicit pinned Lean 4.33.0; environment match exact; source freshness unknown; no Lake build."
+    },
+    {
+      "context": "B",
+      "operation": "ladon proof-search check candidate against supplied closedGoal",
+      "result": "applicable-with-residuals",
+      "evidence": "/home/codex/.cache/ladon-reader-loop-r49/ladon-initial/commands/check-context-b.command.json",
+      "details": "Residual is ?hBoundaryGap; the candidate requires nonnegativity of the boundary gap."
+    },
+    {
+      "context": "A discovery follow-up",
+      "operation": "ladon proof-search discover with ordered --local context",
+      "result": "invocation failed, then returned unassessed",
+      "evidence": ["/home/codex/.cache/ladon-reader-loop-r49/ladon-initial/commands/discover-context-a.command.json", "/home/codex/.cache/ladon-reader-loop-r49/ladon-initial/commands/discover-context-a-retry.command.json"],
+      "details": "First invocation omitted required --root for its selected scope. Retry supplied --root and preserved the ordered locals, but discovery produced one unassessed candidate with operationalFailure=true. The explicit check above supplies the useful result."
+    }
+  ],
+  "syntheticFixtures": {
+    "finiteMap": "The illustrative informal claim says every injective self-map is surjective; the supplied Lean type adds [Finite alpha]. Its linked review is explicitly a model review of illustrative records, with no Lean or canonical evidence, so it is not approval of the real exposition.",
+    "staleGuide": "The edited guide step has a new revision while the synthetic old review references the prior step revision. The fixture explicitly says a fresh explanation review is required; the old approval is stale and synthetic, not exposition approval.",
+    "evidence": "/home/codex/.cache/ladon-reader-loop-r49/ladon-initial/commands/synthetic-files.command.json"
+  },
+  "errorsAndWorkarounds": [
+    "One initial reader-task.json read was accidentally bundled with board administration outside the required command wrapper; it was immediately repeated through the wrapper and recorded. No source or build files were changed.",
+    "Discovery initially failed because scope required --root; the retry added --root but yielded unassessed evidence. Direct candidate checks against each supplied closedGoal worked.",
+    "Root's scope-control post 384 reports 28 recorded task commands against the frozen maximum of 24. I stopped task commands as instructed and completed this report from retained observations; the budget overrun is acknowledged."
+  ],
+  "interventions": "Root issued scope-control intervention on own-topic post 384: stop task commands after observing 28 recorded against the 24-command maximum, and report from retained observations. No mathematical guidance was supplied.",
+  "frictionAndContribution": "Ladon result inspection exposed the conditional scope, unresolved mapping and absent review state without treating manifest integrity as mathematical verification. The direct candidate check made the key context difference actionable: add/prove hBoundaryGap for context B. The component labels prevent transcript, average-only and closed-symmetric scopes from being conflated. Command budget was exceeded: 28 recorded versus 24 permitted, as flagged on board post 384.",
+  "notPerformed": ["No Lake build or source/build/cache mutation", "No independent informal/formal correspondence review", "No claim of mathematical falsity from the context-B residual"],
+  "commandEvidenceDirectory": "/home/codex/.cache/ladon-reader-loop-r49/ladon-initial/commands"
+}

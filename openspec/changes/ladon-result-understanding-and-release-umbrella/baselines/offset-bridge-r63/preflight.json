@@ -1,0 +1,14 @@
+{
+  "command": [
+    "lean",
+    "/home/codex/.cache/ladon-offset-r63-ss457txs/ordinary/Preflight.lean"
+  ],
+  "returncode": 0,
+  "stdout": "Mf.DP.tendsto_fixedParticipationCalibratedStddev_offset (schedule : Mf.DP.FixedParticipationSchedule)\n  (sensitivity epsilon delta : \u211d) (hSensitivity : 0 < sensitivity) (hEpsilon : 0 \u2264 epsilon) (hDeltaPos : 0 < delta)\n  (hDeltaLtBoundary : delta < 1 - Real.exp (-\u2191schedule.participationBudget)) :\n  Filter.Tendsto\n    (fun horizon =>\n      sensitivity / \u2191(Mf.DP.fixedParticipationCalibratedStddev schedule sensitivity epsilon delta horizon) -\n        Mf.DP.gaussianCriticalScale horizon)\n    Filter.atTop (nhds (Mf.DP.fixedParticipationTargetOffset (\u2191schedule.participationBudget) delta))\nMf.DP.PoissonFixedEpochPoint.ofExtra (epoch : \u2115) (epoch_pos : 0 < epoch) (extra : \u2115) : Mf.DP.PoissonFixedEpochPoint\n'Mf.DP.tendsto_fixedParticipationCalibratedStddev_offset' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+  "stderr": "",
+  "elapsed_seconds": 2.413307528011501,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 6960906240
+}

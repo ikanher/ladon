@@ -1,0 +1,25 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_____ test_installed_discovery_accepts_a_real_record_projection_hypothesis _____
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-796/test_installed_discovery_accep0')
+
+    @pytest.mark.skipif(shutil.which('lake') is None, reason='pinned Lean fixture unavailable')
+    def test_installed_discovery_accepts_a_real_record_projection_hypothesis(tmp_path):
+        locals_ = [
+            'point:LadonFixture.ProjectionPoint',
+            'hNonFull:point.epoch < point.horizon',
+        ]
+        argv = _context_command(tmp_path, locals_, 'point.epoch < point.horizon', 'id')
+        completed = subprocess.run(
+            argv, cwd=tmp_path, capture_output=True, text=True, timeout=90, check=False
+        )
+>       assert completed.returncode == 0, completed.stderr
+E       AssertionError: 
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/codex/.cache/ladon-qualification-r48/ladon-bundles-r48-ouvuyuvz/py311/bin/ladon', 'proof...covery-result-v1",\n  "shortlist": {\n    "source": "explicit-candidates"\n  },\n  "status": "failed"\n}\n', stderr='').returncode
+
+tests/test_discovery_local_context.py:153: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_discovery_local_context.py::test_installed_discovery_accepts_a_real_record_projection_hypothesis
+1 failed, 14 deselected in 2.02s

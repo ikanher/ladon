@@ -1,0 +1,43 @@
+{
+  "schema": "ladon-qualitative-reader-report-v1",
+  "task": {
+    "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+    "context_A": "Applicable. The supplied theorem Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg in shared/lean-source/Mf/DP/PoissonFixedEpochCenterGapPropagation.lean has the same conclusion and requires hNonFull, 0<h, 0≤boundary, boundary<query, and 0≤fixedEpochCenterGap point h boundary. Context A supplies these hypotheses exactly.",
+    "context_B": "Not applicable from its listed hypotheses: it omits the boundary-gap premise. A numerical falsification candidate uses E=1, T=3, point with q=E/T=1/3, h=1, boundary=0, query=0.001. Evaluating the finite Binomial(3,1/3) trace formula gives boundary gap ≈ -0.00760887497 and query gap ≈ -0.00751469941. This is a plain floating-point calculation using the standard normal CDF via erfc, not a Lean proof or interval certificate; it strongly indicates the closed Context B goal is false.",
+    "lemma_prerequisites": "The source wrapper requires point.epoch < point.horizon and h>0. It discharges the abstract propagation lemma using convexity of the exponential tilt on [0,∞), tilt(0)<1, positive factor h·φ(h·theta), the exact derivative formula, the assumed boundary gap, and the gap limit 0 at +∞. The boundary gap condition is essential for the stated propagation route and cannot be dropped in Context B.",
+    "reasoning_shape": "The abstract gap derivative has sign 1−tilt. If tilt(query)<1, convexity and tilt(0)<1 give strict increase up to query, so a nonnegative boundary gap propagates. If tilt(query)≥1, strict decrease after query plus the zero tail limit forces a nonnegative later value, which yields a strict positive value at query."
+  },
+  "assignment_post": 535,
+  "start_post": 538,
+  "status": "completed",
+  "recorded_wrapper_command_count": 21,
+  "count_note": "21 includes this report write, completion post, and final own-topic poll. Three preliminary board-inspection commands were run before registration, solely to read post 535 and check registration; they are outside the task evidence command count. One recorded manuscript-inspection attempt had a Python syntax error and was rerun successfully.",
+  "optimality_audit": {
+    "conditional_claim": "The manuscript’s fixed-E all-horizon result assumes a² ≤ Λ_E ε with Λ_E=6E/(3E+2). It then claims full batch strictly beats every finite T>E for transcript calibrated privacy variance and total variance for every S≥0. The finite-horizon result instead has rate-dependent Λ_{E,T}. These are sufficient domains, not a full classification and do not order every pair of smaller batches.",
+    "counterexample": "The same exposition gives Δ=1, E=2, ε=1/4, δ=3/4 with v3≤5/32<4/25<v2 and V₂(3,S)<V₂(2,S) for 0≤S≤9/400. This refutes unconditional full-batch optimality over finite horizons. Its average-only analogue is described as a conventional extension.",
+    "release_scope": "Claims distinguish the complete released transcript from average-only output. The model is independent Poisson sampling, homogeneous independent Gaussian noise, and equal-weight averages of fixed clipped contributions; it does not cover adaptive optimizer trajectories or training loss. Fixed-rate q>0 asymptotics cannot simply be specialized to q=E/T without a uniformity argument.",
+    "formal_coverage": "The manifest inventories 15 theorem/lemma/proposition/corollary claims and marks that inventory complete, but says it does not inventory equations, definitions, or proof steps. It has 25 formal targets, 17 links, and 26 component assessments. Average-only components and some asymptotic schedule translations are conventional or reported implications without a checked adapter."
+  },
+  "evidence_currency": {
+    "manifest": "evidence/assets/00089.json assessments and evidence/manifest.json: assessments are authored by an OpenAI Codex implementation agent and explicitly say they are model-attributed, not independent certification. The manifest has no review entries.",
+    "guide": "evidence/assets/00092.json contains 9 reader-guide steps and no reviews. Its explanations are reader aids and do not validate formal translation.",
+    "correspondence": "evidence/assets/00090.bin labels the source mapping as model-attributed and explicitly says captured target bindings are not correspondence approval or a checked mathematical adapter.",
+    "canonical_lineage": "evidence/assets/00094.sqlite3 records one lineage closure (2685 nodes, 64824 edges) for Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_epochUniformSignal, marked complete in that database. That is a structural record for a different theorem; it is not the center-gap theorem’s closure, a proof of exposition correspondence, or a current review of the manuscript. Database status labels were treated as evidence metadata only.",
+    "synthetic_fixtures": "finite-map.json is explicitly illustrative: the informal unrestricted injective→surjective claim omits [Finite α], and successor on ℕ is a counterexample. stale-guide.json edits an explanation while retaining an approval whose stepRevision points to the old explanation hash; README says all such review records are synthetic. Neither fixture approves this exposition."
+  },
+  "verification_and_limits": {
+    "source_read": "Read the three supplied Lean owner files; the directly relevant propagation module contains the abstract gap theorem and fixed-epoch wrapper. No source/build-tree edits were made.",
+    "lean": "No Lean compilation or exact application check was run. No lake build or source edits were made.",
+    "numeric_check": "Context B’s candidate was evaluated with Python math.erfc and is not an interval-certified counterexample.",
+    "command_failures": [
+      "The first Python manuscript-extraction command failed with a SyntaxError; the rerun succeeded."
+    ],
+    "gates_not_claimed": [
+      "No independent human review or current correspondence approval.",
+      "No complete dependency closure for the selected center-gap theorem.",
+      "No formal proof of Context B’s numerical falsifier."
+    ]
+  },
+  "command_evidence_dir": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands",
+  "report_markdown": "/home/codex/.cache/ladon-reader-followup-r53/plain/report.md"
+}

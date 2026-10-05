@@ -1,0 +1,11 @@
+Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_offset (epoch : ℕ) (epoch_pos : 0 < epoch)
+  (sensitivity epsilon delta : ℝ) (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon)
+  (delta_pos : 0 < delta) (delta_lt_boundary : delta < 1 - Real.exp (-↑epoch)) :
+  Filter.Tendsto
+    (fun extra =>
+      sensitivity /
+          ↑(Mf.DP.poissonFixedEpochCalibratedStddev (Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra)
+              sensitivity epsilon delta) -
+        √(2 * Real.log ↑(epoch + extra)))
+    Filter.atTop (nhds (Mf.DP.standardNormalQuantile (-Real.log (1 - delta) / ↑epoch)))
+'Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_offset' depends on axioms: [propext, Classical.choice, Quot.sound]

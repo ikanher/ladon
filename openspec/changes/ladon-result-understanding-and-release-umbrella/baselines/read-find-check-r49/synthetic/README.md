@@ -1,0 +1,1 @@
+Synthetic additional-assumption and stale-review fixture. All reviews and source identities here are illustrative test records; no real exposition review is asserted. The original finite-map files are unchanged, and stale-guide.json retains an old explanation review after editing the step.

@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T13:09:50.571563+00:00",
+  "argv": [
+    "python",
+    "-c",
+    "import json,pathlib; p=pathlib.Path(\".\");\nfor f in [\"evidence/manifest.json\",\"evidence/bundle.json\",\"synthetic/README.md\",\"synthetic/finite-map.guide.json\",\"synthetic/finite-map.json\",\"synthetic/stale-guide.json\"]:\n print(\"\\\\n###\",f); x=(p/f).read_text();\n try:\n  d=json.loads(x); print(json.dumps(d,ensure_ascii=False,indent=2)[:18000])\n except Exception: print(x[:18000])"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-followup-r53/shared",
+  "exitCode": 0,
+  "elapsedSeconds": 0.05863486300222576,
+  "peakRssBytes": 9691136,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/inspect-manifest-bundle-synthetic.stdout",
+      "bytes": 43215,
+      "sha256": "sha256:0f6fd8cef2926062ad79bf3b18f9fb9aeddf0250eea0f2caaaafb3efea9697c1"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/inspect-manifest-bundle-synthetic.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

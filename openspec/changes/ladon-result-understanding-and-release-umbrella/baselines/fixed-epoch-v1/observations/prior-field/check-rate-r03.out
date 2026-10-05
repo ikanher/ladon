@@ -1,0 +1,93 @@
+{
+  "candidate": {
+    "check": {
+      "applicationTerm": null,
+      "authority": {
+        "analysisCompleteness": "invalid",
+        "authorityBasis": "not-assessed",
+        "environmentMatch": "unknown",
+        "executionBinding": "explicit-pinned",
+        "observationState": "failed",
+        "operationOutcome": "failed",
+        "sourceFreshness": "unknown"
+      },
+      "checkRunRef": null,
+      "dischargedHypotheses": [],
+      "environmentRef": null,
+      "executionBindingLimitation": null,
+      "failure": {
+        "diagnostic": {
+          "code": "invalid-worker-output",
+          "message": "Lean semantic environment reports 10,500 imported modules; evidence limit is 10,000"
+        },
+        "stage": "invalid-worker-output"
+      },
+      "receiptIdentity": "sha256:53a01acae268356a58548c55b61ec955ad851bb0c3e96239661d778b3a7b5dd6",
+      "residualPremises": [],
+      "scratch": null,
+      "sourceReceiptIdentity": "sha256:53a01acae268356a58548c55b61ec955ad851bb0c3e96239661d778b3a7b5dd6",
+      "status": "invalid-worker-output",
+      "substitutions": []
+    },
+    "name": "Mf.DP.PoissonFixedEpochPoint.horizon_pos",
+    "nameFingerprint": "sha256:76b9f13babe63716e84462e678726384aadb92e16c36f4dc64a5bbefff1bb791",
+    "shortlist": {
+      "source": "explicit-candidate"
+    },
+    "source": null
+  },
+  "coverage": {
+    "candidatePopulation": {
+      "observed": 1,
+      "omitted": 0,
+      "projected": 1,
+      "statusCounts": {
+        "invalid-worker-output": 1
+      }
+    },
+    "omissionPopulation": {
+      "generatedRecords": 0,
+      "observedRecords": 1,
+      "omittedRecords": 0,
+      "projectedRecords": 1,
+      "totalClaims": 1,
+      "transportRecords": 1
+    },
+    "operationalFailure": true
+  },
+  "limitations": [
+    "Artifact bodies and structural Lean expressions are omitted; expand registered evidence for audit.",
+    {
+      "id": "checker-observation-not-theorem-truth",
+      "message": "Acceptance records what this Lean process checked in this exact environment; Ladon does not promote it to an unqualified theorem-truth verdict."
+    }
+  ],
+  "omissions": [
+    {
+      "omitted": 1,
+      "pointer": "/candidate/source",
+      "reason": "source-location-unavailable"
+    }
+  ],
+  "operation": "check-candidate",
+  "projection": {
+    "canonicalPayloadIdentity": "sha256:0010fc4eb4e68fc7f51259db199e2be0c0717ae9a859f2dc56f4fcceb275efcb",
+    "canonicalSchema": "ladon-semantic-candidate-check-result-v1",
+    "limits": {
+      "maxBytes": 8192,
+      "measurement": "pretty-json-utf8-v1"
+    },
+    "name": "llm",
+    "producerResultIdentity": null,
+    "projectionIdentity": "sha256:fff8ac4e85b122e051f5c691f914b62ef18cd6909c355dd7d1fb6acfa0f68ebc"
+  },
+  "request": {
+    "goal": "∀ (point : Mf.DP.PoissonFixedEpochPoint), 0 < point.horizon",
+    "goalFingerprint": "sha256:7cc2ae55e377110095f6d2d8b6c270c18a4f26662d40ceb1d0a209aeeec046ba",
+    "localContext": [],
+    "module": "Mf.DP.PoissonFixedEpochRate",
+    "moduleFingerprint": "sha256:da062463271428c62744d7ad1b37d51bab791f3c1b00fe7feb3c31dc4924df58"
+  },
+  "schema": "ladon-semantic-candidate-projection-v1",
+  "status": "invalid-worker-output"
+}

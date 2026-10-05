@@ -1,0 +1,27 @@
+{
+  "status": "accepted-against-available-compiled-imports",
+  "declaration": "Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_offset",
+  "source": "Mf/DP/PoissonFixedEpochOffset.lean",
+  "sourceDigest": "sha256:859e9694147bd05203feca6241ad9ce388f2016f24e4576285c3279a30ca2993",
+  "toolchain": "leanprover/lean4:v4.33.0",
+  "lakeManifestDigest": "sha256:56c1b71846349db8473a42af6d1f5979e07e9f3f248eb9ae2510cfb59c94465d",
+  "cwd": "/home/codex/projects/lean/matrix-factorization",
+  "commands": [
+    {
+      "command": "lake env lean Mf/DP/PoissonFixedEpochOffset.lean",
+      "exitCode": 0
+    },
+    {
+      "command": "lake env lean -o .lake/build/lib/lean/Mf/DP/PoissonFixedEpochOffset.olean Mf/DP/PoissonFixedEpochOffset.lean",
+      "exitCode": 0
+    },
+    {
+      "command": "lake env lean Mf/DP/PoissonFixedEpochOffsetAudit.lean",
+      "exitCode": 0
+    }
+  ],
+  "axiomOutput": "Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_offset (epoch : ℕ) (epoch_pos : 0 < epoch)\n  (sensitivity epsilon delta : ℝ) (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon)\n  (delta_pos : 0 < delta) (delta_lt_boundary : delta < 1 - Real.exp (-↑epoch)) :\n  Filter.Tendsto\n    (fun extra =>\n      sensitivity /\n          ↑(Mf.DP.poissonFixedEpochCalibratedStddev (Mf.DP.PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra)\n              sensitivity epsilon delta) -\n        √(2 * Real.log ↑(epoch + extra)))\n    Filter.atTop (nhds (Mf.DP.standardNormalQuantile (-Real.log (1 - delta) / ↑epoch)))\n'Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_offset' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+  "normalLakeBuild": "failed in existing SparseGaussianProductForwardUpperBoundEndpoints dependency; no maintained-build acceptance",
+  "maintainerAdoption": "pending",
+  "resourceMeasurement": "direct.resources measures one compiler process RSS; not tree RSS. No cap enforced in ordinary smoke."
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "offset-correspondence-review-v1",
+  "claim": {
+    "id": "thm:smallbatch",
+    "component": "offset",
+    "originalOffsetParagraph": "\\begin{theorem}[Sparse transcript calibration]\\label{thm:smallbatch}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n\\begin{equation}\\label{eq:interior}\n 0<\\delta<1-e^{-E}.\n\\end{equation}\nThen, along integer horizons,\n\\[\n \\frac\\Delta{\\sigma_{E,T}}-\\sqrt{2\\log T}\n \\longrightarrow s_{E,\\delta}:=\n \\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}E\\right).\n\\]\nConsequently,\n\\begin{align}\n \\sigma_{E,T}&\\sim\\frac\\Delta{\\sqrt{2\\log T}}\\longrightarrow0,\n \\label{eq:sigmaasymptotic}\\\\\n v_{E,T}&\\sim\\frac{\\Delta^2T}{2E^2\\log T}\\longrightarrow\\infty,\n \\label{eq:privacydivergence}\\\\\n V_E(T,S)&\\sim v_{E,T}\\qquad\\text{for each fixed }S\\geq0.\n \\label{eq:total-equivalent}\n\\end{align}\n\\end{theorem}",
+    "minimallyRevisedParagraph": "For fixed $E\\in\\mathbb{N}_{>0}$, $\\Delta>0$, $\\varepsilon\\geq0$, and $0<\\delta<1-e^{-E}$, along integer horizons $T\\geq E$, the calibrated offset satisfies\\n\\[\\frac{\\Delta}{\\sigma_{E,T}}-\\sqrt{2\\log T}\\longrightarrow\\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}{E}\\right).\\]\nThis offset component is formally proved by `OffsetBridge.fixedEpochOffsetBridge`; the leading and variance-equivalent conclusions remain at their prior assessment status.",
+    "proofReference": {
+      "file": "Bridge.lean",
+      "declaration": "OffsetBridge.fixedEpochOffsetBridge",
+      "location": "Bridge.lean:10",
+      "targetPreserved": true,
+      "details": "Instantiates Mf.DP.tendsto_fixedParticipationCalibratedStddev_offset with the capped schedule of budget epoch, composes with horizon = epoch + extra, and proves the calibration schedule and Gaussian critical scale equal the target expressions. Thus every integer horizon T >= epoch is covered, and the square-root/log scale and quantile constant are retained.",
+      "ordinaryLean": "Lean 4.33.0 compilation succeeded using the ready .lake/build/lib/lean objects and package build paths.",
+      "axioms": "#print axioms reports [propext, Classical.choice, Quot.sound] for the bridge; no sorryAx or added assumption appears."
+    },
+    "attempts": [
+      "The first direct import-path compile could not locate the module object because the shared mathematics/source tree is read-only and has no object files in that location.",
+      "The proof was compiled successfully against the existing ready module objects with Lean 4.33.0; the final Bridge.lean has no sorry placeholder."
+    ],
+    "proposedOffsetCoverageAssessment": {
+      "status": "formally-proved-adapter",
+      "scope": "Fixed-epoch calibrated offset for every epoch > 0, sensitivity > 0, epsilon >= 0, and 0 < delta < 1 - exp(-epoch), along all integer horizons T = epoch + extra.",
+      "formalBasis": "The exact target theorem compiles, with only standard Lean axioms in its transitive axiom report.",
+      "attributedCorrespondence": "The source correspondence in manifest/assessments remains model-attributed. This review adds a checked Lean adapter for the offset statement; it does not independently certify the informal exposition or other components."
+    },
+    "leadingComponentStatus": {
+      "status": "unchanged",
+      "priorAssessmentKind": "reported-implication-without-checked-adapter",
+      "note": "No leading, raw-noise, variance-equivalent, or total-equivalent theorem was proved or reassessed here. The whole sparse transcript calibration theorem is not upgraded."
+    },
+    "rationale": "The general fixed-participation theorem already proves the quantile offset for the capped schedule. The fixed-epoch rate lemma identifies q_T = min(1,E/T), and its calibration definition unfolds to the same sampled-Gaussian calibration at horizon E+extra. Since E+extra >= E > 0, the logarithmic scale is exactly sqrt(2 log T). The compiled adapter closes this precise correspondence gap. A checked formal derivation is distinct from a model-attributed claim-to-source mapping: only this Lean statement and its dependencies are formally checked here."
+  }
+}

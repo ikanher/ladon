@@ -1,0 +1,370 @@
+import Mf.DP.PoissonFixedEpochSkewBoundaryTrace
+import Mf.DP.PoissonFixedEpochThresholdPoissonMargin
+import Mf.DP.PoissonFixedEpochTraceDominance
+
+/-!
+# Fixed-epoch all-horizon dominance domain
+
+For each positive expected epoch budget `E`, this module exposes the exact
+finite-horizon-uniform coefficient `6 E / (3 E + 2)`.  The smaller universal
+constant `6 / 5` is only the infimum of these coefficients over all epoch
+budgets; it is not the organizing theorem here.
+-/
+
+namespace Mf.DP
+
+open scoped BigOperators
+
+noncomputable section
+
+set_option autoImplicit false
+
+/-- At exact full-batch calibration, the fixed-epoch coefficient supplies the
+strict threshold-trace comparison at every finite non-full horizon. -/
+theorem
+    poissonFixedEpochThresholdTail_calibrated_lt_traceAverage_of_epochUniformSignal
+    (point : PoissonFixedEpochPoint)
+    (sensitivity epsilon delta : Real)
+    (hNonFull : point.epoch < point.horizon)
+    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1)
+    (hSignalSq :
+      poissonFixedEpochStandardizedSignal sensitivity
+          (poissonFixedEpochFullBatchCalibratedRunVariance
+            sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos
+              hDeltaLtOne) ^ 2 ≤
+        poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon) :
+    poissonFixedEpochThresholdTail sensitivity epsilon
+        (poissonFixedEpochFullBatchCalibratedRunVariance
+          sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne) 1 <
+      ∑ trace : ParticipationTrace point.horizon,
+        poissonTraceProb (point.samplingRate : Real) trace *
+          poissonFixedEpochThresholdTail sensitivity epsilon
+            (poissonFixedEpochFullBatchCalibratedRunVariance
+              sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne)
+            (poissonFixedEpochNormalizedTraceCount point trace) := by
+  let runVariance := poissonFixedEpochFullBatchCalibratedRunVariance
+    sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne
+  let signalReal := poissonFixedEpochStandardizedSignal sensitivity runVariance
+  let signal : NNReal := Real.toNNReal signalReal
+  let centerDistance :=
+    poissonFixedEpochPositiveCenterDistance epsilon signalReal
+  have hRunVariance : 0 < runVariance :=
+    poissonFixedEpochFullBatchCalibratedRunVariance_pos sensitivity epsilon delta
+      hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne
+  have hSignalReal : 0 < signalReal := by
+    dsimp [signalReal, poissonFixedEpochStandardizedSignal]
+    exact div_pos hSensitivity (Real.sqrt_pos.2 hRunVariance)
+  have hSignal : 0 < signal := by
+    dsimp [signal]
+    exact Real.toNNReal_pos.mpr hSignalReal
+  have hSignalCoe : (signal : Real) = signalReal :=
+    Real.coe_toNNReal _ hSignalReal.le
+  have hSignalSq' :
+      (signal : Real) ^ 2 ≤
+        poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon := by
+    simpa [hSignalCoe, signalReal, runVariance] using hSignalSq
+  have hTrace :=
+    stdNormalCDFReal_lt_fixedEpochGaussianTraceAverage_of_epochUniformSignalFactor_le
+      point epsilon signal hNonFull hSignal hSignalSq'
+  have hCount (count : Nat) :
+      fixedEpochGaussianCountTest point (-centerDistance) signal count =
+        poissonFixedEpochThresholdTail sensitivity epsilon runVariance
+          ((count : Real) / point.epoch) := by
+    have hRaw :=
+      fixedEpochGaussianCountTest_eq_poissonFixedEpochThresholdTail
+        point sensitivity epsilon runVariance hRunVariance hSensitivity count
+    simpa [signal, signalReal, centerDistance,
+      poissonFixedEpochPositiveCenterDistance] using hRaw
+  have hAtEpoch :
+      stdNormalCDFReal (-centerDistance) =
+        poissonFixedEpochThresholdTail sensitivity epsilon runVariance 1 := by
+    rw [← fixedEpochGaussianCountTest_at_epoch point (-centerDistance) signal,
+      hCount]
+    congr 1
+    field_simp [point.epoch_pos.ne']
+  have hTrace' :
+      stdNormalCDFReal (-centerDistance) <
+        poissonTraceCountAverage point.horizon point.samplingRate
+          (fixedEpochGaussianCountTest point (-centerDistance) signal) := by
+    simpa [centerDistance, hSignalCoe] using hTrace
+  rw [hAtEpoch] at hTrace'
+  unfold poissonTraceCountAverage at hTrace'
+  simpa only [hCount, poissonFixedEpochNormalizedTraceCount, runVariance] using hTrace'
+
+/-- Product-accountant dominance under the fixed-epoch, all-horizon signal
+factor. -/
+theorem
+    poissonFixedEpoch_productProfile_calibratedRunVariance_gt_of_epochUniformSignal
+    (point : PoissonFixedEpochPoint)
+    (sensitivity epsilon delta : Real)
+    (hNonFull : point.epoch < point.horizon)
+    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1)
+    (hSignalSq :
+      poissonFixedEpochStandardizedSignal sensitivity
+          (poissonFixedEpochFullBatchCalibratedRunVariance
+            sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos
+              hDeltaLtOne) ^ 2 ≤
+        poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon) :
+    ENNReal.ofReal delta <
+      binaryAccountingProfile
+        (sampledGaussianSourceProductLaw point.horizon point.samplingRate
+          point.samplingRate_le_one sensitivity
+          (poissonFixedEpochRawNoiseVariance point
+            (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta
+              hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne)))
+        (sampledGaussianReferenceProductLaw point.horizon
+          (poissonFixedEpochRawNoiseVariance point
+            (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta
+              hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne))) epsilon := by
+  apply poissonFixedEpoch_productProfile_calibratedRunVariance_gt_of_traceGap
+    point sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne
+  exact
+    poissonFixedEpochThresholdTail_calibrated_lt_traceAverage_of_epochUniformSignal
+      point sensitivity epsilon delta hNonFull hSensitivity hEpsilon hDeltaPos
+        hDeltaLtOne hSignalSq
+
+/-- Calibrated run-level privacy variance is strictly larger at every finite
+non-full horizon under the fixed-epoch factor. -/
+theorem
+    poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_epochUniformSignal
+    (point : PoissonFixedEpochPoint)
+    (sensitivity epsilon delta : Real)
+    (hNonFull : point.epoch < point.horizon)
+    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1)
+    (hSignalSq :
+      poissonFixedEpochStandardizedSignal sensitivity
+          (poissonFixedEpochFullBatchCalibratedRunVariance
+            sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos
+              hDeltaLtOne) ^ 2 ≤
+        poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon) :
+    (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta
+        hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne : Real) <
+      poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta := by
+  apply poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_traceGap
+    point sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne
+  exact
+    poissonFixedEpochThresholdTail_calibrated_lt_traceAverage_of_epochUniformSignal
+      point sensitivity epsilon delta hNonFull hSensitivity hEpsilon hDeltaPos
+        hDeltaLtOne hSignalSq
+
+/-- Full batch has strictly smaller frozen-average total variance at every
+finite non-full horizon and every nonnegative energy. -/
+theorem
+    poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_epochUniformSignal
+    (point : PoissonFixedEpochPoint)
+    (sensitivity epsilon delta energy : Real)
+    (hNonFull : point.epoch < point.horizon)
+    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1)
+    (hEnergy : 0 ≤ energy)
+    (hSignalSq :
+      poissonFixedEpochStandardizedSignal sensitivity
+          (poissonFixedEpochFullBatchCalibratedRunVariance
+            sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos
+              hDeltaLtOne) ^ 2 ≤
+        poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon) :
+    poissonFixedEpochTotalAverageVariance
+        (PoissonFixedEpochPoint.fullBatch point.epoch point.epoch_pos)
+        sensitivity epsilon delta energy <
+      poissonFixedEpochTotalAverageVariance point sensitivity epsilon delta energy := by
+  apply poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_traceGap
+    point sensitivity epsilon delta energy hSensitivity hEpsilon.le hDeltaPos
+      hDeltaLtOne hEnergy
+  exact
+    poissonFixedEpochThresholdTail_calibrated_lt_traceAverage_of_epochUniformSignal
+      point sensitivity epsilon delta hNonFull hSensitivity hEpsilon hDeltaPos
+        hDeltaLtOne hSignalSq
+
+/-- Gaussian-profile boundary corresponding to the exact fixed-epoch,
+all-horizon coefficient `6 E / (3 E + 2)`. -/
+def poissonFixedEpochEpochUniformDeltaThreshold
+    (epoch : Nat) (epsilon : Real) : Real :=
+  gdpProfile
+    (Real.sqrt
+      (poissonFixedEpochEpochUniformSignalSquareFactor epoch * epsilon))
+    epsilon
+
+/-- Exact equivalence between the fixed-epoch delta threshold and the
+calibrated full-batch signal-square condition. -/
+theorem
+    poissonFixedEpochDelta_le_epochUniformThreshold_iff_fullBatchCalibratedSignal_sq_le
+    (epoch : Nat) (sensitivity epsilon delta : Real)
+    (hEpoch : 0 < epoch)
+    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1) :
+    delta ≤ poissonFixedEpochEpochUniformDeltaThreshold epoch epsilon ↔
+      poissonFixedEpochStandardizedSignal sensitivity
+            (poissonFixedEpochFullBatchCalibratedRunVariance
+              sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos
+                hDeltaLtOne) ^ 2 ≤
+          poissonFixedEpochEpochUniformSignalSquareFactor epoch * epsilon := by
+  let runVariance := poissonFixedEpochFullBatchCalibratedRunVariance
+    sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne
+  let signal := poissonFixedEpochStandardizedSignal sensitivity runVariance
+  let factor := poissonFixedEpochEpochUniformSignalSquareFactor epoch
+  let boundary := Real.sqrt (factor * epsilon)
+  have hRunVariance : 0 < runVariance :=
+    poissonFixedEpochFullBatchCalibratedRunVariance_pos sensitivity epsilon delta
+      hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne
+  have hSignal : 0 < signal := by
+    dsimp [signal, poissonFixedEpochStandardizedSignal]
+    exact div_pos hSensitivity (Real.sqrt_pos.2 hRunVariance)
+  have hFactor : 0 < factor := by
+    dsimp [factor, poissonFixedEpochEpochUniformSignalSquareFactor]
+    have hEpochReal : (0 : Real) < epoch := by exact_mod_cast hEpoch
+    positivity
+  have hBoundary : 0 < boundary := by
+    dsimp [boundary]
+    exact Real.sqrt_pos.2 (mul_pos hFactor hEpsilon)
+  have hBoundarySq : boundary ^ 2 = factor * epsilon := by
+    dsimp [boundary]
+    exact Real.sq_sqrt (mul_pos hFactor hEpsilon).le
+  have hCalibratedProfile : gdpProfile signal epsilon = delta := by
+    have hEvent := poissonFixedEpochFullBatchThreshold_eventValue_calibrated_eq
+      sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne
+    have hGDP := poissonFixedEpochFullBatchThreshold_eventValue_eq_gdpProfile
+      sensitivity epsilon runVariance hSignal.ne'
+    exact hGDP.symm.trans hEvent
+  have hProfileIff := (Training.gdpProfile_strictMonoOn_pos epsilon).le_iff_le
+    hSignal hBoundary
+  change delta ≤ gdpProfile boundary epsilon ↔ signal ^ 2 ≤ factor * epsilon
+  rw [← hCalibratedProfile, hProfileIff]
+  constructor
+  · intro h
+    nlinarith [sq_nonneg (boundary - signal)]
+  · intro h
+    nlinarith [sq_nonneg (boundary - signal)]
+
+/-- Delta-coordinate product-accountant consumer at the fixed-epoch
+all-horizon boundary. -/
+theorem
+    poissonFixedEpoch_productProfile_calibratedRunVariance_gt_of_delta_le_epochUniformThreshold
+    (point : PoissonFixedEpochPoint)
+    (sensitivity epsilon delta : Real)
+    (hNonFull : point.epoch < point.horizon)
+    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1)
+    (hDeltaThreshold :
+      delta ≤ poissonFixedEpochEpochUniformDeltaThreshold point.epoch epsilon) :
+    ENNReal.ofReal delta <
+      binaryAccountingProfile
+        (sampledGaussianSourceProductLaw point.horizon point.samplingRate
+          point.samplingRate_le_one sensitivity
+          (poissonFixedEpochRawNoiseVariance point
+            (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta
+              hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne)))
+        (sampledGaussianReferenceProductLaw point.horizon
+          (poissonFixedEpochRawNoiseVariance point
+            (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta
+              hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne))) epsilon := by
+  apply
+    poissonFixedEpoch_productProfile_calibratedRunVariance_gt_of_epochUniformSignal
+      point sensitivity epsilon delta hNonFull hSensitivity hEpsilon hDeltaPos
+        hDeltaLtOne
+  exact
+    (poissonFixedEpochDelta_le_epochUniformThreshold_iff_fullBatchCalibratedSignal_sq_le
+      point.epoch sensitivity epsilon delta point.epoch_pos hSensitivity hEpsilon
+        hDeltaPos hDeltaLtOne).1 hDeltaThreshold
+
+/-- Delta-coordinate calibrated privacy-variance consumer. -/
+theorem
+    poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_delta_le_epochUniformThreshold
+    (point : PoissonFixedEpochPoint)
+    (sensitivity epsilon delta : Real)
+    (hNonFull : point.epoch < point.horizon)
+    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1)
+    (hDeltaThreshold :
+      delta ≤ poissonFixedEpochEpochUniformDeltaThreshold point.epoch epsilon) :
+    (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta
+        hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne : Real) <
+      poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta := by
+  apply
+    poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_epochUniformSignal
+      point sensitivity epsilon delta hNonFull hSensitivity hEpsilon hDeltaPos
+        hDeltaLtOne
+  exact
+    (poissonFixedEpochDelta_le_epochUniformThreshold_iff_fullBatchCalibratedSignal_sq_le
+      point.epoch sensitivity epsilon delta point.epoch_pos hSensitivity hEpsilon
+        hDeltaPos hDeltaLtOne).1 hDeltaThreshold
+
+/-- Delta-coordinate all-energy total-variance consumer. -/
+theorem
+    poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_delta_le_epochUniformThreshold
+    (point : PoissonFixedEpochPoint)
+    (sensitivity epsilon delta energy : Real)
+    (hNonFull : point.epoch < point.horizon)
+    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1)
+    (hEnergy : 0 ≤ energy)
+    (hDeltaThreshold :
+      delta ≤ poissonFixedEpochEpochUniformDeltaThreshold point.epoch epsilon) :
+    poissonFixedEpochTotalAverageVariance
+        (PoissonFixedEpochPoint.fullBatch point.epoch point.epoch_pos)
+        sensitivity epsilon delta energy <
+      poissonFixedEpochTotalAverageVariance point sensitivity epsilon delta energy := by
+  apply
+    poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_epochUniformSignal
+      point sensitivity epsilon delta energy hNonFull hSensitivity hEpsilon
+        hDeltaPos hDeltaLtOne hEnergy
+  exact
+    (poissonFixedEpochDelta_le_epochUniformThreshold_iff_fullBatchCalibratedSignal_sq_le
+      point.epoch sensitivity epsilon delta point.epoch_pos hSensitivity hEpsilon
+        hDeltaPos hDeltaLtOne).1 hDeltaThreshold
+
+/-- Literal fixed-epoch, all-horizon consumer.  One delta-threshold hypothesis
+simultaneously yields calibrated privacy-variance and all-energy total-variance
+dominance at every finite non-full horizon with the selected epoch budget. -/
+theorem
+    poissonFixedEpoch_allHorizon_dominance_of_delta_le_epochUniformThreshold
+    (epoch : Nat) (sensitivity epsilon delta : Real)
+    (hEpoch : 0 < epoch)
+    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1)
+    (hDeltaThreshold :
+      delta ≤ poissonFixedEpochEpochUniformDeltaThreshold epoch epsilon) :
+    ∀ point : PoissonFixedEpochPoint,
+      point.epoch = epoch → point.epoch < point.horizon →
+        ((poissonFixedEpochFullBatchCalibratedRunVariance
+              sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos
+                hDeltaLtOne : Real) <
+            poissonFixedEpochCalibratedPrivacyVariance
+              point sensitivity epsilon delta ∧
+          ∀ energy : Real, 0 ≤ energy →
+            poissonFixedEpochTotalAverageVariance
+                (PoissonFixedEpochPoint.fullBatch epoch hEpoch)
+                sensitivity epsilon delta energy <
+              poissonFixedEpochTotalAverageVariance
+                point sensitivity epsilon delta energy) := by
+  intro point hPointEpoch hNonFull
+  subst epoch
+  constructor
+  · exact
+      poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_delta_le_epochUniformThreshold
+        point sensitivity epsilon delta hNonFull hSensitivity hEpsilon hDeltaPos
+          hDeltaLtOne hDeltaThreshold
+  · intro energy hEnergy
+    simpa only using
+      poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_delta_le_epochUniformThreshold
+        point sensitivity epsilon delta energy hNonFull hSensitivity hEpsilon
+          hDeltaPos hDeltaLtOne hEnergy hDeltaThreshold
+
+end
+
+end Mf.DP
+import Mf.DP.PoissonFixedEpochRectangleHybridConcreteAggregate
+import Mf.DP.PoissonFixedEpochOutputSum
+import Mf.DP.PoissonFixedEpochEnergyThreshold
+import Mf.DP.PoissonFixedEpochFullBatchCandidateBracket
+import Mf.DP.PoissonFixedEpochFullBatchFourTwentyFifthsBracket
+import Mf.DP.SampledGaussianFiniteFeasibility
+
+namespace Mf.DP
+
+open PoissonFixedEpochRectangleActiveHinge
+open PoissonFixedEpochRectangleAtomicIntervals
+open PoissonFixedEpochFullBatchCandidateBracket
+open PoissonFixedEpochFullBatchFourTwentyFifthsBracket

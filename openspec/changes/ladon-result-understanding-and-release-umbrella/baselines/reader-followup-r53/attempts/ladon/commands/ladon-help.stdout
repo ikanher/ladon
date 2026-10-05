@@ -1,0 +1,145 @@
+usage: ladon [-h] [--repo-root REPO_ROOT] [--root ANALYSIS_ROOTS]
+             [--scope {changed-set,closure,inventory,multi-root,namespace,owner}]
+             [--changed-path CHANGED_PATH]
+             [--changed-manifest CHANGED_MANIFEST] [--max-modules MAX_MODULES]
+             [--max-context-modules MAX_CONTEXT_MODULES]
+             [--cache-dir CACHE_DIR] [--no-cache] [--build]
+             [--build-timeout BUILD_TIMEOUT]
+             [--extraction-backend {text,lean}]
+             [--lean-extraction-scope {root,inventory}]
+             [--lean-cache-dir LEAN_CACHE_DIR]
+             [--lean-batch-size LEAN_BATCH_SIZE] [--lean-timeout LEAN_TIMEOUT]
+             [--lean-strict] [--progress {auto,plain,json,off}]
+             [--overall-timeout OVERALL_TIMEOUT] [--max-rss-mib MAX_RSS_MIB]
+             [--max-report-bytes MAX_REPORT_BYTES] [--format {text,json}]
+             [--output OUTPUT] [--emit FORMAT=PATH]
+             [--report-version {v3,v2,v1}]
+             [--projection {summary,review,full}] [--output-json LEGACY_JSON]
+             [--output-text LEGACY_TEXT] [--fail-on FAIL_ON]
+             [--generated-at-utc GENERATED_AT_UTC] [--doc-file DOC_FILE]
+             [--packet-dir PACKET_DIR]
+             [--architecture-policy ARCHITECTURE_POLICY]
+             [--source-pattern-policy SOURCE_PATTERN_POLICY]
+             [--generated-family-policy GENERATED_FAMILY_POLICY]
+             [--generated-family-candidate-profile GENERATED_FAMILY_CANDIDATE_PROFILE]
+             [--module-system-witness MODULE_SYSTEM_WITNESS]
+             [--import-diet-witness IMPORT_DIET_WITNESS]
+             [--proof-xray PROOF_XRAY]
+             [--packet-profile {generic,review_packet,witness_bundle,release_bundle}]
+             [--verify-export-surface]
+             [--certificate-artifact CERTIFICATE_ARTIFACT]
+             [target]
+
+Ladon clean-core Lean analyzer
+
+positional arguments:
+  target                Optional analysis root alias
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Repository root to analyze
+  --root ANALYSIS_ROOTS
+                        Lean root file or module; repeat for multi-root scope.
+  --scope {changed-set,closure,inventory,multi-root,namespace,owner}
+                        Primary/context population contract; owner is the
+                        ordinary default.
+  --changed-path CHANGED_PATH
+  --changed-manifest CHANGED_MANIFEST
+  --max-modules MAX_MODULES
+  --max-context-modules MAX_CONTEXT_MODULES
+  --cache-dir CACHE_DIR
+                        Source-index cache directory; defaults to the platform
+                        user cache.
+  --no-cache            Bypass source-index reads and writes for this
+                        analysis.
+  --build               Run the target repository's lake build before
+                        dependent analysis.
+  --build-timeout BUILD_TIMEOUT
+                        Finite Lake build deadline in seconds.
+  --extraction-backend {text,lean}
+                        Select text-only discovery or Lean-backed extraction.
+                        The Lean backend loads target environments and is
+                        unsafe for untrusted repositories.
+  --lean-extraction-scope {root,inventory}
+  --lean-cache-dir LEAN_CACHE_DIR
+                        Optional cache directory for Lean helper JSON payloads
+  --lean-batch-size LEAN_BATCH_SIZE
+                        Modules per bounded Lean inventory helper invocation
+                        (minimum 2).
+  --lean-timeout LEAN_TIMEOUT
+                        Finite deadline in seconds for each Lean helper batch.
+  --lean-strict         Reject partial Lean batches while preserving their
+                        rows and diagnostics.
+  --progress {auto,plain,json,off}
+                        Emit long-run progress on stderr; auto is interactive-
+                        only.
+  --overall-timeout OVERALL_TIMEOUT
+                        Optional finite deadline for the complete analysis in
+                        seconds.
+  --max-rss-mib MAX_RSS_MIB
+                        Optional supported process-tree resident-memory limit
+                        in MiB.
+  --max-report-bytes MAX_REPORT_BYTES
+                        Optional maximum bytes for each selected report
+                        representation.
+  --format {text,json}
+  --output OUTPUT       Report path, or - for standard output.
+  --emit FORMAT=PATH    Add an output destination; repeat for multiple report
+                        formats.
+  --report-version {v3,v2,v1}
+                        JSON report major. Canonical output defaults to v3;
+                        deprecated --json/--text output retains v2 unless
+                        selected explicitly.
+  --projection {summary,review,full}
+                        Report-v3 projection; review is the ordinary default.
+  --output-json LEGACY_JSON, --json LEGACY_JSON
+  --output-text LEGACY_TEXT, --text LEGACY_TEXT
+  --fail-on FAIL_ON     Repeatable kind:<kind>, severity:<minimum>, or
+                        phase:<name>:<skipped|partial> selector.
+  --generated-at-utc GENERATED_AT_UTC
+  --doc-file DOC_FILE
+  --packet-dir PACKET_DIR
+  --architecture-policy ARCHITECTURE_POLICY
+                        Optional JSON policy defining project-specific module
+                        groups and forbidden imports.
+  --source-pattern-policy SOURCE_PATTERN_POLICY
+                        Optional JSON policy defining project-specific source
+                        text patterns to report.
+  --generated-family-policy GENERATED_FAMILY_POLICY
+                        Optional versioned JSON policy defining project-
+                        generated source families and quoted provenance.
+  --generated-family-candidate-profile GENERATED_FAMILY_CANDIDATE_PROFILE
+                        Optional strict versioned profile for advisory
+                        generated-family candidate detection.
+  --module-system-witness MODULE_SYSTEM_WITNESS
+                        Optional JSON witness quoting Lean module-system
+                        boundary evidence.
+  --import-diet-witness IMPORT_DIET_WITNESS
+                        Optional JSON witness quoting Lean/Lake import
+                        minimization evidence.
+  --proof-xray PROOF_XRAY
+                        Optional JSON witness quoting elaborated proof-shape
+                        evidence.
+  --packet-profile {generic,review_packet,witness_bundle,release_bundle}
+                        Evidence profile used for --packet-dir summaries.
+  --verify-export-surface
+  --certificate-artifact CERTIFICATE_ARTIFACT
+
+commands:
+  doctor    Emit read-only installation and repository readiness diagnostics.
+  result    Validate an experimental result manifest without loading Lean evidence.
+  theorem   Plan, materialize, and independently replay theorem capsules.
+  proof-search  Build and query local Lean proof-navigation evidence.
+  proofir       Validate, canonicalize, or inspect ProofIR artifacts.
+  runset    Execute a versioned set of ordinary analyses.
+  preview   Resolve roots, scope, policies, and costs without target execution.
+  inspect   Inspect canonical rows from one existing report or source index.
+  findings  List, filter, or inspect findings from one existing report.
+  atlas     Build an atlas from reports or a runset bundle.
+  query     Run a canned query against an atlas SQLite database.
+  diff      Compare two explicit atlas files structurally.
+  cards     Render reviewer cards from an atlas.
+  workflow  Build a combined atlas review workflow.
+
+Run 'ladon COMMAND --help' for command-specific options.

@@ -1,0 +1,257 @@
+FFFFFFFFFFFF                                                             [100%]
+=================================== FAILURES ===================================
+_ test_component_card_labels_whole_statement_and_preserves_current_historical_scopes _
+
+    def test_component_card_labels_whole_statement_and_preserves_current_historical_scopes():
+        value, attached = _scoped_inputs()
+>       result = _component_view(value, assessments=attached)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_component_scope.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+assessments = {'assessments': [{'author': {'id': 'reviewer-1', 'kind': 'human'}, 'basis': 'reviewed against the supplied statement',...42b5e6bf773377e9376ce7e024e5431fe1b331bec4', 'resultId': 'finite-map-example', 'schema': 'ladon-result-assessments-v1'}
+artifacts = None, kwargs = {}
+
+    def _component_view(value, *, assessments=None, artifacts=None, **kwargs):
+>       return inspect_result_manifest(
+            value, [] if artifacts is None else artifacts,
+            assessments=assessments, section="components",
+            claim_id=CLAIM_ID, component_id=MAPPED, **kwargs,
+        )
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:37: TypeError
+_____ test_historical_scope_is_retained_but_never_marks_component_reported _____
+
+    def test_historical_scope_is_retained_but_never_marks_component_reported():
+        value, attached = _scoped_inputs(current=False, historical=True)
+>       card = _component_view(value, assessments=attached)["rows"][0]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_component_scope.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+assessments = {'assessments': [{'author': {'id': 'reviewer-1', 'kind': 'human'}, 'basis': 'reviewed against the supplied statement',...42b5e6bf773377e9376ce7e024e5431fe1b331bec4', 'resultId': 'finite-map-example', 'schema': 'ladon-result-assessments-v1'}
+artifacts = None, kwargs = {}
+
+    def _component_view(value, *, assessments=None, artifacts=None, **kwargs):
+>       return inspect_result_manifest(
+            value, [] if artifacts is None else artifacts,
+            assessments=assessments, section="components",
+            claim_id=CLAIM_ID, component_id=MAPPED, **kwargs,
+        )
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:37: TypeError
+_________ test_selected_component_keeps_full_sibling_mapping_coverage __________
+
+    def test_selected_component_keeps_full_sibling_mapping_coverage():
+        value, attached = _scoped_inputs()
+>       card = _component_view(value, assessments=attached)["rows"][0]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_component_scope.py:143: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+assessments = {'assessments': [{'author': {'id': 'reviewer-1', 'kind': 'human'}, 'basis': 'reviewed against the supplied statement',...42b5e6bf773377e9376ce7e024e5431fe1b331bec4', 'resultId': 'finite-map-example', 'schema': 'ladon-result-assessments-v1'}
+artifacts = None, kwargs = {}
+
+    def _component_view(value, *, assessments=None, artifacts=None, **kwargs):
+>       return inspect_result_manifest(
+            value, [] if artifacts is None else artifacts,
+            assessments=assessments, section="components",
+            claim_id=CLAIM_ID, component_id=MAPPED, **kwargs,
+        )
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:37: TypeError
+________ test_unresolved_formal_statement_uses_only_manifest_authority _________
+
+    def test_unresolved_formal_statement_uses_only_manifest_authority():
+        value = manifest()
+>       unresolved = _component_view(value)["rows"][0]["formalStatements"][0]
+                     ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_component_scope.py:159: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+assessments = None, artifacts = None, kwargs = {}
+
+    def _component_view(value, *, assessments=None, artifacts=None, **kwargs):
+>       return inspect_result_manifest(
+            value, [] if artifacts is None else artifacts,
+            assessments=assessments, section="components",
+            claim_id=CLAIM_ID, component_id=MAPPED, **kwargs,
+        )
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:37: TypeError
+_______ test_resolved_formal_statement_uses_exact_stored_canonical_type ________
+
+    def test_resolved_formal_statement_uses_exact_stored_canonical_type():
+        resolved_manifest, artifacts = resolved_inputs()
+>       resolved_card = _component_view(resolved_manifest, artifacts=artifacts)["rows"][0]
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_result_component_scope.py:170: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'claimInventory': {'coverage': 'complete', 'scope': 'One illustrative paper statement; not a checked formalization.'}...omponentIds': ['implication'], 'id': 'mapping-1', 'targetIds': ['finite-map']}], 'resultId': 'finite-map-example', ...}
+assessments = None
+artifacts = [{'artifactId': 'sha256:89e64f31d0afb4d377e93b344b137c8a7f08bb7db86a58caee2695cd3a2a44fa', 'artifactKind': 'proofir.en...'expected': 1, ...}, 'environmentRef': 'sha256:12792a5761866d4f9493155f79ec2aaef3d3b4d9b07d436cf1932a00097c374d', ...}]
+kwargs = {}
+
+    def _component_view(value, *, assessments=None, artifacts=None, **kwargs):
+>       return inspect_result_manifest(
+            value, [] if artifacts is None else artifacts,
+            assessments=assessments, section="components",
+            claim_id=CLAIM_ID, component_id=MAPPED, **kwargs,
+        )
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:37: TypeError
+_____ test_target_selector_cannot_lend_mapped_evidence_to_unmapped_sibling _____
+
+    def test_target_selector_cannot_lend_mapped_evidence_to_unmapped_sibling():
+        value, attached = _scoped_inputs()
+>       result = inspect_result_manifest(
+            value, [], assessments=attached, section="components", claim_id=CLAIM_ID,
+            component_id=UNMAPPED, target_id=TARGET_ID,
+        )
+E       TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:183: TypeError
+_ test_component_selection_requires_components_exact_claim_and_known_component[implication-claims-paper-theorem-1] _
+
+component = 'implication', section = 'claims', claim = 'paper-theorem-1'
+
+    @pytest.mark.parametrize(("component", "section", "claim"), [
+        (MAPPED, "claims", CLAIM_ID),
+        ("missing-component", "components", CLAIM_ID),
+        (MAPPED, "components", "missing-claim"),
+        (MAPPED, "components", None),
+    ])
+    def test_component_selection_requires_components_exact_claim_and_known_component(component, section, claim):
+        value = manifest()
+        with pytest.raises(ResultManifestError):
+>           inspect_result_manifest(
+                value, [], section=section, claim_id=claim, component_id=component,
+            )
+E           TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:201: TypeError
+_ test_component_selection_requires_components_exact_claim_and_known_component[missing-component-components-paper-theorem-1] _
+
+component = 'missing-component', section = 'components'
+claim = 'paper-theorem-1'
+
+    @pytest.mark.parametrize(("component", "section", "claim"), [
+        (MAPPED, "claims", CLAIM_ID),
+        ("missing-component", "components", CLAIM_ID),
+        (MAPPED, "components", "missing-claim"),
+        (MAPPED, "components", None),
+    ])
+    def test_component_selection_requires_components_exact_claim_and_known_component(component, section, claim):
+        value = manifest()
+        with pytest.raises(ResultManifestError):
+>           inspect_result_manifest(
+                value, [], section=section, claim_id=claim, component_id=component,
+            )
+E           TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:201: TypeError
+_ test_component_selection_requires_components_exact_claim_and_known_component[implication-components-missing-claim] _
+
+component = 'implication', section = 'components', claim = 'missing-claim'
+
+    @pytest.mark.parametrize(("component", "section", "claim"), [
+        (MAPPED, "claims", CLAIM_ID),
+        ("missing-component", "components", CLAIM_ID),
+        (MAPPED, "components", "missing-claim"),
+        (MAPPED, "components", None),
+    ])
+    def test_component_selection_requires_components_exact_claim_and_known_component(component, section, claim):
+        value = manifest()
+        with pytest.raises(ResultManifestError):
+>           inspect_result_manifest(
+                value, [], section=section, claim_id=claim, component_id=component,
+            )
+E           TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:201: TypeError
+_ test_component_selection_requires_components_exact_claim_and_known_component[implication-components-None] _
+
+component = 'implication', section = 'components', claim = None
+
+    @pytest.mark.parametrize(("component", "section", "claim"), [
+        (MAPPED, "claims", CLAIM_ID),
+        ("missing-component", "components", CLAIM_ID),
+        (MAPPED, "components", "missing-claim"),
+        (MAPPED, "components", None),
+    ])
+    def test_component_selection_requires_components_exact_claim_and_known_component(component, section, claim):
+        value = manifest()
+        with pytest.raises(ResultManifestError):
+>           inspect_result_manifest(
+                value, [], section=section, claim_id=claim, component_id=component,
+            )
+E           TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:201: TypeError
+_____ test_old_and_unfocused_cursors_are_rejected_for_component_projection _____
+
+    def test_old_and_unfocused_cursors_are_rejected_for_component_projection():
+        value = manifest()
+        full = inspect_result_manifest(value, [], section="components", claim_id=CLAIM_ID, limit=1)
+        legacy_cursor = full["pagination"]["nextCursor"]
+        with pytest.raises(ResultManifestError):
+>           inspect_result_manifest(
+                value, [], section="components", claim_id=CLAIM_ID,
+                component_id=MAPPED, limit=1, cursor=legacy_cursor,
+            )
+E           TypeError: inspect_result_manifest() got an unexpected keyword argument 'component_id'
+
+tests/test_result_component_scope.py:211: TypeError
+___________ test_component_cli_json_text_and_references_have_parity ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-939/test_component_cli_json_text_a0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7b27457bcf90>
+
+    def test_component_cli_json_text_and_references_have_parity(tmp_path, capsys):
+        value, attached = _scoped_inputs()
+        manifest_path = tmp_path / "manifest.json"
+        assessment_path = tmp_path / "assessments.json"
+        manifest_path.write_bytes(canonical_json(value))
+        assessment_path.write_bytes(canonical_json(attached))
+        outputs = []
+        for fmt in ("json", "text"):
+            code = main([
+                "result", "inspect", str(manifest_path), "--assessments", str(assessment_path),
+                "--section", "components", "--claim", CLAIM_ID, "--component", MAPPED,
+                "--format", fmt,
+            ])
+>           assert code == 0
+E           assert 2 == 0
+
+tests/test_result_component_scope.py:245: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"diagnostic":{"code":"manifest-invalid","message":"unrecognized arguments: --component implication"},"exitClass":"invocation","exitCode":2,"operation":"inspect","schema":"ladon-result-terminal-v1","status":"failed"}
+=========================== short test summary info ============================
+FAILED tests/test_result_component_scope.py::test_component_card_labels_whole_statement_and_preserves_current_historical_scopes
+FAILED tests/test_result_component_scope.py::test_historical_scope_is_retained_but_never_marks_component_reported
+FAILED tests/test_result_component_scope.py::test_selected_component_keeps_full_sibling_mapping_coverage
+FAILED tests/test_result_component_scope.py::test_unresolved_formal_statement_uses_only_manifest_authority
+FAILED tests/test_result_component_scope.py::test_resolved_formal_statement_uses_exact_stored_canonical_type
+FAILED tests/test_result_component_scope.py::test_target_selector_cannot_lend_mapped_evidence_to_unmapped_sibling
+FAILED tests/test_result_component_scope.py::test_component_selection_requires_components_exact_claim_and_known_component[implication-claims-paper-theorem-1]
+FAILED tests/test_result_component_scope.py::test_component_selection_requires_components_exact_claim_and_known_component[missing-component-components-paper-theorem-1]
+FAILED tests/test_result_component_scope.py::test_component_selection_requires_components_exact_claim_and_known_component[implication-components-missing-claim]
+FAILED tests/test_result_component_scope.py::test_component_selection_requires_components_exact_claim_and_known_component[implication-components-None]
+FAILED tests/test_result_component_scope.py::test_old_and_unfocused_cursors_are_rejected_for_component_projection
+FAILED tests/test_result_component_scope.py::test_component_cli_json_text_and_references_have_parity
+12 failed in 0.15s

@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T09:15:07.917265+00:00",
+  "argv": [
+    "/bin/bash",
+    "-lc",
+    "mkdir -p .; cat > context-a.lean <<\"EOF\"\nimport Mf.DP.PoissonFixedEpochCenterGapPropagation\nopen Mf.DP\nexample : \u2200 (point : PoissonFixedEpochPoint) (h boundary query : \u211d)\n    (hNonFull : point.epoch < point.horizon) (hh : 0 < h)\n    (hBoundaryNonneg : 0 \u2264 boundary) (hBoundaryQuery : boundary < query)\n    (hBoundaryGap : 0 \u2264 fixedEpochCenterGap point h boundary),\n    0 < fixedEpochCenterGap point h query := by\n  intro point h boundary query hNonFull hh hBoundaryNonneg hBoundaryQuery hBoundaryGap\n  exact fixedEpochCenterGap_pos_of_boundary_nonneg point h boundary query\n    hNonFull hh hBoundaryNonneg hBoundaryQuery hBoundaryGap\nEOF\ncat > context-b.lean <<\"EOF\"\nimport Mf.DP.PoissonFixedEpochCenterGapPropagation\nopen Mf.DP\nexample : \u2200 (point : PoissonFixedEpochPoint) (h boundary query : \u211d)\n    (hNonFull : point.epoch < point.horizon) (hh : 0 < h)\n    (hBoundaryNonneg : 0 \u2264 boundary) (hBoundaryQuery : boundary < query),\n    0 < fixedEpochCenterGap point h query := by\n  intro point h boundary query hNonFull hh hBoundaryNonneg hBoundaryQuery\n  exact fixedEpochCenterGap_pos_of_boundary_nonneg point h boundary query\n    hNonFull hh hBoundaryNonneg hBoundaryQuery\nEOF"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest",
+  "exitCode": 0,
+  "elapsedSeconds": 0.05871634103823453,
+  "peakRssBytes": 3952640,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/write-applications.stdout",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/write-applications.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

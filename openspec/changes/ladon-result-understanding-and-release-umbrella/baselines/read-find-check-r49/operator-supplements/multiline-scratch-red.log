@@ -1,0 +1,56 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+______ test_multiline_application_compiles_in_its_original_context[False] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-800/test_multiline_application_com0')
+introduced = False
+
+    @pytest.mark.skipif(shutil.which('lake') is None, reason='pinned Lean unavailable')
+    @pytest.mark.parametrize('introduced', [False, True])
+    def test_multiline_application_compiles_in_its_original_context(tmp_path, introduced):
+        context = [{'name': 'P', 'type': 'Prop'}, {'name': 'h', 'type': 'P'}]
+        goal = '∀ (P : Prop), P → P' if introduced else 'P'
+        source = build_scratch_source('LadonFixture', goal, 'id\n  h',
+                                      [] if introduced else context,
+                                      context if introduced else None)
+        path = tmp_path / 'Replay.lean'
+        path.write_text(source)
+        fixture = Path(__file__).parent / 'fixtures/lean_integration'
+        result = subprocess.run(['lake', 'env', 'lean', str(path)], cwd=fixture,
+                                text=True, capture_output=True, check=False, timeout=60)
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: /tmp/pytest-of-codex/pytest-800/test_multiline_application_com0/Replay.lean:5:3: error: unknown tactic
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['lake', 'env', 'lean', '/tmp/pytest-of-codex/pytest-800/test_multiline_application_com0/Replay....='/tmp/pytest-of-codex/pytest-800/test_multiline_application_com0/Replay.lean:5:3: error: unknown tactic\n', stderr='').returncode
+
+tests/test_semantic_multiline_scratch_integration.py:26: AssertionError
+______ test_multiline_application_compiles_in_its_original_context[True] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-800/test_multiline_application_com1')
+introduced = True
+
+    @pytest.mark.skipif(shutil.which('lake') is None, reason='pinned Lean unavailable')
+    @pytest.mark.parametrize('introduced', [False, True])
+    def test_multiline_application_compiles_in_its_original_context(tmp_path, introduced):
+        context = [{'name': 'P', 'type': 'Prop'}, {'name': 'h', 'type': 'P'}]
+        goal = '∀ (P : Prop), P → P' if introduced else 'P'
+        source = build_scratch_source('LadonFixture', goal, 'id\n  h',
+                                      [] if introduced else context,
+                                      context if introduced else None)
+        path = tmp_path / 'Replay.lean'
+        path.write_text(source)
+        fixture = Path(__file__).parent / 'fixtures/lean_integration'
+        result = subprocess.run(['lake', 'env', 'lean', str(path)], cwd=fixture,
+                                text=True, capture_output=True, check=False, timeout=60)
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: /tmp/pytest-of-codex/pytest-800/test_multiline_application_com1/Replay.lean:7:3: error: unknown tactic
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['lake', 'env', 'lean', '/tmp/pytest-of-codex/pytest-800/test_multiline_application_com1/Replay....='/tmp/pytest-of-codex/pytest-800/test_multiline_application_com1/Replay.lean:7:3: error: unknown tactic\n', stderr='').returncode
+
+tests/test_semantic_multiline_scratch_integration.py:26: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_multiline_scratch_integration.py::test_multiline_application_compiles_in_its_original_context[False]
+FAILED tests/test_semantic_multiline_scratch_integration.py::test_multiline_application_compiles_in_its_original_context[True]
+2 failed in 0.33s

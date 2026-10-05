@@ -1,0 +1,18 @@
+--- /home/codex/projects/ladon/openspec/changes/ladon-result-understanding-and-release-umbrella/baselines/source-path-r51/reproduce/baseline-lean_toolchain.py	2026-10-04 13:22:56.512785799 +0300
++++ /home/codex/projects/ladon/src/ladon/lean_toolchain.py	2026-10-04 13:40:48.207391804 +0300
+@@ -326,11 +326,12 @@
+ 
+ 
+ def _validate_source_relative_path(relative: str) -> str:
+-    normalized = Path(relative).as_posix()
+-    parts = Path(normalized).parts
++    path = Path(relative)
++    normalized = path.as_posix()
++    parts = path.parts
+     if (
+         not normalized
+-        or Path(normalized).is_absolute()
++        or path.is_absolute()
+         or ".." in parts
+         or len(parts) > SOURCE_PATH_DEPTH_LIMIT
+         or len(normalized.encode()) > SOURCE_PATH_BYTE_LIMIT

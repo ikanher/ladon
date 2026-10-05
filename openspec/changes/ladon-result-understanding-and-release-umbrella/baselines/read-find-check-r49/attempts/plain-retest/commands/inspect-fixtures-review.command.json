@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T09:14:47.673963+00:00",
+  "argv": [
+    "/bin/bash",
+    "-lc",
+    "python3 - <<\"PY\"\nimport json\nfor i in range(89):\n d=json.load(open(f\"assets/{i:05}.json\")); ext=d.get(\"extensions\",{}); txt=json.dumps(d).lower()\n if \"synthetic\" in txt or \"review\" in txt or \"finite-map\" in txt or \"stale\" in txt:\n  print(\"###\",i,d.get(\"artifactKind\"),d.get(\"artifactId\")); print(json.dumps(d,indent=2)[:3000])\nPY"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-loop-r49/shared/evidence",
+  "exitCode": 0,
+  "elapsedSeconds": 0.5236621270887554,
+  "peakRssBytes": 31191040,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/inspect-fixtures-review.stdout",
+      "bytes": 43400,
+      "sha256": "sha256:6e06860d04a5e0095ffb02235e18a6c808e5a6fb120fc503127312de73ea1eb6"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/inspect-fixtures-review.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T13:12:09.837438+00:00",
+  "argv": [
+    "bash",
+    "-lc",
+    "python /home/codex/projects/ladon/.codex/skills/ultra-code/scripts/ultra_code_bb.py read --db /home/codex/projects/ladon/.codex/state/ultra-result-evidence.sqlite3 --since 538 --topic reader-r53-plain --format human; cd /home/codex/.cache/ladon-reader-followup-r53/shared; python -c 'import json,pathlib,math; g=json.loads(pathlib.Path(\"evidence/assets/00092.json\").read_text()); print(\"GUIDE STEPS\"); [print(json.dumps({k:s.get(k) for k in [\"id\",\"claimId\",\"purpose\",\"explanation\",\"sources\",\"prerequisites\",\"revision\"]},ensure_ascii=False)) for s in g[\"steps\"]]; print(\"GUIDE REVIEWS\",g[\"reviews\"]); Phi=lambda x:.5*math.erfc(-x/math.sqrt(2)); T,E=3,1; q=E/T\nfor h in [.1,1,2,3,4,8]:\n for b,x in [(0,.1),(0,.5),(.1,.2),(.5,.6)]:\n  gap=sum(math.comb(T,k)*q**k*(1-q)**(T-k)*Phi(h*(k-E-x)) for k in range(T+1))-Phi(-h*x)\n  if b==0 and x==.1: g0=sum(math.comb(T,k)*q**k*(1-q)**(T-k)*Phi(h*(k-E-b)) for k in range(T+1))-Phi(-h*b); print(\"numeric\",T,E,h,b,x,\"boundarygap\",g0,\"querygap\",gap) '"
+  ],
+  "cwd": "/home/codex/projects/ladon",
+  "exitCode": 0,
+  "elapsedSeconds": 0.11743353703059256,
+  "peakRssBytes": 17813504,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/numeric-check-and-guide-extract.stdout",
+      "bytes": 13089,
+      "sha256": "sha256:7d6bcda8628e895be2516e78734fc5c9257bfb5053cecd6a507a1a9772dc4387"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/numeric-check-and-guide-extract.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

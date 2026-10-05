@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T13:13:06.971267+00:00",
+  "argv": [
+    "python",
+    "-c",
+    "import pathlib,re; f=pathlib.Path(\"evidence/assets/00091.bin\"); s=f.read_text(); lines=s.splitlines(); terms=[\"cor:fixed-epoch-all-horizon\",\"thm:strict-interior-counterexample\",\"sec:scope\",\"Scope of the conclusions\",\"lem:binomial-propagation\",\"thm:rate-adaptive-pointwise\"];\nfor term in terms:\n hits=[i for i,l in enumerate(lines) if term in l]; print(\"###\",term,hits[:8]);\n for i in hits[:2]: print(\"\\\\n\".join(f\"{j+1}: {lines[j]}\" for j in range(max(0,i-3),min(len(lines),i+20))); print(\"...\")"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-followup-r53/shared",
+  "exitCode": 1,
+  "elapsedSeconds": 0.059033712022937834,
+  "peakRssBytes": 9854976,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/inspect-manuscript-claims-scope.stdout",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/inspect-manuscript-claims-scope.stderr",
+      "bytes": 289,
+      "sha256": "sha256:d012971bcd443e6cb0861cf249872c55aa7312b5ed4370521793954958f6dd6c"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

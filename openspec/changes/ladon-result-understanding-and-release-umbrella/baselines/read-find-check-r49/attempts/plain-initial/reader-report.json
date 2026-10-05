@@ -1,0 +1,79 @@
+{
+  "schema": "ladon-reader-report-v1",
+  "reader": "reader_plain_r49",
+  "mode": "plain",
+  "task": "Audit full-batch optimality exposition and check the proposed fixedEpochCenterGap goal in both contexts.",
+  "selectedSources": [
+    {
+      "source": "evidence/manifest.json",
+      "use": "Claim statements, target names and source bindings; result inventory says the transcript comparison, strict-interior counterexample and sparse asymptotics have formal target bindings."
+    },
+    {
+      "source": "evidence/assets/00092.json",
+      "use": "Reader guide with bounded explanations, formal coverage statements and release-scope caveats."
+    },
+    {
+      "source": "evidence/assets/00089.json",
+      "use": "Component assessments distinguish source-correspondence from conventional-only material and attribute assessments to a model."
+    },
+    {
+      "source": "Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:430",
+      "use": "Selected lemma fixedEpochCenterGap_pos_of_boundary_nonneg and proof prerequisites."
+    },
+    {
+      "source": "Mf/DP/PoissonFixedEpochEpochUniformDomain.lean:131",
+      "use": "An all-finite-horizons strict comparison theorem with an explicit signal-square condition."
+    },
+    {
+      "source": "Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean:105",
+      "use": "Certified adjacent-horizon counterexample and total-variance range."
+    },
+    {
+      "source": "synthetic/finite-map.json, synthetic/finite-map.guide.json, synthetic/stale-guide.json, synthetic/README.md",
+      "use": "Illustrate an omitted premise and a stale explanation review; these are explicitly test records."
+    }
+  ],
+  "conclusions": {
+    "fullBatchOptimality": "The supported finite comparison is conditional, not an unrestricted claim that full batch always minimizes calibrated variance. For T>E, sensitivity Δ>0, ε>0, 0<δ<1 and a=Δ/sqrt(v_FB), the transcript theorem assumes a^2 <= Λ_(E,T) ε and concludes v_FB < vbar_(E,T) <= v_(E,T), and for every S>=0 the full-batch total variance is strictly smaller than the smaller-batch total variance. The all-horizons corollary uses the sufficient condition a^2 <= (6E/(3E+2)) ε. These conditions establish comparison against full batch, not an ordering among all smaller batches or a classification outside the sufficient domain.",
+    "counterexample": "At Δ=1, E=2, ε=1/4, δ=3/4, the formal source proves v_3 <= 5/32 < 4/25 < v_FB (=v_2), and the T=3 total variance is strictly lower for 0<=S<=9/400. Thus adjacent smaller-batch optimality fails at a positive calibrated noise setting; this does not contradict the conditional theorem when its signal condition is not established.",
+    "releaseScope": "The sparse theorem concerns the released complete transcript under independent Poisson sampling of fixed clipped record contributions and homogeneous independent Gaussian noise; the averaged output has separate statements. Its δ condition is 0<δ<1-exp(-E); it gives sigma_(E,T)->0 and transcript calibrated privacy variance tending to infinity, while the supplied guide says the average-only calibrated variance has a horizon-uniform bound. The exposition explicitly does not assert adaptive optimizer-trajectory or training-loss conclusions. Fixed-rate q>0 asymptotics do not automatically cover q=E/T without uniformity in q.",
+    "formalCoverage": "Manifest targets bind the transcript finite comparison and all-horizon results, the strict-interior transcript counterexample, and the transcript sparse-limit components. The average-only counterexample extension, average-only uniform bound and strict half-rate endpoint improvement are labeled conventional-only in the supplied component assessments; do not present those as covered by these formal targets. Several analytic and exposition-to-target correspondences are model-attributed rather than independently validated.",
+    "reviewCurrency": "The current manifest has an empty reviews array. The guide and assessments are model-authored reader aids, not evidence of human approval. The synthetic stale-guide record has an old approval keyed to the old step revision after the explanation changed, so it is stale even within that fixture. No supplied record establishes current real exposition approval.",
+    "syntheticFiniteMap": "The illustrative informal statement 'Every injective self-map is surjective' omits finiteness, while the supplied target has [Finite α]. That additional hypothesis is material: successor on Nat is injective and not surjective. The fixture labels its digests illustrative and says it was not checked; it demonstrates a premise-audit hazard, not a review of the real exposition.",
+    "lemma": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg (PoissonFixedEpochCenterGapPropagation.lean:430) states that for a non-full point, h>0, 0<=boundary<query, and gap(point,h,boundary)>=0, the gap at query is strictly positive. Its proof invokes strict convexity/tilt and a vanishing-at-infinity argument. No theorem name was preselected: this was selected by matching the goal and its supplied source signature."
+  },
+  "contextChecks": [
+    {
+      "context": "A",
+      "result": "success",
+      "evidence": "The proposition was discharged directly by fixedEpochCenterGap_pos_of_boundary_nonneg with hNonFull, hh, hBoundaryNonneg, hBoundaryQuery and hBoundaryGap. Lean emitted no diagnostic for this example in the recorded check command."
+    },
+    {
+      "context": "B",
+      "result": "not discharged; required premise unavailable",
+      "evidence": "The explicit attempted application left the obligation 0 <= fixedEpochCenterGap point h boundary. Lean reported 'don't know how to synthesize placeholder for argument hBoundaryGap' and separately showed the original strict positivity goal unsolved. This is a failed application due to a missing premise, not evidence that the goal is false."
+    }
+  ],
+  "checks": {
+    "successful": [
+      "Direct Lean 4.33.0 invocation against existing compiled project and package imports elaborated context A and the lemma application. No Lake build was run."
+    ],
+    "failedOrPartial": [
+      "First direct Lean invocation had only the project build library in LEAN_PATH and failed with unknown module prefix Mathlib. Workaround: include the existing Mathlib and package build library paths explicitly in LEAN_PATH.",
+      "The combined context check exited with an expected elaboration failure on context B because its lemma premise hBoundaryGap is absent; the Lean error states the precise remaining nonnegativity obligation."
+    ],
+    "toolingLimits": "No Lake build or source/build/cache mutation was performed. Checks used the pinned Lean 4.33.0 binary and pre-existing .olean files."
+  },
+  "evidencePaths": [
+    "/home/codex/.cache/ladon-reader-loop-r49/plain-initial/commands/check-contexts-with-deps.command.json",
+    "/home/codex/.cache/ladon-reader-loop-r49/plain-initial/commands/locate-source-declarations.command.json",
+    "/home/codex/.cache/ladon-reader-loop-r49/plain-initial/ContextCheck.lean"
+  ],
+  "interventions": "None.",
+  "frictionAndContributions": [
+    "The result manifest target inventory gave a direct path from the unnamed goal to the propagation lemma, avoiding a broad source search for a preselected theorem name.",
+    "Context A includes the lemma's boundary-gap premise verbatim; context B removes it. The Lean error isolated the missing nonnegativity obligation and avoided misreporting an application failure as a counterexample.",
+    "An initial Lean import-path error was resolved by explicitly adding the already-built package libraries, without invoking Lake or mutating project artifacts.",
+    "The finite-map fixture separates informal scope from formal premises; the stale-guide fixture ties its review to an older revision. Both prevent treating synthetic test records as real approval."
+  ]
+}

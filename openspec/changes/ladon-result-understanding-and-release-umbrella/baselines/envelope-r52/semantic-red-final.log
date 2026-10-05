@@ -1,0 +1,343 @@
+.........FFFFFF.FF.                                                      [100%]
+=================================== FAILURES ===================================
+___ test_hostile_deepcopy_cannot_replace_validated_payload[top-dict-single] ____
+
+validator = <function validate_envelope at 0x7118a645bba0>
+location = 'top-dict'
+
+    @pytest.mark.parametrize(
+        "validator",
+        [
+            validate_envelope,
+            lambda artifact: validate_envelope_batch([artifact])[0],
+        ],
+        ids=["single", "batch"],
+    )
+    @pytest.mark.parametrize("location", ["top-dict", "nested-dict", "nested-list"])
+    def test_hostile_deepcopy_cannot_replace_validated_payload(validator, location):
+        class EvilDict(dict):
+            def __deepcopy__(self, memo):
+                return {"proofirVersion": "bad"}
+    
+        class EvilList(list):
+            def __deepcopy__(self, memo):
+                return []
+    
+        raw = claim_artifact()
+        if location == "top-dict":
+            raw = EvilDict(raw)
+        elif location == "nested-dict":
+            raw["producer"] = EvilDict(raw["producer"])
+        else:
+            raw["subjectRefs"] = EvilList(raw["subjectRefs"])
+        raw["artifactId"] = detached_content_id(raw)
+        try:
+            validated = validator(raw)
+        except ProofIRV3Error:
+            # Rejecting hostile container subclasses at the ownership boundary is safe.
+            return
+        returned = validated.to_dict()
+>       assert returned == raw
+E       AssertionError: assert {'proofirVersion': 'bad'} == {'proofirVers...': 'opaque'}}}
+E         
+E         Differing items:
+E         {'proofirVersion': 'bad'} != {'proofirVersion': '3.0'}
+E         Right contains 9 more items:
+E         {'artifactId': 'sha256:e62c49f67a336d0be01dec6fd2f79ac9c23c003c133b036d1acda60c25fd86a7',
+E          'artifactKind': 'proofir.claim',
+E          'coverage': {'bounds': {'maxSubjects': 1000},...
+E         
+E         ...Full output truncated (23 lines hidden), use '-vv' to show
+
+tests/test_envelope_batch_snapshot.py:173: AssertionError
+____ test_hostile_deepcopy_cannot_replace_validated_payload[top-dict-batch] ____
+
+validator = <function <lambda> at 0x7118a649e020>, location = 'top-dict'
+
+    @pytest.mark.parametrize(
+        "validator",
+        [
+            validate_envelope,
+            lambda artifact: validate_envelope_batch([artifact])[0],
+        ],
+        ids=["single", "batch"],
+    )
+    @pytest.mark.parametrize("location", ["top-dict", "nested-dict", "nested-list"])
+    def test_hostile_deepcopy_cannot_replace_validated_payload(validator, location):
+        class EvilDict(dict):
+            def __deepcopy__(self, memo):
+                return {"proofirVersion": "bad"}
+    
+        class EvilList(list):
+            def __deepcopy__(self, memo):
+                return []
+    
+        raw = claim_artifact()
+        if location == "top-dict":
+            raw = EvilDict(raw)
+        elif location == "nested-dict":
+            raw["producer"] = EvilDict(raw["producer"])
+        else:
+            raw["subjectRefs"] = EvilList(raw["subjectRefs"])
+        raw["artifactId"] = detached_content_id(raw)
+        try:
+            validated = validator(raw)
+        except ProofIRV3Error:
+            # Rejecting hostile container subclasses at the ownership boundary is safe.
+            return
+        returned = validated.to_dict()
+>       assert returned == raw
+E       AssertionError: assert {'proofirVersion': 'bad'} == {'proofirVers...': 'opaque'}}}
+E         
+E         Differing items:
+E         {'proofirVersion': 'bad'} != {'proofirVersion': '3.0'}
+E         Right contains 9 more items:
+E         {'artifactId': 'sha256:e62c49f67a336d0be01dec6fd2f79ac9c23c003c133b036d1acda60c25fd86a7',
+E          'artifactKind': 'proofir.claim',
+E          'coverage': {'bounds': {'maxSubjects': 1000},...
+E         
+E         ...Full output truncated (23 lines hidden), use '-vv' to show
+
+tests/test_envelope_batch_snapshot.py:173: AssertionError
+__ test_hostile_deepcopy_cannot_replace_validated_payload[nested-dict-single] __
+
+validator = <function validate_envelope at 0x7118a645bba0>
+location = 'nested-dict'
+
+    @pytest.mark.parametrize(
+        "validator",
+        [
+            validate_envelope,
+            lambda artifact: validate_envelope_batch([artifact])[0],
+        ],
+        ids=["single", "batch"],
+    )
+    @pytest.mark.parametrize("location", ["top-dict", "nested-dict", "nested-list"])
+    def test_hostile_deepcopy_cannot_replace_validated_payload(validator, location):
+        class EvilDict(dict):
+            def __deepcopy__(self, memo):
+                return {"proofirVersion": "bad"}
+    
+        class EvilList(list):
+            def __deepcopy__(self, memo):
+                return []
+    
+        raw = claim_artifact()
+        if location == "top-dict":
+            raw = EvilDict(raw)
+        elif location == "nested-dict":
+            raw["producer"] = EvilDict(raw["producer"])
+        else:
+            raw["subjectRefs"] = EvilList(raw["subjectRefs"])
+        raw["artifactId"] = detached_content_id(raw)
+        try:
+            validated = validator(raw)
+        except ProofIRV3Error:
+            # Rejecting hostile container subclasses at the ownership boundary is safe.
+            return
+        returned = validated.to_dict()
+>       assert returned == raw
+E       AssertionError: assert {'artifactId'...eeeeeee', ...} == {'artifactId'...eeeeeee', ...}
+E         
+E         Omitting 9 identical items, use -vv to show
+E         Differing items:
+E         {'producer': {'proofirVersion': 'bad'}} != {'producer': {'name': 'fixture-producer', 'version': '1.0', 'implementation': 'python', 'buildDigest': 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'}}
+E         Use -v to get more diff
+
+tests/test_envelope_batch_snapshot.py:173: AssertionError
+__ test_hostile_deepcopy_cannot_replace_validated_payload[nested-dict-batch] ___
+
+validator = <function <lambda> at 0x7118a649e020>, location = 'nested-dict'
+
+    @pytest.mark.parametrize(
+        "validator",
+        [
+            validate_envelope,
+            lambda artifact: validate_envelope_batch([artifact])[0],
+        ],
+        ids=["single", "batch"],
+    )
+    @pytest.mark.parametrize("location", ["top-dict", "nested-dict", "nested-list"])
+    def test_hostile_deepcopy_cannot_replace_validated_payload(validator, location):
+        class EvilDict(dict):
+            def __deepcopy__(self, memo):
+                return {"proofirVersion": "bad"}
+    
+        class EvilList(list):
+            def __deepcopy__(self, memo):
+                return []
+    
+        raw = claim_artifact()
+        if location == "top-dict":
+            raw = EvilDict(raw)
+        elif location == "nested-dict":
+            raw["producer"] = EvilDict(raw["producer"])
+        else:
+            raw["subjectRefs"] = EvilList(raw["subjectRefs"])
+        raw["artifactId"] = detached_content_id(raw)
+        try:
+            validated = validator(raw)
+        except ProofIRV3Error:
+            # Rejecting hostile container subclasses at the ownership boundary is safe.
+            return
+        returned = validated.to_dict()
+>       assert returned == raw
+E       AssertionError: assert {'artifactId'...eeeeeee', ...} == {'artifactId'...eeeeeee', ...}
+E         
+E         Omitting 9 identical items, use -vv to show
+E         Differing items:
+E         {'producer': {'proofirVersion': 'bad'}} != {'producer': {'name': 'fixture-producer', 'version': '1.0', 'implementation': 'python', 'buildDigest': 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'}}
+E         Use -v to get more diff
+
+tests/test_envelope_batch_snapshot.py:173: AssertionError
+__ test_hostile_deepcopy_cannot_replace_validated_payload[nested-list-single] __
+
+validator = <function validate_envelope at 0x7118a645bba0>
+location = 'nested-list'
+
+    @pytest.mark.parametrize(
+        "validator",
+        [
+            validate_envelope,
+            lambda artifact: validate_envelope_batch([artifact])[0],
+        ],
+        ids=["single", "batch"],
+    )
+    @pytest.mark.parametrize("location", ["top-dict", "nested-dict", "nested-list"])
+    def test_hostile_deepcopy_cannot_replace_validated_payload(validator, location):
+        class EvilDict(dict):
+            def __deepcopy__(self, memo):
+                return {"proofirVersion": "bad"}
+    
+        class EvilList(list):
+            def __deepcopy__(self, memo):
+                return []
+    
+        raw = claim_artifact()
+        if location == "top-dict":
+            raw = EvilDict(raw)
+        elif location == "nested-dict":
+            raw["producer"] = EvilDict(raw["producer"])
+        else:
+            raw["subjectRefs"] = EvilList(raw["subjectRefs"])
+        raw["artifactId"] = detached_content_id(raw)
+        try:
+            validated = validator(raw)
+        except ProofIRV3Error:
+            # Rejecting hostile container subclasses at the ownership boundary is safe.
+            return
+        returned = validated.to_dict()
+>       assert returned == raw
+E       AssertionError: assert {'artifactId'...eeeeeee', ...} == {'artifactId'...eeeeeee', ...}
+E         
+E         Omitting 9 identical items, use -vv to show
+E         Differing items:
+E         {'subjectRefs': []} != {'subjectRefs': [{'kind': 'statement', 'localId': 'statement:goal'}]}
+E         Use -v to get more diff
+
+tests/test_envelope_batch_snapshot.py:173: AssertionError
+__ test_hostile_deepcopy_cannot_replace_validated_payload[nested-list-batch] ___
+
+validator = <function <lambda> at 0x7118a649e020>, location = 'nested-list'
+
+    @pytest.mark.parametrize(
+        "validator",
+        [
+            validate_envelope,
+            lambda artifact: validate_envelope_batch([artifact])[0],
+        ],
+        ids=["single", "batch"],
+    )
+    @pytest.mark.parametrize("location", ["top-dict", "nested-dict", "nested-list"])
+    def test_hostile_deepcopy_cannot_replace_validated_payload(validator, location):
+        class EvilDict(dict):
+            def __deepcopy__(self, memo):
+                return {"proofirVersion": "bad"}
+    
+        class EvilList(list):
+            def __deepcopy__(self, memo):
+                return []
+    
+        raw = claim_artifact()
+        if location == "top-dict":
+            raw = EvilDict(raw)
+        elif location == "nested-dict":
+            raw["producer"] = EvilDict(raw["producer"])
+        else:
+            raw["subjectRefs"] = EvilList(raw["subjectRefs"])
+        raw["artifactId"] = detached_content_id(raw)
+        try:
+            validated = validator(raw)
+        except ProofIRV3Error:
+            # Rejecting hostile container subclasses at the ownership boundary is safe.
+            return
+        returned = validated.to_dict()
+>       assert returned == raw
+E       AssertionError: assert {'artifactId'...eeeeeee', ...} == {'artifactId'...eeeeeee', ...}
+E         
+E         Omitting 9 identical items, use -vv to show
+E         Differing items:
+E         {'subjectRefs': []} != {'subjectRefs': [{'kind': 'statement', 'localId': 'statement:goal'}]}
+E         Use -v to get more diff
+
+tests/test_envelope_batch_snapshot.py:173: AssertionError
+_____ test_serialization_hook_cannot_introduce_unchecked_producer[single] ______
+
+validator = <function validate_envelope at 0x7118a645bba0>
+
+    @pytest.mark.parametrize(
+        "validator",
+        [validate_envelope, lambda artifact: validate_envelope_batch([artifact])[0]],
+        ids=["single", "batch"],
+    )
+    def test_serialization_hook_cannot_introduce_unchecked_producer(validator):
+        class AlternateItems(dict):
+            def items(self):
+                return [(key, 0 if key == "producer" else value) for key, value in dict.items(self)]
+    
+        raw = AlternateItems(claim_artifact())
+        try:
+            checked = validator(raw)
+        except ProofIRV3Error:
+            return
+        returned = checked.to_dict()
+>       assert isinstance(returned["producer"], dict)
+E       assert False
+E        +  where False = isinstance(0, dict)
+
+tests/test_envelope_batch_snapshot.py:201: AssertionError
+______ test_serialization_hook_cannot_introduce_unchecked_producer[batch] ______
+
+validator = <function <lambda> at 0x7118a649e200>
+
+    @pytest.mark.parametrize(
+        "validator",
+        [validate_envelope, lambda artifact: validate_envelope_batch([artifact])[0]],
+        ids=["single", "batch"],
+    )
+    def test_serialization_hook_cannot_introduce_unchecked_producer(validator):
+        class AlternateItems(dict):
+            def items(self):
+                return [(key, 0 if key == "producer" else value) for key, value in dict.items(self)]
+    
+        raw = AlternateItems(claim_artifact())
+        try:
+            checked = validator(raw)
+        except ProofIRV3Error:
+            return
+        returned = checked.to_dict()
+>       assert isinstance(returned["producer"], dict)
+E       assert False
+E        +  where False = isinstance(0, dict)
+
+tests/test_envelope_batch_snapshot.py:201: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_envelope_batch_snapshot.py::test_hostile_deepcopy_cannot_replace_validated_payload[top-dict-single]
+FAILED tests/test_envelope_batch_snapshot.py::test_hostile_deepcopy_cannot_replace_validated_payload[top-dict-batch]
+FAILED tests/test_envelope_batch_snapshot.py::test_hostile_deepcopy_cannot_replace_validated_payload[nested-dict-single]
+FAILED tests/test_envelope_batch_snapshot.py::test_hostile_deepcopy_cannot_replace_validated_payload[nested-dict-batch]
+FAILED tests/test_envelope_batch_snapshot.py::test_hostile_deepcopy_cannot_replace_validated_payload[nested-list-single]
+FAILED tests/test_envelope_batch_snapshot.py::test_hostile_deepcopy_cannot_replace_validated_payload[nested-list-batch]
+FAILED tests/test_envelope_batch_snapshot.py::test_serialization_hook_cannot_introduce_unchecked_producer[single]
+FAILED tests/test_envelope_batch_snapshot.py::test_serialization_hook_cannot_introduce_unchecked_producer[batch]
+8 failed, 11 passed in 0.08s

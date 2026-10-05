@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T13:10:13.518520+00:00",
+  "argv": [
+    "python",
+    "-c",
+    "import json,pathlib; p=pathlib.Path(\"evidence\"); m=json.loads((p/\"manifest.json\").read_text()); b=json.loads((p/\"bundle.json\").read_text()); print(\"manifest keys\",list(m)); print(\"manifest target IDs\",[(x.get(\"id\"),x.get(\"name\"),x.get(\"typeText\"),x.get(\"source\")) for x in m.get(\"targets\",[])]); print(\"claim IDs\",[x.get(\"id\") for x in m.get(\"claims\",[])]); print(\"bundle keys\",list(b));\nfor k,v in b.items():\n if isinstance(v,list): print(k,\"list\",len(v),\"first\",str(v[0])[:800] if v else \"\")\n elif isinstance(v,dict): print(k,\"dict keys\",list(v)[:40])\n else: print(k,str(v)[:1000])\nprint(\"asset headers:\");\nfor f in sorted((p/\"assets\").iterdir()):\n try:\n  d=json.loads(f.read_text()); print(f.name, d.get(\"schema\"), d.get(\"type\"),d.get(\"title\"),d.get(\"name\"),list(d)[:8])\n except Exception as e: print(f.name,\"nonjson\",e)"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-followup-r53/shared",
+  "exitCode": 0,
+  "elapsedSeconds": 0.11753406398929656,
+  "peakRssBytes": 20094976,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/summarize-evidence-index.stdout",
+      "bytes": 35881,
+      "sha256": "sha256:ec9baf6f9e49d9eeedac646ab6edd50cac5add3c2fb4f64a154a9aa3f733e67f"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/summarize-evidence-index.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

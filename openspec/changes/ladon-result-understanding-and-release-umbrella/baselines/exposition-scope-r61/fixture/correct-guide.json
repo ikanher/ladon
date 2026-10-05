@@ -1,0 +1,62 @@
+{
+  "schema": "ladon-result-guide-v1",
+  "resultId": "poisson-fixed-epoch-exposition-20261003-r02",
+  "manifestRevision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+  "steps": [
+    {
+      "id": "center-propagation",
+      "revision": "sha256:33ea8e254e05599bb4df3c6f83d6c8e7c5b7643ccf35b1d698c48a1407b259e4",
+      "claimId": "lem:binomial-propagation",
+      "claimRevision": "sha256:b3cf99cfd36ca744273387be6f9ad774877318e0722087c00299943dc1ca3b18",
+      "targetRevisions": [
+        {
+          "targetId": "propagation",
+          "revision": "sha256:d070fc3b5ce1a5f6be3ba02478282c14683332339ad76afbdb00a7282f1261f8"
+        }
+      ],
+      "purpose": "Read how positivity moves across centers.",
+      "explanation": "Let point be a fixed-epoch point with point.epoch < point.horizon, h > 0, boundary ≥ 0 and query > boundary. If fixedEpochCenterGap point h boundary ≥ 0, the propagation lemma gives fixedEpochCenterGap point h query > 0.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-propagation",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:binomial-signs",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "completion-a.stdout",
+          "digest": "sha256:42590501cb9fa3cc2576fba192f004a2cad321d5ffccb79d9e7e92b001921b6d"
+        }
+      ],
+      "author": {
+        "identity": "root-labelled-synthetic-control",
+        "kind": "model"
+      },
+      "prerequisites": []
+    }
+  ],
+  "citations": [],
+  "reviews": [
+    {
+      "id": "synthetic-correct",
+      "scope": "explanation",
+      "stepId": "center-propagation",
+      "stepRevision": "sha256:33ea8e254e05599bb4df3c6f83d6c8e7c5b7643ccf35b1d698c48a1407b259e4",
+      "targetRevisions": [
+        {
+          "targetId": "propagation",
+          "revision": "sha256:d070fc3b5ce1a5f6be3ba02478282c14683332339ad76afbdb00a7282f1261f8"
+        }
+      ],
+      "reviewer": {
+        "identity": "root-labelled-control-not-independent-review",
+        "kind": "model"
+      },
+      "status": "approved",
+      "rationale": "Synthetic scope control: the passage retains every displayed prerequisite. The r60 A receipt records an independently replayed application, not a review of proof strategy.",
+      "timestamp": "2026-10-05T00:00:00Z"
+    }
+  ]
+}

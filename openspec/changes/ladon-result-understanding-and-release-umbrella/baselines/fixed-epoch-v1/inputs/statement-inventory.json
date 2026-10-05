@@ -1,0 +1,110 @@
+[
+  {
+    "label": "lem:calibration",
+    "kind": "lemma",
+    "line": 315,
+    "statement": "\\begin{lemma}[Calibration properties]\\label{lem:calibration}\nFor every finite admissible horizon and fixed $\\varepsilon$, the transcript\naccountant value is continuous and nonincreasing in the raw noise, including\nat zero. Its feasible set is nonempty, and the calibration infimum is\nattained. At a positive minimizing noise, the accountant value equals\n$\\delta$. The same properties hold for the average-only accountant value\nas a function of $v$.\n\nAt full batch, $v_{\\mathrm{FB}}>0$ is independent of $E$ and is uniquely\nspecified by\n\\begin{equation}\\label{eq:gaussian-calibration}\n G_\\varepsilon(a)=\\delta,\\qquad a=\\Delta/\\sqrt{v_{\\mathrm{FB}}},\\qquad\n G_\\varepsilon(a)=\\Phi\\!\\left(\\frac a2-\\frac\\varepsilon a\\right)\n -e^\\varepsilon\\Phi\\!\\left(-\\frac a2-\\frac\\varepsilon a\\right).\n\\end{equation}\nAt full batch, $\\overline v_{E,E}=v_{\\mathrm{FB}}$.\nThe forward and reverse full-batch profiles coincide, and\n$G_\\varepsilon'(a)=\\phi(a/2-\\varepsilon/a)>0$ for $a>0$.\n\\end{lemma}"
+  },
+  {
+    "label": "thm:rate-adaptive-pointwise",
+    "kind": "theorem",
+    "line": 387,
+    "statement": "\\begin{theorem}[Horizon-dependent full-batch dominance]\n\\label{thm:rate-adaptive-pointwise}\nLet $E,T\\in\\N_{>0}$ with $T>E$, $\\Delta>0$, $\\varepsilon>0$, and\n$0<\\delta<1$. Put $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$, where\n$v_{\\mathrm{FB}}$ is the calibrated full-batch privacy variance. If\n\\begin{equation}\\label{eq:rate-adaptive-signal-condition}\n a^2\\leq\\Lambda_{E,T}\\varepsilon,\n\\end{equation}\nthen\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\n\\]\nand, for every $S\\geq0$,\n\\[\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S).\n\\]\n\\end{theorem}"
+  },
+  {
+    "label": "cor:fixed-epoch-all-horizon",
+    "kind": "corollary",
+    "line": 501,
+    "statement": "\\begin{corollary}[Full-batch dominance at every finite horizon]\n\\label{cor:fixed-epoch-all-horizon}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$, and put\n$a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$. If\n\\begin{equation}\\label{eq:epoch-uniform-condition}\n a^2\\leq\\Lambda_E\\varepsilon,\n \\qquad \\Lambda_E:=\\frac{6E}{3E+2},\n\\end{equation}\nthen, for every finite integer $T>E$,\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\n\\]\nand, for every $S\\geq0$,\n\\[\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S).\n\\]\n\\end{corollary}"
+  },
+  {
+    "label": "thm:strict-interior-counterexample",
+    "kind": "theorem",
+    "line": 593,
+    "statement": "\\begin{theorem}[A finite reversal below the nonparticipation boundary]\n\\label{thm:strict-interior-counterexample}\nLet $\\Delta=1$, $E=2$, $\\varepsilon=1/4$, and $\\delta=3/4$. At the adjacent\nsmaller-batch horizon $T=3$, with $q=2/3$, the calibrated privacy variances\nsatisfy\n\\[\n v_3\\leq\\frac5{32}<\\frac4{25}<v_2.\n\\]\nConsequently,\n\\[\n 0\\leq S\\leq\\frac9{400}\n \\quad\\Longrightarrow\\quad V_2(3,S)<V_2(2,S).\n\\]\n\\end{theorem}"
+  },
+  {
+    "label": "thm:smallbatch",
+    "kind": "theorem",
+    "line": 722,
+    "statement": "\\begin{theorem}[Sparse calibration and variance]\\label{thm:smallbatch}\nFix a positive integer $E$ and assume~\\eqref{eq:interior}. As $T\\to\\infty$\nthrough integers,\n\\[\n \\frac{\\Delta}{\\sigma_{E,T}}-\\sqrt{2\\log T}\n \\longrightarrow s_{E,\\delta}:=\n \\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}{E}\\right).\n\\]\nIn particular,\n\\begin{equation}\\label{eq:sigmaasymptotic}\n \\sigma_{E,T}\\sim\\frac{\\Delta}{\\sqrt{2\\log T}}\\longrightarrow0,\n\\end{equation}\nwhereas\n\\begin{equation}\\label{eq:privacydivergence}\n v_{E,T}\\sim\\frac{\\Delta^2T}{2E^2\\log T}\\longrightarrow+\\infty.\n\\end{equation}\nFor every fixed $S\\geq0$,\n\\begin{equation}\\label{eq:total-equivalent}\n V_E(T,S)\\sim v_{E,T}.\n\\end{equation}\n\\end{theorem}"
+  },
+  {
+    "label": "cor:eventual",
+    "kind": "corollary",
+    "line": 747,
+    "statement": "\\begin{corollary}[Uniform eventual full-batch dominance]\\label{cor:eventual}\nUnder~\\eqref{eq:interior}, there is an integer $T_0\\geq E$ such that\n$V_E(E,S)<V_E(T,S)$ for every $T\\geq T_0$ and every $S\\geq0$.\n\\end{corollary}"
+  },
+  {
+    "label": "prop:average-uniform-bound",
+    "kind": "proposition",
+    "line": 761,
+    "statement": "\\begin{proposition}[Uniform bound for average-only calibration]\n\\label{prop:average-uniform-bound}\nFor every integer $T\\geq E>0$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n$0<\\delta<1$,\n\\[\n \\overline v_{E,T}\\leq\\frac{\\Delta^2}{2\\pi\\delta^2}.\n\\]\n\\end{proposition}"
+  },
+  {
+    "label": "thm:rate-adaptive-center",
+    "kind": "theorem",
+    "line": 1046,
+    "statement": "\\begin{theorem}[The binomial center comparison]\\label{thm:rate-adaptive-center}\nLet $T>E>0$ be integers and $h>0$. Then\n$\\Gamma_{E,T}(\\theta,h)>0$ under the following conditions:\n\\begin{equation}\\label{eq:rate-adaptive-center-condition}\n \\begin{array}{c|c}\n T>2E & \\theta\\geq c_{E,T}:=(1-2E/T)/3,\\\\\n T=2E & \\theta>0,\\\\\n E<T<2E & \\theta\\geq0.\n \\end{array}\n\\end{equation}\nAt $T=2E$ and $\\theta=0$, the gap is zero.\n\\end{theorem}"
+  },
+  {
+    "label": "lem:binomial-propagation",
+    "kind": "lemma",
+    "line": 1065,
+    "statement": "\\begin{lemma}[Propagation of positivity]\\label{lem:binomial-propagation}\nFix $h>0$ and $0\\leq\\theta_1<\\theta_2$. If\n$\\Gamma_{E,T}(\\theta_1,h)\\geq0$, then\n$\\Gamma_{E,T}(\\theta_2,h)>0$.\n\\end{lemma}"
+  },
+  {
+    "label": "lem:binomial-stein-polynomial",
+    "kind": "lemma",
+    "line": 1173,
+    "statement": "\\begin{lemma}[A binomial telescoping identity]\\label{lem:binomial-stein-polynomial}\nPut $C=T-E$. For $1\\leq j\\leq E$, define\n\\[\n R_j=j-c,\\qquad A_j(z)=R_j^2-2Er-3c^2+z-z^2.\n\\]\nThen, for every real $z$,\n\\begin{equation}\\label{eq:binomial-cubic-stein-polynomial}\n \\begin{split}\n &(z-c)\\{R_j^2-(z-c)^2\\}+c(R_j^2-c^2)\\\\\n &\\hspace{2em}=r(E+z)A_j(z)-p(C-z)A_j(z+1).\n \\end{split}\n\\end{equation}\n\\end{lemma}"
+  },
+  {
+    "label": "lem:binomial-double-cumulative",
+    "kind": "lemma",
+    "line": 1198,
+    "statement": "\\begin{lemma}[Nonnegativity of the hinge transform]\n\\label{lem:binomial-double-cumulative}\nIf $T>2E$, then $J(t)\\geq0$ for every $t\\geq0$, and\n$J((1-c)^2)>0$.\n\\end{lemma}"
+  },
+  {
+    "label": "lem:binomial-reflected-zero",
+    "kind": "lemma",
+    "line": 1290,
+    "statement": "\\begin{lemma}[The zero-center sign]\\label{lem:binomial-reflected-zero}\nFor $h>0$, the gap $\\Gamma_{E,T}(0,h)$ is negative when $T>2E$, zero when\n$T=2E$, and positive when $E<T<2E$.\n\\end{lemma}"
+  },
+  {
+    "label": "lem:strict-average-endpoint",
+    "kind": "lemma",
+    "line": 1348,
+    "statement": "\\begin{lemma}[Improving the threshold at half rate]\\label{lem:strict-average-endpoint}\nLet $E\\in\\N_{>0}$, $a>0$, and $K\\sim\\operatorname{Binomial}(2E,1/2)$.\nLet $Q=\\Normal(0,1)$, and let $P$ be the mixture whose conditional law\ngiven $K=k$ is $\\Normal(ak/E,1)$. With $\\varepsilon=a^2/2$,\n\\[\n H_{e^\\varepsilon}(P, Q)\n >\\frac12-e^\\varepsilon\\overline\\Phi(a).\n\\]\n\\end{lemma}"
+  },
+  {
+    "label": "thm:accountant-limit",
+    "kind": "theorem",
+    "line": 1396,
+    "statement": "\\begin{theorem}[The fixed-participation profile limit]\\label{thm:accountant-limit}\nLet $\\rho>0$, $\\Delta>0$, and $\\varepsilon\\geq0$. Suppose\n$q_T\\in[0,1]$, $Tq_T\\to\\rho$, $\\sigma_T>0$ eventually, and\n\\[\n \\frac{\\Delta}{\\sigma_T}-\\sqrt{2\\log T}\\longrightarrow s\\in\\R.\n\\]\nThen\n\\[\n \\AO_S(\\sigma_T,\\Delta,q_T,T,\\varepsilon)\n \\longrightarrow1-\\exp\\{-\\rho\\Phi(s)\\}.\n\\]\n\\end{theorem}"
+  },
+  {
+    "label": "thm:fixed-participation-calibration",
+    "kind": "theorem",
+    "line": 1550,
+    "statement": "\\begin{theorem}[Fixed-participation calibration]\n\\label{thm:fixed-participation-calibration}\nLet $\\rho>0$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n$0<\\delta<1-e^{-\\rho}$. Suppose $q_T\\in[0,1]$ and $Tq_T\\to\\rho$, and define\n\\[\n \\sigma_T^{\\mathrm{cal}}:=\\inf\\left\\{\\sigma\\geq0:\n \\AO_S(\\sigma,\\Delta,q_T,T,\\varepsilon)\\leq\\delta\\right\\}.\n\\]\nThen $\\sigma_T^{\\mathrm{cal}}>0$ eventually, and\n\\[\n \\frac{\\Delta}{\\sigma_T^{\\mathrm{cal}}}-\\sqrt{2\\log T}\n \\longrightarrow s_{\\rho,\\delta}:=\n \\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}\\rho\\right).\n\\]\nFor the capped exact-budget schedule $q_T=\\min\\{1,\\rho/T\\}$, it follows that\n\\[\n \\frac{\\sigma_T^{\\mathrm{cal}}\\sqrt{2\\log(1/q_T)}}\\Delta\\longrightarrow1.\n\\]\n\\end{theorem}"
+  },
+  {
+    "label": "thm:near-full-accountant",
+    "kind": "proposition",
+    "line": 1906,
+    "statement": "\\begin{proposition}[Full-support convexity]\\label{thm:near-full-accountant}\nLet $E,T\\in\\N_{>0}$ with $T\\geq E$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n$0<\\delta<1$. If\n\\begin{equation}\\label{eq:nearfull-region}\n \\frac TE\\leq\\frac12+\\frac{\\varepsilon v_{\\mathrm{FB}}}{\\Delta^2},\n\\end{equation}\nthen $\\mathcal A_{E,T}(v_{\\mathrm{FB}};\\varepsilon)\\geq\\delta$.\nFor $T>E$, the inequality is strict, and\n\\[\n v_{E,T}>v_{\\mathrm{FB}},\\qquad\n V_E(E,S)<V_E(T,S)\\quad(S\\geq0).\n\\]\n\\end{proposition}"
+  },
+  {
+    "label": "thm:support-width-accountant",
+    "kind": "theorem",
+    "line": 1943,
+    "statement": "\\begin{theorem}[Finite-support secants]\\label{thm:support-width-accountant}\nLet $T>E>0$ be integers, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$.\nIf\n\\begin{equation}\\label{eq:support-width-region}\n a^2:=\\frac{\\Delta^2}{v_{\\mathrm{FB}}}\n \\leq\\frac{2\\varepsilon E}{T-1},\n\\end{equation}\nthen $\\mathcal A_{E,T}(v_{\\mathrm{FB}};\\varepsilon)>\\delta$, and\n\\[\n v_{E,T}>v_{\\mathrm{FB}},\\qquad\n V_E(E,S)<V_E(T,S)\\quad(S\\geq0).\n\\]\n\\end{theorem}"
+  },
+  {
+    "label": "thm:renyi",
+    "kind": "theorem",
+    "line": 2068,
+    "statement": "\\begin{theorem}[Forward integer-order R\\'enyi dominance]\\label{thm:renyi}\nFor every admissible $(E,T)$, integer $m\\geq2$, $v>0$, and $\\Delta>0$,\n\\begin{equation}\\label{eq:powerdominance}\n \\exp\\left(\\frac{m(m-1)\\Delta^2}{2v}\\right)\\leq M_m(q,z)^T.\n\\end{equation}\nThe left side is the full-batch transcript moment. If $T>E$, the inequality\nis strict, as is the corresponding forward R\\'enyi-divergence comparison.\nThus full batch uniquely minimizes this quantity at the supplied variance.\n\\end{theorem}"
+  }
+]

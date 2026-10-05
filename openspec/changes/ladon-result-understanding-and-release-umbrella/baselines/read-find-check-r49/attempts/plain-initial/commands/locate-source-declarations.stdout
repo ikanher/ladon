@@ -1,0 +1,223 @@
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-126-        hDeltaLtOne hSignalSq
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-127-
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-128-/-- Calibrated run-level privacy variance is strictly larger at every finite
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-129-non-full horizon under the fixed-epoch factor. -/
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-130-theorem
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean:131:    poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_epochUniformSignal
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-132-    (point : PoissonFixedEpochPoint)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-133-    (sensitivity epsilon delta : Real)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-134-    (hNonFull : point.epoch < point.horizon)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-135-    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-136-    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-137-    (hSignalSq :
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-138-      poissonFixedEpochStandardizedSignal sensitivity
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-139-          (poissonFixedEpochFullBatchCalibratedRunVariance
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-140-            sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-141-              hDeltaLtOne) ^ 2 ≤
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-142-        poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon) :
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-143-    (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-144-        hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne : Real) <
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-145-      poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta := by
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-146-  apply poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_traceGap
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-147-    point sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-148-  exact
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-149-    poissonFixedEpochThresholdTail_calibrated_lt_traceAverage_of_epochUniformSignal
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-150-      point sensitivity epsilon delta hNonFull hSensitivity hEpsilon hDeltaPos
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-151-        hDeltaLtOne hSignalSq
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-152-
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-153-/-- Full batch has strictly smaller frozen-average total variance at every
+--
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-281-      delta ≤ poissonFixedEpochEpochUniformDeltaThreshold point.epoch epsilon) :
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-282-    (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-283-        hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne : Real) <
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-284-      poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta := by
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-285-  apply
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean:286:    poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_epochUniformSignal
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-287-      point sensitivity epsilon delta hNonFull hSensitivity hEpsilon hDeltaPos
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-288-        hDeltaLtOne
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-289-  exact
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-290-    (poissonFixedEpochDelta_le_epochUniformThreshold_iff_fullBatchCalibratedSignal_sq_le
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-291-      point.epoch sensitivity epsilon delta point.epoch_pos hSensitivity hEpsilon
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-292-        hDeltaPos hDeltaLtOne).1 hDeltaThreshold
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-293-
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-294-/-- Delta-coordinate all-energy total-variance consumer. -/
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-295-theorem
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-296-    poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_delta_le_epochUniformThreshold
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-297-    (point : PoissonFixedEpochPoint)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-298-    (sensitivity epsilon delta energy : Real)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-299-    (hNonFull : point.epoch < point.horizon)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-300-    (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-301-    (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-302-    (hEnergy : 0 ≤ energy)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-303-    (hDeltaThreshold :
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-304-      delta ≤ poissonFixedEpochEpochUniformDeltaThreshold point.epoch epsilon) :
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-305-    poissonFixedEpochTotalAverageVariance
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-306-        (PoissonFixedEpochPoint.fullBatch point.epoch point.epoch_pos)
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-307-        sensitivity epsilon delta energy <
+Mf/DP/PoissonFixedEpochEpochUniformDomain.lean-308-      poissonFixedEpochTotalAverageVariance point sensitivity epsilon delta energy := by
+--
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-425-    exact hGapOneNonneg.trans_lt hQueryGtOne
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-426-
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-427-/-- Fixed-`h` center propagation for the exact finite trace.  A nonnegative
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-428-gap at one nonnegative boundary center becomes a strict positive gap at every
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-429-larger center. -/
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean:430:theorem fixedEpochCenterGap_pos_of_boundary_nonneg
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-431-    (point : PoissonFixedEpochPoint) (h boundary query : ℝ)
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-432-    (hNonFull : point.epoch < point.horizon) (hh : 0 < h)
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-433-    (hBoundaryNonneg : 0 ≤ boundary) (hBoundaryQuery : boundary < query)
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-434-    (hBoundaryGap : 0 ≤ fixedEpochCenterGap point h boundary) :
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-435-    0 < fixedEpochCenterGap point h query := by
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-436-  apply gap_pos_of_boundary_nonneg
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-437-    (fixedEpochCenterGap point h)
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-438-    (fixedEpochCenterTilt point h)
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-439-    (fun theta => h * stdNormalPdfReal (h * theta))
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-440-    boundary query hBoundaryNonneg hBoundaryQuery
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-441-  · exact (fixedEpochCenterTilt_strictConvex point h hNonFull hh).convexOn.subset
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-442-      (by simp) (convex_Ici 0)
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-443-  · exact fixedEpochCenterTilt_zero_lt_one point h hNonFull hh
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-444-  · intro theta
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-445-    exact mul_pos hh (stdNormalPdfReal_pos _)
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-446-  · exact hasDerivAt_fixedEpochCenterGap point h
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-447-  · exact hBoundaryGap
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-448-  · exact tendsto_fixedEpochCenterGap_atTop_zero point h hh
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-449-
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-450-/-- The abstract center gap is exactly the existing Gaussian count-test gap
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-451-after expressing the positive center distance in count-step units. -/
+Mf/DP/PoissonFixedEpochCenterGapPropagation.lean-452-theorem fixedEpochCenterGap_eq_countTestAverage_sub
+--
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-100-  rw [mem_sampledGaussianFeasibleStddevSet_iff]
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-101-  exact sampled_profile_lt.le
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-102-
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-103-/-- The exact calibrated privacy variance at the strict-interior sampled point
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-104-is no larger than the certified candidate `5/32`. -/
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean:105:theorem strictInterior_calibratedPrivacyVariance_le_five_thirty_seconds :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-106-    poissonFixedEpochCalibratedPrivacyVariance strictInteriorPoint
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-107-        1 (1 / 4) (3 / 4) ≤ 5 / 32 := by
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-108-  have hcalibrated := sampledGaussianCalibratedStddev_le_of_feasible
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-109-    3 twoThirdsSamplingRate twoThirdsSamplingRate_le_one
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-110-    1 (1 / 4) (3 / 4) strictInteriorNoiseStddev
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-111-    strictInteriorNoiseStddev_feasible
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-112-  have hcalibrated' :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-113-      poissonFixedEpochCalibratedStddev strictInteriorPoint
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-114-          1 (1 / 4) (3 / 4) ≤ strictInteriorNoiseStddev := by
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-115-    have hrate : strictInteriorPoint.samplingRate = twoThirdsSamplingRate := by
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-116-      apply NNReal.eq
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-117-      rfl
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-118-    unfold poissonFixedEpochCalibratedStddev
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-119-    simpa only [show strictInteriorPoint.horizon = 3 by rfl, hrate] using
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-120-      hcalibrated
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-121-  have hsquare :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-122-      (poissonFixedEpochCalibratedStddev strictInteriorPoint
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-123-          1 (1 / 4) (3 / 4) : Real) ^ 2 ≤
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-124-        (strictInteriorNoiseStddev : Real) ^ 2 :=
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-125-    (sq_le_sq₀ (by positivity) (by positivity)).2 (by exact_mod_cast hcalibrated')
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-126-  rw [strictInteriorNoiseStddev_sq] at hsquare
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-127-  unfold poissonFixedEpochCalibratedPrivacyVariance
+--
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-143-theorem strictInterior_calibratedPrivacyVariance_lt_fullBatch :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-144-    poissonFixedEpochCalibratedPrivacyVariance strictInteriorPoint
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-145-        1 (1 / 4) (3 / 4) <
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-146-      (fullBatchGaussianBaseStddev 1 (1 / 4) (3 / 4)
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-147-        (by norm_num) (by norm_num) (by norm_num) (by norm_num)) ^ 2 :=
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean:148:  strictInterior_calibratedPrivacyVariance_le_five_thirty_seconds.trans_lt
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-149-    five_thirty_seconds_lt_calibrated_sq
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-150-
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-151-/-- The adjacent point `T=3` has strictly smaller calibrated privacy variance
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-152-than the fixed-epoch full-batch point `T=E=2`. -/
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-153-theorem strictInterior_calibratedPrivacyVariance_lt_adjacentFullBatch :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-154-    poissonFixedEpochCalibratedPrivacyVariance strictInteriorPoint
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-155-        1 (1 / 4) (3 / 4) <
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-156-      poissonFixedEpochCalibratedPrivacyVariance
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-157-        (PoissonFixedEpochPoint.fullBatch 2 (by norm_num))
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-158-        1 (1 / 4) (3 / 4) := by
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-159-  unfold poissonFixedEpochCalibratedPrivacyVariance
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-160-  rw [poissonFixedEpochPrivacyVariance_fullBatch_eq_base_sq 2 (by norm_num)
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-161-    1 (1 / 4) (3 / 4) (by norm_num) (by norm_num) (by norm_num) (by norm_num)]
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-162-  exact strictInterior_calibratedPrivacyVariance_lt_fullBatch
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-163-
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-164-/-- Calibrated privacy variance is not nondecreasing on the first adjacent
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-165-horizon step `T=2` to `T=3` at the selected strict-interior target. -/
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-166-theorem strictInterior_not_adjacent_calibratedPrivacyVariance_nondec :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-167-    ¬ poissonFixedEpochCalibratedPrivacyVariance
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-168-        (PoissonFixedEpochPoint.fullBatch 2 (by norm_num))
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-169-        1 (1 / 4) (3 / 4) ≤
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-170-      poissonFixedEpochCalibratedPrivacyVariance strictInteriorPoint
+--
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-181-        poissonFixedEpochCalibratedPrivacyVariance strictInteriorPoint
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-182-          1 (1 / 4) (3 / 4)) := by
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-183-  have sampled_le :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-184-      poissonFixedEpochCalibratedPrivacyVariance strictInteriorPoint
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-185-          1 (1 / 4) (3 / 4) ≤ 5 / 32 :=
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean:186:    strictInterior_calibratedPrivacyVariance_le_five_thirty_seconds
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-187-  have fullBatch_gt :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-188-      4 / 25 <
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-189-        poissonFixedEpochCalibratedPrivacyVariance
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-190-          (PoissonFixedEpochPoint.fullBatch 2 (by norm_num))
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-191-          1 (1 / 4) (3 / 4) := by
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-192-    unfold poissonFixedEpochCalibratedPrivacyVariance
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-193-    rw [poissonFixedEpochPrivacyVariance_fullBatch_eq_base_sq 2 (by norm_num)
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-194-      1 (1 / 4) (3 / 4) (by norm_num) (by norm_num) (by norm_num) (by norm_num)]
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-195-    exact four_twenty_fifths_lt_calibrated_sq
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-196-  linarith
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-197-
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-198-/-- At the selected adjacent point, the true calibrated privacy-variance gap
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-199-algebraically characterizes strict total-variance reversal for every real
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-200-energy; the frozen-gradient interpretation uses the physical domain
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-201-`0 ≤ energy`. -/
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-202-theorem strictInterior_totalVariance_lt_fullBatch_iff_energy_lt_calibrated_gap
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-203-    (energy : Real) :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-204-    poissonFixedEpochTotalAverageVariance strictInteriorPoint
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-205-        1 (1 / 4) (3 / 4) energy <
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-206-      poissonFixedEpochTotalAverageVariance
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-207-        (PoissonFixedEpochPoint.fullBatch 2 (by norm_num))
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-208-        1 (1 / 4) (3 / 4) energy ↔
+--
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-247-        (PoissonFixedEpochPoint.fullBatch 2 (by norm_num))
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-248-        1 (1 / 4) (3 / 4) 0 := by
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-249-  apply poissonFixedEpoch_totalVariance_lt_fullBatch_of_certified_upper
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-250-    strictInteriorPoint 1 (1 / 4) (3 / 4) 0 (5 / 32)
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-251-    (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean:252:    strictInterior_calibratedPrivacyVariance_le_five_thirty_seconds
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-253-  unfold poissonFixedEpochSamplingVariance
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-254-  norm_num [strictInteriorPoint, PoissonFixedEpochPoint.ofExtra]
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-255-  exact five_thirty_seconds_lt_calibrated_sq
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-256-
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-257-/-- The strict-interior total-variance reversal persists throughout the closed
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-258-nonnegative-energy interval `0 ≤ S ≤ 9/400`. -/
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean:259:theorem strictInterior_totalVariance_lt_fullBatch_of_energy_le_nine_four_hundred
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-260-    (energy : Real) (_energy_nonneg : 0 ≤ energy)
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-261-    (energy_le : energy ≤ 9 / 400) :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-262-    poissonFixedEpochTotalAverageVariance strictInteriorPoint
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-263-        1 (1 / 4) (3 / 4) energy <
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-264-      poissonFixedEpochTotalAverageVariance
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-265-        (PoissonFixedEpochPoint.fullBatch 2 (by norm_num))
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-266-        1 (1 / 4) (3 / 4) energy := by
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-267-  apply poissonFixedEpoch_totalVariance_lt_fullBatch_of_certified_upper
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-268-    strictInteriorPoint 1 (1 / 4) (3 / 4) energy (5 / 32)
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-269-    (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean:270:    strictInterior_calibratedPrivacyVariance_le_five_thirty_seconds
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-271-  calc
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-272-    poissonFixedEpochSamplingVariance strictInteriorPoint energy + 5 / 32 =
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-273-        energy / 6 + 5 / 32 := by
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-274-      norm_num [poissonFixedEpochSamplingVariance, strictInteriorPoint,
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-275-        PoissonFixedEpochPoint.ofExtra]
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-276-      <;> ring
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-277-    _ ≤ 4 / 25 := by linarith
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-278-    _ < (fullBatchGaussianBaseStddev 1 (1 / 4) (3 / 4)
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-279-        (by norm_num) (by norm_num) (by norm_num) (by norm_num)) ^ 2 :=
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-280-      four_twenty_fifths_lt_calibrated_sq
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-281-
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-282-/-- Open-interval compatibility corollary of the closed endpoint theorem. -/
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-283-theorem strictInterior_totalVariance_lt_fullBatch_of_energy_lt_nine_four_hundred
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-284-    (energy : Real) (energy_nonneg : 0 ≤ energy)
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-285-    (energy_lt : energy < 9 / 400) :
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-286-    poissonFixedEpochTotalAverageVariance strictInteriorPoint
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-287-        1 (1 / 4) (3 / 4) energy <
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-288-      poissonFixedEpochTotalAverageVariance
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-289-        (PoissonFixedEpochPoint.fullBatch 2 (by norm_num))
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-290-        1 (1 / 4) (3 / 4) energy :=
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean:291:  strictInterior_totalVariance_lt_fullBatch_of_energy_le_nine_four_hundred
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-292-    energy energy_nonneg energy_lt.le
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-293-
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-294-end
+Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean-295-end Mf.DP

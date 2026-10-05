@@ -1,0 +1,232 @@
+\]
+A small interval just above $a$ therefore contributes negatively to that ray's
+privacy value. Removing it gives a value strictly above $\delta$, as shown
+in Lemma~\ref{lem:strict-average-endpoint}. This uses only the average.
+
+In all cases~\eqref{eq:calibration-transfer} gives
+$\overline v_{E,T}>v_{\mathrm{FB}}$. Apply data processing and add the
+nonnegative sampling variance to finish.
+\end{proof}
+
+\begin{corollary}[All finite horizons]\label{cor:fixed-epoch-all-horizon}
+Fix $E\in\N_{>0}$, $\Delta>0$, $\varepsilon>0$, and $0<\delta<1$.
+If $a=\Delta/\sqrt{v_{\mathrm{FB}}}$ satisfies
+\begin{equation}\label{eq:epoch-uniform-condition}
+ a^2\leq\Lambda_E\varepsilon,\qquad \Lambda_E=\frac{6E}{3E+2},
+\end{equation}
+then for every integer $T>E$,
+\[
+ v_{\mathrm{FB}}<\overline v_{E,T}\leq v_{E,T},
+\]
+and, simultaneously for every $S\geq0$,
+\[
+ V_E(E,S)=\overline V_E(E,S)<\overline V_E(T,S)\leq V_E(T,S).
+\]
+\end{corollary}
+\begin{proof}
+For $T>2E$, $\Lambda_{E,T}=6E/(3E+2-4E/T)>\Lambda_E$.
+For $E<T\leq2E$, $\Lambda_{E,T}=2>\Lambda_E$.
+Apply Theorem~\ref{thm:rate-adaptive-pointwise}.
+\end{proof}
+The uniform hypothesis is exactly $\theta\geq1/3$. Every finite low-rate
+boundary $(1-2E/T)/3$ is strictly below $1/3$, which explains why the closed
+uniform condition still gives strict dominance. Equivalently, strict
+monotonicity of $G_\varepsilon$ expresses the condition as
+$\delta\leq G_\varepsilon(\sqrt{\Lambda_E\varepsilon})$.
+The small-scale expansion proves sharpness of the low-rate center for this
+particular event uniformly over $h$; it does not classify the complete
+privacy profile outside the sufficient domain.
+
+\section{A positive-noise reversal}
+A qualification on privacy is necessary. At zero noise both canonical
+profiles equal $1-(1-E/T)^T$, tending to $1-e^{-E}$. The next example lies
+below this limiting boundary and has positive calibrated noise at both horizons.
+\begin{theorem}[An adjacent smaller batch can win]\label{thm:strict-interior-counterexample}
+For $\Delta=1$, $E=2$, $\varepsilon=1/4$, and $\delta=3/4$, write
+$v_T=v_{2,T}$. Then
+\[
+ v_3\leq\frac5{32}<\frac4{25}<v_2,
+ \qquad
+ V_2(3,S)<V_2(2,S)\quad\text{for }0\leq S\leq\frac9{400}.
+\]
+The same strict total-variance comparison holds for average-only calibration.
+\end{theorem}
+\begin{proof}
+Appendix~\ref{app:rational-calculation} bounds the forward and reverse
+transcript profiles at $T=3$, $v=5/32$ by
+$7420364678/10^{10}$ and $7237647581/10^{10}$, respectively. Both are below
+$3/4$. At full batch, $v=4/25$ gives
+$G_{1/4}(5/2)>19/25>3/4$. Feasibility and~\eqref{eq:calibration-transfer}
+give the claimed brackets. For the total variance,
+\[
+ V_2(3,S)\leq\frac S6+\frac5{32}\leq\frac4{25}<v_2=V_2(2,S),
+ \qquad 6(4/25-5/32)=9/400.
+\]
+Average-only calibration can only reduce the smaller-batch variance and
+agrees with transcript calibration at full batch.
+\end{proof}
+The zero-noise profiles are $1$ and $26/27$, both larger than $3/4$.
+Continuity therefore makes both calibrated noises positive. Also
+$e^2>1+2+2>4$, so $3/4<1-e^{-2}$. The example disproves unconditional
+optimality even below the nonparticipation boundary. Its loose privacy target
+does not describe the prevalence of reversals at stringent targets.
+
+\section{What the sparse limit reveals}\label{sec:sparse}
+Now hold $E$ fixed and let $T\to\infty$. The count of participations converges
+to a Poisson variable of mean $E$. Selection becomes rare per release, but
+the probability of any selection does not vanish. Whether individual releases
+are public is therefore consequential.
+
+For transcript calibration, consider a raw-noise sequence with standardized
+shift $\Delta/\sigma_T=\sqrt{2\log T}+s+o(1)$. A maximum test at threshold
+$\sigma_T\sqrt{2\log T}$ has reference probability at most
+$T\overline\Phi(\sqrt{2\log T})\to0$. A selected coordinate exceeds it with
+probability tending to $\Phi(s)$, and the number of such exceedances tends
+to Poisson$(E\Phi(s))$. This gives the lower bound $1-e^{-E\Phi(s)}$.
+The likelihood-ratio argument in Appendix~\ref{app:sparse-limit} proves that
+no event improves its limiting value.
+
+\begin{theorem}[Sparse transcript calibration]\label{thm:smallbatch}
+Fix $E\in\N_{>0}$, $\Delta>0$, $\varepsilon\geq0$, and
+\begin{equation}\label{eq:interior}
+ 0<\delta<1-e^{-E}.
+\end{equation}
+Then, along integer horizons,
+\[
+ \frac\Delta{\sigma_{E,T}}-\sqrt{2\log T}
+ \longrightarrow s_{E,\delta}:=
+ \Phi^{-1}\!\left(-\frac{\log(1-\delta)}E\right).
+\]
+Consequently,
+\begin{align}
+ \sigma_{E,T}&\sim\frac\Delta{\sqrt{2\log T}}\longrightarrow0,
+ \label{eq:sigmaasymptotic}\\
+ v_{E,T}&\sim\frac{\Delta^2T}{2E^2\log T}\longrightarrow\infty,
+ \label{eq:privacydivergence}\\
+ V_E(T,S)&\sim v_{E,T}\qquad\text{for each fixed }S\geq0.
+ \label{eq:total-equivalent}
+\end{align}
+\end{theorem}
+The exact profile limit is inverted by bracketing the calibrated noise between
+$\Delta/(\sqrt{2\log T}+s_{E,\delta}\pm\eta)$ for each $\eta>0$.
+The general profile limit and this inversion are proved in the appendix.
+The privacy variance alone eventually exceeds $v_{\mathrm{FB}}$, giving:
+\begin{corollary}[One cutoff for all energies]\label{cor:eventual}
+Under the hypotheses of Theorem~\ref{thm:smallbatch}, some integer $T_0>E$
+satisfies $V_E(E,S)<V_E(T,S)$ for every $T\geq T_0$ and every $S\geq0$.
+\end{corollary}
+\begin{proof}
+Choose $T_0$ with $v_{E,T}>v_{\mathrm{FB}}$ for $T\geq T_0$, and use
+$(1-q)S/E\geq0$. The choice does not depend on $S$.
+\end{proof}
+
+\begin{proposition}[Average-only calibration stays bounded]\label{prop:average-uniform-bound}
+For integers $T\geq E>0$, $\Delta>0$, $\varepsilon\geq0$, and $0<\delta<1$,
+\[
+ \overline v_{E,T}\leq\frac{\Delta^2}{2\pi\delta^2},\qquad
+ \overline V_E(T,S)\leq\frac SE+\frac{\Delta^2}{2\pi\delta^2}\quad(S\geq0).
+\]
+\end{proposition}
+\begin{proof}
+Use $\TV(P,Q)=\sup_A|P(A)-Q(A)|$. For $m\geq0$,
+\[
+ \TV(\Normal(m,v),\Normal(0,v))
+ =2\Phi(m/(2\sqrt v))-1\leq m/\sqrt{2\pi v}.
+\]
+Convexity under mixtures and $\E K=E$ bound the average-pair TV by
+$\E[K\Delta/E]/\sqrt{2\pi v}=\Delta/\sqrt{2\pi v}$.
+Both directed profiles at $\varepsilon\geq0$ are at most TV. Thus
+$v=\Delta^2/(2\pi\delta^2)$ is feasible; adding the sampling term proves
+the second inequality.
+\end{proof}
+The uniform bound is a feasibility estimate, not an asymptotic formula.
+It shows why the transcript divergence cannot be attributed solely to the
+number of releases: preserving the individual observations matters.
+
+\section{Scope of the conclusions}
+The finite theorem supplies a sufficient domain, not a complete classification
+of privacy targets. It compares each smaller batch with full batch and does
+not order every pair of smaller batches. The sparse cutoff is uniform in
+energy, but fixes $E,\Delta,\varepsilon,\delta$. At a fixed dataset size $N$,
+the expected batch $EN/T$ eventually falls below one; a joint limit in $N$
+or a changing privacy target requires a separate analysis.
+
+The fixed-rate asymptotic comparison in R\"ais\"a, J\"alk\"o, and
+Honkela~\cite[Corollary 5.4]{raisa2024} follows a different path: for fixed
+$q>0$, its calibrated raw-noise ratio satisfies
+$\sigma(q,T)/(q\sigma(1,T))\to1$. It cannot be specialized to $q=E/T$
+without uniformity in the rate. Here the expected participation, rather than
+the sampling rate, is fixed.
+
+All comparisons concern independent Poisson sampling, homogeneous independent
+    poissonTraceProb (point.samplingRate : ℝ) trace *
+      (h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) ^ 2 *
+      Real.exp
+        ((h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) * theta -
+          h ^ 2 * ((participationCount trace : ℝ) - point.epoch) ^ 2 / 2)
+
+/-- Exact finite differentiation of the center gap. -/
+theorem hasDerivAt_fixedEpochCenterGap
+    (point : PoissonFixedEpochPoint) (h theta : ℝ) :
+    HasDerivAt (fixedEpochCenterGap point h)
+      (h * stdNormalPdfReal (h * theta) *
+        (1 - fixedEpochCenterTilt point h theta)) theta := by
+  have hSum : HasDerivAt
+      (fun current : ℝ =>
+        ∑ trace : ParticipationTrace point.horizon,
+          poissonTraceProb (point.samplingRate : ℝ) trace *
+            stdNormalCDFReal
+              (h * ((participationCount trace : ℝ) - point.epoch - current)))
+      (∑ trace : ParticipationTrace point.horizon,
+        poissonTraceProb (point.samplingRate : ℝ) trace *
+          (-h * stdNormalPdfReal
+            (h * ((participationCount trace : ℝ) - point.epoch - theta)))) theta := by
+    apply HasDerivAt.fun_sum
+    intro trace _htrace
+    have hArgument : HasDerivAt
+        (fun current : ℝ =>
+          h * ((participationCount trace : ℝ) - point.epoch - current))
+        (-h) theta := by
+      have hRaw := ((hasDerivAt_const theta
+        ((participationCount trace : ℝ) - point.epoch)).sub
+          (hasDerivAt_id' theta)).const_mul h
+      convert hRaw using 1
+      all_goals first | rfl | ring
+    have hCdf := (hasDerivAt_stdNormalCDFReal
+      (h * ((participationCount trace : ℝ) - point.epoch - theta))).comp
+        theta hArgument
+    have hWeighted := hCdf.const_mul
+      (poissonTraceProb (point.samplingRate : ℝ) trace)
+    convert hWeighted using 1
+    all_goals first | rfl | ring
+  have hBase : HasDerivAt (fun current : ℝ => stdNormalCDFReal (-h * current))
+      (-h * stdNormalPdfReal (h * theta)) theta := by
+    have hArgument : HasDerivAt (fun current : ℝ => -h * current) (-h) theta := by
+      convert (hasDerivAt_id' theta).const_mul (-h) using 1
+      all_goals first | rfl | ring
+    have hCdf := (hasDerivAt_stdNormalCDFReal (-h * theta)).comp theta hArgument
+    convert hCdf using 1
+    all_goals first | rfl | (rw [show -h * theta = -(h * theta) by ring,
+      stdNormalPdfReal_neg]; ring)
+  have hRaw := hSum.sub hBase
+  have hFunction : fixedEpochCenterGap point h =
+      (fun current : ℝ =>
+        ∑ trace : ParticipationTrace point.horizon,
+          poissonTraceProb (point.samplingRate : ℝ) trace *
+            stdNormalCDFReal
+              (h * ((participationCount trace : ℝ) - point.epoch - current))) -
+        fun current : ℝ => stdNormalCDFReal (-h * current) := by
+    rfl
+  rw [hFunction]
+  have hSumFactor : (∑ trace : ParticipationTrace point.horizon,
+      poissonTraceProb (point.samplingRate : ℝ) trace *
+        (-h * stdNormalPdfReal
+          (h * ((participationCount trace : ℝ) - point.epoch - theta)))) =
+    -h * stdNormalPdfReal (h * theta) *
+      fixedEpochCenterTilt point h theta := by
+      unfold fixedEpochCenterTilt
+      rw [Finset.mul_sum]
+      apply Finset.sum_congr rfl
+      intro trace _
+      rw [show
+        h * ((participationCount trace : ℝ) - point.epoch - theta) =

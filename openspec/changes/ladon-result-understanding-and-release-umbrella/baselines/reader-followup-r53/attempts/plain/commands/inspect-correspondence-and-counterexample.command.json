@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T13:12:36.105394+00:00",
+  "argv": [
+    "bash",
+    "-lc",
+    "python /home/codex/projects/ladon/.codex/skills/ultra-code/scripts/ultra_code_bb.py read --db /home/codex/projects/ladon/.codex/state/ultra-result-evidence.sqlite3 --since 538 --topic reader-r53-plain --format human; cd /home/codex/.cache/ladon-reader-followup-r53/shared; python -c 'import json,pathlib,math; d=pathlib.Path(\"evidence/assets\"); x=json.loads((d/\"00090.bin\").read_text()); print(\"CORRESPONDENCE keys\",list(x)); print(\"CORRESPONDENCE\",json.dumps({k:v for k,v in x.items() if k in [\"manifest_revision\",\"author\",\"components\",\"previous_extraction_corrections\",\"capture_followup\"]},ensure_ascii=False,indent=2)[:8000]); f=(d/\"00091.bin\").read_bytes(); print(\"ASSET91\",len(f),f[:300]);\nPhi=lambda x:.5*math.erfc(-x/math.sqrt(2)); T,E,h,theta=3,1,1,.001; q=E/T; v=sum(math.comb(T,k)*q**k*(1-q)**(T-k)*Phi(h*(k-E-theta)) for k in range(T+1))-Phi(-h*theta); b=sum(math.comb(T,k)*q**k*(1-q)**(T-k)*Phi(h*(k-E)) for k in range(T+1))-.5; print(\"counterexample T,E,h,boundary,query,bgap,qgap\",T,E,h,0,theta,b,v) '"
+  ],
+  "cwd": "/home/codex/projects/ladon",
+  "exitCode": 0,
+  "elapsedSeconds": 0.11796264501754194,
+  "peakRssBytes": 14282752,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/inspect-correspondence-and-counterexample.stdout",
+      "bytes": 8589,
+      "sha256": "sha256:b02d2cc1eabc6321bb2150a211cb16088bb85ca3474e2dfb4c8c1924e209fbfd"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-followup-r53/plain/commands/inspect-correspondence-and-counterexample.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

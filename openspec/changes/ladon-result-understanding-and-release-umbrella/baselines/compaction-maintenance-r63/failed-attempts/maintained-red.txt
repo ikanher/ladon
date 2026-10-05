@@ -1,0 +1,48 @@
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+____________ test_public_exposition_retries_smaller_row_compaction _____________
+
+    def test_public_exposition_retries_smaller_row_compaction():
+        manifest, artifacts, guide = _multi_target_case()
+    
+>       result = _inspect(manifest, artifacts, guide)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_exposition_compaction_retry.py:52: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_exposition_compaction_retry.py:43: in _inspect
+    return guide_result_manifest(
+src/ladon/result_guides.py:55: in guide_result_manifest
+    return inspect_page(result, rows, binding, limit, cursor)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/result_inspection_page.py:33: in inspect_page
+    candidate = compact_row(rows[index], profile='exposition',
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+row = {'checkingScope': 'explicit-application-operation-required', 'mathematicalVerdict': 'not-inferred', 'paragraph': {'aut...mRevision': 'sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1', ...}, 'recheckNotices': [], ...}
+
+    def compact_row(row, *, profile='default', text_limit=None, list_limit=None):
+        """Bound a row, keeping focused exposition prose ahead of repeated records."""
+        from ladon.result_exposition_page import focused_exposition_row
+        source = focused_exposition_row(row) if profile == 'exposition' else row
+        references = row.get('references', {})
+        levels = ((text_limit, list_limit),) if text_limit is not None else (
+            (2048, 10), (512, 3), (128, 1),
+        )
+        priorities = _exposition_priorities() if profile == 'exposition' else frozenset()
+        for candidate_text_limit, candidate_list_limit in levels:
+            omissions = list(source.get('fieldOmissions', [])) if profile == 'exposition' else []
+            value = _compact(source, '', references, omissions,
+                             candidate_text_limit, candidate_list_limit,
+                             excerpt_types=profile == 'exposition', priority_paths=priorities)
+            if omissions:
+                value['fieldOmissions'] = omissions
+            if len(canonical_json(value)) < 24 * 1024:
+                return value
+>       raise ResultManifestError('inspection row metadata exceeds compact byte limit')
+E       ladon.result_manifest_io.ResultManifestError: inspection row metadata exceeds compact byte limit
+
+src/ladon/result_inspection_page.py:106: ResultManifestError
+=========================== short test summary info ============================
+FAILED tests/test_exposition_compaction_retry.py::test_public_exposition_retries_smaller_row_compaction
+1 failed, 2 passed in 0.10s

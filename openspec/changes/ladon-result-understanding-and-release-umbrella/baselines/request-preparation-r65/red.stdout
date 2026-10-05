@@ -1,0 +1,124 @@
+FF....                                                                   [100%]
+=================================== FAILURES ===================================
+______ test_bundle_view_prepares_once_and_matches_explicit_view[inspect] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-990/test_bundle_view_prepares_once0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7289fc96e510>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7289fc976cd0>
+operation = 'inspect'
+
+    @pytest.mark.parametrize('operation', ['inspect', 'guide'])
+    def test_bundle_view_prepares_once_and_matches_explicit_view(tmp_path, capsys, monkeypatch, operation):
+        from ladon.result_bundles import export_result_bundle, open_result_bundle
+        from ladon import result_bundle_inputs, result_dossier, result_guides, result_inspection
+    
+        manifest_path, selection, _, _ = _fixture(tmp_path)
+        bundle = tmp_path / 'result.zip'
+        export_result_bundle(manifest_path, selection, bundle)
+    
+        calls = []
+        prepare = result_dossier.prepare_dossier
+    
+        def counted_prepare(*args, **kwargs):
+            calls.append(kwargs.get('target_ids'))
+            return prepare(*args, **kwargs)
+    
+        monkeypatch.setattr(result_bundle_inputs, 'prepare_dossier', counted_prepare)
+        monkeypatch.setattr(result_inspection, 'prepare_dossier', counted_prepare)
+        monkeypatch.setattr(result_guides, 'prepare_dossier', counted_prepare)
+    
+        args = ['result', operation, str(bundle), '--section', 'assumptions', '--limit', '1']
+        code = main(args)
+        output = capsys.readouterr()
+        assert code == 0, output.err
+        bundled_view = json.loads(output.out)
+        bundle_call_count = len(calls)
+        calls.clear()
+    
+        # The ordinary manifest view remains the output contract for selected rows.
+        with open_result_bundle(bundle) as inputs:
+            options = {
+                'section': 'assumptions', 'limit': 1,
+                'lineage_inputs': inputs.lineage,
+                'lineage_base': inputs.root,
+                'lineage_reference_base': 'bundle:' + inputs.identity,
+                'bundle_identity': inputs.identity,
+            }
+            if operation == 'guide':
+                from ladon.result_guides import guide_result_manifest
+                expected = guide_result_manifest(
+                    inputs.manifest, inputs.artifacts, guide_inputs=inputs.guide,
+                    assessments=inputs.assessments, **options)
+            else:
+                from ladon.result_inspection import inspect_result_manifest
+                expected = inspect_result_manifest(
+                    inputs.manifest, inputs.artifacts, assessments=inputs.assessments,
+                    **options)
+        assert bundled_view == expected
+>       assert bundle_call_count == 1
+E       assert 2 == 1
+
+tests/test_result_bundle_preparation.py:60: AssertionError
+_______ test_bundle_view_prepares_once_and_matches_explicit_view[guide] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-990/test_bundle_view_prepares_once1')
+capsys = <_pytest.capture.CaptureFixture object at 0x7289fc8a4110>
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7289fc8a7210>
+operation = 'guide'
+
+    @pytest.mark.parametrize('operation', ['inspect', 'guide'])
+    def test_bundle_view_prepares_once_and_matches_explicit_view(tmp_path, capsys, monkeypatch, operation):
+        from ladon.result_bundles import export_result_bundle, open_result_bundle
+        from ladon import result_bundle_inputs, result_dossier, result_guides, result_inspection
+    
+        manifest_path, selection, _, _ = _fixture(tmp_path)
+        bundle = tmp_path / 'result.zip'
+        export_result_bundle(manifest_path, selection, bundle)
+    
+        calls = []
+        prepare = result_dossier.prepare_dossier
+    
+        def counted_prepare(*args, **kwargs):
+            calls.append(kwargs.get('target_ids'))
+            return prepare(*args, **kwargs)
+    
+        monkeypatch.setattr(result_bundle_inputs, 'prepare_dossier', counted_prepare)
+        monkeypatch.setattr(result_inspection, 'prepare_dossier', counted_prepare)
+        monkeypatch.setattr(result_guides, 'prepare_dossier', counted_prepare)
+    
+        args = ['result', operation, str(bundle), '--section', 'assumptions', '--limit', '1']
+        code = main(args)
+        output = capsys.readouterr()
+        assert code == 0, output.err
+        bundled_view = json.loads(output.out)
+        bundle_call_count = len(calls)
+        calls.clear()
+    
+        # The ordinary manifest view remains the output contract for selected rows.
+        with open_result_bundle(bundle) as inputs:
+            options = {
+                'section': 'assumptions', 'limit': 1,
+                'lineage_inputs': inputs.lineage,
+                'lineage_base': inputs.root,
+                'lineage_reference_base': 'bundle:' + inputs.identity,
+                'bundle_identity': inputs.identity,
+            }
+            if operation == 'guide':
+                from ladon.result_guides import guide_result_manifest
+                expected = guide_result_manifest(
+                    inputs.manifest, inputs.artifacts, guide_inputs=inputs.guide,
+                    assessments=inputs.assessments, **options)
+            else:
+                from ladon.result_inspection import inspect_result_manifest
+                expected = inspect_result_manifest(
+                    inputs.manifest, inputs.artifacts, assessments=inputs.assessments,
+                    **options)
+        assert bundled_view == expected
+>       assert bundle_call_count == 1
+E       assert 2 == 1
+
+tests/test_result_bundle_preparation.py:60: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_result_bundle_preparation.py::test_bundle_view_prepares_once_and_matches_explicit_view[inspect]
+FAILED tests/test_result_bundle_preparation.py::test_bundle_view_prepares_once_and_matches_explicit_view[guide]
+2 failed, 4 passed in 0.28s

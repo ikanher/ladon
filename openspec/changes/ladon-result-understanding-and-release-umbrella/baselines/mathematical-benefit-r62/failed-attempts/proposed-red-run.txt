@@ -1,0 +1,101 @@
+FFFFF                                                                    [100%]
+=================================== FAILURES ===================================
+_____ test_recorded_completion_text_keeps_context_classes_and_local_values _____
+
+    def test_recorded_completion_text_keeps_context_classes_and_local_values():
+        raw = json.loads((R60 / 'completion-b-json.stdout').read_text())
+        before = copy.deepcopy(raw)
+        text = render_completion_text(raw)
+        residual = raw['application']['residualGoals'][0]
+        implementation = next(x for x in residual['localContext'] if x['implementationDetail'])
+        usable = [x for x in residual['localContext'] if not x['implementationDetail']]
+        assert implementation['typeDisplay'] in text
+>       assert 'implementation detail' in text.lower() or 'internal local' in text.lower()
+E       AssertionError: assert ('implementation detail' in 'application outcome: incomplete\noriginal goal: 0 < mf.dp.fixedepochcentergap point h query\nremaining obligation: 0 ...e9ee0e91642fcec07e118a5\nscope: selected source goal; enclosing declaration and prose correspondence remain separate\n' or 'internal local' in 'application outcome: incomplete\noriginal goal: 0 < mf.dp.fixedepochcentergap point h query\nremaining obligation: 0 ...e9ee0e91642fcec07e118a5\nscope: selected source goal; enclosing declaration and prose correspondence remain separate\n')
+E        +  where 'application outcome: incomplete\noriginal goal: 0 < mf.dp.fixedepochcentergap point h query\nremaining obligation: 0 ...e9ee0e91642fcec07e118a5\nscope: selected source goal; enclosing declaration and prose correspondence remain separate\n' = <built-in method lower of str object at 0x5cd864413300>()
+E        +    where <built-in method lower of str object at 0x5cd864413300> = 'application outcome: incomplete\noriginal goal: 0 < Mf.DP.fixedEpochCenterGap point h query\nremaining obligation: 0 ...e9ee0e91642fcec07e118a5\nscope: selected source goal; enclosing declaration and prose correspondence remain separate\n'.lower
+E        +  and   'application outcome: incomplete\noriginal goal: 0 < mf.dp.fixedepochcentergap point h query\nremaining obligation: 0 ...e9ee0e91642fcec07e118a5\nscope: selected source goal; enclosing declaration and prose correspondence remain separate\n' = <built-in method lower of str object at 0x5cd864413300>()
+E        +    where <built-in method lower of str object at 0x5cd864413300> = 'application outcome: incomplete\noriginal goal: 0 < Mf.DP.fixedEpochCenterGap point h query\nremaining obligation: 0 ...e9ee0e91642fcec07e118a5\nscope: selected source goal; enclosing declaration and prose correspondence remain separate\n'.lower
+
+.codex/state/benefit-readers-r62/red/test_r62_presentation.py:33: AssertionError
+_ test_completion_renderer_shows_definition_value_and_keeps_payload_untouched __
+
+    def test_completion_renderer_shows_definition_value_and_keeps_payload_untouched():
+        captured = json.loads(R59_CAPTURE.read_text())['capture']['goal']['localContext']
+        local_definition = next(x for x in captured if x['userName'] == 'z')
+        assert local_definition['valueDisplay'] == 'h'
+        payload = {
+            'status': 'incomplete', 'captureId': 'fixture-capture', 'termDigest': 'fixture-term',
+            'application': {'status': 'incomplete', 'originalGoal': {'typeDisplay': 'x = x'},
+                            'residualGoals': [{'typeDisplay': 'x = x', 'localContext': [
+                                {'userName': '_internal', 'typeDisplay': 'Nat', 'implementationDetail': True,
+                                 'valueDisplay': 'let α := 1\nα + 1', 'valueStructural': 'expr'},
+                                {'userName': 'h', 'typeDisplay': 'x = x', 'implementationDetail': False,
+                                 'valueDisplay': '', 'valueStructural': ''},
+                                local_definition,
+                            ]}]},
+            'replay': {'status': 'not-run'},
+            'trust': {'coverage': 'unavailable', 'observedAxioms': None}, 'diagnostic': None,
+        }
+        before = copy.deepcopy(payload)
+        text = render_completion_text(payload)
+>       assert 'let α := 1\nα + 1' in text
+E       AssertionError: assert 'let α := 1\nα + 1' in 'application outcome: incomplete\noriginal goal: x = x\nremaining obligation: x = x\n  _internal : Nat\n  h : x = x\n ...ure\nterm: fixture-term\nscope: selected source goal; enclosing declaration and prose correspondence remain separate\n'
+
+.codex/state/benefit-readers-r62/red/test_r62_presentation.py:65: AssertionError
+_______ test_completion_json_and_text_field_records_agree_on_local_names _______
+
+    def test_completion_json_and_text_field_records_agree_on_local_names():
+        payload = json.loads((R60 / 'completion-b-json.stdout').read_text())
+        text = (R60 / 'completion-b-text.stdout').read_text()
+        expected = [x['userName'] for x in payload['application']['residualGoals'][0]['localContext']]
+        positions = [text.index(name) for name in expected]
+>       assert positions == sorted(positions)
+E       assert [162, 77, 66,... 85, 432, ...] == [66, 77, 85, ...162, 432, ...]
+E         
+E         At index 0 diff: 162 != 66
+E         Use -v to get more diff
+
+.codex/state/benefit-readers-r62/red/test_r62_presentation.py:75: AssertionError
+_ test_recorded_broadened_average_page_prioritizes_paragraph_reviews_and_uncovered_sibling _
+
+    def test_recorded_broadened_average_page_prioritizes_paragraph_reviews_and_uncovered_sibling():
+        path = ROOT / 'openspec/changes/ladon-result-understanding-and-release-umbrella/baselines/exposition-scope-r61/field/broadened-average.stdout'
+        page = json.loads(path.read_text())
+        assert len(json.dumps(page, ensure_ascii=False).encode()) + 1 <= 32768
+        assert len(text_projection(page).encode()) + 1 <= 32768
+        row = page['rows'][0]
+>       assert 'sufficient condition' in row['paragraph']['explanation']
+E       AssertionError: assert 'sufficient condition' in 'The supplied uniform transcript targets formally establish both transcript and average-only optimality under the sufficient cond'
+
+.codex/state/benefit-readers-r62/red/test_r62_presentation.py:85: AssertionError
+__ test_compact_page_marks_clipped_formal_text_and_points_to_complete_record ___
+
+    def test_compact_page_marks_clipped_formal_text_and_points_to_complete_record():
+        manifest, artifacts, guide = guide_inputs()  # noqa: F405
+        # Add a very large, realistic authored argument; source references must still
+        # identify the complete input when the bounded view clips it.
+        guide = clone(guide)  # noqa: F405
+        guide['steps'][0]['explanation'] = 'A short passage with the sufficient condition. ' + 'λ' * 20000
+        guide['steps'][0]['revision'] = revision('step', guide['steps'][0])  # noqa: F405
+        guide = reseal(guide)  # noqa: F405
+        page = guide_result_manifest(manifest, artifacts, guide_inputs=guide,
+                                     section='steps', claim_id=manifest['claims'][0]['id'], limit=1)
+        assert len(json.dumps(page, ensure_ascii=False).encode()) + 1 <= 32768
+        omissions = page['rows'][0].get('fieldOmissions', [])
+        assert all(x.get('reference', {}).get('input') for x in omissions)
+        # Any clipped decision text must say at its point of use that it is an excerpt.
+        clipped = page['rows'][0]['explanation']
+>       assert 'excerpt' in clipped.lower() or not omissions
+E       AssertionError: assert ('excerpt' in 'a short passage with the sufficient condition. λλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλ...λλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλ' or not [{'omittedBytes': 38000, 'path': '/explanation', 'reference': {'input': 'guide-inputs', 'pointer': '/steps/0/explanation', 'revision': 'sha256:54617491c789ca59eae28b63f852a983b45a8f721afdb6a9b8a9c6d934565831'}}])
+E        +  where 'a short passage with the sufficient condition. λλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλ...λλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλ' = <built-in method lower of str object at 0x5cd86445c570>()
+E        +    where <built-in method lower of str object at 0x5cd86445c570> = 'A short passage with the sufficient condition. λλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλ...λλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλλ'.lower
+
+.codex/state/benefit-readers-r62/red/test_r62_presentation.py:119: AssertionError
+=========================== short test summary info ============================
+FAILED .codex/state/benefit-readers-r62/red/test_r62_presentation.py::test_recorded_completion_text_keeps_context_classes_and_local_values
+FAILED .codex/state/benefit-readers-r62/red/test_r62_presentation.py::test_completion_renderer_shows_definition_value_and_keeps_payload_untouched
+FAILED .codex/state/benefit-readers-r62/red/test_r62_presentation.py::test_completion_json_and_text_field_records_agree_on_local_names
+FAILED .codex/state/benefit-readers-r62/red/test_r62_presentation.py::test_recorded_broadened_average_page_prioritizes_paragraph_reviews_and_uncovered_sibling
+FAILED .codex/state/benefit-readers-r62/red/test_r62_presentation.py::test_compact_page_marks_clipped_formal_text_and_points_to_complete_record
+5 failed in 0.10s

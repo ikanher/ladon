@@ -1,0 +1,22 @@
+# r53 reader pair evidence audit
+
+## Decision
+
+The pair gives credible, narrow evidence that Ladon can return exact Lean candidate-elaboration evidence: its fresh pinned check accepted Context A and left `?hBoundaryGap` residual in Context B. It does not establish that Ladon improved the reader's conclusion over ordinary source inspection. The packet is ready for a pro direction review before any new result-layer feature or further prompt/model retest.
+
+## Gate findings
+
+- **Mathematical scope — supported with limits.** Both reports correctly present the full-batch theorem as conditional, separate the transcript and average-only scopes, and avoid claiming outside-domain classification or adaptive training-loss generality. The shared TeX source in `evidence/assets/00091.bin` gives the threshold at lines 299–311, the E=2/T=3 reversal and S interval at lines 340–347, and the limitations in its scope section beginning at line 430. This confirms the interpretation against the copied source, not the underlying proof independently.
+- **Evidence discipline — supported.** Ladon's live inspection resolves 25 targets and reports 26 attributed assessments, zero real review rows, unknown proof coverage and freshness. Plain additionally distinguishes conventional average-only components and a lineage closure for a different theorem. Both correctly identify finite-map and stale-guide review examples as synthetic only. Hash checking passed for all 106 shared-input entries; all three copied Lean files byte-match the r52 matrix snapshot. The source manifest, guide, and two assessment-source identities match r49 hashes and sizes.
+- **Actual reuse — partial support.** Ladon's retained Context A command used explicit Lean 4.33.0 paths and the exact goal; the tool returned accepted with no residuals. Context B returned `applicable-with-residuals` and `?hBoundaryGap`. Both results are fresh tool elaboration observations, but source freshness is marked unknown and no standalone Lean replay, scratch proof, or lake build was run. The earlier malformed candidate-expression invocation is retained with exit 2, followed by a valid declaration-name command.
+- **Plain numeric indication — qualified.** The retained `inspect-correspondence-and-counterexample` command computes `Phi(x)=.5*erfc(-x/sqrt(2))` and the binomial weighted finite trace gap. Its output prints E=1, T=3, h=1, boundary=0, query=0.001, with boundary gap `-0.007608874966120838` and query gap `-0.007514699408654124`. That is a plausible numerical counterexample to the unconditional Context B goal, not a formal Lean proof or interval certificate. The report's conclusion is appropriately qualified.
+- **Ordinary operation — partial support.** Inventory verification found no mismatch: 68 Ladon and 65 plain entries. Metadata contains exactly 22 Ladon commands (21 success, one exit 2) and 21 plain commands (20 success, one exit 1), agreeing with summary counts and elapsed totals. But Ladon discloses an unrecorded guide command and two setup/invocation attempts; total command population and compliance with the 24-command cap therefore cannot be independently established. Plain's three pre-registration board reads are also disclosed and excluded as lifecycle reads with no task data. No rescue, source edits, build changes, or reader retest are recorded.
+- **Added value — uncertain.** Ladon's strongest incremental result is an actual elaborator observation, beyond a model-authored report, that confirms A and makes the missing B premise explicit. Plain reaches the same theorem/premise diagnosis via source reading and a numerical computation. This pair does not establish causal advantage. Recorded process time/RSS are also not comparable: Ladon 62.638 sec / 8.348 GiB versus plain 1.476 sec / 0.0187 GiB, while the plain command span is 389.5 sec and manual inspection is outside recorded process time.
+
+## Direction for review
+
+Choose whether to invest in a small, source-bound exact-application flow with independent scratch/compiler replay and complete command accounting, or whether native source reading already handles this class of task. Current evidence supports that decision review; it does not support a broad feature proposal or another same-guide prompt/model trial.
+
+## Limits
+
+There is no independent current human review, no source-freshness guarantee, no standalone compiler replay, and no certified numeric witness. These are gaps in the evidence, not claims that the mathematical result is false.

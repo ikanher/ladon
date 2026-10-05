@@ -1,0 +1,42 @@
+{
+  "schema": "offset-correspondence-revision-v1",
+  "resultId": "poisson-fixed-epoch-exposition-20261003-r02",
+  "claimId": "thm:smallbatch",
+  "componentId": "offset",
+  "originalOffsetParagraph": "The exact profile limit is inverted by bracketing the calibrated noise between $\\Delta/(\\sqrt{2\\log T}+s_{E,\\delta}\\pm\\eta)$ for each $\\eta>0$. The general profile limit and this inversion are proved in the appendix.",
+  "minimallyRevisedParagraph": "The exact profile limit is inverted by bracketing the calibrated noise between $\\Delta/(\\sqrt{2\\log T}+s_{E,\\delta}\\pm\\eta)$ for each $\\eta>0$. The offset limit is formally established for every integer horizon $T=E+\\mathrm{extra}\\ge E$ in `OffsetBridge.fixedEpochOffsetBridge` (see `Bridge.lean`); its capped fixed-participation schedule has exactly the same calibrated standard deviation on this path. The general profile limit and this inversion are proved in the appendix.",
+  "proofAndAttemptReference": {
+    "target": "Bridge.lean:OffsetBridge.fixedEpochOffsetBridge",
+    "originalTargetPreserved": true,
+    "attemptsRetainedIn": "Bridge.lean",
+    "method": "Apply Mf.DP.tendsto_fixedParticipationCalibratedStddev_offset to cappedFixedParticipationSchedule (epoch : NNReal); identify its sampling rate with PoissonFixedEpochPoint.ofExtra samplingRate; compose along extra ↦ epoch + extra; simplify fixedParticipationTargetOffset to the explicit quantile target.",
+    "exactRateAdapter": "mathematics/source/Mf/DP/PoissonFixedEpochRate.lean:126-135, PoissonFixedEpochPoint.ofExtra_samplingRate_eq_cappedParticipationRate",
+    "calibrationDefinitions": [
+      "mathematics/source/Mf/DP/FixedParticipationGaussianCalibrationAsymptotics.lean:375-381, fixedParticipationCalibratedStddev",
+      "mathematics/source/Mf/DP/PoissonFixedEpochVariance.lean:23-29, poissonFixedEpochCalibratedStddev"
+    ],
+    "relatedOwner": "mathematics/source/Mf/DP/PoissonFixedEpochAsymptotics.lean:45-67 contains the existing privacy-variance capped-schedule identity; it is not mistaken for the calibrated-standard-deviation bridge proved here.",
+    "verification": "lake env lean Bridge.lean succeeds with Lean 4.33.0. #print axioms fixedEpochOffsetBridge reports [propext, Classical.choice, Quot.sound], with no sorryAx and no added assumptions."
+  },
+  "proposedOffsetCoverageAssessment": {
+    "kind": "formal-source-correspondence",
+    "status": "proved",
+    "scope": "For each positive integer epoch E, sensitivity Δ>0, ε≥0 and 0<δ<1-exp(-E), the calibrated offset limit holds on every integer horizon T=E+extra, extra∈ℕ, with explicit scale sqrt(2 log T) and limit standardNormalQuantile(-log(1-δ)/E).",
+    "calibrationEquality": "The point and schedule standard deviations are both sampledGaussianCalibratedStddev at horizon E+extra, with equal rate by the exact capped-rate identity; therefore this matches calibration definitions, not merely asymptotic sampling rates.",
+    "targetRevision": "sha256:5143027dee53cad453059af2bde568d23cac14c8c71dcb5de336535e3faed83b",
+    "priorAssessmentSuperseded": "component-assessment-10: reported-implication-without-checked-adapter"
+  },
+  "leadingComponentStatus": {
+    "status": "unchanged",
+    "assessment": "component-assessment-11 remains reported-implication-without-checked-adapter for raw, variance, and total leading equivalents.",
+    "targets": [
+      "raw-ratio",
+      "raw-zero",
+      "variance-ratio",
+      "variance-infinity",
+      "total-ratio"
+    ],
+    "wholeTheoremUpgraded": false
+  },
+  "formalProofVersusAttributedCorrespondence": "The Lean kernel checks the exact offset proposition in Bridge.lean from the existing formal general theorem and the explicit schedule/calibration equalities. The link from that proposition to the exposition's symbols (E, T, Δ, σ, and Φ^{-1}) is a source-correspondence assessment authored here, not an independent certification of the exposition or of its leading-component claims. The proof does not establish the asymptotic equivalents, eventual positivity as a separate exposition claim, or the whole sparse transcript calibration theorem."
+}

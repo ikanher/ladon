@@ -1,0 +1,97 @@
+22-
+23-namespace Mf.DP
+24-
+25-/-- Fixed-`h` center gap for the exact finite participation trace. -/
+26:def fixedEpochCenterGap
+27-    (point : PoissonFixedEpochPoint) (h theta : ℝ) : ℝ :=
+28-  ∑ trace : ParticipationTrace point.horizon,
+29-      poissonTraceProb (point.samplingRate : ℝ) trace *
+30-        stdNormalCDFReal
+--
+58-        ((h ^ 2 * ((participationCount trace : ℝ) - point.epoch)) * theta -
+59-          h ^ 2 * ((participationCount trace : ℝ) - point.epoch) ^ 2 / 2)
+60-
+61-/-- Exact finite differentiation of the center gap. -/
+62:theorem hasDerivAt_fixedEpochCenterGap
+63-    (point : PoissonFixedEpochPoint) (h theta : ℝ) :
+64:    HasDerivAt (fixedEpochCenterGap point h)
+65-      (h * stdNormalPdfReal (h * theta) *
+66-        (1 - fixedEpochCenterTilt point h theta)) theta := by
+67-  have hSum : HasDerivAt
+68-      (fun current : ℝ =>
+--
+101-    convert hCdf using 1
+102-    all_goals first | rfl | (rw [show -h * theta = -(h * theta) by ring,
+103-      stdNormalPdfReal_neg]; ring)
+104-  have hRaw := hSum.sub hBase
+105:  have hFunction : fixedEpochCenterGap point h =
+106-      (fun current : ℝ =>
+107-        ∑ trace : ParticipationTrace point.horizon,
+108-          poissonTraceProb (point.samplingRate : ℝ) trace *
+109-            stdNormalCDFReal
+--
+308-      · exact ⟨trueTrace point.horizon, Finset.mem_univ _, hStrict⟩
+309-    _ = 1 := sum_poissonTraceProb_eq_one _
+310-
+311-/-- Finite support makes the center gap vanish at the right endpoint. -/
+312:theorem tendsto_fixedEpochCenterGap_atTop_zero
+313-    (point : PoissonFixedEpochPoint) (h : ℝ) (hh : 0 < h) :
+314:    Tendsto (fixedEpochCenterGap point h) atTop (nhds 0) := by
+315-  have hCdfAtBot : Tendsto stdNormalCDFReal atBot (nhds 0) := by
+316-    change Tendsto (ProbabilityTheory.cdf stdNormalMeasure) atBot (nhds 0)
+317-    exact ProbabilityTheory.tendsto_cdf_atBot (μ := stdNormalMeasure)
+318-  have hTrace (trace : ParticipationTrace point.horizon) : Tendsto
+--
+345-  have hBaseArgument : Tendsto (fun theta : ℝ => -h * theta) atTop atBot :=
+346-    tendsto_id.const_mul_atTop_of_neg (by linarith)
+347-  have hBase : Tendsto (fun theta : ℝ => stdNormalCDFReal (-h * theta))
+348-      atTop (nhds 0) := hCdfAtBot.comp hBaseArgument
+349:  unfold fixedEpochCenterGap
+350-  simpa only [sub_zero, neg_mul] using hSum.sub hBase
+351-
+352-/-- Abstract shape lemma isolated from the finite Gaussian trace.  Convexity
+353-of the exponential tilt, its strict deficit at zero, the exact derivative
+--
+426-
+427-/-- Fixed-`h` center propagation for the exact finite trace.  A nonnegative
+428-gap at one nonnegative boundary center becomes a strict positive gap at every
+429-larger center. -/
+430:theorem fixedEpochCenterGap_pos_of_boundary_nonneg
+431-    (point : PoissonFixedEpochPoint) (h boundary query : ℝ)
+432-    (hNonFull : point.epoch < point.horizon) (hh : 0 < h)
+433-    (hBoundaryNonneg : 0 ≤ boundary) (hBoundaryQuery : boundary < query)
+434:    (hBoundaryGap : 0 ≤ fixedEpochCenterGap point h boundary) :
+435:    0 < fixedEpochCenterGap point h query := by
+436-  apply gap_pos_of_boundary_nonneg
+437:    (fixedEpochCenterGap point h)
+438-    (fixedEpochCenterTilt point h)
+439-    (fun theta => h * stdNormalPdfReal (h * theta))
+440-    boundary query hBoundaryNonneg hBoundaryQuery
+441-  · exact (fixedEpochCenterTilt_strictConvex point h hNonFull hh).convexOn.subset
+442-      (by simp) (convex_Ici 0)
+443-  · exact fixedEpochCenterTilt_zero_lt_one point h hNonFull hh
+444-  · intro theta
+445-    exact mul_pos hh (stdNormalPdfReal_pos _)
+446:  · exact hasDerivAt_fixedEpochCenterGap point h
+447-  · exact hBoundaryGap
+448:  · exact tendsto_fixedEpochCenterGap_atTop_zero point h hh
+449-
+450-/-- The abstract center gap is exactly the existing Gaussian count-test gap
+451-after expressing the positive center distance in count-step units. -/
+452:theorem fixedEpochCenterGap_eq_countTestAverage_sub
+453-    (point : PoissonFixedEpochPoint) (centerDistance : Real)
+454-    (signal : NNReal) (hSignal : 0 < signal) :
+455:    fixedEpochCenterGap point ((signal : Real) / point.epoch)
+456-        ((point.epoch : Real) * centerDistance / (signal : Real)) =
+457-      poissonTraceCountAverage point.horizon point.samplingRate
+458-          (fixedEpochGaussianCountTest point (-centerDistance) signal) -
+459-        stdNormalCDFReal (-centerDistance) := by
+460-  have hEpoch : (point.epoch : Real) ≠ 0 := by
+461-    exact_mod_cast point.epoch_pos.ne'
+462-  have hSignalReal : (signal : Real) ≠ 0 := by
+463-    exact_mod_cast hSignal.ne'
+464:  unfold fixedEpochCenterGap poissonTraceCountAverage fixedEpochGaussianCountTest
+465-  have hBase :
+466-      -((signal : Real) / point.epoch) *
+467-          ((point.epoch : Real) * centerDistance / (signal : Real)) =
+468-        -centerDistance := by

@@ -1,0 +1,48 @@
+{
+  "schema": "ladon-qualitative-reader-task-v1",
+  "instruction": "Audit the full-batch optimality claim: state conditions and limitations, distinguish release scopes, identify incomplete formal coverage and review currency. Find a relevant supporting lemma for the specified goals, explain its prerequisites, and explicitly check the proposed application in both contexts. Do not infer falsehood from a rejected application. Report failures and workarounds.",
+  "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+  "contexts": [
+    {
+      "id": "context-A",
+      "locals": [
+        "point:Mf.DP.PoissonFixedEpochPoint",
+        "h:\u211d",
+        "boundary:\u211d",
+        "query:\u211d",
+        "hNonFull:point.epoch < point.horizon",
+        "hh:0 < h",
+        "hBoundaryNonneg:0 \u2264 boundary",
+        "hBoundaryQuery:boundary < query",
+        "hBoundaryGap:0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary"
+      ],
+      "closedGoal": "\u2200 (point : Mf.DP.PoissonFixedEpochPoint) (h : \u211d) (boundary : \u211d) (query : \u211d) (hNonFull : point.epoch < point.horizon) (hh : 0 < h) (hBoundaryNonneg : 0 \u2264 boundary) (hBoundaryQuery : boundary < query) (hBoundaryGap : 0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary), 0 < Mf.DP.fixedEpochCenterGap point h query"
+    },
+    {
+      "id": "context-B",
+      "locals": [
+        "point:Mf.DP.PoissonFixedEpochPoint",
+        "h:\u211d",
+        "boundary:\u211d",
+        "query:\u211d",
+        "hNonFull:point.epoch < point.horizon",
+        "hh:0 < h",
+        "hBoundaryNonneg:0 \u2264 boundary",
+        "hBoundaryQuery:boundary < query"
+      ],
+      "closedGoal": "\u2200 (point : Mf.DP.PoissonFixedEpochPoint) (h : \u211d) (boundary : \u211d) (query : \u211d) (hNonFull : point.epoch < point.horizon) (hh : 0 < h) (hBoundaryNonneg : 0 \u2264 boundary) (hBoundaryQuery : boundary < query), 0 < Mf.DP.fixedEpochCenterGap point h query"
+    }
+  ],
+  "leanRepository": "/home/codex/.cache/ladon-envelope-r52/matrix-snapshot",
+  "module": "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+  "toolchain": "leanprover/lean4:v4.33.0",
+  "leanPath": "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+  "lakePath": "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+  "limits": {
+    "leanRssGiB": 32,
+    "commandTimeoutSeconds": 120,
+    "readerMinutes": 12,
+    "readerCommands": 24
+  },
+  "syntheticTask": "Inspect the finite-map illustrative premise difference and the separate stale-guide synthetic review. Explain why neither is a real approval of this exposition."
+}

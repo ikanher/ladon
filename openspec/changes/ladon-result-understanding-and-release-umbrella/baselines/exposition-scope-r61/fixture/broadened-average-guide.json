@@ -1,0 +1,74 @@
+{
+  "schema": "ladon-result-guide-v1",
+  "resultId": "poisson-fixed-epoch-exposition-20261003-r02",
+  "manifestRevision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+  "steps": [
+    {
+      "id": "conditional-all-horizons",
+      "revision": "sha256:27371752c9cef2a36a2b491e9442ed12b59c2e72da1e1abbe89543c474c2beb1",
+      "claimId": "cor:fixed-epoch-all-horizon",
+      "claimRevision": "sha256:0108f8bad055aabc20a15fde2fed178bec5d26a78e097a8113a6d68967beea83",
+      "targetRevisions": [
+        {
+          "targetId": "uniform-privacy",
+          "revision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370"
+        },
+        {
+          "targetId": "uniform-total",
+          "revision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f"
+        },
+        {
+          "targetId": "fullbatch",
+          "revision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa"
+        }
+      ],
+      "purpose": "Start with the usable positive result.",
+      "explanation": "The supplied uniform transcript targets formally establish both transcript and average-only optimality under the sufficient condition.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#cor:fixed-epoch-all-horizon",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#sec:near-full",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "root-labelled-synthetic-control",
+        "kind": "model"
+      },
+      "prerequisites": []
+    }
+  ],
+  "citations": [],
+  "reviews": [
+    {
+      "id": "synthetic-broadened-average",
+      "scope": "explanation",
+      "stepId": "conditional-all-horizons",
+      "stepRevision": "sha256:27371752c9cef2a36a2b491e9442ed12b59c2e72da1e1abbe89543c474c2beb1",
+      "targetRevisions": [
+        {
+          "targetId": "uniform-privacy",
+          "revision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370"
+        },
+        {
+          "targetId": "uniform-total",
+          "revision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f"
+        },
+        {
+          "targetId": "fullbatch",
+          "revision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa"
+        }
+      ],
+      "reviewer": {
+        "identity": "root-labelled-control-not-independent-review",
+        "kind": "model"
+      },
+      "status": "with-differences",
+      "rationale": "Synthetic altered control: the average component has no formal mapping. Keep the transcript conclusion scoped to its bindings and describe the average-only strengthening as conventional exposition according to the supplied assessment; unformalized does not mean false.",
+      "timestamp": "2026-10-05T00:00:00Z"
+    }
+  ]
+}

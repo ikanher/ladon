@@ -1,0 +1,27 @@
+{
+  "parentObjective": "Ladon core discovery cost repair, explicitly continued after r50",
+  "target": "Reduce source-path normalization/filtering cost; preserve all identity verification boundaries.",
+  "acceptance": [
+    "Identical selected sorted normalized paths, including excluded-path safety validation, all source/symlink/file/byte bounds and mutation rejection.",
+    "No source/toolchain recheck removed; no path/mtime or cross-request cache; no skipped artifact validation.",
+    "Measured median filtering runtime at least 20 percent lower on frozen real source enumeration, same interpreter, alternating before/after runs. This is an internal performance gate, not a CI timing test or external benefit metric.",
+    "Installed Python3.11/3.12 relevant security/context tests, full clean-candidate gate and matrix A/B discovery preserve prior outcomes.",
+    "Independent root integration and distinct audit; frozen legacy/corpus/harness."
+  ],
+  "surface": [
+    "src/ladon/lean_toolchain.py",
+    "new semantic regression tests and reproduction/performance evidence"
+  ],
+  "testFirst": "Performance red gate plus semantic-preservation tests; no implementation-mirroring call-count tests.",
+  "dependencyPolicy": "stdlib only; no foreign code/caches, no new services/API/schema.",
+  "rollback": "Reversible focused patch; baseline source retained; root index/HEAD preserved.",
+  "capacity": {
+    "concurrentSlotsIncludingRoot": 4,
+    "workerModel": "gpt-6-luna",
+    "workerReasoning": "medium",
+    "portfolio": "red/scout/falsifier, then green, then distinct audit"
+  },
+  "baselineSourceSha256": "3dcddd3ba3a571f601d83031b94b1fe00c090428248f2ac9e9314f2dfeb4aa75",
+  "baselineCandidate": "573dec57fbc187d9f3343fe6eec51b8fea11da1e",
+  "verificationState": "unverified"
+}

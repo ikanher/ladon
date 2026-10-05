@@ -1,0 +1,81 @@
+FFFFFFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+____ test_current_exposition_binds_exact_step_review_and_selected_component ____
+tests/test_result_exposition_view_contract.py:88: in test_current_exposition_binds_exact_step_review_and_selected_component
+    result = _view(manifest, artifacts, guide)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_result_exposition_view_contract.py:28: in _view
+    return _api()(
+E   TypeError: guide_result_manifest() got an unexpected keyword argument 'component_id'
+_ test_corrective_rationale_is_authored_without_inferred_mathematical_verdict __
+tests/test_result_exposition_view_contract.py:111: in test_corrective_rationale_is_authored_without_inferred_mathematical_verdict
+    row = _view(manifest, artifacts, changed)["rows"][0]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_result_exposition_view_contract.py:28: in _view
+    return _api()(
+E   TypeError: guide_result_manifest() got an unexpected keyword argument 'component_id'
+__ test_stale_explanation_review_is_shown_as_historical_on_current_paragraph ___
+tests/test_result_exposition_view_contract.py:134: in test_stale_explanation_review_is_shown_as_historical_on_current_paragraph
+    row = _view(manifest, artifacts, changed)["rows"][0]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_result_exposition_view_contract.py:28: in _view
+    return _api()(
+E   TypeError: guide_result_manifest() got an unexpected keyword argument 'component_id'
+____ test_missing_guide_produces_one_unavailable_paragraph_without_support _____
+tests/test_result_exposition_view_contract.py:143: in test_missing_guide_produces_one_unavailable_paragraph_without_support
+    result = _api()(manifest, artifacts, guide_inputs=None, section="exposition",
+E   TypeError: guide_result_manifest() got an unexpected keyword argument 'component_id'
+_ test_historical_paragraph_and_review_cannot_borrow_current_support_statements _
+tests/test_result_exposition_view_contract.py:174: in test_historical_paragraph_and_review_cannot_borrow_current_support_statements
+    row = _view(changed_manifest, artifacts, historical)["rows"][0]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_result_exposition_view_contract.py:28: in _view
+    return _api()(
+E   TypeError: guide_result_manifest() got an unexpected keyword argument 'component_id'
+________ test_historical_whole_step_hides_still_current_target_binding _________
+tests/test_result_exposition_view_contract.py:194: in test_historical_whole_step_hides_still_current_target_binding
+    row = _view(changed_manifest, artifacts, guide)["rows"][0]
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_result_exposition_view_contract.py:28: in _view
+    return _api()(
+E   TypeError: guide_result_manifest() got an unexpected keyword argument 'component_id'
+____ test_target_selection_is_conjunctive_and_component_selection_is_exact _____
+tests/test_result_exposition_view_contract.py:206: in test_target_selection_is_conjunctive_and_component_selection_is_exact
+    result = _view(manifest, artifacts, guide, target_id="supporting-lemma")
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_result_exposition_view_contract.py:28: in _view
+    return _api()(
+E   TypeError: guide_result_manifest() got an unexpected keyword argument 'component_id'
+__ test_citations_and_component_assessments_remain_separate_attributed_inputs __
+tests/test_result_exposition_view_contract.py:255: in test_citations_and_component_assessments_remain_separate_attributed_inputs
+    result = _cli_parity_result(main, args, capsys)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_result_exposition_view_contract.py:220: in _cli_parity_result
+    assert main(args) == 0
+E   AssertionError: assert 2 == 0
+E    +  where 2 = <function main at 0x79416145ee80>(['result', 'guide', '/tmp/pytest-of-codex/pytest-960/test_citations_and_component_a0/manifest.json', '--guide-inputs', '/tmp/pytest-of-codex/pytest-960/test_citations_and_component_a0/guide.json', '--assessments', ...])
+----------------------------- Captured stderr call -----------------------------
+{"diagnostic":{"code":"manifest-invalid","message":"argument --section: invalid choice: 'exposition' (choose from 'steps', 'citations', 'reviews', 'correspondence', 'targets', 'checking', 'assumptions', 'lineage', 'evidence')"},"exitClass":"invocation","exitCode":2,"operation":"guide","schema":"ladon-result-terminal-v1","status":"failed"}
+_ test_bundle_exposition_uses_bundled_assessments_without_importing_check_authority _
+tests/test_result_exposition_view_contract.py:284: in test_bundle_exposition_uses_bundled_assessments_without_importing_check_authority
+    assert main(["result", "guide", str(bundle), "--section", "exposition",
+E   AssertionError: assert 2 == 0
+E    +  where 2 = <function main at 0x79416145ee80>(['result', 'guide', '/tmp/pytest-of-codex/pytest-960/test_bundle_exposition_uses_bu0/result.zip', '--section', 'exposition', '--claim', ...])
+----------------------------- Captured stderr call -----------------------------
+{"diagnostic":{"code":"manifest-invalid","message":"argument --section: invalid choice: 'exposition' (choose from 'steps', 'citations', 'reviews', 'correspondence', 'targets', 'checking', 'assumptions', 'lineage', 'evidence')"},"exitClass":"invocation","exitCode":2,"operation":"guide","schema":"ladon-result-terminal-v1","status":"failed"}
+_ test_exposition_pages_bind_component_guide_and_assessment_inputs_and_stay_bounded _
+tests/test_result_exposition_view_contract.py:329: in test_exposition_pages_bind_component_guide_and_assessment_inputs_and_stay_bounded
+    first_page = project(manifest, artifacts, guide_inputs=expanded, section="exposition",
+E   TypeError: guide_result_manifest() got an unexpected keyword argument 'component_id'
+=========================== short test summary info ============================
+FAILED tests/test_result_exposition_view_contract.py::test_current_exposition_binds_exact_step_review_and_selected_component
+FAILED tests/test_result_exposition_view_contract.py::test_corrective_rationale_is_authored_without_inferred_mathematical_verdict
+FAILED tests/test_result_exposition_view_contract.py::test_stale_explanation_review_is_shown_as_historical_on_current_paragraph
+FAILED tests/test_result_exposition_view_contract.py::test_missing_guide_produces_one_unavailable_paragraph_without_support
+FAILED tests/test_result_exposition_view_contract.py::test_historical_paragraph_and_review_cannot_borrow_current_support_statements
+FAILED tests/test_result_exposition_view_contract.py::test_historical_whole_step_hides_still_current_target_binding
+FAILED tests/test_result_exposition_view_contract.py::test_target_selection_is_conjunctive_and_component_selection_is_exact
+FAILED tests/test_result_exposition_view_contract.py::test_citations_and_component_assessments_remain_separate_attributed_inputs
+FAILED tests/test_result_exposition_view_contract.py::test_bundle_exposition_uses_bundled_assessments_without_importing_check_authority
+FAILED tests/test_result_exposition_view_contract.py::test_exposition_pages_bind_component_guide_and_assessment_inputs_and_stay_bounded
+10 failed in 0.19s

@@ -1,0 +1,27 @@
+.lake/build/lib/lean/Mf/DP/PoissonFixedEpochCenterGapPropagation.olean
+Lean (version 4.33.0, x86_64-unknown-linux-gnu, commit d8b18978322de05a8f3dba51ef03cf5461676c17, Release)
+/-- Fixed-`h` center propagation for the exact finite trace.  A nonnegative
+gap at one nonnegative boundary center becomes a strict positive gap at every
+larger center. -/
+theorem fixedEpochCenterGap_pos_of_boundary_nonneg
+    (point : PoissonFixedEpochPoint) (h boundary query : ℝ)
+    (hNonFull : point.epoch < point.horizon) (hh : 0 < h)
+    (hBoundaryNonneg : 0 ≤ boundary) (hBoundaryQuery : boundary < query)
+    (hBoundaryGap : 0 ≤ fixedEpochCenterGap point h boundary) :
+    0 < fixedEpochCenterGap point h query := by
+  apply gap_pos_of_boundary_nonneg
+    (fixedEpochCenterGap point h)
+    (fixedEpochCenterTilt point h)
+    (fun theta => h * stdNormalPdfReal (h * theta))
+    boundary query hBoundaryNonneg hBoundaryQuery
+  · exact (fixedEpochCenterTilt_strictConvex point h hNonFull hh).convexOn.subset
+      (by simp) (convex_Ici 0)
+  · exact fixedEpochCenterTilt_zero_lt_one point h hNonFull hh
+  · intro theta
+    exact mul_pos hh (stdNormalPdfReal_pos _)
+  · exact hasDerivAt_fixedEpochCenterGap point h
+  · exact hBoundaryGap
+  · exact tendsto_fixedEpochCenterGap_atTop_zero point h hh
+
+/-- The abstract center gap is exactly the existing Gaussian count-test gap
+after expressing the positive center distance in count-step units. -/

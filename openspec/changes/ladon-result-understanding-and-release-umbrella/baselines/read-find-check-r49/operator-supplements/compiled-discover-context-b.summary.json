@@ -1,0 +1,215 @@
+{
+  "request": {
+    "batchSize": 8,
+    "executionContextRef": "sha256:7df1cc3de639d457f94a8060d912b8a85c7fadf061a44ad09a170fc9998e382e",
+    "freshness": "stored",
+    "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+    "localContext": [
+      {
+        "name": "point",
+        "type": "Mf.DP.PoissonFixedEpochPoint"
+      },
+      {
+        "name": "h",
+        "type": "\u211d"
+      },
+      {
+        "name": "boundary",
+        "type": "\u211d"
+      },
+      {
+        "name": "query",
+        "type": "\u211d"
+      },
+      {
+        "name": "hNonFull",
+        "type": "point.epoch < point.horizon"
+      },
+      {
+        "name": "hh",
+        "type": "0 < h"
+      },
+      {
+        "name": "hBoundaryNonneg",
+        "type": "0 \u2264 boundary"
+      },
+      {
+        "name": "hBoundaryQuery",
+        "type": "boundary < query"
+      }
+    ],
+    "maxCandidates": 10,
+    "maxOutputBytes": 8388608,
+    "maxRssBytes": 34359738368,
+    "module": "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+    "roots": [
+      "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+    ],
+    "schema": "ladon-verified-discovery-request-v1",
+    "scope": "module",
+    "scratchMode": "advisory",
+    "timeoutSeconds": 90.0
+  },
+  "status": "available",
+  "check": {
+    "status": "applicable-with-residuals",
+    "applicationTerm": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h boundary query hNonFull hh hBoundaryNonneg hBoundaryQuery\n  ?hBoundaryGap",
+    "residualPremises": [
+      {
+        "typeDisplay": "0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary",
+        "typeStructural": "Lean.Expr.app\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `LE.le [Lean.Level.zero]) (Lean.Expr.const `Real []))\n      (Lean.Expr.const `Real.instLE []))\n    (Lean.Expr.app\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `OfNat.ofNat [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.lit (Lean.Literal.natVal 0)))\n      (Lean.Expr.app\n        (Lean.Expr.app (Lean.Expr.const `Zero.toOfNat0 [Lean.Level.zero]) (Lean.Expr.const `Real []))\n        (Lean.Expr.const `Real.instZero []))))\n  (Lean.Expr.app\n    (Lean.Expr.app\n      (Lean.Expr.app (Lean.Expr.const `Mf.DP.fixedEpochCenterGap []) (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 11)))\n      (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 14)))\n    (Lean.Expr.fvar (Lean.Name.mkNum `_uniq 17)))"
+      }
+    ],
+    "substitutions": [
+      {
+        "termDisplay": "point",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 11)",
+        "variable": "point"
+      },
+      {
+        "termDisplay": "h",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 14)",
+        "variable": "h"
+      },
+      {
+        "termDisplay": "boundary",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 17)",
+        "variable": "boundary"
+      },
+      {
+        "termDisplay": "query",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 20)",
+        "variable": "query"
+      },
+      {
+        "termDisplay": "hNonFull",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 23)",
+        "variable": "hNonFull"
+      },
+      {
+        "termDisplay": "hh",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 26)",
+        "variable": "hh"
+      },
+      {
+        "termDisplay": "hBoundaryNonneg",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 29)",
+        "variable": "hBoundaryNonneg"
+      },
+      {
+        "termDisplay": "hBoundaryQuery",
+        "termStructural": "Lean.Expr.fvar (Lean.Name.mkNum `_uniq 32)",
+        "variable": "hBoundaryQuery"
+      },
+      {
+        "termDisplay": "?hBoundaryGap",
+        "termStructural": "Lean.Expr.mvar (Lean.Name.mkNum `_uniq 52)",
+        "variable": "hBoundaryGap"
+      }
+    ],
+    "dischargedHypotheses": [
+      {
+        "dischargedByLocalRef": "local:4",
+        "method": "assumption-definitional-equality",
+        "premiseOrdinal": 0,
+        "premiseTypeDisplay": "point.epoch < point.horizon"
+      },
+      {
+        "dischargedByLocalRef": "local:5",
+        "method": "assumption-definitional-equality",
+        "premiseOrdinal": 1,
+        "premiseTypeDisplay": "0 < h"
+      },
+      {
+        "dischargedByLocalRef": "local:6",
+        "method": "assumption-definitional-equality",
+        "premiseOrdinal": 2,
+        "premiseTypeDisplay": "0 \u2264 boundary"
+      },
+      {
+        "dischargedByLocalRef": "local:7",
+        "method": "assumption-definitional-equality",
+        "premiseOrdinal": 3,
+        "premiseTypeDisplay": "boundary < query"
+      }
+    ],
+    "evidenceReceipt": {
+      "analysisCompleteness": "partial",
+      "authorityBasis": "elaborator-check",
+      "checkRunRef": "check:d6fab6b44c91b6b767469b4904596b6dc365d4bb6a698c3d644375607bd2584c",
+      "environmentMatch": "exact",
+      "environmentRef": "sha256:4576652c6fa44afe3d9074d27a41fb01df5785fdc6fce58c76bd202e2f84dd80",
+      "executionBinding": "explicit-pinned",
+      "limitations": [
+        "Residual premises remain unverified.",
+        "Target modules may execute repository-controlled initializers; this observation is authority-scoped to trusted target code."
+      ],
+      "observationState": "live",
+      "operationOutcome": "accepted",
+      "receiptIdentity": "sha256:04b457c670aa7320c014a5045a6d0b3b1f4421aee71fcadb1a714107802b243f",
+      "schema": "ladon-evidence-receipt-v1",
+      "sourceFreshness": "unknown",
+      "subject": {
+        "candidate": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+        "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+        "localContext": [
+          {
+            "name": "point",
+            "type": "Mf.DP.PoissonFixedEpochPoint"
+          },
+          {
+            "name": "h",
+            "type": "\u211d"
+          },
+          {
+            "name": "boundary",
+            "type": "\u211d"
+          },
+          {
+            "name": "query",
+            "type": "\u211d"
+          },
+          {
+            "name": "hNonFull",
+            "type": "point.epoch < point.horizon"
+          },
+          {
+            "name": "hh",
+            "type": "0 < h"
+          },
+          {
+            "name": "hBoundaryNonneg",
+            "type": "0 \u2264 boundary"
+          },
+          {
+            "name": "hBoundaryQuery",
+            "type": "boundary < query"
+          }
+        ],
+        "module": "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+      }
+    }
+  },
+  "scratch": null,
+  "coverage": {
+    "accepted": 1,
+    "completed": 1,
+    "failed": 0,
+    "invalidWorkerOutput": 0,
+    "memoryLimited": 0,
+    "outputLimited": 0,
+    "rejected": 0,
+    "scratchAttempted": 0,
+    "scratchCompiled": 0,
+    "shortlisted": 1,
+    "submitted": 1,
+    "timeouts": 0,
+    "truncated": false,
+    "unassessed": 0
+  },
+  "rawOutput": {
+    "path": "/home/codex/.cache/ladon-reader-loop-r49/operator/compiled-discover-context-b.stdout",
+    "bytes": 2282966,
+    "sha256": "sha256:c82e138a69384abcfd2037e3678adf1bba9d50a0d751274524bbd128a4d03014"
+  }
+}

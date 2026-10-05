@@ -1,0 +1,53 @@
+usage: ladon proof-search check candidate [-h] [--repo-root REPO_ROOT]
+                                          [--index INDEX_PATH]
+                                          [--format {text,json}]
+                                          [--output OUTPUT] [--progress]
+                                          [--projection {llm,review,audit}]
+                                          [--evidence-store EVIDENCE_STORE]
+                                          [--max-evidence-store-mib MAX_EVIDENCE_STORE_MIB]
+                                          [--require-isolation] --module
+                                          MODULE --goal GOAL --candidate
+                                          CANDIDATE
+                                          [--timeout-seconds TIMEOUT_SECONDS]
+                                          [--max-output-mib MAX_OUTPUT_MIB]
+                                          [--max-rss-mib MAX_RSS_MIB]
+                                          [--toolchain-mode {ambient,explicit}]
+                                          [--lake-path LAKE_PATH]
+                                          [--lean-path LEAN_PATH]
+
+Load one trusted target module with direct Lean and existing compiled .olean
+roots; Ladon does not reconcile Lake dependencies. Target initializers may
+run.
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Lean repository owning the index.
+  --index INDEX_PATH    Override the default <repo>/.ladon/index/proof-
+                        search.sqlite path.
+  --format {text,json}  Result representation.
+  --output OUTPUT       Result path, or - for standard output.
+  --progress            Write bounded JSON progress records to standard error.
+  --projection {llm,review,audit}
+                        Select compact LLM/review output backed by registered
+                        evidence, or audit for the complete embedded ProofIR
+                        payload.
+  --evidence-store EVIDENCE_STORE
+                        Override the repository-scoped user-cache semantic
+                        evidence registry.
+  --max-evidence-store-mib MAX_EVIDENCE_STORE_MIB
+                        Maximum semantic evidence registry size in MiB;
+                        defaults to 512.
+  --require-isolation   Require target initializer isolation; fails closed
+                        when unavailable.
+  --module MODULE
+  --goal GOAL
+  --candidate CANDIDATE
+  --timeout-seconds TIMEOUT_SECONDS
+  --max-output-mib MAX_OUTPUT_MIB
+  --max-rss-mib MAX_RSS_MIB
+  --toolchain-mode {ambient,explicit}
+                        Select ambient discovery (non-authoritative) or
+                        explicit pinned executables.
+  --lake-path LAKE_PATH
+  --lean-path LEAN_PATH

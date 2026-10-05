@@ -1,0 +1,120 @@
+--- r51/proofir_v3.py
++++ r52/proofir_v3.py
+@@ -342,16 +342,42 @@
+ 
+     if max_bytes is not None:
+         max_artifact_bytes = max_bytes
+-    _validate_envelope_shape(value)
+-    canonical_bytes(value, max_bytes=max_artifact_bytes)
+-    detached = dict(value)
+-    detached.pop("artifactId", None)
+-    expected = (
+-        "sha256:"
+-        + hashlib.sha256(canonical_bytes(detached, max_bytes=max_artifact_bytes)).hexdigest()
+-    )
++    owned, encoded = _prepare_envelope(value, max_artifact_bytes)
++    return _validate_owned_envelope(owned, encoded)
++
++
++def _prepare_envelope(value: Any, max_artifact_bytes: int) -> tuple[dict[str, Any], bytes]:
++    """Own the serialized tree before validating its semantics and identity."""
++    try:
++        encoded = canonical_bytes(value, max_bytes=max_artifact_bytes)
++    except ProofIRV3Error:
++        # Keep the established shape-first diagnostic on malformed inputs.
++        _validate_envelope_shape(value)
++        raise
++    owned = json.loads(encoded, object_pairs_hook=_own_object_pairs)
++    _validate_envelope_shape(owned)
++    # Recheck the parsed tree: custom input hooks need not preserve its profile.
++    encoded = canonical_bytes(owned, max_bytes=max_artifact_bytes)
++    return owned, encoded
++
++
++def _own_object_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
++    owned = dict(pairs)
++    if len(owned) != len(pairs):
++        raise ProofIRV3Error("duplicate serialized object key")
++    return owned
++
++
++def _validate_owned_envelope(value: dict[str, Any], encoded: bytes) -> ProofIRV3Artifact:
++    # Closed envelope keys sort artifactId first. Both tree and encoding were
++    # prepared together, and removing this field cannot enlarge profile bounds.
++    prefix = b'{"artifactId":' + json.dumps(value["artifactId"]).encode() + b','
++    if not encoded.startswith(prefix):
++        raise ProofIRV3Error("prepared envelope has inconsistent canonical encoding")
++    detached = b'{' + encoded[len(prefix):]
++    expected = "sha256:" + hashlib.sha256(detached).hexdigest()
+     _validate_declared_id(value, expected)
+-    return ProofIRV3Artifact(_freeze(copy.deepcopy(value)), expected)
++    return ProofIRV3Artifact(_freeze(value), expected)
+ 
+ 
+ def validate_envelope_batch(
+@@ -371,18 +397,15 @@
+     mutating a store while discovering a dangling cross-artifact edge.
+     """
+ 
+-    if not isinstance(values, list):
++    if type(values) is not list:
+         raise ProofIRV3Error("v3 envelope batch must be an array")
+     max_artifact_bytes, max_batch_bytes = _resolve_batch_limits(
+         max_bytes, max_artifact_bytes, max_batch_bytes, max_artifacts
+     )
+-    artifacts = _preflight_batch(values, max_artifact_bytes, max_batch_bytes, max_artifacts)
++    owned_values, artifacts = _preflight_batch(values, max_artifact_bytes, max_batch_bytes, max_artifacts)
+     for owner_id, artifact in artifacts.items():
+         _validate_external_references(owner_id, artifact, artifacts)
+-    return tuple(
+-        validate_envelope(value, max_artifact_bytes=max_artifact_bytes)
+-        for value in values
+-    )
++    return tuple(_validate_owned_envelope(value, encoded) for value, encoded in owned_values)
+ 
+ 
+ def _validate_envelope_shape(value: Any) -> None:
+--- r51/proofir_v3_batch.py
++++ r52/proofir_v3_batch.py
+@@ -24,27 +24,25 @@
+ 
+ def preflight(
+     values: list[dict[str, Any]], artifact_limit: int, batch_limit: int, count_limit: int
+-) -> dict[str, dict[str, Any]]:
+-    from ladon.proofir_v3 import _fail, _validate_envelope_shape, canonical_bytes
++) -> tuple[list[tuple[dict[str, Any], bytes]], dict[str, dict[str, Any]]]:
++    from ladon.proofir_v3 import _fail, _prepare_envelope
+ 
+     if len(values) > count_limit:
+         _fail("reference-valid", "batch-item-limit", "", f"v3 envelope batch exceeds item limit: {count_limit}")
+     artifacts: dict[str, dict[str, Any]] = {}
++    encodings: dict[str, bytes] = {}
++    rows: list[tuple[dict[str, Any], bytes]] = []
+     total_bytes = 0
+     for value in values:
+-        _validate_envelope_shape(value)
+-        total_bytes += len(canonical_bytes(value, max_bytes=artifact_limit))
++        owned, encoded = _prepare_envelope(value, artifact_limit)
++        total_bytes += len(encoded)
+         if total_bytes > batch_limit:
+             _fail("reference-valid", "batch-byte-limit", "", f"v3 envelope batch exceeds aggregate byte limit: {batch_limit}")
+-        _record(artifacts, value)
+-    return artifacts
+-
+-
+-def _record(artifacts: dict[str, dict[str, Any]], value: dict[str, Any]) -> None:
+-    from ladon.proofir_v3 import _fail, canonical_bytes
+-
+-    artifact_id = str(value["artifactId"])
+-    prior = artifacts.get(artifact_id)
+-    if prior is not None and canonical_bytes(prior) != canonical_bytes(value):
+-        _fail("reference-valid", "duplicate-batch-artifact-id", "/artifactId", "different artifacts share a declared artifact ID", value)
+-    artifacts[artifact_id] = value
++        artifact_id = owned["artifactId"]
++        prior = encodings.get(artifact_id)
++        if prior is not None and prior != encoded:
++            _fail("reference-valid", "duplicate-batch-artifact-id", "/artifactId", "different artifacts share a declared artifact ID", owned)
++        artifacts[artifact_id] = owned
++        encodings[artifact_id] = encoded
++        rows.append((owned, encoded))
++    return rows, artifacts

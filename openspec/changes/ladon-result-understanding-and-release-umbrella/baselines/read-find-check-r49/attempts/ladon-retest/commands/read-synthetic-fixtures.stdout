@@ -1,0 +1,174 @@
+Synthetic additional-assumption and stale-review fixture. All reviews and source identities here are illustrative test records; no real exposition review is asserted. The original finite-map files are unchanged, and stale-guide.json retains an old explanation review after editing the step.
+{
+  "schema": "ladon-result-manifest-v1",
+  "resultId": "finite-map-example",
+  "title": "Illustrative claim with an additional finiteness assumption",
+  "claimInventory": {
+    "scope": "One illustrative paper statement; not a checked formalization.",
+    "coverage": "complete"
+  },
+  "claims": [
+    {
+      "id": "paper-theorem-1",
+      "statement": "Every injective self-map is surjective.",
+      "document": {
+        "locator": "example-paper#theorem-1",
+        "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "components": [
+        "implication",
+        "unrestricted-domain"
+      ],
+      "revision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1"
+    }
+  ],
+  "targets": [
+    {
+      "id": "finite-map",
+      "name": "Example.injective_surjective",
+      "typeText": "{α : Type} → [Finite α] → (f : α → α) → Function.Injective f → Function.Surjective f",
+      "source": {
+        "path": "Example.lean",
+        "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "projectRevision": "illustrative-fixture-only"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.32.1",
+        "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+    }
+  ],
+  "links": [
+    {
+      "id": "mapping-1",
+      "claimId": "paper-theorem-1",
+      "componentIds": [
+        "implication"
+      ],
+      "targetIds": [
+        "finite-map"
+      ]
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-1",
+      "linkId": "mapping-1",
+      "linkDigest": "sha256:902df6d9d43c9384ceef299ff5393a05efb245735d1ded8dc7eaf1e38cdfb200",
+      "claimRevision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "reviewer": {
+        "id": "illustrative-model-review",
+        "kind": "model"
+      },
+      "method": "Supplied statement comparison; no Lean or canonical evidence loaded.",
+      "timestamp": "2026-10-02T09:00:00Z",
+      "rationale": "The supplied formal type assumes a finite domain; the informal statement does not. All source/environment digests in this fixture are illustrative.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "assumption",
+          "claimAnchor": "example-paper#theorem-1",
+          "formalAnchor": "Example.lean: supplied type [Finite α]",
+          "description": "Finiteness is an additional hypothesis.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    }
+  ],
+  "revision": "sha256:1a54b5cd4498baf2b4ab4842b5e6bf773377e9376ce7e024e5431fe1b331bec4"
+}
+{
+  "schema": "ladon-result-guide-v1",
+  "resultId": "finite-map-example",
+  "manifestRevision": "sha256:1a54b5cd4498baf2b4ab4842b5e6bf773377e9376ce7e024e5431fe1b331bec4",
+  "steps": [
+    {
+      "id": "finite-domain-condition",
+      "claimId": "paper-theorem-1",
+      "claimRevision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "purpose": "Check the domain hypothesis before reusing the implication.",
+      "explanation": "The supplied formal type requires a finite domain. The informal statement omits this assumption. Finiteness makes injectivity imply surjectivity; for an infinite domain the unrestricted claim fails, as the successor self-map of the natural numbers shows. This illustrative explanation is not a Lean check or a correspondence approval.",
+      "sources": [
+        {
+          "locator": "example-paper#theorem-1",
+          "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ],
+      "author": {
+        "identity": "Ladon illustrative guide",
+        "kind": "model"
+      },
+      "prerequisites": [],
+      "revision": "sha256:fc7ea39f6d6bce5fd39859020ffd0871ec9b0ec21989cd33eee6f3e321543fcd"
+    }
+  ],
+  "citations": [],
+  "reviews": []
+}
+{
+  "schema": "ladon-result-guide-v1",
+  "resultId": "finite-map-example",
+  "manifestRevision": "sha256:1a54b5cd4498baf2b4ab4842b5e6bf773377e9376ce7e024e5431fe1b331bec4",
+  "steps": [
+    {
+      "id": "finite-domain-condition",
+      "claimId": "paper-theorem-1",
+      "claimRevision": "sha256:5a67ef7f1ce40bf951fe113d335d07fb2026f867a4d1c22e633bb281c476dfb1",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "purpose": "Check the domain hypothesis before reusing the implication.",
+      "explanation": "The supplied formal type requires a finite domain. The informal statement omits this assumption. Finiteness makes injectivity imply surjectivity; for an infinite domain the unrestricted claim fails, as the successor self-map of the natural numbers shows. This illustrative explanation is not a Lean check or a correspondence approval. This edited version requires a fresh explanation review; all identities remain illustrative.",
+      "sources": [
+        {
+          "locator": "example-paper#theorem-1",
+          "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+        }
+      ],
+      "author": {
+        "identity": "Ladon illustrative guide",
+        "kind": "model"
+      },
+      "prerequisites": [],
+      "revision": "sha256:b5ebbc18ab80d270df67a314c4b20b13b494911e023f026d9f77633e48be103a"
+    }
+  ],
+  "citations": [],
+  "reviews": [
+    {
+      "id": "synthetic-old-explanation-review",
+      "scope": "explanation",
+      "stepId": "finite-domain-condition",
+      "stepRevision": "sha256:fc7ea39f6d6bce5fd39859020ffd0871ec9b0ec21989cd33eee6f3e321543fcd",
+      "targetRevisions": [
+        {
+          "targetId": "finite-map",
+          "revision": "sha256:d0f542859ccdc49fad5ce71917110960be698ce4e7ed3b2dd9a61b29c28caad6"
+        }
+      ],
+      "reviewer": {
+        "identity": "Synthetic test observer, not a real reviewer",
+        "kind": "tool"
+      },
+      "status": "approved",
+      "rationale": "Synthetic currency fixture: approval refers only to the previous illustrative explanation; not mathematical or human approval.",
+      "timestamp": "2026-10-04T00:00:00Z"
+    }
+  ]
+}

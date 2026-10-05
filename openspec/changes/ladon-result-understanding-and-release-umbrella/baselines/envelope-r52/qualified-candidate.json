@@ -1,0 +1,415 @@
+{
+  "sourceHead": "d64f475e23a7339c91aa280ff6e6679c27607875",
+  "sourceIndexSha256": "840bfe9d261ad6afa25c36c7311ad86677a1c437e84044826cbf0791370afc04",
+  "candidateCommit": "50b907aae7a07b29e5b899d092319a136ec56fd4",
+  "sourceInventoryDigest": "sha256:f5a110c14789eee323a58e489d2a4ee84d7d26b2d789cbd6206c02ec46de8be1",
+  "status": "qualified implementation and frozen performance; final field replay is recorded separately, reader benefit not established",
+  "wheel": {
+    "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/dist/ladon-0.2.0-py3-none-any.whl",
+    "bytes": 1026128,
+    "sha256": "sha256:1d6d4d7cdb54ec477a719ac19cb513c19dc34b0a7b26e93a57b484cb288a0e01"
+  },
+  "records": {
+    "build-wheel": {
+      "argv": [
+        "uv",
+        "build",
+        "--wheel",
+        "--out-dir",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/dist"
+      ],
+      "cwd": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate",
+      "exitCode": 0,
+      "elapsedSeconds": 0.0757854119874537,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/build-wheel.log",
+        "bytes": 161,
+        "sha256": "sha256:0b862f5b66734487eb16836617e6fda51b0d51e723134e121764fb7776d90097"
+      }
+    },
+    "clean-checkout": {
+      "argv": [
+        "uv",
+        "run",
+        "--locked",
+        "python",
+        "scripts/clean_checkout_gate.py",
+        "--candidate",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate",
+        "--package-resource",
+        "ladon.schemas:ladon-result-assessments-v1.schema.json",
+        "--package-resource",
+        "ladon.schemas:ladon-result-lineage-inputs-v1.schema.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "exitCode": 0,
+      "elapsedSeconds": 303.02237069699913,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/clean-checkout.log",
+        "bytes": 20216,
+        "sha256": "sha256:903cbcfba8cbac6b8a0f933289766c84f39ab1b4a837fdd42d282ff0374b0b72"
+      }
+    },
+    "py311-contracts": {
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311/bin/python",
+        "-I",
+        "-m",
+        "pytest",
+        "-q",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_discovery_correctness_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_discovery_evaluation_driver.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_discovery_local_context.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_discovery_scope_lean_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_discovery_vertical_pipeline.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_envelope_batch_snapshot.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_envelope_duplicate_serialization.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_execution_environment_policy.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_final_execution_environment.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_lean_toolchain.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_native_v3_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_quux_boundary.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_cli.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_cli_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_corpus_complete.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_hardening.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_installed_cli.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_installed_workflow_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_r03_adversarial_vectors.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_result_schema_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_subject_scope.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_terminal_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_assessments.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_archive.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_atomic.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_hardening.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_schema.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_views.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_zip_descriptor.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_zip_layout.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_zip_volume.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundles.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_checking.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_cli.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_evidence_section.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guide_cli.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guide_currency.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guide_inputs.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guide_pagination.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guide_schema.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guides.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_inspection.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_inspection_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_inspection_hardening.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_inspection_references.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage_acquisition.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage_boundaries.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage_pagination.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage_schema.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage_store_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_manifest.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_resolution.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_subject_evidence.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_adapter_registry.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_application_binding_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_binding_projection.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_build_mode.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_batch_worker.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_framed_protocol.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_lean_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_residual_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_security_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_verifier.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_worker_v3_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_cli_projection.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_context_dependencies.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_evidence_registry.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_extraction_protocol.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_lean_execution.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_multiline_scratch_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_observation_closure.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_projection_hardening.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_result_delivery.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_result_projection.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_weak_receipt_boundary.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_source_enumeration_context.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_source_path_semantics.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_verified_discovery.py"
+      ],
+      "cwd": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/test-inputs",
+      "exitCode": 0,
+      "elapsedSeconds": 95.50614598498214,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311-contracts.log",
+        "bytes": 1232,
+        "sha256": "sha256:d04d67d8a9e1c3e055f4944c21d8ded7cddc553e1e1c7c692e28fc227b20e641"
+      }
+    },
+    "py311-fixture-build": {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lake",
+        "build"
+      ],
+      "cwd": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/fixtures/lean_integration",
+      "exitCode": 0,
+      "elapsedSeconds": 0.33697106305044144,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311-fixture-build.log",
+        "bytes": 401,
+        "sha256": "sha256:cc66f0caccdb9ea18444d5d079415cb1ad6a3b24eae7e800d52487e0a230e06c"
+      }
+    },
+    "py311-install": {
+      "argv": [
+        "uv",
+        "pip",
+        "install",
+        "--python",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311/bin/python",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/dist/ladon-0.2.0-py3-none-any.whl",
+        "pytest",
+        "jsonschema",
+        "ruff",
+        "radon",
+        "vulture"
+      ],
+      "cwd": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate",
+      "exitCode": 0,
+      "elapsedSeconds": 0.049745894968509674,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311-install.log",
+        "bytes": 676,
+        "sha256": "sha256:06ba37072e7fdca7b9db27117609a2d0ce18c4311de1cb024fcaa4c200bcc553"
+      }
+    },
+    "py311-origin": {
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311/bin/python",
+        "-I",
+        "-c",
+        "import ladon.result_inspection as m, ladon.proofir_v3 as t, ladon.proofir_v3_batch as b, sys; print(sys.version); print(m.__file__); print(t.__file__); print(b.__file__); assert \"site-packages\" in m.__file__ and \"site-packages\" in t.__file__ and \"site-packages\" in b.__file__"
+      ],
+      "cwd": "/tmp",
+      "exitCode": 0,
+      "elapsedSeconds": 0.08144402503967285,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311-origin.log",
+        "bytes": 442,
+        "sha256": "sha256:85792674864d3c5473eaceb983a546e626cbc37d029e8a92a1f362d910425b72"
+      }
+    },
+    "py311-venv": {
+      "argv": [
+        "uv",
+        "venv",
+        "--python",
+        "3.11",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311"
+      ],
+      "cwd": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate",
+      "exitCode": 0,
+      "elapsedSeconds": 0.02437009592540562,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311-venv.log",
+        "bytes": 295,
+        "sha256": "sha256:b4eacfe4e3bad02b8a26347d6d42d087cd26923b17fccb357a4eea8c26d29f04"
+      }
+    },
+    "py312-contracts": {
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312/bin/python",
+        "-I",
+        "-m",
+        "pytest",
+        "-q",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_discovery_correctness_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_discovery_evaluation_driver.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_discovery_local_context.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_discovery_scope_lean_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_discovery_vertical_pipeline.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_envelope_batch_snapshot.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_envelope_duplicate_serialization.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_execution_environment_policy.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_final_execution_environment.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_lean_toolchain.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_native_v3_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_quux_boundary.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_cli.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_cli_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_corpus_complete.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_hardening.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_installed_cli.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_installed_workflow_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_r03_adversarial_vectors.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_result_schema_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_subject_scope.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_proofir_v3_terminal_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_assessments.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_archive.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_atomic.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_hardening.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_schema.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_views.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_zip_descriptor.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_zip_layout.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundle_zip_volume.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_bundles.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_checking.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_cli.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_evidence_section.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guide_cli.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guide_currency.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guide_inputs.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guide_pagination.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guide_schema.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_guides.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_inspection.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_inspection_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_inspection_hardening.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_inspection_references.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage_acquisition.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage_boundaries.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage_pagination.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage_schema.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_lineage_store_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_manifest.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_resolution.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_result_subject_evidence.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_adapter_registry.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_application_binding_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_binding_projection.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_build_mode.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_batch_worker.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_framed_protocol.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_lean_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_residual_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_security_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_verifier.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_candidate_worker_v3_contract.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_cli_projection.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_context_dependencies.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_evidence_registry.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_extraction_protocol.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_lean_execution.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_multiline_scratch_integration.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_observation_closure.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_projection_hardening.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_result_delivery.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_result_projection.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_semantic_weak_receipt_boundary.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_source_enumeration_context.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_source_path_semantics.py",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/test_verified_discovery.py"
+      ],
+      "cwd": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/test-inputs",
+      "exitCode": 0,
+      "elapsedSeconds": 97.35345992690418,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312-contracts.log",
+        "bytes": 1232,
+        "sha256": "sha256:d22f0991e84fa1c6601e761de21b0ec72eb40d8d2c93fe25a3d51df222f91978"
+      }
+    },
+    "py312-fixture-build": {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lake",
+        "build"
+      ],
+      "cwd": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate/tests/fixtures/lean_integration",
+      "exitCode": 0,
+      "elapsedSeconds": 0.13106970000080764,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312-fixture-build.log",
+        "bytes": 310,
+        "sha256": "sha256:e498ce60ef7991727444a3a139ea8922601bc5fac186d034d6340579253e42ed"
+      }
+    },
+    "py312-install": {
+      "argv": [
+        "uv",
+        "pip",
+        "install",
+        "--python",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312/bin/python",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/dist/ladon-0.2.0-py3-none-any.whl",
+        "pytest",
+        "jsonschema",
+        "ruff",
+        "radon",
+        "vulture"
+      ],
+      "cwd": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate",
+      "exitCode": 0,
+      "elapsedSeconds": 0.049740256974473596,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312-install.log",
+        "bytes": 650,
+        "sha256": "sha256:3a4fdad51969e3548048f9f160bd4d219674a04fec0d54f72f21354df0166933"
+      }
+    },
+    "py312-origin": {
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312/bin/python",
+        "-I",
+        "-c",
+        "import ladon.result_inspection as m, ladon.proofir_v3 as t, ladon.proofir_v3_batch as b, sys; print(sys.version); print(m.__file__); print(t.__file__); print(b.__file__); assert \"site-packages\" in m.__file__ and \"site-packages\" in t.__file__ and \"site-packages\" in b.__file__"
+      ],
+      "cwd": "/tmp",
+      "exitCode": 0,
+      "elapsedSeconds": 0.08538894797675312,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312-origin.log",
+        "bytes": 445,
+        "sha256": "sha256:a8401b2e3a583149b771a114ea1166ecd078883a201b32b9ed5f49b1d1e625f4"
+      }
+    },
+    "py312-venv": {
+      "argv": [
+        "uv",
+        "venv",
+        "--python",
+        "3.12",
+        "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312"
+      ],
+      "cwd": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/candidate",
+      "exitCode": 0,
+      "elapsedSeconds": 0.026380534982308745,
+      "pathPrefix": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin",
+      "logIdentity": {
+        "originalPath": "/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312-venv.log",
+        "bytes": 244,
+        "sha256": "sha256:7aa660a80a29788f06a3dfb192a033ec52e4f2d41bec20cc413d4d5cae60d404"
+      }
+    }
+  },
+  "passedTests": {
+    "maintained": 2973,
+    "installedCli": 29,
+    "installedRelevant": {
+      "py311": 1055,
+      "py312": 1055
+    }
+  },
+  "runtimes": {
+    "py311": "3.11.15 (main, Mar 11 2026, 17:20:07) [GCC 14.3.0]\n/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311/lib/python3.11/site-packages/ladon/result_inspection.py\n/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311/lib/python3.11/site-packages/ladon/proofir_v3.py\n/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py311/lib/python3.11/site-packages/ladon/proofir_v3_batch.py",
+    "py312": "3.12.12 (main, Feb  3 2026, 22:51:04) [Clang 21.1.4 ]\n/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312/lib/python3.12/site-packages/ladon/result_inspection.py\n/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312/lib/python3.12/site-packages/ladon/proofir_v3.py\n/home/codex/.cache/ladon-qualification-r52/ladon-envelope-r52-q7f8t4x8/py312/lib/python3.12/site-packages/ladon/proofir_v3_batch.py"
+  },
+  "fieldEvidence": "observations.json"
+}

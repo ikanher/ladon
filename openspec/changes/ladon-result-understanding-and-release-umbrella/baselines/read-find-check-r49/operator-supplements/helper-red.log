@@ -1,0 +1,67 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_assigned_argument_is_not_replaced_by_another_local_of_the_same_type[True] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-797/test_assigned_argument_is_not_0')
+complete = True
+
+    @pytest.mark.skipif(shutil.which('lake') is None, reason='pinned Lean unavailable')
+    @pytest.mark.parametrize('complete', [True, False])
+    def test_assigned_argument_is_not_replaced_by_another_local_of_the_same_type(tmp_path, complete):
+        project = _project(tmp_path)
+        locals_ = LOCALS if complete else LOCALS[:-1]
+        result = subprocess.run(_command(project, locals_), cwd=tmp_path, text=True,
+                                capture_output=True, check=False, timeout=90)
+        payload = json.loads(result.stdout)
+        checked = payload['candidates'][0]['check']
+>       assert result.returncode == 0, checked.get('scratch')
+E       AssertionError: {'applicationTerm': 'BindingFixture.propagate h h query hh hb hbq hg', 'artifacts': [{'artifactId': 'sha256:94988f755a... boundary
+E         but is expected to have type
+E           0 ≤ h
+E         in the application
+E           BindingFixture.propagate h h query hh hb', ...}
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/home/codex/.cache/ladon-qualification-r49/ladon-reader-r49-qrb6gco9/py311/bin/ladon', 'proof-...ery-result-v1",\n  "shortlist": {\n    "source": "explicit-candidates"\n  },\n  "status": "available"\n}\n', stderr='').returncode
+
+tests/test_semantic_application_binding_integration.py:63: AssertionError
+_ test_assigned_argument_is_not_replaced_by_another_local_of_the_same_type[False] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-797/test_assigned_argument_is_not_1')
+complete = False
+
+    @pytest.mark.skipif(shutil.which('lake') is None, reason='pinned Lean unavailable')
+    @pytest.mark.parametrize('complete', [True, False])
+    def test_assigned_argument_is_not_replaced_by_another_local_of_the_same_type(tmp_path, complete):
+        project = _project(tmp_path)
+        locals_ = LOCALS if complete else LOCALS[:-1]
+        result = subprocess.run(_command(project, locals_), cwd=tmp_path, text=True,
+                                capture_output=True, check=False, timeout=90)
+        payload = json.loads(result.stdout)
+        checked = payload['candidates'][0]['check']
+        assert result.returncode == 0, checked.get('scratch')
+>       _assert_application(checked, complete)
+
+tests/test_semantic_application_binding_integration.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+checked = {'applicationTerm': 'BindingFixture.propagate h h query hh hb hbq ?hg', 'artifacts': [{'artifactId': 'sha256:a6568943a...', 'type': '0 ≤ boundary'}, {'name': 'hbq', 'type': 'boundary < query'}], 'candidate': 'BindingFixture.propagate', ...}
+complete = False
+
+    def _assert_application(checked, complete):
+        if complete:
+            assert checked['status'] == 'accepted'
+            assert checked['scratch']['status'] == 'compiled', checked['scratch']
+        else:
+            assert checked['status'] == 'applicable-with-residuals', checked
+>           assert [row['typeDisplay'] for row in checked['residualPremises']] == [
+                '0 ≤ BindingFixture.measure h boundary']
+E           AssertionError: assert ['0 ≤ Binding....measure h h'] == ['0 ≤ Binding...e h boundary']
+E             
+E             At index 0 diff: '0 ≤ BindingFixture.measure h h' != '0 ≤ BindingFixture.measure h boundary'
+E             Use -v to get more diff
+
+tests/test_semantic_application_binding_integration.py:73: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_binding_integration.py::test_assigned_argument_is_not_replaced_by_another_local_of_the_same_type[True]
+FAILED tests/test_semantic_application_binding_integration.py::test_assigned_argument_is_not_replaced_by_another_local_of_the_same_type[False]
+2 failed in 4.76s

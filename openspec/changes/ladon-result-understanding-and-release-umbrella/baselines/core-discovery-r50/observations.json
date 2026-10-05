@@ -1,0 +1,972 @@
+{
+  "schema": "ladon-core-discovery-field-observations-v1",
+  "candidateCommit": "573dec57fbc187d9f3343fe6eec51b8fea11da1e",
+  "operatorOnly": true,
+  "blindReaderTest": false,
+  "productionChanged": false,
+  "r49TaskSha256": "sha256:479c9450c1a3b38106d6024e94a716283b59705da3ed68d360096797a0be61da",
+  "controls": "Same A/B goals and ordered contexts; same target module/pinned toolchain; supplied lexical pattern and module root, no candidate name. Different candidate populations and operations; shared-host timings are descriptive.",
+  "limits": {
+    "recordedCommandCap": 20,
+    "perCommandSeconds": 120,
+    "memoryGiB": 32
+  },
+  "results": {
+    "discover-a-pattern": {
+      "status": "available",
+      "request": {
+        "freshness": "verify",
+        "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+        "goalFingerprint": "sha256:2f13f6f9373020a31da11f12c4a937f79b187569576cd4f0f990cac8718e069d",
+        "localContext": [
+          {
+            "name": "point",
+            "type": "Mf.DP.PoissonFixedEpochPoint"
+          },
+          {
+            "name": "h",
+            "type": "\u211d"
+          },
+          {
+            "name": "boundary",
+            "type": "\u211d"
+          },
+          {
+            "name": "query",
+            "type": "\u211d"
+          }
+        ],
+        "module": "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "moduleFingerprint": "sha256:43b9d35c0d04f302f9097273dec373079d7623af21f40f694877118bd6b89fbc",
+        "roots": [
+          "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+        ],
+        "scope": "module",
+        "scratchMode": "advisory"
+      },
+      "shortlist": {
+        "coverage": {
+          "authority": "sqlite_lexical_shortlist",
+          "cap": 8,
+          "diagnosticCap": 0,
+          "diagnosticReturned": 0,
+          "fieldContributionCounts": {
+            "conclusionText": 4,
+            "renderedType": 4,
+            "typeText": 4
+          },
+          "populationComplete": true,
+          "returned": 4,
+          "rowEvidenceComplete": true,
+          "scope": {
+            "kind": "module",
+            "modules": 1,
+            "omissions": [],
+            "roots": [
+              "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+            ]
+          },
+          "shortlistMatchedLowerBound": 4
+        },
+        "freshnessEvidence": {
+          "configurationFingerprint": "4c49aee41c413824400f4cb4080546b765502dcf66e0570ce98f4f762ade81d0",
+          "currentGenerationIdentity": "363433ec5197bb63cb989b05970499d816c4bdf541bb9bfae6a548e4c2317931",
+          "generationIdentity": "363433ec5197bb63cb989b05970499d816c4bdf541bb9bfae6a548e4c2317931",
+          "helperIdentity": "lexical-navigation-v3;theorem-lineage-v2;proofir-catalog-v3",
+          "indexSchema": "ladon-proof-search-index-v5",
+          "sourceFingerprint": "1cc2c101495db06f659df4b42e1ec64b9356de8220fdc7a8d9ccf6471145ea88",
+          "toolchainIdentity": "leanprover/lean4:v4.33.0"
+        },
+        "omissions": [],
+        "pattern": "fixedEpochCenterGap",
+        "source": "type-text-shortlist"
+      },
+      "coverage": {
+        "candidatePopulation": {
+          "observed": 4,
+          "omitted": 0,
+          "projected": 4,
+          "scratchStatusCounts": {
+            "compiled": 1
+          },
+          "statusCounts": {
+            "accepted": 1,
+            "rejected": 3
+          }
+        },
+        "canonical": {
+          "accepted": 1,
+          "completed": 4,
+          "failed": 0,
+          "invalidWorkerOutput": 0,
+          "memoryLimited": 0,
+          "outputLimited": 0,
+          "rejected": 3,
+          "scratchAttempted": 1,
+          "scratchCompiled": 1,
+          "shortlisted": 4,
+          "submitted": 4,
+          "timeouts": 0,
+          "truncated": false,
+          "unassessed": 0
+        },
+        "omissionPopulation": {
+          "generatedRecords": 0,
+          "observedRecords": 7,
+          "omittedRecords": 0,
+          "projectedRecords": 7,
+          "totalClaims": 15,
+          "transportRecords": 7
+        },
+        "operationalFailure": false
+      },
+      "candidates": [
+        {
+          "name": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+          "status": "accepted",
+          "applicationTerm": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h boundary query hNonFull hh hBoundaryNonneg hBoundaryQuery\n  hBoundaryGap",
+          "residualPremises": [],
+          "scratch": {
+            "authority": {
+              "analysisCompleteness": "partial",
+              "authorityBasis": "process-observation",
+              "environmentMatch": "exact",
+              "executionBinding": "explicit-pinned",
+              "observationState": "derived",
+              "operationOutcome": "accepted",
+              "sourceFreshness": "unknown"
+            },
+            "checkRunRef": {
+              "artifactRef": "sha256:4350888767328c132fe6aadb8cfcaf94bf38daf04e64b1b15014bc61ec270c2f",
+              "kind": "check-run",
+              "localId": "check:71a2037d3db84a671e1cb312bffb751301d420f9fd8b718a42af115bec95ce9e"
+            },
+            "environmentRef": {
+              "artifactRef": "sha256:b20cd82c28770e221d8f4090cba9dcf853c499217b4f5a83b6f6c5c0ab216ea6",
+              "environmentRef": "sha256:4576652c6fa44afe3d9074d27a41fb01df5785fdc6fce58c76bd202e2f84dd80"
+            },
+            "executionBindingLimitation": null,
+            "receiptIdentity": "sha256:b650192e336f2e331895998f4891874d0cc498aaa92aa9c3bd92244bf7191a49",
+            "sourceReceiptIdentity": "sha256:81642587358722b27f2581bac62649ea8c9f4dbe96c47738d1af399671e5876a",
+            "status": "compiled"
+          }
+        },
+        {
+          "name": "Mf.DP.fixedEpochCenterGap_eq_countTestAverage_sub",
+          "status": "rejected",
+          "applicationTerm": "",
+          "residualPremises": [],
+          "scratch": null
+        },
+        {
+          "name": "Mf.DP.hasDerivAt_fixedEpochCenterGap",
+          "status": "rejected",
+          "applicationTerm": "",
+          "residualPremises": [],
+          "scratch": null
+        },
+        {
+          "name": "Mf.DP.tendsto_fixedEpochCenterGap_atTop_zero",
+          "status": "rejected",
+          "applicationTerm": "",
+          "residualPremises": [],
+          "scratch": null
+        }
+      ]
+    },
+    "discover-b-pattern": {
+      "status": "available",
+      "request": {
+        "freshness": "verify",
+        "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+        "goalFingerprint": "sha256:2f13f6f9373020a31da11f12c4a937f79b187569576cd4f0f990cac8718e069d",
+        "localContext": [
+          {
+            "name": "point",
+            "type": "Mf.DP.PoissonFixedEpochPoint"
+          },
+          {
+            "name": "h",
+            "type": "\u211d"
+          },
+          {
+            "name": "boundary",
+            "type": "\u211d"
+          },
+          {
+            "name": "query",
+            "type": "\u211d"
+          }
+        ],
+        "module": "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "moduleFingerprint": "sha256:43b9d35c0d04f302f9097273dec373079d7623af21f40f694877118bd6b89fbc",
+        "roots": [
+          "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+        ],
+        "scope": "module",
+        "scratchMode": "advisory"
+      },
+      "shortlist": {
+        "coverage": {
+          "authority": "sqlite_lexical_shortlist",
+          "cap": 8,
+          "diagnosticCap": 0,
+          "diagnosticReturned": 0,
+          "fieldContributionCounts": {
+            "conclusionText": 4,
+            "renderedType": 4,
+            "typeText": 4
+          },
+          "populationComplete": true,
+          "returned": 4,
+          "rowEvidenceComplete": true,
+          "scope": {
+            "kind": "module",
+            "modules": 1,
+            "omissions": [],
+            "roots": [
+              "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+            ]
+          },
+          "shortlistMatchedLowerBound": 4
+        },
+        "freshnessEvidence": {
+          "configurationFingerprint": "4c49aee41c413824400f4cb4080546b765502dcf66e0570ce98f4f762ade81d0",
+          "currentGenerationIdentity": "363433ec5197bb63cb989b05970499d816c4bdf541bb9bfae6a548e4c2317931",
+          "generationIdentity": "363433ec5197bb63cb989b05970499d816c4bdf541bb9bfae6a548e4c2317931",
+          "helperIdentity": "lexical-navigation-v3;theorem-lineage-v2;proofir-catalog-v3",
+          "indexSchema": "ladon-proof-search-index-v5",
+          "sourceFingerprint": "1cc2c101495db06f659df4b42e1ec64b9356de8220fdc7a8d9ccf6471145ea88",
+          "toolchainIdentity": "leanprover/lean4:v4.33.0"
+        },
+        "omissions": [],
+        "pattern": "fixedEpochCenterGap",
+        "source": "type-text-shortlist"
+      },
+      "coverage": {
+        "candidatePopulation": {
+          "observed": 4,
+          "omitted": 0,
+          "projected": 4,
+          "scratchStatusCounts": {},
+          "statusCounts": {
+            "applicable-with-residuals": 1,
+            "rejected": 3
+          }
+        },
+        "canonical": {
+          "accepted": 1,
+          "completed": 4,
+          "failed": 0,
+          "invalidWorkerOutput": 0,
+          "memoryLimited": 0,
+          "outputLimited": 0,
+          "rejected": 3,
+          "scratchAttempted": 0,
+          "scratchCompiled": 0,
+          "shortlisted": 4,
+          "submitted": 4,
+          "timeouts": 0,
+          "truncated": false,
+          "unassessed": 0
+        },
+        "omissionPopulation": {
+          "generatedRecords": 0,
+          "observedRecords": 7,
+          "omittedRecords": 0,
+          "projectedRecords": 7,
+          "totalClaims": 14,
+          "transportRecords": 7
+        },
+        "operationalFailure": false
+      },
+      "candidates": [
+        {
+          "name": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+          "status": "applicable-with-residuals",
+          "applicationTerm": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h boundary query hNonFull hh hBoundaryNonneg hBoundaryQuery\n  ?hBoundaryGap",
+          "residualPremises": [
+            {
+              "typeDisplay": "0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary"
+            }
+          ],
+          "scratch": null
+        },
+        {
+          "name": "Mf.DP.fixedEpochCenterGap_eq_countTestAverage_sub",
+          "status": "rejected",
+          "applicationTerm": "",
+          "residualPremises": [],
+          "scratch": null
+        },
+        {
+          "name": "Mf.DP.hasDerivAt_fixedEpochCenterGap",
+          "status": "rejected",
+          "applicationTerm": "",
+          "residualPremises": [],
+          "scratch": null
+        },
+        {
+          "name": "Mf.DP.tendsto_fixedEpochCenterGap_atTop_zero",
+          "status": "rejected",
+          "applicationTerm": "",
+          "residualPremises": [],
+          "scratch": null
+        }
+      ]
+    },
+    "discover-a-profile": {
+      "status": "available",
+      "request": {
+        "freshness": "verify",
+        "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+        "goalFingerprint": "sha256:2f13f6f9373020a31da11f12c4a937f79b187569576cd4f0f990cac8718e069d",
+        "localContext": [
+          {
+            "name": "point",
+            "type": "Mf.DP.PoissonFixedEpochPoint"
+          },
+          {
+            "name": "h",
+            "type": "\u211d"
+          },
+          {
+            "name": "boundary",
+            "type": "\u211d"
+          },
+          {
+            "name": "query",
+            "type": "\u211d"
+          }
+        ],
+        "module": "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "moduleFingerprint": "sha256:43b9d35c0d04f302f9097273dec373079d7623af21f40f694877118bd6b89fbc",
+        "roots": [
+          "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+        ],
+        "scope": "module",
+        "scratchMode": "advisory"
+      },
+      "shortlist": {
+        "coverage": {
+          "authority": "sqlite_lexical_shortlist",
+          "cap": 8,
+          "diagnosticCap": 0,
+          "diagnosticReturned": 0,
+          "fieldContributionCounts": {
+            "conclusionText": 4,
+            "renderedType": 4,
+            "typeText": 4
+          },
+          "populationComplete": true,
+          "returned": 4,
+          "rowEvidenceComplete": true,
+          "scope": {
+            "kind": "module",
+            "modules": 1,
+            "omissions": [],
+            "roots": [
+              "Mf.DP.PoissonFixedEpochCenterGapPropagation"
+            ]
+          },
+          "shortlistMatchedLowerBound": 4
+        },
+        "freshnessEvidence": {
+          "configurationFingerprint": "4c49aee41c413824400f4cb4080546b765502dcf66e0570ce98f4f762ade81d0",
+          "currentGenerationIdentity": "363433ec5197bb63cb989b05970499d816c4bdf541bb9bfae6a548e4c2317931",
+          "generationIdentity": "363433ec5197bb63cb989b05970499d816c4bdf541bb9bfae6a548e4c2317931",
+          "helperIdentity": "lexical-navigation-v3;theorem-lineage-v2;proofir-catalog-v3",
+          "indexSchema": "ladon-proof-search-index-v5",
+          "sourceFingerprint": "1cc2c101495db06f659df4b42e1ec64b9356de8220fdc7a8d9ccf6471145ea88",
+          "toolchainIdentity": "leanprover/lean4:v4.33.0"
+        },
+        "omissions": [],
+        "pattern": "fixedEpochCenterGap",
+        "source": "type-text-shortlist"
+      },
+      "coverage": {
+        "candidatePopulation": {
+          "observed": 4,
+          "omitted": 0,
+          "projected": 4,
+          "scratchStatusCounts": {
+            "compiled": 1
+          },
+          "statusCounts": {
+            "accepted": 1,
+            "rejected": 3
+          }
+        },
+        "canonical": {
+          "accepted": 1,
+          "completed": 4,
+          "failed": 0,
+          "invalidWorkerOutput": 0,
+          "memoryLimited": 0,
+          "outputLimited": 0,
+          "rejected": 3,
+          "scratchAttempted": 1,
+          "scratchCompiled": 1,
+          "shortlisted": 4,
+          "submitted": 4,
+          "timeouts": 0,
+          "truncated": false,
+          "unassessed": 0
+        },
+        "omissionPopulation": {
+          "generatedRecords": 0,
+          "observedRecords": 7,
+          "omittedRecords": 0,
+          "projectedRecords": 7,
+          "totalClaims": 15,
+          "transportRecords": 7
+        },
+        "operationalFailure": false
+      },
+      "candidates": [
+        {
+          "name": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+          "status": "accepted",
+          "applicationTerm": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h boundary query hNonFull hh hBoundaryNonneg hBoundaryQuery\n  hBoundaryGap",
+          "residualPremises": [],
+          "scratch": {
+            "authority": {
+              "analysisCompleteness": "partial",
+              "authorityBasis": "process-observation",
+              "environmentMatch": "exact",
+              "executionBinding": "explicit-pinned",
+              "observationState": "derived",
+              "operationOutcome": "accepted",
+              "sourceFreshness": "unknown"
+            },
+            "checkRunRef": {
+              "artifactRef": "sha256:22f4061eeaf5c991681d3447136ba2037914918fd915d2f420b5e9571b662eb6",
+              "kind": "check-run",
+              "localId": "check:e84320554f94873fa8a43a105d9be566d167b0aa39e475726cf8d6273be879d2"
+            },
+            "environmentRef": {
+              "artifactRef": "sha256:b20cd82c28770e221d8f4090cba9dcf853c499217b4f5a83b6f6c5c0ab216ea6",
+              "environmentRef": "sha256:4576652c6fa44afe3d9074d27a41fb01df5785fdc6fce58c76bd202e2f84dd80"
+            },
+            "executionBindingLimitation": null,
+            "receiptIdentity": "sha256:391d0d315c38f871cb224d24badb6d5541d42ddd191530da7d6c78a03e315e74",
+            "sourceReceiptIdentity": "sha256:3a6e3d2f059e37f4136ecbd7394c5d0bfc36e70ecfae7003daef26102327df9a",
+            "status": "compiled"
+          }
+        },
+        {
+          "name": "Mf.DP.fixedEpochCenterGap_eq_countTestAverage_sub",
+          "status": "rejected",
+          "applicationTerm": "",
+          "residualPremises": [],
+          "scratch": null
+        },
+        {
+          "name": "Mf.DP.hasDerivAt_fixedEpochCenterGap",
+          "status": "rejected",
+          "applicationTerm": "",
+          "residualPremises": [],
+          "scratch": null
+        },
+        {
+          "name": "Mf.DP.tendsto_fixedEpochCenterGap_atTop_zero",
+          "status": "rejected",
+          "applicationTerm": "",
+          "residualPremises": [],
+          "scratch": null
+        }
+      ]
+    }
+  },
+  "nativeIncomplete": {
+    "exactStatus": "failed to close goal",
+    "applyExitCode": 0,
+    "tryThisSuggestions": 280,
+    "failedCandidateMessages": 280,
+    "sorryWarnings": 1,
+    "scope": "Native apply? exploratory suggestions do not establish a proof."
+  },
+  "commands": [
+    {
+      "label": "discover-a-pattern",
+      "record": "commands/discover-a-pattern.command.json",
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r49/ladon-reader-r49-n_l7lj84/py311/bin/ladon",
+        "proof-search",
+        "discover",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--index",
+        "/home/codex/.cache/ladon-core-discovery-r50/proof-search.sqlite",
+        "--module",
+        "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "--goal",
+        "0 < Mf.DP.fixedEpochCenterGap point h query",
+        "--pattern",
+        "fixedEpochCenterGap",
+        "--scope",
+        "module",
+        "--root",
+        "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "--max-candidates",
+        "8",
+        "--batch-size",
+        "4",
+        "--freshness",
+        "verify",
+        "--timeout-seconds",
+        "100",
+        "--max-rss-mib",
+        "32768",
+        "--toolchain-mode",
+        "explicit",
+        "--lake-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+        "--lean-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "--scratch-mode",
+        "advisory",
+        "--format",
+        "json",
+        "--local",
+        "point:Mf.DP.PoissonFixedEpochPoint",
+        "--local",
+        "h:\u211d",
+        "--local",
+        "boundary:\u211d",
+        "--local",
+        "query:\u211d",
+        "--local",
+        "hNonFull:point.epoch < point.horizon",
+        "--local",
+        "hh:0 < h",
+        "--local",
+        "hBoundaryNonneg:0 \u2264 boundary",
+        "--local",
+        "hBoundaryQuery:boundary < query",
+        "--local",
+        "hBoundaryGap:0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 27.276956915971823,
+      "peakRssBytes": 8976396288,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "streams": {
+        "stdout": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/discover-a-pattern.stdout",
+          "bytes": 17081,
+          "sha256": "sha256:3930afe068f65e1758004953a006b86b9bf2c45186086905ec0572990c87b851"
+        },
+        "stderr": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/discover-a-pattern.stderr",
+          "bytes": 0,
+          "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "label": "discover-a-profile",
+      "record": "commands/discover-a-profile.command.json",
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r49/ladon-reader-r49-n_l7lj84/py311/bin/python",
+        "-I",
+        "-m",
+        "cProfile",
+        "-o",
+        "/home/codex/.cache/ladon-core-discovery-r50/discover-a.prof",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "discover",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--index",
+        "/home/codex/.cache/ladon-core-discovery-r50/proof-search.sqlite",
+        "--module",
+        "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "--goal",
+        "0 < Mf.DP.fixedEpochCenterGap point h query",
+        "--pattern",
+        "fixedEpochCenterGap",
+        "--scope",
+        "module",
+        "--root",
+        "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "--max-candidates",
+        "8",
+        "--batch-size",
+        "4",
+        "--freshness",
+        "verify",
+        "--timeout-seconds",
+        "100",
+        "--max-rss-mib",
+        "32768",
+        "--toolchain-mode",
+        "explicit",
+        "--lake-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+        "--lean-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "--scratch-mode",
+        "advisory",
+        "--format",
+        "json",
+        "--local",
+        "point:Mf.DP.PoissonFixedEpochPoint",
+        "--local",
+        "h:\u211d",
+        "--local",
+        "boundary:\u211d",
+        "--local",
+        "query:\u211d",
+        "--local",
+        "hNonFull:point.epoch < point.horizon",
+        "--local",
+        "hh:0 < h",
+        "--local",
+        "hBoundaryNonneg:0 \u2264 boundary",
+        "--local",
+        "hBoundaryQuery:boundary < query",
+        "--local",
+        "hBoundaryGap:0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 72.36491581506561,
+      "peakRssBytes": 8985624576,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "streams": {
+        "stdout": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/discover-a-profile.stdout",
+          "bytes": 17081,
+          "sha256": "sha256:b9f352a3b16e4ea389eda880aaea8eee2ec5303f2a2d2cff2a1aeffa79405d70"
+        },
+        "stderr": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/discover-a-profile.stderr",
+          "bytes": 0,
+          "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "label": "discover-b-pattern",
+      "record": "commands/discover-b-pattern.command.json",
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r49/ladon-reader-r49-n_l7lj84/py311/bin/ladon",
+        "proof-search",
+        "discover",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--index",
+        "/home/codex/.cache/ladon-core-discovery-r50/proof-search.sqlite",
+        "--module",
+        "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "--goal",
+        "0 < Mf.DP.fixedEpochCenterGap point h query",
+        "--pattern",
+        "fixedEpochCenterGap",
+        "--scope",
+        "module",
+        "--root",
+        "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "--max-candidates",
+        "8",
+        "--batch-size",
+        "4",
+        "--freshness",
+        "verify",
+        "--timeout-seconds",
+        "100",
+        "--max-rss-mib",
+        "32768",
+        "--toolchain-mode",
+        "explicit",
+        "--lake-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+        "--lean-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "--scratch-mode",
+        "advisory",
+        "--format",
+        "json",
+        "--local",
+        "point:Mf.DP.PoissonFixedEpochPoint",
+        "--local",
+        "h:\u211d",
+        "--local",
+        "boundary:\u211d",
+        "--local",
+        "query:\u211d",
+        "--local",
+        "hNonFull:point.epoch < point.horizon",
+        "--local",
+        "hh:0 < h",
+        "--local",
+        "hBoundaryNonneg:0 \u2264 boundary",
+        "--local",
+        "hBoundaryQuery:boundary < query"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 21.276181811932474,
+      "peakRssBytes": 8992010240,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "streams": {
+        "stdout": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/discover-b-pattern.stdout",
+          "bytes": 16051,
+          "sha256": "sha256:3d7295afa26fbdd4bc0a2692715b3529d596ee475afc7d39b64f91f385264f54"
+        },
+        "stderr": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/discover-b-pattern.stderr",
+          "bytes": 0,
+          "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "label": "index-build-isolated-retry",
+      "record": "commands/index-build-isolated-retry.command.json",
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r49/ladon-reader-r49-n_l7lj84/py311/bin/ladon",
+        "proof-search",
+        "index",
+        "build",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--index",
+        "/home/codex/.cache/ladon-core-discovery-r50/proof-search.sqlite",
+        "--format",
+        "json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 93.71926268201787,
+      "peakRssBytes": 125915136,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "streams": {
+        "stdout": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/index-build-isolated-retry.stdout",
+          "bytes": 10375,
+          "sha256": "sha256:78138dbcacace93ec71be5db74fa90e61721314a0f3013b94f50989b5f2c9055"
+        },
+        "stderr": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/index-build-isolated-retry.stderr",
+          "bytes": 0,
+          "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "label": "index-build-isolated",
+      "record": "commands/index-build-isolated.command.json",
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r49/ladon-reader-r49-n_l7lj84/py311/bin/ladon",
+        "proof-search",
+        "index",
+        "build",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--index-path",
+        "/home/codex/.cache/ladon-core-discovery-r50/proof-search.sqlite",
+        "--format",
+        "json"
+      ],
+      "exitCode": 2,
+      "elapsedSeconds": 0.11647527397144586,
+      "peakRssBytes": 26669056,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "streams": {
+        "stdout": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/index-build-isolated.stdout",
+          "bytes": 0,
+          "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/index-build-isolated.stderr",
+          "bytes": 282,
+          "sha256": "sha256:e71ee5d3263a9e55726ddfc44f18993aa822bb5e6fa17defdc48464f3978be09"
+        }
+      }
+    },
+    {
+      "label": "native-a-exact",
+      "record": "commands/native-a-exact.command.json",
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+        "env",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "/home/codex/.cache/ladon-core-discovery-r50/native-context-a-exact.lean"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 7.314048342988826,
+      "peakRssBytes": 9751142400,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "streams": {
+        "stdout": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/native-a-exact.stdout",
+          "bytes": 2134,
+          "sha256": "sha256:967e83bb81a9ab393ce3f68575e322b08426cfe4331f98b8cdec37c80d23c4d0"
+        },
+        "stderr": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/native-a-exact.stderr",
+          "bytes": 0,
+          "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "label": "native-b-apply",
+      "record": "commands/native-b-apply.command.json",
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+        "env",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "/home/codex/.cache/ladon-core-discovery-r50/native-context-b-apply.lean"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 10.546292309067212,
+      "peakRssBytes": 9793847296,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "streams": {
+        "stdout": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/native-b-apply.stdout",
+          "bytes": 131277,
+          "sha256": "sha256:59e95741b0ad4794a3a6c85f3ec949a9f969bed2d8050f26dbe8c0a8426caf3d"
+        },
+        "stderr": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/native-b-apply.stderr",
+          "bytes": 0,
+          "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "label": "native-b-exact",
+      "record": "commands/native-b-exact.command.json",
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+        "env",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "/home/codex/.cache/ladon-core-discovery-r50/native-context-b-exact.lean"
+      ],
+      "exitCode": 1,
+      "elapsedSeconds": 8.742910834029317,
+      "peakRssBytes": 9772957696,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "streams": {
+        "stdout": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/native-b-exact.stdout",
+          "bytes": 160,
+          "sha256": "sha256:139fe399ed98b36eb4e59bf929266d5f0cc3c941180181a9383b54a69e1baa05"
+        },
+        "stderr": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/native-b-exact.stderr",
+          "bytes": 0,
+          "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "label": "type-shortlist-fresh",
+      "record": "commands/type-shortlist-fresh.command.json",
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r49/ladon-reader-r49-n_l7lj84/py311/bin/ladon",
+        "proof-search",
+        "search",
+        "type-text",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--index",
+        "/home/codex/.cache/ladon-core-discovery-r50/proof-search.sqlite",
+        "--pattern",
+        "fixedEpochCenterGap",
+        "--scope",
+        "module",
+        "--root",
+        "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "--limit",
+        "8",
+        "--freshness",
+        "verify",
+        "--format",
+        "json"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 1.3998238020576537,
+      "peakRssBytes": 45015040,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "streams": {
+        "stdout": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/type-shortlist-fresh.stdout",
+          "bytes": 7933,
+          "sha256": "sha256:2d933341b60a70dfdae2ff435f6dc67a3922342d672ee0d9dbf7302fbae33231"
+        },
+        "stderr": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/type-shortlist-fresh.stderr",
+          "bytes": 0,
+          "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    },
+    {
+      "label": "type-shortlist-original",
+      "record": "commands/type-shortlist-original.command.json",
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r49/ladon-reader-r49-n_l7lj84/py311/bin/ladon",
+        "proof-search",
+        "search",
+        "type-text",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--pattern",
+        "fixedEpochCenterGap",
+        "--scope",
+        "module",
+        "--root",
+        "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+        "--limit",
+        "8",
+        "--freshness",
+        "verify",
+        "--format",
+        "json"
+      ],
+      "exitCode": 2,
+      "elapsedSeconds": 1.3868122480344027,
+      "peakRssBytes": 45088768,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "streams": {
+        "stdout": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/type-shortlist-original.stdout",
+          "bytes": 0,
+          "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "stderr": {
+          "path": "/home/codex/.cache/ladon-core-discovery-r50/commands/type-shortlist-original.stderr",
+          "bytes": 216,
+          "sha256": "sha256:ce1d5f81dbd9769d0284227987e50d64cca2ed966b41fe2b9f27f54983caf94d"
+        }
+      }
+    }
+  ],
+  "nextRepairHypothesis": "Reduce repeated parsing/validation work within a request while preserving source, toolchain and evidence revalidation. No cross-request path/mtime cache or skipped checks."
+}

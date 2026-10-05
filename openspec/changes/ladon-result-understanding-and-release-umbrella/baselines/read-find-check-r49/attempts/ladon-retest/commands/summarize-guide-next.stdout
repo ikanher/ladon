@@ -1,0 +1,129 @@
+[
+  {
+    "stepId": "binomial-center",
+    "id": "binomial-center",
+    "claimId": "thm:rate-adaptive-center",
+    "purpose": "Orient the sign-comparison machinery.",
+    "explanation": "The binomial-center theorem states positivity domains for the comparison gap. The manuscript then derives the low-rate boundary through a hinge-transform argument, and handles the zero-center sign by reflection. These are supporting statements for the main finite comparison, not additional assumptions needed to read its headline conclusion. Matching the exposition to the supplied signatures regroups the trace average as a binomial count and identifies \u03b8 and a positive scale. The symmetric zero-center identity is separate from the conventional strict average-only endpoint argument.",
+    "prerequisites": [
+      {
+        "revision": "sha256:73661b9b31b93e72d3644972cf16e60376d4056e6ea34d872728fd676093e13e",
+        "stepId": "calibration-prerequisite"
+      }
+    ],
+    "sources": [
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:rate-adaptive-center"
+      },
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-reflected-zero"
+      },
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:binomial-signs"
+      }
+    ]
+  },
+  {
+    "stepId": "center-propagation",
+    "id": "center-propagation",
+    "claimId": "lem:binomial-propagation",
+    "purpose": "Read how positivity moves across centers.",
+    "explanation": "The stated lemma says a nonnegative gap at a smaller nonnegative center implies strict positivity at a larger center. It supplies the propagation step used when the low-rate boundary has been shown positive. The stored source-correspondence assessment distinguishes the source proof by a tilted strictly convex function from the exposition\u2019s Gaussian-kernel ratio argument.",
+    "prerequisites": [
+      {
+        "revision": "sha256:142a0d7b54b8a4feb450109b5f7c0294ec7a613b4e7646a220578b079036330f",
+        "stepId": "binomial-center"
+      }
+    ],
+    "sources": [
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-propagation"
+      },
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:binomial-signs"
+      }
+    ]
+  },
+  {
+    "stepId": "hinge-and-telescoping",
+    "id": "hinge-and-telescoping",
+    "claimId": "lem:binomial-double-cumulative",
+    "purpose": "Unpack the supporting discrete calculation.",
+    "explanation": "The appendix rewrites the comparison as a Laplace integral of a hinge transform and uses a binomial telescoping identity to establish its sign and a strict positive knot. The formal targets cover the nonnegative and strict hinge statements and the polynomial identity. The guide does not independently validate the algebra or the exposition-to-target translations. The supplied correspondence uses radius \u221at for J(t), radius 1-c for its positive knot, and a sign change on both sides of the general-radius polynomial identity. These translation steps retain their attributed status.",
+    "prerequisites": [
+      {
+        "revision": "sha256:11298bc3fd608193879f0ddb0fd3cf2ff4ef634731825535b2ab863b42208be7",
+        "stepId": "center-propagation"
+      }
+    ],
+    "sources": [
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-double-cumulative"
+      },
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-stein-polynomial"
+      },
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:binomial-signs"
+      }
+    ]
+  },
+  {
+    "stepId": "fixed-participation-limit",
+    "id": "fixed-participation-limit",
+    "claimId": "thm:accountant-limit",
+    "purpose": "Put the fixed-rate background in its proper place.",
+    "explanation": "The appendix gives a general fixed-participation privacy-profile limit and calibrated offset. The exposition compares it with the fixed-rate result cited from R\u00e4is\u00e4, J\u00e4lk\u00f6, and Honkela (2024), while explicitly explaining that fixed q>0 does not specialize to q=E/T without uniformity in q. The source-correspondence assessment describes schedule adapters; this is not an asserted direct identity between differently parameterized statements.",
+    "prerequisites": [
+      {
+        "revision": "sha256:800a6f5130fc846856bf427b6bd31863dcf4bb179fe3b4bf9ee58ba30495a19c",
+        "stepId": "release-scope"
+      }
+    ],
+    "sources": [
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:accountant-limit"
+      },
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:fixed-participation-calibration"
+      },
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex:431 (section Scope of the conclusions)"
+      }
+    ]
+  },
+  {
+    "stepId": "average-only-bound",
+    "id": "average-only-bound",
+    "claimId": "prop:average-uniform-bound",
+    "purpose": "Distinguish bounded average calibration from transcript divergence.",
+    "explanation": "The proposition gives a horizon-uniform upper bound for average-only calibrated variance. Alongside the sparse transcript theorem, it explains the manuscript\u2019s comparison of output choices. The bound is presented as a feasibility estimate, not an asymptotic formula.",
+    "prerequisites": [
+      {
+        "revision": "sha256:6c53e759f427b4e354de2550a3b0627c60afa46fe6a2bcaf9b330ecb91a64dbd",
+        "stepId": "fixed-participation-limit"
+      }
+    ],
+    "sources": [
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#prop:average-uniform-bound"
+      },
+      {
+        "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583",
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#sec:sparse"
+      }
+    ]
+  }
+]

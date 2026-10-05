@@ -1,0 +1,64 @@
+[
+  {
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "python",
+      "scripts/installed_distribution_smoke.py",
+      "--candidate",
+      "/home/codex/.cache/ladon-qualification-r61/ladon-exposition-scope-r61-z3sf9fbx/candidate",
+      "--package-resource",
+      "ladon:lean/ladon_source_goal_completion_helper.lean",
+      "--package-resource",
+      "ladon:lean/ladon_source_goal_helper.lean"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 15.234141562017612,
+    "timed_out": false,
+    "output_limited": false,
+    "memory_limited": false,
+    "peak_rss_bytes": 149372928,
+    "name": "installed-distribution"
+  },
+  {
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "python",
+      "scripts/lean_integration_gate.py",
+      "--candidate",
+      "/home/codex/.cache/ladon-qualification-r61/ladon-exposition-scope-r61-z3sf9fbx/candidate",
+      "--required"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 4.361418084939942,
+    "timed_out": false,
+    "output_limited": false,
+    "memory_limited": false,
+    "peak_rss_bytes": 2161618944,
+    "name": "required-lean-integration"
+  },
+  {
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "python",
+      "scripts/ladon_benchmarks.py",
+      "--candidate",
+      "/home/codex/.cache/ladon-qualification-r61/ladon-exposition-scope-r61-z3sf9fbx/candidate",
+      "--required",
+      "--output",
+      "/home/codex/.cache/ladon-qualification-r61/ladon-exposition-scope-r61-z3sf9fbx/required-portable-benchmark-results.json"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 8.671614825027063,
+    "timed_out": false,
+    "output_limited": false,
+    "memory_limited": false,
+    "peak_rss_bytes": 139649024,
+    "name": "required-portable-benchmarks"
+  }
+]

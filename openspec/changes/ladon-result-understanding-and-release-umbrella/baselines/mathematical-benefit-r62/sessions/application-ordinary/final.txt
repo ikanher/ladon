@@ -1,0 +1,9 @@
+[TaskAttempts.lean](/home/codex/.cache/ladon-benefit-r62-w4ypswr2/application-ordinary/TaskAttempts.lean) contains a proof of TaskOne using `fixedEpochCenterGap_pos_of_boundary_nonneg`. Lean checked it, and `#print axioms` reports only `propext`, `Classical.choice`, and `Quot.sound`.
+
+Applying that same theorem to TaskTwo leaves this obligation:
+
+```lean
+0 ≤ Mf.DP.fixedEpochCenterGap point h boundary
+```
+
+Lean displayed it as an unsolved goal when checking [TaskTwoAttempt.lean](/home/codex/.cache/ladon-benefit-r62-w4ypswr2/application-ordinary/TaskTwoAttempt.lean). [TaskOne.lean](/home/codex/.cache/ladon-benefit-r62-w4ypswr2/application-ordinary/TaskOne.lean) and [TaskTwo.lean](/home/codex/.cache/ladon-benefit-r62-w4ypswr2/application-ordinary/TaskTwo.lean) remain unchanged. This residual identifies what the attempted application requires; it does not establish that TaskTwo’s goal is impossible.

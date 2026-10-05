@@ -1,0 +1,31 @@
+F......                                                                  [100%]
+=================================== FAILURES ===================================
+______ test_real_dependency_traversal_order_can_differ_from_binder_order _______
+
+    def test_real_dependency_traversal_order_can_differ_from_binder_order():
+        captured = _captured_context()
+        assert captured['observed'][2]['dependencies'] == ['local:1', 'local:0']
+>       validate_observed_local_context(captured['observed'], captured['requested'])
+
+tests/test_semantic_context_dependencies.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.codex/state/reader-loop-r49/local-green/src/ladon/semantic_local_context.py:63: in validate_observed_local_context
+    _validate_observed_row(observed_row, requested_row, observed)
+.codex/state/reader-loop-r49/local-green/src/ladon/semantic_local_context.py:81: in _validate_observed_row
+    _validate_structural_type(observed_row, displayed, name, context)
+.codex/state/reader-loop-r49/local-green/src/ladon/semantic_local_context.py:102: in _validate_structural_type
+    _raise_structural_mismatch(name)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'h'
+
+    def _raise_structural_mismatch(name: str) -> None:
+>       raise ValueError(
+            f"Lean semantic helper returned a structurally mismatched type for local {name}"
+        )
+E       ValueError: Lean semantic helper returned a structurally mismatched type for local h
+
+.codex/state/reader-loop-r49/local-green/src/ladon/semantic_local_context.py:146: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_context_dependencies.py::test_real_dependency_traversal_order_can_differ_from_binder_order
+1 failed, 6 passed in 0.04s

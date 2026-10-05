@@ -1,0 +1,261 @@
+--- a/src/ladon/source_goal_completion_cli.py
++++ b/src/ladon/source_goal_completion_cli.py
+@@ -56,7 +56,13 @@
+         for residual in application["residualGoals"]:
+             lines.append("remaining obligation: " + residual["typeDisplay"])
+             for local in residual["localContext"]:
+-                lines.append(f"  {local['userName']} : {local['typeDisplay']}")
++                role = "internal implementation detail" if local["implementationDetail"] else "usable premise"
++                lines.append(f"  {role}:")
++                declaration = f"  {local['userName']} : {local['typeDisplay']}"
++                value = local.get("valueDisplay")
++                if value:
++                    declaration += " := " + value
++                lines.append(declaration)
+     lines.append("independent compiler replay: " + payload["replay"]["status"])
+     trust = payload["trust"]
+     lines.append("transitive trust coverage: " + trust["coverage"])
+--- a/src/ladon/result_inspection_page.py
++++ b/src/ladon/result_inspection_page.py
+@@ -2,6 +2,7 @@
+ from __future__ import annotations
+ 
+ import base64
++import copy
+ import hashlib
+ import json
+ 
+@@ -27,12 +28,26 @@
+     offset = _offset(cursor, binding, len(rows))
+     result['rows'] = []
+     for index in range(offset, min(len(rows), offset + limit)):
+-        candidate = compact_row(rows[index])
+-        result['rows'].append(candidate)
+-        _pagination(result, len(rows), offset, binding)
+-        if not _fits(result):
+-            result['rows'].pop()
+-            break
++        if result.get('section') == 'exposition':
++            accepted = False
++            for text_limit, list_limit in ((2048, 10), (512, 3), (128, 1)):
++                candidate = compact_row(rows[index], profile='exposition',
++                                        text_limit=text_limit, list_limit=list_limit)
++                result['rows'].append(candidate)
++                _pagination(result, len(rows), offset, binding)
++                if _fits(result):
++                    accepted = True
++                    break
++                result['rows'].pop()
++            if not accepted:
++                break
++        else:
++            candidate = compact_row(rows[index])
++            result['rows'].append(candidate)
++            _pagination(result, len(rows), offset, binding)
++            if not _fits(result):
++                result['rows'].pop()
++                break
+     _pagination(result, len(rows), offset, binding)
+     if (offset < len(rows) and not result['rows']) or not _fits(result):
+         raise ResultManifestError('inspection metadata exceeds compact byte limit')
+@@ -71,12 +86,19 @@
+         raise ResultManifestError('invalid or stale inspection cursor') from exc
+ 
+ 
+-def compact_row(row):
+-    """Clip fields with exact source references, never silently discard a row."""
++def compact_row(row, *, profile='default', text_limit=None, list_limit=None):
++    """Bound a row, keeping focused exposition prose ahead of repeated records."""
++    source = _focused_exposition_row(row) if profile == 'exposition' else row
+     references = row.get('references', {})
+-    for text_limit, list_limit in ((2048, 10), (512, 3), (128, 1)):
+-        omissions = []
+-        value = _compact(row, '', references, omissions, text_limit, list_limit)
++    levels = ((text_limit, list_limit),) if text_limit is not None else (
++        (2048, 10), (512, 3), (128, 1),
++    )
++    priorities = _exposition_priorities() if profile == 'exposition' else frozenset()
++    for candidate_text_limit, candidate_list_limit in levels:
++        omissions = list(source.get('fieldOmissions', [])) if profile == 'exposition' else []
++        value = _compact(source, '', references, omissions,
++                         candidate_text_limit, candidate_list_limit,
++                         excerpt_types=profile == 'exposition', priority_paths=priorities)
+         if omissions:
+             value['fieldOmissions'] = omissions
+         if len(canonical_json(value)) < 24 * 1024:
+@@ -84,24 +106,147 @@
+     raise ResultManifestError('inspection row metadata exceeds compact byte limit')
+ 
+ 
+-def _compact(value, path, references, omissions, text_limit, list_limit):
+-    if isinstance(value, str) and len(value.encode()) > text_limit:
+-        kept = value.encode()[:text_limit].decode('utf-8', errors='ignore')
+-        omissions.append({'path': path, 'omittedBytes': len(value.encode()) - len(kept.encode()),
++def _exposition_priorities():
++    return frozenset({
++        '/paragraph/explanation', '/paragraph/purpose', '/reviews/0/rationale',
++        '/selectedComponent/componentId',
++        '/selectedComponent/claimComponentCoverage/components',
++    })
++
++
++def _focused_exposition_row(row):
++    """Deduplicate large formal context while preserving exact retrieval routes."""
++    value = copy.deepcopy(row)
++    references = _all_references(row)
++    omissions = []
++    paragraph = value.get('paragraph', {})
++    component = value.get('selectedComponent', {})
++    _omit_field(paragraph, 'targetBindings', '/paragraph/targetBindings', references, omissions)
++    _omit_component_duplicates(component, references, omissions)
++    _omit_supporting_statement_duplicates(value, references, omissions)
++    coverage = component.get('claimComponentCoverage', {})
++    _bound_sibling_preview(component, coverage, references, omissions)
++    for index, sibling in enumerate(coverage.get('components', [])):
++        _omit_field(sibling, 'targetIds',
++                    f'/selectedComponent/claimComponentCoverage/components/{index}/targetIds',
++                    references, omissions)
++    if omissions:
++        value['fieldOmissions'] = omissions
++    return value
++
++
++def _omit_component_duplicates(component, references, omissions):
++    for key in ('wholeClaimStatement', 'formalStatements', 'mappingSources', 'assessments'):
++        _omit_field(component, key, '/selectedComponent/' + key, references, omissions)
++
++
++def _omit_supporting_statement_duplicates(value, references, omissions):
++    for index, statement in enumerate(value.get('supportingStatements', [])):
++        for key in ('resolution', 'source'):
++            path = f'/supportingStatements/{index}/{key}'
++            _omit_field(statement, key, path, references, omissions)
++
++
++def _omit_field(container, key, path, references, omissions):
++    if key not in container:
++        return
++    removed = container.pop(key)
++    if removed in ('', [], {}):
++        return
++    reference = _reference(path, references)
++    if reference.get('reason') == 'projection metadata':
++        raise ResultManifestError(f'exposition omission lacks an input reference: {path}')
++    omissions.append({'path': path, 'omittedBytes': len(canonical_json(removed)),
++                      'reference': reference, 'reason': 'repeated-record'})
++
++
++def _bound_sibling_preview(component, coverage, references, omissions):
++    siblings = coverage.get('components', [])
++    if len(siblings) <= 20:
++        return
++    selected_id = component.get('componentId')
++    priorities = [i for i, sibling in enumerate(siblings)
++                  if sibling.get('componentId') == selected_id or sibling.get('mappingStatus') == 'unmapped']
++    retained = priorities[:20]
++    retained.extend(i for i in range(len(siblings)) if i not in retained and len(retained) < 20)
++    retained.sort()
++    coverage['components'] = [siblings[i] for i in retained]
++    path = '/selectedComponent/claimComponentCoverage/components'
++    omissions.append({'path': path, 'omittedRows': len(siblings) - len(retained),
++                      'reference': _reference(path, references), 'reason': 'bounded-sibling-preview'})
++
++
++def _all_references(value):
++    found = {}
++
++    def visit(item, path=''):
++        if not isinstance(item, dict):
++            if isinstance(item, list):
++                for index, child in enumerate(item):
++                    visit(child, f'{path}/{index}')
++            return
++        refs = item.get('references')
++        if isinstance(refs, dict):
++            for suffix, reference in refs.items():
++                if isinstance(reference, dict) and 'input' in reference and 'pointer' in reference:
++                    found[path + suffix] = reference
++        for key, child in item.items():
++            if key != 'references':
++                visit(child, f'{path}/{_escape(key)}')
++
++    visit(value)
++    return found
++
++
++def _compact(value, path, references, omissions, text_limit, list_limit, *,
++             excerpt_types=False, priority_paths=frozenset()):
++    if _is_priority(path, value, priority_paths):
++        return value
++    if isinstance(value, str):
++        return _compact_text(value, path, references, omissions, text_limit, excerpt_types)
++    if isinstance(value, list):
++        return _compact_list(value, path, references, omissions, text_limit, list_limit,
++                             excerpt_types, priority_paths)
++    if isinstance(value, dict):
++        return _compact_mapping(value, path, references, omissions, text_limit, list_limit,
++                                excerpt_types, priority_paths)
++    return value
++
++
++def _is_priority(path, value, priorities):
++    return path in priorities and (not isinstance(value, str) or len(value.encode()) <= 512)
++
++
++def _compact_text(value, path, references, omissions, text_limit, excerpt_types):
++    if len(value.encode()) <= text_limit:
++        return value
++    kept = value.encode()[:text_limit].decode('utf-8', errors='ignore')
++    reference = _reference(path, references)
++    omitted_bytes = len(value.encode()) - len(kept.encode())
++    if excerpt_types and path.endswith('/typeText'):
++        kept = ('EXCERPT (complete type: ladon result inspect <manifest> --section targets '
++                '--target <targetId> --format json):\n' + kept)
++    omissions.append({'path': path, 'omittedBytes': omitted_bytes, 'reference': reference})
++    return kept
++
++
++def _compact_list(value, path, references, omissions, text_limit, list_limit,
++                  excerpt_types, priority_paths):
++    if len(value) > list_limit:
++        omissions.append({'path': path, 'omittedRows': len(value) - list_limit,
+                           'reference': _reference(path, references)})
+-        return kept
+-    if isinstance(value, list):
+-        if len(value) > list_limit:
+-            omissions.append({'path': path, 'omittedRows': len(value) - list_limit,
+-                              'reference': _reference(path, references)})
+-        return [_compact(v, f'{path}/{i}', references, omissions, text_limit, list_limit)
+-                for i, v in enumerate(value[:list_limit])]
+-    if isinstance(value, dict):
+-        references = {**references, **{path + key: ref for key, ref in value.get('references', {}).items()}}
+-        return {key: (child if key == 'references' else
+-                      _compact(child, f'{path}/{_escape(key)}', references, omissions, text_limit, list_limit))
+-                for key, child in value.items()}
+-    return value
++    return [_compact(item, f'{path}/{index}', references, omissions, text_limit, list_limit,
++                     excerpt_types=excerpt_types, priority_paths=priority_paths)
++            for index, item in enumerate(value[:list_limit])]
++
++
++def _compact_mapping(value, path, references, omissions, text_limit, list_limit,
++                     excerpt_types, priority_paths):
++    nested = {**references, **{path + key: ref for key, ref in value.get('references', {}).items()}}
++    return {key: (child if key == 'references' else
++                  _compact(child, f'{path}/{_escape(key)}', nested, omissions, text_limit, list_limit,
++                           excerpt_types=excerpt_types, priority_paths=priority_paths))
++            for key, child in value.items()}
+ 
+ 
+ def _reference(path, references):
+--- a/src/ladon/result_guides.py
++++ b/src/ladon/result_guides.py
+@@ -31,7 +31,7 @@
+                              lineage_reference_base=lineage_reference_base)
+     query = {'section': section, 'claim': claim_id, 'target': target_id, 'limit': limit}
+     if section == 'exposition':
+-        query = {'projectionVersion': 2, **query, 'component': component_id}
++        query = {'projectionVersion': 3, **query, 'component': component_id}
+     binding = inspection_digest({'revision': manifest['revision'], 'guideInputs': companion,
+                                  'assessments': inputs.assessments,
+                                  'artifacts': sorted(inputs.catalog), 'query': query,

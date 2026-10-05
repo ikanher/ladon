@@ -1,0 +1,33 @@
+{
+  "recordedAt": "2026-10-04T09:16:09.602859+00:00",
+  "argv": [
+    "/bin/bash",
+    "-lc",
+    "python3 - <<\"PY\"\nimport json\nfor p in [\"synthetic/finite-map.json\",\"synthetic/finite-map.guide.json\",\"synthetic/stale-guide.json\"]:\n print(\"###\",p); print(json.dumps(json.load(open(p)),indent=2))\nm=json.load(open(\"evidence/manifest.json\"));\nfor c in m[\"claims\"]:\n if c.get(\"id\") in [\"cor:fixed-epoch-all-horizon\",\"thm:smallbatch\"]: print(\"###CLAIM\",json.dumps(c,indent=2)[:10000])\nPY\npython3 - <<\"PY\"\np=\"evidence/assets/00091.bin\"\nb=open(p,\"rb\").read(); print(\"### EXPOSITION HEADERS/SECTIONS\")\nfor i,l in enumerate(b.decode(\"utf8\",errors=\"replace\").splitlines(),1):\n if any(s in l.lower() for s in [\"fixed epoch\", \"full-batch\", \"all-horizon\", \"scope of the conclusions\", \"smallbatch\", \"batch optimality\"]): print(i,l[:260])\nPY"
+  ],
+  "cwd": "/home/codex/.cache/ladon-reader-loop-r49/shared",
+  "exitCode": 0,
+  "elapsedSeconds": 0.11812845093663782,
+  "peakRssBytes": 4100096,
+  "timedOut": false,
+  "memoryLimited": false,
+  "outputLimited": false,
+  "streams": {
+    "stdout": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/inspect-synthetics-claims.stdout",
+      "bytes": 10103,
+      "sha256": "sha256:b28550f69285c6cb479314106ffc8006070f08c49136004fae3c43355bf099de"
+    },
+    "stderr": {
+      "path": "/home/codex/.cache/ladon-reader-loop-r49/plain-retest/commands/inspect-synthetics-claims.stderr",
+      "bytes": 0,
+      "sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "stdinFile": null,
+  "limits": {
+    "timeoutSeconds": 120,
+    "rssGiB": 32,
+    "outputMiB": 64
+  }
+}

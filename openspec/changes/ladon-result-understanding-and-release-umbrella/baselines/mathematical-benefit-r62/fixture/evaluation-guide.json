@@ -1,0 +1,495 @@
+{
+  "schema": "ladon-result-guide-v1",
+  "resultId": "poisson-fixed-epoch-exposition-20261003-r02",
+  "manifestRevision": "sha256:872c241d73ea74763320085ad53169636f67a92bfe18de9e24309ce9e7e2bac3",
+  "steps": [
+    {
+      "id": "conditional-all-horizons",
+      "revision": "sha256:5fea6bbf25014364a57fad29f55279ff0f0a4313fca706a2f39a1be814de2912",
+      "claimId": "cor:fixed-epoch-all-horizon",
+      "claimRevision": "sha256:0108f8bad055aabc20a15fde2fed178bec5d26a78e097a8113a6d68967beea83",
+      "targetRevisions": [
+        {
+          "targetId": "uniform-privacy",
+          "revision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370"
+        },
+        {
+          "targetId": "uniform-total",
+          "revision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f"
+        },
+        {
+          "targetId": "fullbatch",
+          "revision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa"
+        }
+      ],
+      "purpose": "Start with the usable positive result.",
+      "explanation": "For integers E>0 and T>E, sensitivity Δ>0, ε>0 and 0<δ<1, put a=Δ/√v_FB. The sufficient condition a² ≤ (6E/(3E+2)) ε gives v_FB < v̄_(E,T) ≤ v_(E,T), with strict full-batch total-variance dominance for every S≥0. It is a sufficient domain, not a classification outside it or an ordering of every pair of smaller batches. The target bindings cover the transcript conclusions and full-batch reference; the average-only strengthening remains conventional exposition in the supplied assessments.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#cor:fixed-epoch-all-horizon",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#sec:near-full",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "OpenAI Codex guide agents (field proposal and root revision)",
+        "kind": "model"
+      },
+      "prerequisites": []
+    },
+    {
+      "id": "strict-interior-reversal",
+      "revision": "sha256:cf2f3666a235d2550081e6855403c8f9684c8b78ea4697b65521caff73e5f05a",
+      "claimId": "thm:strict-interior-counterexample",
+      "claimRevision": "sha256:636c1150f4da72acb9f277996c4c41540d68c084dec5f7ed60943e53072b1d8b",
+      "targetRevisions": [
+        {
+          "targetId": "reversal-upper",
+          "revision": "sha256:4c022dee56ae24257767034edf4fd6355e3e9a19521b0add1a988eb1e84f6d5c"
+        },
+        {
+          "targetId": "reversal-lower",
+          "revision": "sha256:a296c4b73a1c41fe7a5879c8bbb1d793206769428d85c379125c92daa2d1e96f"
+        },
+        {
+          "targetId": "reversal-total",
+          "revision": "sha256:44142b822c8811af69dd7cc6295ec4e428cd8f90779644f260c1545caedd1d40"
+        },
+        {
+          "targetId": "fullbatch",
+          "revision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa"
+        }
+      ],
+      "purpose": "Check the limit of the first result.",
+      "explanation": "At Δ=1, E=2, ε=1/4 and δ=3/4, the exposition gives v3 ≤ 5/32 < 4/25 < v2 and V₂(3,S) < V₂(2,S) for 0≤S≤9/400. Thus the adjacent smaller batch can win at positive calibrated noise. The transcript brackets and inclusive energy range have the supplied formal bindings. The average-only reversal is a separate conventional extension. The lower comparator is the squared Gaussian base standard deviation, identified with full batch through the fullbatch target.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:strict-interior-counterexample",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:rational-calculation",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "OpenAI Codex guide agents (field proposal and root revision)",
+        "kind": "model"
+      },
+      "prerequisites": [
+        {
+          "stepId": "conditional-all-horizons",
+          "revision": "sha256:5fea6bbf25014364a57fad29f55279ff0f0a4313fca706a2f39a1be814de2912"
+        }
+      ]
+    },
+    {
+      "id": "release-scope",
+      "revision": "sha256:800a6f5130fc846856bf427b6bd31863dcf4bb179fe3b4bf9ee58ba30495a19c",
+      "claimId": "thm:smallbatch",
+      "claimRevision": "sha256:bf37f1efcf293770fba61f4b50f99a8a32d5f0425b9db71bb59e3c760afb9ec0",
+      "targetRevisions": [],
+      "purpose": "Keep the experiment and asymptotic scopes visible.",
+      "explanation": "The manuscript models independent Poisson sampling of fixed clipped record contributions, homogeneous independent Gaussian noise, and an equal-weight average. Its sparse theorem concerns the complete released transcript. The average-only output has a separate uniform feasibility bound. The manuscript explicitly makes no claim about adaptive optimizer trajectories or training loss, and warns that fixed-rate asymptotics do not automatically cover q=E/T. This scope note is a reader aid attached to the sparse theorem; it does not claim that the formal target encodes these modeling qualifications.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#sec:model",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#sec:sparse",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex:431 (section Scope of the conclusions)",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "OpenAI Codex guide agents (field proposal and root revision)",
+        "kind": "model"
+      },
+      "prerequisites": [
+        {
+          "stepId": "strict-interior-reversal",
+          "revision": "sha256:cf2f3666a235d2550081e6855403c8f9684c8b78ea4697b65521caff73e5f05a"
+        }
+      ]
+    },
+    {
+      "id": "calibration-prerequisite",
+      "revision": "sha256:73661b9b31b93e72d3644972cf16e60376d4056e6ea34d872728fd676093e13e",
+      "claimId": "lem:calibration",
+      "claimRevision": "sha256:13b61b0fcfaa45b01572aa7643711e7ce8ff724346c26e73bb8377867b31ddc5",
+      "targetRevisions": [
+        {
+          "targetId": "fullbatch",
+          "revision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa"
+        }
+      ],
+      "purpose": "See what the calibrated variances mean.",
+      "explanation": "The appendix establishes finite-horizon continuity, monotonicity, feasibility, and attainment for both profiles, and identifies the shared positive full-batch calibration through the Gaussian formula. That common reference is used in the finite comparison and the counterexample. The referenced exposition itself attributes the analytic Gaussian calibration formula to Balle and Wang (2018). Only the full-batch identification has a target binding here; continuity, attainment, the Gaussian formula and the average-only identification remain conventional components in the supplied assessments.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:calibration",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:calibration",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#eq:gaussian-calibration",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "OpenAI Codex guide agents (field proposal and root revision)",
+        "kind": "model"
+      },
+      "prerequisites": [
+        {
+          "stepId": "release-scope",
+          "revision": "sha256:800a6f5130fc846856bf427b6bd31863dcf4bb179fe3b4bf9ee58ba30495a19c"
+        }
+      ]
+    },
+    {
+      "id": "binomial-center",
+      "revision": "sha256:142a0d7b54b8a4feb450109b5f7c0294ec7a613b4e7646a220578b079036330f",
+      "claimId": "thm:rate-adaptive-center",
+      "claimRevision": "sha256:5ec94143a489a958a3ff42a4e23ff1db84712481f7f73c79fe7f84f17294fd47",
+      "targetRevisions": [
+        {
+          "targetId": "center-positive",
+          "revision": "sha256:f55d8398d4ababee950940b561609abe10c110f127733a4c9c0ed6e34b0b2aff"
+        },
+        {
+          "targetId": "center-zero",
+          "revision": "sha256:c7d5b122daefa9dc2886a87c9637ee0e002ed8d30b549552ef9dfbc3e0607437"
+        },
+        {
+          "targetId": "zero-low",
+          "revision": "sha256:5344c50a056ff0a82970ace12e2780ee6c8c818e30de8d151fcdb40b079a1664"
+        },
+        {
+          "targetId": "zero-high",
+          "revision": "sha256:205bde70268116365596db90e6f220f1cbd9684987473a9664213009f6865d90"
+        }
+      ],
+      "purpose": "Orient the sign-comparison machinery.",
+      "explanation": "The binomial-center theorem states positivity domains for the comparison gap. The manuscript then derives the low-rate boundary through a hinge-transform argument, and handles the zero-center sign by reflection. These are supporting statements for the main finite comparison, not additional assumptions needed to read its headline conclusion. Matching the exposition to the supplied signatures regroups the trace average as a binomial count and identifies θ and a positive scale. The symmetric zero-center identity is separate from the conventional strict average-only endpoint argument.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:rate-adaptive-center",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-reflected-zero",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:binomial-signs",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "OpenAI Codex guide agents (field proposal and root revision)",
+        "kind": "model"
+      },
+      "prerequisites": [
+        {
+          "stepId": "calibration-prerequisite",
+          "revision": "sha256:73661b9b31b93e72d3644972cf16e60376d4056e6ea34d872728fd676093e13e"
+        }
+      ]
+    },
+    {
+      "id": "center-propagation",
+      "revision": "sha256:11298bc3fd608193879f0ddb0fd3cf2ff4ef634731825535b2ab863b42208be7",
+      "claimId": "lem:binomial-propagation",
+      "claimRevision": "sha256:b3cf99cfd36ca744273387be6f9ad774877318e0722087c00299943dc1ca3b18",
+      "targetRevisions": [
+        {
+          "targetId": "propagation",
+          "revision": "sha256:d070fc3b5ce1a5f6be3ba02478282c14683332339ad76afbdb00a7282f1261f8"
+        }
+      ],
+      "purpose": "Read how positivity moves across centers.",
+      "explanation": "The stated lemma says a nonnegative gap at a smaller nonnegative center implies strict positivity at a larger center. It supplies the propagation step used when the low-rate boundary has been shown positive. The stored source-correspondence assessment distinguishes the source proof by a tilted strictly convex function from the exposition’s Gaussian-kernel ratio argument.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-propagation",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:binomial-signs",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "OpenAI Codex guide agents (field proposal and root revision)",
+        "kind": "model"
+      },
+      "prerequisites": [
+        {
+          "stepId": "binomial-center",
+          "revision": "sha256:142a0d7b54b8a4feb450109b5f7c0294ec7a613b4e7646a220578b079036330f"
+        }
+      ]
+    },
+    {
+      "id": "hinge-and-telescoping",
+      "revision": "sha256:daa367d1d367b9a530a3e651ad30556e594de351c1ec220062f40d525951ec57",
+      "claimId": "lem:binomial-double-cumulative",
+      "claimRevision": "sha256:1dc10cffe6bd81b1f5eda04b3211d97f132de164f36240d163c205066a7f5230",
+      "targetRevisions": [
+        {
+          "targetId": "hinge-nonnegative",
+          "revision": "sha256:9af9796c9f9f7a7a2f3c11f833cd4b235a188c65d6cfc955aef12cbc726cf034"
+        },
+        {
+          "targetId": "hinge-positive",
+          "revision": "sha256:13fdd87763a261c9e339134ea2b7b4bd1ed9c7ae1a65b2f64cf9682e546c4af7"
+        },
+        {
+          "targetId": "polynomial",
+          "revision": "sha256:37d60120ec4c1c981ccf7088ca18adaea2f825235430e7710fe9cdd529989092"
+        }
+      ],
+      "purpose": "Unpack the supporting discrete calculation.",
+      "explanation": "The appendix rewrites the comparison as a Laplace integral of a hinge transform and uses a binomial telescoping identity to establish its sign and a strict positive knot. The formal targets cover the nonnegative and strict hinge statements and the polynomial identity. The guide does not independently validate the algebra or the exposition-to-target translations. The supplied correspondence uses radius √t for J(t), radius 1-c for its positive knot, and a sign change on both sides of the general-radius polynomial identity. These translation steps retain their attributed status.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-double-cumulative",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-stein-polynomial",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:binomial-signs",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "OpenAI Codex guide agents (field proposal and root revision)",
+        "kind": "model"
+      },
+      "prerequisites": [
+        {
+          "stepId": "center-propagation",
+          "revision": "sha256:11298bc3fd608193879f0ddb0fd3cf2ff4ef634731825535b2ab863b42208be7"
+        }
+      ]
+    },
+    {
+      "id": "fixed-participation-limit",
+      "revision": "sha256:6c53e759f427b4e354de2550a3b0627c60afa46fe6a2bcaf9b330ecb91a64dbd",
+      "claimId": "thm:accountant-limit",
+      "claimRevision": "sha256:fa568c1b36e683ed12deb097a7cac602850a9680a928ce3b36e1b9d2b53dfe5d",
+      "targetRevisions": [
+        {
+          "targetId": "profile-limit",
+          "revision": "sha256:38d1919ba72d0ae45f049ae988b026083a176ace1e5c334d4a451a574de43c75"
+        }
+      ],
+      "purpose": "Put the fixed-rate background in its proper place.",
+      "explanation": "The appendix gives a general fixed-participation privacy-profile limit and calibrated offset. The exposition compares it with the fixed-rate result cited from Räisä, Jälkö, and Honkela (2024), while explicitly explaining that fixed q>0 does not specialize to q=E/T without uniformity in q. The source-correspondence assessment describes schedule adapters; this is not an asserted direct identity between differently parameterized statements.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:accountant-limit",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#thm:fixed-participation-calibration",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex:431 (section Scope of the conclusions)",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "OpenAI Codex guide agents (field proposal and root revision)",
+        "kind": "model"
+      },
+      "prerequisites": [
+        {
+          "stepId": "release-scope",
+          "revision": "sha256:800a6f5130fc846856bf427b6bd31863dcf4bb179fe3b4bf9ee58ba30495a19c"
+        }
+      ]
+    },
+    {
+      "id": "average-only-bound",
+      "revision": "sha256:4dadccd4619321d8e8af67275e6ab51f074f286cd7d1e11116e735bcf1557580",
+      "claimId": "prop:average-uniform-bound",
+      "claimRevision": "sha256:98adfc1f05587ac23d55fa2bf1c0f1ee6c92d060f48da7fe21e2cb76381d8fe5",
+      "targetRevisions": [],
+      "purpose": "Distinguish bounded average calibration from transcript divergence.",
+      "explanation": "The proposition gives a horizon-uniform upper bound for average-only calibrated variance. Alongside the sparse transcript theorem, it explains the manuscript’s comparison of output choices. The bound is presented as a feasibility estimate, not an asymptotic formula.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#prop:average-uniform-bound",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#sec:sparse",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "OpenAI Codex guide agents (field proposal and root revision)",
+        "kind": "model"
+      },
+      "prerequisites": [
+        {
+          "stepId": "fixed-participation-limit",
+          "revision": "sha256:6c53e759f427b4e354de2550a3b0627c60afa46fe6a2bcaf9b330ecb91a64dbd"
+        }
+      ]
+    },
+    {
+      "id": "passage-17",
+      "claimId": "cor:fixed-epoch-all-horizon",
+      "claimRevision": "sha256:0108f8bad055aabc20a15fde2fed178bec5d26a78e097a8113a6d68967beea83",
+      "targetRevisions": [
+        {
+          "targetId": "uniform-privacy",
+          "revision": "sha256:f69a81bda0b91ebe0d15d22214755f0fe9ee1c975309e7a08e80f6a761502370"
+        },
+        {
+          "targetId": "uniform-total",
+          "revision": "sha256:9c136978adefdec626946adfddf6a6e54231713f63494c5a93a9ce9287ed749f"
+        },
+        {
+          "targetId": "fullbatch",
+          "revision": "sha256:6f8a19b4b97612857818d6782d60f23e3519b6b9d55e4981e34c48843fba21fa"
+        }
+      ],
+      "purpose": "Review the supplied unreviewed paragraph against the declared mathematics.",
+      "explanation": "The supplied uniform transcript targets formally establish both transcript and average-only optimality under the sufficient condition.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#cor:fixed-epoch-all-horizon",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#sec:near-full",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "evaluation-fixture-author",
+        "kind": "model"
+      },
+      "prerequisites": [],
+      "revision": "sha256:3717116534d6dfba76f8c8589d8c782625fcc097d75a3b9cef002ac075dcc3fe"
+    },
+    {
+      "id": "passage-42",
+      "claimId": "lem:binomial-propagation",
+      "claimRevision": "sha256:b3cf99cfd36ca744273387be6f9ad774877318e0722087c00299943dc1ca3b18",
+      "targetRevisions": [
+        {
+          "targetId": "propagation",
+          "revision": "sha256:d070fc3b5ce1a5f6be3ba02478282c14683332339ad76afbdb00a7282f1261f8"
+        }
+      ],
+      "purpose": "Review the supplied unreviewed paragraph against the declared mathematics.",
+      "explanation": "Let point be a fixed-epoch point with point.epoch < point.horizon, h > 0, boundary ≥ 0 and query > boundary. If fixedEpochCenterGap point h boundary ≥ 0, the propagation lemma gives fixedEpochCenterGap point h query > 0.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-propagation",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:binomial-signs",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "evaluation-fixture-author",
+        "kind": "model"
+      },
+      "prerequisites": [],
+      "revision": "sha256:1413987437ad84f457eff89a850212e991932b8aeec3f40ab4b09c873e663c12"
+    },
+    {
+      "id": "passage-68",
+      "claimId": "lem:binomial-propagation",
+      "claimRevision": "sha256:b3cf99cfd36ca744273387be6f9ad774877318e0722087c00299943dc1ca3b18",
+      "targetRevisions": [
+        {
+          "targetId": "propagation",
+          "revision": "sha256:d070fc3b5ce1a5f6be3ba02478282c14683332339ad76afbdb00a7282f1261f8"
+        }
+      ],
+      "purpose": "Review the supplied unreviewed paragraph against the declared mathematics.",
+      "explanation": "Let point be a fixed-epoch point with point.epoch < point.horizon, h > 0, boundary ≥ 0 and query > boundary. The propagation lemma gives fixedEpochCenterGap point h query > 0.",
+      "sources": [
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#lem:binomial-propagation",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        },
+        {
+          "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_exposition.tex#app:binomial-signs",
+          "digest": "sha256:d3b6b9dceb8dc3465120abbc6c89133ad5f754eb13c4918d3a10e8cc9d28f583"
+        }
+      ],
+      "author": {
+        "identity": "evaluation-fixture-author",
+        "kind": "model"
+      },
+      "prerequisites": [],
+      "revision": "sha256:14aad532f6b58e99db66e4af63f21806669cf65ba2cfd2926ea84d0dc98d835e"
+    }
+  ],
+  "citations": [
+    {
+      "id": "balle-wang-2018",
+      "revision": "sha256:6fd0120bbcb37f0337257d32ec525d5a859b2c8064bd450fc4a61186041544de",
+      "stepId": "calibration-prerequisite",
+      "stepRevision": "sha256:73661b9b31b93e72d3644972cf16e60376d4056e6ea34d872728fd676093e13e",
+      "work": {
+        "id": "ballewang2018",
+        "title": "Improving the Gaussian Mechanism for Differential Privacy: Analytical Calibration and Optimal Denoising",
+        "authors": [
+          "B. Balle",
+          "Y.-X. Wang"
+        ],
+        "url": "https://proceedings.mlr.press/v80/balle18a.html"
+      },
+      "locator": "Manuscript bibliography key ballewang2018; cited at Lemma Calibration and Appendix Calibration",
+      "relationship": "background",
+      "assertion": "The manuscript cites this work for the analytical Gaussian calibration formula. This records the manuscript-provided citation and relationship; no independent bibliographic or priority assessment is made.",
+      "submitter": "OpenAI Codex guide agent (guides_field_r47)"
+    },
+    {
+      "id": "raisa-et-al-2024",
+      "revision": "sha256:054246d7beb6b85031cec3344334546b386fc6f1bc320ad95c9b178ab503f5a0",
+      "stepId": "fixed-participation-limit",
+      "stepRevision": "sha256:6c53e759f427b4e354de2550a3b0627c60afa46fe6a2bcaf9b330ecb91a64dbd",
+      "work": {
+        "id": "raisa2024",
+        "title": "Subsampling is not Magic: Why Large Batch Sizes Work for Differentially Private Stochastic Optimisation",
+        "authors": [
+          "O. Räisä",
+          "J. Jälkö",
+          "A. Honkela"
+        ],
+        "url": "https://proceedings.mlr.press/v235/raisa24a.html"
+      },
+      "locator": "Manuscript bibliography key raisa2024; Section Scope of the conclusions, citing Corollary 5.4",
+      "relationship": "related-method",
+      "assertion": "The manuscript reports a fixed-q asymptotic ratio and distinguishes it from q=E/T absent uniformity in rate. This is the source author’s characterization, not a priority claim or independent verification.",
+      "submitter": "OpenAI Codex guide agent (guides_field_r47)"
+    }
+  ],
+  "reviews": []
+}
