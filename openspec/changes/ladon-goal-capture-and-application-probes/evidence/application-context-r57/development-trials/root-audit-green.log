@@ -1,0 +1,117 @@
+FF...................................................................... [ 58%]
+...................................................                      [100%]
+=================================== FAILURES ===================================
+_ test_rejected_v4_process_identity_binds_original_protocol[ladon-lean-semantic-v4/check-candidate] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-882/test_rejected_v4_process_ident0')
+protocol = 'ladon-lean-semantic-v4/check-candidate'
+
+    @pytest.mark.parametrize('protocol', [SINGLE, BATCH])
+    def test_rejected_v4_process_identity_binds_original_protocol(tmp_path, protocol):
+        request, helper, process, payload = rejection(tmp_path, protocol)
+>       artifacts, _ = _rejected_artifacts(request, helper, process, payload, helper_identity='helper')
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_semantic_application_context_audit.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/semantic_candidate_worker.py:988: in _rejected_artifacts
+    artifact = _envelope(
+src/ladon/semantic_candidate_worker.py:1561: in _envelope
+    return make_envelope(
+src/ladon/proofir_v3.py:1314: in make_envelope
+    return validate_envelope(envelope)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proofir_v3.py:345: in validate_envelope
+    owned, encoded = _prepare_envelope(value, max_artifact_bytes)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proofir_v3.py:358: in _prepare_envelope
+    _validate_envelope_shape(owned)
+src/ladon/proofir_v3.py:427: in _validate_envelope_shape
+    _validate_kind_payload(value)
+src/ladon/proofir_v3.py:1020: in _validate_kind_payload
+    validate_kind_payload(value)
+src/ladon/proofir_v3_payloads.py:131: in validate_kind_payload
+    validator(p, value, subjects, env)
+src/ladon/proofir_v3_payloads.py:873: in _validate_check
+    _validate_checker_identity(p["checker"], value)
+src/ladon/proofir_v3_payloads.py:901: in _validate_checker_identity
+    _fail(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+stage = 'kind-schema-valid', code = 'invalid-content-digest'
+pointer = '/payload/checker/implementationDigest', message = 'invalid digest'
+value = {'artifactId': 'sha256:d4f9d38a952ab84d8531ebbc8d721135b39d04ae0199b6b55b4663f346e50aeb', 'artifactKind': 'proofir.che... 'expected': 4, ...}, 'environmentRef': 'sha256:afbbf62ee19be56ba016f9519ce31983b57d089c8ea9ec5c9d118f0f9a30cd72', ...}
+
+    def _fail(
+        stage: str,
+        code: str,
+        pointer: str,
+        message: str,
+        value: Mapping[str, Any] | None = None,
+    ) -> None:
+        artifact_id = value.get("artifactId") if value is not None else None
+>       raise ProofIRV3Error(
+            message, ProofIRV3Diagnostic(stage, code, pointer, message, artifact_id)
+        )
+E       ladon.proofir_v3.ProofIRV3Error: invalid digest
+
+src/ladon/proofir_v3.py:119: ProofIRV3Error
+_ test_rejected_v4_process_identity_binds_original_protocol[ladon-lean-semantic-v4/check-candidates] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-882/test_rejected_v4_process_ident1')
+protocol = 'ladon-lean-semantic-v4/check-candidates'
+
+    @pytest.mark.parametrize('protocol', [SINGLE, BATCH])
+    def test_rejected_v4_process_identity_binds_original_protocol(tmp_path, protocol):
+        request, helper, process, payload = rejection(tmp_path, protocol)
+>       artifacts, _ = _rejected_artifacts(request, helper, process, payload, helper_identity='helper')
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_semantic_application_context_audit.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/semantic_candidate_worker.py:988: in _rejected_artifacts
+    artifact = _envelope(
+src/ladon/semantic_candidate_worker.py:1561: in _envelope
+    return make_envelope(
+src/ladon/proofir_v3.py:1314: in make_envelope
+    return validate_envelope(envelope)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proofir_v3.py:345: in validate_envelope
+    owned, encoded = _prepare_envelope(value, max_artifact_bytes)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proofir_v3.py:358: in _prepare_envelope
+    _validate_envelope_shape(owned)
+src/ladon/proofir_v3.py:427: in _validate_envelope_shape
+    _validate_kind_payload(value)
+src/ladon/proofir_v3.py:1020: in _validate_kind_payload
+    validate_kind_payload(value)
+src/ladon/proofir_v3_payloads.py:131: in validate_kind_payload
+    validator(p, value, subjects, env)
+src/ladon/proofir_v3_payloads.py:873: in _validate_check
+    _validate_checker_identity(p["checker"], value)
+src/ladon/proofir_v3_payloads.py:901: in _validate_checker_identity
+    _fail(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+stage = 'kind-schema-valid', code = 'invalid-content-digest'
+pointer = '/payload/checker/implementationDigest', message = 'invalid digest'
+value = {'artifactId': 'sha256:43e35794d8fe26ecf2c8f6be9c8d6719b937aa526a19e136d75f3a3f6be1b259', 'artifactKind': 'proofir.che... 'expected': 4, ...}, 'environmentRef': 'sha256:afbbf62ee19be56ba016f9519ce31983b57d089c8ea9ec5c9d118f0f9a30cd72', ...}
+
+    def _fail(
+        stage: str,
+        code: str,
+        pointer: str,
+        message: str,
+        value: Mapping[str, Any] | None = None,
+    ) -> None:
+        artifact_id = value.get("artifactId") if value is not None else None
+>       raise ProofIRV3Error(
+            message, ProofIRV3Diagnostic(stage, code, pointer, message, artifact_id)
+        )
+E       ladon.proofir_v3.ProofIRV3Error: invalid digest
+
+src/ladon/proofir_v3.py:119: ProofIRV3Error
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_context_audit.py::test_rejected_v4_process_identity_binds_original_protocol[ladon-lean-semantic-v4/check-candidate]
+FAILED tests/test_semantic_application_context_audit.py::test_rejected_v4_process_identity_binds_original_protocol[ladon-lean-semantic-v4/check-candidates]
+2 failed, 121 passed in 1.47s

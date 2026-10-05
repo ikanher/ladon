@@ -1,0 +1,321 @@
+.FFFFFFFF.FFFFFF                                                         [100%]
+=================================== FAILURES ===================================
+_______ test_v4_cannot_omit_an_observation_population[residualContexts] ________
+
+missing = 'residualContexts'
+
+    @pytest.mark.parametrize("missing", ["residualContexts", "declarationBinders"])
+    def test_v4_cannot_omit_an_observation_population(missing):
+        payload = rows()
+        del payload[missing]
+>       with pytest.raises((ValueError, TypeError), match="context|binder|observation"):
+E       Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'TypeError'>)
+
+tests/test_semantic_application_context_v4.py:54: Failed
+______ test_v4_cannot_omit_an_observation_population[declarationBinders] _______
+
+missing = 'declarationBinders'
+
+    @pytest.mark.parametrize("missing", ["residualContexts", "declarationBinders"])
+    def test_v4_cannot_omit_an_observation_population(missing):
+        payload = rows()
+        del payload[missing]
+>       with pytest.raises((ValueError, TypeError), match="context|binder|observation"):
+E       Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'TypeError'>)
+
+tests/test_semantic_application_context_v4.py:54: Failed
+____ test_v4_residual_context_is_closed_ordered_and_owned[missing-context] _____
+
+fault = 'missing-context'
+
+    @pytest.mark.parametrize("fault", ["missing-context", "extra-context", "unknown-dependency", "duplicate-id", "forward-dependency", "value-half-present"])
+    def test_v4_residual_context_is_closed_ordered_and_owned(fault):
+        payload = rows()
+        context = payload["residualContexts"][0]["localContext"]
+        if fault == "missing-context":
+            payload["residualContexts"] = []
+        elif fault == "extra-context":
+            payload["residualContexts"].append(deepcopy(payload["residualContexts"][0]))
+        elif fault == "unknown-dependency":
+            context[0]["dependencies"] = ["local:foreign"]
+        elif fault == "duplicate-id":
+            context.append(local("y"))
+        elif fault == "forward-dependency":
+            context[0]["dependencies"] = ["local:1"]
+            context.append(local("y", "local:1"))
+        else:
+            context[0]["valueDisplay"] = "0"
+>       with pytest.raises((ValueError, TypeError), match="context|local|depend|value"):
+E       Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'TypeError'>)
+
+tests/test_semantic_application_context_v4.py:75: Failed
+_____ test_v4_residual_context_is_closed_ordered_and_owned[extra-context] ______
+
+fault = 'extra-context'
+
+    @pytest.mark.parametrize("fault", ["missing-context", "extra-context", "unknown-dependency", "duplicate-id", "forward-dependency", "value-half-present"])
+    def test_v4_residual_context_is_closed_ordered_and_owned(fault):
+        payload = rows()
+        context = payload["residualContexts"][0]["localContext"]
+        if fault == "missing-context":
+            payload["residualContexts"] = []
+        elif fault == "extra-context":
+            payload["residualContexts"].append(deepcopy(payload["residualContexts"][0]))
+        elif fault == "unknown-dependency":
+            context[0]["dependencies"] = ["local:foreign"]
+        elif fault == "duplicate-id":
+            context.append(local("y"))
+        elif fault == "forward-dependency":
+            context[0]["dependencies"] = ["local:1"]
+            context.append(local("y", "local:1"))
+        else:
+            context[0]["valueDisplay"] = "0"
+>       with pytest.raises((ValueError, TypeError), match="context|local|depend|value"):
+E       Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'TypeError'>)
+
+tests/test_semantic_application_context_v4.py:75: Failed
+___ test_v4_residual_context_is_closed_ordered_and_owned[unknown-dependency] ___
+
+fault = 'unknown-dependency'
+
+    @pytest.mark.parametrize("fault", ["missing-context", "extra-context", "unknown-dependency", "duplicate-id", "forward-dependency", "value-half-present"])
+    def test_v4_residual_context_is_closed_ordered_and_owned(fault):
+        payload = rows()
+        context = payload["residualContexts"][0]["localContext"]
+        if fault == "missing-context":
+            payload["residualContexts"] = []
+        elif fault == "extra-context":
+            payload["residualContexts"].append(deepcopy(payload["residualContexts"][0]))
+        elif fault == "unknown-dependency":
+            context[0]["dependencies"] = ["local:foreign"]
+        elif fault == "duplicate-id":
+            context.append(local("y"))
+        elif fault == "forward-dependency":
+            context[0]["dependencies"] = ["local:1"]
+            context.append(local("y", "local:1"))
+        else:
+            context[0]["valueDisplay"] = "0"
+>       with pytest.raises((ValueError, TypeError), match="context|local|depend|value"):
+E       Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'TypeError'>)
+
+tests/test_semantic_application_context_v4.py:75: Failed
+______ test_v4_residual_context_is_closed_ordered_and_owned[duplicate-id] ______
+
+fault = 'duplicate-id'
+
+    @pytest.mark.parametrize("fault", ["missing-context", "extra-context", "unknown-dependency", "duplicate-id", "forward-dependency", "value-half-present"])
+    def test_v4_residual_context_is_closed_ordered_and_owned(fault):
+        payload = rows()
+        context = payload["residualContexts"][0]["localContext"]
+        if fault == "missing-context":
+            payload["residualContexts"] = []
+        elif fault == "extra-context":
+            payload["residualContexts"].append(deepcopy(payload["residualContexts"][0]))
+        elif fault == "unknown-dependency":
+            context[0]["dependencies"] = ["local:foreign"]
+        elif fault == "duplicate-id":
+            context.append(local("y"))
+        elif fault == "forward-dependency":
+            context[0]["dependencies"] = ["local:1"]
+            context.append(local("y", "local:1"))
+        else:
+            context[0]["valueDisplay"] = "0"
+>       with pytest.raises((ValueError, TypeError), match="context|local|depend|value"):
+E       Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'TypeError'>)
+
+tests/test_semantic_application_context_v4.py:75: Failed
+___ test_v4_residual_context_is_closed_ordered_and_owned[forward-dependency] ___
+
+fault = 'forward-dependency'
+
+    @pytest.mark.parametrize("fault", ["missing-context", "extra-context", "unknown-dependency", "duplicate-id", "forward-dependency", "value-half-present"])
+    def test_v4_residual_context_is_closed_ordered_and_owned(fault):
+        payload = rows()
+        context = payload["residualContexts"][0]["localContext"]
+        if fault == "missing-context":
+            payload["residualContexts"] = []
+        elif fault == "extra-context":
+            payload["residualContexts"].append(deepcopy(payload["residualContexts"][0]))
+        elif fault == "unknown-dependency":
+            context[0]["dependencies"] = ["local:foreign"]
+        elif fault == "duplicate-id":
+            context.append(local("y"))
+        elif fault == "forward-dependency":
+            context[0]["dependencies"] = ["local:1"]
+            context.append(local("y", "local:1"))
+        else:
+            context[0]["valueDisplay"] = "0"
+>       with pytest.raises((ValueError, TypeError), match="context|local|depend|value"):
+E       Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'TypeError'>)
+
+tests/test_semantic_application_context_v4.py:75: Failed
+___ test_v4_residual_context_is_closed_ordered_and_owned[value-half-present] ___
+
+fault = 'value-half-present'
+
+    @pytest.mark.parametrize("fault", ["missing-context", "extra-context", "unknown-dependency", "duplicate-id", "forward-dependency", "value-half-present"])
+    def test_v4_residual_context_is_closed_ordered_and_owned(fault):
+        payload = rows()
+        context = payload["residualContexts"][0]["localContext"]
+        if fault == "missing-context":
+            payload["residualContexts"] = []
+        elif fault == "extra-context":
+            payload["residualContexts"].append(deepcopy(payload["residualContexts"][0]))
+        elif fault == "unknown-dependency":
+            context[0]["dependencies"] = ["local:foreign"]
+        elif fault == "duplicate-id":
+            context.append(local("y"))
+        elif fault == "forward-dependency":
+            context[0]["dependencies"] = ["local:1"]
+            context.append(local("y", "local:1"))
+        else:
+            context[0]["valueDisplay"] = "0"
+>       with pytest.raises((ValueError, TypeError), match="context|local|depend|value"):
+E       Failed: DID NOT RAISE any of (<class 'ValueError'>, <class 'TypeError'>)
+
+tests/test_semantic_application_context_v4.py:75: Failed
+__ test_v4_application_identity_binds_context_and_full_declaration_inventory ___
+
+    def test_v4_application_identity_binds_context_and_full_declaration_inventory():
+>       a = application()
+            ^^^^^^^^^^^^^
+
+tests/test_semantic_application_context_v4.py:107: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+contexts = None
+selected = {'binders': [], 'name': 'Main.step', 'typeDisplay': 'True → True', 'typeStructural': 'forall True True'}
+
+    def application(contexts=None, selected=None):
+        selected = declaration() if selected is None else selected
+>       return _application_subject(
+            _subject("statement", {"typeDisplay": "True", "typeStructural": "True"}),
+            _subject("declaration", selected),
+            [_subject("statement", {"typeDisplay": "True", "typeStructural": "True"})],
+            context=_context_subject("sha256:" + "a" * 64, []),
+            application_term="Main.step ?h",
+            residual_rows=rows()["residualPremises"],
+            residual_contexts=rows()["residualContexts"] if contexts is None else contexts,
+            selected_declaration=selected, semantic_protocol=V4,
+        )
+E       TypeError: _application_subject() got an unexpected keyword argument 'residual_contexts'
+
+tests/test_semantic_application_context_v4.py:94: TypeError
+__ test_v4_display_only_changes_do_not_change_structural_application_identity __
+
+    def test_v4_display_only_changes_do_not_change_structural_application_identity():
+        contexts = deepcopy(rows()["residualContexts"])
+        contexts[0]["localContext"][0]["typeDisplay"] = "ℕ"
+>       assert application()["localId"] == application(contexts)["localId"]
+               ^^^^^^^^^^^^^
+
+tests/test_semantic_application_context_v4.py:122: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+contexts = None
+selected = {'binders': [], 'name': 'Main.step', 'typeDisplay': 'True → True', 'typeStructural': 'forall True True'}
+
+    def application(contexts=None, selected=None):
+        selected = declaration() if selected is None else selected
+>       return _application_subject(
+            _subject("statement", {"typeDisplay": "True", "typeStructural": "True"}),
+            _subject("declaration", selected),
+            [_subject("statement", {"typeDisplay": "True", "typeStructural": "True"})],
+            context=_context_subject("sha256:" + "a" * 64, []),
+            application_term="Main.step ?h",
+            residual_rows=rows()["residualPremises"],
+            residual_contexts=rows()["residualContexts"] if contexts is None else contexts,
+            selected_declaration=selected, semantic_protocol=V4,
+        )
+E       TypeError: _application_subject() got an unexpected keyword argument 'residual_contexts'
+
+tests/test_semantic_application_context_v4.py:94: TypeError
+___ test_v4_single_frame_accepts_owned_observations_and_rejects_extra_fields ___
+
+    def test_v4_single_frame_accepts_owned_observations_and_rejects_extra_fields():
+        request = SemanticCandidateRequest(Path("."), "Main", "True", "Main.step")
+        payload = frame(request)
+>       parsed = _parse_worker_payload("LADON_FRAME " + json.dumps(payload), request, "req-v4")
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_semantic_application_context_v4.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/semantic_candidate_worker.py:635: in _parse_worker_payload
+    _validate_worker_frame(payload, request, request_id)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+payload = {'applicationTerm': 'Main.step ?h', 'candidate': {'name': 'Main.step', 'typeDisplay': 'True → True', 'typeStructural': 'forall True True'}, 'declarationBinders': [], 'dischargedHypotheses': [], ...}
+request = SemanticCandidateRequest(repo_root=PosixPath('.'), module='Main', goal='True', candidate='Main.step', timeout_seconds=...8608, max_rss_bytes=34359738368, toolchain=None, local_context=(), execution_context_ref=None, require_isolation=False)
+request_id = 'req-v4'
+
+    def _validate_worker_frame(
+        payload: Mapping[str, Any], request: SemanticCandidateRequest, request_id: str
+    ) -> None:
+        if payload.get("protocol") != SEMANTIC_PROTOCOL:
+>           raise ValueError("Lean semantic helper emitted an unsupported protocol")
+E           ValueError: Lean semantic helper emitted an unsupported protocol
+
+src/ladon/semantic_candidate_worker.py:709: ValueError
+_________ test_v4_batch_rows_require_the_same_owned_context_population _________
+
+    def test_v4_batch_rows_require_the_same_owned_context_population():
+        payload = rows()
+        row = {
+            "candidate": "Main.step", "status": "applicable-with-residuals",
+            "candidateSubject": {k: v for k, v in declaration().items() if k != "binders"},
+            "applicationTerm": "Main.step ?h", "failureStage": "", "diagnostic": "",
+            **{k: payload[k] for k in ["substitutions", "dischargedHypotheses", "residualPremises", "residualContexts", "declarationBinders"]},
+        }
+>       _validate_batch_row(row, "Main.step", protocol=BATCH4)
+E       TypeError: _validate_batch_row() got an unexpected keyword argument 'protocol'
+
+tests/test_semantic_application_context_v4.py:156: TypeError
+___ test_stored_v4_reads_new_fields_without_synthesizing_legacy_populations ____
+
+    def test_stored_v4_reads_new_fields_without_synthesizing_legacy_populations():
+        shape = {
+            "applicationObservationVersion": 4, "semanticProtocol": V4,
+            "residualContexts": rows()["residualContexts"], "selectedDeclaration": declaration(),
+        }
+        subject = {"kind": "candidate-application", "localId": "app", "searchShape": shape}
+        artifact = {"payload": {"inputs": {"subjectRefs": [{"kind": "candidate-application", "localId": "app"}]}}, "subjectRefs": [subject]}
+>       assert _stored_check(artifact) == shape
+E       AssertionError: assert {} == {'application...ck-candidate'}
+E         
+E         Right contains 4 more items:
+E         {'applicationObservationVersion': 4,
+E          'residualContexts': [{'goalId': '_uniq.1',
+E                                'localContext': [{'binderInfo': 'default',
+E                                                  'dependencies': [],
+E                                                  'localId': 'local:0',...
+E         
+E         ...Full output truncated (12 lines hidden), use '-vv' to show
+
+tests/test_semantic_application_context_v4.py:169: AssertionError
+_ test_v4_projection_ownership_rejects_missing_or_changed_declaration_evidence _
+
+    def test_v4_projection_ownership_rejects_missing_or_changed_declaration_evidence():
+        shape = {"applicationTerm": "Main.step", "substitutions": [], "residualPremises": [], "dischargedHypotheses": [], "localContext": [], "applicationObservationVersion": 4, "semanticProtocol": V4, "residualContexts": [], "selectedDeclaration": declaration()}
+        receipt = {"subject": {"localContext": []}}
+        check = deepcopy(shape)
+        del check["selectedDeclaration"]
+>       with pytest.raises(SemanticProjectionError):
+E       Failed: DID NOT RAISE <class 'ladon.semantic_projection_core.SemanticProjectionError'>
+
+tests/test_semantic_application_context_v4.py:180: Failed
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_context_v4.py::test_v4_cannot_omit_an_observation_population[residualContexts]
+FAILED tests/test_semantic_application_context_v4.py::test_v4_cannot_omit_an_observation_population[declarationBinders]
+FAILED tests/test_semantic_application_context_v4.py::test_v4_residual_context_is_closed_ordered_and_owned[missing-context]
+FAILED tests/test_semantic_application_context_v4.py::test_v4_residual_context_is_closed_ordered_and_owned[extra-context]
+FAILED tests/test_semantic_application_context_v4.py::test_v4_residual_context_is_closed_ordered_and_owned[unknown-dependency]
+FAILED tests/test_semantic_application_context_v4.py::test_v4_residual_context_is_closed_ordered_and_owned[duplicate-id]
+FAILED tests/test_semantic_application_context_v4.py::test_v4_residual_context_is_closed_ordered_and_owned[forward-dependency]
+FAILED tests/test_semantic_application_context_v4.py::test_v4_residual_context_is_closed_ordered_and_owned[value-half-present]
+FAILED tests/test_semantic_application_context_v4.py::test_v4_application_identity_binds_context_and_full_declaration_inventory
+FAILED tests/test_semantic_application_context_v4.py::test_v4_display_only_changes_do_not_change_structural_application_identity
+FAILED tests/test_semantic_application_context_v4.py::test_v4_single_frame_accepts_owned_observations_and_rejects_extra_fields
+FAILED tests/test_semantic_application_context_v4.py::test_v4_batch_rows_require_the_same_owned_context_population
+FAILED tests/test_semantic_application_context_v4.py::test_stored_v4_reads_new_fields_without_synthesizing_legacy_populations
+FAILED tests/test_semantic_application_context_v4.py::test_v4_projection_ownership_rejects_missing_or_changed_declaration_evidence
+14 failed, 2 passed in 0.11s

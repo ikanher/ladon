@@ -1,0 +1,25 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________ test_small_owned_context_survives_bounded_omission_ledger ___________
+
+    def test_small_owned_context_survives_bounded_omission_ledger():
+        check, selected = observation()
+        payload = transport(check)
+        payload['request'] = {'goal': '∀ (α β : Type) [Inhabited α] (x : α) (y : β), (x = x) ∧ (y = y)',
+                              'module': 'BinderFixture', 'goalFingerprint': 'sha256:' + 'a' * 64,
+                              'moduleFingerprint': 'sha256:' + 'b' * 64, 'localContext': []}
+        card = payload['candidate']['check']
+        card.update(environmentRef={'artifactRef': 'sha256:' + 'c' * 64, 'environmentRef': 'sha256:' + 'd' * 64},
+                    checkRunRef={'artifactRef': 'sha256:' + 'e' * 64, 'localId': 'check:' + 'f' * 64},
+                    receiptIdentity='sha256:' + 'a' * 64, sourceReceiptIdentity='sha256:' + 'b' * 64)
+        original = deepcopy(payload)
+        result = finalize_projection(payload, 8192)
+        card = result['candidate']['check']
+>       assert card['selectedDeclaration']['typeDisplay'] == selected['typeDisplay']
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'selectedDeclaration'
+
+tests/test_semantic_application_context_ledger.py:22: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_context_ledger.py::test_small_owned_context_survives_bounded_omission_ledger
+1 failed in 0.04s

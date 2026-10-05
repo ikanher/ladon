@@ -1,0 +1,18 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "pytest",
+    "-q",
+    "tests/test_source_goal_completion_lean.py::test_real_local_value_application_replays_and_keeps_project_unchanged",
+    "--tb=short"
+  ],
+  "returncode": 1,
+  "stdout": "F                                                                        [100%]\n=================================== FAILURES ===================================\n____ test_real_local_value_application_replays_and_keeps_project_unchanged _____\ntests/test_source_goal_completion_lean.py:70: in test_real_local_value_application_replays_and_keeps_project_unchanged\n    _assert_completed(result, capture)\ntests/test_source_goal_completion_lean.py:58: in _assert_completed\n    assert result[\"status\"] == \"completed\", result\nE   AssertionError: {'application': None, 'captureId': 'sha256:539711f8c563e292f4ad44996a163a97510d4f9b838f0fcdd4b2f1b7571ac1b9', 'diagnos...ode': 'helper-protocol', 'message': 'owner direct-import list is malformed'}, 'operation': 'complete-source-goal', ...}\nE   assert 'unavailable' == 'completed'\nE     \nE     - completed\nE     + unavailable\n=========================== short test summary info ============================\nFAILED tests/test_source_goal_completion_lean.py::test_real_local_value_application_replays_and_keeps_project_unchanged\n1 failed in 7.66s\n",
+  "stderr": "",
+  "elapsed_seconds": 7.799452614970505,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 2158190592
+}

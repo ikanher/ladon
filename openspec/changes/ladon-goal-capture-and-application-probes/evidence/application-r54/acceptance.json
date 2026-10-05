@@ -1,0 +1,74 @@
+{
+  "schema": "ladon-application-slice-acceptance-v1",
+  "scope": "task 1.1 residual text, not source capture, completion or usefulness",
+  "identity": {
+    "sourceHead": "d64f475e23a7339c91aa280ff6e6679c27607875",
+    "sourceIndexSha256": "840bfe9d261ad6afa25c36c7311ad86677a1c437e84044826cbf0791370afc04",
+    "candidateCommit": "40f91d77f97f5d8b7ab4fd0dda0a7b22394dc175",
+    "sourceInventoryDigest": "sha256:ad0a7ca1055b806b94605f60b3205d219467bc91356fba86f97a4b3684741b55"
+  },
+  "wheelSha256": "e00e8be3d9c3f531d88c1712b3dd2c8ea025a74627f673a562da279830fcfbb2",
+  "maintainedTests": 2979,
+  "installedCliContracts": 29,
+  "installedTestsByRuntime": {
+    "3.11": 1061,
+    "3.12": 1061
+  },
+  "originsAndParity": [
+    {
+      "runtime": "py311",
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r54/ladon-application-r54-_23yfsf2/py311/bin/python",
+        "-I",
+        "-c",
+        "import hashlib,json,ladon.proof_search_semantic_cli as s, ladon.proof_search_cli as c; from pathlib import Path; print(json.dumps([{\"module\":m.__name__,\"path\":m.__file__,\"sha256\":hashlib.sha256(Path(m.__file__).read_bytes()).hexdigest()} for m in [s,c]]))"
+      ],
+      "cwd": "/tmp",
+      "exitCode": 0,
+      "modules": [
+        {
+          "module": "ladon.proof_search_semantic_cli",
+          "path": "/home/codex/.cache/ladon-qualification-r54/ladon-application-r54-_23yfsf2/py311/lib/python3.11/site-packages/ladon/proof_search_semantic_cli.py",
+          "sha256": "88e3edfd83e4e270f22de1885d5ee56c9a1eeac560366448cd46b77524253eaf"
+        },
+        {
+          "module": "ladon.proof_search_cli",
+          "path": "/home/codex/.cache/ladon-qualification-r54/ladon-application-r54-_23yfsf2/py311/lib/python3.11/site-packages/ladon/proof_search_cli.py",
+          "sha256": "0a655c43a439d85eb21c523b867f07a5b78d21a4f5c63c6f72ce6cd73e37eb63"
+        }
+      ]
+    },
+    {
+      "runtime": "py312",
+      "argv": [
+        "/home/codex/.cache/ladon-qualification-r54/ladon-application-r54-_23yfsf2/py312/bin/python",
+        "-I",
+        "-c",
+        "import hashlib,json,ladon.proof_search_semantic_cli as s, ladon.proof_search_cli as c; from pathlib import Path; print(json.dumps([{\"module\":m.__name__,\"path\":m.__file__,\"sha256\":hashlib.sha256(Path(m.__file__).read_bytes()).hexdigest()} for m in [s,c]]))"
+      ],
+      "cwd": "/tmp",
+      "exitCode": 0,
+      "modules": [
+        {
+          "module": "ladon.proof_search_semantic_cli",
+          "path": "/home/codex/.cache/ladon-qualification-r54/ladon-application-r54-_23yfsf2/py312/lib/python3.12/site-packages/ladon/proof_search_semantic_cli.py",
+          "sha256": "88e3edfd83e4e270f22de1885d5ee56c9a1eeac560366448cd46b77524253eaf"
+        },
+        {
+          "module": "ladon.proof_search_cli",
+          "path": "/home/codex/.cache/ladon-qualification-r54/ladon-application-r54-_23yfsf2/py312/lib/python3.12/site-packages/ladon/proof_search_cli.py",
+          "sha256": "0a655c43a439d85eb21c523b867f07a5b78d21a4f5c63c6f72ce6cd73e37eb63"
+        }
+      ]
+    }
+  ],
+  "field": {
+    "fixture": "fixed-epoch known-candidate missing-boundary-premise regression",
+    "freshChecks": 2,
+    "independentReplay": "not-requested",
+    "discovery": "not-tested",
+    "status": "applicable-with-residuals",
+    "residual": "0 \u2264 Mf.DP.fixedEpochCenterGap point h boundary"
+  },
+  "historicalEvidence": "r52 and r03 unchanged; no comparative benefit or new completion claim"
+}

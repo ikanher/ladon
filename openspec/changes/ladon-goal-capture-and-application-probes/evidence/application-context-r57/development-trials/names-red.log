@@ -1,0 +1,118 @@
+F..FF.                                                                   [100%]
+=================================== FAILURES ===================================
+_ test_repeated_display_names_dispatch_by_protocol[ladon-lean-semantic-v4/check-candidate-True] _
+
+protocol = 'ladon-lean-semantic-v4/check-candidate', valid = True
+
+    @pytest.mark.parametrize('protocol,valid', [('ladon-lean-semantic-v4/check-candidate', True),
+                                              ('ladon-lean-semantic-v3/check-candidate', False)])
+    def test_repeated_display_names_dispatch_by_protocol(protocol, valid):
+        request = SemanticCandidateRequest(Path('.'), 'Main', 'True', 'Main.step')
+        payload = frame(request)
+        payload.update(protocol=protocol, localContext=locals_())
+        if not valid:
+            del payload['residualContexts'], payload['declarationBinders']
+            with pytest.raises(ValueError, match='duplicate local identity'):
+                _parse_worker_payload('LADON_FRAME ' + json.dumps(payload), request, 'req-v4')
+        else:
+>           parsed = _parse_worker_payload('LADON_FRAME ' + json.dumps(payload), request, 'req-v4')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_semantic_application_context_names.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/semantic_candidate_worker.py:647: in _parse_worker_payload
+    validate_observed_local_context(payload["localContext"], request.local_context)
+src/ladon/semantic_local_context.py:64: in validate_observed_local_context
+    _validate_unique_observed_rows(observed)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observed = [{'binderInfo': 'default', 'dependencies': [], 'localId': 'local:0', 'origin': 'goal-introduced', ...}, {'binderInfo': 'default', 'dependencies': [], 'localId': 'local:1', 'origin': 'goal-introduced', ...}]
+
+    def _validate_unique_observed_rows(observed: Sequence[Mapping[str, Any]]) -> None:
+        local_ids: set[str] = set()
+        local_names: set[str] = set()
+        for row in observed:
+            _validate_observed_row_shape(row)
+            if row["localId"] in local_ids or row["userName"] in local_names:
+>               raise ValueError("Lean semantic helper returned duplicate local identity")
+E               ValueError: Lean semantic helper returned duplicate local identity
+
+src/ladon/semantic_local_context.py:147: ValueError
+_______________ test_v4_batch_accepts_distinct_anonymous_locals ________________
+
+    def test_v4_batch_accepts_distinct_anonymous_locals():
+        request = SemanticCandidateRequest(Path('.'), 'Main', 'True', 'Main.step')
+        stream = batch_frames(request, header_protocol=V4, row_protocol=V4, summary_protocol=V4)
+        rows = [json.loads(line.removeprefix('LADON_FRAME ')) for line in stream.splitlines()]
+        rows[0]['localContext'] = locals_()
+        stream = '\n'.join('LADON_FRAME ' + json.dumps(row) for row in rows)
+>       payload, terminal = _parse_batch_worker_payload(stream, request, 'req-mixed', [request.candidate])
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_semantic_application_context_names.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/semantic_candidate_batch_worker.py:243: in _parse_batch_worker_payload
+    _validate_batch_header(header, request, request_id)
+src/ladon/semantic_candidate_batch_worker.py:302: in _validate_batch_header
+    _validate_batch_identity(payload, request, request_id)
+src/ladon/semantic_candidate_batch_worker.py:392: in _validate_batch_identity
+    _validate_batch_semantic_population(payload, request)
+src/ladon/semantic_candidate_batch_worker.py:483: in _validate_batch_semantic_population
+    validate_observed_local_context(payload["localContext"], request.local_context)
+src/ladon/semantic_local_context.py:64: in validate_observed_local_context
+    _validate_unique_observed_rows(observed)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observed = [{'binderInfo': 'default', 'dependencies': [], 'localId': 'local:0', 'origin': 'goal-introduced', ...}, {'binderInfo': 'default', 'dependencies': [], 'localId': 'local:1', 'origin': 'goal-introduced', ...}]
+
+    def _validate_unique_observed_rows(observed: Sequence[Mapping[str, Any]]) -> None:
+        local_ids: set[str] = set()
+        local_names: set[str] = set()
+        for row in observed:
+            _validate_observed_row_shape(row)
+            if row["localId"] in local_ids or row["userName"] in local_names:
+>               raise ValueError("Lean semantic helper returned duplicate local identity")
+E               ValueError: Lean semantic helper returned duplicate local identity
+
+src/ladon/semantic_local_context.py:147: ValueError
+_ test_v4_rejection_retains_distinct_anonymous_locals[ladon-lean-semantic-v4/check-candidate-True] _
+
+protocol = 'ladon-lean-semantic-v4/check-candidate', valid = True
+
+    @pytest.mark.parametrize('protocol,valid', [('ladon-lean-semantic-v4/check-candidate', True),
+                                              ('ladon-lean-semantic-v3/check-candidate', False)])
+    def test_v4_rejection_retains_distinct_anonymous_locals(protocol, valid):
+        request = SemanticCandidateRequest(Path('.'), 'Main', 'True', 'Main.step')
+        payload = frame(request)
+        for field in ['candidate', 'applicationTerm', 'substitutions', 'dischargedHypotheses', 'residualPremises', 'residualContexts', 'declarationBinders']:
+            del payload[field]
+        payload.update(protocol=protocol, localContext=locals_(), candidateName=request.candidate,
+                       status='rejected', failureStage='application-rejected', diagnostic='rejected')
+        if valid:
+>           _validate_rejected_worker_payload(payload, request, 'req-v4')
+
+tests/test_semantic_application_context_names.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/semantic_candidate_worker.py:703: in _validate_rejected_worker_payload
+    validate_observed_local_context(payload["localContext"], request.local_context)
+src/ladon/semantic_local_context.py:64: in validate_observed_local_context
+    _validate_unique_observed_rows(observed)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observed = [{'binderInfo': 'default', 'dependencies': [], 'localId': 'local:0', 'origin': 'goal-introduced', ...}, {'binderInfo': 'default', 'dependencies': [], 'localId': 'local:1', 'origin': 'goal-introduced', ...}]
+
+    def _validate_unique_observed_rows(observed: Sequence[Mapping[str, Any]]) -> None:
+        local_ids: set[str] = set()
+        local_names: set[str] = set()
+        for row in observed:
+            _validate_observed_row_shape(row)
+            if row["localId"] in local_ids or row["userName"] in local_names:
+>               raise ValueError("Lean semantic helper returned duplicate local identity")
+E               ValueError: Lean semantic helper returned duplicate local identity
+
+src/ladon/semantic_local_context.py:147: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_context_names.py::test_repeated_display_names_dispatch_by_protocol[ladon-lean-semantic-v4/check-candidate-True]
+FAILED tests/test_semantic_application_context_names.py::test_v4_batch_accepts_distinct_anonymous_locals
+FAILED tests/test_semantic_application_context_names.py::test_v4_rejection_retains_distinct_anonymous_locals[ladon-lean-semantic-v4/check-candidate-True]
+3 failed, 3 passed in 0.10s

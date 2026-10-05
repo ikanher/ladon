@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/home/codex/.cache/ladon-qualification-r59/ladon-application-completion-r59-7ivd_ivg/py311/bin/python",
+    "-I",
+    "-c",
+    "import hashlib,importlib,json,sys; from pathlib import Path; modules=['_source_goal_completion_binding', '_source_goal_completion_observation', 'source_goal_completion', '_source_goal_completion_inputs', '_source_goal_completion_protocol', '_source_goal_completion_replay', 'source_goal_completion_cli', 'proof_search_goal_cli', 'proof_search_cli', 'proof_search_terminal', 'source_goal_capture', '_source_goal_inventory', '_source_goal_protocol']; paths=[Path(importlib.import_module('ladon.'+m).__file__) for m in modules]; paths += [paths[0].parent/'lean/ladon_source_goal_completion_helper.lean', paths[0].parent/'lean/ladon_source_goal_helper.lean']; assert all('site-packages' in str(p) for p in paths); print(json.dumps({'runtime':sys.version,'files':[{'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in paths]}))"
+  ],
+  "cwd": "/tmp",
+  "exitCode": 0,
+  "elapsedSeconds": 0.1157967490144074
+}

@@ -1,0 +1,124 @@
++ /home/codex/miniconda3/bin/uv lock --check
+Using CPython 3.11.15 interpreter at: /home/codex/miniconda3/bin/python3.11
+Resolved 18 packages in 0.41ms
++ /home/codex/miniconda3/bin/uv sync --locked --no-editable
+Using CPython 3.11.15 interpreter at: /home/codex/miniconda3/bin/python3.11
+Creating virtual environment at: /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/environment
+Resolved 18 packages in 0.39ms
+   Building ladon @ file:///home/codex/.cache/ladon-qualification-r57/ladon-candidate-q48xhlbb/source
+      Built ladon @ file:///home/codex/.cache/ladon-qualification-r57/ladon-candidate-q48xhlbb/source
+Downloading pygments (1.2MiB)
+Downloading ruff (10.5MiB)
+ Downloaded pygments
+ Downloaded ruff
+Prepared 18 packages in 904ms
+Installed 18 packages in 7ms
+ + attrs==26.1.0
+ + colorama==0.4.6
+ + iniconfig==2.3.0
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + ladon==0.2.0 (from file:///home/codex/.cache/ladon-qualification-r57/ladon-candidate-q48xhlbb/source)
+ + mando==0.7.1
+ + packaging==26.2
+ + pluggy==1.6.0
+ + pygments==2.20.0
+ + pytest==9.0.3
+ + radon==6.0.1
+ + referencing==0.37.0
+ + rpds-py==2026.6.3
+ + ruff==0.16.3
+ + six==1.17.0
+ + typing-extensions==4.16.0
+ + vulture==2.16
++ /home/codex/miniconda3/bin/uv run --locked --no-sync python -m pytest --collect-only -q
++ /home/codex/projects/ladon/.venv/bin/python3 -m pytest --collect-only -q
++ /home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lake build
+✔ [2/5] Built LadonFixture.Core (116ms)
+✔ [3/5] Built LadonFixture.Helper (116ms)
+⚠ [4/5] Built LadonFixture (127ms)
+warning: LadonFixture.lean:12:23: Variable name `y` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+Build completed successfully (5 jobs).
++ /home/codex/miniconda3/bin/uv run --locked --no-sync python scripts/python_quality.py --strict
+
+== strict radon/vulture checks ==
+radon/vulture: clean
+
+== scoped ruff ==
++ /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/environment/bin/python3 -m ruff check src tests scripts
+All checks passed!
+
+== compileall ==
+
+== pytest ==
++ /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/environment/bin/python3 -m pytest -q tests
+........................................................................ [  2%]
+........................................................................ [  4%]
+........................................................................ [  7%]
+........................................................................ [  9%]
+........................................................................ [ 11%]
+........................................................................ [ 14%]
+........................................................................ [ 16%]
+........................................................................ [ 18%]
+........................................................................ [ 21%]
+........................................................................ [ 23%]
+........................................................................ [ 25%]
+........................................................................ [ 28%]
+........................................................................ [ 30%]
+........................................................................ [ 32%]
+........................................................................ [ 35%]
+........................................................................ [ 37%]
+........................................................................ [ 39%]
+........................................................................ [ 42%]
+........................................................................ [ 44%]
+........................................................................ [ 46%]
+........................................................................ [ 49%]
+........................................................................ [ 51%]
+........................................................................ [ 53%]
+........................................................................ [ 56%]
+........................................................................ [ 58%]
+........................................................................ [ 60%]
+........................................................................ [ 63%]
+........................................................................ [ 65%]
+........................................................................ [ 68%]
+........................................................................ [ 70%]
+........................................................................ [ 72%]
+........................................................................ [ 75%]
+........................................................................ [ 77%]
+........................................................................ [ 79%]
+........................................................................ [ 82%]
+........................................................................ [ 84%]
+........................................................................ [ 86%]
+........................................................................ [ 89%]
+........................................................................ [ 91%]
+........................................................................ [ 93%]
+........................................................................ [ 96%]
+........................................................................ [ 98%]
+.............................................                            [100%]
+3069 passed in 291.07s (0:04:51)
++ /home/codex/miniconda3/bin/uv build --force-pep517 --build-constraints /home/codex/.cache/ladon-qualification-r57/ladon-candidate-q48xhlbb/source/build-constraints.txt --out-dir /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/dist --clear .
+Building source distribution...
+Building wheel from source distribution...
+Successfully built /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/dist/ladon-0.2.0.tar.gz
+Successfully built /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/dist/ladon-0.2.0-py3-none-any.whl
++ /home/codex/miniconda3/bin/uv venv --python /home/codex/projects/ladon/.venv/bin/python3 /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/installed
+Using CPython 3.11.15 interpreter at: /home/codex/projects/ladon/.venv/bin/python3
+Creating virtual environment at: installed
+Activate with: source installed/bin/activate
++ /home/codex/miniconda3/bin/uv pip install --python /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/installed/bin/python /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/dist/ladon-0.2.0-py3-none-any.whl
+Using Python 3.11.15 environment at: installed
+Resolved 1 package in 1ms
+Prepared 1 package in 6ms
+Installed 1 package in 3ms
+ + ladon==0.2.0 (from file:///home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/dist/ladon-0.2.0-py3-none-any.whl)
++ /home/codex/miniconda3/bin/uv pip check --python /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/installed/bin/python
+Using Python 3.11.15 environment at: installed
+Checked 1 package in 0.21ms
+All installed packages are compatible
++ /home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/installed/bin/python -c from importlib import resources; import sys; path = resources.files(sys.argv[1]).joinpath(sys.argv[2]); assert path.is_file(), path; print(path) ladon lean/ladon_semantic_candidate_helper.lean
+/home/codex/.cache/ladon-qualification-r57/ladon-clean-gate-sbl0mo61/installed/lib/python3.11/site-packages/ladon/lean/ladon_semantic_candidate_helper.lean
+clean checkout gate: PASS

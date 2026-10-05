@@ -1,0 +1,111 @@
+.FFF                                                                     [100%]
+=================================== FAILURES ===================================
+______________ test_v4_frame_with_context_and_binders_dispatches _______________
+
+    def test_v4_frame_with_context_and_binders_dispatches() -> None:
+        request = SemanticCandidateRequest(Path("."), "Main", "True", "Main.candidate")
+>       _validate_worker_frame(_frame(request, v4_fields=True), request, "request-v4-contract")
+
+tests/test_semantic_application_context_v4_dispatch.py:87: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+payload = {'applicationTerm': 'Main.candidate', 'candidate': {'name': 'Main.candidate', 'typeDisplay': 'Nat → Target', 'typeStru...ependencies': [], 'localId': 'local:param0', 'origin': 'declaration-parameter', ...}], 'dischargedHypotheses': [], ...}
+request = SemanticCandidateRequest(repo_root=PosixPath('.'), module='Main', goal='True', candidate='Main.candidate', timeout_sec...8608, max_rss_bytes=34359738368, toolchain=None, local_context=(), execution_context_ref=None, require_isolation=False)
+request_id = 'request-v4-contract'
+
+    def _validate_worker_frame(
+        payload: Mapping[str, Any], request: SemanticCandidateRequest, request_id: str
+    ) -> None:
+        if payload.get("protocol") != SEMANTIC_PROTOCOL:
+>           raise ValueError("Lean semantic helper emitted an unsupported protocol")
+E           ValueError: Lean semantic helper emitted an unsupported protocol
+
+src/ladon/semantic_candidate_worker.py:709: ValueError
+___ test_v4_frame_without_context_or_binders_rejects_for_missing_v4_evidence ___
+
+    def test_v4_frame_without_context_or_binders_rejects_for_missing_v4_evidence() -> None:
+        request = SemanticCandidateRequest(Path("."), "Main", "True", "Main.candidate")
+        frame = _frame(request, v4_fields=False)
+        frame["protocol"] = V4_PROTOCOL
+        with pytest.raises(ValueError) as rejected:
+            _validate_worker_frame(frame, request, "request-v4-contract")
+        message = str(rejected.value)
+>       assert "residualContexts" in message or "declarationBinders" in message
+E       AssertionError: assert ('residualContexts' in 'Lean semantic helper emitted an unsupported protocol' or 'declarationBinders' in 'Lean semantic helper emitted an unsupported protocol')
+
+tests/test_semantic_application_context_v4_dispatch.py:97: AssertionError
+___ test_application_identity_v4_binds_context_per_same_expression_residual ____
+
+    def test_application_identity_v4_binds_context_per_same_expression_residual() -> None:
+        """Equal residual expressions with distinct observed contexts need distinct IDs."""
+        statement = _subject("statement", {"name": "Target", "typeDisplay": "Target", "typeStructural": "Target"})
+        selected = {
+            "name": "Main.candidate",
+            "typeDisplay": "R x → R x → Target",
+            "typeStructural": "forallE R (forallE R Target)",
+            "binders": [{**_local("local:param0", "x", "Nat"), "origin": "declaration-parameter"}],
+        }
+        declaration = _subject("declaration", selected)
+        residual = _subject("statement", {"name": "R x", "typeDisplay": "R x", "typeStructural": "app R x"})
+        residuals = [residual, dict(residual)]
+        rows = [
+            {"typeDisplay": "R x", "typeStructural": "app R x"},
+            {"typeDisplay": "R x", "typeStructural": "app R x"},
+        ]
+        base_context = [
+            _local("local:x", "x", "Nat"),
+            {
+                **_local("local:y", "y", "Nat"),
+                "valueDisplay": "wrap x",
+                "valueStructural": "wrap x",
+                "dependencies": ["local:x"],
+            },
+        ]
+        changed_value_context = [
+            base_context[0],
+            {**base_context[1], "valueDisplay": "wrap (wrap x)", "valueStructural": "wrap (wrap x)"},
+        ]
+        contexts = [
+            {"goalId": "?m.1", "localContext": base_context},
+            {"goalId": "?m.2", "localContext": base_context},
+        ]
+        changed = [contexts[0], {"goalId": "?m.2", "localContext": changed_value_context}]
+        def build(owned_contexts: list[dict[str, object]]) -> dict[str, object]:
+            return _application_subject(
+                statement,
+                declaration,
+                residuals,
+                application_term="candidate ?m₁ ?m₂",
+                residual_rows=rows,
+                residual_contexts=owned_contexts,
+                selected_declaration=selected,
+                semantic_protocol=V4_PROTOCOL,
+            )
+    
+>       first = build(contexts)
+                ^^^^^^^^^^^^^^^
+
+tests/test_semantic_application_context_v4_dispatch.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owned_contexts = [{'goalId': '?m.1', 'localContext': [{'binderInfo': 'default', 'dependencies': [], 'localId': 'local:x', 'origin': 'go......}, {'binderInfo': 'default', 'dependencies': ['local:x'], 'localId': 'local:y', 'origin': 'goal-introduced', ...}]}]
+
+    def build(owned_contexts: list[dict[str, object]]) -> dict[str, object]:
+>       return _application_subject(
+            statement,
+            declaration,
+            residuals,
+            application_term="candidate ?m₁ ?m₂",
+            residual_rows=rows,
+            residual_contexts=owned_contexts,
+            selected_declaration=selected,
+            semantic_protocol=V4_PROTOCOL,
+        )
+E       TypeError: _application_subject() got an unexpected keyword argument 'residual_contexts'
+
+tests/test_semantic_application_context_v4_dispatch.py:135: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_context_v4_dispatch.py::test_v4_frame_with_context_and_binders_dispatches
+FAILED tests/test_semantic_application_context_v4_dispatch.py::test_v4_frame_without_context_or_binders_rejects_for_missing_v4_evidence
+FAILED tests/test_semantic_application_context_v4_dispatch.py::test_application_identity_v4_binds_context_per_same_expression_residual
+3 failed, 1 passed in 0.06s

@@ -1,0 +1,76 @@
+F..F..                                                                   [100%]
+=================================== FAILURES ===================================
+__________ test_v4_notation_fallback_accepts_a_shadowed_display_name ___________
+
+    def test_v4_notation_fallback_accepts_a_shadowed_display_name():
+        """V4 owner evidence disambiguates repeated names by unique raw local IDs."""
+>       _validate(V4, _notation_shadowed_rows())
+
+tests/test_semantic_context_shadowing.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_semantic_context_shadowing.py:39: in _validate
+    _validate_context_subject(subject, check, None, check_artifact=owner)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'localContext': [{'name': 'n', 'type': 'ℕ'}, {'name': 'n', 'type': 'Bool'}]}
+check = {'applicationObservationVersion': 4, 'callerLocalContext': [{'name': 'n', 'type': 'Nat'}], 'semanticProtocol': 'ladon-lean-semantic-v4/check-candidate'}
+request = None
+
+    def _validate_context_subject(
+        subject: Mapping[str, Any], check: Mapping[str, Any],
+        request: Mapping[str, Any] | None,
+        *, check_artifact: Mapping[str, Any] | None = None,
+    ) -> None:
+        observed = _observed_context(subject)
+        requested = check.get("callerLocalContext")
+        if requested is None and request is not None:
+            requested = request.get("localContext")
+        if requested is None:
+            return
+        if not isinstance(requested, list):
+            raise SemanticProjectionError("semantic request has invalid local context")
+        normalized = [dict(row) for row in requested if isinstance(row, Mapping)]
+        if len(normalized) != len(requested) or (
+            observed[: len(normalized)] != normalized
+            and not _owned_context_matches(observed, normalized, check_artifact)
+        ):
+>           raise SemanticProjectionError(
+                "semantic observed local context does not preserve the requested prefix"
+            )
+E           ladon.semantic_projection_core.SemanticProjectionError: semantic observed local context does not preserve the requested prefix
+
+src/ladon/_semantic_observation_contract.py:248: SemanticProjectionError
+_ test_scratch_notation_uses_parent_context_protocol[ladon-lean-semantic-v4/check-candidate-False-True] _
+
+protocol = 'ladon-lean-semantic-v4/check-candidate', duplicate = False
+valid = True
+
+    @pytest.mark.parametrize("protocol,duplicate,valid", [(V4, False, True), (V3, False, False), (V4, True, False)])
+    def test_scratch_notation_uses_parent_context_protocol(protocol, duplicate, valid):
+        rows = _notation_shadowed_rows("local:0" if duplicate else "local:1")
+        observed = [{"name": row["userName"], "type": row["typeDisplay"]} for row in rows]
+        shape = {"localContext": rows}
+        if protocol == V4:
+            shape.update(applicationObservationVersion=4, semanticProtocol=protocol)
+        parent = {"subjectRefs": [{"kind": "candidate-application", "searchShape": shape}]}
+        if valid:
+>           _validate_scratch_notation(observed, REQUESTED, parent)
+
+tests/test_semantic_context_shadowing.py:73: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observed = [{'name': 'n', 'type': 'ℕ'}, {'name': 'n', 'type': 'Bool'}]
+requested = [{'name': 'n', 'type': 'Nat'}]
+parent_artifact = {'subjectRefs': [{'kind': 'candidate-application', 'searchShape': {'applicationObservationVersion': 4, 'localContext':...calId': 'local:1', 'origin': 'goal-introduced', ...}], 'semanticProtocol': 'ladon-lean-semantic-v4/check-candidate'}}]}
+
+    def _validate_scratch_notation(observed, requested, parent_artifact):
+        if (any(set(row) != {'name', 'type'} for row in requested)
+                or not _owned_context_matches(observed, requested, parent_artifact)):
+>           raise SemanticProjectionError('scratch context has no matching parent structural evidence')
+E           ladon.semantic_projection_core.SemanticProjectionError: scratch context has no matching parent structural evidence
+
+src/ladon/_semantic_observation_contract.py:285: SemanticProjectionError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_context_shadowing.py::test_v4_notation_fallback_accepts_a_shadowed_display_name
+FAILED tests/test_semantic_context_shadowing.py::test_scratch_notation_uses_parent_context_protocol[ladon-lean-semantic-v4/check-candidate-False-True]
+2 failed, 4 passed in 0.04s

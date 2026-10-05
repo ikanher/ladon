@@ -1,0 +1,16 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "python",
+    ".codex/state/application-handoff-r60/search_complete_a.py"
+  ],
+  "returncode": 1,
+  "stdout": "{\"name\": \"search\", \"returnCode\": 2, \"seconds\": 9.092067984980531, \"rss\": 50589696}\n",
+  "stderr": "Traceback (most recent call last):\n  File \"/home/codex/projects/ladon/.codex/state/application-handoff-r60/search_complete_a.py\", line 9, in <module>\n    result=command('search',[str(cli),'proof-search','search','type-text','--repo-root',str(matrix),'--index','/home/codex/.cache/ladon-core-discovery-r50/proof-search.sqlite','--pattern','fixedEpochCenterGap','--scope','module','--root','Mf.DP.PoissonFixedEpochCenterGapPropagation','--limit','8','--freshness','verify','--format','json'])\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/codex/projects/ladon/.codex/state/application-handoff-r60/search_complete_a.py\", line 8, in command\n    r=run_bounded_target_process(argv,cwd=Path('/tmp'),env=env,timeout_seconds=55,max_output_bytes=8388608,max_rss_bytes=34359738368);(run/(name+'.stdout')).write_text(r.stdout);(run/(name+'.stderr')).write_text(r.stderr);row=asdict(r);row.pop('stdout');row.pop('stderr');(run/(name+'.command.json')).write_text(json.dumps(row,indent=2)+'\\n');print(json.dumps({'name':name,'returnCode':r.returncode,'seconds':r.elapsed_seconds,'rss':r.peak_rss_bytes}),flush=True);assert r.returncode==0,(name,r.stdout[-1000:],r.stderr[-1000:]);return json.loads(r.stdout)\n                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       ^^^^^^^^^^^^^^^\nAssertionError: ('search', '', '{\"diagnostic\":{\"code\":\"invalid-invocation\",\"message\":\"type-text index is stale or unavailable\"},\"exitClass\":\"invocation\",\"exitCode\":2,\"operation\":\"search\",\"schema\":\"ladon-proof-search-terminal-v1\",\"status\":\"failed\"}\\n')\n",
+  "elapsed_seconds": 9.199683716055006,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 108265472
+}

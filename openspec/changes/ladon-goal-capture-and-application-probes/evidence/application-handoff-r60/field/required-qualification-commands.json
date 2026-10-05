@@ -1,0 +1,64 @@
+[
+  {
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "python",
+      "scripts/installed_distribution_smoke.py",
+      "--candidate",
+      "/home/codex/.cache/ladon-qualification-r59/ladon-application-completion-r59-7ivd_ivg/candidate",
+      "--package-resource",
+      "ladon:lean/ladon_source_goal_completion_helper.lean",
+      "--package-resource",
+      "ladon:lean/ladon_source_goal_helper.lean"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 14.761358057963662,
+    "timed_out": false,
+    "output_limited": false,
+    "memory_limited": false,
+    "peak_rss_bytes": 151146496,
+    "name": "installed-distribution"
+  },
+  {
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "python",
+      "scripts/lean_integration_gate.py",
+      "--candidate",
+      "/home/codex/.cache/ladon-qualification-r59/ladon-application-completion-r59-7ivd_ivg/candidate",
+      "--required"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 4.207471632049419,
+    "timed_out": false,
+    "output_limited": false,
+    "memory_limited": false,
+    "peak_rss_bytes": 2141163520,
+    "name": "required-lean-integration"
+  },
+  {
+    "command": [
+      "uv",
+      "run",
+      "--locked",
+      "python",
+      "scripts/ladon_benchmarks.py",
+      "--candidate",
+      "/home/codex/.cache/ladon-qualification-r59/ladon-application-completion-r59-7ivd_ivg/candidate",
+      "--required",
+      "--output",
+      "/home/codex/.cache/ladon-handoff-r60-i80pkq23/required-portable-benchmark-results.json"
+    ],
+    "returncode": 0,
+    "elapsed_seconds": 8.570344559964724,
+    "timed_out": false,
+    "output_limited": false,
+    "memory_limited": false,
+    "peak_rss_bytes": 139223040,
+    "name": "required-portable-benchmarks"
+  }
+]

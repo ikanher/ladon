@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/home/codex/.cache/ladon-qualification-r55/ladon-source-capture-r55-q9gljvgi/py311/bin/python",
+    "-I",
+    "-c",
+    "import hashlib,json,sys; from pathlib import Path; import ladon.source_goal_capture as m; import ladon._source_goal_protocol as p; import ladon._source_goal_inventory as i; paths=[Path(x.__file__) for x in [m,p,i]]+[Path(m.__file__).parent/'lean/ladon_source_goal_helper.lean']; assert all('site-packages' in str(x) for x in paths); print(json.dumps({'runtime':sys.version,'files':[{'path':str(x),'sha256':hashlib.sha256(x.read_bytes()).hexdigest()} for x in paths]}))"
+  ],
+  "cwd": "/tmp",
+  "exitCode": 0,
+  "elapsedSeconds": 0.037185525987297297
+}

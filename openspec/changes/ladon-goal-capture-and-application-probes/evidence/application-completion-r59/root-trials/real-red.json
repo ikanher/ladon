@@ -1,0 +1,18 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "pytest",
+    "-q",
+    "tests/test_source_goal_completion_lean.py::test_real_local_value_application_replays_and_keeps_project_unchanged",
+    "--tb=short"
+  ],
+  "returncode": 1,
+  "stdout": "F                                                                        [100%]\n=================================== FAILURES ===================================\n____ test_real_local_value_application_replays_and_keeps_project_unchanged _____\ntests/test_source_goal_completion_lean.py:69: in test_real_local_value_application_replays_and_keeps_project_unchanged\n    result = complete_source_goal(_request(tmp_path, context, capture, \"z\"))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nsrc/ladon/source_goal_completion.py:78: in complete_source_goal\n    _complete(request, captured_request, capture, runner, result)\nsrc/ladon/source_goal_completion.py:111: in _complete\n    from ladon._source_goal_completion_protocol import decode_completion, validate_completion\nE   ModuleNotFoundError: No module named 'ladon._source_goal_completion_protocol'\n=========================== short test summary info ============================\nFAILED tests/test_source_goal_completion_lean.py::test_real_local_value_application_replays_and_keeps_project_unchanged\n1 failed in 6.04s\n",
+  "stderr": "",
+  "elapsed_seconds": 6.164598308969289,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 2149122048
+}

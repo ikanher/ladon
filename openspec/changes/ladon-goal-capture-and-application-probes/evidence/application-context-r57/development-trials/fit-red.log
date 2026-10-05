@@ -1,0 +1,31 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_compact_dependent_application_keeps_residual_context_and_selected_type __
+
+    def test_compact_dependent_application_keeps_residual_context_and_selected_type():
+        selected = {'name': 'Main.step', 'typeDisplay': '∀ {α β : Type} [Inhabited α] (x : α) (y : β), x = x → y = y → x = x ∧ y = y',
+                    'typeStructural': 'structural-declaration-type', 'binders': [local(i, 'declaration-parameter') for i in range(7)]}
+        check = {'status': 'applicable-with-residuals', 'applicationTerm': 'Main.step x y ?h ?k',
+                 'substitutions': [{'variable': f'v{i}', 'termDisplay': 'x', 'termStructural': 'fvar x'} for i in range(4)],
+                 'dischargedHypotheses': [], 'residualPremises': [{'typeDisplay': p, 'typeStructural': 'expr'} for p in ['x = x', 'y = y']],
+                 'applicationObservationVersion': 4, 'semanticProtocol': 'ladon-lean-semantic-v4/check-candidate',
+                 'residualContexts': [{'goalId': f'_uniq.{i}', 'localContext': [local(j) for j in range(5)]} for i in range(2)],
+                 'selectedDeclaration': selected}
+        omissions = []
+        card = candidate_card('Main.step', check, {}, 'llm', {}, omissions, pointer='/candidate')
+        payload = {'schema': 'ladon-semantic-candidate-projection-v1', 'operation': 'check-candidate',
+                   'status': 'applicable-with-residuals', 'candidate': card, 'request': {},
+                   'coverage': {}, 'omissions': omissions, 'limitations': [],
+                   'projection': {'name': 'llm', 'canonicalSchema': 'ladon-semantic-candidate-check-result-v1',
+                                  'canonicalPayloadIdentity': 'sha256:' + 'a' * 64,
+                                  'limits': {'maxBytes': 8192, 'measurement': 'pretty-json-utf8-v1'}}}
+        result = finalize_projection(payload, 8192)
+        projected = result['candidate']['check']
+>       assert projected['selectedDeclaration']['typeDisplay'] == selected['typeDisplay']
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'selectedDeclaration'
+
+tests/test_semantic_application_context_fit.py:33: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_context_fit.py::test_compact_dependent_application_keeps_residual_context_and_selected_type
+1 failed in 0.04s

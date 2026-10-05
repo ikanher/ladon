@@ -1,0 +1,200 @@
+{
+  "candidate": {
+    "check": {
+      "applicationObservationVersion": 4,
+      "applicationTerm": "BinderFixture.use x y a✝¹ a✝",
+      "authority": {
+        "analysisCompleteness": "complete",
+        "authorityBasis": "elaborator-check",
+        "environmentMatch": "exact",
+        "executionBinding": "explicit-pinned",
+        "observationState": "live",
+        "operationOutcome": "accepted",
+        "sourceFreshness": "unknown"
+      },
+      "checkRunRef": {
+        "artifactRef": "sha256:04e9af5250caa4000f30f0d961216fe2caae884b4ef756ce2fd33d53491c93c7",
+        "kind": "check-run",
+        "localId": "check:3bb3b66f3504ce32d005a863f69923c4ef896d5bac950b84a0814f742b981260"
+      },
+      "dischargedHypotheses": [
+        {
+          "dischargedByLocalRef": "local:5",
+          "method": "assumption-definitional-equality",
+          "premiseOrdinal": 0,
+          "premiseTypeDisplay": "x = x"
+        },
+        {
+          "dischargedByLocalRef": "local:6",
+          "method": "assumption-definitional-equality",
+          "premiseOrdinal": 1,
+          "premiseTypeDisplay": "y = y"
+        }
+      ],
+      "environmentRef": {
+        "artifactRef": "sha256:764edb81ffa54dbe618345be40cd4f4525efe09e97b85a2b8d8bbb5e22e8a090",
+        "environmentRef": "sha256:eadf9c69af1ea20057849878d0eca50957d763f12a132f8b16417ae28e3f5f98"
+      },
+      "executionBindingLimitation": null,
+      "failure": null,
+      "receiptIdentity": "sha256:94ce4b22ac52977926a1f9de602400ab56fd20c65238c9fb931d944c7f50dd45",
+      "residualContexts": [],
+      "residualPremises": [],
+      "scratch": null,
+      "selectedDeclaration": {
+        "binders": [
+          {
+            "binderInfo": "Lean.BinderInfo.implicit",
+            "localId": "local:0",
+            "typeDisplay": "Type",
+            "userName": "α"
+          },
+          {
+            "binderInfo": "Lean.BinderInfo.strictImplicit",
+            "localId": "local:1",
+            "typeDisplay": "Type",
+            "userName": "β"
+          },
+          {
+            "binderInfo": "Lean.BinderInfo.instImplicit",
+            "dependencies": [
+              "local:0"
+            ],
+            "localId": "local:2",
+            "typeDisplay": "Inhabited α",
+            "userName": "inst._@.BinderFixture.3332530522._hygCtx._hyg.4"
+          },
+          {
+            "binderInfo": "Lean.BinderInfo.default",
+            "dependencies": [
+              "local:0"
+            ],
+            "localId": "local:3",
+            "typeDisplay": "α",
+            "userName": "x"
+          }
+        ],
+        "name": "BinderFixture.use",
+        "typeDisplay": "∀ {α : Type} ⦃β : Type⦄ [Inhabited α] (x : α) (y : β), x = x → y = y → x = x ∧ y = y"
+      },
+      "semanticProtocol": "ladon-lean-semantic-v4/check-candidate",
+      "sourceReceiptIdentity": "sha256:94ce4b22ac52977926a1f9de602400ab56fd20c65238c9fb931d944c7f50dd45",
+      "status": "accepted",
+      "substitutions": [
+        {
+          "termDisplay": "α",
+          "variable": "α"
+        },
+        {
+          "termDisplay": "β",
+          "variable": "β"
+        },
+        {
+          "termDisplay": "inst✝",
+          "variable": "inst._@.BinderFixture.3332530522._hygCtx._hyg.4"
+        },
+        {
+          "termDisplay": "x",
+          "variable": "x"
+        }
+      ]
+    },
+    "name": "BinderFixture.use",
+    "nameFingerprint": "sha256:bcdb124ecece769074d7140388b08db335ea5e8514b188f53f9f7e3cc0c484aa",
+    "shortlist": {
+      "source": "explicit-candidate"
+    },
+    "source": null
+  },
+  "coverage": {
+    "candidatePopulation": {
+      "observed": 1,
+      "omitted": 0,
+      "projected": 1,
+      "statusCounts": {
+        "accepted": 1
+      }
+    },
+    "omissionPopulation": {
+      "generatedRecords": 1,
+      "observedRecords": 10,
+      "omittedRecords": 6,
+      "projectedRecords": 4,
+      "totalClaims": 27,
+      "transportRecords": 5
+    },
+    "operationalFailure": false
+  },
+  "limitations": [
+    "Artifact bodies and structural Lean expressions are omitted; expand registered evidence for audit.",
+    {
+      "id": "checker-observation-not-theorem-truth",
+      "message": "Acceptance records what this Lean process checked in this exact environment; Ladon does not promote it to an unqualified theorem-truth verdict."
+    }
+  ],
+  "omissions": [
+    {
+      "omitted": 12,
+      "pointer": "/candidate/check/selectedDeclaration/binders",
+      "reason": "compact-local-fields-omitted"
+    },
+    {
+      "omitted": 3,
+      "pointer": "/candidate/check/selectedDeclaration/binders",
+      "reason": "projection-collection-limit"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidate/check/selectedDeclaration/typeStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 3,
+      "pointer": "/candidate/check/substitutions",
+      "reason": "projection-collection-limit"
+    },
+    {
+      "omitted": 6,
+      "pointer": "/omissions",
+      "reason": "projection-collection-limit"
+    }
+  ],
+  "operation": "check-candidate",
+  "projection": {
+    "canonicalPayloadIdentity": "sha256:4f2603c045f6d465fcc74e43f9f79ac5b24a228f25bfbf0337c0e1230a2f91c7",
+    "canonicalSchema": "ladon-semantic-candidate-check-result-v1",
+    "limits": {
+      "maxBytes": 8192,
+      "measurement": "pretty-json-utf8-v1"
+    },
+    "name": "llm",
+    "producerResultIdentity": null,
+    "projectionIdentity": "sha256:6ddb512213f01e8232e3136970093218461358305ed038ed0c9d26f044d11d52"
+  },
+  "request": {
+    "goal": "∀ (α β : Type) [Inhabited α] (x : α) (y : β), x = x → y = y → (x = x) ∧ (y = y)",
+    "goalFingerprint": "sha256:8ce6a1434d9c32c44eedfdc9cc294852472a5f7adf01ac489d39b63729b3e3d5",
+    "localContext": [
+      {
+        "name": "α",
+        "type": "Type"
+      },
+      {
+        "name": "β",
+        "type": "Type"
+      },
+      {
+        "name": "inst._@._hyg.6",
+        "type": "Inhabited α"
+      },
+      {
+        "name": "x",
+        "type": "α"
+      }
+    ],
+    "module": "BinderFixture",
+    "moduleFingerprint": "sha256:68611a8190b9463f6ec5b63e54b224c7fb8187eaf04e0debd83013aa1b0c5e9a"
+  },
+  "schema": "ladon-semantic-candidate-projection-v1",
+  "status": "accepted"
+}

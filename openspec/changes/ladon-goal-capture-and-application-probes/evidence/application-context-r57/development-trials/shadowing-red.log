@@ -1,0 +1,45 @@
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+__________ test_v4_notation_fallback_accepts_a_shadowed_display_name ___________
+
+    def test_v4_notation_fallback_accepts_a_shadowed_display_name():
+        """V4 owner evidence disambiguates repeated names by unique raw local IDs."""
+>       _validate(V4, _notation_shadowed_rows())
+
+tests/test_semantic_context_shadowing.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_semantic_context_shadowing.py:39: in _validate
+    _validate_context_subject(subject, check, None, check_artifact=owner)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'localContext': [{'name': 'n', 'type': 'ℕ'}, {'name': 'n', 'type': 'Bool'}]}
+check = {'applicationObservationVersion': 4, 'callerLocalContext': [{'name': 'n', 'type': 'Nat'}], 'semanticProtocol': 'ladon-lean-semantic-v4/check-candidate'}
+request = None
+
+    def _validate_context_subject(
+        subject: Mapping[str, Any], check: Mapping[str, Any],
+        request: Mapping[str, Any] | None,
+        *, check_artifact: Mapping[str, Any] | None = None,
+    ) -> None:
+        observed = _observed_context(subject)
+        requested = check.get("callerLocalContext")
+        if requested is None and request is not None:
+            requested = request.get("localContext")
+        if requested is None:
+            return
+        if not isinstance(requested, list):
+            raise SemanticProjectionError("semantic request has invalid local context")
+        normalized = [dict(row) for row in requested if isinstance(row, Mapping)]
+        if len(normalized) != len(requested) or (
+            observed[: len(normalized)] != normalized
+            and not _owned_context_matches(observed, normalized, check_artifact)
+        ):
+>           raise SemanticProjectionError(
+                "semantic observed local context does not preserve the requested prefix"
+            )
+E           ladon.semantic_projection_core.SemanticProjectionError: semantic observed local context does not preserve the requested prefix
+
+src/ladon/_semantic_observation_contract.py:248: SemanticProjectionError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_context_shadowing.py::test_v4_notation_fallback_accepts_a_shadowed_display_name
+1 failed, 2 passed in 0.04s

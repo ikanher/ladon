@@ -1,0 +1,70 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_real_v4_application_observes_introduced_context_and_full_telescope[False] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-864/test_real_v4_application_obser0')
+batch = False
+
+    @pytest.mark.skipif(shutil.which("lean") is None, reason="Lean toolchain unavailable")
+    @pytest.mark.parametrize("batch", [False, True])
+    def test_real_v4_application_observes_introduced_context_and_full_telescope(tmp_path, batch):
+        request = _request(tmp_path)
+        before = {str(p.relative_to(request.repo_root)): hashlib.sha256(p.read_bytes()).hexdigest()
+                  for p in request.repo_root.rglob("*") if p.is_file()}
+        assert request.local_context == ()
+        if batch:
+            result = check_semantic_candidates(request, [request.candidate]).to_dict()
+            assert result["status"] == "available", result
+            _assert_observations(result["rows"][0], "ladon-lean-semantic-v4/check-candidates")
+        else:
+            result = check_semantic_candidate(request).to_dict()
+            assert result["callerLocalContext"] == []
+>           _assert_observations(result, "ladon-lean-semantic-v4/check-candidate")
+
+tests/test_semantic_application_context_v4_lean.py:106: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+result = {'analysisCompleteness': 'partial', 'applicationTerm': 'BinderFixture.use x y ?h ?k', 'artifacts': [{'artifactId': 'sh...647327ee503857f11b3695e7808ac0c8ac18d5b5a8d457', ...}], 'authoritySelection': 'explicit-pinned-application-check', ...}
+protocol = 'ladon-lean-semantic-v4/check-candidate'
+
+    def _assert_observations(result, protocol):
+        assert result["status"] == "applicable-with-residuals", result
+>       assert result["applicationObservationVersion"] == 4
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'applicationObservationVersion'
+
+tests/test_semantic_application_context_v4_lean.py:61: KeyError
+_ test_real_v4_application_observes_introduced_context_and_full_telescope[True] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-864/test_real_v4_application_obser1')
+batch = True
+
+    @pytest.mark.skipif(shutil.which("lean") is None, reason="Lean toolchain unavailable")
+    @pytest.mark.parametrize("batch", [False, True])
+    def test_real_v4_application_observes_introduced_context_and_full_telescope(tmp_path, batch):
+        request = _request(tmp_path)
+        before = {str(p.relative_to(request.repo_root)): hashlib.sha256(p.read_bytes()).hexdigest()
+                  for p in request.repo_root.rglob("*") if p.is_file()}
+        assert request.local_context == ()
+        if batch:
+            result = check_semantic_candidates(request, [request.candidate]).to_dict()
+            assert result["status"] == "available", result
+>           _assert_observations(result["rows"][0], "ladon-lean-semantic-v4/check-candidates")
+
+tests/test_semantic_application_context_v4_lean.py:102: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+result = {'applicationTerm': 'BinderFixture.use x y ?h ?k', 'artifacts': [{'artifactId': 'sha256:aa80bdc9e37ab622f461771299ca24...50f30b1a45041db4306933cd0203bf58a31c7a821ac7b', ...}], 'callerLocalContext': [], 'candidate': 'BinderFixture.use', ...}
+protocol = 'ladon-lean-semantic-v4/check-candidates'
+
+    def _assert_observations(result, protocol):
+        assert result["status"] == "applicable-with-residuals", result
+>       assert result["applicationObservationVersion"] == 4
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'applicationObservationVersion'
+
+tests/test_semantic_application_context_v4_lean.py:61: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_context_v4_lean.py::test_real_v4_application_observes_introduced_context_and_full_telescope[False]
+FAILED tests/test_semantic_application_context_v4_lean.py::test_real_v4_application_observes_introduced_context_and_full_telescope[True]
+2 failed in 4.26s

@@ -1,0 +1,77 @@
+...........FF                                                            [100%]
+=================================== FAILURES ===================================
+_____ test_real_source_capture_selects_ordered_goals_and_preserves_locals ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-838/test_real_source_capture_selec0')
+
+    @pytest.mark.skipif(shutil.which("lean") is None, reason="Lean toolchain unavailable")
+    def test_real_source_capture_selects_ordered_goals_and_preserves_locals(tmp_path: Path):
+        from ladon.source_goal_capture import SourceGoalCaptureRequest, capture_source_goal
+    
+        repo, source, original, context = _fixture(tmp_path)
+        before = hashlib.sha256(source.read_bytes()).hexdigest()
+        repo_before = {path.relative_to(repo): path.read_bytes() for path in repo.rglob("*") if path.is_file()}
+        line = 6
+        column = 13
+    
+        def capture(ordinal):
+            request = SourceGoalCaptureRequest(
+                repo_root=repo,
+                source_path="Owner.lean",
+                module="Owner",
+                line=line,
+                column=column,
+                toolchain=context,
+                goal_ordinal=ordinal,
+                timeout_seconds=45,
+                max_rss_bytes=8 * 1024**3,
+            )
+            return capture_source_goal(request)
+    
+        ambiguous = capture(None)
+>       assert ambiguous["status"] == "ambiguous", ambiguous
+E       AssertionError: {'capture': None, 'diagnostic': {'code': 'process-failed', 'message': 'Lean helper failed; inspect bounded diagnostics...Digest': 'sha256:c18d13cc04af7c70bbfa3b04ba48354faedbcdd9eb0fa8b5d64f3178f07d9dff', 'memoryLimited': False, ...}], ...}
+E       assert 'process-failed' == 'ambiguous'
+E         
+E         - ambiguous
+E         + process-failed
+
+tests/test_source_goal_capture_lean_integration.py:85: AssertionError
+______ test_unfinished_source_and_stale_or_invalid_positions_are_reported ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-838/test_unfinished_source_and_sta0')
+
+    @pytest.mark.skipif(shutil.which("lean") is None, reason="Lean toolchain unavailable")
+    def test_unfinished_source_and_stale_or_invalid_positions_are_reported(tmp_path: Path):
+        from ladon.source_goal_capture import SourceGoalCaptureRequest, capture_source_goal
+    
+        repo, source, _, context = _fixture(tmp_path, unfinished=True)
+        original = source.read_bytes()
+        repo_before = {path.relative_to(repo): path.read_bytes() for path in repo.rglob("*") if path.is_file()}
+        request = SourceGoalCaptureRequest(
+            repo_root=repo, source_path="Owner.lean", module="Owner",
+            line=7, column=8, toolchain=context, goal_ordinal=0,
+            timeout_seconds=45, max_rss_bytes=8 * 1024**3,
+        )
+        invalid = capture_source_goal(
+            replace(request, line=99)
+        )
+        _assert_failure(invalid, "unavailable")
+    
+        stale = capture_source_goal(replace(request, expected_source_digest="sha256:" + "0" * 64))
+        _assert_failure(stale, "stale")
+    
+        # Capture does not complete or rewrite the user's unfinished proof.
+        captured = capture_source_goal(request)
+>       assert captured["status"] == "captured", captured
+E       AssertionError: {'capture': None, 'diagnostic': {'code': 'process-failed', 'message': 'Lean helper failed; inspect bounded diagnostics...Digest': 'sha256:dfa99ec3866075307bd53b7413fedf1c30a27ab4a794313332146a7b1a4bb8be', 'memoryLimited': False, ...}], ...}
+E       assert 'process-failed' == 'captured'
+E         
+E         - captured
+E         + process-failed
+
+tests/test_source_goal_capture_lean_integration.py:163: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_source_goal_capture_lean_integration.py::test_real_source_capture_selects_ordered_goals_and_preserves_locals
+FAILED tests/test_source_goal_capture_lean_integration.py::test_unfinished_source_and_stale_or_invalid_positions_are_reported
+2 failed, 11 passed in 6.14s

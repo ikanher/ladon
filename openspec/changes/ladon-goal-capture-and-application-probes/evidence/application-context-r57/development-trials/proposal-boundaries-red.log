@@ -1,0 +1,128 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+_ test_batch_cannot_promote_a_prefix_from_a_different_protocol[ladon-lean-semantic-v3/check-candidates-ladon-lean-semantic-v3/check-candidates-ladon-lean-semantic-v4/check-candidates] _
+
+header = 'ladon-lean-semantic-v3/check-candidates'
+row = 'ladon-lean-semantic-v3/check-candidates'
+summary = 'ladon-lean-semantic-v4/check-candidates'
+
+    @pytest.mark.parametrize("header,row,summary", [(V3, V3, V4), (V4, V3, V4), (V3, V4, V3)])
+    def test_batch_cannot_promote_a_prefix_from_a_different_protocol(header, row, summary):
+        request = SemanticCandidateRequest(Path("."), "Main", "True", "Main.step")
+        try:
+            payload, terminal = _parse_batch_worker_payload(
+                batch_frames(request, header_protocol=header, row_protocol=row, summary_protocol=summary),
+                request, "req-mixed", [request.candidate],
+            )
+        except ValueError:
+            return
+>       assert not terminal, payload
+E       AssertionError: {'executablePath': '/bin/lean', 'executionContextRef': 'unbound', 'frameKind': 'header', 'frameVersion': 1, ...}
+E       assert not True
+
+tests/test_semantic_application_context_v4_boundaries.py:52: AssertionError
+_ test_batch_cannot_promote_a_prefix_from_a_different_protocol[ladon-lean-semantic-v4/check-candidates-ladon-lean-semantic-v3/check-candidates-ladon-lean-semantic-v4/check-candidates] _
+
+header = 'ladon-lean-semantic-v4/check-candidates'
+row = 'ladon-lean-semantic-v3/check-candidates'
+summary = 'ladon-lean-semantic-v4/check-candidates'
+
+    @pytest.mark.parametrize("header,row,summary", [(V3, V3, V4), (V4, V3, V4), (V3, V4, V3)])
+    def test_batch_cannot_promote_a_prefix_from_a_different_protocol(header, row, summary):
+        request = SemanticCandidateRequest(Path("."), "Main", "True", "Main.step")
+        try:
+            payload, terminal = _parse_batch_worker_payload(
+                batch_frames(request, header_protocol=header, row_protocol=row, summary_protocol=summary),
+                request, "req-mixed", [request.candidate],
+            )
+        except ValueError:
+            return
+>       assert not terminal, payload
+E       AssertionError: {'executablePath': '/bin/lean', 'executionContextRef': 'unbound', 'frameKind': 'header', 'frameVersion': 1, ...}
+E       assert not True
+
+tests/test_semantic_application_context_v4_boundaries.py:52: AssertionError
+_ test_batch_cannot_promote_a_prefix_from_a_different_protocol[ladon-lean-semantic-v3/check-candidates-ladon-lean-semantic-v4/check-candidates-ladon-lean-semantic-v3/check-candidates] _
+
+header = 'ladon-lean-semantic-v3/check-candidates'
+row = 'ladon-lean-semantic-v4/check-candidates'
+summary = 'ladon-lean-semantic-v3/check-candidates'
+
+    @pytest.mark.parametrize("header,row,summary", [(V3, V3, V4), (V4, V3, V4), (V3, V4, V3)])
+    def test_batch_cannot_promote_a_prefix_from_a_different_protocol(header, row, summary):
+        request = SemanticCandidateRequest(Path("."), "Main", "True", "Main.step")
+        try:
+            payload, terminal = _parse_batch_worker_payload(
+                batch_frames(request, header_protocol=header, row_protocol=row, summary_protocol=summary),
+                request, "req-mixed", [request.candidate],
+            )
+        except ValueError:
+            return
+>       assert not terminal, payload
+E       AssertionError: {'executablePath': '/bin/lean', 'executionContextRef': 'unbound', 'frameKind': 'header', 'frameVersion': 1, ...}
+E       assert not True
+
+tests/test_semantic_application_context_v4_boundaries.py:52: AssertionError
+_ test_application_identity_rejects_partial_versioned_inputs[residual_contexts] _
+
+missing = 'residual_contexts'
+
+    @pytest.mark.parametrize("missing", ["residual_contexts", "selected_declaration", "semantic_protocol"])
+    def test_application_identity_rejects_partial_versioned_inputs(missing):
+        selected = {"name": "Main.step", "typeDisplay": "True", "typeStructural": "True", "binders": []}
+        kwargs = {"residual_contexts": [], "selected_declaration": selected, "semantic_protocol": V4}
+        del kwargs[missing]
+>       with pytest.raises((TypeError, ValueError)):
+E       Failed: DID NOT RAISE any of (<class 'TypeError'>, <class 'ValueError'>)
+
+tests/test_semantic_application_context_v4_boundaries.py:61: Failed
+_ test_application_identity_rejects_partial_versioned_inputs[selected_declaration] _
+
+missing = 'selected_declaration'
+
+    @pytest.mark.parametrize("missing", ["residual_contexts", "selected_declaration", "semantic_protocol"])
+    def test_application_identity_rejects_partial_versioned_inputs(missing):
+        selected = {"name": "Main.step", "typeDisplay": "True", "typeStructural": "True", "binders": []}
+        kwargs = {"residual_contexts": [], "selected_declaration": selected, "semantic_protocol": V4}
+        del kwargs[missing]
+>       with pytest.raises((TypeError, ValueError)):
+E       Failed: DID NOT RAISE any of (<class 'TypeError'>, <class 'ValueError'>)
+
+tests/test_semantic_application_context_v4_boundaries.py:61: Failed
+_ test_application_identity_rejects_partial_versioned_inputs[semantic_protocol] _
+
+missing = 'semantic_protocol'
+
+    @pytest.mark.parametrize("missing", ["residual_contexts", "selected_declaration", "semantic_protocol"])
+    def test_application_identity_rejects_partial_versioned_inputs(missing):
+        selected = {"name": "Main.step", "typeDisplay": "True", "typeStructural": "True", "binders": []}
+        kwargs = {"residual_contexts": [], "selected_declaration": selected, "semantic_protocol": V4}
+        del kwargs[missing]
+>       with pytest.raises((TypeError, ValueError)):
+E       Failed: DID NOT RAISE any of (<class 'TypeError'>, <class 'ValueError'>)
+
+tests/test_semantic_application_context_v4_boundaries.py:61: Failed
+___ test_stored_v4_contexts_are_validated_even_when_read_without_projection ____
+
+    def test_stored_v4_contexts_are_validated_even_when_read_without_projection():
+        shape = {
+            "applicationObservationVersion": 4, "semanticProtocol": V4,
+            "applicationTerm": "Main.step", "substitutions": [], "dischargedHypotheses": [],
+            "residualPremises": [{"typeDisplay": "True", "typeStructural": "True"}],
+            "residualContexts": [],
+            "selectedDeclaration": {"name": "Main.step", "typeDisplay": "True", "typeStructural": "True", "binders": []},
+        }
+        artifact = {"payload": {"inputs": {"subjectRefs": [{"kind": "candidate-application", "localId": "app"}]}}, "subjectRefs": [{"kind": "candidate-application", "localId": "app", "searchShape": shape}]}
+>       with pytest.raises((TypeError, ValueError), match="context|observation"):
+E       Failed: DID NOT RAISE any of (<class 'TypeError'>, <class 'ValueError'>)
+
+tests/test_semantic_application_context_v4_boundaries.py:76: Failed
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_context_v4_boundaries.py::test_batch_cannot_promote_a_prefix_from_a_different_protocol[ladon-lean-semantic-v3/check-candidates-ladon-lean-semantic-v3/check-candidates-ladon-lean-semantic-v4/check-candidates]
+FAILED tests/test_semantic_application_context_v4_boundaries.py::test_batch_cannot_promote_a_prefix_from_a_different_protocol[ladon-lean-semantic-v4/check-candidates-ladon-lean-semantic-v3/check-candidates-ladon-lean-semantic-v4/check-candidates]
+FAILED tests/test_semantic_application_context_v4_boundaries.py::test_batch_cannot_promote_a_prefix_from_a_different_protocol[ladon-lean-semantic-v3/check-candidates-ladon-lean-semantic-v4/check-candidates-ladon-lean-semantic-v3/check-candidates]
+FAILED tests/test_semantic_application_context_v4_boundaries.py::test_application_identity_rejects_partial_versioned_inputs[residual_contexts]
+FAILED tests/test_semantic_application_context_v4_boundaries.py::test_application_identity_rejects_partial_versioned_inputs[selected_declaration]
+FAILED tests/test_semantic_application_context_v4_boundaries.py::test_application_identity_rejects_partial_versioned_inputs[semantic_protocol]
+FAILED tests/test_semantic_application_context_v4_boundaries.py::test_stored_v4_contexts_are_validated_even_when_read_without_projection
+7 failed in 0.09s

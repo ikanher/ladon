@@ -1,0 +1,11 @@
+{
+  "argv": [
+    "/home/codex/.cache/ladon-qualification-r57/ladon-application-context-r57-8w3_qhxg/py311/bin/python",
+    "-I",
+    "-c",
+    "import hashlib,importlib,json,sys; from pathlib import Path; modules=['semantic_local_context', 'semantic_application_cards', 'semantic_projection_fit', '_semantic_observation_results', 'semantic_application_context', 'semantic_candidate_protocol', 'semantic_candidate_worker', 'semantic_candidate_batch_worker', 'semantic_stored_receipt', 'semantic_projection_cards', 'proof_search_semantic_cli']; paths=[Path(importlib.import_module('ladon.'+m).__file__) for m in modules]; paths += [paths[0].parent/'lean/ladon_semantic_candidate_helper.lean']; assert all('site-packages' in str(p) for p in paths); print(json.dumps({'runtime':sys.version,'files':[{'path':str(p),'sha256':hashlib.sha256(p.read_bytes()).hexdigest()} for p in paths]}))"
+  ],
+  "cwd": "/tmp",
+  "exitCode": 0,
+  "elapsedSeconds": 0.09024140401743352
+}

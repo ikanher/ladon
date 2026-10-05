@@ -1,0 +1,124 @@
+FF...                                                                    [100%]
+=================================== FAILURES ===================================
+_ test_rejected_context_uses_owning_process_protocol[ladon-lean-semantic-v4/check-candidate-False-True] _
+
+protocol = 'ladon-lean-semantic-v4/check-candidate', duplicate = False
+valid = True
+
+    @pytest.mark.parametrize('protocol,duplicate,valid', [
+        ('ladon-lean-semantic-v4/check-candidate', False, True),
+        ('ladon-lean-semantic-v4/check-candidates', False, True),
+        ('ladon-lean-semantic-v3/check-candidate', False, False),
+        ('ladon-lean-semantic-v4/check-candidate', True, False),
+        ('unknown', False, False),
+    ])
+    def test_rejected_context_uses_owning_process_protocol(protocol, duplicate, valid):
+        rows = _notation_shadowed_rows('local:0' if duplicate else 'local:1')
+        observed = [{'name': row['userName'], 'type': row['typeDisplay']} for row in rows]
+        check = {'callerLocalContext': REQUESTED, 'status': 'rejected'}
+        owner = {
+            'subjectRefs': [{'kind': 'local-context', 'searchShape': {'localContext': rows}}],
+            'extensions': {'ladon.process-observation/v1': {
+                'applicationObservationVersion': 4, 'semanticProtocol': protocol,
+            }},
+        }
+        if valid:
+>           _validate_context_subject({'localContext': observed}, check, None, check_artifact=owner)
+
+tests/test_semantic_context_rejected_protocol.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'localContext': [{'name': 'n', 'type': 'ℕ'}, {'name': 'n', 'type': 'Bool'}]}
+check = {'callerLocalContext': [{'name': 'n', 'type': 'Nat'}], 'status': 'rejected'}
+request = None
+
+    def _validate_context_subject(
+        subject: Mapping[str, Any], check: Mapping[str, Any],
+        request: Mapping[str, Any] | None,
+        *, check_artifact: Mapping[str, Any] | None = None,
+    ) -> None:
+        observed = _observed_context(subject)
+        requested = check.get("callerLocalContext")
+        if requested is None and request is not None:
+            requested = request.get("localContext")
+        if requested is None:
+            return
+        if not isinstance(requested, list):
+            raise SemanticProjectionError("semantic request has invalid local context")
+        normalized = [dict(row) for row in requested if isinstance(row, Mapping)]
+        if len(normalized) != len(requested) or (
+            observed[: len(normalized)] != normalized
+            and not _owned_context_matches(
+                observed, normalized, check_artifact,
+                allow_shadowed_names=_v4_context_mode(check),
+            )
+        ):
+>           raise SemanticProjectionError(
+                "semantic observed local context does not preserve the requested prefix"
+            )
+E           ladon.semantic_projection_core.SemanticProjectionError: semantic observed local context does not preserve the requested prefix
+
+src/ladon/_semantic_observation_contract.py:251: SemanticProjectionError
+_ test_rejected_context_uses_owning_process_protocol[ladon-lean-semantic-v4/check-candidates-False-True] _
+
+protocol = 'ladon-lean-semantic-v4/check-candidates', duplicate = False
+valid = True
+
+    @pytest.mark.parametrize('protocol,duplicate,valid', [
+        ('ladon-lean-semantic-v4/check-candidate', False, True),
+        ('ladon-lean-semantic-v4/check-candidates', False, True),
+        ('ladon-lean-semantic-v3/check-candidate', False, False),
+        ('ladon-lean-semantic-v4/check-candidate', True, False),
+        ('unknown', False, False),
+    ])
+    def test_rejected_context_uses_owning_process_protocol(protocol, duplicate, valid):
+        rows = _notation_shadowed_rows('local:0' if duplicate else 'local:1')
+        observed = [{'name': row['userName'], 'type': row['typeDisplay']} for row in rows]
+        check = {'callerLocalContext': REQUESTED, 'status': 'rejected'}
+        owner = {
+            'subjectRefs': [{'kind': 'local-context', 'searchShape': {'localContext': rows}}],
+            'extensions': {'ladon.process-observation/v1': {
+                'applicationObservationVersion': 4, 'semanticProtocol': protocol,
+            }},
+        }
+        if valid:
+>           _validate_context_subject({'localContext': observed}, check, None, check_artifact=owner)
+
+tests/test_semantic_context_rejected_protocol.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+subject = {'localContext': [{'name': 'n', 'type': 'ℕ'}, {'name': 'n', 'type': 'Bool'}]}
+check = {'callerLocalContext': [{'name': 'n', 'type': 'Nat'}], 'status': 'rejected'}
+request = None
+
+    def _validate_context_subject(
+        subject: Mapping[str, Any], check: Mapping[str, Any],
+        request: Mapping[str, Any] | None,
+        *, check_artifact: Mapping[str, Any] | None = None,
+    ) -> None:
+        observed = _observed_context(subject)
+        requested = check.get("callerLocalContext")
+        if requested is None and request is not None:
+            requested = request.get("localContext")
+        if requested is None:
+            return
+        if not isinstance(requested, list):
+            raise SemanticProjectionError("semantic request has invalid local context")
+        normalized = [dict(row) for row in requested if isinstance(row, Mapping)]
+        if len(normalized) != len(requested) or (
+            observed[: len(normalized)] != normalized
+            and not _owned_context_matches(
+                observed, normalized, check_artifact,
+                allow_shadowed_names=_v4_context_mode(check),
+            )
+        ):
+>           raise SemanticProjectionError(
+                "semantic observed local context does not preserve the requested prefix"
+            )
+E           ladon.semantic_projection_core.SemanticProjectionError: semantic observed local context does not preserve the requested prefix
+
+src/ladon/_semantic_observation_contract.py:251: SemanticProjectionError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_context_rejected_protocol.py::test_rejected_context_uses_owning_process_protocol[ladon-lean-semantic-v4/check-candidate-False-True]
+FAILED tests/test_semantic_context_rejected_protocol.py::test_rejected_context_uses_owning_process_protocol[ladon-lean-semantic-v4/check-candidates-False-True]
+2 failed, 3 passed in 0.04s

@@ -1,0 +1,69 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_rejected_v4_process_identity_binds_original_protocol[ladon-lean-semantic-v4/check-candidate] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-884/test_rejected_v4_process_ident0')
+protocol = 'ladon-lean-semantic-v4/check-candidate'
+
+    @pytest.mark.parametrize('protocol', [SINGLE, BATCH])
+    def test_rejected_v4_process_identity_binds_original_protocol(tmp_path, protocol):
+        request, helper, process, payload = rejection(tmp_path, protocol)
+        artifacts, _ = _rejected_artifacts(request, helper, process, payload, helper_identity='sha256:' + 'a' * 64)
+        row = observation(artifacts[1])
+>       assert row['semanticProtocol'] == protocol
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'semanticProtocol'
+
+tests/test_semantic_application_context_rejections_text.py:45: KeyError
+_ test_rejected_v4_process_identity_binds_original_protocol[ladon-lean-semantic-v4/check-candidates] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-884/test_rejected_v4_process_ident1')
+protocol = 'ladon-lean-semantic-v4/check-candidates'
+
+    @pytest.mark.parametrize('protocol', [SINGLE, BATCH])
+    def test_rejected_v4_process_identity_binds_original_protocol(tmp_path, protocol):
+        request, helper, process, payload = rejection(tmp_path, protocol)
+        artifacts, _ = _rejected_artifacts(request, helper, process, payload, helper_identity='sha256:' + 'a' * 64)
+        row = observation(artifacts[1])
+>       assert row['semanticProtocol'] == protocol
+               ^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'semanticProtocol'
+
+tests/test_semantic_application_context_rejections_text.py:45: KeyError
+_ test_rejected_v4_batch_preserves_wire_identity_without_inventing_application _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-884/test_rejected_v4_batch_preserv0')
+
+    def test_rejected_v4_batch_preserves_wire_identity_without_inventing_application(tmp_path):
+        request, helper, process, payload = rejection(tmp_path, BATCH)
+        row = {'candidate': request.candidate, 'status': 'rejected', 'failureStage': 'candidate-not-found',
+               'diagnostic': 'missing', 'applicationTerm': '', 'substitutions': [],
+               'dischargedHypotheses': [], 'residualPremises': [], 'residualContexts': [], 'declarationBinders': []}
+        environment = _environment_artifact(tmp_path, payload)
+        result = _materialize_batch_row(request, helper, process, payload, environment, row)
+>       assert observation(result['artifacts'][1])['semanticProtocol'] == BATCH
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'semanticProtocol'
+
+tests/test_semantic_application_context_rejections_text.py:60: KeyError
+____________ test_direct_v4_text_is_bounded_and_discloses_clipping _____________
+
+    def test_direct_v4_text_is_bounded_and_discloses_clipping():
+        huge = 'x' * 1_000_000
+        check = {'applicationObservationVersion': 4, 'status': 'applicable-with-residuals',
+                 'selectedDeclaration': {'typeDisplay': huge, 'binders': [{'binderInfo': huge}] * 1000},
+                 'residualPremises': [{'typeDisplay': huge}] * 10,
+                 'residualContexts': [{'goalId': huge, 'localContext': []}] * 10,
+                 'checkRunRef': {'artifactRef': 'exact-check', 'localId': 'check:1'}}
+        text = '\n'.join(render_semantic_candidates([{'name': 'Main.step', 'check': check}], include_projected_evidence=True))
+>       assert len(text) < 8000
+E       assert 1021002672 < 8000
+E        +  where 1021002672 = len('- Main.step [applicable-with-residuals]\n  selected declaration type: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...xxxxxxxxxxxxxxxxxxxxxxxxxxxx):\n  evidence expansion checkRunRef: {"artifactRef": "exact-check", "localId": "check:1"}')
+
+tests/test_semantic_application_context_rejections_text.py:73: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_context_rejections_text.py::test_rejected_v4_process_identity_binds_original_protocol[ladon-lean-semantic-v4/check-candidate]
+FAILED tests/test_semantic_application_context_rejections_text.py::test_rejected_v4_process_identity_binds_original_protocol[ladon-lean-semantic-v4/check-candidates]
+FAILED tests/test_semantic_application_context_rejections_text.py::test_rejected_v4_batch_preserves_wire_identity_without_inventing_application
+FAILED tests/test_semantic_application_context_rejections_text.py::test_direct_v4_text_is_bounded_and_discloses_clipping
+4 failed in 1.11s

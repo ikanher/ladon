@@ -1,0 +1,18 @@
+{
+  "command": [
+    "uv",
+    "run",
+    "pytest",
+    "-q",
+    "tests/test_source_goal_completion_lean.py::test_real_local_value_application_replays_and_keeps_project_unchanged",
+    "--tb=short"
+  ],
+  "returncode": 1,
+  "stdout": "F                                                                        [100%]\n=================================== FAILURES ===================================\n____ test_real_local_value_application_replays_and_keeps_project_unchanged _____\ntests/test_source_goal_completion_lean.py:70: in test_real_local_value_application_replays_and_keeps_project_unchanged\n    _assert_completed(result, capture)\ntests/test_source_goal_completion_lean.py:58: in _assert_completed\n    assert result[\"status\"] == \"completed\", result\nE   AssertionError: {'application': {'goalId': '_uniq.28', 'goalTypeStructural': 'Lean.Expr.mdata\nE       { entries := [(`noImplicitLambda, Lea...6e2cced9c` is a proposition; use `theorem` instead of `def`\\\nE     \\\nE     Note: Thi'}, 'operation': 'complete-source-goal', ...}\nE   assert 'process-failed' == 'completed'\nE     \nE     - completed\nE     + process-failed\n=========================== short test summary info ============================\nFAILED tests/test_source_goal_completion_lean.py::test_real_local_value_application_replays_and_keeps_project_unchanged\n1 failed in 8.47s\n",
+  "stderr": "",
+  "elapsed_seconds": 8.654906215029769,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 2166923264
+}

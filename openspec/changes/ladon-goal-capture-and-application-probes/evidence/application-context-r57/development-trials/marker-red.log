@@ -1,0 +1,122 @@
+F.FF                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_malformed_process_marker_cannot_enable_shadowing[4.0-ladon-lean-semantic-v4/check-candidate] _
+
+version = 4.0, protocol = 'ladon-lean-semantic-v4/check-candidate'
+
+    @pytest.mark.parametrize('version,protocol', [
+        (4.0, 'ladon-lean-semantic-v4/check-candidate'),
+        (True, 'ladon-lean-semantic-v4/check-candidate'),
+        (4, []),
+        (4, {}),
+    ])
+    def test_malformed_process_marker_cannot_enable_shadowing(version, protocol):
+        rows = _notation_shadowed_rows()
+        observed = [{'name': row['userName'], 'type': row['typeDisplay']} for row in rows]
+        owner = {
+            'subjectRefs': [{'kind': 'local-context', 'searchShape': {'localContext': rows}}],
+            'extensions': {'ladon.process-observation/v1': {
+                'applicationObservationVersion': version, 'semanticProtocol': protocol,
+            }},
+        }
+>       with pytest.raises(SemanticProjectionError, match='requested prefix'):
+E       Failed: DID NOT RAISE <class 'ladon.semantic_projection_core.SemanticProjectionError'>
+
+tests/test_semantic_context_protocol_marker.py:26: Failed
+______ test_malformed_process_marker_cannot_enable_shadowing[4-protocol2] ______
+
+version = 4, protocol = []
+
+    @pytest.mark.parametrize('version,protocol', [
+        (4.0, 'ladon-lean-semantic-v4/check-candidate'),
+        (True, 'ladon-lean-semantic-v4/check-candidate'),
+        (4, []),
+        (4, {}),
+    ])
+    def test_malformed_process_marker_cannot_enable_shadowing(version, protocol):
+        rows = _notation_shadowed_rows()
+        observed = [{'name': row['userName'], 'type': row['typeDisplay']} for row in rows]
+        owner = {
+            'subjectRefs': [{'kind': 'local-context', 'searchShape': {'localContext': rows}}],
+            'extensions': {'ladon.process-observation/v1': {
+                'applicationObservationVersion': version, 'semanticProtocol': protocol,
+            }},
+        }
+        with pytest.raises(SemanticProjectionError, match='requested prefix'):
+>           _validate_context_subject({'localContext': observed}, {'callerLocalContext': REQUESTED},
+                                      None, check_artifact=owner)
+
+tests/test_semantic_context_protocol_marker.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/_semantic_observation_contract.py:249: in _validate_context_subject
+    _v4_context_mode(check) or _parent_v4_context_mode(check_artifact)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/_semantic_observation_contract.py:294: in _parent_v4_context_mode
+    return isinstance(extensions, Mapping) and _v4_context_mode(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observation = {'applicationObservationVersion': 4, 'semanticProtocol': []}
+
+    def _v4_context_mode(observation) -> bool:
+        return (
+            isinstance(observation, Mapping)
+            and observation.get('applicationObservationVersion') == 4
+>           and observation.get('semanticProtocol') in {
+                'ladon-lean-semantic-v4/check-candidate',
+                'ladon-lean-semantic-v4/check-candidates',
+            }
+        )
+E       TypeError: unhashable type: 'list'
+
+src/ladon/_semantic_observation_contract.py:278: TypeError
+______ test_malformed_process_marker_cannot_enable_shadowing[4-protocol3] ______
+
+version = 4, protocol = {}
+
+    @pytest.mark.parametrize('version,protocol', [
+        (4.0, 'ladon-lean-semantic-v4/check-candidate'),
+        (True, 'ladon-lean-semantic-v4/check-candidate'),
+        (4, []),
+        (4, {}),
+    ])
+    def test_malformed_process_marker_cannot_enable_shadowing(version, protocol):
+        rows = _notation_shadowed_rows()
+        observed = [{'name': row['userName'], 'type': row['typeDisplay']} for row in rows]
+        owner = {
+            'subjectRefs': [{'kind': 'local-context', 'searchShape': {'localContext': rows}}],
+            'extensions': {'ladon.process-observation/v1': {
+                'applicationObservationVersion': version, 'semanticProtocol': protocol,
+            }},
+        }
+        with pytest.raises(SemanticProjectionError, match='requested prefix'):
+>           _validate_context_subject({'localContext': observed}, {'callerLocalContext': REQUESTED},
+                                      None, check_artifact=owner)
+
+tests/test_semantic_context_protocol_marker.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/_semantic_observation_contract.py:249: in _validate_context_subject
+    _v4_context_mode(check) or _parent_v4_context_mode(check_artifact)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/_semantic_observation_contract.py:294: in _parent_v4_context_mode
+    return isinstance(extensions, Mapping) and _v4_context_mode(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observation = {'applicationObservationVersion': 4, 'semanticProtocol': {}}
+
+    def _v4_context_mode(observation) -> bool:
+        return (
+            isinstance(observation, Mapping)
+            and observation.get('applicationObservationVersion') == 4
+>           and observation.get('semanticProtocol') in {
+                'ladon-lean-semantic-v4/check-candidate',
+                'ladon-lean-semantic-v4/check-candidates',
+            }
+        )
+E       TypeError: unhashable type: 'dict'
+
+src/ladon/_semantic_observation_contract.py:278: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_context_protocol_marker.py::test_malformed_process_marker_cannot_enable_shadowing[4.0-ladon-lean-semantic-v4/check-candidate]
+FAILED tests/test_semantic_context_protocol_marker.py::test_malformed_process_marker_cannot_enable_shadowing[4-protocol2]
+FAILED tests/test_semantic_context_protocol_marker.py::test_malformed_process_marker_cannot_enable_shadowing[4-protocol3]
+3 failed, 1 passed in 0.06s

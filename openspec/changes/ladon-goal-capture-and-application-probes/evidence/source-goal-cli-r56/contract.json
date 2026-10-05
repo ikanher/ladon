@@ -1,0 +1,34 @@
+{
+  "parent_objective": "Source-bound theorem application, task2.2 ordinary pinned goal capture and compiler diagnostic queries, not completion",
+  "current_target": "Expose qualified source capture via ordinary proof-search CLI without reconstructing goals; parsed compiler text remains caller supplied until actual capture",
+  "acceptance_contract": [
+    "Add ladon proof-search goal capture with --repo-root --source relative.lean --module --line 1-based --column zero-based Unicode scalar --goal-ordinal optional --expected-source-digest optional; explicit --lean-path/--lake-path, process limit/isolation and json/text/output/progress args. Default32GiB. No global/shared builds; exact API capture source/goal/env/context; no registry promotion or complete label.",
+    "Add goal diagnostic with --diagnostic-file bounded UTF8 plain Lean diagnostic stream and --module. Parse exactly selected type-mismatch record location/expression/actualType/expectedType. Compiler text positions are1-based lines and0-based scalar columns as mkErrorStringWithPos prints Position.column directly; preserve parsed coordinates unchanged. Multiple relevant diagnostics require --diagnostic-ordinal; none/malformed unsupported explicitly, no first selection.",
+    "Attempt exact source capture at parsed selected location, bounded by same pinned toolchain policy. Retain parsed fragments under caller-supplied evidence regardless of capture success. Actual capture remains separate observed evidence; do not substitute expectedType if capture unavailable. Absolute compiler path may normalize only inside resolved repo; unsafe/nonmatching rejected by existing API. Do not infer module from prettyprint.",
+    "JSON preserves full authoritative captured result; text foreground goal and ordered visible locals with available let values and source selection, flags internal locals separately, capture scope/replaynot-run, exact refs into available JSON. Operational unavailable/stale/ambiguous/bounded failures exit1 with JSON intact, argument malformed exit2 stderrterminal, interruption130. Text/JSON same scope/status. Existing check candidate handwritten/scratch semantics unchanged.",
+    "Verify real nested namespace/sections and source options/open scope, same-name dependent locals/let notation, multi-goal ordinal/stale/noGoal/modular unsupported. Relevant compiler constructor mismatch supplies parsed fragments and capture may honestly unavailable if no tacticInfo. No silent caller/observed conflation. Installed CLI real field, both Python supported runtimes origin/helper packaged, preserved projectbytes, source32GiB actual telemetry. No full completion/proof claim."
+  ],
+  "change_surface": [
+    "proof_search_cli.py parser/dispatcher/output only",
+    "new proof_search_goal_cli.py",
+    "new compiler_goal_query.py",
+    "proof_search_terminal.py new goal exitclass handling",
+    "new tests",
+    "docs source capture/CLI"
+  ],
+  "test_first": true,
+  "dependency_policy": "No new dependencies or backend rewrite, no neighboring edits/builds. Root production/test/database/task/build authority; workers readonly and isolated proposals. Existing68 frozen tests immutable.",
+  "rollback_boundary": "Reversible root patch, no rootstage/reset/commit",
+  "verification_state": "unverified",
+  "board": "/home/codex/projects/ladon/.codex/state/ultra-result-evidence.sqlite3",
+  "capacity": "4 including root;10 total workers including red/scout about to register of18",
+  "budget": "New task2.2 integration slice <=180 cumulative source-helper seconds incl installed verification, each<=45sec and32GiB. This does not reset task2.1 feasibility remaining budget; task2.1 qualification still counted there, no completion expansion until it passes.",
+  "baseline_revision": "d64f475e23a7339c91aa280ff6e6679c27607875",
+  "baseline_files": {
+    "proof_search_cli.py": "0a655c43a439d85eb21c523b867f07a5b78d21a4f5c63c6f72ce6cd73e37eb63",
+    "proof_search_terminal.py": "a136e36ce43ce4a75100aa303dccea955bcbcde1033f4e9f323f1b432d81c843",
+    "source_goal_capture.py": "778b6028b7ba7e8d1e844ffe9b9d22e191988874cd49a702c518aab53bfbdbd0",
+    "_source_goal_protocol.py": "e378522df6ee9b9a5adcff3728b855826e834a2cd68e44f8e8bdb9626b284cbf",
+    "lean/ladon_source_goal_helper.lean": "095b731e16772ebb89a51de2a7579b8fafdb862c0a9c1f378d1b6f1e69127aa0"
+  }
+}

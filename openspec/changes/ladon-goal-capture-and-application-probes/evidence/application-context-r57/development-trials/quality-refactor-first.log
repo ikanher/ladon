@@ -1,0 +1,97 @@
+..F.FF                                                                   [100%]
+=================================== FAILURES ===================================
+__________ test_project_strict_quality_has_no_radon_or_vulture_issues __________
+
+    def test_project_strict_quality_has_no_radon_or_vulture_issues() -> None:
+        issues = strict_quality_issues([Path("src"), Path("tests"), Path("scripts")])
+    
+>       assert issues == []
+E       AssertionError: assert [QualityIssue...rank D (30)')] == []
+E         
+E         Left contains 2 more items, first extra item: QualityIssue(tool='radon-cc', path='tests/test_semantic_application_context_lean_v4.py', line=85, name='_assert_declaration_telescope', rank='C', value='13', message='_assert_declaration_telescope has radon rank C (13)')
+E         Use -v to get more diff
+
+tests/test_python_quality.py:49: AssertionError
+_ test_real_v4_application_observes_introduced_context_and_full_telescope[False] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-877/test_real_v4_application_obser0')
+batch = False
+
+    @pytest.mark.skipif(shutil.which("lean") is None, reason="Lean toolchain unavailable")
+    @pytest.mark.parametrize("batch", [False, True])
+    def test_real_v4_application_observes_introduced_context_and_full_telescope(tmp_path, batch):
+        request = _request(tmp_path)
+        before = {str(p.relative_to(request.repo_root)): hashlib.sha256(p.read_bytes()).hexdigest()
+                  for p in request.repo_root.rglob("*") if p.is_file()}
+        assert request.local_context == ()
+        if batch:
+            result = check_semantic_candidates(request, [request.candidate]).to_dict()
+            assert result["status"] == "available", result
+            _assert_observations(result["rows"][0], "ladon-lean-semantic-v4/check-candidates")
+        else:
+            result = check_semantic_candidate(request).to_dict()
+            assert result["callerLocalContext"] == []
+>           _assert_observations(result, "ladon-lean-semantic-v4/check-candidate")
+
+tests/test_semantic_application_context_lean_v4.py:114: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+result = {'analysisCompleteness': 'partial', 'applicationObservationVersion': 4, 'applicationTerm': 'BinderFixture.use x y ?h ?...ed': 14, ...}, 'environmentRef': 'sha256:6895d6823e6405bb592e1c5ebcd0908815ec47343004a43f55d272d390155b27', ...}], ...}
+protocol = 'ladon-lean-semantic-v4/check-candidate'
+
+    def _assert_observations(result, protocol):
+        assert result["status"] == "applicable-with-residuals", result
+        assert result["applicationObservationVersion"] == 4
+        assert result["semanticProtocol"] == protocol
+        assert [row["typeDisplay"] for row in result["residualPremises"]] == ["x = x", "y = y"]
+        _assert_residual_contexts(result)
+        _assert_declaration_telescope(result)
+        validate_envelope_batch(result["artifacts"])
+        owner = next(s for s in result["artifacts"][1]["subjectRefs"] if s["kind"] == "candidate-application")
+>       assert owner["searchShape"]["selectedDeclaration"] == selected
+                                                              ^^^^^^^^
+E       NameError: name 'selected' is not defined
+
+tests/test_semantic_application_context_lean_v4.py:68: NameError
+_ test_real_v4_application_observes_introduced_context_and_full_telescope[True] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-877/test_real_v4_application_obser1')
+batch = True
+
+    @pytest.mark.skipif(shutil.which("lean") is None, reason="Lean toolchain unavailable")
+    @pytest.mark.parametrize("batch", [False, True])
+    def test_real_v4_application_observes_introduced_context_and_full_telescope(tmp_path, batch):
+        request = _request(tmp_path)
+        before = {str(p.relative_to(request.repo_root)): hashlib.sha256(p.read_bytes()).hexdigest()
+                  for p in request.repo_root.rglob("*") if p.is_file()}
+        assert request.local_context == ()
+        if batch:
+            result = check_semantic_candidates(request, [request.candidate]).to_dict()
+            assert result["status"] == "available", result
+>           _assert_observations(result["rows"][0], "ladon-lean-semantic-v4/check-candidates")
+
+tests/test_semantic_application_context_lean_v4.py:110: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+result = {'applicationObservationVersion': 4, 'applicationTerm': 'BinderFixture.use x y ?h ?k', 'artifacts': [{'artifactId': 's...tRef': 'sha256:78b3a7ca063bc8b311ecb6b7fa0a5f8f5fe736892914f7a6c2ba8667b63c653e', ...}], 'callerLocalContext': [], ...}
+protocol = 'ladon-lean-semantic-v4/check-candidates'
+
+    def _assert_observations(result, protocol):
+        assert result["status"] == "applicable-with-residuals", result
+        assert result["applicationObservationVersion"] == 4
+        assert result["semanticProtocol"] == protocol
+        assert [row["typeDisplay"] for row in result["residualPremises"]] == ["x = x", "y = y"]
+        _assert_residual_contexts(result)
+        _assert_declaration_telescope(result)
+        validate_envelope_batch(result["artifacts"])
+        owner = next(s for s in result["artifacts"][1]["subjectRefs"] if s["kind"] == "candidate-application")
+>       assert owner["searchShape"]["selectedDeclaration"] == selected
+                                                              ^^^^^^^^
+E       NameError: name 'selected' is not defined
+
+tests/test_semantic_application_context_lean_v4.py:68: NameError
+=========================== short test summary info ============================
+FAILED tests/test_python_quality.py::test_project_strict_quality_has_no_radon_or_vulture_issues
+FAILED tests/test_semantic_application_context_lean_v4.py::test_real_v4_application_observes_introduced_context_and_full_telescope[False]
+FAILED tests/test_semantic_application_context_lean_v4.py::test_real_v4_application_observes_introduced_context_and_full_telescope[True]
+3 failed, 3 passed in 13.66s

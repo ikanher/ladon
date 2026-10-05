@@ -1,0 +1,46 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_______ test_text_shows_residual_local_type_and_selected_parameter_kind ________
+
+    def test_text_shows_residual_local_type_and_selected_parameter_kind():
+        result = check()
+        text = "\n".join(render_semantic_candidates([{"name": "Main.step", "check": result}], include_projected_evidence=True))
+        assert "P x0" in text
+>       assert re.search(r"x0\s*:\s*Nat", text)
+E       AssertionError: assert None
+E        +  where None = <function search at 0x7c88cc24d4e0>('x0\\s*:\\s*Nat', '- Main.step [applicable-with-residuals] application=Main.step ?h\n  remaining goal: P x0')
+E        +    where <function search at 0x7c88cc24d4e0> = re.search
+
+tests/test_semantic_application_context_v4_text.py:34: AssertionError
+______ test_bounded_cards_keep_context_ordinal_and_disclose_missing_tail _______
+
+    def test_bounded_cards_keep_context_ordinal_and_disclose_missing_tail():
+        result = check()
+        result["residualContexts"][0]["localContext"] = [local(i) for i in range(8)]
+        omissions = []
+        card = candidate_card("Main.step", result, {}, "llm", {}, omissions, pointer="/candidates/0")
+>       context = card["check"]["residualContexts"][0]
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'residualContexts'
+
+tests/test_semantic_application_context_v4_text.py:44: KeyError
+_ test_legacy_card_does_not_infer_context_from_receipt_or_residual_expression __
+
+    def test_legacy_card_does_not_infer_context_from_receipt_or_residual_expression():
+        result = check()
+        for key in ["applicationObservationVersion", "semanticProtocol", "residualContexts", "selectedDeclaration"]:
+            del result[key]
+        omissions = []
+        card = candidate_card("Main.step", result, {}, "llm", {}, omissions, pointer="/candidates/0")
+        assert card["check"].get("residualContexts") is None
+        assert card["check"].get("selectedDeclaration") is None
+>       assert any(row["pointer"].endswith("/residualContexts") and row["reason"] == "canonical-field-unavailable" for row in omissions)
+E       assert False
+E        +  where False = any(<generator object test_legacy_card_does_not_infer_context_from_receipt_or_residual_expression.<locals>.<genexpr> at 0x7c88ca8a2ea0>)
+
+tests/test_semantic_application_context_v4_text.py:60: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_semantic_application_context_v4_text.py::test_text_shows_residual_local_type_and_selected_parameter_kind
+FAILED tests/test_semantic_application_context_v4_text.py::test_bounded_cards_keep_context_ordinal_and_disclose_missing_tail
+FAILED tests/test_semantic_application_context_v4_text.py::test_legacy_card_does_not_infer_context_from_receipt_or_residual_expression
+3 failed in 0.08s

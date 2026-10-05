@@ -1,0 +1,103 @@
+{
+  "candidate": {
+    "check": {
+      "applicationTerm": null,
+      "authority": {
+        "analysisCompleteness": "invalid",
+        "authorityBasis": "not-assessed",
+        "environmentMatch": "unknown",
+        "executionBinding": "explicit-pinned",
+        "observationState": "failed",
+        "operationOutcome": "failed",
+        "sourceFreshness": "unknown"
+      },
+      "checkRunRef": null,
+      "dischargedHypotheses": [],
+      "environmentRef": null,
+      "executionBindingLimitation": null,
+      "failure": {
+        "diagnostic": {
+          "code": "invalid-worker-output",
+          "message": "Lean semantic helper returned duplicate local identity"
+        },
+        "stage": "invalid-worker-output"
+      },
+      "receiptIdentity": "sha256:4045bfde5d86eb89aa39fba3e9f41ddb66d05e6a3acb316fa6cde33ed08cfca5",
+      "residualPremises": [],
+      "scratch": null,
+      "sourceReceiptIdentity": "sha256:4045bfde5d86eb89aa39fba3e9f41ddb66d05e6a3acb316fa6cde33ed08cfca5",
+      "status": "invalid-worker-output",
+      "substitutions": []
+    },
+    "name": "BinderFixture.use",
+    "nameFingerprint": "sha256:bcdb124ecece769074d7140388b08db335ea5e8514b188f53f9f7e3cc0c484aa",
+    "shortlist": {
+      "source": "explicit-candidate"
+    },
+    "source": null
+  },
+  "coverage": {
+    "candidatePopulation": {
+      "observed": 1,
+      "omitted": 0,
+      "projected": 1,
+      "statusCounts": {
+        "invalid-worker-output": 1
+      }
+    },
+    "omissionPopulation": {
+      "generatedRecords": 0,
+      "observedRecords": 3,
+      "omittedRecords": 0,
+      "projectedRecords": 3,
+      "totalClaims": 3,
+      "transportRecords": 3
+    },
+    "operationalFailure": true
+  },
+  "limitations": [
+    "Artifact bodies and structural Lean expressions are omitted; expand registered evidence for audit.",
+    {
+      "id": "checker-observation-not-theorem-truth",
+      "message": "Acceptance records what this Lean process checked in this exact environment; Ladon does not promote it to an unqualified theorem-truth verdict."
+    }
+  ],
+  "omissions": [
+    {
+      "omitted": 1,
+      "pointer": "/candidate/check/residualContexts",
+      "reason": "canonical-field-unavailable"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidate/check/selectedDeclaration",
+      "reason": "canonical-field-unavailable"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidate/source",
+      "reason": "source-location-unavailable"
+    }
+  ],
+  "operation": "check-candidate",
+  "projection": {
+    "canonicalPayloadIdentity": "sha256:01c013a80f4e1b5d6167ef2c2a6d406774f935d1a29fc45fa02d2afcb6af391f",
+    "canonicalSchema": "ladon-semantic-candidate-check-result-v1",
+    "limits": {
+      "maxBytes": 8192,
+      "measurement": "pretty-json-utf8-v1"
+    },
+    "name": "llm",
+    "producerResultIdentity": null,
+    "projectionIdentity": "sha256:36ee246f7e74bb019bda066b10445a474546ce3fa3d21c1774b26112815505a7"
+  },
+  "request": {
+    "goal": "∀ (α β : Type) [Inhabited α] (x : α) (y : β), x = x → y = y → (x = x) ∧ (y = y)",
+    "goalFingerprint": "sha256:8ce6a1434d9c32c44eedfdc9cc294852472a5f7adf01ac489d39b63729b3e3d5",
+    "localContext": [],
+    "module": "BinderFixture",
+    "moduleFingerprint": "sha256:68611a8190b9463f6ec5b63e54b224c7fb8187eaf04e0debd83013aa1b0c5e9a"
+  },
+  "schema": "ladon-semantic-candidate-projection-v1",
+  "status": "invalid-worker-output"
+}
