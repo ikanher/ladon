@@ -1,0 +1,23 @@
+{"argv": ["uv", "run", "--locked", "python", "scripts/ladon_benchmarks.py", "--candidate", "5fa5fc9007384b003815b7e212b89f7f7047b30b", "--required", "--output", "/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/full-qualification/prerequisites-r47/benchmarks.json"], "cwd": "/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/candidate"}
++ /home/codex/miniconda3/bin/uv build --force-pep517 --build-constraints /home/codex/.cache/ladon-qualification-r47/ladon-candidate-_evpboap/source/build-constraints.txt --out-dir /home/codex/.cache/ladon-qualification-r47/ladon-benchmarks-oueplz0u/dist --clear .
+Building source distribution...
+Building wheel from source distribution...
+Successfully built /home/codex/.cache/ladon-qualification-r47/ladon-benchmarks-oueplz0u/dist/ladon-0.2.0.tar.gz
+Successfully built /home/codex/.cache/ladon-qualification-r47/ladon-benchmarks-oueplz0u/dist/ladon-0.2.0-py3-none-any.whl
++ /home/codex/miniconda3/bin/uv venv --python /home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/candidate/.venv/bin/python3 /home/codex/.cache/ladon-qualification-r47/ladon-benchmarks-oueplz0u/installed
+Using CPython 3.11.15 interpreter at: /home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/candidate/.venv/bin/python3
+Creating virtual environment at: installed
+Activate with: source installed/bin/activate
++ /home/codex/miniconda3/bin/uv pip install --python /home/codex/.cache/ladon-qualification-r47/ladon-benchmarks-oueplz0u/installed/bin/python /home/codex/.cache/ladon-qualification-r47/ladon-benchmarks-oueplz0u/dist/ladon-0.2.0-py3-none-any.whl
+Using Python 3.11.15 environment at: installed
+Resolved 1 package in 1ms
+Prepared 1 package in 4ms
+Installed 1 package in 3ms
+ + ladon==0.2.0 (from file:///home/codex/.cache/ladon-qualification-r47/ladon-benchmarks-oueplz0u/dist/ladon-0.2.0-py3-none-any.whl)
++ /home/codex/miniconda3/bin/uv pip check --python /home/codex/.cache/ladon-qualification-r47/ladon-benchmarks-oueplz0u/installed/bin/python
+Using Python 3.11.15 environment at: installed
+Checked 1 package in 0.21ms
+All installed packages are compatible
++ /home/codex/.cache/ladon-qualification-r47/ladon-benchmarks-oueplz0u/installed/bin/python -c from importlib import resources; print(resources.files('ladon').joinpath('lean', 'ladon_parser_helper.lean'))
+benchmark results: /home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/full-qualification/prerequisites-r47/benchmarks.json
+benchmark summary: correctness failures=0; coverage=17/17; cold=0.444s; warm=0.328s; peak-rss=44.059MiB; warm-cache-hits=1; stability failures=0

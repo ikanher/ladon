@@ -1,0 +1,85 @@
+FFFFFFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+_____ test_guide_preserves_authored_order_and_exact_conjunctive_selectors ______
+tests/test_result_guides.py:49: in test_guide_preserves_authored_order_and_exact_conjunctive_selectors
+    project = _api()
+              ^^^^^^
+tests/test_result_guides.py:13: in _api
+    from ladon.result_guides import guide_result_manifest
+E   ModuleNotFoundError: No module named 'ladon.result_guides'
+_ test_current_guide_supporting_target_is_navigable_without_correspondence_link _
+tests/test_result_guides.py:90: in test_current_guide_supporting_target_is_navigable_without_correspondence_link
+    result = _api()(
+             ^^^^^^
+tests/test_result_guides.py:13: in _api
+    from ladon.result_guides import guide_result_manifest
+E   ModuleNotFoundError: No module named 'ladon.result_guides'
+_ test_historical_target_does_not_supply_current_text_or_current_claim_navigation _
+tests/test_result_guides.py:108: in test_historical_target_does_not_supply_current_text_or_current_claim_navigation
+    project = _api()
+              ^^^^^^
+tests/test_result_guides.py:13: in _api
+    from ladon.result_guides import guide_result_manifest
+E   ModuleNotFoundError: No module named 'ladon.result_guides'
+___________ test_missing_guide_keeps_structural_navigation_available ___________
+tests/test_result_guides.py:129: in test_missing_guide_keeps_structural_navigation_available
+    project = _api()
+              ^^^^^^
+tests/test_result_guides.py:13: in _api
+    from ladon.result_guides import guide_result_manifest
+E   ModuleNotFoundError: No module named 'ladon.result_guides'
+_ test_citations_reviews_and_conflicting_attribution_assertions_stay_separate __
+tests/test_result_guides.py:170: in test_citations_reviews_and_conflicting_attribution_assertions_stay_separate
+    project = _api()
+              ^^^^^^
+tests/test_result_guides.py:13: in _api
+    from ladon.result_guides import guide_result_manifest
+E   ModuleNotFoundError: No module named 'ladon.result_guides'
+__________ test_selected_view_rejects_malformed_unselected_guide_rows __________
+tests/test_result_guides.py:188: in test_selected_view_rejects_malformed_unselected_guide_rows
+    _api()(
+    ^^^^^^
+tests/test_result_guides.py:13: in _api
+    from ladon.result_guides import guide_result_manifest
+E   ModuleNotFoundError: No module named 'ladon.result_guides'
+_____ test_paginated_guide_is_complete_bounded_and_cursor_binds_companion ______
+tests/test_result_guides.py:201: in test_paginated_guide_is_complete_bounded_and_cursor_binds_companion
+    project = _api()
+              ^^^^^^
+tests/test_result_guides.py:13: in _api
+    from ladon.result_guides import guide_result_manifest
+E   ModuleNotFoundError: No module named 'ladon.result_guides'
+__ test_guide_cli_is_offline_has_matching_text_and_preserves_inspect_contract __
+tests/test_result_guide_cli.py:46: in test_guide_cli_is_offline_has_matching_text_and_preserves_inspect_contract
+    assert main(_argv(manifest, guide, artifacts, "--section", "steps", "--limit", "20")) == 0
+E   AssertionError: assert 2 == 0
+E    +  where 2 = <function main at 0x7cf28d504540>(['result', 'guide', '/tmp/pytest-of-codex/pytest-744/test_guide_cli_is_offline_has_0/manifest.json', '--guide-inputs', '/tmp/pytest-of-codex/pytest-744/test_guide_cli_is_offline_has_0/guide.json', '--artifact', ...])
+E    +    where ['result', 'guide', '/tmp/pytest-of-codex/pytest-744/test_guide_cli_is_offline_has_0/manifest.json', '--guide-inputs', '/tmp/pytest-of-codex/pytest-744/test_guide_cli_is_offline_has_0/guide.json', '--artifact', ...] = _argv(PosixPath('/tmp/pytest-of-codex/pytest-744/test_guide_cli_is_offline_has_0/manifest.json'), PosixPath('/tmp/pytest-of-codex/pytest-744/test_guide_cli_is_offline_has_0/guide.json'), [PosixPath('/tmp/pytest-of-codex/pytest-744/test_guide_cli_is_offline_has_0/artifact-0.json'), PosixPath('/tmp/pytest-of-codex/pytest-744/test_guide_cli_is_offline_has_0/artifact-1.json')], '--section', 'steps', '--limit', '20')
+----------------------------- Captured stderr call -----------------------------
+{"diagnostic":{"code":"manifest-invalid","message":"argument operation: invalid choice: 'guide' (choose from 'validate', 'resolve', 'inspect')"},"exitClass":"invocation","exitCode":2,"operation":"validate","schema":"ladon-result-terminal-v1","status":"failed"}
+_ test_guide_cli_validates_full_companion_before_selector_and_writes_no_success_output _
+tests/test_result_guide_cli.py:99: in test_guide_cli_validates_full_companion_before_selector_and_writes_no_success_output
+    assert diagnostic["operation"] == "guide"
+E   AssertionError: assert 'validate' == 'guide'
+E     
+E     - guide
+E     + validate
+_____ test_guide_cli_rejects_unknown_exact_selectors_without_partial_view ______
+tests/test_result_guide_cli.py:113: in test_guide_cli_rejects_unknown_exact_selectors_without_partial_view
+    assert json.loads(captured.err)["operation"] == "guide"
+E   AssertionError: assert 'validate' == 'guide'
+E     
+E     - guide
+E     + validate
+=========================== short test summary info ============================
+FAILED tests/test_result_guides.py::test_guide_preserves_authored_order_and_exact_conjunctive_selectors
+FAILED tests/test_result_guides.py::test_current_guide_supporting_target_is_navigable_without_correspondence_link
+FAILED tests/test_result_guides.py::test_historical_target_does_not_supply_current_text_or_current_claim_navigation
+FAILED tests/test_result_guides.py::test_missing_guide_keeps_structural_navigation_available
+FAILED tests/test_result_guides.py::test_citations_reviews_and_conflicting_attribution_assertions_stay_separate
+FAILED tests/test_result_guides.py::test_selected_view_rejects_malformed_unselected_guide_rows
+FAILED tests/test_result_guides.py::test_paginated_guide_is_complete_bounded_and_cursor_binds_companion
+FAILED tests/test_result_guide_cli.py::test_guide_cli_is_offline_has_matching_text_and_preserves_inspect_contract
+FAILED tests/test_result_guide_cli.py::test_guide_cli_validates_full_companion_before_selector_and_writes_no_success_output
+FAILED tests/test_result_guide_cli.py::test_guide_cli_rejects_unknown_exact_selectors_without_partial_view
+10 failed in 0.16s

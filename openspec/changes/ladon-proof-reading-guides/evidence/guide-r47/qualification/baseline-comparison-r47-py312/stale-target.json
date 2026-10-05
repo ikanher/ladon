@@ -1,0 +1,1025 @@
+{
+  "schema": "ladon-result-manifest-v1",
+  "resultId": "matrix-fixed-epoch-exposition-baseline-v1",
+  "title": "Fixed-epoch exposition: declared component correspondence baseline, not theorem acceptance",
+  "claimInventory": {
+    "scope": "Every theorem/lemma/proposition/corollary environment in the captured TeX; excludes unboxed claims and proof-step assertions. Mathematical component boundaries are model-authored; mappings are partial, not independently certified.",
+    "coverage": "complete"
+  },
+  "claims": [
+    {
+      "id": "lem:calibration",
+      "statement": "\\begin{lemma}[Calibration properties]\\label{lem:calibration}\nFor every finite admissible horizon and fixed $\\varepsilon$, the transcript\naccountant value is continuous and nonincreasing in the raw noise, including\nat zero. Its feasible set is nonempty, and the calibration infimum is\nattained. At a positive minimizing noise, the accountant value equals\n$\\delta$. The same properties hold for the average-only accountant value\nas a function of $v$.\n\nAt full batch, $v_{\\mathrm{FB}}>0$ is independent of $E$ and is uniquely\nspecified by\n\\begin{equation}\\label{eq:gaussian-calibration}\n G_\\varepsilon(a)=\\delta,\\qquad a=\\Delta/\\sqrt{v_{\\mathrm{FB}}},\\qquad\n G_\\varepsilon(a)=\\Phi\\!\\left(\\frac a2-\\frac\\varepsilon a\\right)\n -e^\\varepsilon\\Phi\\!\\left(-\\frac a2-\\frac\\varepsilon a\\right).\n\\end{equation}\nAt full batch, $\\overline v_{E,E}=v_{\\mathrm{FB}}$.\nThe forward and reverse full-batch profiles coincide, and\n$G_\\varepsilon'(a)=\\phi(a/2-\\varepsilon/a)>0$ for $a>0$.\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#lem:calibration",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "general-transcript-calibration",
+        "average-calibration",
+        "full-batch-properties"
+      ],
+      "revision": "sha256:36477c7e74bf3a4a7973f3de079a69d2cb628838a7ef29a3b7dd3e5fd66fe6bb"
+    },
+    {
+      "id": "thm:rate-adaptive-pointwise",
+      "statement": "\\begin{theorem}[Horizon-dependent full-batch dominance]\n\\label{thm:rate-adaptive-pointwise}\nLet $E,T\\in\\N_{>0}$ with $T>E$, $\\Delta>0$, $\\varepsilon>0$, and\n$0<\\delta<1$. Put $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$, where\n$v_{\\mathrm{FB}}$ is the calibrated full-batch privacy variance. If\n\\begin{equation}\\label{eq:rate-adaptive-signal-condition}\n a^2\\leq\\Lambda_{E,T}\\varepsilon,\n\\end{equation}\nthen\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\n\\]\nand, for every $S\\geq0$,\n\\[\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S).\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:rate-adaptive-pointwise",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "transcript-excluding-symmetric-equality",
+        "symmetric-equality-endpoint",
+        "average-only-conclusions"
+      ],
+      "revision": "sha256:4f4fe8f61f31604feb26f7094fbb31e791d4243510b3a3ce53be01b5ddc86c7b"
+    },
+    {
+      "id": "cor:fixed-epoch-all-horizon",
+      "statement": "\\begin{corollary}[Full-batch dominance at every finite horizon]\n\\label{cor:fixed-epoch-all-horizon}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$, and put\n$a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$. If\n\\begin{equation}\\label{eq:epoch-uniform-condition}\n a^2\\leq\\Lambda_E\\varepsilon,\n \\qquad \\Lambda_E:=\\frac{6E}{3E+2},\n\\end{equation}\nthen, for every finite integer $T>E$,\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\n\\]\nand, for every $S\\geq0$,\n\\[\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S).\n\\]\n\\end{corollary}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#cor:fixed-epoch-all-horizon",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "transcript-all-horizons",
+        "average-only-conclusions"
+      ],
+      "revision": "sha256:ef09f4b140e535d759e1117c17f6c144df1cbb7764461ba151583b0a0b27a7d9"
+    },
+    {
+      "id": "thm:strict-interior-counterexample",
+      "statement": "\\begin{theorem}[A finite reversal below the nonparticipation boundary]\n\\label{thm:strict-interior-counterexample}\nLet $\\Delta=1$, $E=2$, $\\varepsilon=1/4$, and $\\delta=3/4$. At the adjacent\nsmaller-batch horizon $T=3$, with $q=2/3$, the calibrated privacy variances\nsatisfy\n\\[\n v_3\\leq\\frac5{32}<\\frac4{25}<v_2.\n\\]\nConsequently,\n\\[\n 0\\leq S\\leq\\frac9{400}\n \\quad\\Longrightarrow\\quad V_2(3,S)<V_2(2,S).\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:strict-interior-counterexample",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "finite-transcript-reversal-and-energy-interval"
+      ],
+      "revision": "sha256:d09e037ed403b76de648db934086d98508a15946a33839f636b29998ffcf3899"
+    },
+    {
+      "id": "thm:smallbatch",
+      "statement": "\\begin{theorem}[Sparse calibration and variance]\\label{thm:smallbatch}\nFix a positive integer $E$ and assume~\\eqref{eq:interior}. As $T\\to\\infty$\nthrough integers,\n\\[\n \\frac{\\Delta}{\\sigma_{E,T}}-\\sqrt{2\\log T}\n \\longrightarrow s_{E,\\delta}:=\n \\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}{E}\\right).\n\\]\nIn particular,\n\\begin{equation}\\label{eq:sigmaasymptotic}\n \\sigma_{E,T}\\sim\\frac{\\Delta}{\\sqrt{2\\log T}}\\longrightarrow0,\n\\end{equation}\nwhereas\n\\begin{equation}\\label{eq:privacydivergence}\n v_{E,T}\\sim\\frac{\\Delta^2T}{2E^2\\log T}\\longrightarrow+\\infty.\n\\end{equation}\nFor every fixed $S\\geq0$,\n\\begin{equation}\\label{eq:total-equivalent}\n V_E(T,S)\\sim v_{E,T}.\n\\end{equation}\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:smallbatch",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "fixed-epoch-offset-via-schedule-specialization",
+        "raw-noise-equivalent-and-zero",
+        "privacy-variance-equivalent-and-divergence",
+        "fixed-energy-total-equivalent"
+      ],
+      "revision": "sha256:deca59e9ab6e3aa5f8aabf7c76d67c3e01cf7bf625a497166982eefd67efd99c"
+    },
+    {
+      "id": "cor:eventual",
+      "statement": "\\begin{corollary}[Uniform eventual full-batch dominance]\\label{cor:eventual}\nUnder~\\eqref{eq:interior}, there is an integer $T_0\\geq E$ such that\n$V_E(E,S)<V_E(T,S)$ for every $T\\geq T_0$ and every $S\\geq0$.\n\\end{corollary}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#cor:eventual",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "one-cutoff-for-all-energies"
+      ],
+      "revision": "sha256:a016f5d08ff778e3bd044b4fa7b463b36c6ef725b35ac7ae0780de852138fdcd"
+    },
+    {
+      "id": "prop:average-uniform-bound",
+      "statement": "\\begin{proposition}[Uniform bound for average-only calibration]\n\\label{prop:average-uniform-bound}\nFor every integer $T\\geq E>0$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n$0<\\delta<1$,\n\\[\n \\overline v_{E,T}\\leq\\frac{\\Delta^2}{2\\pi\\delta^2}.\n\\]\n\\end{proposition}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#prop:average-uniform-bound",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "average-only-uniform-feasibility"
+      ],
+      "revision": "sha256:798d985d1ff9a454d640611302242219ce2a5312be933ff7e0d963a551713f6a"
+    },
+    {
+      "id": "thm:rate-adaptive-center",
+      "statement": "\\begin{theorem}[The binomial center comparison]\\label{thm:rate-adaptive-center}\nLet $T>E>0$ be integers and $h>0$. Then\n$\\Gamma_{E,T}(\\theta,h)>0$ under the following conditions:\n\\begin{equation}\\label{eq:rate-adaptive-center-condition}\n \\begin{array}{c|c}\n T>2E & \\theta\\geq c_{E,T}:=(1-2E/T)/3,\\\\\n T=2E & \\theta>0,\\\\\n E<T<2E & \\theta\\geq0.\n \\end{array}\n\\end{equation}\nAt $T=2E$ and $\\theta=0$, the gap is zero.\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:rate-adaptive-center",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "whole-labelled-statement"
+      ],
+      "revision": "sha256:189898238879b4f3def4c8e93e1918af08a01a4d4583f5dbe051ac8c73479117"
+    },
+    {
+      "id": "lem:binomial-propagation",
+      "statement": "\\begin{lemma}[Propagation of positivity]\\label{lem:binomial-propagation}\nFix $h>0$ and $0\\leq\\theta_1<\\theta_2$. If\n$\\Gamma_{E,T}(\\theta_1,h)\\geq0$, then\n$\\Gamma_{E,T}(\\theta_2,h)>0$.\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#lem:binomial-propagation",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "whole-labelled-statement"
+      ],
+      "revision": "sha256:6fe6edf954390d2acecbc086014924bf300012fcc49aa4aa1d5167441cc51fad"
+    },
+    {
+      "id": "lem:binomial-stein-polynomial",
+      "statement": "\\begin{lemma}[A binomial telescoping identity]\\label{lem:binomial-stein-polynomial}\nPut $C=T-E$. For $1\\leq j\\leq E$, define\n\\[\n R_j=j-c,\\qquad A_j(z)=R_j^2-2Er-3c^2+z-z^2.\n\\]\nThen, for every real $z$,\n\\begin{equation}\\label{eq:binomial-cubic-stein-polynomial}\n \\begin{split}\n &(z-c)\\{R_j^2-(z-c)^2\\}+c(R_j^2-c^2)\\\\\n &\\hspace{2em}=r(E+z)A_j(z)-p(C-z)A_j(z+1).\n \\end{split}\n\\end{equation}\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#lem:binomial-stein-polynomial",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "whole-labelled-statement"
+      ],
+      "revision": "sha256:9d80170987cf2134e3cdac758a6bec357acc52241dd61266e5a9fb621ff155d8"
+    },
+    {
+      "id": "lem:binomial-double-cumulative",
+      "statement": "\\begin{lemma}[Nonnegativity of the hinge transform]\n\\label{lem:binomial-double-cumulative}\nIf $T>2E$, then $J(t)\\geq0$ for every $t\\geq0$, and\n$J((1-c)^2)>0$.\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#lem:binomial-double-cumulative",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "whole-labelled-statement"
+      ],
+      "revision": "sha256:3abead4f0be6b33057a9cf9b3d4ac1a689e9194b802d1fa45db8a4202ff53134"
+    },
+    {
+      "id": "lem:binomial-reflected-zero",
+      "statement": "\\begin{lemma}[The zero-center sign]\\label{lem:binomial-reflected-zero}\nFor $h>0$, the gap $\\Gamma_{E,T}(0,h)$ is negative when $T>2E$, zero when\n$T=2E$, and positive when $E<T<2E$.\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#lem:binomial-reflected-zero",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "whole-labelled-statement"
+      ],
+      "revision": "sha256:7a977511bb860cec613a368fff314d700dfce6f95f9ae02d67460238cb8f28aa"
+    },
+    {
+      "id": "lem:strict-average-endpoint",
+      "statement": "\\begin{lemma}[Improving the threshold at half rate]\\label{lem:strict-average-endpoint}\nLet $E\\in\\N_{>0}$, $a>0$, and $K\\sim\\operatorname{Binomial}(2E,1/2)$.\nLet $Q=\\Normal(0,1)$, and let $P$ be the mixture whose conditional law\ngiven $K=k$ is $\\Normal(ak/E,1)$. With $\\varepsilon=a^2/2$,\n\\[\n H_{e^\\varepsilon}(P, Q)\n >\\frac12-e^\\varepsilon\\overline\\Phi(a).\n\\]\n\\end{lemma}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#lem:strict-average-endpoint",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "average-event-strict-improvement"
+      ],
+      "revision": "sha256:73db68de4c0420b410e76e31be9693ed9bac3f19b7007e747b245a19eef6443c"
+    },
+    {
+      "id": "thm:accountant-limit",
+      "statement": "\\begin{theorem}[The fixed-participation profile limit]\\label{thm:accountant-limit}\nLet $\\rho>0$, $\\Delta>0$, and $\\varepsilon\\geq0$. Suppose\n$q_T\\in[0,1]$, $Tq_T\\to\\rho$, $\\sigma_T>0$ eventually, and\n\\[\n \\frac{\\Delta}{\\sigma_T}-\\sqrt{2\\log T}\\longrightarrow s\\in\\R.\n\\]\nThen\n\\[\n \\AO_S(\\sigma_T,\\Delta,q_T,T,\\varepsilon)\n \\longrightarrow1-\\exp\\{-\\rho\\Phi(s)\\}.\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:accountant-limit",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "general-transcript-profile-limit"
+      ],
+      "revision": "sha256:7a01aabe42e019e3653c97b4e9cd1d458de9a6987128caa8b14790dc9d23325a"
+    },
+    {
+      "id": "thm:fixed-participation-calibration",
+      "statement": "\\begin{theorem}[Fixed-participation calibration]\n\\label{thm:fixed-participation-calibration}\nLet $\\rho>0$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n$0<\\delta<1-e^{-\\rho}$. Suppose $q_T\\in[0,1]$ and $Tq_T\\to\\rho$, and define\n\\[\n \\sigma_T^{\\mathrm{cal}}:=\\inf\\left\\{\\sigma\\geq0:\n \\AO_S(\\sigma,\\Delta,q_T,T,\\varepsilon)\\leq\\delta\\right\\}.\n\\]\nThen $\\sigma_T^{\\mathrm{cal}}>0$ eventually, and\n\\[\n \\frac{\\Delta}{\\sigma_T^{\\mathrm{cal}}}-\\sqrt{2\\log T}\n \\longrightarrow s_{\\rho,\\delta}:=\n \\Phi^{-1}\\!\\left(-\\frac{\\log(1-\\delta)}\\rho\\right).\n\\]\nFor the capped exact-budget schedule $q_T=\\min\\{1,\\rho/T\\}$, it follows that\n\\[\n \\frac{\\sigma_T^{\\mathrm{cal}}\\sqrt{2\\log(1/q_T)}}\\Delta\\longrightarrow1.\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:fixed-participation-calibration",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "calibrated-offset",
+        "eventual-positive-calibration",
+        "capped-schedule-leading-ratio"
+      ],
+      "revision": "sha256:ace65167e7a9c2a7c90e642e8458a6e8e08c56a6e78e4b01e45035dc75828305"
+    },
+    {
+      "id": "thm:near-full-accountant",
+      "statement": "\\begin{proposition}[Full-support convexity]\\label{thm:near-full-accountant}\nLet $E,T\\in\\N_{>0}$ with $T\\geq E$, $\\Delta>0$, $\\varepsilon\\geq0$, and\n$0<\\delta<1$. If\n\\begin{equation}\\label{eq:nearfull-region}\n \\frac TE\\leq\\frac12+\\frac{\\varepsilon v_{\\mathrm{FB}}}{\\Delta^2},\n\\end{equation}\nthen $\\mathcal A_{E,T}(v_{\\mathrm{FB}};\\varepsilon)\\geq\\delta$.\nFor $T>E$, the inequality is strict, and\n\\[\n v_{E,T}>v_{\\mathrm{FB}},\\qquad\n V_E(E,S)<V_E(T,S)\\quad(S\\geq0).\n\\]\n\\end{proposition}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:near-full-accountant",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "whole-labelled-statement"
+      ],
+      "revision": "sha256:d9db638e60ac8fa7d643574b2539ec6bba53d2964f4880ceae07c77933eddfd0"
+    },
+    {
+      "id": "thm:support-width-accountant",
+      "statement": "\\begin{theorem}[Finite-support secants]\\label{thm:support-width-accountant}\nLet $T>E>0$ be integers, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$.\nIf\n\\begin{equation}\\label{eq:support-width-region}\n a^2:=\\frac{\\Delta^2}{v_{\\mathrm{FB}}}\n \\leq\\frac{2\\varepsilon E}{T-1},\n\\end{equation}\nthen $\\mathcal A_{E,T}(v_{\\mathrm{FB}};\\varepsilon)>\\delta$, and\n\\[\n v_{E,T}>v_{\\mathrm{FB}},\\qquad\n V_E(E,S)<V_E(T,S)\\quad(S\\geq0).\n\\]\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:support-width-accountant",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "strict-support-width-transcript",
+        "closed-secant-except-corner",
+        "E1-T2-equality-corner"
+      ],
+      "revision": "sha256:cc918b2d9f91e9b9415a7f4216b32d3ae130e56b8e1fbce4148fd792988f6b2a"
+    },
+    {
+      "id": "thm:renyi",
+      "statement": "\\begin{theorem}[Forward integer-order R\\'enyi dominance]\\label{thm:renyi}\nFor every admissible $(E,T)$, integer $m\\geq2$, $v>0$, and $\\Delta>0$,\n\\begin{equation}\\label{eq:powerdominance}\n \\exp\\left(\\frac{m(m-1)\\Delta^2}{2v}\\right)\\leq M_m(q,z)^T.\n\\end{equation}\nThe left side is the full-batch transcript moment. If $T>E$, the inequality\nis strict, as is the corresponding forward R\\'enyi-divergence comparison.\nThus full batch uniquely minimizes this quantity at the supplied variance.\n\\end{theorem}",
+      "document": {
+        "locator": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:renyi",
+        "digest": "sha256:a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118"
+      },
+      "components": [
+        "whole-labelled-statement"
+      ],
+      "revision": "sha256:6790bcb9cd1b88603ad672698ae2c0c9a21daa5d70406db6bbee6d6b7bacf065"
+    }
+  ],
+  "targets": [
+    {
+      "id": "uniform-privacy",
+      "name": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_epochUniformSignal",
+      "typeText": "(point : PoissonFixedEpochPoint) (sensitivity epsilon delta : Real) (hNonFull : point.epoch < point.horizon) (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1) (hSignalSq : poissonFixedEpochStandardizedSignal sensitivity (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne) ^ 2 ≤ poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon) : (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne : Real) < poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochEpochUniformDomain.lean",
+        "digest": "sha256:bf8bcc8d4715f3947932f6cf715645cafc6a1f3a16d2b39d7fe9a0766c4d13b5",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:b54f87d12825c8ecf19417452806a49d520ba923ec65553de91b0680dee74621"
+    },
+    {
+      "id": "uniform-total",
+      "name": "Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_epochUniformSignal",
+      "typeText": "(point : PoissonFixedEpochPoint) (sensitivity epsilon delta energy : Real) (hNonFull : point.epoch < point.horizon) (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1) (hEnergy : 0 ≤ energy) (hSignalSq : poissonFixedEpochStandardizedSignal sensitivity (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne) ^ 2 ≤ poissonFixedEpochEpochUniformSignalSquareFactor point.epoch * epsilon) : poissonFixedEpochTotalAverageVariance (PoissonFixedEpochPoint.fullBatch point.epoch point.epoch_pos) sensitivity epsilon delta energy < poissonFixedEpochTotalAverageVariance point sensitivity epsilon delta energy → False /- synthetic target edit -/",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochEpochUniformDomain.lean",
+        "digest": "sha256:bf8bcc8d4715f3947932f6cf715645cafc6a1f3a16d2b39d7fe9a0766c4d13b5",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:37c2e60e6ba9c1e6341f105223c8d60bedaa4bc88663c9f93641bbd44a9b1ad2"
+    },
+    {
+      "id": "pointwise-privacy",
+      "name": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_exactCriticalSignalSquareCondition",
+      "typeText": "(point : PoissonFixedEpochPoint) (sensitivity epsilon delta : Real) (hNonFull : point.epoch < point.horizon) (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1) (hSignalSq : poissonFixedEpochExactCriticalSignalSquareCondition point epsilon (poissonFixedEpochStandardizedSignal sensitivity (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne))) : (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne : Real) < poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochPointwiseDominanceDomain.lean",
+        "digest": "sha256:88db8d26189787583e57c4fbd881671d3068ca74cec72cd8ae6cda3610e92d43",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:102f0789bfa42925622d5002b95ae763e8491f9e840558b8d152ea76978ac7fa"
+    },
+    {
+      "id": "pointwise-total",
+      "name": "Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_of_exactCriticalSignalSquareCondition",
+      "typeText": "(point : PoissonFixedEpochPoint) (sensitivity epsilon delta energy : Real) (hNonFull : point.epoch < point.horizon) (hSensitivity : 0 < sensitivity) (hEpsilon : 0 < epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1) (hEnergy : 0 ≤ energy) (hSignalSq : poissonFixedEpochExactCriticalSignalSquareCondition point epsilon (poissonFixedEpochStandardizedSignal sensitivity (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon.le hDeltaPos hDeltaLtOne))) : poissonFixedEpochTotalAverageVariance (PoissonFixedEpochPoint.fullBatch point.epoch point.epoch_pos) sensitivity epsilon delta energy < poissonFixedEpochTotalAverageVariance point sensitivity epsilon delta energy",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochPointwiseDominanceDomain.lean",
+        "digest": "sha256:88db8d26189787583e57c4fbd881671d3068ca74cec72cd8ae6cda3610e92d43",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:e8726b3e0042b18492058137719f77d2db6101a831d61c910f32a639e08902ed"
+    },
+    {
+      "id": "reversal-upper",
+      "name": "Mf.DP.strictInterior_calibratedPrivacyVariance_le_five_thirty_seconds",
+      "typeText": ": poissonFixedEpochCalibratedPrivacyVariance strictInteriorPoint 1 (1 / 4) (3 / 4) ≤ 5 / 32",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean",
+        "digest": "sha256:387069bd0b1358b5e404ac0fa3e0bc5af469cc23425c35932d36294e501972cc",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:c5aab8f88fc1147230f6583cca0c3d7c1b171a4ba5b8df2ddffa443dea647fba"
+    },
+    {
+      "id": "reversal-lower",
+      "name": "Mf.DP.strictInterior_calibratedPrivacyVariance_lt_adjacentFullBatch",
+      "typeText": ": poissonFixedEpochCalibratedPrivacyVariance strictInteriorPoint 1 (1 / 4) (3 / 4) < poissonFixedEpochCalibratedPrivacyVariance (PoissonFixedEpochPoint.fullBatch 2 (by norm_num)) 1 (1 / 4) (3 / 4)",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean",
+        "digest": "sha256:387069bd0b1358b5e404ac0fa3e0bc5af469cc23425c35932d36294e501972cc",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:eb8805402fa261dfc3c267e0ce454c8eeba462296aa2a27731936076d0b59cf7"
+    },
+    {
+      "id": "reversal-total",
+      "name": "Mf.DP.strictInterior_totalVariance_lt_fullBatch_of_energy_le_nine_four_hundred",
+      "typeText": "(energy : Real) (_energy_nonneg : 0 ≤ energy) (energy_le : energy ≤ 9 / 400) : poissonFixedEpochTotalAverageVariance strictInteriorPoint 1 (1 / 4) (3 / 4) energy < poissonFixedEpochTotalAverageVariance (PoissonFixedEpochPoint.fullBatch 2 (by norm_num)) 1 (1 / 4) (3 / 4) energy",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochStrictInteriorCounterexample.lean",
+        "digest": "sha256:387069bd0b1358b5e404ac0fa3e0bc5af469cc23425c35932d36294e501972cc",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:1ed69bdbcdf033e42124791b54a05b2f13f6a0d577b867da598335ac18304477"
+    },
+    {
+      "id": "sparse-noise-ratio",
+      "name": "Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_smallRate_ratio_one",
+      "typeText": "(epoch : Nat) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : Real) (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_boundary : delta < 1 - Real.exp (-(epoch : Real))) : Tendsto (fun extra => (poissonFixedEpochCalibratedStddev (PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra) sensitivity epsilon delta : Real) * Real.sqrt (2 * Real.log (1 / ((PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra).samplingRate : Real))) / sensitivity) atTop (nhds 1)",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:6a81790cef3b4c5db2b7717c2b0264e9f5967d6f487dd48c24b39d4449d34b39"
+    },
+    {
+      "id": "sparse-noise-zero",
+      "name": "Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_zero",
+      "typeText": "(epoch : Nat) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : Real) (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_boundary : delta < 1 - Real.exp (-(epoch : Real))) : Tendsto (fun extra => (poissonFixedEpochCalibratedStddev (PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra) sensitivity epsilon delta : Real)) atTop (nhds 0)",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:a8199a0dca20720f14ee20d1f375f76159a9d27ff123a97e4b846b37a503f39c"
+    },
+    {
+      "id": "sparse-variance-ratio",
+      "name": "Mf.DP.tendsto_poissonFixedEpochPrivacyVariance_div_leadingTerm_one",
+      "typeText": "(epoch : Nat) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : Real) (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_boundary : delta < 1 - Real.exp (-(epoch : Real))) : Tendsto (fun extra => poissonFixedEpochCalibratedPrivacyVariance (PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra) sensitivity epsilon delta / fixedParticipationPrivacyVarianceLeadingTerm (epoch : Real) ((PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra).samplingRate : Real) sensitivity) atTop (nhds 1)",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:7cbe2a84778a828c62c07108212d9ea70e798cffcc4836a453b000160dc00b4b"
+    },
+    {
+      "id": "sparse-variance-divergence",
+      "name": "Mf.DP.tendsto_poissonFixedEpochPrivacyVariance_atTop",
+      "typeText": "(epoch : Nat) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : Real) (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_boundary : delta < 1 - Real.exp (-(epoch : Real))) : Tendsto (fun extra => poissonFixedEpochPrivacyVarianceOfStddev (PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra) (poissonFixedEpochCalibratedStddev (PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra) sensitivity epsilon delta : Real)) atTop atTop",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:1f484d83c27b0a0e3405ca072cbe94817288796a2d9d18230490eea2207eb18c"
+    },
+    {
+      "id": "sparse-total",
+      "name": "Mf.DP.tendsto_poissonFixedEpochTotalAverageVariance_div_leadingTerm_one",
+      "typeText": "(epoch : Nat) (epoch_pos : 0 < epoch) (sensitivity epsilon delta energy : Real) (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_boundary : delta < 1 - Real.exp (-(epoch : Real))) : Tendsto (fun extra => poissonFixedEpochTotalAverageVariance (PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra) sensitivity epsilon delta energy / fixedParticipationPrivacyVarianceLeadingTerm (epoch : Real) ((PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra).samplingRate : Real) sensitivity) atTop (nhds 1)",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:e303163d89c7e041cc76f7999b4b03f65dfbb91a0df03fb9dda69b74bf1b1754"
+    },
+    {
+      "id": "eventual-uniform",
+      "name": "Mf.DP.eventually_poissonFixedEpoch_fullBatch_lt_totalAverageVariance_uniform_energy",
+      "typeText": "(epoch : Nat) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : Real) (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_boundary : delta < 1 - Real.exp (-(epoch : Real))) : ∀ᶠ extra : Nat in atTop, ∀ energy : Real, 0 ≤ energy → poissonFixedEpochTotalAverageVariance (PoissonFixedEpochPoint.fullBatch epoch epoch_pos) sensitivity epsilon delta energy < poissonFixedEpochTotalAverageVariance (PoissonFixedEpochPoint.ofExtra epoch epoch_pos extra) sensitivity epsilon delta energy",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochAsymptotics.lean",
+        "digest": "sha256:436ca6b8d6e121a8f398977adbb91f5e3c45dc03e8d8279d88e11b052f737471",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:51fecc143f4352d7a3fbed0c5f1dc82653f077ff46b4dae05aef13f014e4e4b3"
+    },
+    {
+      "id": "profile-limit",
+      "name": "Mf.DP.tendsto_sampledGaussianProductProfileStddev_finiteOffset",
+      "typeText": "(schedule : FixedParticipationSchedule) (sensitivity : Real) (noiseStddev : Nat → NNReal) (offset epsilon : Real) (_hSensitivity : 0 < sensitivity) (hepsilon : 0 ≤ epsilon) (hStddev : ∀ᶠ horizon in atTop, 0 < noiseStddev horizon) (hOffset : Tendsto (fun horizon => sensitivity / (noiseStddev horizon : Real) - gaussianCriticalScale horizon) atTop (nhds offset)) : Tendsto (fun horizon => sampledGaussianProductProfileStddev horizon (schedule.samplingRate horizon) (schedule.rate_le_one horizon) sensitivity (noiseStddev horizon) epsilon) atTop (nhds (ENNReal.ofReal (1 - Real.exp (-(schedule.participationBudget : Real) * stdNormalCDFReal offset))))",
+      "source": {
+        "path": "Mf/DP/FixedParticipationGaussianAccounting.lean",
+        "digest": "sha256:c2da34b048b1c5b37180a9e4da3cc6b62d89182628fa9b45e5eb773cd10b133d",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:05d94ed16084d73e44723edeaf90bb55e1ac6df5e48e25276f64dbf50c69fbb0"
+    },
+    {
+      "id": "calibrated-offset",
+      "name": "Mf.DP.tendsto_fixedParticipationCalibratedStddev_offset",
+      "typeText": "(schedule : FixedParticipationSchedule) (sensitivity epsilon delta : Real) (hSensitivity : 0 < sensitivity) (hEpsilon : 0 ≤ epsilon) (hDeltaPos : 0 < delta) (hDeltaLtBoundary : delta < 1 - Real.exp (-(schedule.participationBudget : Real))) : Tendsto (fun horizon => sensitivity / (fixedParticipationCalibratedStddev schedule sensitivity epsilon delta horizon : Real) - gaussianCriticalScale horizon) atTop (nhds (fixedParticipationTargetOffset (schedule.participationBudget : Real) delta))",
+      "source": {
+        "path": "Mf/DP/FixedParticipationGaussianCalibrationAsymptotics.lean",
+        "digest": "sha256:0f23d72d33f81e123aad9e260cbeb294724451923aabd5cb467b9ea628df76c8",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:1df06d03f214613db4cf53c2823507d77ab20541c219149fc4ea5b67679fcb10"
+    },
+    {
+      "id": "secant-profile",
+      "name": "Mf.DP.poissonFixedEpoch_productProfile_calibratedRunVariance_gt_of_supportWidth",
+      "typeText": "(point : PoissonFixedEpochPoint) (sensitivity epsilon delta : Real) (hNonFull : point.epoch < point.horizon) (hSensitivity : 0 < sensitivity) (hEpsilon : 0 ≤ epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1) (hSupportWidth : (poissonFixedEpochStandardizedSignal sensitivity (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon hDeltaPos hDeltaLtOne)) ^ 2 < 2 * epsilon * point.epoch / ((point.horizon : Real) - 1)) : ENNReal.ofReal delta < binaryAccountingProfile (sampledGaussianSourceProductLaw point.horizon point.samplingRate point.samplingRate_le_one sensitivity (poissonFixedEpochRawNoiseVariance point (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon hDeltaPos hDeltaLtOne))) (sampledGaussianReferenceProductLaw point.horizon (poissonFixedEpochRawNoiseVariance point (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon hDeltaPos hDeltaLtOne))) epsilon",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochNearFullDominance.lean",
+        "digest": "sha256:ba6bc8a3bfbaec06ccd677b8571931b649ba677da3140d5aa807a0a0519495df",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:8ed5599b6476caa8b46fd76bf1838c830b6793adb138e8fd63cf2aa7e76d3bd1"
+    },
+    {
+      "id": "secant-privacy",
+      "name": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_supportWidth",
+      "typeText": "(point : PoissonFixedEpochPoint) (sensitivity epsilon delta : Real) (hNonFull : point.epoch < point.horizon) (hSensitivity : 0 < sensitivity) (hEpsilon : 0 ≤ epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1) (hSupportWidth : (poissonFixedEpochStandardizedSignal sensitivity (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon hDeltaPos hDeltaLtOne)) ^ 2 < 2 * epsilon * point.epoch / ((point.horizon : Real) - 1)) : (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon hDeltaPos hDeltaLtOne : Real) < poissonFixedEpochCalibratedPrivacyVariance point sensitivity epsilon delta",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochNearFullDominance.lean",
+        "digest": "sha256:ba6bc8a3bfbaec06ccd677b8571931b649ba677da3140d5aa807a0a0519495df",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:c40f4172b95a42eb8bf3da5b9d226628f1c874debe5210994a2871254e59e10d"
+    },
+    {
+      "id": "secant-total",
+      "name": "Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_supportWidth",
+      "typeText": "(point : PoissonFixedEpochPoint) (sensitivity epsilon delta energy : Real) (hNonFull : point.epoch < point.horizon) (hSensitivity : 0 < sensitivity) (hEpsilon : 0 ≤ epsilon) (hDeltaPos : 0 < delta) (hDeltaLtOne : delta < 1) (hEnergy : 0 ≤ energy) (hSupportWidth : (poissonFixedEpochStandardizedSignal sensitivity (poissonFixedEpochFullBatchCalibratedRunVariance sensitivity epsilon delta hSensitivity hEpsilon hDeltaPos hDeltaLtOne)) ^ 2 < 2 * epsilon * point.epoch / ((point.horizon : Real) - 1)) : poissonFixedEpochTotalAverageVariance (PoissonFixedEpochPoint.fullBatch point.epoch point.epoch_pos) sensitivity epsilon delta energy < poissonFixedEpochTotalAverageVariance point sensitivity epsilon delta energy",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochNearFullDominance.lean",
+        "digest": "sha256:ba6bc8a3bfbaec06ccd677b8571931b649ba677da3140d5aa807a0a0519495df",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:8ceca1ccf171837cae434011ccfe7394ca2f3ec69923a1779981d728bcf95de6"
+    },
+    {
+      "id": "reversal-bracket",
+      "name": "Mf.DP.PoissonFixedEpochFullBatchFourTwentyFifthsBracket.four_twenty_fifths_lt_calibrated_sq",
+      "typeText": ": (4 / 25 : Real) < (fullBatchGaussianBaseStddev 1 (1 / 4) (3 / 4) (by norm_num) (by norm_num) (by norm_num) (by norm_num)) ^ 2",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochFullBatchFourTwentyFifthsBracket.lean",
+        "digest": "sha256:9b2de149a9f7a6fd3de5e869d7347ce2c111e550e568e65c82a16fdfa45f86ce",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:a29a4b176f7c77e15c9c302b23e6780c8e69c8eed223063bdf14130b73874af9"
+    },
+    {
+      "id": "fullbatch-comparator",
+      "name": "Mf.DP.poissonFixedEpochPrivacyVariance_fullBatch_eq_base_sq",
+      "typeText": "(epoch : Nat) (epoch_pos : 0 < epoch) (sensitivity epsilon delta : Real) (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta) (delta_lt_one : delta < 1) : poissonFixedEpochPrivacyVarianceOfStddev (PoissonFixedEpochPoint.fullBatch epoch epoch_pos) (poissonFixedEpochCalibratedStddev (PoissonFixedEpochPoint.fullBatch epoch epoch_pos) sensitivity epsilon delta) = (fullBatchGaussianBaseStddev sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one) ^ 2",
+      "source": {
+        "path": "Mf/DP/PoissonFixedEpochVariance.lean",
+        "digest": "sha256:7df2853825f9c7728607de78d1fda0eb1ae46a675350dcf07065f623c83188ca",
+        "projectRevision": "sha256:f8e2839b485b073353df435dd3a9ea3f7d53abb48b14b99f55f3238e0096327b"
+      },
+      "environment": {
+        "toolchain": "leanprover/lean4:v4.33.0",
+        "digest": "sha256:634cf65a17eb28d7f45775cce1b7f2ef43ebd8987d168aecbdec25c6d797d08b"
+      },
+      "revision": "sha256:40b00249a0ddd83f1b6fd32738053ada5911817c9c1c195c64c67d2dc0cf102f"
+    }
+  ],
+  "links": [
+    {
+      "id": "link-1",
+      "claimId": "thm:rate-adaptive-pointwise",
+      "componentIds": [
+        "transcript-excluding-symmetric-equality"
+      ],
+      "targetIds": [
+        "pointwise-privacy",
+        "pointwise-total"
+      ]
+    },
+    {
+      "id": "link-2",
+      "claimId": "cor:fixed-epoch-all-horizon",
+      "componentIds": [
+        "transcript-all-horizons"
+      ],
+      "targetIds": [
+        "uniform-privacy",
+        "uniform-total"
+      ]
+    },
+    {
+      "id": "link-3",
+      "claimId": "thm:strict-interior-counterexample",
+      "componentIds": [
+        "finite-transcript-reversal-and-energy-interval"
+      ],
+      "targetIds": [
+        "reversal-upper",
+        "reversal-lower",
+        "reversal-total",
+        "reversal-bracket",
+        "fullbatch-comparator"
+      ]
+    },
+    {
+      "id": "link-4",
+      "claimId": "thm:smallbatch",
+      "componentIds": [
+        "fixed-epoch-offset-via-schedule-specialization"
+      ],
+      "targetIds": [
+        "calibrated-offset"
+      ]
+    },
+    {
+      "id": "link-5",
+      "claimId": "thm:smallbatch",
+      "componentIds": [
+        "raw-noise-equivalent-and-zero"
+      ],
+      "targetIds": [
+        "sparse-noise-ratio",
+        "sparse-noise-zero"
+      ]
+    },
+    {
+      "id": "link-6",
+      "claimId": "thm:smallbatch",
+      "componentIds": [
+        "privacy-variance-equivalent-and-divergence"
+      ],
+      "targetIds": [
+        "sparse-variance-ratio",
+        "sparse-variance-divergence"
+      ]
+    },
+    {
+      "id": "link-7",
+      "claimId": "thm:smallbatch",
+      "componentIds": [
+        "fixed-energy-total-equivalent"
+      ],
+      "targetIds": [
+        "sparse-total"
+      ]
+    },
+    {
+      "id": "link-8",
+      "claimId": "cor:eventual",
+      "componentIds": [
+        "one-cutoff-for-all-energies"
+      ],
+      "targetIds": [
+        "eventual-uniform"
+      ]
+    },
+    {
+      "id": "link-9",
+      "claimId": "thm:accountant-limit",
+      "componentIds": [
+        "general-transcript-profile-limit"
+      ],
+      "targetIds": [
+        "profile-limit"
+      ]
+    },
+    {
+      "id": "link-10",
+      "claimId": "thm:fixed-participation-calibration",
+      "componentIds": [
+        "calibrated-offset"
+      ],
+      "targetIds": [
+        "calibrated-offset"
+      ]
+    },
+    {
+      "id": "link-11",
+      "claimId": "thm:support-width-accountant",
+      "componentIds": [
+        "strict-support-width-transcript"
+      ],
+      "targetIds": [
+        "secant-profile",
+        "secant-privacy",
+        "secant-total"
+      ]
+    }
+  ],
+  "reviews": [
+    {
+      "id": "review-1",
+      "linkId": "link-1",
+      "linkDigest": "sha256:9e033692a29f34fad4ee1f74e7f85753c330eadfaa51856e462b71bc923ee793",
+      "claimRevision": "sha256:4f4fe8f61f31604feb26f7094fbb31e791d4243510b3a3ce53be01b5ddc86c7b",
+      "targetRevisions": [
+        {
+          "targetId": "pointwise-privacy",
+          "revision": "sha256:102f0789bfa42925622d5002b95ae763e8491f9e840558b8d152ea76978ac7fa"
+        },
+        {
+          "targetId": "pointwise-total",
+          "revision": "sha256:e8726b3e0042b18492058137719f77d2db6101a831d61c910f32a639e08902ed"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787710+00:00",
+      "rationale": "Pinned transcript theorems use a strict condition at T=2E. The paper includes equality there and also average-only conclusions. Only the transcript component excluding symmetric equality is linked.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:rate-adaptive-pointwise",
+          "formalAnchor": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_exactCriticalSignalSquareCondition; Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_of_exactCriticalSignalSquareCondition",
+          "description": "Pinned transcript theorems use a strict condition at T=2E. The paper includes equality there and also average-only conclusions. Only the transcript component excluding symmetric equality is linked. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    },
+    {
+      "id": "review-2",
+      "linkId": "link-2",
+      "linkDigest": "sha256:c397f79bb7b9a9f8a06cae2421cfe898b3048dd47aead480a24727fd30202b04",
+      "claimRevision": "sha256:ef09f4b140e535d759e1117c17f6c144df1cbb7764461ba151583b0a0b27a7d9",
+      "targetRevisions": [
+        {
+          "targetId": "uniform-privacy",
+          "revision": "sha256:b54f87d12825c8ecf19417452806a49d520ba923ec65553de91b0680dee74621"
+        },
+        {
+          "targetId": "uniform-total",
+          "revision": "sha256:6ce68d8435eda2fc1598a10cf4c071f9b9075de83c030a811641113458321987"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787743+00:00",
+      "rationale": "Pinned statements cover transcript privacy/total variance for every finite T>E, nonnegative energy, under a^2<=6E*epsilon/(3E+2). Average-only inequalities are conventional additions.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#cor:fixed-epoch-all-horizon",
+          "formalAnchor": "Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_epochUniformSignal; Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_epochUniformSignal",
+          "description": "Pinned statements cover transcript privacy/total variance for every finite T>E, nonnegative energy, under a^2<=6E*epsilon/(3E+2). Average-only inequalities are conventional additions. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    },
+    {
+      "id": "review-3",
+      "linkId": "link-3",
+      "linkDigest": "sha256:85cfd37c9ba9600cf4ec3ffb91a4966732572c58cb7abaf09039973bab4f7425",
+      "claimRevision": "sha256:d09e037ed403b76de648db934086d98508a15946a33839f636b29998ffcf3899",
+      "targetRevisions": [
+        {
+          "targetId": "reversal-upper",
+          "revision": "sha256:c5aab8f88fc1147230f6583cca0c3d7c1b171a4ba5b8df2ddffa443dea647fba"
+        },
+        {
+          "targetId": "reversal-lower",
+          "revision": "sha256:eb8805402fa261dfc3c267e0ce454c8eeba462296aa2a27731936076d0b59cf7"
+        },
+        {
+          "targetId": "reversal-total",
+          "revision": "sha256:1ed69bdbcdf033e42124791b54a05b2f13f6a0d577b867da598335ac18304477"
+        },
+        {
+          "targetId": "reversal-bracket",
+          "revision": "sha256:a29a4b176f7c77e15c9c302b23e6780c8e69c8eed223063bdf14130b73874af9"
+        },
+        {
+          "targetId": "fullbatch-comparator",
+          "revision": "sha256:40b00249a0ddd83f1b6fd32738053ada5911817c9c1c195c64c67d2dc0cf102f"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787765+00:00",
+      "rationale": "Compare exactly Delta=1,E=2,T=3,epsilon=1/4,delta=3/4 and inclusive 0<=S<=9/400. The 4/25 lower bracket and full-batch comparator identity are separate targets; 5/32<4/25 is rational arithmetic in the source proof. The average-only transfer occurs outside the labelled theorem and is outside this boxed-statement inventory.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:strict-interior-counterexample",
+          "formalAnchor": "Mf.DP.strictInterior_calibratedPrivacyVariance_le_five_thirty_seconds; Mf.DP.strictInterior_calibratedPrivacyVariance_lt_adjacentFullBatch; Mf.DP.strictInterior_totalVariance_lt_fullBatch_of_energy_le_nine_four_hundred; Mf.DP.PoissonFixedEpochFullBatchFourTwentyFifthsBracket.four_twenty_fifths_lt_calibrated_sq; Mf.DP.poissonFixedEpochPrivacyVariance_fullBatch_eq_base_sq",
+          "description": "Compare exactly Delta=1,E=2,T=3,epsilon=1/4,delta=3/4 and inclusive 0<=S<=9/400. The 4/25 lower bracket and full-batch comparator identity are separate targets; 5/32<4/25 is rational arithmetic in the source proof. The average-only transfer occurs outside the labelled theorem and is outside this boxed-statement inventory. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    },
+    {
+      "id": "review-4",
+      "linkId": "link-4",
+      "linkDigest": "sha256:09af465e3bf8245323804f69b89b338b5f3d48a519192d9dce4c5ec3c599630c",
+      "claimRevision": "sha256:deca59e9ab6e3aa5f8aabf7c76d67c3e01cf7bf625a497166982eefd67efd99c",
+      "targetRevisions": [
+        {
+          "targetId": "calibrated-offset",
+          "revision": "sha256:1df06d03f214613db4cf53c2823507d77ab20541c219149fc4ea5b67679fcb10"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787785+00:00",
+      "rationale": "The addendum specializes the general offset using q_T=min(1,E/T); no separately packaged fixed-E offset is claimed. Leading equivalents use log(1/q)=log(T/E), converted to log T at fixed E; horizons use E+extra. These are attributed mathematical translations, not a Lean-checked adapter.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:smallbatch",
+          "formalAnchor": "Mf.DP.tendsto_fixedParticipationCalibratedStddev_offset",
+          "description": "The addendum specializes the general offset using q_T=min(1,E/T); no separately packaged fixed-E offset is claimed. Leading equivalents use log(1/q)=log(T/E), converted to log T at fixed E; horizons use E+extra. These are attributed mathematical translations, not a Lean-checked adapter. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    },
+    {
+      "id": "review-5",
+      "linkId": "link-5",
+      "linkDigest": "sha256:ec823d0f44d3b514797a7e656c95ff1b7b7095ac55788983aa2c9bef26e32aa8",
+      "claimRevision": "sha256:deca59e9ab6e3aa5f8aabf7c76d67c3e01cf7bf625a497166982eefd67efd99c",
+      "targetRevisions": [
+        {
+          "targetId": "sparse-noise-ratio",
+          "revision": "sha256:6a81790cef3b4c5db2b7717c2b0264e9f5967d6f487dd48c24b39d4449d34b39"
+        },
+        {
+          "targetId": "sparse-noise-zero",
+          "revision": "sha256:a8199a0dca20720f14ee20d1f375f76159a9d27ff123a97e4b846b37a503f39c"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787793+00:00",
+      "rationale": "The addendum specializes the general offset using q_T=min(1,E/T); no separately packaged fixed-E offset is claimed. Leading equivalents use log(1/q)=log(T/E), converted to log T at fixed E; horizons use E+extra. These are attributed mathematical translations, not a Lean-checked adapter.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:smallbatch",
+          "formalAnchor": "Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_smallRate_ratio_one; Mf.DP.tendsto_poissonFixedEpochCalibratedStddev_zero",
+          "description": "The addendum specializes the general offset using q_T=min(1,E/T); no separately packaged fixed-E offset is claimed. Leading equivalents use log(1/q)=log(T/E), converted to log T at fixed E; horizons use E+extra. These are attributed mathematical translations, not a Lean-checked adapter. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    },
+    {
+      "id": "review-6",
+      "linkId": "link-6",
+      "linkDigest": "sha256:0c3bc7eba9321b279c75d889d3b1b91b43dc3849c68afbbc6cd659439243df5b",
+      "claimRevision": "sha256:deca59e9ab6e3aa5f8aabf7c76d67c3e01cf7bf625a497166982eefd67efd99c",
+      "targetRevisions": [
+        {
+          "targetId": "sparse-variance-ratio",
+          "revision": "sha256:7cbe2a84778a828c62c07108212d9ea70e798cffcc4836a453b000160dc00b4b"
+        },
+        {
+          "targetId": "sparse-variance-divergence",
+          "revision": "sha256:1f484d83c27b0a0e3405ca072cbe94817288796a2d9d18230490eea2207eb18c"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787802+00:00",
+      "rationale": "The addendum specializes the general offset using q_T=min(1,E/T); no separately packaged fixed-E offset is claimed. Leading equivalents use log(1/q)=log(T/E), converted to log T at fixed E; horizons use E+extra. These are attributed mathematical translations, not a Lean-checked adapter.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:smallbatch",
+          "formalAnchor": "Mf.DP.tendsto_poissonFixedEpochPrivacyVariance_div_leadingTerm_one; Mf.DP.tendsto_poissonFixedEpochPrivacyVariance_atTop",
+          "description": "The addendum specializes the general offset using q_T=min(1,E/T); no separately packaged fixed-E offset is claimed. Leading equivalents use log(1/q)=log(T/E), converted to log T at fixed E; horizons use E+extra. These are attributed mathematical translations, not a Lean-checked adapter. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    },
+    {
+      "id": "review-7",
+      "linkId": "link-7",
+      "linkDigest": "sha256:7957a379aa64f0dc696ae7cef034f2b3dc2f5fceb7c679cfb19279a37cb59321",
+      "claimRevision": "sha256:deca59e9ab6e3aa5f8aabf7c76d67c3e01cf7bf625a497166982eefd67efd99c",
+      "targetRevisions": [
+        {
+          "targetId": "sparse-total",
+          "revision": "sha256:e303163d89c7e041cc76f7999b4b03f65dfbb91a0df03fb9dda69b74bf1b1754"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787809+00:00",
+      "rationale": "The addendum specializes the general offset using q_T=min(1,E/T); no separately packaged fixed-E offset is claimed. Leading equivalents use log(1/q)=log(T/E), converted to log T at fixed E; horizons use E+extra. These are attributed mathematical translations, not a Lean-checked adapter.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:smallbatch",
+          "formalAnchor": "Mf.DP.tendsto_poissonFixedEpochTotalAverageVariance_div_leadingTerm_one",
+          "description": "The addendum specializes the general offset using q_T=min(1,E/T); no separately packaged fixed-E offset is claimed. Leading equivalents use log(1/q)=log(T/E), converted to log T at fixed E; horizons use E+extra. These are attributed mathematical translations, not a Lean-checked adapter. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    },
+    {
+      "id": "review-8",
+      "linkId": "link-8",
+      "linkDigest": "sha256:a66f60157912eb90280937d9c330007de2cea2865bee25a79aa6b927c493badd",
+      "claimRevision": "sha256:a016f5d08ff778e3bd044b4fa7b463b36c6ef725b35ac7ae0780de852138fdcd",
+      "targetRevisions": [
+        {
+          "targetId": "eventual-uniform",
+          "revision": "sha256:51fecc143f4352d7a3fbed0c5f1dc82653f077ff46b4dae05aef13f014e4e4b3"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787824+00:00",
+      "rationale": "One eventual horizon cutoff serves every nonnegative energy. This is not monotonicity among smaller-batch horizons; uses strict subcritical delta.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#cor:eventual",
+          "formalAnchor": "Mf.DP.eventually_poissonFixedEpoch_fullBatch_lt_totalAverageVariance_uniform_energy",
+          "description": "One eventual horizon cutoff serves every nonnegative energy. This is not monotonicity among smaller-batch horizons; uses strict subcritical delta. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    },
+    {
+      "id": "review-9",
+      "linkId": "link-9",
+      "linkDigest": "sha256:0714b59abd94045817eb0847927b831ab6de5162d301252ae3f5ce00586f4ea4",
+      "claimRevision": "sha256:7a01aabe42e019e3653c97b4e9cd1d458de9a6987128caa8b14790dc9d23325a",
+      "targetRevisions": [
+        {
+          "targetId": "profile-limit",
+          "revision": "sha256:05d94ed16084d73e44723edeaf90bb55e1ac6df5e48e25276f64dbf50c69fbb0"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787895+00:00",
+      "rationale": "Match the general FixedParticipationSchedule hypotheses and finite-offset regime. Lean uses an ENNReal-valued profile, while the article displays its finite real value.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:accountant-limit",
+          "formalAnchor": "Mf.DP.tendsto_sampledGaussianProductProfileStddev_finiteOffset",
+          "description": "Match the general FixedParticipationSchedule hypotheses and finite-offset regime. Lean uses an ENNReal-valued profile, while the article displays its finite real value. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    },
+    {
+      "id": "review-10",
+      "linkId": "link-10",
+      "linkDigest": "sha256:bd21e53de528009403e0a4d2cda078cf698d99c21aee8962851db6a9c1e9c456",
+      "claimRevision": "sha256:ace65167e7a9c2a7c90e642e8458a6e8e08c56a6e78e4b01e45035dc75828305",
+      "targetRevisions": [
+        {
+          "targetId": "calibrated-offset",
+          "revision": "sha256:1df06d03f214613db4cf53c2823507d77ab20541c219149fc4ea5b67679fcb10"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787914+00:00",
+      "rationale": "Map the calibrated-offset conclusion under 0<delta<1-exp(-rho). The eventual positivity and capped-schedule ratio components are not separately assessed in this baseline.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:fixed-participation-calibration",
+          "formalAnchor": "Mf.DP.tendsto_fixedParticipationCalibratedStddev_offset",
+          "description": "Map the calibrated-offset conclusion under 0<delta<1-exp(-rho). The eventual positivity and capped-schedule ratio components are not separately assessed in this baseline. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    },
+    {
+      "id": "review-11",
+      "linkId": "link-11",
+      "linkDigest": "sha256:6dd0d73ca17e4710f2d2b65e33dd0a157f948e41f3cd4ee3134d810c1f2536f7",
+      "claimRevision": "sha256:cc918b2d9f91e9b9415a7f4216b32d3ae130e56b8e1fbce4148fd792988f6b2a",
+      "targetRevisions": [
+        {
+          "targetId": "secant-profile",
+          "revision": "sha256:8ed5599b6476caa8b46fd76bf1838c830b6793adb138e8fd63cf2aa7e76d3bd1"
+        },
+        {
+          "targetId": "secant-privacy",
+          "revision": "sha256:c40f4172b95a42eb8bf3da5b9d226628f1c874debe5210994a2871254e59e10d"
+        },
+        {
+          "targetId": "secant-total",
+          "revision": "sha256:8ceca1ccf171837cae434011ccfe7394ca2f3ec69923a1779981d728bcf95de6"
+        }
+      ],
+      "reviewer": {
+        "id": "codex-implementation-agent-baseline-2026-10-02",
+        "kind": "model"
+      },
+      "method": "Manual comparison of captured exposition, current coverage addendum and archived-source-matched lexical declaration signatures. This agent authored both the mapping and review; no independent review.",
+      "timestamp": "2026-10-02T16:55:13.787940+00:00",
+      "rationale": "The dedicated pinned theorem requires strict a^2<2*epsilon*E/(T-1). The addendum explains the remaining closed cases via the pointwise domain, except E=1,T=2. That implication is recorded but not supplied as a checked target link.",
+      "status": "reviewed-with-differences",
+      "differences": [
+        {
+          "kind": "scope",
+          "claimAnchor": "latex/natural-language/poisson_fixed_epoch_large_batch_optimality_proof.tex#thm:support-width-accountant",
+          "formalAnchor": "Mf.DP.poissonFixedEpoch_productProfile_calibratedRunVariance_gt_of_supportWidth; Mf.DP.poissonFixedEpochCalibratedPrivacyVariance_gt_fullBatch_of_supportWidth; Mf.DP.poissonFixedEpochTotalAverageVariance_fullBatch_lt_allEnergy_of_supportWidth",
+          "description": "The dedicated pinned theorem requires strict a^2<2*epsilon*E/(T-1). The addendum explains the remaining closed cases via the pointwise domain, except E=1,T=2. That implication is recorded but not supplied as a checked target link. Review scope is the named component and supplied source statements; no proof replay or canonical resolution.",
+          "basis": "reviewer-asserted"
+        }
+      ]
+    }
+  ],
+  "revision": "sha256:0d53bb4eaded2ca22bad9e6b94aad0138c06a0f3d7cf4583f6bf14e9c57a2c72"
+}

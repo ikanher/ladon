@@ -1,0 +1,37 @@
+[
+  {
+    "argv": [
+      "/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/py311/bin/python",
+      "-I",
+      "-m",
+      "ruff",
+      "check",
+      "src/ladon/proofir_derivation.py",
+      "src/ladon/_proofir_derivation_core.py",
+      "src/ladon/_proofir_derivation_solver.py",
+      "src/ladon/_proofir_derivation_slice.py",
+      "src/ladon/proofir_derivation_scc.py"
+    ],
+    "workingDirectory": "/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/candidate",
+    "exitCode": 0,
+    "status": "passed",
+    "logPath": "/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/full-qualification/source-quality-r47-0.log"
+  },
+  {
+    "argv": [
+      "/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/py311/bin/python",
+      "-I",
+      "-c",
+      "from pathlib import Path; import sys; from ladon.quality import strict_quality_issues, format_issue; issues = strict_quality_issues([Path(p) for p in sys.argv[1:]]); print('\\n'.join(format_issue(i) for i in issues) or 'radon/vulture: clean'); sys.exit(bool(issues))",
+      "src/ladon/proofir_derivation.py",
+      "src/ladon/_proofir_derivation_core.py",
+      "src/ladon/_proofir_derivation_solver.py",
+      "src/ladon/_proofir_derivation_slice.py",
+      "src/ladon/proofir_derivation_scc.py"
+    ],
+    "workingDirectory": "/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/candidate",
+    "exitCode": 0,
+    "status": "passed",
+    "logPath": "/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47b-9nrffih0/full-qualification/source-quality-r47-1.log"
+  }
+]

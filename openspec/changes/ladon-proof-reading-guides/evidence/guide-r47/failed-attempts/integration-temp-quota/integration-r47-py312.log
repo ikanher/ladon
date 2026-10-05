@@ -1,0 +1,1973 @@
+........................................................................ [  2%]
+........................................................................ [  5%]
+........................................................................ [  8%]
+........................................................................ [ 10%]
+........................................................................ [ 13%]
+........................................................................ [ 16%]
+........................................................................ [ 18%]
+........................................................................ [ 21%]
+........................................................................ [ 24%]
+........................................................................ [ 26%]
+........................................................................ [ 29%]
+........................................................................ [ 32%]
+........................................................................ [ 34%]
+........................................................................ [ 37%]
+........................................................................ [ 40%]
+........................................................................ [ 42%]
+........................................................................ [ 45%]
+........................................................................ [ 48%]
+........................................................................ [ 50%]
+........................................................................ [ 53%]
+........................................................................ [ 56%]
+........................................................................ [ 58%]
+........................................................................ [ 61%]
+........................................................................ [ 64%]
+........................................................................ [ 66%]
+........................................................................ [ 69%]
+........................................................................ [ 72%]
+........................................................................ [ 75%]
+........................................................................ [ 77%]
+........................................................................ [ 80%]
+........................................................................ [ 83%]
+........................................................................ [ 85%]
+........................................................................ [ 88%]
+........................................................................ [ 91%]
+........................................................................ [ 93%]
+.............................................................EEEE.EEEEEE [ 96%]
+E.EEEEEEE.FFF........................................................... [ 99%]
+........................                                                 [100%]
+==================================== ERRORS ====================================
+____ ERROR at setup of test_materialization_rejects_casefold_path_collision ____
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_materialization_rejects_c0')
+
+    @pytest.fixture
+    def planned_repository(tmp_path: Path) -> tuple[Path, TheoremPlan]:
+        root = tmp_path / "repository"
+        shutil.copytree(FIXTURE, root)
+        build = subprocess.run(
+            ["lake", "build"],
+            cwd=root,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=120,
+        )
+        if build.returncode != 0:
+            pytest.fail(build.stderr or build.stdout)
+>       return root, plan_theorem_capsule(root, "CapsuleFixture.chosen")
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_theorem_capsule_materialization.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../py312/lib/python3.12/site-packages/ladon/theorem_capsule_planning.py:86: in plan_theorem_capsule
+    helper = _run_exact_helper(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repo_root = PosixPath('/tmp/pytest-of-codex/pytest-755/test_materialization_rejects_c0/repository')
+entry = CapsuleSource(module='CapsuleFixture', path='CapsuleFixture.lean', content=b'import CapsuleFixture.Base\nimport Capsul...:= by\n  trivial\n\nend LocalContext\n\nend CapsuleFixture\n', imports=('CapsuleFixture.Base', 'CapsuleFixture.Large'))
+theorem_name = 'CapsuleFixture.chosen'
+layout = CapsuleLayout(root=PosixPath('/tmp/pytest-of-codex/pytest-755/test_materialization_rejects_c0/repository'), source_map...': 'CapsuleFixture/Large.lean'}, fingerprint='sha256:05a9715980f86be61dcaa12764c192a1249f24c557357c093da96a9c1e5f3dcc')
+helper_path = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/py312/lib/python3.12/site-packages/ladon/lean/ladon_theorem_capsule_helper.lean')
+timeout_seconds = 120.0, max_rss_bytes = None, cancel_event = None
+
+    def _run_exact_helper(
+        repo_root: Path,
+        entry: CapsuleSource,
+        theorem_name: str,
+        layout: CapsuleLayout,
+        *,
+        helper_path: Path,
+        timeout_seconds: float,
+        max_rss_bytes: int | None,
+        cancel_event: threading.Event | None,
+    ) -> dict[str, Any]:
+        try:
+            execution = prepare_direct_lean_execution(
+                repo_root,
+                entry.module,
+                None,
+                require_compiled_module=True,
+            )
+        except ValueError as exc:
+            raise CapsuleOperationalError(str(exc)) from exc
+        with tempfile.TemporaryDirectory(prefix="ladon-theorem-plan-") as temporary:
+            module_file = Path(temporary) / "repository-modules.txt"
+            module_file.write_text(
+                "\n".join(layout.modules) + "\n",
+                encoding="utf-8",
+            )
+            process = run_bounded_target_process(
+                [
+                    *execution.command,
+                    "--run",
+                    str(helper_path),
+                    entry.module,
+                    entry.path,
+                    theorem_name,
+                    str(module_file),
+                ],
+                cwd=repo_root,
+                env=execution.environment,
+                timeout_seconds=timeout_seconds,
+                max_output_bytes=HELPER_OUTPUT_LIMIT_BYTES,
+                max_rss_bytes=max_rss_bytes,
+                cancel_event=cancel_event,
+            )
+        if process.output_limited:
+            raise CapsuleOperationalError(
+                "Lean theorem dependency stream exceeded the finite output limit"
+            )
+        if process.memory_limited:
+            raise CapsuleOperationalError(
+                "Lean theorem helper exceeded the finite process-tree RSS limit"
+            )
+        if not process.succeeded:
+            outcome = "timed out" if process.timed_out else "failed"
+            detail = (process.stderr or process.stdout).strip()[:2000]
+>           raise CapsuleOperationalError(
+                f"Lean theorem helper {outcome} for {entry.path}: {detail}"
+            )
+E           ladon.theorem_capsule_models.CapsuleOperationalError: Lean theorem helper failed for CapsuleFixture.lean:
+
+../py312/lib/python3.12/site-packages/ladon/theorem_capsule_planning.py:197: CapsuleOperationalError
+_____ ERROR at setup of test_materialization_refuses_existing_destination ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_materialization_refuses_e0')
+
+    @pytest.fixture
+    def planned_repository(tmp_path: Path) -> tuple[Path, TheoremPlan]:
+        root = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, root)
+
+tests/test_theorem_capsule_materialization.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_materialization_refuses_e0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_materialization_refuses_e0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_materialization_refuses_e0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_materialization_refuses_e0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_materialization_refuses_e0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_materialization_refuses_e0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+______ ERROR at setup of test_materialization_cleans_interrupted_staging _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_materialization_cleans_in0')
+
+    @pytest.fixture
+    def planned_repository(tmp_path: Path) -> tuple[Path, TheoremPlan]:
+        root = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, root)
+
+tests/test_theorem_capsule_materialization.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_materialization_cleans_in0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_materialization_cleans_in0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_materialization_cleans_in0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_materialization_cleans_in0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_materialization_cleans_in0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_materialization_cleans_in0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+_______ ERROR at setup of test_plan_is_exact_complete_and_deterministic ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_is_exact_complete_an0')
+
+    @pytest.fixture
+    def compiled_repository(tmp_path: Path) -> Path:
+        root = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, root)
+
+tests/test_theorem_capsule_planning.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_is_exact_complete_an0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_plan_is_exact_complete_an0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_plan_is_exact_complete_an0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_is_exact_complete_an0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_is_exact_complete_an0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_is_exact_complete_an0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+_________ ERROR at setup of test_plan_prefix_ends_before_later_theorem _________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_prefix_ends_before_l0')
+
+    @pytest.fixture
+    def compiled_repository(tmp_path: Path) -> Path:
+        root = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, root)
+
+tests/test_theorem_capsule_planning.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_prefix_ends_before_l0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_plan_prefix_ends_before_l0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_plan_prefix_ends_before_l0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_prefix_ends_before_l0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_prefix_ends_before_l0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_prefix_ends_before_l0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+________ ERROR at setup of test_plan_rejects_short_and_wrong_kind_names ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_rejects_short_and_wr0')
+
+    @pytest.fixture
+    def compiled_repository(tmp_path: Path) -> Path:
+        root = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, root)
+
+tests/test_theorem_capsule_planning.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_rejects_short_and_wr0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_plan_rejects_short_and_wr0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_plan_rejects_short_and_wr0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_rejects_short_and_wr0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_rejects_short_and_wr0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_rejects_short_and_wr0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+____ ERROR at setup of test_plan_rejects_ambiguous_exact_lexical_candidates ____
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_rejects_ambiguous_ex0')
+
+    @pytest.fixture
+    def compiled_repository(tmp_path: Path) -> Path:
+        root = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, root)
+
+tests/test_theorem_capsule_planning.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_rejects_ambiguous_ex0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_plan_rejects_ambiguous_ex0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_plan_rejects_ambiguous_ex0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_rejects_ambiguous_ex0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_rejects_ambiguous_ex0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_rejects_ambiguous_ex0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+_______ ERROR at setup of test_plan_process_tree_rss_limit_fails_closed ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_process_tree_rss_lim0')
+
+    @pytest.fixture
+    def compiled_repository(tmp_path: Path) -> Path:
+        root = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, root)
+
+tests/test_theorem_capsule_planning.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_process_tree_rss_lim0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_plan_process_tree_rss_lim0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_plan_process_tree_rss_lim0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_process_tree_rss_lim0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_process_tree_rss_lim0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_process_tree_rss_lim0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+_______ ERROR at setup of test_plan_marks_native_lake_facets_ineligible ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_marks_native_lake_fa0')
+
+    @pytest.fixture
+    def compiled_repository(tmp_path: Path) -> Path:
+        root = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, root)
+
+tests/test_theorem_capsule_planning.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_marks_native_lake_fa0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_plan_marks_native_lake_fa0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_plan_marks_native_lake_fa0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_marks_native_lake_fa0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_marks_native_lake_fa0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_marks_native_lake_fa0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+___________ ERROR at setup of test_plan_cli_emits_one_json_document ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_cli_emits_one_json_d0')
+
+    @pytest.fixture
+    def compiled_repository(tmp_path: Path) -> Path:
+        root = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, root)
+
+tests/test_theorem_capsule_planning.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_cli_emits_one_json_d0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_plan_cli_emits_one_json_d0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_plan_cli_emits_one_json_d0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_cli_emits_one_json_d0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_cli_emits_one_json_d0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_cli_emits_one_json_d0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+_ ERROR at setup of test_plan_cli_rejects_output_inside_target_without_writing _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_cli_rejects_output_i0')
+
+    @pytest.fixture
+    def compiled_repository(tmp_path: Path) -> Path:
+        root = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, root)
+
+tests/test_theorem_capsule_planning.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_plan_cli_rejects_output_i0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_plan_cli_rejects_output_i0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_plan_cli_rejects_output_i0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_cli_rejects_output_i0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_cli_rejects_output_i0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_plan_cli_rejects_output_i0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+__ ERROR at setup of test_replay_verifies_after_original_checkout_is_renamed ___
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_verifies_after_ori0')
+
+    @pytest.fixture
+    def capsule_fixture(tmp_path: Path) -> tuple[Path, Path]:
+        repository = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, repository)
+
+tests/test_theorem_capsule_replay.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_verifies_after_ori0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_replay_verifies_after_ori0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_replay_verifies_after_ori0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_verifies_after_ori0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_verifies_after_ori0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_verifies_after_ori0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+______ ERROR at setup of test_replay_rejects_mutated_content_before_lean _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_rejects_mutated_co0')
+
+    @pytest.fixture
+    def capsule_fixture(tmp_path: Path) -> tuple[Path, Path]:
+        repository = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, repository)
+
+tests/test_theorem_capsule_replay.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_rejects_mutated_co0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_mutated_co0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_mutated_co0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_mutated_co0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_mutated_co0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_mutated_co0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+____________ ERROR at setup of test_replay_rejects_undeclared_file _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared0')
+
+    @pytest.fixture
+    def capsule_fixture(tmp_path: Path) -> tuple[Path, Path]:
+        repository = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, repository)
+
+tests/test_theorem_capsule_replay.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+_____ ERROR at setup of test_replay_rejects_undeclared_symlink_before_lean _____
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared1')
+
+    @pytest.fixture
+    def capsule_fixture(tmp_path: Path) -> tuple[Path, Path]:
+        repository = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, repository)
+
+tests/test_theorem_capsule_replay.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared1/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared1/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared1/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared1/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared1/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_undeclared1/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+_ ERROR at setup of test_replay_rejects_resigned_toolchain_drift_against_plan __
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_rejects_resigned_t0')
+
+    @pytest.fixture
+    def capsule_fixture(tmp_path: Path) -> tuple[Path, Path]:
+        repository = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, repository)
+
+tests/test_theorem_capsule_replay.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_rejects_resigned_t0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_resigned_t0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_resigned_t0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_resigned_t0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_resigned_t0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_rejects_resigned_t0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+_______ ERROR at setup of test_replay_detects_structural_identity_change _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_detects_structural0')
+
+    @pytest.fixture
+    def capsule_fixture(tmp_path: Path) -> tuple[Path, Path]:
+        repository = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, repository)
+
+tests/test_theorem_capsule_replay.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_detects_structural0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_replay_detects_structural0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_replay_detects_structural0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_detects_structural0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_detects_structural0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_detects_structural0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+__ ERROR at setup of test_replay_classifies_process_timeout_as_resource_limit __
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_classifies_process0')
+
+    @pytest.fixture
+    def capsule_fixture(tmp_path: Path) -> tuple[Path, Path]:
+        repository = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, repository)
+
+tests/test_theorem_capsule_replay.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_classifies_process0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_replay_classifies_process0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_classifies_process0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_classifies_process0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_classifies_process0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+=================================== FAILURES ===================================
+______________________ test_replay_supported_tar_archive _______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_supported_tar_arch0')
+
+    def test_replay_supported_tar_archive(
+        tmp_path: Path,
+    ) -> None:
+        repository = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, repository)
+
+tests/test_theorem_capsule_replay.py:179: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_supported_tar_arch0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_replay_supported_tar_arch0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_replay_supported_tar_arch0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_supported_tar_arch0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_supported_tar_arch0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_supported_tar_arch0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+______________________ test_replay_supported_zip_archive _______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_supported_zip_arch0')
+
+    def test_replay_supported_zip_archive(
+        tmp_path: Path,
+    ) -> None:
+        repository = tmp_path / "repository"
+>       shutil.copytree(FIXTURE, repository)
+
+tests/test_theorem_capsule_replay.py:195: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:600: in copytree
+    return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+entries = [<DirEntry 'lakefile.toml'>, <DirEntry 'lean-toolchain'>, <DirEntry 'CapsuleFixture'>, <DirEntry 'CapsuleFixture.lean'>]
+src = PosixPath('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule')
+dst = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_supported_zip_arch0/repository')
+symlinks = False, ignore = None
+copy_function = <function copy2 at 0x7beea216cb80>
+ignore_dangling_symlinks = False, dirs_exist_ok = False
+
+    def _copytree(entries, src, dst, symlinks, ignore, copy_function,
+                  ignore_dangling_symlinks, dirs_exist_ok=False):
+        if ignore is not None:
+            ignored_names = ignore(os.fspath(src), [x.name for x in entries])
+        else:
+            ignored_names = ()
+    
+        os.makedirs(dst, exist_ok=dirs_exist_ok)
+        errors = []
+        use_srcentry = copy_function is copy2 or copy_function is copy
+    
+        for srcentry in entries:
+            if srcentry.name in ignored_names:
+                continue
+            srcname = os.path.join(src, srcentry.name)
+            dstname = os.path.join(dst, srcentry.name)
+            srcobj = srcentry if use_srcentry else srcname
+            try:
+                is_symlink = srcentry.is_symlink()
+                if is_symlink and os.name == 'nt':
+                    # Special check for directory junctions, which appear as
+                    # symlinks but we want to recurse.
+                    lstat = srcentry.stat(follow_symlinks=False)
+                    if lstat.st_reparse_tag == stat.IO_REPARSE_TAG_MOUNT_POINT:
+                        is_symlink = False
+                if is_symlink:
+                    linkto = os.readlink(srcname)
+                    if symlinks:
+                        # We can't just leave it to `copy_function` because legacy
+                        # code with a custom `copy_function` may rely on copytree
+                        # doing the right thing.
+                        os.symlink(linkto, dstname)
+                        copystat(srcobj, dstname, follow_symlinks=not symlinks)
+                    else:
+                        # ignore dangling symlink if the flag is on
+                        if not os.path.exists(linkto) and ignore_dangling_symlinks:
+                            continue
+                        # otherwise let the copy occur. copy2 will raise an error
+                        if srcentry.is_dir():
+                            copytree(srcobj, dstname, symlinks, ignore,
+                                     copy_function, ignore_dangling_symlinks,
+                                     dirs_exist_ok)
+                        else:
+                            copy_function(srcobj, dstname)
+                elif srcentry.is_dir():
+                    copytree(srcobj, dstname, symlinks, ignore, copy_function,
+                             ignore_dangling_symlinks, dirs_exist_ok)
+                else:
+                    # Will raise a SpecialFileError for unsupported file types
+                    copy_function(srcobj, dstname)
+            # catch the Error from the recursive copytree so that we can
+            # continue with other files
+            except Error as err:
+                errors.extend(err.args[0])
+            except OSError as why:
+                errors.append((srcname, dstname, str(why)))
+        try:
+            copystat(src, dst)
+        except OSError as why:
+            # Copying file access times may fail on Windows
+            if getattr(why, 'winerror', None) is None:
+                errors.append((src, dst, str(why)))
+        if errors:
+>           raise Error(errors)
+E           shutil.Error: [('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lakefile.toml', '/tmp/pytest-of-codex/pytest-755/test_replay_supported_zip_arch0/repository/lakefile.toml', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/lean-toolchain', '/tmp/pytest-of-codex/pytest-755/test_replay_supported_zip_arch0/repository/lean-toolchain', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Large.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_supported_zip_arch0/repository/CapsuleFixture/Large.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture/Base.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_supported_zip_arch0/repository/CapsuleFixture/Base.lean', '[Errno 122] Disk quota exceeded'), ('/home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/tests/fixtures/theorem_capsule/CapsuleFixture.lean', '/tmp/pytest-of-codex/pytest-755/test_replay_supported_zip_arch0/repository/CapsuleFixture.lean', '[Errno 122] Disk quota exceeded')]
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/shutil.py:554: Error
+______________ test_replay_rejects_zip_symlink_before_extraction _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_rejects_zip_symlin0')
+
+    def test_replay_rejects_zip_symlink_before_extraction(
+        tmp_path: Path,
+    ) -> None:
+        archive_path = tmp_path / "capsule.zip"
+        with zipfile.ZipFile(archive_path, mode="w") as archive:
+            member = zipfile.ZipInfo("linked-input")
+            member.create_system = 3
+            member.external_attr = (stat.S_IFLNK | 0o777) << 16
+>           archive.writestr(member, "lean-toolchain")
+
+tests/test_theorem_capsule_replay.py:215: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/zipfile/__init__.py:1926: in writestr
+    with self.open(zinfo, mode='w') as dest:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <zipfile._ZipWriteFile object at 0x7bee9eb8f9d0>
+
+    def close(self):
+        if self.closed:
+            return
+        try:
+            super().close()
+            # Flush any data from the compressor, and update header info
+            if self._compressor:
+                buf = self._compressor.flush()
+                self._compress_size += len(buf)
+                self._fileobj.write(buf)
+                self._zinfo.compress_size = self._compress_size
+            else:
+                self._zinfo.compress_size = self._file_size
+            self._zinfo.CRC = self._crc
+            self._zinfo.file_size = self._file_size
+    
+            if not self._zip64:
+                if self._file_size > ZIP64_LIMIT:
+                    raise RuntimeError("File size too large, try using force_zip64")
+                if self._compress_size > ZIP64_LIMIT:
+                    raise RuntimeError("Compressed size too large, try using force_zip64")
+    
+            # Write updated header info
+            if self._zinfo.flag_bits & _MASK_USE_DATA_DESCRIPTOR:
+                # Write CRC and file sizes after the file data
+                fmt = '<LLQQ' if self._zip64 else '<LLLL'
+                self._fileobj.write(struct.pack(fmt, _DD_SIGNATURE, self._zinfo.CRC,
+                    self._zinfo.compress_size, self._zinfo.file_size))
+                self._zipfile.start_dir = self._fileobj.tell()
+            else:
+                # Seek backwards and write file header (which will now include
+                # correct CRC and file sizes)
+    
+                # Preserve current position in file
+                self._zipfile.start_dir = self._fileobj.tell()
+>               self._fileobj.seek(self._zinfo.header_offset)
+E               OSError: [Errno 122] Disk quota exceeded
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/zipfile/__init__.py:1275: OSError
+
+During handling of the above exception, another exception occurred:
+
+self = <zipfile.ZipFile [closed]>
+
+    def close(self):
+        """Close the file, and for mode 'w', 'x' and 'a' write the ending
+        records."""
+        if self.fp is None:
+            return
+    
+        if self._writing:
+            raise ValueError("Can't close the ZIP file while there is "
+                             "an open writing handle on it. "
+                             "Close the writing handle before closing the zip.")
+    
+        try:
+            if self.mode in ('w', 'x', 'a') and self._didModify: # write ending records
+                with self._lock:
+                    if self._seekable:
+>                       self.fp.seek(self.start_dir)
+E                       OSError: [Errno 122] Disk quota exceeded
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/zipfile/__init__.py:1983: OSError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-755/test_replay_rejects_zip_symlin0')
+
+    def test_replay_rejects_zip_symlink_before_extraction(
+        tmp_path: Path,
+    ) -> None:
+        archive_path = tmp_path / "capsule.zip"
+>       with zipfile.ZipFile(archive_path, mode="w") as archive:
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_theorem_capsule_replay.py:211: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/zipfile/__init__.py:1413: in __exit__
+    self.close()
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/zipfile/__init__.py:1988: in close
+    self._fpclose(fp)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <zipfile.ZipFile [closed]>
+fp = <_io.BufferedRandom name='/tmp/pytest-of-codex/pytest-755/test_replay_rejects_zip_symlin0/capsule.zip'>
+
+    def _fpclose(self, fp):
+        assert self._fileRefCnt > 0
+        self._fileRefCnt -= 1
+        if not self._fileRefCnt and not self._filePassed:
+>           fp.close()
+E           OSError: [Errno 122] Disk quota exceeded
+
+/home/codex/.local/share/uv/python/cpython-3.12.12-linux-x86_64-gnu/lib/python3.12/zipfile/__init__.py:2088: OSError
+=============================== warnings summary ===============================
+tests/test_release_gate_common.py::test_treeish_materializes_clean_commit
+  /home/codex/.cache/ladon-qualification-r47/ladon-guides-r47-10957q49/candidate/scripts/release_gate_candidate.py:230: DeprecationWarning: Python 3.14 will, by default, filter extracted tar archives and reject files or modify their metadata. Use the filter argument to control this behavior.
+    bundle.extractall(destination)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_theorem_capsule_replay.py::test_replay_supported_tar_archive
+FAILED tests/test_theorem_capsule_replay.py::test_replay_supported_zip_archive
+FAILED tests/test_theorem_capsule_replay.py::test_replay_rejects_zip_symlink_before_extraction
+ERROR tests/test_theorem_capsule_materialization.py::test_materialization_rejects_casefold_path_collision
+ERROR tests/test_theorem_capsule_materialization.py::test_materialization_refuses_existing_destination
+ERROR tests/test_theorem_capsule_materialization.py::test_materialization_cleans_interrupted_staging
+ERROR tests/test_theorem_capsule_planning.py::test_plan_is_exact_complete_and_deterministic
+ERROR tests/test_theorem_capsule_planning.py::test_plan_prefix_ends_before_later_theorem
+ERROR tests/test_theorem_capsule_planning.py::test_plan_rejects_short_and_wrong_kind_names
+ERROR tests/test_theorem_capsule_planning.py::test_plan_rejects_ambiguous_exact_lexical_candidates
+ERROR tests/test_theorem_capsule_planning.py::test_plan_process_tree_rss_limit_fails_closed
+ERROR tests/test_theorem_capsule_planning.py::test_plan_marks_native_lake_facets_ineligible
+ERROR tests/test_theorem_capsule_planning.py::test_plan_cli_emits_one_json_document
+ERROR tests/test_theorem_capsule_planning.py::test_plan_cli_rejects_output_inside_target_without_writing
+ERROR tests/test_theorem_capsule_replay.py::test_replay_verifies_after_original_checkout_is_renamed
+ERROR tests/test_theorem_capsule_replay.py::test_replay_rejects_mutated_content_before_lean
+ERROR tests/test_theorem_capsule_replay.py::test_replay_rejects_undeclared_file
+ERROR tests/test_theorem_capsule_replay.py::test_replay_rejects_undeclared_symlink_before_lean
+ERROR tests/test_theorem_capsule_replay.py::test_replay_rejects_resigned_toolchain_drift_against_plan
+ERROR tests/test_theorem_capsule_replay.py::test_replay_detects_structural_identity_change
+ERROR tests/test_theorem_capsule_replay.py::test_replay_classifies_process_timeout_as_resource_limit
+3 failed, 2667 passed, 1 warning, 18 errors in 208.13s (0:03:28)
