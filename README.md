@@ -19,6 +19,9 @@ and bridge surfaces are optional layers. See [Product scope](docs/PRODUCT_SCOPE.
 and the generated [supported-feature matrix](docs/SUPPORTED_FEATURE_MATRIX.md).
 The [measured alpha profile](docs/MEASURED_ALPHA_PROFILE.md) separates candidate
 contract support from external results and release readiness.
+For a questioned proof step, the [correspondence audit recipe](docs/PROOF_CORRESPONDENCE_AUDIT.md)
+separates local errors, final-theorem validity, existence assumptions and proof method,
+with replayable development examples and scoped correction proposals.
 
 ## Setup and support
 

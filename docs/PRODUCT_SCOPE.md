@@ -44,6 +44,8 @@ justified. Interface/extractor/release expansion remains frozen. A substantive
 new question, material claim/support change or concrete costly/error-prone handoff
 in actual use should determine further work; routine edits need no new pro review.
 
+The supplied proof-correspondence paper led to a bounded [local audit workflow](PROOF_CORRESPONDENCE_AUDIT.md). Three elementary cases and faithful controls have new ordinary Lean evidence; one pinned published derivative comparison has source-local evidence and an unresolved stronger-estimate bridge. The investigation closes with readable findings and unadopted corrections. Existing tools suffice; this adds no runtime feature and does not reopen the r09 editorial or r68 optimization cycles.
+
 The existing engineering/ordinary-proof results do not establish comparative
 reader benefit or artifact-maintenance advantage. The umbrella benefit gate stays
 unmet/deferred; neither a bundle nor a recorded review certifies understanding.
