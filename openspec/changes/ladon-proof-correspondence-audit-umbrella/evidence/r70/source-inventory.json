@@ -1,0 +1,94 @@
+{
+  "recordedAt": "2026-10-08T11:44:27.812815+00:00",
+  "paper": "arXiv:2610.08144v1",
+  "sourceFiles": [
+    {
+      "origin": "paper/natural-language-proofs/00README.json",
+      "snapshot": "sources/paper/00README.json",
+      "sha256": "9f2de6d591ecc07e6e0ed33f517c096f04dcc20777ef4668709adb86c25c650d",
+      "bytes": 245,
+      "role": "supplied published-source candidate; local bytes, not authenticated arXiv archive"
+    },
+    {
+      "origin": "paper/natural-language-proofs/Figure3Fixed.jpg",
+      "snapshot": "sources/paper/Figure3Fixed.jpg",
+      "sha256": "ea4297813f53bc3914bbb1b850b8730053638f345dd199d5de8ffb8feb24e8b1",
+      "bytes": 397626,
+      "role": "supplied published-source candidate; local bytes, not authenticated arXiv archive"
+    },
+    {
+      "origin": "paper/natural-language-proofs/NavierStokes2.jpg",
+      "snapshot": "sources/paper/NavierStokes2.jpg",
+      "sha256": "0c8b222a88d14428aa662f365f8a3c12ae5bf48089f38f314c3fa88ff3422098",
+      "bytes": 348982,
+      "role": "supplied published-source candidate; local bytes, not authenticated arXiv archive"
+    },
+    {
+      "origin": "paper/natural-language-proofs/NavierStokes_LostInTranslation_ArXiv.bbl",
+      "snapshot": "sources/paper/NavierStokes_LostInTranslation_ArXiv.bbl",
+      "sha256": "1580a05e1d6e7c2a24d57ca010cd672112423f07d71daa8379169a1537b89bb9",
+      "bytes": 14226,
+      "role": "supplied published-source candidate; local bytes, not authenticated arXiv archive"
+    },
+    {
+      "origin": "paper/natural-language-proofs/NavierStokes_LostInTranslation_ArXiv.tex",
+      "snapshot": "sources/paper/NavierStokes_LostInTranslation_ArXiv.tex",
+      "sha256": "67b27489185bf10baa92192a47ca25d51ecd4ed320b51374b5571a9cba13c084",
+      "bytes": 112538,
+      "role": "supplied published-source candidate; local bytes, not authenticated arXiv archive"
+    },
+    {
+      "origin": "paper/natural-language-proofs/cubic_squish.jpg",
+      "snapshot": "sources/paper/cubic_squish.jpg",
+      "sha256": "84b88fd8b42bc844649d323f7986fae65352ee9c89842946cf19c2678018bedf",
+      "bytes": 246164,
+      "role": "supplied published-source candidate; local bytes, not authenticated arXiv archive"
+    },
+    {
+      "origin": "paper/natural-language-proofs/matrix_example_slim.jpg",
+      "snapshot": "sources/paper/matrix_example_slim.jpg",
+      "sha256": "ca1ee102d0ba08abedef7ac047b671594abd33da4b973bea75f2285b30a7b93a",
+      "bytes": 270904,
+      "role": "supplied published-source candidate; local bytes, not authenticated arXiv archive"
+    }
+  ],
+  "cases": [
+    {
+      "id": "polynomial",
+      "locator": "ex:example1; source lines 598\u2013626",
+      "originalQuestion": "Does the claimed factorization establish the stated inequality?",
+      "localObligations": [
+        "x^3-x^2-x+1 = (x-1)*(x+1)^2",
+        "0 <= (x-1)*(x+1)^2 for x >= -1",
+        "0 <= x^3-x^2-x+1 for x >= -1"
+      ],
+      "faithfulControl": "Use (x+1)*(x-1)^2 with the original domain; no new premise.",
+      "codeProvenance": "New reconstruction of displayed mathematical obligations, not screenshot transcription."
+    },
+    {
+      "id": "least-element",
+      "locator": "sec:why; source lines 1064\u20131107",
+      "originalQuestion": "Does the concrete B_e have a witness, independently of the later ring identity?",
+      "localObligations": [
+        "forall n, not B_e n",
+        "{n | B_e n} = empty",
+        "n_e = 0; r_e = 1",
+        "algebraic identity",
+        "for a general nonempty subset of naturals, sInf is a member and least"
+      ],
+      "faithfulControl": "State existence as a hypothesis for a general set, explicitly conditional; do not suggest it holds for the concrete empty set.",
+      "codeProvenance": "Displayed code retained verbatim in source snapshot; check file will namespace/reconstruct and add independent obligations."
+    },
+    {
+      "id": "matrix",
+      "locator": "ex:example2; source lines 639\u2013674",
+      "originalQuestion": "Are both arguments valid, and does the formal argument use diagonalization?",
+      "localObligations": [
+        "trace(A*A) >= 0 for real symmetric A",
+        "orthonormal diagonalization; trace invariance; sum of squared eigenvalues"
+      ],
+      "faithfulControl": "Keep the diagonalization steps; a direct symmetry proof is valid but an alternative, not evidence that those steps were translated.",
+      "codeProvenance": "New implementations of both mathematical routes, not attributed to the screenshot author."
+    }
+  ]
+}
