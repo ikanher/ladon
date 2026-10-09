@@ -2,6 +2,8 @@ import Lean
 import Lean.Server.InfoUtils
 open Lean Elab Meta
 
+-- LADON_EXPR_GRAPH
+
 structure LocalRow where
   localId : String
   userName : String
@@ -60,6 +62,7 @@ structure CompletionFrame where
   importedModules : Array String
   compiledModulePaths : Array CompiledModulePath
   directImports : Array String
+  sourceContextModule : String
   selectedGoal : Option GoalRow
   status : String
   termDisplay : String
@@ -158,9 +161,9 @@ def localRow (decl : LocalDecl) : MetaM LocalRow := do
     userName := decl.userName.toString
     binderInfo := (repr decl.binderInfo).pretty
     typeDisplay := (← ppExpr type).pretty
-    typeStructural := (repr type).pretty
+    typeStructural := structuralText type
     valueDisplay := (← value?.mapM ppExpr).map (·.pretty) |>.getD ""
-    valueStructural := (value?.map fun value => (repr value).pretty).getD ""
+    valueStructural := (value?.map fun value => structuralText value).getD ""
     dependencies
     implementationDetail := decl.isImplementationDetail
   }
@@ -174,7 +177,7 @@ def goalRow (goal : MVarId) : MetaM GoalRow := goal.withContext do
   return {
     goalId := goal.name.toString
     typeDisplay := typeDisplay.pretty
-    typeStructural := (repr type).pretty
+    typeStructural := structuralText type
     localContext := rows
   }
 
@@ -296,7 +299,7 @@ unsafe def main (_args : List String) : IO UInt32 := do
                   { errToSorry := false, mayPostpone := false } termState
               let term ← instantiateMVars term
               let (display, structural) ← goal.withContext do
-                pure ((← ppExpr term).pretty, (repr term).pretty)
+                pure ((← ppExpr term).pretty, structuralText term)
               let mut residualIds := termState.pendingMVars.toArray
               for id in ← getMVars term do
                 if !(← id.isAssigned) && !residualIds.contains id then
@@ -330,11 +333,16 @@ unsafe def main (_args : List String) : IO UInt32 := do
             catch ex => do
               let message ← ex.toMessageData.toString
               pure (rejected "typecheck-or-closure" message)
+  let sourceContextModule := if checkResult.status == "accepted" then
+    "LadonCompletionContext_" ++ requestId else ""
+  if !sourceContextModule.isEmpty then
+    let contextPath := ((System.FilePath.mk snapshotPath).parent.getD ".") / (sourceContextModule ++ ".olean")
+    Lean.writeModule (ctxInfo.env.setMainModule sourceContextModule.toName) contextPath (writeIR := false)
   let directImports := ((HeaderSyntax.imports header false).map (fun imp => imp.module.toString)).toList.eraseDups.toArray
   let output : CompletionFrame := {
     frame := "LADON_COMPLETION_FRAME"
     protocolVersion := "ladon-lean-source-completion-v1/check"
-    helperVersion := "ladon-source-completion-helper-v1"
+    helperVersion := "ladon-source-completion-helper-v2"
     requestId, captureId, termDigest, contextRef, module, filename, sourceDigest, line, column
     leanVersion := Lean.versionString
     leanCommit := Lean.githash
@@ -352,6 +360,7 @@ unsafe def main (_args : List String) : IO UInt32 := do
     importedModules := ctxInfo.env.header.moduleNames.map toString
     compiledModulePaths
     directImports
+    sourceContextModule
     selectedGoal
     status := checkResult.status
     termDisplay := checkResult.termDisplay

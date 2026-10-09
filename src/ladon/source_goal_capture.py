@@ -12,6 +12,7 @@ from pathlib import Path
 from time import monotonic
 from typing import Any
 
+from ladon._source_goal_helpers import stage_helper, verify_helper
 from ladon._source_goal_inventory import capture_inventory, verify_inventory
 from ladon._source_goal_protocol import (
     HELPER_VERSION,
@@ -103,7 +104,6 @@ def capture_source_goal(
         helper = helper_path or Path(str(resources.files("ladon").joinpath(
             "lean", "ladon_source_goal_helper.lean",
         )))
-        helper_digest = _digest(_read_regular(helper, MAX_HELPER_BYTES))
         verify_toolchain_identities(request.toolchain)
         execution = prepare_direct_lean_execution(
             root, None, request.toolchain, require_compiled_module=False,
@@ -111,10 +111,13 @@ def capture_source_goal(
         with tempfile.TemporaryDirectory(prefix="ladon-source-goal-") as temporary:
             snapshot = Path(temporary) / source_path.name
             snapshot.write_bytes(source)
-            return _capture_snapshot(
-                request, source_path, source, snapshot, helper, helper_digest,
+            staged, helper_digest = stage_helper(helper, Path(temporary))
+            result = _capture_snapshot(
+                request, source_path, source, snapshot, staged, helper_digest,
                 execution, runner, started, receipts,
             )
+            verify_helper(helper, helper_digest)
+            return result
     except _AssociationError as error:
         return _result(error.status, error.code, str(error), started, receipts)
     except (OSError, ValueError, TypeError, KeyError) as error:
@@ -186,6 +189,7 @@ def _observe(request, execution, helper, body, source, runner, receipts):
         input_bytes=input_bytes,
     )
     receipts.append(_receipt(process, input_bytes))
+    receipts[-1]["maxOutputBytes"] = request.max_output_bytes
     if not process.succeeded:
         return {}, process
     frame = decode_observation(process.stdout)
@@ -250,6 +254,7 @@ def _receipt(process: ProcessResult, input_bytes: bytes) -> dict[str, Any]:
         "timedOut": process.timed_out, "memoryLimited": process.memory_limited,
         "outputLimited": process.output_limited, "inputDigest": _digest(input_bytes),
         "stdoutDigest": _digest(process.stdout.encode()), "stderrDigest": _digest(process.stderr.encode()),
+        "stdoutBytes": len(process.stdout.encode()), "stderrBytes": len(process.stderr.encode()),
     }
 
 
@@ -270,6 +275,11 @@ def _process_failure(process: ProcessResult, started: float, receipts):
     if status == "process-failed":
         status, code, message = _unsupported_diagnostic(process.stderr)
     result = _result(status, code, message, started, receipts)
+    if receipts:
+        result["diagnostic"]["outputSize"] = {
+            key: receipts[-1].get(key)
+            for key in ("stdoutBytes", "stderrBytes", "maxOutputBytes")
+        }
     result["diagnostic"]["processOutput"] = {
         "stdout": _diagnostic_text(process.stdout),
         "stderr": _diagnostic_text(process.stderr),

@@ -241,6 +241,8 @@ def test_discovery_projection_retains_complete_status_accounting_and_failure() -
         "omitted": 0,
         "statusCounts": {"accepted": 1, "failed-checker": 1},
         "scratchStatusCounts": {},
+        "closedAccepted": 1,
+        "applicableWithResiduals": 0,
     }
     assert projected["coverage"]["operationalFailure"] is True
     assert [row["check"]["status"] for row in projected["candidates"]] == [
@@ -366,6 +368,9 @@ def test_bloated_discovery_is_bounded_with_explicit_population_omissions() -> No
 
     population = projected["coverage"]["candidatePopulation"]
     assert population["observed"] == 40
+    assert population["closedAccepted"] == 0
+    assert population["applicableWithResiduals"] == 40
+    assert projected["coverage"]["canonical"]["accepted"] == 40
     assert population["omitted"] > 0
     assert any(row["pointer"] == "/candidates" for row in projected["omissions"])
     assert len(semantic_projection_bytes(projected)) <= DISCOVERY_PROJECTION_MAX_BYTES

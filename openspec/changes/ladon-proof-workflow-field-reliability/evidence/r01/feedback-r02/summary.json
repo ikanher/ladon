@@ -1,0 +1,114 @@
+{
+  "installation": "ladon 0.2.0 a073eadc3d6204f80f87a8eacc6e43d3797b46b5 dirty",
+  "prior_feedback": "temp/ladon-adam-energy-field-feedback-r01.zip",
+  "tested": [
+    "incremental index update after retained lineage",
+    "full rebuild mutation guard and retry",
+    "fresh compiled theorem lineage summary",
+    "stored declaration-rooted routes",
+    "bounded bottleneck/dominator view"
+  ],
+  "lineage": {
+    "nodes": {
+      "declaredAxioms": 0,
+      "externalFrontier": 1668,
+      "projectOwned": 550,
+      "total": 2218
+    },
+    "edges": {
+      "type": 12197,
+      "value": 47424
+    },
+    "freshness": "fresh",
+    "recorded_omissions": 0,
+    "authority": "lean_environment",
+    "receipt": {
+      "command": [
+        "ladon",
+        "theorem",
+        "lineage",
+        "Mf.Optimization.FiniteMemoryAdam.Cumulative.Energy.energy_physical_window_output_lt",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--index",
+        "/home/codex/projects/lean/matrix-factorization/.ladon/index/proof-search.sqlite",
+        "--refresh",
+        "missing",
+        "--view",
+        "summary",
+        "--from",
+        "trust",
+        "--max-rss-mib",
+        "49152",
+        "--timeout",
+        "180",
+        "--format",
+        "json",
+        "--output",
+        "/tmp/adam-r22-ladon-final-lineage.json"
+      ],
+      "exit_status": 0,
+      "seconds": 38.80068681295961,
+      "sampled_process_tree_peak_bytes": 9152208896,
+      "rss_ceiling_bytes": 51539607552,
+      "runtime_ceiling_seconds": 240,
+      "stop": null,
+      "log": "/tmp/adam-r22-ladon-final-lineage.log"
+    }
+  },
+  "routes": {
+    "returned": {
+      "edges": 2,
+      "nodes": 666,
+      "routes": 1
+    },
+    "truncated": true,
+    "selected_route": {
+      "depth": 2,
+      "edges": [
+        "value",
+        "value"
+      ],
+      "nodes": [
+        "Mf.Optimization.FiniteMemoryAdam.Cumulative.Energy.model_expected_update_energy_le",
+        "Mf.Optimization.FiniteMemoryAdam.Cumulative.Energy.physical_window_expected_energy_le",
+        "Mf.Optimization.FiniteMemoryAdam.Cumulative.Energy.energy_physical_window_output_lt"
+      ],
+      "root": "Mf.Optimization.FiniteMemoryAdam.Cumulative.Energy.model_expected_update_energy_le",
+      "target": "Mf.Optimization.FiniteMemoryAdam.Cumulative.Energy.energy_physical_window_output_lt"
+    }
+  },
+  "bottlenecks": {
+    "chain": [
+      "Mf.Optimization.FiniteMemoryAdam.Cumulative.Energy.model_expected_update_energy_le",
+      "Mf.Optimization.FiniteMemoryAdam.Cumulative.Energy.physical_window_expected_energy_le",
+      "Mf.Optimization.FiniteMemoryAdam.Cumulative.Energy.energy_physical_window_output_lt"
+    ],
+    "summary_truncated": true,
+    "population_truncated": true
+  },
+  "issues": [
+    {
+      "kind": "workflow limitation",
+      "description": "Incremental lexical update fails closed while lineage closures retain the original generation; a full rebuild is required. On this repository the successful rebuild takes about 109 seconds, despite only 17 new theorem/audit owners."
+    },
+    {
+      "kind": "correct safety behavior",
+      "description": "The first full rebuild rejected concurrent source changes and preserved the old index. Root had added the final audit while it ran; the quiescent retry succeeded. This was an execution mistake, not a Ladon bug."
+    },
+    {
+      "kind": "bounded view limitation",
+      "description": "maxNodes=3000 returns 666 distinct nodes, one two-edge route and a truncated view, although the closure summary has 2218 nodes. The cap appears to operate on recursive rows rather than unique nodes; clarify labels/accounting before callers interpret this as a unique-node limit."
+    }
+  ],
+  "requested_improvements": [
+    "Allow new lexical generations while retaining old lineage as explicitly generation-bound evidence, or explain why a full rebuild is necessary in the update result.",
+    "Clarify acquisition row versus unique-node budgets and estimate an adequate route budget from the stored summary.",
+    "Prior R01: preserve earlier same-file declarations in source-goal completion and fix the single le_trans candidate evidence conflict."
+  ],
+  "nonclaims": [
+    "No theorem replay is performed by stored lineage views.",
+    "Bounded bottlenecks do not establish mathematical necessity or complete alternative-proof coverage.",
+    "This is not qualification of every Ladon feature."
+  ]
+}

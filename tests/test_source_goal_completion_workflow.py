@@ -106,10 +106,13 @@ def _completion_frame(
     request: dict[str, Any], context, *, status="accepted", goal_id="_uniq.1",
 ) -> str:
     init_path = context.library_roots[0] / "Init.olean"
+    context_module = "LadonCompletionContext_" + request["requestId"] if status == "accepted" else ""
+    if context_module:
+        Path(request["snapshotPath"]).with_name(context_module + ".olean").write_bytes(b"scripted private source environment")
     frame = {
         "frame": "LADON_COMPLETION_FRAME",
         "protocolVersion": "ladon-lean-source-completion-v1/check",
-        "helperVersion": "ladon-source-completion-helper-v1",
+        "helperVersion": "ladon-source-completion-helper-v2",
         "requestId": request["requestId"], "captureId": request["captureId"],
         "termDigest": request["termDigest"], "contextRef": request["contextRef"],
         "module": request["module"], "filename": request["filename"],
@@ -122,7 +125,7 @@ def _completion_frame(
         "openDeclarationsStructural": "[]", "optionsStructural": "[]",
         "importedModules": ["Init"], "compiledModulePaths": [{
             "module": "Init", "path": str(init_path),
-        }], "directImports": [],
+        }], "directImports": [], "sourceContextModule": context_module,
         "selectedGoal": {
             "goalId": goal_id, "typeDisplay": "True",
             "typeStructural": "Lean.Expr.const `True []", "localContext": [],

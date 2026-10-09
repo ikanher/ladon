@@ -156,6 +156,8 @@ def project_request(
             request.get("localContext"), projection, omissions, f"{pointer}/localContext"
         ),
     }
+    if type(request.get("maxCandidates")) is int:
+        result["maxCandidates"] = request["maxCandidates"]
     _copy_request_modes(request, result)
     _project_roots(request.get("roots"), result, omissions, pointer)
     return result

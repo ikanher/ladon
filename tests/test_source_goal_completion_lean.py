@@ -106,10 +106,10 @@ def test_real_allowed_classical_axiom_is_reported_as_foundational(tmp_path):
     assert "Classical.choice" in result["trust"]["observedAxioms"]
 
 
-def test_source_local_uncompiled_dependency_cannot_supply_replay_coverage(tmp_path):
+def test_source_local_uncompiled_dependency_receives_independent_replay_coverage(tmp_path):
     text = "def localWitness : True := True.intro\nexample : True := by\n  skip\n"
     _source, context, capture = _capture(tmp_path, text, 3, 6)
     result = complete_source_goal(_request(tmp_path, context, capture, "localWitness"))
-    assert result["status"] != "completed", result
-    assert result["trust"]["accepted"] is False
-    assert result["trust"]["coverage"] == "unavailable"
+    _assert_completed(result, capture)
+    assert result["trust"]["observedAxioms"] == []
+    assert result["replay"]["sourceContext"]["basis"] == "selected-source-environment"

@@ -9,12 +9,12 @@ from typing import Any
 from ladon.source_association_io import _MODULE, _AssociationError
 
 PROTOCOL = "ladon-lean-source-completion-v1/check"
-HELPER_VERSION = "ladon-source-completion-helper-v1"
+HELPER_VERSION = "ladon-source-completion-helper-v2"
 FRAME_PREFIX = "LADON_COMPLETION_FRAME "
-REPLAY_PROTOCOL = "ladon-lean-source-completion-replay-v1"
+REPLAY_PROTOCOL = "ladon-lean-source-completion-replay-v2"
 REPLAY_PREFIX = "LADON_COMPLETION_REPLAY "
-FRAME_FIELDS = frozenset(["frame", "protocolVersion", "helperVersion", "requestId", "captureId", "termDigest", "contextRef", "module", "filename", "sourceDigest", "line", "column", "leanVersion", "leanCommit", "leanExecutablePath", "goalOrdinal", "goalCount", "useAfter", "byteOffset", "rangeStartByte", "rangeEndByte", "selectionEndByte", "namespaceName", "openDeclarationsStructural", "optionsStructural", "importedModules", "compiledModulePaths", "directImports", "selectedGoal", "status", "termDisplay", "termStructural", "residualGoals", "closedTargetText", "closedProofText", "diagnostic"])
-REPLAY_FIELDS = frozenset(["frame", "protocolVersion", "requestId", "captureId", "termDigest", "sourceDigest", "declaration", "observedAxioms", "coverage"])
+FRAME_FIELDS = frozenset(["frame", "protocolVersion", "helperVersion", "requestId", "captureId", "termDigest", "contextRef", "module", "filename", "sourceDigest", "line", "column", "leanVersion", "leanCommit", "leanExecutablePath", "goalOrdinal", "goalCount", "useAfter", "byteOffset", "rangeStartByte", "rangeEndByte", "selectionEndByte", "namespaceName", "openDeclarationsStructural", "optionsStructural", "importedModules", "compiledModulePaths", "directImports", "sourceContextModule", "selectedGoal", "status", "termDisplay", "termStructural", "residualGoals", "closedTargetText", "closedProofText", "diagnostic"])
+REPLAY_FIELDS = frozenset(["frame", "protocolVersion", "requestId", "captureId", "termDigest", "sourceDigest", "declaration", "observedAxioms", "coverage", "sourceContextDigest"])
 
 
 def _fail(message: str, status: str = "unavailable", code: str = "helper-protocol") -> None:

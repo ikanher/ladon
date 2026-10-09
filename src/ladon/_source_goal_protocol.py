@@ -5,6 +5,7 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from ladon._expr_graph_protocol import validate_structural_text
 from ladon.lean_toolchain import LeanToolchainContext
 from ladon.source_association_io import _AssociationError, _file_identity, _strict_json
 
@@ -145,6 +146,7 @@ def _validate_goals(goals: Any) -> None:
         if not isinstance(goal, dict) or set(goal) != GOAL_FIELDS:
             protocol_error("source helper goal fields are malformed")
         _strings(goal, ("goalId", "typeDisplay", "typeStructural"), nonempty=True)
+        _structural_text(goal["typeStructural"])
         if goal["goalId"] in known:
             protocol_error("source helper repeats a goal identity")
         known.add(goal["goalId"])
@@ -168,6 +170,8 @@ def _validate_local(local: Any) -> None:
         protocol_error("source helper local fields are malformed")
     _strings(local, ("localId", "userName", "binderInfo", "typeDisplay", "typeStructural"), nonempty=True)
     _strings(local, ("valueDisplay", "valueStructural"))
+    _structural_text(local["typeStructural"])
+    _structural_text(local["valueStructural"])
     if type(local["implementationDetail"]) is not bool:
         protocol_error("source helper implementation-detail role is malformed")
     dependencies = local["dependencies"]
@@ -179,3 +183,10 @@ def _validate_local(local: Any) -> None:
 
 def observation_identity(value: Mapping[str, Any]) -> dict[str, Any]:
     return {key: item for key, item in value.items() if key != "requestId"}
+
+
+def _structural_text(text: str) -> None:
+    try:
+        validate_structural_text(text)
+    except ValueError as error:
+        protocol_error(str(error))

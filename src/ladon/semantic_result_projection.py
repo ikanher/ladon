@@ -222,6 +222,8 @@ def _discovery_coverage(
             "projected": projected_count,
             "omitted": len(rows) - projected_count,
             "statusCounts": dict(sorted(statuses.items())),
+            "closedAccepted": statuses["accepted"],
+            "applicableWithResiduals": statuses["applicable-with-residuals"],
             "scratchStatusCounts": dict(sorted(scratch_statuses.items())),
         },
         "operationalFailure": any(_row_operational_failure(row) for row in rows),

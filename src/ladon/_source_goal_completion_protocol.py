@@ -56,6 +56,9 @@ def validate_completion(
     _validate_observation(value, request, capture)
     _validate_inventory(value, capture["environment"])
     _validate_outcome(value)
+    expected_module = "LadonCompletionContext_" + request["requestId"] if value["status"] == "accepted" else ""
+    if value["sourceContextModule"] != expected_module:
+        _fail("completion source context does not match the exact request")
 
 
 def _validate_outcome(value):
@@ -124,7 +127,7 @@ def _validate_replay_shape(value):
 
 
 def _validate_replay_bindings(value, expected):
-    for key in ("requestId", "captureId", "termDigest", "sourceDigest", "declaration"):
+    for key in ("requestId", "captureId", "termDigest", "sourceDigest", "declaration", "sourceContextDigest"):
         if not isinstance(value[key], str) or value[key] != expected[key] or not value[key]:
             _fail(f"compiler replay binding {key} does not match generated source", "stale", "replay-binding")
 

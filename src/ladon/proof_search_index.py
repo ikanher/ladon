@@ -20,7 +20,7 @@ import sqlite3
 import subprocess
 import tempfile
 import time
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -223,6 +223,7 @@ def build_proof_search_index(
     *,
     index_path: Path | None = None,
     max_index_bytes: int = DEFAULT_MAX_INDEX_BYTES,
+    progress: Callable[[Mapping[str, Any]], None] | None = None,
 ) -> IndexBuildResult:
     """Build and atomically replace one repository's v1 query index."""
 
@@ -234,6 +235,7 @@ def build_proof_search_index(
     destination.parent.mkdir(parents=True, exist_ok=True)
     lock = _acquire_build_lock(destination)
     try:
+        _build_progress(progress, "discovery")
         snapshot = capture_repository_snapshot(root)
         temporary = _temporary_database_path(destination)
         try:
@@ -241,6 +243,7 @@ def build_proof_search_index(
                 temporary,
                 snapshot,
                 max_index_bytes=max_index_bytes,
+                **({"progress": progress} if progress is not None else {}),
             )
             if temporary.stat().st_size > max_index_bytes:
                 raise _index_storage_limit_error(max_index_bytes)
@@ -250,6 +253,7 @@ def build_proof_search_index(
                     exit_class="operational", code="source-changed",
                     remediation="Retry after the source tree stops changing.",
                 )
+            _build_progress(progress, "publication")
             durable_replace(temporary, destination)
         finally:
             temporary.unlink(missing_ok=True)
@@ -491,11 +495,12 @@ def _write_database(
     snapshot: RepositorySnapshot,
     *,
     max_index_bytes: int,
+    progress: Callable[[Mapping[str, Any]], None] | None = None,
 ) -> dict[str, int]:
     """Populate a constrained fresh database and return collection counts."""
 
     try:
-        return _write_database_connection(path, snapshot, max_index_bytes)
+        return _write_database_connection(path, snapshot, max_index_bytes, progress)
     except sqlite3.Error as exc:
         if getattr(exc, "sqlite_errorcode", None) == sqlite3.SQLITE_FULL or (
             "database or disk is full" in str(exc).lower()
@@ -523,6 +528,7 @@ def _write_database_connection(
     path: Path,
     snapshot: RepositorySnapshot,
     max_index_bytes: int,
+    progress: Callable[[Mapping[str, Any]], None] | None = None,
 ) -> dict[str, int]:
     """Own one SQLite connection for a complete unpublished generation."""
 
@@ -540,12 +546,15 @@ def _write_database_connection(
         import_count = 0
         structure_count = 0
         type_truncation_count = 0
-        for source in snapshot.sources:
+        for ordinal, source in enumerate(snapshot.sources, 1):
             module_counts = _insert_source(connection, source)
             declaration_count += module_counts[0]
             import_count += module_counts[1]
             structure_count += module_counts[2]
             type_truncation_count += module_counts[3]
+            if ordinal % max(1, len(snapshot.sources) // 20) == 0 or ordinal == len(snapshot.sources):
+                _build_progress(progress, "extraction", processedModules=ordinal,
+                                totalModules=len(snapshot.sources))
         _insert_module_semantic_states(connection, snapshot, declaration_count, import_count)
         _insert_layout_omissions(connection, snapshot.layout)
         _insert_symbol_rows(connection)
@@ -562,6 +571,7 @@ def _write_database_connection(
         if declaration_count + import_count + structure_count > 100:
             connection.execute("PRAGMA optimize")
         connection.commit()
+        _build_progress(progress, "validation")
         _validate_database(connection)
     return {
         "modules": len(snapshot.sources),
@@ -1451,3 +1461,8 @@ __all__ = [
     "inspect_proof_search_index",
     "query_proof_search_index",
 ]
+
+
+def _build_progress(progress, phase: str, **counts: int) -> None:
+    if progress is not None:
+        progress({"phase": phase, "status": "running", **counts})

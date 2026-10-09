@@ -21,6 +21,10 @@ The initial profile uses ordinary non-modular source with default frontend setup
 
 Every non-captured result has `capture: null`. Ambiguity, unavailability, staleness, timeout, memory limit, output limit and process failure remain distinct. Failed processes expose bounded diagnostic excerpts with truncation flags and retain stream digests. Receipts record actual commands, supervised helper time and RSS; operation wall time also includes inventory work. Default limits are 60 seconds per helper, 8 MiB helper output and 32 GiB helper process-tree RSS. These finite execution/input bounds are separate from uncapped saved reports.
 
+Structural fields remain opaque strings. New observations use `ladon-expr-dag-v1:` followed by a complete constructor graph with backward references. Shared subexpressions are stored once per expression. Binder annotations, names, universe levels, metadata and local-definition values are retained; no proof value is truncated to make capture succeed. Human display fields remain separate. Historical fingerprints remain readable, but completion requires a fresh capture when helper bytes change.
+
+Process receipts include `stdoutBytes`, `stderrBytes` and the configured `maxOutputBytes`. An execution failure also reports those sizes under `diagnostic.outputSize`, beside bounded excerpts. These are observed stream sizes, not an estimate of the complete frame after an output-limit kill.
+
 The source helper uses the closed `ladon-lean-source-goal-v1/capture` protocol. Existing semantic-v3 checker protocols, receipts and exploratory acceptance labels are unchanged. Historical feasibility qualification alone does not establish CLI completion or comparative reader benefit; the separate completion report records its current gates.
 
 ## Ordinary CLI handoff

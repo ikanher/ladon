@@ -183,6 +183,15 @@ authority, closure identity, omissions, and truncation. They describe
 dependencies of one compiled proof term; they do not enumerate all proofs,
 alternative proofs, or a natural-language proof.
 
+For route acquisition, `--max-nodes` currently bounds traversal rows as well
+as the returned distinct-node list. Different paths can visit the same
+declaration, so `acquisition.rowsObserved` can exceed `returned.nodes`.
+One extra row detects truncation: a budget of 3,000 can report 3,001 observed
+rows. The closure summary counts distinct nodes; it cannot determine a route
+budget that guarantees complete traversal. Keep `truncated` and omissions
+visible even when a desired route was found. `bounds.recursiveRowLimit` reports
+the separate internal bound on recursive expansion.
+
 ## Build and execution security
 
 Target building is opt-in:
@@ -491,6 +500,16 @@ and `--root` to select candidates. For example, `--module Main --scope module
 A non-terminal batch prefix is exposed as a provisional
 process observation: it is not counted as accepted or rejected and cannot
 trigger scratch. Controlled testing uses explicit-pinned toolchains.
+
+Compact discovery retains the requested `maxCandidates`. Its population summary
+separates `closedAccepted` from `applicableWithResiduals`; the historical
+`coverage.canonical.accepted` total still includes both. A residual application
+does not establish the goal. Substitution identities use the declaration's
+binder position and displayed name (`binder:INDEX:NAME`) so repeated names stay
+distinct. Contradictory bindings remain invalid. A row-local evidence failure
+is attributed in the batch diagnostic and excluded from publication; independently
+validated sibling rows remain available. A partial or unassessed row is never
+promoted to acceptance.
 
 Add `--require-isolation` to `proof-search check candidate` or `proof-search
 discover` when target initializer isolation is required. The current trusted

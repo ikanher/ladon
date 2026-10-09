@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import json
+import sys
+import time
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -25,6 +28,7 @@ def _dispatch_index(
             repo_root,
             index_path=index_path,
             max_index_bytes=args.max_index_mib * 1024 * 1024,
+            **({"progress": _stage_reporter()} if args.progress else {}),
         ).payload
         return payload
     if args.index_operation == "update":
@@ -69,3 +73,14 @@ def _dispatch_prune(args: argparse.Namespace, repo_root: Path) -> Mapping[str, A
         repo_root, directory=args.directory, selected=tuple(args.select),
         older_than_days=args.older_than_days, keep=tuple(args.keep),
     )
+
+
+def _stage_reporter():
+    started = time.monotonic()
+
+    def report(fields):
+        row = {"schema": "ladon-proof-search-progress-v1", "operation": "index.build",
+               "elapsedSeconds": round(time.monotonic() - started, 6), **fields}
+        print(json.dumps(row, sort_keys=True, separators=(",", ":")), file=sys.stderr, flush=True)
+
+    return report

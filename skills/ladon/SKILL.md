@@ -62,12 +62,35 @@ used by discovery is the goal context; candidate population comes from scope
 and roots. Keep rejected and unassessed candidates visible. An accepted
 application with residual goals is partial; it does not prove those goals.
 
+Read `request.maxCandidates` beside the population counts. `closedAccepted`
+counts closed applications; `applicableWithResiduals` counts applications that
+still leave obligations. The historical accepted aggregate includes both.
+Substitution keys include binder positions, so repeated displayed names refer
+to distinct binders. Keep candidate-specific evidence failures visible alongside
+valid siblings; do not describe a partial batch as entirely checked.
+
+Use `index build --progress` for long rebuilds; stage and module-count events
+go to stderr. A publication event is not a successful terminal result. Updating
+an index with retained lineage still requires a full rebuild; use a new index
+path if the old evidence needs to be preserved.
+
+Source-goal completion supports earlier declarations in the same ordinary
+file through a private selected-environment snapshot and separate compiler
+replay. After upgrading, recapture source goals because captures bind helper
+bytes. Structural expression graphs retain local proof values without recursive
+tree expansion. Keep measured memory and output sizes in field reports.
+
 Report exact checked inputs and execution receipts separately from stored
 index evidence and structural explanations. Preserve unknown or stale states
 and the installed version's limitations; a source digest, route card, or
 successful index query supplies no theorem-verification authority.
 
 Architecture review is secondary; evidence and lineage are the audit layer.
+
+For lineage routes, `--max-nodes` also limits traversal rows. Repeated paths can
+visit the same declaration, so `acquisition.rowsObserved` differs from returned
+distinct nodes. One extra row detects truncation. A closure's distinct-node
+count cannot establish a sufficient route budget; retain truncation and omissions.
 
 ## Integration evidence boundary
 

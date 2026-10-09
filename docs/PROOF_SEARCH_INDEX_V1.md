@@ -35,6 +35,17 @@ size ceiling governs the updated database. Status reports source deltas and
 identity meanings; index list/prune provides preview-first cleanup of private
 generations without treating persistent lock files as orphans.
 
+For a long rebuild, use `ladon proof-search index build --repo-root /path/to/project --progress`.
+Bounded JSON events on stderr report discovery, module extraction, validation
+and publication. Extraction events include processed and total module counts;
+there are at most about twenty periodic updates plus the final count. The final
+result remains on stdout. A publication event indicates an attempt, not success;
+wait for the terminal result. Without `--progress`, these events are silent.
+
+Updating an index that retains lineage is still refused. If a full build is
+needed, build to a new `--index PATH` to preserve the old evidence-bearing file.
+The new lexical generation does not migrate its retained checks or lineage.
+
 The schema currently requires 16 named B-tree indexes:
 
 - declaration name, kind, module, namespace, package, source path, and

@@ -170,7 +170,7 @@ def _interpret_batch_process(
             peak_rss_bytes=process.peak_rss_bytes,
         )
     try:
-        rows = _materialize_batch_rows(
+        rows, invalid_rows = _materialize_batch_rows(
             request,
             helper_path,
             process,
@@ -184,26 +184,39 @@ def _interpret_batch_process(
             elapsed_seconds=process.elapsed_seconds,
             peak_rss_bytes=process.peak_rss_bytes,
         )
-    status = "available" if terminal and process.succeeded else ("partial" if rows else "failed")
+    status = _batch_status(rows, invalid_rows, terminal, process.succeeded)
     return SemanticCandidateBatchCheck(
         status,
         tuple(rows),
-        diagnostic=(
-            None
-            if status == "available"
-            else {
-                **_process_diagnostic(process),
-                **(
-                    {"code": "malformed-batch-prefix", "message": payload["protocolDiagnostic"]}
-                    if payload.get("protocolDiagnostic")
-                    else {}
-                ),
-            }
-        ),
+        diagnostic=_batch_diagnostic(status, invalid_rows, payload, process),
         elapsed_seconds=process.elapsed_seconds,
         peak_rss_bytes=process.peak_rss_bytes,
         terminal=terminal and process.succeeded,
     )
+
+
+def _batch_status(rows, invalid_rows, terminal: bool, succeeded: bool) -> str:
+    if invalid_rows:
+        return "partial" if rows else "failed"
+    if terminal and succeeded:
+        return "available"
+    return "partial" if rows else "failed"
+
+
+def _batch_diagnostic(status, invalid_rows, payload, process):
+    if status == "available":
+        return None
+    if invalid_rows:
+        return {
+            "code": "invalid-batch-evidence",
+            "message": "one or more candidate rows failed canonical evidence validation",
+            "failedCandidates": [item["candidate"] for item in invalid_rows],
+            "candidateFailures": [dict(item) for item in invalid_rows],
+        }
+    if payload.get("protocolDiagnostic"):
+        return {**_process_diagnostic(process), "code": "malformed-batch-prefix",
+                "message": payload["protocolDiagnostic"]}
+    return _process_diagnostic(process)
 
 
 def _validate_batch_candidates(candidates: Sequence[str]) -> None:
@@ -581,19 +594,29 @@ def _materialize_batch_rows(
     payload: Mapping[str, Any],
     *,
     authoritative: bool,
-) -> list[dict[str, Any]]:
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
     environment = _environment_artifact(request.repo_root, payload, request.toolchain)
+    rows: list[dict[str, Any]] = []
+    invalid_rows: list[dict[str, str]] = []
     if not authoritative:
-        return [
-            _materialize_partial_row(
-                request, helper_path, process, payload["localContext"], environment, row
+        for row in payload["rows"]:
+            try:
+                rows.append(
+                    _materialize_partial_row(
+                        request, helper_path, process, payload["localContext"], environment, row
+                    )
+                )
+            except (OSError, TypeError, ValueError) as error:
+                invalid_rows.append({"candidate": str(row["candidate"]), "message": str(error)})
+        return rows, invalid_rows
+    for row in payload["rows"]:
+        try:
+            rows.append(
+                _materialize_batch_row(request, helper_path, process, payload, environment, row)
             )
-            for row in payload["rows"]
-        ]
-    return [
-        _materialize_batch_row(request, helper_path, process, payload, environment, row)
-        for row in payload["rows"]
-    ]
+        except (OSError, TypeError, ValueError) as error:
+            invalid_rows.append({"candidate": str(row["candidate"]), "message": str(error)})
+    return rows, invalid_rows
 
 
 def _materialize_partial_row(

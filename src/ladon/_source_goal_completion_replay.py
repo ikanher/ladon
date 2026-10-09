@@ -8,19 +8,23 @@ from typing import Any
 from ladon.source_association_io import _MODULE, _AssociationError, _digest
 
 
-def replay_source(frame: Mapping[str, Any], request: Mapping[str, Any]) -> tuple[bytes, dict[str, Any]]:
+def replay_source(frame: Mapping[str, Any], request: Mapping[str, Any], context_digest: str) -> tuple[bytes, dict[str, Any]]:
     imports = frame["directImports"]
     if not isinstance(imports, list) or any(not isinstance(name, str) or not _MODULE.fullmatch(name) for name in imports):
         raise _AssociationError("unavailable", "replay-imports", "completion helper imports are malformed")
     declaration = "ladonCompletion_" + request["requestId"]
     body = "import Lean\n" + "".join(f"import {name}\n" for name in imports if name != "Lean")
+    context_module = frame["sourceContextModule"]
+    if not _MODULE.fullmatch(context_module) or context_module in imports:
+        raise _AssociationError("unavailable", "replay-context", "private replay context module is malformed or ambiguous")
+    body += f"import {context_module}\n"
     body += f"\ndef {declaration} : {frame['closedTargetText']} :=\n{frame['closedProofText']}\n"
     expected = {
         "frame": "LADON_COMPLETION_REPLAY",
-        "protocolVersion": "ladon-lean-source-completion-replay-v1",
+        "protocolVersion": "ladon-lean-source-completion-replay-v2",
         "requestId": request["requestId"], "captureId": request["captureId"],
         "termDigest": request["termDigest"], "sourceDigest": _digest(body.encode()),
-        "declaration": declaration,
+        "declaration": declaration, "sourceContextDigest": context_digest,
     }
     fields = [f"({json.dumps(key)}, Lean.toJson ({json.dumps(value)} : String))"
               for key, value in expected.items()]

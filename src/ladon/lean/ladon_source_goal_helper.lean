@@ -2,6 +2,8 @@ import Lean
 import Lean.Server.InfoUtils
 open Lean Elab Meta
 
+-- LADON_EXPR_GRAPH
+
 structure LocalRow where
   localId : String
   userName : String
@@ -65,9 +67,9 @@ def localRow (decl : LocalDecl) : MetaM LocalRow := do
     userName := decl.userName.toString
     binderInfo := (repr decl.binderInfo).pretty
     typeDisplay := (← ppExpr type).pretty
-    typeStructural := (repr type).pretty
+    typeStructural := structuralText type
     valueDisplay := (← value?.mapM ppExpr).map (·.pretty) |>.getD ""
-    valueStructural := (value?.map fun value => (repr value).pretty).getD ""
+    valueStructural := (value?.map fun value => structuralText value).getD ""
     dependencies
     implementationDetail := decl.isImplementationDetail
   }
@@ -81,7 +83,7 @@ def goalRow (goal : MVarId) : MetaM GoalRow := goal.withContext do
   return {
     goalId := goal.name.toString
     typeDisplay := typeDisplay.pretty
-    typeStructural := (repr type).pretty
+    typeStructural := structuralText type
     localContext := rows
   }
 

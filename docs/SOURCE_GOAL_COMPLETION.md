@@ -16,7 +16,9 @@ The input must be a successful `ladon-source-goal-capture-result-v1` envelope. T
 
 The operation checks the capture's canonical identity before execution, re-observes the source position and compares its actual goal, ordered context, scopes, options and pinned compiled environment. It elaborates the term there. Local definitions retain their actual values; internal/self dependencies cannot become added hypotheses. Closed expressions must survive printing and parsing with empty local context before ordinary compiler replay. Temporary files stay outside the target project. Reports cannot overwrite the capture file, sources, helpers, executables or compiled artifacts.
 
-The initial profile is ordinary non-modular source with default frontend setup. Definitions available only in the unfinished source may be unavailable to replay. This prevents completion without implying the goal is false. The operation does not insert a proof or establish the enclosing production declaration.
+The profile supports ordinary non-modular source with default frontend setup, including declarations earlier in the same file. Replay imports a private compiled snapshot of the selected source environment, then checks the closed application in a separate compiler process. The snapshot does not complete the enclosing declaration or the unfinished source tail. Its digest and size appear under `replay.sourceContext`; temporary files are removed afterward. Transitive dependencies on `sorryAx` still fail the trust policy.
+
+After upgrading, capture the goal again before completing it. Captures bind exact helper bytes; an older capture cannot be silently reused with the new expression encoding or completion helper.
 
 The schema `ladon-source-goal-completion-result-v1` separates `application`, `replay` and `trust`:
 

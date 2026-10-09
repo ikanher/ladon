@@ -13,6 +13,7 @@ from typing import Any
 
 from ladon._source_goal_completion_inputs import capture_request_fields, own_capture
 from ladon._source_goal_completion_replay import replay_source
+from ladon._source_goal_helpers import stage_helper, verify_helper
 from ladon._source_goal_inventory import capture_inventory, verify_inventory
 from ladon.execution_posture import require_target_execution_policy
 from ladon.lean_toolchain import (
@@ -113,9 +114,10 @@ def _complete(request, captured_request, capture, runner, result) -> None:
 
     root, source_path, source = _prepare_source(captured_request)
     helper = Path(str(resources.files("ladon").joinpath("lean", "ladon_source_goal_completion_helper.lean")))
-    helper_digest = _digest(_read_regular(helper, MAX_HELPER_BYTES))
     execution = prepare_direct_lean_execution(root, None, request.toolchain, require_compiled_module=False)
     with tempfile.TemporaryDirectory(prefix="ladon-source-completion-") as directory:
+        original_helper = helper
+        helper, helper_digest = stage_helper(original_helper, Path(directory))
         snapshot = Path(directory) / source_path.name
         snapshot.write_bytes(source)
         body = _helper_request(capture, snapshot, request.term)
@@ -125,6 +127,7 @@ def _complete(request, captured_request, capture, runner, result) -> None:
         _verify_source_files(source_path, snapshot, source)
         _verify_bytes(helper, helper_digest, MAX_HELPER_BYTES, "completion-helper")
         verify_toolchain_identities(request.toolchain)
+        verify_helper(original_helper, helper_digest)
         frame = decode_completion(process.stdout)
         validate_completion(frame, body, capture, request.toolchain, source)
         files, environment, inventory = capture_inventory(request.toolchain, frame)
@@ -138,6 +141,7 @@ def _complete(request, captured_request, capture, runner, result) -> None:
         _replay(request, runner, result, execution, Path(directory), frame, body)
         _verify_source_files(source_path, snapshot, source)
         _verify_bytes(helper, helper_digest, MAX_HELPER_BYTES, "completion-helper")
+        verify_helper(original_helper, helper_digest)
         verify_inventory(files, environment, inventory)
         verify_toolchain_identities(request.toolchain)
 
@@ -192,15 +196,28 @@ def _application(frame, helper_digest):
 def _replay(request, runner, result, execution, directory, frame, body):
     from ladon._source_goal_completion_protocol import decode_replay, validate_replay
 
-    source, expected = replay_source(frame, body)
+    context_path = directory / (frame["sourceContextModule"] + ".olean")
+    if context_path.stat().st_size > request.max_output_bytes:
+        raise _AssociationError("output-limit", "replay-context-size", "private replay context exceeds the declared output bound")
+    context_bytes = _read_regular(context_path, request.max_output_bytes)
+    context_digest = _digest(context_bytes)
+    source, expected = replay_source(frame, body, context_digest)
     path = directory / "LadonCompletion.lean"
     path.write_bytes(source)
     result["replay"] = {
         "status": "not-run", "generatedSource": source.decode(),
         "sourceDigest": _digest(source), "declarationBodyDigest": expected["sourceDigest"],
         "declaration": expected["declaration"], "coverage": "unavailable",
+        "sourceContext": {"module": frame["sourceContextModule"], "digest": context_digest,
+                          "bytes": len(context_bytes), "basis": "selected-source-environment"},
     }
-    process = _run(request, execution, runner, [str(path)], b"", result)
+    from ladon.semantic_lean_execution import DirectLeanExecution
+
+    replay_environment = dict(execution.environment)
+    replay_environment["LEAN_PATH"] = str(directory) + ":" + replay_environment.get("LEAN_PATH", "")
+    replay_execution = DirectLeanExecution(execution.command, replay_environment, execution.library_roots)
+    process = _run(request, replay_execution, runner, [str(path)], b"", result)
+    _verify_bytes(context_path, context_digest, request.max_output_bytes, "replay-context")
     result["replay"]["status"] = "process-succeeded" if process.succeeded else _process_status(process)
     _verify_bytes(path, _digest(source), len(source), "replay-source")
     _require_process(process, "replay")

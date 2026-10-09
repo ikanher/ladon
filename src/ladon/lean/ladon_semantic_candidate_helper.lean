@@ -243,7 +243,13 @@ private partial def applicationSubstitutions (type : Expr) (arguments : Array Ex
     | .forallE binderName _ body _ =>
         let argument ← instantiateMVars arguments[index]
         let display ← Meta.ppExpr argument
-        let variableName := if binderName.isAnonymous then s!"_{index}" else toString binderName
+        -- The substitution schema treats `variable` as a binding identity, not
+        -- merely a pretty-printed name. Lean permits shadowed/repeated binder
+        -- names, so retain the source name while scoping it by declaration
+        -- parameter ordinal. The declaration binder inventory keeps the
+        -- unmodified user-facing name.
+        let displayName := if binderName.isAnonymous then s!"_{index}" else toString binderName
+        let variableName := s!"binder:{index}:{displayName}"
         let rest ← applicationSubstitutions (body.instantiate1 argument) arguments (index + 1)
         return #[{
           «variable» := variableName
