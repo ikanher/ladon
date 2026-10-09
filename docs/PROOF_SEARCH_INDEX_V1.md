@@ -26,6 +26,15 @@ default maximum database size is 1 GiB; `--max-index-mib` changes it. Lexical
 signatures retain at most 16 KiB and record any truncation as omission evidence.
 Query output is capped at 1,000 rows.
 
+`index update` now reuses unchanged module extraction in an atomically
+published copy of a compatible lexical generation. It rebuilds derived FTS
+search data and checks source identity before replacement. It refuses to
+reassociate retained semantic, lineage or ProofIR evidence and reports that
+an explicit full build is required for unsupported bases. The saved base-build
+size ceiling governs the updated database. Status reports source deltas and
+identity meanings; index list/prune provides preview-first cleanup of private
+generations without treating persistent lock files as orphans.
+
 The schema currently requires 16 named B-tree indexes:
 
 - declaration name, kind, module, namespace, package, source path, and

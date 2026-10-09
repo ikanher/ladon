@@ -28,6 +28,7 @@ from typing import Any
 from ladon.extraction import parse_import_sites, parse_text_declarations
 from ladon.lean_layout import LeanSourceMap, discover_lean_source_map, root_for_path
 from ladon.lexical_mask import mask_lean_source
+from ladon.proof_search_exact_counts import exact_name_counts, match_summary
 from ladon.proof_search_name_query import (
     name_casefold,
     query_name_database,
@@ -243,6 +244,12 @@ def build_proof_search_index(
             )
             if temporary.stat().st_size > max_index_bytes:
                 raise _index_storage_limit_error(max_index_bytes)
+            if capture_repository_snapshot(root).generation_identity != snapshot.generation_identity:
+                raise ProofSearchIndexError(
+                    "supported repository inputs changed during index build",
+                    exit_class="operational", code="source-changed",
+                    remediation="Retry after the source tree stops changing.",
+                )
             durable_replace(temporary, destination)
         finally:
             temporary.unlink(missing_ok=True)
@@ -261,11 +268,24 @@ def build_proof_search_index(
     return IndexBuildResult(payload)
 
 
+def update_proof_search_index(
+    repo_root: Path,
+    *,
+    index_path: Path | None = None,
+) -> IndexBuildResult:
+    """Refresh a compatible lexical generation without changing the public API."""
+
+    from ladon.proof_search_index_update import update_proof_search_index as update
+
+    return update(repo_root, index_path=index_path)
+
+
 def inspect_proof_search_index(
     repo_root: Path,
     *,
     index_path: Path | None = None,
     verify_sources: bool = True,
+    changed_limit: int = 5,
 ) -> dict[str, Any]:
     """Return schema, coverage, and optional live freshness evidence."""
 
@@ -274,20 +294,22 @@ def inspect_proof_search_index(
     if not database.is_file():
         return _unavailable_status(root, database, "index_missing")
     started = time.monotonic()
+    if not 0 <= changed_limit <= 1000:
+        raise ProofSearchIndexError("changed listing limit must be between 0 and 1000")
     try:
         with _open_readonly(database) as connection:
             metadata = _metadata(connection)
             counts = _database_counts(connection)
+            stored_sources = _stored_sources(connection) if verify_sources else {}
             indexes = schema_lookup_indexes(connection)
             index_columns = schema_index_columns(connection)
             query_surfaces = schema_query_surfaces(connection)
             foreign_keys = schema_foreign_keys(connection)
     except (OSError, sqlite3.Error, ValueError) as exc:
         return _unavailable_status(root, database, f"index_unreadable: {exc}")
-    freshness, current_generation = _freshness(
-        root,
-        metadata,
-        verify_sources=verify_sources,
+    freshness, current_generation, source_changes = _freshness_details(
+        root, metadata, stored_sources, verify_sources=verify_sources,
+        changed_limit=changed_limit,
     )
     version_control_visible = _version_control_visible(root, database)
     return {
@@ -304,6 +326,9 @@ def inspect_proof_search_index(
         "helperIdentity": metadata.get("helperIdentity"),
         "currentGenerationIdentity": current_generation,
         "freshness": freshness,
+        "sourceChanges": source_changes,
+        "generationIdentityMeaning": "stored rows in the queried index",
+        "currentGenerationIdentityMeaning": "currently observed supported inputs",
         "evidenceStatus": metadata.get("evidenceStatus", "unknown"),
         "toolchainIdentity": metadata.get("toolchainIdentity"),
         "configurationFingerprint": metadata.get("configurationFingerprint"),
@@ -330,6 +355,7 @@ def inspect_proof_search_index(
             "aliases.target",
         ],
         "databaseBytes": database.stat().st_size,
+        "maxIndexBytes": _integer_metadata(metadata, "maxIndexBytes"),
         "storage": database_storage_accounting(database, _open_readonly),
         "versionControlVisible": version_control_visible,
         "elapsedSeconds": round(time.monotonic() - started, 6),
@@ -352,13 +378,7 @@ def query_proof_search_index(
 ) -> dict[str, Any]:
     """Run one deterministic bounded metadata query."""
 
-    if scope not in SUPPORTED_INDEX_SCOPES:
-        expected = ", ".join(sorted(SUPPORTED_INDEX_SCOPES))
-        raise ProofSearchIndexError(f"unsupported scope {scope!r}; expected {expected}")
-    if limit < 1 or limit > 1000:
-        raise ProofSearchIndexError("query limit must be between 1 and 1000")
-    if freshness not in {"stored", "verify"}:
-        raise ProofSearchIndexError("freshness must be stored or verify")
+    _validate_query_options(scope, limit, freshness)
     root = repo_root.resolve()
     database = _resolved_index_path(root, index_path)
     if not database.is_file():
@@ -368,6 +388,7 @@ def query_proof_search_index(
         with _open_readonly(database) as connection:
             metadata = _metadata(connection)
             _require_query_schema(metadata)
+            stored_sources = _stored_sources(connection) if freshness == "verify" else {}
             rows, truncated, selected_module_count, scope_omissions = query_name_database(
                 connection,
                 text=text,
@@ -378,6 +399,10 @@ def query_proof_search_index(
                 exclusions=tuple(exclusions),
                 min_matched_segments=min_matched_segments,
             )
+            qualified_exact, basename_exact = exact_name_counts(
+                connection, text=text or "", scope=scope, roots=tuple(roots),
+                exclusions=tuple(exclusions),
+            )
     except sqlite3.Error as exc:
         raise ProofSearchIndexError(
             "proof-search index is incompatible or unreadable; rebuild it before querying: "
@@ -385,10 +410,11 @@ def query_proof_search_index(
         ) from exc
     except ValueError as exc:
         raise ProofSearchIndexError(str(exc)) from exc
-    stored_freshness = "unchecked"
-    current_generation = None
-    if freshness == "verify":
-        stored_freshness, current_generation = _freshness(root, metadata, verify_sources=True)
+    stored_freshness, current_generation, source_changes = _freshness_details(
+        root, metadata, stored_sources, verify_sources=freshness == "verify",
+        changed_limit=5, scope=scope, roots=roots,
+    )
+    summary = match_summary(rows, text, qualified_exact, basename_exact)
     return {
         "schema": PROOF_SEARCH_RESULT_SCHEMA,
         "operation": "query",
@@ -396,6 +422,11 @@ def query_proof_search_index(
         "indexPath": str(database),
         "generationIdentity": metadata.get("generationIdentity"),
         "freshness": stored_freshness,
+        "sourceChanges": source_changes,
+        "matchSummary": summary,
+        "queryImpact": source_changes.get("queryImpact", "unknown"),
+        "generationIdentityMeaning": "stored rows in the queried index",
+        "currentGenerationIdentityMeaning": "currently observed supported inputs",
         "freshnessStatus": ("verified-fresh" if stored_freshness == "fresh" else stored_freshness),
         "currentGenerationIdentity": current_generation,
         "evidenceStatus": metadata.get("evidenceStatus", "unknown"),
@@ -415,6 +446,16 @@ def query_proof_search_index(
         "elapsedSeconds": round(time.monotonic() - started, 6),
         "nonclaim": _index_nonclaim(),
     }
+
+
+def _validate_query_options(scope: str, limit: int, freshness: str) -> None:
+    if scope not in SUPPORTED_INDEX_SCOPES:
+        expected = ", ".join(sorted(SUPPORTED_INDEX_SCOPES))
+        raise ProofSearchIndexError(f"unsupported scope {scope!r}; expected {expected}")
+    if limit < 1 or limit > 1000:
+        raise ProofSearchIndexError("query limit must be between 1 and 1000")
+    if freshness not in {"stored", "verify"}:
+        raise ProofSearchIndexError("freshness must be stored or verify")
 
 
 def _query_metadata(
@@ -1128,19 +1169,43 @@ def _freshness(
 
     if not verify_sources:
         return "unchecked", None
-    snapshot = capture_repository_snapshot(repo_root)
-    recorded_schema = metadata.get("indexSchema")
-    if recorded_schema != PROOF_SEARCH_INDEX_SCHEMA:
-        return "incompatible-schema", snapshot.generation_identity
-    if metadata.get("schemaGeneration") != PROOF_SEARCH_SCHEMA_GENERATION:
-        return "incompatible-schema", snapshot.generation_identity
-    if metadata.get("toolchainIdentity") != snapshot.toolchain_identity:
-        return "incompatible-toolchain", snapshot.generation_identity
-    if metadata.get("configurationFingerprint") != snapshot.configuration_fingerprint:
-        return "stale-configuration", snapshot.generation_identity
-    if metadata.get("sourceFingerprint") != snapshot.source_fingerprint:
-        return "stale-source", snapshot.generation_identity
-    return "fresh", snapshot.generation_identity
+    return _freshness_from_snapshot(capture_repository_snapshot(repo_root), metadata)
+
+
+def _stored_sources(connection: sqlite3.Connection) -> dict[str, tuple[str, str, str, bool, int]]:
+    return {
+        str(row[0]): (str(row[1]), str(row[2]), str(row[3]), bool(row[4]), int(row[5]))
+        for row in connection.execute(
+            "SELECT name,path,source_sha256,package,generated,source_bytes FROM modules"
+        )
+    }
+
+
+def _freshness_details(
+    repo_root: Path,
+    metadata: Mapping[str, str],
+    stored_sources: Mapping[str, tuple[str, str, str, bool, int]],
+    *,
+    verify_sources: bool,
+    changed_limit: int,
+    scope: str | None = None,
+    roots: Sequence[str] = (),
+) -> tuple[str, str | None, dict[str, Any]]:
+    from ladon.proof_search_freshness import _freshness_details as details
+
+    return details(
+        repo_root, metadata, stored_sources, verify_sources=verify_sources,
+        changed_limit=changed_limit, scope=scope, roots=roots,
+        capture=capture_repository_snapshot,
+    )
+
+
+def _freshness_from_snapshot(
+    snapshot: RepositorySnapshot, metadata: Mapping[str, str]
+) -> tuple[str, str]:
+    from ladon.proof_search_freshness import _freshness_from_snapshot as compare
+
+    return compare(snapshot, metadata)
 
 
 def _database_counts(connection: sqlite3.Connection) -> dict[str, int]:

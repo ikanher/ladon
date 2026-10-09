@@ -85,6 +85,7 @@ def test_exact_unicode_name_bypasses_ascii_token_filter(tmp_path: Path) -> None:
 
     assert result["rows"][0]["candidateName"] == "α"
     assert result["rows"][0]["ranking"]["contribution"] == "exact"
+    assert result["matchSummary"]["exactMatches"] == 1
 
 
 def test_empty_name_search_suggests_type_text(tmp_path: Path) -> None:
@@ -146,6 +147,55 @@ def test_verified_freshness_reports_status_and_stale_source(tmp_path: Path) -> N
     )
     stale = query_proof_search_index(tmp_path, text="stableName", freshness="verify")
     assert stale["freshness"] == "stale-source"
+
+
+def test_stale_identifier_miss_separates_lexical_suggestions(tmp_path: Path, capsys) -> None:
+    (tmp_path / "Main.lean").write_text(
+        "theorem actualCorrectedSecondMemoryHelper : True := True.intro\n",
+        encoding="utf-8",
+    )
+    build_proof_search_index(tmp_path)
+    (tmp_path / "Fresh.lean").write_text(
+        "theorem actualCorrectedSecondMemory : True := True.intro\n",
+        encoding="utf-8",
+    )
+    status = main([
+        "proof-search", "search", "name", "--repo-root", str(tmp_path),
+        "--text", "actualCorrectedSecondMemory", "--format", "text",
+    ])
+    text = capsys.readouterr().out
+    assert status == 0
+    assert "0 exact matches" in text
+    assert "stale-source" in text
+    assert "lexical suggestions" in text
+    assert text.index("0 exact matches") < text.index("actualCorrectedSecondMemoryHelper")
+
+    stored = query_proof_search_index(
+        tmp_path, text="actualCorrectedSecondMemory", freshness="stored"
+    )
+    assert stored["sourceChanges"]["status"] == "not-checked"
+    assert stored["matchSummary"]["exactMatches"] == 0
+
+
+def test_exact_basename_count_precedes_display_limit_and_scope_impact(tmp_path: Path) -> None:
+    (tmp_path / "A.lean").write_text(
+        "namespace A\ntheorem wanted : True := True.intro\nend A\n", encoding="utf-8"
+    )
+    (tmp_path / "B.lean").write_text(
+        "namespace B\ntheorem wanted : True := True.intro\nend B\n", encoding="utf-8"
+    )
+    build_proof_search_index(tmp_path)
+    result = query_proof_search_index(tmp_path, text="wanted", freshness="verify", limit=1)
+    assert result["matchSummary"]["exactMatches"] == 2
+    assert result["returned"] == 1
+    (tmp_path / "New.lean").write_text(
+        "theorem another : True := True.intro\n", encoding="utf-8"
+    )
+    scoped = query_proof_search_index(
+        tmp_path, text="wanted", scope="module", roots=("A",), freshness="verify"
+    )
+    assert scoped["freshness"] == "stale-source"
+    assert scoped["queryImpact"] == "unaffected"
 
 
 def test_name_command_has_v2_schema_and_omits_compat_rows(tmp_path: Path, capsys) -> None:

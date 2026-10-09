@@ -39,6 +39,9 @@ Indexing and search read source text without running Lean. Results are
 candidates to investigate, not proof that a theorem applies. The disposable
 index lives in `.ladon/index/`; add that directory to your project's ignore
 file, or choose another location with `--index`.
+After edits, use `proof-search index status --changed` to see stale sources and
+`proof-search index update` to refresh a compatible lexical index. See the
+[CLI reference](docs/CLI.md) for index cleanup and evidence limits.
 
 Check a candidate against a goal in a compiled module from your project:
 

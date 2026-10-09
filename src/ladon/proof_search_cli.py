@@ -34,9 +34,7 @@ from ladon.proof_search_index import (
     DEFAULT_MAX_INDEX_BYTES,
     SUPPORTED_INDEX_SCOPES,
     ProofSearchIndexError,
-    build_proof_search_index,
     default_proof_search_index_path,
-    inspect_proof_search_index,
     query_proof_search_index,
 )
 from ladon.proof_search_semantic_cli import (
@@ -94,6 +92,10 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
         help="Maximum database size in MiB; defaults to 1024.",
     )
 
+    update = commands.add_parser("update", help="Explicitly refresh changed lexical modules.")
+    _add_repository_options(update)
+    _add_output_options(update)
+
     status = commands.add_parser("status", help="Inspect index identity and freshness.")
     _add_repository_options(status)
     _add_output_options(status)
@@ -101,6 +103,29 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
         "--no-verify-sources",
         action="store_true",
         help="Read stored metadata without hashing current source/configuration bytes.",
+    )
+    listing = commands.add_parser("list", help="Inventory local index files and protected state.")
+    _add_repository_options(listing)
+    _add_output_options(listing)
+    listing.add_argument("--directory", type=Path)
+    listing.add_argument("--limit", type=_positive_integer, default=1000)
+
+    prune = commands.add_parser("prune", help="Preview or apply selected private-index cleanup.")
+    _add_repository_options(prune)
+    _add_output_options(prune)
+    prune.add_argument("--directory", type=Path)
+    prune.add_argument("--select", action="append", default=[])
+    prune.add_argument("--keep", action="append", default=[])
+    prune.add_argument("--older-than-days", type=float)
+    prune.add_argument("--apply", action="store_true")
+    prune.add_argument("--preview-file", type=Path)
+    status.add_argument(
+        "--changed", action="store_true",
+        help="List up to 1000 added, changed and removed supported source modules.",
+    )
+    status.add_argument(
+        "--details", action="store_true",
+        help="Expand the detailed index, schema and storage inventory in text output.",
     )
 
     query = commands.add_parser("query", help="Run a bounded declaration query.")
@@ -315,7 +340,9 @@ def proof_search_main(argv: Sequence[str]) -> int:
         _write_payload(payload, output=args.output, output_format=args.output_format)
         exit_code = (
             EXIT_OPERATIONAL
-            if semantic_payload_failed(operation, payload)
+            if semantic_payload_failed(operation, payload) or (
+                operation == "index.prune" and payload.get("status") == "partial"
+            )
             else EXIT_SUCCESS
         )
         _emit_progress(
@@ -537,28 +564,9 @@ def _dispatch_explain(
 def _dispatch_index(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
-    if args.index_operation == "build":
-        payload = build_proof_search_index(
-            repo_root,
-            index_path=index_path,
-            max_index_bytes=args.max_index_mib * 1024 * 1024,
-        ).payload
-        return payload
-    if args.index_operation == "status":
-        return inspect_proof_search_index(
-            repo_root, index_path=index_path, verify_sources=not args.no_verify_sources
-        )
-    return query_proof_search_index(
-        repo_root,
-        index_path=index_path,
-        text=args.text,
-        scope=args.scope,
-        roots=tuple(args.root),
-        limit=args.limit,
-        query_mode=args.query_mode,
-        exclusions=tuple(args.exclude),
-        min_matched_segments=args.min_matched_segments,
-    )
+    from ladon.proof_search_index_cli import _dispatch_index as dispatch
+
+    return dispatch(args, repo_root, index_path)
 
 
 def _dispatch_search(
@@ -653,6 +661,10 @@ def _write_payload(
 
 
 def _render_text(payload: Mapping[str, Any]) -> str:
+    if payload.get("schema") == "ladon-proof-search-index-lifecycle-v1":
+        from ladon.proof_search_index_text import render_lifecycle
+
+        return render_lifecycle(payload)
     if payload.get("schema") == "ladon-source-goal-completion-result-v1":
         from ladon.source_goal_completion_cli import render_completion_text
 
@@ -690,24 +702,9 @@ def _render_source_association(payload: Mapping[str, Any]) -> str:
 
 
 def _render_header(payload: Mapping[str, Any]) -> list[str]:
-    operation = str(payload.get("operation", "index"))
-    lines = [
-        f"proof-search {operation}: {payload.get('status', 'unknown')}",
-        f"path: {payload.get('indexPath', 'unavailable')}",
-    ]
-    for key, label in (
-        ("generationIdentity", "generation"),
-        ("freshness", "freshness"),
-        ("evidenceStatus", "evidence"),
-        ("databaseBytes", "bytes"),
-        ("elapsedSeconds", "elapsed_seconds"),
-    ):
-        if payload.get(key) is not None:
-            lines.append(f"{label}: {payload[key]}")
-    counts = payload.get("counts")
-    if isinstance(counts, Mapping):
-        lines.append("counts: " + ", ".join(f"{key}={counts[key]}" for key in sorted(counts)))
-    return lines
+    from ladon.proof_search_index_text import _render_header as render
+
+    return render(payload)
 
 
 def _render_core_rows(payload: Mapping[str, Any]) -> list[str]:

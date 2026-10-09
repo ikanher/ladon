@@ -53,6 +53,7 @@ Proof-navigation indexing is an explicit ordinary CLI operation:
 ladon proof-search index build --repo-root /path/to/project \
   --format json --output -
 ladon proof-search index status --repo-root /path/to/project
+ladon proof-search index status --repo-root /path/to/project --changed
 ladon proof-search index query --repo-root /path/to/project \
   --text integrable --scope closure --root Project.Owner --limit 20
 ```
@@ -74,6 +75,51 @@ Index construction is lexical-only and never invokes Lean. The former
 options were removed because they labeled lexical output without producing
 semantic populations. Lean-backed evidence is available only through explicit
 operations whose results name the checker and exact subject.
+
+For a compatible existing index, `index update` explicitly refreshes changed
+lexical modules while reusing extraction from unchanged modules:
+
+```bash
+ladon proof-search index update --repo-root /path/to/project --format json
+```
+
+It does not run during search or status. A missing or incompatible index, changed
+configuration, or retained semantic/lineage/ProofIR evidence produces a
+`full-build-required` diagnostic and preserves the old database. A source
+change during publication produces `source-changed`. A no-op reports `unchanged`.
+The update uses the base index's stored size ceiling; use an explicit full
+build if that limit must change.
+
+Verified status compares the indexed generation with current supported inputs.
+`generationIdentity` names the rows in the database;
+`currentGenerationIdentity` names newly observed inputs and is absent with
+`--no-verify-sources`. `sourceChanges` counts added, changed and removed modules,
+with a bounded path sample. Use `--changed` for a larger listing, or
+`--details` for the full text inventory. A status of `stale-configuration`
+requires an explicit build even when the top-level index status is `available`.
+Name search reports exact identifier matches separately from lexical
+suggestions. An exact miss in a stale generation does not establish absence
+from the current source tree. `--freshness stored` does not check current files.
+
+List local index storage before cleaning up private experiments:
+
+```bash
+ladon proof-search index list --repo-root /path/to/project --format text
+ladon proof-search index prune --repo-root /path/to/project \
+  --select proof-search.session.sqlite --format json --output /tmp/ladon-prune-preview.json
+ladon proof-search index prune --repo-root /path/to/project \
+  --apply --preview-file /tmp/ladon-prune-preview.json --format json
+```
+
+`prune` previews by default. Apply uses the saved preview, checks every file's
+identity and publisher state again, and protects the default index, retained
+evidence, foreign indexes, symlinks and uncertain sidecars. Persistent `.lock`
+files remain coordination state. `--older-than-days` can select candidates for
+a preview, but file age is a filesystem timestamp, not proof of inactivity.
+Use `--directory` to inventory a different explicit local index directory.
+`index list` inspects at most `--limit` entries. If the directory is truncated,
+`totalBytes` covers only returned rows and `totalBytesScope` says so; prune
+requires a complete inventory before making a preview.
 
 ### Stored ProofIR evidence
 

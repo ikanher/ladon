@@ -20,6 +20,24 @@ be a lower bound. `--freshness stored` reports stored evidence;
 `--freshness verify` checks canonical source/index generation freshness and
 does not check a candidate with Lean.
 
+For active source editing, use `proof-search index status --changed` to inspect
+added, changed and removed modules. An exact identifier miss on a stale index
+does not establish current-source absence; read the exact-match summary before
+lexical suggestions. `generationIdentity` names stored rows and
+`currentGenerationIdentity` names newly observed supported inputs. Stored-only
+queries leave the latter unchecked. For a compatible lexical index, use the
+explicit `proof-search index update`; a `full-build-required` diagnostic means
+the existing generation cannot be safely updated. Inspect the returned reuse,
+source-change and size evidence before reporting an improvement.
+
+When private indexes accumulate, run `proof-search index list`, then save a
+`proof-search index prune --select NAME --format json --output PREVIEW.json`
+preview. Apply only that saved selection with `prune --apply --preview-file
+PREVIEW.json`. The default index, retained evidence, active publishers and
+uncertain sidecars are protected. Persistent `.lock` files are coordination
+state, not evidence that an active writer is present. The commands and limits
+are documented in [CLI contracts](../../docs/CLI.md).
+
 Use `proof-search explain --candidate <qualified-name> --goal <goal>` for
 structural comparison of one uniquely attributable, nonempty, untruncated
 Lean-rendered indexed type. Its `--module` selects the candidate's owner.

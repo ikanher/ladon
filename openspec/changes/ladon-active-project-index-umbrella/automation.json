@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "change": "ladon-active-project-index-umbrella",
+  "commands": [
+    "openspec validate ladon-active-project-index-umbrella --strict",
+    "python -m pytest tests/test_proof_search_index.py tests/test_proof_search_name_v2.py tests/test_sqlite_publication.py tests/test_proof_search_consumers.py tests/test_proof_search_constructor.py -q",
+    "git diff --check"
+  ]
+}
