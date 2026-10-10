@@ -1,0 +1,20 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_incomplete_binding_cannot_consume_body_assignment ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1354/test_incomplete_binding_cannot0')
+
+    def test_incomplete_binding_cannot_consume_body_assignment(tmp_path):
+        (tmp_path / 'Main.lean').write_text('theorem t : let x ← action; FinalMarker x := by exact ProofLeakMarker\n')
+        index = build_proof_search_index(tmp_path).index_path
+        with sqlite3.connect(index) as db:
+>           assert db.execute('SELECT type_text, type_status FROM declarations').fetchone() == (None, 'unavailable')
+E           AssertionError: assert (': let x ← a...al-signature') == (None, 'unavailable')
+E             
+E             At index 0 diff: ': let x ← action; FinalMarker x := by exact ProofLeakMarker' != None
+E             Use -v to get more diff
+
+tests/test_lexical_signature_missing_assignment.py:12: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_lexical_signature_missing_assignment.py::test_incomplete_binding_cannot_consume_body_assignment
+1 failed in 0.09s

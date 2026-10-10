@@ -1,0 +1,24 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_layout_lets_and_absolute_value_conclusion_survive ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1337/test_layout_lets_and_absolute_0')
+
+    def test_layout_lets_and_absolute_value_conclusion_survive(tmp_path):
+        (tmp_path / 'Main.lean').write_text('''theorem fieldShape (x : Real) :
+        let state := x
+        let scale := (let inner := state; inner + 1)
+        let value := fun t => scale * t
+        |value x| ≤ FinalMarker x := by
+      exact ProofBodyOnlySymbol
+    ''')
+        index = build_proof_search_index(tmp_path).index_path
+        with sqlite3.connect(index) as db:
+            text, truncated = db.execute('SELECT type_text, type_text_truncated FROM declarations').fetchone()
+>       assert 'let state := x' in text
+E       AssertionError: assert 'let state := x' in '(x : Real) : let state'
+
+tests/test_lexical_let_layout.py:19: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_lexical_let_layout.py::test_layout_lets_and_absolute_value_conclusion_survive
+1 failed in 0.09s

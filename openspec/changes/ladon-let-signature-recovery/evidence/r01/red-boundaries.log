@@ -1,0 +1,53 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+______________ test_multiline_binding_assignment_keeps_conclusion ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1341/test_multiline_binding_assignm0')
+
+    def test_multiline_binding_assignment_keeps_conclusion(tmp_path):
+        text = signature(tmp_path, 'theorem t : let x\n    := 1; FinalMarker x := by trivial\n')
+>       assert 'FinalMarker x' in text
+E       AssertionError: assert 'FinalMarker x' in ': let x'
+
+tests/test_lexical_signature_boundaries.py:17: AssertionError
+_____________ test_unfinished_proof_does_not_invalidate_statement ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1341/test_unfinished_proof_does_not0')
+
+    def test_unfinished_proof_does_not_invalidate_statement(tmp_path):
+        text = signature(tmp_path, 'theorem t : let x := 1; FinalMarker x := by\n  exact (\n')
+>       assert 'FinalMarker x' in text
+E       AssertionError: assert 'FinalMarker x' in ': let x'
+
+tests/test_lexical_signature_boundaries.py:22: AssertionError
+________________ test_unsupported_recursive_let_is_unavailable _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1341/test_unsupported_recursive_let0')
+
+    def test_unsupported_recursive_let_is_unavailable(tmp_path):
+        text = signature(tmp_path, 'theorem t : let rec f (n : Nat) := n; FinalMarker f := by trivial\n')
+>       assert text is None
+E       AssertionError: assert ': let rec f (n : Nat)' is None
+
+tests/test_lexical_signature_boundaries.py:28: AssertionError
+________________ test_nested_match_does_not_cut_off_conclusion _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1341/test_nested_match_does_not_cut0')
+
+    def test_nested_match_does_not_cut_off_conclusion(tmp_path):
+        text = signature(tmp_path, '''theorem t :
+        let x := (match 1 with
+          | 0 => 1
+          | n => n)
+        FinalMarker x := by trivial
+    ''')
+>       assert 'FinalMarker x' in text
+E       AssertionError: assert 'FinalMarker x' in ': let x'
+
+tests/test_lexical_signature_boundaries.py:38: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_lexical_signature_boundaries.py::test_multiline_binding_assignment_keeps_conclusion
+FAILED tests/test_lexical_signature_boundaries.py::test_unfinished_proof_does_not_invalidate_statement
+FAILED tests/test_lexical_signature_boundaries.py::test_unsupported_recursive_let_is_unavailable
+FAILED tests/test_lexical_signature_boundaries.py::test_nested_match_does_not_cut_off_conclusion
+4 failed in 0.13s

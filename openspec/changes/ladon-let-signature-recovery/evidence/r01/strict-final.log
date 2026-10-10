@@ -1,0 +1,244 @@
+
+== strict radon/vulture checks ==
+radon/vulture: clean
+
+== scoped ruff ==
++ /home/codex/projects/ladon/.venv/bin/python3 -m ruff check src tests scripts
+All checks passed!
+
+== compileall ==
+
+== pytest ==
++ /home/codex/projects/ladon/.venv/bin/python3 -m pytest -q tests
+........................................................................ [  2%]
+........................................................................ [  4%]
+........................................................................ [  6%]
+........................................................................ [  8%]
+........................................................................ [ 10%]
+........................................................................ [ 13%]
+........................................................................ [ 15%]
+........................................................................ [ 17%]
+........................................................................ [ 19%]
+........................................................................ [ 21%]
+........................................................................ [ 23%]
+........................................................................ [ 26%]
+........................................................................ [ 28%]
+......................................F................................. [ 30%]
+........................................................................ [ 32%]
+........F............................................................... [ 34%]
+........................................................................ [ 36%]
+..F.......F............................................................. [ 39%]
+........................................................................ [ 41%]
+........................................................................ [ 43%]
+........................................................................ [ 45%]
+........................................................................ [ 47%]
+........................................................................ [ 50%]
+........................................................................ [ 52%]
+........................................................................ [ 54%]
+........................................................................ [ 56%]
+........................................................................ [ 58%]
+........................................................................ [ 60%]
+........................................................................ [ 63%]
+........................................................................ [ 65%]
+........................................................................ [ 67%]
+........................................................................ [ 69%]
+........................................................................ [ 71%]
+........................................................................ [ 73%]
+........................................................................ [ 76%]
+........................................................................ [ 78%]
+........................................................................ [ 80%]
+........................................................................ [ 82%]
+........................................................................ [ 84%]
+........................................................................ [ 87%]
+........................................................................ [ 89%]
+........................................................................ [ 91%]
+........................................................................ [ 93%]
+........................................................................ [ 95%]
+.....................F.................................................. [ 97%]
+......................................................................   [100%]
+=================================== FAILURES ===================================
+_ test_installed_partial_lean_failures_preserve_schema_valid_report[malformed-malformed helper JSON frame] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1362/test_installed_partial_lean_fa0')
+mode = 'malformed', diagnostic = 'malformed helper JSON frame'
+
+    @pytest.mark.parametrize(
+        ("mode", "diagnostic"),
+        [
+            ("malformed", "malformed helper JSON frame"),
+            ("timeout", "exceeded its configured deadline"),
+        ],
+    )
+    def test_installed_partial_lean_failures_preserve_schema_valid_report(
+        tmp_path: Path,
+        mode: str,
+        diagnostic: str,
+    ) -> None:
+        repo_root, fake_bin = build_fixture(tmp_path, "exit 0")
+        install_fake_lean_helper(
+            repo_root,
+            fake_bin,
+            failing_batch_lake_script(mode),
+        )
+        output = tmp_path / f"lean-{mode}.json"
+    
+        result = run_build(
+            repo_root,
+            fake_bin,
+            "--extraction-backend",
+            "lean",
+            "--lean-timeout",
+            "0.1",
+            "--format",
+            "json",
+            "--output",
+            str(output),
+        )
+    
+        assert result.returncode == 1
+        assert result.stdout == ""
+        payload = json.loads(output.read_text(encoding="utf-8"))
+        Draft202012Validator(load_report_v3_schema()).validate(payload)
+        phase = payload["phases"]["lean_extraction"]
+        assert phase["status"] == "partial"
+        assert phase["disposition"] == "required-rejection"
+>       assert diagnostic in json.dumps(payload)
+E       assert 'malformed helper JSON frame' in '{"coverage": {"collections": {"declaration_graph.declarations": {"analysisFingerprint": "sha256:677d4a71931a060975095...rget environments and may execute imported initializers; do not use it as safe analysis of an untrusted repository."]}'
+E        +  where '{"coverage": {"collections": {"declaration_graph.declarations": {"analysisFingerprint": "sha256:677d4a71931a060975095...rget environments and may execute imported initializers; do not use it as safe analysis of an untrusted repository."]}' = <function dumps at 0x7db8636def20>({'coverage': {'collections': {'declaration_graph.declarations': {'analysisFingerprint': 'sha256:677d4a71931a0609750958...0/target/Tiny.lean', 'analysis_root_module': 'Tiny', 'extraction_backend': 'lean', 'generated_at_utc': None, ...}, ...})
+E        +    where <function dumps at 0x7db8636def20> = json.dumps
+
+tests/test_installed_cli_contract.py:874: AssertionError
+__________ test_timeout_preserves_prefix_and_kills_helper_descendant ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1362/test_timeout_preserves_prefix_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7db85e3027d0>
+
+    def test_timeout_preserves_prefix_and_kills_helper_descendant(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+    ) -> None:
+        repo, helper, modules, requested = named_runtime_fixture(tmp_path, ("Pkg.A", "Pkg.B"))
+        child_pid = tmp_path / "child.pid"
+        install_fake_lake(tmp_path, monkeypatch)
+        monkeypatch.setenv("LADON_FAKE_HELPER_MODE", "timeout")
+        monkeypatch.setenv("LADON_FAKE_CHILD_PID", str(child_pid))
+    
+        result = execute_lean_runtime(
+            repo_root=repo,
+            helper_path=helper,
+            requested=requested,
+            modules=modules,
+            cache_dir=None,
+            config=LeanRuntimeConfig(batch_size=2, timeout_seconds=0.3),
+        )
+    
+>       assert list(result.payloads) == ["Pkg.A"]
+E       AssertionError: assert [] == ['Pkg.A']
+E         
+E         Right contains one more item: 'Pkg.A'
+E         Use -v to get more diff
+
+tests/test_lean_runtime.py:220: AssertionError
+______________ test_target_process_timeout_kills_descendant_group ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1362/test_target_process_timeout_ki0')
+
+    def test_target_process_timeout_kills_descendant_group(tmp_path: Path) -> None:
+        child_pid_path = tmp_path / "child.pid"
+        program = (
+            "import pathlib, subprocess, sys, time; "
+            "child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)']); "
+            f"pathlib.Path({str(child_pid_path)!r}).write_text(str(child.pid)); "
+            "time.sleep(60)"
+        )
+    
+        result = run_target_process(
+            [sys.executable, "-c", program],
+            cwd=tmp_path,
+            timeout_seconds=0.3,
+            terminate_grace_seconds=0.3,
+        )
+    
+        assert result.timed_out is True
+        assert result.succeeded is False
+        child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+>       assert process_is_live(child_pid) is False
+E       assert True is False
+E        +  where True = process_is_live(2144814)
+
+tests/test_process_supervisor.py:56: AssertionError
+____________ test_non_streaming_cancellation_reaps_descendant_group ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1362/test_non_streaming_cancellatio0')
+
+    def test_non_streaming_cancellation_reaps_descendant_group(
+        tmp_path: Path,
+    ) -> None:
+        child_pid_path = tmp_path / "cancelled-child.pid"
+        program = (
+            "import pathlib, subprocess, sys, time; "
+            "child = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)']); "
+            f"pathlib.Path({str(child_pid_path)!r}).write_text(str(child.pid)); "
+            "time.sleep(60)"
+        )
+        cancel = threading.Event()
+        timer = threading.Timer(0.15, cancel.set)
+        timer.start()
+        try:
+            with pytest.raises(ProcessCancelled):
+                run_target_process(
+                    [sys.executable, "-c", program],
+                    cwd=tmp_path,
+                    timeout_seconds=3,
+                    cancel_event=cancel,
+                    terminate_grace_seconds=0.1,
+                )
+        finally:
+            timer.cancel()
+    
+        child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+>       assert process_is_live(child_pid) is False
+E       assert True is False
+E        +  where True = process_is_live(2144872)
+
+tests/test_process_supervisor.py:220: AssertionError
+_____________ test_lake_build_cancellation_reaps_its_process_group _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1362/test_lake_build_cancellation_r0')
+
+    def test_lake_build_cancellation_reaps_its_process_group(
+        tmp_path: Path,
+    ) -> None:
+        child_pid_path = tmp_path / "build-child.pid"
+        lake = fake_lake(
+            tmp_path,
+            f"sleep 60 & echo $! > {child_pid_path}; wait",
+        )
+        (tmp_path / "lakefile.lean").write_text("package Tiny\n", encoding="utf-8")
+        cancel = threading.Event()
+        timer = threading.Timer(0.2, cancel.set)
+        timer.start()
+        try:
+            with pytest.raises(ProcessCancelled):
+                run_lake_build(
+                    tmp_path,
+                    lake_executable=str(lake),
+                    timeout_seconds=3,
+                    cancel_event=cancel,
+                )
+        finally:
+            timer.cancel()
+    
+        child_pid = int(child_pid_path.read_text(encoding="utf-8"))
+>       assert process_is_live(child_pid) is False
+E       assert True is False
+E        +  where True = process_is_live(2159292)
+
+tests/test_target_build.py:105: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_installed_cli_contract.py::test_installed_partial_lean_failures_preserve_schema_valid_report[malformed-malformed helper JSON frame]
+FAILED tests/test_lean_runtime.py::test_timeout_preserves_prefix_and_kills_helper_descendant
+FAILED tests/test_process_supervisor.py::test_target_process_timeout_kills_descendant_group
+FAILED tests/test_process_supervisor.py::test_non_streaming_cancellation_reaps_descendant_group
+FAILED tests/test_target_build.py::test_lake_build_cancellation_reaps_its_process_group
+5 failed, 3305 passed in 871.80s (0:14:31)

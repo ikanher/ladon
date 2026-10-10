@@ -1,0 +1,136 @@
+FF.FFF.FFF                                                               [100%]
+=================================== FAILURES ===================================
+__ test_consecutive_and_nested_let_initializers_survive_in_lexical_signature ___
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1331/test_consecutive_and_nested_le0')
+
+    def test_consecutive_and_nested_let_initializers_survive_in_lexical_signature(tmp_path: Path) -> None:
+        repo = repo_at(
+            tmp_path / "repo",
+            """theorem consecutive (x : Nat) : let first := x + 1; let second := first + 1; second > x := by
+      omega
+    
+    theorem nested (x : Nat) : let result := (let inner := x + 1; inner + 1); result > x := by
+      omega
+    """,
+        )
+        index = build_proof_search_index(repo).index_path
+        consecutive = declaration_type(index, "consecutive")
+        nested = declaration_type(index, "nested")
+>       assert consecutive is not None and "first := x + 1" in consecutive
+E       AssertionError: assert ('(x : Nat) : let first' is not None and 'first := x + 1' in '(x : Nat) : let first')
+
+tests/test_lexical_let_signatures.py:34: AssertionError
+_______________ test_binder_default_does_not_cut_off_conclusion ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1331/test_binder_default_does_not_c0')
+
+    def test_binder_default_does_not_cut_off_conclusion(tmp_path: Path) -> None:
+        repo = repo_at(
+            tmp_path / "repo",
+            "theorem withDefault (x : Nat := 0) : TargetSymbol x := by\n  exact trivial\n",
+        )
+        index = build_proof_search_index(repo).index_path
+        signature = declaration_type(index, "withDefault")
+>       assert signature is not None and "TargetSymbol x" in signature
+E       AssertionError: assert ('(x : Nat' is not None and 'TargetSymbol x' in '(x : Nat')
+
+tests/test_lexical_let_signatures.py:46: AssertionError
+________________ test_let_conclusion_is_searchable_through_cli _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1331/test_let_conclusion_is_searcha0')
+capsys = <_pytest.capture.CaptureFixture object at 0x74e034319990>
+
+    def test_let_conclusion_is_searchable_through_cli(tmp_path: Path, capsys) -> None:
+        import json
+        from ladon.cli import main
+    
+        repo = repo_at(tmp_path / "repo", "theorem scoped (x : Nat) : let a := x; FinalMarker a := by\n  exact BodyMarker\n")
+        build_proof_search_index(repo)
+        assert main(["proof-search", "search", "type-text", "--repo-root", str(repo), "--pattern", "FinalMarker", "--format", "json"]) == 0
+        payload = json.loads(capsys.readouterr().out)
+>       assert [row["candidateName"] for row in payload["results"]] == ["scoped"]
+E       AssertionError: assert [] == ['scoped']
+E         
+E         Right contains one more item: 'scoped'
+E         Use -v to get more diff
+
+tests/test_lexical_let_signatures.py:69: AssertionError
+___________ test_masked_assignments_do_not_change_signature_boundary ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1331/test_masked_assignments_do_not0')
+
+    def test_masked_assignments_do_not_change_signature_boundary(tmp_path: Path) -> None:
+        repo = repo_at(tmp_path / "repo", 'theorem masked : let text := ":= by"; /- := -/ FinalMarker text := by\n  exact BodyMarker\n')
+        signature = declaration_type(build_proof_search_index(repo).index_path, "masked")
+>       assert signature is not None and "FinalMarker text" in signature
+E       AssertionError: assert (': let text' is not None and 'FinalMarker text' in ': let text')
+
+tests/test_lexical_let_signatures.py:75: AssertionError
+____________ test_unbalanced_signature_is_unavailable_with_omission ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1331/test_unbalanced_signature_is_u0')
+
+    def test_unbalanced_signature_is_unavailable_with_omission(tmp_path: Path) -> None:
+        repo = repo_at(tmp_path / "repo", "theorem uncertain (x : Nat : FinalMarker := by\n  exact BodyMarker\n")
+        index = build_proof_search_index(repo).index_path
+        with sqlite3.connect(index) as db:
+>           assert db.execute("SELECT type_status, type_text FROM declarations").fetchone() == ("unavailable", None)
+E           AssertionError: assert ('lexical-sig... FinalMarker') == ('unavailable', None)
+E             
+E             At index 0 diff: 'lexical-signature' != 'unavailable'
+E             Use -v to get more diff
+
+tests/test_lexical_let_signatures.py:83: AssertionError
+________ test_prior_extractor_is_stale_and_recovers_without_source_edit ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1331/test_prior_extractor_is_stale_0')
+
+    def test_prior_extractor_is_stale_and_recovers_without_source_edit(tmp_path: Path) -> None:
+        index = prior_index(tmp_path)
+>       assert inspect_proof_search_index(tmp_path)["freshness"] == "stale-configuration"
+E       AssertionError: assert 'fresh' == 'stale-configuration'
+E         
+E         - stale-configuration
+E         + fresh
+
+tests/test_lexical_extractor_recovery.py:28: AssertionError
+______ test_extractor_recovery_archives_retained_rows_before_replacement _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1331/test_extractor_recovery_archiv0')
+
+    def test_extractor_recovery_archives_retained_rows_before_replacement(tmp_path: Path) -> None:
+        index = prior_index(tmp_path, retained=True)
+        with sqlite3.connect(index) as db:
+            expected = db.execute("SELECT * FROM binders").fetchall()
+        result = update_proof_search_index(tmp_path).payload
+>       assert result["status"] == "complete"
+E       AssertionError: assert 'unchanged' == 'complete'
+E         
+E         - complete
+E         + unchanged
+
+tests/test_lexical_extractor_recovery.py:46: AssertionError
+____________ test_unknown_helper_is_rejected_without_changing_index ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1331/test_unknown_helper_is_rejecte0')
+
+    def test_unknown_helper_is_rejected_without_changing_index(tmp_path: Path) -> None:
+        index = prior_index(tmp_path)
+        with sqlite3.connect(index) as db:
+            db.execute("UPDATE metadata SET value='unknown-extractor' WHERE key='helperIdentity'")
+        before = index.read_bytes()
+>       with pytest.raises(ProofSearchIndexError) as raised:
+E       Failed: DID NOT RAISE <class 'ladon.proof_search_index.ProofSearchIndexError'>
+
+tests/test_lexical_extractor_recovery.py:61: Failed
+=========================== short test summary info ============================
+FAILED tests/test_lexical_let_signatures.py::test_consecutive_and_nested_let_initializers_survive_in_lexical_signature
+FAILED tests/test_lexical_let_signatures.py::test_binder_default_does_not_cut_off_conclusion
+FAILED tests/test_lexical_let_signatures.py::test_let_conclusion_is_searchable_through_cli
+FAILED tests/test_lexical_let_signatures.py::test_masked_assignments_do_not_change_signature_boundary
+FAILED tests/test_lexical_let_signatures.py::test_unbalanced_signature_is_unavailable_with_omission
+FAILED tests/test_lexical_extractor_recovery.py::test_prior_extractor_is_stale_and_recovers_without_source_edit
+FAILED tests/test_lexical_extractor_recovery.py::test_extractor_recovery_archives_retained_rows_before_replacement
+FAILED tests/test_lexical_extractor_recovery.py::test_unknown_helper_is_rejected_without_changing_index
+8 failed, 2 passed in 1.01s

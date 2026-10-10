@@ -1,0 +1,160 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________ test_unavailable_omission_is_replaced_with_its_module _____________
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-1345/test_unavailable_omission_is_r0')
+destination = PosixPath('/tmp/pytest-of-codex/pytest-1345/test_unavailable_omission_is_r0/.ladon/index/proof-search.sqlite')
+old = <sqlite3.Connection object at 0x787f08329a80>
+snapshot = RepositorySnapshot(repo_root=PosixPath('/tmp/pytest-of-codex/pytest-1345/test_unavailable_omission_is_r0'), layout=Lea... ('maxFiles', 256), ('maxMetadataBytes', 16384), ('maxTotalBytes', 67108864)), relationships=()), proofir_artifacts=())
+changed = {'Main'}, removed = set(), max_index_bytes = 1073741824, history = []
+
+    def _publish_copy(root, destination, old, snapshot, changed, removed, max_index_bytes, history):
+        temporary = _temporary_database_path(destination)
+        try:
+>           counts = _populate_updated_copy(
+                temporary, old, snapshot, changed, removed, max_index_bytes, history
+            )
+
+src/ladon/proof_search_index_update.py:183: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_search_index_update.py:225: in _populate_updated_copy
+    _insert_source(copy, source)
+src/ladon/proof_search_index.py:791: in _insert_source
+    structure_count, truncation_count = _insert_declarations(
+src/ladon/proof_search_index.py:870: in _insert_declarations
+    structure, truncated = _insert_one_declaration(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x787f08329f30>
+source = IndexedSource(module='Main', path=PosixPath('/tmp/pytest-of-codex/pytest-1345/test_unavailable_omission_is_r0/Main.lea...entional', generated=False, sha256='bd53227c9551ee868cb610160f6ea2a4e680256fe50ac6db1413aab757126afe', source_bytes=47)
+text = 'theorem t (x : Int : FinalMarker := by trivial\n'
+masked = 'theorem t (x : Int : FinalMarker := by trivial'
+declaration = LeanTextDeclaration(name='t', kind='theorem', line=1, column=9, start_offset=8, end_offset=9, identifier='ladon.lexica... dependency fact, theorem equivalence, or theorem verdict.', scope_context_id=None, scope_context_status='unavailable')
+
+    def _insert_one_declaration(
+        connection: sqlite3.Connection,
+        source: IndexedSource,
+        text: str,
+        masked: str,
+        declaration: Any,
+    ) -> tuple[bool, bool]:
+        candidate = declaration.candidate_name
+        type_text, type_bytes, type_truncated = _lexical_type_text(text, masked, declaration)
+        structure_name = candidate if declaration.kind in {"structure", "class"} else None
+        connection.execute(
+            """
+            INSERT INTO declarations(
+                id, name, candidate_name, name_casefold, name_segments, namespace, kind, module, package,
+                path, line, column_number, start_offset, end_offset,
+                block_sha256, type_text, type_text_bytes, type_text_truncated,
+                type_status, authority, privacy, locality, structure_name,
+                doc_text, rendered_type, conclusion_text
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                declaration.identifier,
+                declaration.name,
+                candidate,
+                name_casefold(candidate or declaration.name),
+                semantic_name_segments_v1(candidate or declaration.name),
+                ".".join(declaration.namespace_stack),
+                declaration.kind,
+                source.module,
+                source.package,
+                source.relative_path,
+                declaration.line,
+                declaration.column,
+                declaration.start_offset,
+                declaration.end_offset,
+                declaration.normalized_block_sha256,
+                type_text,
+                type_bytes,
+                int(type_truncated),
+                "lexical-signature" if type_text else "unavailable",
+                "lexical_text",
+                declaration.privacy,
+                declaration.locality,
+                structure_name,
+                "",
+                type_text or "",
+                type_text or "",
+            ),
+        )
+        if type_truncated:
+            connection.execute(
+                "INSERT INTO omissions VALUES ('declaration', ?, 'lexical_type_truncated', ?)",
+                (
+                    declaration.identifier,
+                    json.dumps(
+                        {"observedBytes": type_bytes, "storedBytes": _MAX_LEXICAL_TYPE_BYTES},
+                        sort_keys=True,
+                        separators=(",", ":"),
+                    ),
+                ),
+            )
+        elif type_text is None:
+>           connection.execute(
+                "INSERT INTO omissions VALUES ('declaration', ?, 'lexical_signature_unavailable', ?)",
+                (declaration.identifier, "{}"),
+            )
+E           sqlite3.IntegrityError: UNIQUE constraint failed: omissions.kind, omissions.subject, omissions.reason
+
+src/ladon/proof_search_index.py:940: IntegrityError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1345/test_unavailable_omission_is_r0')
+
+    def test_unavailable_omission_is_replaced_with_its_module(tmp_path):
+        source = tmp_path / 'Main.lean'
+        source.write_text('theorem t (x : Nat : FinalMarker := by trivial\n')
+        index = build_proof_search_index(tmp_path).index_path
+        source.write_text('theorem t (x : Int : FinalMarker := by trivial\n')
+>       assert update_proof_search_index(tmp_path).payload['status'] == 'complete'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_lexical_signature_omission_update.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_search_index.py:287: in update_proof_search_index
+    return update(repo_root, index_path=index_path, max_history_bytes=max_history_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_search_index_update.py:103: in update_proof_search_index
+    counts, temporary_bytes = _publish_copy(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-1345/test_unavailable_omission_is_r0')
+destination = PosixPath('/tmp/pytest-of-codex/pytest-1345/test_unavailable_omission_is_r0/.ladon/index/proof-search.sqlite')
+old = <sqlite3.Connection object at 0x787f08329a80>
+snapshot = RepositorySnapshot(repo_root=PosixPath('/tmp/pytest-of-codex/pytest-1345/test_unavailable_omission_is_r0'), layout=Lea... ('maxFiles', 256), ('maxMetadataBytes', 16384), ('maxTotalBytes', 67108864)), relationships=()), proofir_artifacts=())
+changed = {'Main'}, removed = set(), max_index_bytes = 1073741824, history = []
+
+    def _publish_copy(root, destination, old, snapshot, changed, removed, max_index_bytes, history):
+        temporary = _temporary_database_path(destination)
+        try:
+            counts = _populate_updated_copy(
+                temporary, old, snapshot, changed, removed, max_index_bytes, history
+            )
+            if temporary.stat().st_size > max_index_bytes:
+                raise _index_storage_limit_error(max_index_bytes)
+            temporary_bytes = temporary.stat().st_size
+            _ensure_source_stable(root, snapshot)
+            durable_replace(temporary, destination)
+            return counts, temporary_bytes
+        except OSError as error:
+            uncertain = not temporary.exists()
+            raise ProofSearchIndexError(
+                f"index publication {'durability is uncertain' if uncertain else 'failed'}: {error}",
+                exit_class="operational",
+                code="publication-uncertain" if uncertain else "publication-failed",
+                remediation="Inspect the active generation and retained history before retrying.",
+            ) from error
+        except sqlite3.Error as exc:
+            if "database or disk is full" in str(exc).lower():
+                raise _index_storage_limit_error(max_index_bytes) from exc
+>           raise ProofSearchIndexError(f"SQLite index update failed: {exc}") from exc
+E           ladon.proof_search_index.ProofSearchIndexError: SQLite index update failed: UNIQUE constraint failed: omissions.kind, omissions.subject, omissions.reason
+
+src/ladon/proof_search_index_update.py:203: ProofSearchIndexError
+=========================== short test summary info ============================
+FAILED tests/test_lexical_signature_omission_update.py::test_unavailable_omission_is_replaced_with_its_module
+1 failed in 0.13s

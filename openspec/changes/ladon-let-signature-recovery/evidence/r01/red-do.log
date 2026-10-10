@@ -1,0 +1,44 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___________ test_unsupported_do_binding_never_captures_proof[\u2190] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1350/test_unsupported_do_binding_ne0')
+binding = '←'
+
+    @pytest.mark.parametrize('binding', ['←', '<-'])
+    def test_unsupported_do_binding_never_captures_proof(tmp_path, binding):
+        (tmp_path / 'Main.lean').write_text(
+            f'theorem t : do let x {binding} action; pure (FinalMarker x) := by exact ProofLeakMarker\n'
+        )
+        index = build_proof_search_index(tmp_path).index_path
+        with sqlite3.connect(index) as db:
+>           assert db.execute('SELECT type_text, type_status FROM declarations').fetchone() == (None, 'unavailable')
+E           AssertionError: assert (': do let x ...al-signature') == (None, 'unavailable')
+E             
+E             At index 0 diff: ': do let x ← action; pure (FinalMarker x) := by exact ProofLeakMarker' != None
+E             Use -v to get more diff
+
+tests/test_lexical_signature_do.py:17: AssertionError
+_____________ test_unsupported_do_binding_never_captures_proof[<-] _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1350/test_unsupported_do_binding_ne1')
+binding = '<-'
+
+    @pytest.mark.parametrize('binding', ['←', '<-'])
+    def test_unsupported_do_binding_never_captures_proof(tmp_path, binding):
+        (tmp_path / 'Main.lean').write_text(
+            f'theorem t : do let x {binding} action; pure (FinalMarker x) := by exact ProofLeakMarker\n'
+        )
+        index = build_proof_search_index(tmp_path).index_path
+        with sqlite3.connect(index) as db:
+>           assert db.execute('SELECT type_text, type_status FROM declarations').fetchone() == (None, 'unavailable')
+E           AssertionError: assert (': do let x ...al-signature') == (None, 'unavailable')
+E             
+E             At index 0 diff: ': do let x <- action; pure (FinalMarker x) := by exact ProofLeakMarker' != None
+E             Use -v to get more diff
+
+tests/test_lexical_signature_do.py:17: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_lexical_signature_do.py::test_unsupported_do_binding_never_captures_proof[\u2190]
+FAILED tests/test_lexical_signature_do.py::test_unsupported_do_binding_never_captures_proof[<-]
+2 failed in 0.11s

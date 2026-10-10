@@ -1,0 +1,56 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_installed_partial_lean_failures_preserve_schema_valid_report[malformed-malformed helper JSON frame] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1364/test_installed_partial_lean_fa0')
+mode = 'malformed', diagnostic = 'malformed helper JSON frame'
+
+    @pytest.mark.parametrize(
+        ("mode", "diagnostic"),
+        [
+            ("malformed", "malformed helper JSON frame"),
+            ("timeout", "exceeded its configured deadline"),
+        ],
+    )
+    def test_installed_partial_lean_failures_preserve_schema_valid_report(
+        tmp_path: Path,
+        mode: str,
+        diagnostic: str,
+    ) -> None:
+        repo_root, fake_bin = build_fixture(tmp_path, "exit 0")
+        install_fake_lean_helper(
+            repo_root,
+            fake_bin,
+            failing_batch_lake_script(mode),
+        )
+        output = tmp_path / f"lean-{mode}.json"
+    
+        result = run_build(
+            repo_root,
+            fake_bin,
+            "--extraction-backend",
+            "lean",
+            "--lean-timeout",
+            "0.1",
+            "--format",
+            "json",
+            "--output",
+            str(output),
+        )
+    
+        assert result.returncode == 1
+        assert result.stdout == ""
+        payload = json.loads(output.read_text(encoding="utf-8"))
+        Draft202012Validator(load_report_v3_schema()).validate(payload)
+        phase = payload["phases"]["lean_extraction"]
+        assert phase["status"] == "partial"
+        assert phase["disposition"] == "required-rejection"
+>       assert diagnostic in json.dumps(payload)
+E       assert 'malformed helper JSON frame' in '{"coverage": {"collections": {"declaration_graph.declarations": {"analysisFingerprint": "sha256:185319b219b8c1192554b...rget environments and may execute imported initializers; do not use it as safe analysis of an untrusted repository."]}'
+E        +  where '{"coverage": {"collections": {"declaration_graph.declarations": {"analysisFingerprint": "sha256:185319b219b8c1192554b...rget environments and may execute imported initializers; do not use it as safe analysis of an untrusted repository."]}' = <function dumps at 0x7e671298ee80>({'coverage': {'collections': {'declaration_graph.declarations': {'analysisFingerprint': 'sha256:185319b219b8c1192554b7...0/target/Tiny.lean', 'analysis_root_module': 'Tiny', 'extraction_backend': 'lean', 'generated_at_utc': None, ...}, ...})
+E        +    where <function dumps at 0x7e671298ee80> = json.dumps
+
+tests/test_installed_cli_contract.py:874: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_installed_cli_contract.py::test_installed_partial_lean_failures_preserve_schema_valid_report[malformed-malformed helper JSON frame]
+1 failed, 1 passed in 2.76s

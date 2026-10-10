@@ -1,0 +1,103 @@
+3.11 1501 passed in 344.44s (0:05:44)
+Traceback (most recent call last):
+  File "/home/codex/projects/ladon/openspec/changes/ladon-let-signature-recovery/evidence/r01/installed-check.py", line 72, in <module>
+    main()
+  File "/home/codex/projects/ladon/openspec/changes/ladon-let-signature-recovery/evidence/r01/installed-check.py", line 63, in main
+    log = run([str(python), '-m', 'pytest', '-q', *TESTS], environment=env)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/openspec/changes/ladon-let-signature-recovery/evidence/r01/installed-check.py", line 25, in run
+    raise RuntimeError(f'{command}: {result.stdout[-5000:]} {result.stderr[-3000:]}')
+RuntimeError: ['/home/codex/projects/ladon/temp/let-signature-installed/3.12/bin/python', '-m', 'pytest', '-q', '/home/codex/projects/ladon/tests/test_canonical_population_boundaries.py', '/home/codex/projects/ladon/tests/test_canonical_population_reuse.py', '/home/codex/projects/ladon/tests/test_canonical_receipt_reuse.py', '/home/codex/projects/ladon/tests/test_evidence_receipt.py', '/home/codex/projects/ladon/tests/test_evidence_receipt_readers.py', '/home/codex/projects/ladon/tests/test_index_build_progress_failures.py', '/home/codex/projects/ladon/tests/test_index_build_stage_progress.py', '/home/codex/projects/ladon/tests/test_index_history_audit_controls.py', '/home/codex/projects/ladon/tests/test_index_history_contracts.py', '/home/codex/projects/ladon/tests/test_index_history_hardlink.py', '/home/codex/projects/ladon/tests/test_index_history_immutable_destination.py', '/home/codex/projects/ladon/tests/test_index_history_offline.py', '/home/codex/projects/ladon/tests/test_index_history_prune_unknown.py', '/home/codex/projects/ladon/tests/test_index_history_publication.py', '/home/codex/projects/ladon/tests/test_index_history_recovery.py', '/home/codex/projects/ladon/tests/test_installed_cli_contract.py', '/home/codex/projects/ladon/tests/test_lexical_extractor_recovery.py', '/home/codex/projects/ladon/tests/test_lexical_let_layout.py', '/home/codex/projects/ladon/tests/test_lexical_let_signatures.py', '/home/codex/projects/ladon/tests/test_lexical_signature_bodyless.py', '/home/codex/projects/ladon/tests/test_lexical_signature_boundaries.py', '/home/codex/projects/ladon/tests/test_lexical_signature_do.py', '/home/codex/projects/ladon/tests/test_lexical_signature_missing_assignment.py', '/home/codex/projects/ladon/tests/test_lexical_signature_omission_update.py', '/home/codex/projects/ladon/tests/test_proof_search_active_index.py', '/home/codex/projects/ladon/tests/test_proof_search_baselines.py', '/home/codex/projects/ladon/tests/test_proof_search_cancellation_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_constructor.py', '/home/codex/projects/ladon/tests/test_proof_search_consumers.py', '/home/codex/projects/ladon/tests/test_proof_search_index.py', '/home/codex/projects/ladon/tests/test_proof_search_installed_v3_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_invocation_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_lifecycle.py', '/home/codex/projects/ladon/tests/test_proof_search_name_v2.py', '/home/codex/projects/ladon/tests/test_proof_search_operational_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_progress_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_type.py', '/home/codex/projects/ladon/tests/test_proofir_attachment_policy.py', '/home/codex/projects/ladon/tests/test_proofir_calibration.py', '/home/codex/projects/ladon/tests/test_proofir_catalog.py', '/home/codex/projects/ladon/tests/test_proofir_catalog_schema.py', '/home/codex/projects/ladon/tests/test_proofir_clean_break.py', '/home/codex/projects/ladon/tests/test_proofir_cross_language_parity.py', '/home/codex/projects/ladon/tests/test_proofir_declaration_application_identity.py', '/home/codex/projects/ladon/tests/test_proofir_derivation.py', '/home/codex/projects/ladon/tests/test_proofir_derivation_queries.py', '/home/codex/projects/ladon/tests/test_proofir_derivation_scc.py', '/home/codex/projects/ladon/tests/test_proofir_evidence_cli.py', '/home/codex/projects/ladon/tests/test_proofir_fingerprint_registry.py', '/home/codex/projects/ladon/tests/test_proofir_graph.py', '/home/codex/projects/ladon/tests/test_proofir_identity.py', '/home/codex/projects/ladon/tests/test_proofir_identity_models.py', '/home/codex/projects/ladon/tests/test_proofir_incremental_resolution.py', '/home/codex/projects/ladon/tests/test_proofir_link_observations.py', '/home/codex/projects/ladon/tests/test_proofir_native_v3_contract.py', '/home/codex/projects/ladon/tests/test_proofir_observations.py', '/home/codex/projects/ladon/tests/test_proofir_packet_manifest.py', '/home/codex/projects/ladon/tests/test_proofir_payload_schema.py', '/home/codex/projects/ladon/tests/test_proofir_program_controls.py', '/home/codex/projects/ladon/tests/test_proofir_projection_corpus.py', '/home/codex/projects/ladon/tests/test_proofir_publication_lock_ownership.py', '/home/codex/projects/ladon/tests/test_proofir_query_contracts.py', '/home/codex/projects/ladon/tests/test_proofir_quux_boundary.py', '/home/codex/projects/ladon/tests/test_proofir_result_dimensions.py', '/home/codex/projects/ladon/tests/test_proofir_sqlite_native_contract.py', '/home/codex/projects/ladon/tests/test_proofir_sqlite_rows.py', '/home/codex/projects/ladon/tests/test_proofir_sqlite_wave3_contract.py', '/home/codex/projects/ladon/tests/test_proofir_v3.py', '/home/codex/projects/ladon/tests/test_proofir_v3_cli.py', '/home/codex/projects/ladon/tests/test_proofir_v3_cli_contract.py', '/home/codex/projects/ladon/tests/test_proofir_v3_corpus_complete.py', '/home/codex/projects/ladon/tests/test_proofir_v3_hardening.py', '/home/codex/projects/ladon/tests/test_proofir_v3_installed_cli.py', '/home/codex/projects/ladon/tests/test_proofir_v3_installed_workflow_contract.py', '/home/codex/projects/ladon/tests/test_proofir_v3_integration.py', '/home/codex/projects/ladon/tests/test_proofir_v3_r03_adversarial_vectors.py', '/home/codex/projects/ladon/tests/test_proofir_v3_result_schema_contract.py', '/home/codex/projects/ladon/tests/test_proofir_v3_subject_scope.py', '/home/codex/projects/ladon/tests/test_proofir_v3_terminal_contract.py', '/home/codex/projects/ladon/tests/test_proofir_validation.py', '/home/codex/projects/ladon/tests/test_proofir_validation_parity.py', '/home/codex/projects/ladon/tests/test_result_assessments.py', '/home/codex/projects/ladon/tests/test_result_bundle_archive.py', '/home/codex/projects/ladon/tests/test_result_bundle_atomic.py', '/home/codex/projects/ladon/tests/test_result_bundle_hardening.py', '/home/codex/projects/ladon/tests/test_result_bundle_preparation.py', '/home/codex/projects/ladon/tests/test_result_bundle_schema.py', '/home/codex/projects/ladon/tests/test_result_bundle_views.py', '/home/codex/projects/ladon/tests/test_result_bundle_zip_descriptor.py', '/home/codex/projects/ladon/tests/test_result_bundle_zip_layout.py', '/home/codex/projects/ladon/tests/test_result_bundle_zip_volume.py', '/home/codex/projects/ladon/tests/test_result_bundles.py', '/home/codex/projects/ladon/tests/test_result_canonical_reuse.py', '/home/codex/projects/ladon/tests/test_result_checking.py', '/home/codex/projects/ladon/tests/test_result_cli.py', '/home/codex/projects/ladon/tests/test_result_component_scope.py', '/home/codex/projects/ladon/tests/test_result_component_scope_default.py', '/home/codex/projects/ladon/tests/test_result_component_scope_references.py', '/home/codex/projects/ladon/tests/test_result_evidence_section.py', '/home/codex/projects/ladon/tests/test_result_excerpt_route.py', '/home/codex/projects/ladon/tests/test_result_exposition_view_contract.py', '/home/codex/projects/ladon/tests/test_result_guide_cli.py', '/home/codex/projects/ladon/tests/test_result_guide_currency.py', '/home/codex/projects/ladon/tests/test_result_guide_inputs.py', '/home/codex/projects/ladon/tests/test_result_guide_pagination.py', '/home/codex/projects/ladon/tests/test_result_guide_schema.py', '/home/codex/projects/ladon/tests/test_result_guides.py', '/home/codex/projects/ladon/tests/test_result_inspection.py', '/home/codex/projects/ladon/tests/test_result_inspection_contract.py', '/home/codex/projects/ladon/tests/test_result_inspection_hardening.py', '/home/codex/projects/ladon/tests/test_result_inspection_references.py', '/home/codex/projects/ladon/tests/test_result_lineage.py', '/home/codex/projects/ladon/tests/test_result_lineage_acquisition.py', '/home/codex/projects/ladon/tests/test_result_lineage_boundaries.py', '/home/codex/projects/ladon/tests/test_result_lineage_pagination.py', '/home/codex/projects/ladon/tests/test_result_lineage_schema.py', '/home/codex/projects/ladon/tests/test_result_lineage_store_contract.py', '/home/codex/projects/ladon/tests/test_result_manifest.py', '/home/codex/projects/ladon/tests/test_result_resolution.py', '/home/codex/projects/ladon/tests/test_result_subject_evidence.py', '/home/codex/projects/ladon/tests/test_semantic_adapter_registry.py', '/home/codex/projects/ladon/tests/test_semantic_application_binding_integration.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_compact.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_lean.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_ledger.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_names.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_rejections_text.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_v4.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_v4_boundaries.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_v4_dispatch.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_v4_text.py', '/home/codex/projects/ladon/tests/test_semantic_batch_invalid_sibling.py', '/home/codex/projects/ladon/tests/test_semantic_binding_projection.py', '/home/codex/projects/ladon/tests/test_semantic_build_mode.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_batch_worker.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_framed_protocol.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_lean_integration.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_residual_integration.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_security_contract.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_verifier.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_worker_v3_contract.py', '/home/codex/projects/ladon/tests/test_semantic_cli_projection.py', '/home/codex/projects/ladon/tests/test_semantic_context_dependencies.py', '/home/codex/projects/ladon/tests/test_semantic_context_protocol_marker.py', '/home/codex/projects/ladon/tests/test_semantic_context_rejected_protocol.py', '/home/codex/projects/ladon/tests/test_semantic_context_shadowing_fallback.py', '/home/codex/projects/ladon/tests/test_semantic_evidence_registry.py', '/home/codex/projects/ladon/tests/test_semantic_extraction_protocol.py', '/home/codex/projects/ladon/tests/test_semantic_lean_execution.py', '/home/codex/projects/ladon/tests/test_semantic_multiline_scratch_integration.py', '/home/codex/projects/ladon/tests/test_semantic_observation_closure.py', '/home/codex/projects/ladon/tests/test_semantic_projection_hardening.py', '/home/codex/projects/ladon/tests/test_semantic_residual_text.py', '/home/codex/projects/ladon/tests/test_semantic_result_delivery.py', '/home/codex/projects/ladon/tests/test_semantic_result_projection.py', '/home/codex/projects/ladon/tests/test_semantic_weak_receipt_boundary.py', '/home/codex/projects/ladon/tests/test_sqlite_publication.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_cli.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_hardening.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_integration.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_progress.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_projection.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_query.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_store.py']: ........................................................................ [  4%]
+........................................F............................... [  9%]
+........................................................................ [ 14%]
+........................................................................ [ 19%]
+........................................................................ [ 23%]
+........................................................................ [ 28%]
+........................................................................ [ 33%]
+........................................................................ [ 38%]
+........................................................................ [ 43%]
+........................................................................ [ 47%]
+........................................................................ [ 52%]
+........................................................................ [ 57%]
+........................................................................ [ 62%]
+........................................................................ [ 67%]
+........................................................................ [ 71%]
+........................................................................ [ 76%]
+........................................................................ [ 81%]
+........................................................................ [ 86%]
+........................................................................ [ 91%]
+........................................................................ [ 95%]
+.............................................................            [100%]
+=================================== FAILURES ===================================
+__________ test_installed_runset_cancellation_reaps_active_descendant __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1363/test_installed_runset_cancella0')
+
+    def test_installed_runset_cancellation_reaps_active_descendant(
+        tmp_path: Path,
+    ) -> None:
+        workspace = tmp_path / "workspace"
+        shutil.copytree(RUNSET_MANIFEST.parent, workspace)
+        manifest = workspace / RUNSET_MANIFEST.name
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        payload["entries"] = [payload["entries"][0]]
+        payload["entries"][0]["options"] = {"build": True}
+        manifest.write_text(json.dumps(payload), encoding="utf-8")
+        repository = workspace / "repository"
+        (repository / "lakefile.lean").write_text(
+            "package Fixture\n",
+            encoding="utf-8",
+        )
+        fake_bin = tmp_path / "bin"
+        fake_bin.mkdir()
+        child_pid_path = tmp_path / "runset-child.pid"
+        lake = fake_bin / "lake"
+        lake.write_text(
+            "#!/bin/sh\n"
+            f"sleep 60 & echo $! > {child_pid_path}\n"
+            "wait\n",
+            encoding="utf-8",
+        )
+        lake.chmod(lake.stat().st_mode | stat.S_IXUSR)
+        bundle_dir = tmp_path / "bundle"
+    
+        process = subprocess.Popen(
+            [
+                *analyzer_command(),
+                "runset",
+                "--manifest",
+                str(manifest),
+                "--bundle-dir",
+                str(bundle_dir),
+                "--no-resume",
+                "--progress",
+                "off",
+            ],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=environment_with_fake_bin(fake_bin),
+        )
+>       wait_for_path(child_pid_path)
+
+tests/test_installed_cli_contract.py:547: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-codex/pytest-1363/test_installed_runset_cancella0/runset-child.pid')
+
+    def wait_for_path(path: Path) -> None:
+        """Wait briefly for the fake build to publish its descendant PID."""
+    
+        deadline = time.monotonic() + 4
+        while time.monotonic() < deadline:
+            if path.exists():
+                return
+            time.sleep(0.01)
+>       raise AssertionError(f"timed out waiting for {path}")
+E       AssertionError: timed out waiting for /tmp/pytest-of-codex/pytest-1363/test_installed_runset_cancella0/runset-child.pid
+
+tests/test_installed_cli_contract.py:1056: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_installed_cli_contract.py::test_installed_runset_cancellation_reaps_active_descendant
+1 failed, 1500 passed in 255.89s (0:04:15)
+ 
