@@ -46,6 +46,7 @@ from ladon.proof_search_index import (
     capture_repository_snapshot,
 )
 from ladon.proof_search_retained import first_retained_evidence_table
+from ladon.proof_search_schema import PRIOR_LEXICAL_HELPER_IDENTITY, PROOF_SEARCH_HELPER_IDENTITY
 from ladon.sqlite_publication import durable_replace, release_publication_lock
 
 
@@ -71,10 +72,11 @@ def update_proof_search_index(
             base_generation = metadata.get("generationIdentity")
             old_sources = _stored_sources(old)
             changed, removed = _source_delta(snapshot, old_sources)
+            extractor_changed = metadata.get("helperIdentity") != PROOF_SEARCH_HELPER_IDENTITY
             history = read_history(old)
             validate_history(destination, history)
             enforce_history_budget(history_directory(destination), max_history_bytes)
-            if not changed and not removed:
+            if not _needs_publication(changed, removed, extractor_changed):
                 _ensure_source_stable(root, snapshot)
                 return IndexBuildResult({
                     "schema": PROOF_SEARCH_RESULT_SCHEMA, "operation": "update",
@@ -94,7 +96,7 @@ def update_proof_search_index(
                 entry["path"] = Path(entry["path"]).name
                 preserved.append(entry)
                 history = [row for row in history if row["snapshotId"] != entry["snapshotId"]] + preserved
-            recovery_modules = semantic_modules(old) - removed
+            recovery_modules = _recovery_modules(old, snapshot, removed, extractor_changed)
             max_index_bytes = _integer_metadata(metadata, "maxIndexBytes")
             if not max_index_bytes:
                 raise _full_build_required("base index has no stored size policy")
@@ -128,6 +130,17 @@ def update_proof_search_index(
         raise _full_build_required(f"base index is incompatible or unreadable: {exc}") from exc
     finally:
         release_publication_lock(lock)
+
+
+def _needs_publication(changed, removed, extractor_changed):
+    return bool(changed or removed or extractor_changed)
+
+
+def _recovery_modules(old, snapshot, removed, extractor_changed):
+    modules = semantic_modules(old) - removed
+    if extractor_changed:
+        modules |= {source.module for source in snapshot.sources}
+    return modules
 
 
 def _source_delta(snapshot, old_sources):
@@ -205,6 +218,10 @@ def _populate_updated_copy(temporary, old, snapshot, changed, removed, max_index
         # FTS5's external-content index has no deletion triggers.
         # Rebuild it after the affected declaration rows change.
         for module in sorted(changed | removed):
+            copy.execute(
+                "DELETE FROM omissions WHERE kind='declaration' AND subject IN "
+                "(SELECT id FROM declarations WHERE module=?)", (module,),
+            )
             copy.execute("DELETE FROM modules WHERE name=?", (module,))
         copy.execute("DELETE FROM symbols")
         for source in snapshot.sources:
@@ -244,6 +261,10 @@ def _require_compatible_base(metadata, snapshot, root: Path) -> None:
         raise _full_build_required("base index schema is incompatible")
     if metadata.get("repository") != str(root):
         raise _full_build_required("index belongs to another repository")
+    if metadata.get("helperIdentity") not in {
+        PROOF_SEARCH_HELPER_IDENTITY, PRIOR_LEXICAL_HELPER_IDENTITY,
+    }:
+        raise _full_build_required("base extractor identity is not supported")
     if metadata.get("toolchainIdentity") != snapshot.toolchain_identity or (
         metadata.get("configurationFingerprint") != snapshot.configuration_fingerprint
     ) or metadata.get("layoutStatus") != snapshot.layout.status:

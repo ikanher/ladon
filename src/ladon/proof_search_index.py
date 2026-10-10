@@ -15,7 +15,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import re
 import sqlite3
 import subprocess
 import tempfile
@@ -925,18 +924,7 @@ def _insert_one_declaration(
             type_text or "",
         ),
     )
-    if type_truncated:
-        connection.execute(
-            "INSERT INTO omissions VALUES ('declaration', ?, 'lexical_type_truncated', ?)",
-            (
-                declaration.identifier,
-                json.dumps(
-                    {"observedBytes": type_bytes, "storedBytes": _MAX_LEXICAL_TYPE_BYTES},
-                    sort_keys=True,
-                    separators=(",", ":"),
-                ),
-            ),
-        )
+    _insert_lexical_omission(connection, declaration.identifier, type_text, type_bytes, type_truncated)
     _insert_search_row(connection, declaration.identifier, candidate or declaration.name, type_text)
     if structure_name is not None:
         connection.execute(
@@ -944,6 +932,26 @@ def _insert_one_declaration(
             (declaration.identifier, structure_name, source.module),
         )
     return structure_name is not None, type_truncated
+
+
+def _insert_lexical_omission(connection, identifier, type_text, type_bytes, type_truncated):
+    if type_truncated:
+        connection.execute(
+            "INSERT INTO omissions VALUES ('declaration', ?, 'lexical_type_truncated', ?)",
+            (
+                identifier,
+                json.dumps(
+                    {"observedBytes": type_bytes, "storedBytes": _MAX_LEXICAL_TYPE_BYTES},
+                    sort_keys=True,
+                    separators=(",", ":"),
+                ),
+            ),
+        )
+    elif type_text is None:
+        connection.execute(
+            "INSERT INTO omissions VALUES ('declaration', ?, 'lexical_signature_unavailable', ?)",
+            (identifier, "{}"),
+        )
 
 
 def _insert_search_row(
@@ -978,14 +986,13 @@ def _lexical_type_text(
     finish = declaration.block_end_offset or declaration.end_offset
     raw_tail = text[declaration.end_offset : finish]
     masked_tail = masked[declaration.end_offset : finish]
-    boundaries = [position for position in (masked_tail.find(":="),) if position >= 0]
-    where_match = re.search(r"(?m)^[ \t]*where\b", masked_tail)
-    if where_match is not None:
-        boundaries.append(where_match.start())
-    equation_match = re.search(r"(?m)^[ \t]*\|", masked_tail)
-    if equation_match is not None:
-        boundaries.append(equation_match.start())
-    end = min(boundaries, default=len(raw_tail))
+    from ladon.proof_search_signature import lexical_signature_boundary
+
+    end = lexical_signature_boundary(
+        masked_tail, allow_bodyless=declaration.kind in {"axiom", "constant"},
+    )
+    if end is None:
+        return None, 0, False
     signature = " ".join(raw_tail[:end].split())
     encoded = signature.encode("utf-8")
     if len(encoded) <= _MAX_LEXICAL_TYPE_BYTES:
