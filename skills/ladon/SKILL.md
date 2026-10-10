@@ -29,6 +29,11 @@ queries leave the latter unchecked. For a supported index, use the
 explicit `proof-search index update`; a `full-build-required` diagnostic means
 the existing generation cannot be safely updated. Inspect the returned reuse,
 source-change and size evidence before reporting an improvement.
+After upgrading to 0.2.3, run explicit update to recover signatures from the
+previous lexical extractor, including theorem-type `let` expressions. This
+one-time recovery re-extracts unchanged sources and preserves retained evidence.
+Unknown extractor identities require a new index path. Unsupported signatures
+are unavailable with an omission; type text is still lexical, not elaborated.
 
 When private indexes accumulate, run `proof-search index list`, then save a
 `proof-search index prune --select NAME --format json --output PREVIEW.json`

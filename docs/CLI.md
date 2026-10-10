@@ -70,6 +70,9 @@ Builds are published atomically only after SQLite integrity and foreign-key
 checks pass. `--max-index-mib` sets the database ceiling and defaults to 1024;
 the previous generation remains intact if the new build exceeds it. Stored
 lexical signatures are capped at 16 KiB and query limits are capped at 1,000.
+The extractor preserves ordinary `let` initializers and binder defaults inside
+statements. Unsupported or unbalanced syntax is reported as unavailable with
+an omission; these signatures remain lexical text, not elaborated types.
 Index construction is lexical-only and never invokes Lean. The former
 `--mode semantic|hybrid`, `--lean-timeout`, and `--semantic-completeness`
 options were removed because they labeled lexical output without producing
@@ -104,8 +107,11 @@ Verified status compares the indexed generation with current supported inputs.
 `currentGenerationIdentity` names newly observed inputs and is absent with
 `--no-verify-sources`. `sourceChanges` counts added, changed and removed modules,
 with a bounded path sample. Use `--changed` for a larger listing, or
-`--details` for the full text inventory. A status of `stale-configuration`
-requires an explicit build even when the top-level index status is `available`.
+`--details` for the full text inventory. A status of `stale-configuration` can also mean the lexical extractor changed.
+Version 0.2.3 accepts the preceding extractor through an explicit `index update`,
+re-extracting all modules once even when sources are unchanged. Unknown helper
+identities or changed toolchain/configuration/layout require a build to a new
+path, even when the top-level index status is `available`.
 Name search reports exact identifier matches separately from lexical
 suggestions. An exact miss in a stale generation does not establish absence
 from the current source tree. `--freshness stored` does not check current files.
