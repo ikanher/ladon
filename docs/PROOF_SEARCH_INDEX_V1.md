@@ -1,6 +1,6 @@
 # Proof-search index v1
 
-Version one is a repository-local, disposable SQLite navigation index. Its
+Ladon maintains a repository-local SQLite navigation index. Its
 default path is `.ladon/index/proof-search.sqlite`; `--index PATH` selects an
 external location. The public contract is the versioned CLI result, not these
 private tables.
@@ -26,14 +26,67 @@ default maximum database size is 1 GiB; `--max-index-mib` changes it. Lexical
 signatures retain at most 16 KiB and record any truncation as omission evidence.
 Query output is capped at 1,000 rows.
 
-`index update` now reuses unchanged module extraction in an atomically
-published copy of a compatible lexical generation. It rebuilds derived FTS
-search data and checks source identity before replacement. It refuses to
-reassociate retained semantic, lineage or ProofIR evidence and reports that
-an explicit full build is required for unsupported bases. The saved base-build
-size ceiling governs the updated database. Status reports source deltas and
-identity meanings; index list/prune provides preview-first cleanup of private
-generations without treating persistent lock files as orphans.
+`index update` refreshes changed source modules and reuses unchanged lexical
+extraction. When the supported index retains semantic, lineage or ProofIR
+evidence, it first preserves a standalone SQLite snapshot, then publishes a
+current lexical generation. Semantic overrides in otherwise unchanged modules
+are re-extracted too. Update never invokes Lean or transfers old checks to new
+source bytes. A no-op leaves the active database unchanged.
+
+Snapshots live beside the index in `<index-filename>.history/`. Their names are
+SHA-256 digests of the archived database, so different evidence under the same
+source generation receives different identities. The active database contains
+the history catalog. Move the database and its adjacent history directory
+together, keeping the filename. Registered missing or corrupt snapshots block
+updates; history inspection reports them as unavailable. Unregistered complete
+files and interrupted backups remain protected and are listed separately.
+
+The stored base-build size ceiling still governs the active candidate.
+`index update --max-history-mib N` additionally bounds existing and proposed
+history storage, including uncertain files. Without that option, history has
+no configured ceiling. Nothing evicts evidence automatically. Each archival
+update requires roughly one base-sized snapshot plus a temporary active copy;
+status and update report active, registered-history and temporary bytes.
+
+Publication uses the same writer lock as build and evidence acquisition.
+Snapshots are synced before active replacement. A failure before replacement
+leaves old active bytes intact; a failure after replacement reports
+`publication-uncertain`. Inspect active status and history before retrying.
+`source-changed` names a bounded sample of concurrent edits: retry after edits
+settle. Unsupported layouts or changed toolchain/configuration require a build
+to a **new** index path. Rebuild and prune cannot overwrite or delete a
+history-owning index. History deletion is not supported.
+Supported writers also reject a snapshot path as a publication destination,
+including a symlink pointing to it. Hardlinked publication destinations are
+unsupported, preventing in-place writers from modifying another linked file.
+
+### Inspect retained evidence
+
+Run from the project root (or supply its path):
+
+```bash
+ladon proof-search index update --repo-root "$PWD" --format json
+ladon proof-search index history --repo-root "$PWD" --limit 10 --format json
+ladon theorem lineage Project.theorem --repo-root "$PWD" \
+  --history <snapshot-sha256> --refresh never --format json
+```
+
+History listing uses `ladon-proof-search-index-history-v1`, with bounded
+`--limit`/`--offset` pagination. Historical lineage uses `ladon-theorem-lineage-history-result-v1`, preserves
+the ordinary projection and adds `selectionBasis: historical-snapshot`, `freshness:
+historical`, the original observation and `currentAssociation:
+not-established`. Its receipt describes the original observation. An already
+stale closure stays unavailable: selection does not repair its identity.
+Historical selection requires `--refresh never`, runs no Lean, and works
+without the original project. A joint relocation needs an explicit `--index`
+pointing to the moved database. Fresh acquisition still requires the pinned
+project and compiled imports, through ordinary current-mode lineage.
+
+Private schema v6 recognizes the exact prior v5 layout for update and offline
+reading. A changed v5 generation migrates to v6 after preservation; a no-op
+keeps v5 unchanged. Older installed readers reject v6. Public current-mode
+result schemas remain unchanged; unknown table or column extensions are
+refused rather than discarded.
 
 For a long rebuild, use `ladon proof-search index build --repo-root /path/to/project --progress`.
 Bounded JSON events on stderr report discovery, module extraction, validation
@@ -41,10 +94,6 @@ and publication. Extraction events include processed and total module counts;
 there are at most about twenty periodic updates plus the final count. The final
 result remains on stdout. A publication event indicates an attempt, not success;
 wait for the terminal result. Without `--progress`, these events are silent.
-
-Updating an index that retains lineage is still refused. If a full build is
-needed, build to a new `--index PATH` to preserve the old evidence-bearing file.
-The new lexical generation does not migrate its retained checks or lineage.
 
 The schema currently requires 16 named B-tree indexes:
 

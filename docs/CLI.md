@@ -83,12 +83,21 @@ lexical modules while reusing extraction from unchanged modules:
 ladon proof-search index update --repo-root /path/to/project --format json
 ```
 
-It does not run during search or status. A missing or incompatible index, changed
-configuration, or retained semantic/lineage/ProofIR evidence produces a
-`full-build-required` diagnostic and preserves the old database. A source
-change during publication produces `source-changed`. A no-op reports `unchanged`.
-The update uses the base index's stored size ceiling; use an explicit full
-build if that limit must change.
+Update is explicit; search and status do not run it. Supported retained
+semantic, lineage and ProofIR evidence is archived in
+`<index-filename>.history/` before current lexical rows are published. It does
+not run Lean or associate old evidence with changed sources. Use `index history
+--limit 10 --format json` to list snapshots, then `theorem lineage NAME --history
+SHA256 --refresh never` for offline historical inspection.
+
+Missing or incompatible bases and changed configuration report
+`full-build-required`; build to a new path when preserving the old index.
+Concurrent edits report `source-changed` with bounded paths. A no-op reports
+`unchanged`. The base size ceiling applies to the candidate; optional
+`--max-history-mib` bounds history without eviction. Missing or corrupt
+registered archives block updates. Rebuild and prune protect history owners.
+Move the database and adjacent history directory together. See the
+[index guide](PROOF_SEARCH_INDEX_V1.md) for recovery and disk costs.
 
 Verified status compares the indexed generation with current supported inputs.
 `generationIdentity` names the rows in the database;

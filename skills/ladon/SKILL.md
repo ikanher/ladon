@@ -25,7 +25,7 @@ added, changed and removed modules. An exact identifier miss on a stale index
 does not establish current-source absence; read the exact-match summary before
 lexical suggestions. `generationIdentity` names stored rows and
 `currentGenerationIdentity` names newly observed supported inputs. Stored-only
-queries leave the latter unchecked. For a compatible lexical index, use the
+queries leave the latter unchecked. For a supported index, use the
 explicit `proof-search index update`; a `full-build-required` diagnostic means
 the existing generation cannot be safely updated. Inspect the returned reuse,
 source-change and size evidence before reporting an improvement.
@@ -71,8 +71,15 @@ valid siblings; do not describe a partial batch as entirely checked.
 
 Use `index build --progress` for long rebuilds; stage and module-count events
 go to stderr. A publication event is not a successful terminal result. Updating
-an index with retained lineage still requires a full rebuild; use a new index
-path if the old evidence needs to be preserved.
+an evidence-bearing index preserves its old database in adjacent history and
+publishes current lexical rows; it does not refresh compiled evidence. Use
+`index history --format json` and `theorem lineage NAME --history SHA256
+--refresh never` to inspect an exact original observation offline. Keep the
+index and its `.history` directory together. Historical availability is not
+current applicability; already-stale closures remain stale. Reacquire current
+lineage separately after the intended owners compile. Optional
+`index update --max-history-mib N` bounds history without evicting evidence.
+Rebuild/prune protect history owners; unsupported bases need a new index path.
 
 Source-goal completion supports earlier declarations in the same ordinary
 file through a private selected-environment snapshot and separate compiler
