@@ -1,0 +1,60 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+____________ test_prune_protects_unknown_evidence_extensions[table] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1307/test_prune_protects_unknown_ev0')
+extension = 'table'
+
+    @pytest.mark.parametrize('extension', ['table', 'column'])
+    def test_prune_protects_unknown_evidence_extensions(tmp_path, extension):
+        repo = tmp_path / 'repo'
+        repo.mkdir()
+        (repo / 'Main.lean').write_text('theorem initial : True := True.intro\n')
+        index = build_proof_search_index(repo, index_path=repo / '.ladon/index/proof-search.unknown.sqlite').index_path
+        with sqlite3.connect(index) as connection:
+            if extension == 'table':
+                connection.execute('CREATE TABLE user_evidence(payload TEXT)')
+                connection.execute("INSERT INTO user_evidence VALUES ('must preserve')")
+            else:
+                connection.execute('ALTER TABLE modules ADD COLUMN user_evidence TEXT')
+                connection.execute("UPDATE modules SET user_evidence='must preserve'")
+        original = index.read_bytes()
+        result = preview_prune(repo, selected=(index.name,))
+>       assert result['rows'][0]['classification'] == 'protected'
+E       AssertionError: assert 'disposable-private' == 'protected'
+E         
+E         - protected
+E         + disposable-private
+
+tests/test_index_history_prune_unknown.py:27: AssertionError
+___________ test_prune_protects_unknown_evidence_extensions[column] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1307/test_prune_protects_unknown_ev1')
+extension = 'column'
+
+    @pytest.mark.parametrize('extension', ['table', 'column'])
+    def test_prune_protects_unknown_evidence_extensions(tmp_path, extension):
+        repo = tmp_path / 'repo'
+        repo.mkdir()
+        (repo / 'Main.lean').write_text('theorem initial : True := True.intro\n')
+        index = build_proof_search_index(repo, index_path=repo / '.ladon/index/proof-search.unknown.sqlite').index_path
+        with sqlite3.connect(index) as connection:
+            if extension == 'table':
+                connection.execute('CREATE TABLE user_evidence(payload TEXT)')
+                connection.execute("INSERT INTO user_evidence VALUES ('must preserve')")
+            else:
+                connection.execute('ALTER TABLE modules ADD COLUMN user_evidence TEXT')
+                connection.execute("UPDATE modules SET user_evidence='must preserve'")
+        original = index.read_bytes()
+        result = preview_prune(repo, selected=(index.name,))
+>       assert result['rows'][0]['classification'] == 'protected'
+E       AssertionError: assert 'disposable-private' == 'protected'
+E         
+E         - protected
+E         + disposable-private
+
+tests/test_index_history_prune_unknown.py:27: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_index_history_prune_unknown.py::test_prune_protects_unknown_evidence_extensions[table]
+FAILED tests/test_index_history_prune_unknown.py::test_prune_protects_unknown_evidence_extensions[column]
+2 failed in 0.11s

@@ -1,0 +1,83 @@
+Traceback (most recent call last):
+  File "/home/codex/projects/ladon/openspec/changes/ladon-evidence-preserving-index-update/evidence/r01/installed-check.py", line 72, in <module>
+    main()
+  File "/home/codex/projects/ladon/openspec/changes/ladon-evidence-preserving-index-update/evidence/r01/installed-check.py", line 63, in main
+    log = run([str(python), '-m', 'pytest', '-q', *TESTS], environment=env)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/openspec/changes/ladon-evidence-preserving-index-update/evidence/r01/installed-check.py", line 25, in run
+    raise RuntimeError(f'{command}: {result.stdout[-5000:]} {result.stderr[-3000:]}')
+RuntimeError: ['/home/codex/projects/ladon/temp/index-history-installed/3.11/bin/python', '-m', 'pytest', '-q', '/home/codex/projects/ladon/tests/test_canonical_population_boundaries.py', '/home/codex/projects/ladon/tests/test_canonical_population_reuse.py', '/home/codex/projects/ladon/tests/test_canonical_receipt_reuse.py', '/home/codex/projects/ladon/tests/test_evidence_receipt.py', '/home/codex/projects/ladon/tests/test_evidence_receipt_readers.py', '/home/codex/projects/ladon/tests/test_index_build_progress_failures.py', '/home/codex/projects/ladon/tests/test_index_build_stage_progress.py', '/home/codex/projects/ladon/tests/test_index_history_audit_controls.py', '/home/codex/projects/ladon/tests/test_index_history_contracts.py', '/home/codex/projects/ladon/tests/test_index_history_offline.py', '/home/codex/projects/ladon/tests/test_index_history_prune_unknown.py', '/home/codex/projects/ladon/tests/test_index_history_publication.py', '/home/codex/projects/ladon/tests/test_index_history_recovery.py', '/home/codex/projects/ladon/tests/test_installed_cli_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_active_index.py', '/home/codex/projects/ladon/tests/test_proof_search_baselines.py', '/home/codex/projects/ladon/tests/test_proof_search_cancellation_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_constructor.py', '/home/codex/projects/ladon/tests/test_proof_search_consumers.py', '/home/codex/projects/ladon/tests/test_proof_search_index.py', '/home/codex/projects/ladon/tests/test_proof_search_installed_v3_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_invocation_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_lifecycle.py', '/home/codex/projects/ladon/tests/test_proof_search_name_v2.py', '/home/codex/projects/ladon/tests/test_proof_search_operational_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_progress_contract.py', '/home/codex/projects/ladon/tests/test_proof_search_type.py', '/home/codex/projects/ladon/tests/test_proofir_attachment_policy.py', '/home/codex/projects/ladon/tests/test_proofir_calibration.py', '/home/codex/projects/ladon/tests/test_proofir_catalog.py', '/home/codex/projects/ladon/tests/test_proofir_catalog_schema.py', '/home/codex/projects/ladon/tests/test_proofir_clean_break.py', '/home/codex/projects/ladon/tests/test_proofir_cross_language_parity.py', '/home/codex/projects/ladon/tests/test_proofir_declaration_application_identity.py', '/home/codex/projects/ladon/tests/test_proofir_derivation.py', '/home/codex/projects/ladon/tests/test_proofir_derivation_queries.py', '/home/codex/projects/ladon/tests/test_proofir_derivation_scc.py', '/home/codex/projects/ladon/tests/test_proofir_evidence_cli.py', '/home/codex/projects/ladon/tests/test_proofir_fingerprint_registry.py', '/home/codex/projects/ladon/tests/test_proofir_graph.py', '/home/codex/projects/ladon/tests/test_proofir_identity.py', '/home/codex/projects/ladon/tests/test_proofir_identity_models.py', '/home/codex/projects/ladon/tests/test_proofir_incremental_resolution.py', '/home/codex/projects/ladon/tests/test_proofir_link_observations.py', '/home/codex/projects/ladon/tests/test_proofir_native_v3_contract.py', '/home/codex/projects/ladon/tests/test_proofir_observations.py', '/home/codex/projects/ladon/tests/test_proofir_packet_manifest.py', '/home/codex/projects/ladon/tests/test_proofir_payload_schema.py', '/home/codex/projects/ladon/tests/test_proofir_program_controls.py', '/home/codex/projects/ladon/tests/test_proofir_projection_corpus.py', '/home/codex/projects/ladon/tests/test_proofir_publication_lock_ownership.py', '/home/codex/projects/ladon/tests/test_proofir_query_contracts.py', '/home/codex/projects/ladon/tests/test_proofir_quux_boundary.py', '/home/codex/projects/ladon/tests/test_proofir_result_dimensions.py', '/home/codex/projects/ladon/tests/test_proofir_sqlite_native_contract.py', '/home/codex/projects/ladon/tests/test_proofir_sqlite_rows.py', '/home/codex/projects/ladon/tests/test_proofir_sqlite_wave3_contract.py', '/home/codex/projects/ladon/tests/test_proofir_v3.py', '/home/codex/projects/ladon/tests/test_proofir_v3_cli.py', '/home/codex/projects/ladon/tests/test_proofir_v3_cli_contract.py', '/home/codex/projects/ladon/tests/test_proofir_v3_corpus_complete.py', '/home/codex/projects/ladon/tests/test_proofir_v3_hardening.py', '/home/codex/projects/ladon/tests/test_proofir_v3_installed_cli.py', '/home/codex/projects/ladon/tests/test_proofir_v3_installed_workflow_contract.py', '/home/codex/projects/ladon/tests/test_proofir_v3_integration.py', '/home/codex/projects/ladon/tests/test_proofir_v3_r03_adversarial_vectors.py', '/home/codex/projects/ladon/tests/test_proofir_v3_result_schema_contract.py', '/home/codex/projects/ladon/tests/test_proofir_v3_subject_scope.py', '/home/codex/projects/ladon/tests/test_proofir_v3_terminal_contract.py', '/home/codex/projects/ladon/tests/test_proofir_validation.py', '/home/codex/projects/ladon/tests/test_proofir_validation_parity.py', '/home/codex/projects/ladon/tests/test_result_assessments.py', '/home/codex/projects/ladon/tests/test_result_bundle_archive.py', '/home/codex/projects/ladon/tests/test_result_bundle_atomic.py', '/home/codex/projects/ladon/tests/test_result_bundle_hardening.py', '/home/codex/projects/ladon/tests/test_result_bundle_preparation.py', '/home/codex/projects/ladon/tests/test_result_bundle_schema.py', '/home/codex/projects/ladon/tests/test_result_bundle_views.py', '/home/codex/projects/ladon/tests/test_result_bundle_zip_descriptor.py', '/home/codex/projects/ladon/tests/test_result_bundle_zip_layout.py', '/home/codex/projects/ladon/tests/test_result_bundle_zip_volume.py', '/home/codex/projects/ladon/tests/test_result_bundles.py', '/home/codex/projects/ladon/tests/test_result_canonical_reuse.py', '/home/codex/projects/ladon/tests/test_result_checking.py', '/home/codex/projects/ladon/tests/test_result_cli.py', '/home/codex/projects/ladon/tests/test_result_component_scope.py', '/home/codex/projects/ladon/tests/test_result_component_scope_default.py', '/home/codex/projects/ladon/tests/test_result_component_scope_references.py', '/home/codex/projects/ladon/tests/test_result_evidence_section.py', '/home/codex/projects/ladon/tests/test_result_excerpt_route.py', '/home/codex/projects/ladon/tests/test_result_exposition_view_contract.py', '/home/codex/projects/ladon/tests/test_result_guide_cli.py', '/home/codex/projects/ladon/tests/test_result_guide_currency.py', '/home/codex/projects/ladon/tests/test_result_guide_inputs.py', '/home/codex/projects/ladon/tests/test_result_guide_pagination.py', '/home/codex/projects/ladon/tests/test_result_guide_schema.py', '/home/codex/projects/ladon/tests/test_result_guides.py', '/home/codex/projects/ladon/tests/test_result_inspection.py', '/home/codex/projects/ladon/tests/test_result_inspection_contract.py', '/home/codex/projects/ladon/tests/test_result_inspection_hardening.py', '/home/codex/projects/ladon/tests/test_result_inspection_references.py', '/home/codex/projects/ladon/tests/test_result_lineage.py', '/home/codex/projects/ladon/tests/test_result_lineage_acquisition.py', '/home/codex/projects/ladon/tests/test_result_lineage_boundaries.py', '/home/codex/projects/ladon/tests/test_result_lineage_pagination.py', '/home/codex/projects/ladon/tests/test_result_lineage_schema.py', '/home/codex/projects/ladon/tests/test_result_lineage_store_contract.py', '/home/codex/projects/ladon/tests/test_result_manifest.py', '/home/codex/projects/ladon/tests/test_result_resolution.py', '/home/codex/projects/ladon/tests/test_result_subject_evidence.py', '/home/codex/projects/ladon/tests/test_semantic_adapter_registry.py', '/home/codex/projects/ladon/tests/test_semantic_application_binding_integration.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_compact.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_lean.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_ledger.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_names.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_rejections_text.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_v4.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_v4_boundaries.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_v4_dispatch.py', '/home/codex/projects/ladon/tests/test_semantic_application_context_v4_text.py', '/home/codex/projects/ladon/tests/test_semantic_batch_invalid_sibling.py', '/home/codex/projects/ladon/tests/test_semantic_binding_projection.py', '/home/codex/projects/ladon/tests/test_semantic_build_mode.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_batch_worker.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_framed_protocol.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_lean_integration.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_residual_integration.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_security_contract.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_verifier.py', '/home/codex/projects/ladon/tests/test_semantic_candidate_worker_v3_contract.py', '/home/codex/projects/ladon/tests/test_semantic_cli_projection.py', '/home/codex/projects/ladon/tests/test_semantic_context_dependencies.py', '/home/codex/projects/ladon/tests/test_semantic_context_protocol_marker.py', '/home/codex/projects/ladon/tests/test_semantic_context_rejected_protocol.py', '/home/codex/projects/ladon/tests/test_semantic_context_shadowing_fallback.py', '/home/codex/projects/ladon/tests/test_semantic_evidence_registry.py', '/home/codex/projects/ladon/tests/test_semantic_extraction_protocol.py', '/home/codex/projects/ladon/tests/test_semantic_lean_execution.py', '/home/codex/projects/ladon/tests/test_semantic_multiline_scratch_integration.py', '/home/codex/projects/ladon/tests/test_semantic_observation_closure.py', '/home/codex/projects/ladon/tests/test_semantic_projection_hardening.py', '/home/codex/projects/ladon/tests/test_semantic_residual_text.py', '/home/codex/projects/ladon/tests/test_semantic_result_delivery.py', '/home/codex/projects/ladon/tests/test_semantic_result_projection.py', '/home/codex/projects/ladon/tests/test_semantic_weak_receipt_boundary.py', '/home/codex/projects/ladon/tests/test_sqlite_publication.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_cli.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_hardening.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_integration.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_progress.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_projection.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_query.py', '/home/codex/projects/ladon/tests/test_theorem_lineage_store.py']: ........................................................................ [  4%]
+........................................................................ [  9%]
+.........................................F.............................. [ 14%]
+........................................................................ [ 19%]
+........................................................................ [ 24%]
+........................................................................ [ 29%]
+........................................................................ [ 34%]
+........................................................................ [ 39%]
+........................................................................ [ 43%]
+........................................................................ [ 48%]
+........................................................................ [ 53%]
+........................................................................ [ 58%]
+........................................................................ [ 63%]
+........................................................................ [ 68%]
+........................................................................ [ 73%]
+........................................................................ [ 78%]
+........................................................................ [ 82%]
+........................................................................ [ 87%]
+........................................................................ [ 92%]
+........................................................................ [ 97%]
+...................................                                      [100%]
+=================================== FAILURES ===================================
+_ test_retained_evidence_private_index_is_protected[future-proofir-proofir_future] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1312/test_retained_evidence_private3')
+retained_kind = 'future-proofir', expected_table = 'proofir_future'
+
+    @pytest.mark.parametrize("retained_kind,expected_table", [
+        ("binder", "binders"),
+        ("diagnostic", "proofir_diagnostics"),
+        ("v3-environment", "proofir_v3_environments"),
+        ("future-proofir", "proofir_future"),
+    ])
+    def test_retained_evidence_private_index_is_protected(
+        tmp_path: Path, retained_kind: str, expected_table: str
+    ) -> None:
+        repo = _repo(tmp_path / "repo")
+        private = build_proof_search_index(
+            repo, index_path=repo / ".ladon/index/proof-search.evidence.sqlite"
+        ).index_path
+        with sqlite3.connect(private) as connection:
+            if retained_kind == "binder":
+                declaration = connection.execute("SELECT id FROM declarations LIMIT 1").fetchone()[0]
+                connection.execute(
+                    "INSERT INTO binders VALUES (?,?,?,?,?,?,?,?)",
+                    (declaration, 0, "h", "explicit", "True", 1, "lexical", "True"),
+                )
+            elif retained_kind == "diagnostic":
+                generation = connection.execute(
+                    "SELECT generation_id FROM proofir_generations LIMIT 1"
+                ).fetchone()[0]
+                connection.execute(
+                    "INSERT INTO proofir_diagnostics VALUES (?,?,?,?,?,?,?)",
+                    ("diagnostic", generation, None, "configuration", "catalog", "missing", "{}"),
+                )
+            elif retained_kind == "v3-environment":
+                connection.execute(
+                    "INSERT INTO proofir_v3_environments VALUES (?,?,?,?)",
+                    ("sha256:environment", None, None, "unresolved"),
+                )
+            else:
+                connection.execute("CREATE TABLE proofir_future (payload TEXT NOT NULL)")
+                connection.execute("INSERT INTO proofir_future VALUES ('retained')")
+        preview = preview_prune(repo, selected=(private.name,))
+>       assert preview["rows"][0]["reason"] == f"retained-evidence:{expected_table}"
+E       AssertionError: assert 'unreadable-i...to a new path' == 'retained-evi...roofir_future'
+E         
+E         - retained-evidence:proofir_future
+E         + unreadable-index:unsupported index table or column layout; preserve this index and build to a new path
+
+tests/test_proof_search_lifecycle.py:118: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_proof_search_lifecycle.py::test_retained_evidence_private_index_is_protected[future-proofir-proofir_future]
+1 failed, 1474 passed in 101.63s (0:01:41)
+ 

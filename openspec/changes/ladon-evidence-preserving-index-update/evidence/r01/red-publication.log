@@ -1,0 +1,116 @@
+FFF.F                                                                    [100%]
+=================================== FAILURES ===================================
+_________ test_history_budget_failure_preserves_base_and_reports_bound _________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1279/test_history_budget_failure_pr0')
+
+    def test_history_budget_failure_preserves_base_and_reports_bound(tmp_path):
+        repo, database = evidence_index(tmp_path)
+        original = database.read_bytes()
+        with pytest.raises(ProofSearchIndexError) as raised:
+            update_proof_search_index(repo, max_history_bytes=1)
+>       assert raised.value.code == "history-storage-limit"
+E       AssertionError: assert 'invalid-invocation' == 'history-storage-limit'
+E         
+E         - history-storage-limit
+E         + invalid-invocation
+
+tests/test_index_history_publication.py:33: AssertionError
+__________ test_post_replace_failure_is_uncertain_and_retains_history __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1279/test_post_replace_failure_is_u0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f8ae9ea7550>
+
+    def test_post_replace_failure_is_uncertain_and_retains_history(tmp_path, monkeypatch):
+        import ladon.proof_search_index_update as owner
+    
+        repo, database = evidence_index(tmp_path)
+        replace = owner.durable_replace
+    
+        def uncertain(temporary, destination):
+            replace(temporary, destination)
+            raise OSError("directory fsync failed after replacement")
+    
+        monkeypatch.setattr(owner, "durable_replace", uncertain)
+        with pytest.raises(ProofSearchIndexError) as raised:
+>           update_proof_search_index(repo)
+
+tests/test_index_history_publication.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_search_index.py:285: in update_proof_search_index
+    return update(repo_root, index_path=index_path, max_history_bytes=max_history_bytes)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_search_index_update.py:95: in update_proof_search_index
+    counts, temporary_bytes = _publish_copy(
+src/ladon/proof_search_index_update.py:158: in _publish_copy
+    durable_replace(temporary, destination)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+temporary = PosixPath('/tmp/pytest-of-codex/pytest-1279/test_post_replace_failure_is_u0/repo/.ladon/index/.proof-search.sqlite.1987251.xiluhi6l.tmp')
+destination = PosixPath('/tmp/pytest-of-codex/pytest-1279/test_post_replace_failure_is_u0/repo/.ladon/index/proof-search.sqlite')
+
+    def uncertain(temporary, destination):
+        replace(temporary, destination)
+>       raise OSError("directory fsync failed after replacement")
+E       OSError: directory fsync failed after replacement
+
+tests/test_index_history_publication.py:47: OSError
+____________ test_observed_source_change_lists_paths_and_keeps_base ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1279/test_observed_source_change_li0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7f8ae9c99410>
+
+    def test_observed_source_change_lists_paths_and_keeps_base(tmp_path, monkeypatch):
+        import ladon.proof_search_index_update as owner
+    
+        repo, database = evidence_index(tmp_path)
+        original = database.read_bytes()
+        populate = owner._populate_updated_copy
+    
+        def source_changes(*args, **kwargs):
+            value = populate(*args, **kwargs)
+            (repo / "New.lean").write_text("theorem additional : True := True.intro\n")
+            return value
+    
+        monkeypatch.setattr(owner, "_populate_updated_copy", source_changes)
+        with pytest.raises(ProofSearchIndexError) as raised:
+            update_proof_search_index(repo)
+        assert raised.value.code == "source-changed"
+>       assert raised.value.details["sourceChanges"]["added"] == [{"module": "New", "path": "New.lean"}]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'sourceChanges'
+
+tests/test_index_history_publication.py:74: KeyError
+_____________ test_legacy_noop_retains_actual_generation_and_bytes _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1279/test_legacy_noop_retains_actua0')
+
+    def test_legacy_noop_retains_actual_generation_and_bytes(tmp_path):
+        repo = tmp_path / "repo"
+        repo.mkdir()
+        (repo / "Main.lean").write_text("theorem result : True := True.intro\n")
+        database = build_proof_search_index(repo).index_path
+        with sqlite3.connect(database) as connection:
+            connection.execute("DROP TABLE index_history")
+            for key, value in {
+                "indexSchema": "ladon-proof-search-index-v5",
+                "schemaGeneration": "sqlite-v5-name2-fts2-lineage1-proofir1",
+                "schemaVersion": "5", "generationIdentity": "legacy-generation",
+            }.items():
+                connection.execute("UPDATE metadata SET value=? WHERE key=?", (value, key))
+        original = database.read_bytes()
+        result = update_proof_search_index(repo)
+        assert result.payload["status"] == "unchanged"
+>       assert result.payload["generationIdentity"] == "legacy-generation"
+E       AssertionError: assert 'fb1313e40918...9691e4089c177' == 'legacy-generation'
+E         
+E         - legacy-generation
+E         + fb1313e40918532a3defcb324ed322c128d0d40477a8126dd8a9691e4089c177
+
+tests/test_index_history_publication.py:108: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_index_history_publication.py::test_history_budget_failure_preserves_base_and_reports_bound
+FAILED tests/test_index_history_publication.py::test_post_replace_failure_is_uncertain_and_retains_history
+FAILED tests/test_index_history_publication.py::test_observed_source_change_lists_paths_and_keeps_base
+FAILED tests/test_index_history_publication.py::test_legacy_noop_retains_actual_generation_and_bytes
+4 failed, 1 passed in 0.23s

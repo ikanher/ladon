@@ -1,0 +1,13 @@
+# Initial fixture acquisition/update/search/history flow
+uv run ladon proof-search index build --repo-root "$PWD/temp/index-history-field/fixture" --format json
+uv run ladon theorem lineage CapsuleFixture.chosen --repo-root "$PWD/temp/index-history-field/fixture" --refresh always --format json
+# Append theorem addedAfterEdit to fixture/CapsuleFixture.lean
+uv run ladon proof-search index update --repo-root "$PWD/temp/index-history-field/fixture" --format json
+uv run ladon proof-search search name --text addedAfterEdit --repo-root "$PWD/temp/index-history-field/fixture" --format json
+uv run ladon proof-search index history --repo-root "$PWD/temp/index-history-field/fixture" --format json
+uv run ladon theorem lineage CapsuleFixture.chosen --repo-root "$PWD/temp/index-history-field/fixture" --history "$(cat temp/index-history-field/snapshot-id.txt)" --refresh never --format json
+uv run ladon theorem lineage CapsuleFixture.chosen --repo-root "$PWD/temp/index-history-field/fixture" --refresh always --format json
+# Adam source-only import-closure copy; .lake symlink to shared checkout, no build
+uv run ladon proof-search index build --repo-root "$PWD/temp/index-history-field/adam" --format json
+uv run ladon theorem lineage Mf.Optimization.FiniteMemoryAdam.Cumulative.pairing_lower --repo-root "$PWD/temp/index-history-field/adam" --refresh always --format json
+# Repetitions, clean builds, row comparison: see repeat-updates.sh and compare-*.py

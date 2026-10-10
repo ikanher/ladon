@@ -1,0 +1,88 @@
+FFFFF                                                                    [100%]
+=================================== FAILURES ===================================
+__________ test_mutation_rejects_direct_snapshot_destination[update] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1313/test_mutation_rejects_direct_s0')
+writer = 'update'
+
+    @pytest.mark.parametrize('writer', ['update', 'build', 'proofir', 'lock'])
+    def test_mutation_rejects_direct_snapshot_destination(tmp_path, writer):
+        repo, index = evidence_index(tmp_path)
+        result = update_proof_search_index(repo)
+        snapshot = history_directory(index) / result.payload['preservedSnapshots'][0]['path']
+        original = snapshot.read_bytes()
+        (repo / 'Main.lean').write_text('theorem furtherEdit : True := True.intro\n')
+>       with pytest.raises((RuntimeError, ValueError), match='histor'):
+E       Failed: DID NOT RAISE any of (<class 'RuntimeError'>, <class 'ValueError'>)
+
+tests/test_index_history_immutable_destination.py:20: Failed
+___________ test_mutation_rejects_direct_snapshot_destination[build] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1313/test_mutation_rejects_direct_s1')
+writer = 'build'
+
+    @pytest.mark.parametrize('writer', ['update', 'build', 'proofir', 'lock'])
+    def test_mutation_rejects_direct_snapshot_destination(tmp_path, writer):
+        repo, index = evidence_index(tmp_path)
+        result = update_proof_search_index(repo)
+        snapshot = history_directory(index) / result.payload['preservedSnapshots'][0]['path']
+        original = snapshot.read_bytes()
+        (repo / 'Main.lean').write_text('theorem furtherEdit : True := True.intro\n')
+>       with pytest.raises((RuntimeError, ValueError), match='histor'):
+E       Failed: DID NOT RAISE any of (<class 'RuntimeError'>, <class 'ValueError'>)
+
+tests/test_index_history_immutable_destination.py:20: Failed
+__________ test_mutation_rejects_direct_snapshot_destination[proofir] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1313/test_mutation_rejects_direct_s2')
+writer = 'proofir'
+
+    @pytest.mark.parametrize('writer', ['update', 'build', 'proofir', 'lock'])
+    def test_mutation_rejects_direct_snapshot_destination(tmp_path, writer):
+        repo, index = evidence_index(tmp_path)
+        result = update_proof_search_index(repo)
+        snapshot = history_directory(index) / result.payload['preservedSnapshots'][0]['path']
+        original = snapshot.read_bytes()
+        (repo / 'Main.lean').write_text('theorem furtherEdit : True := True.intro\n')
+>       with pytest.raises((RuntimeError, ValueError), match='histor'):
+E       Failed: DID NOT RAISE any of (<class 'RuntimeError'>, <class 'ValueError'>)
+
+tests/test_index_history_immutable_destination.py:20: Failed
+___________ test_mutation_rejects_direct_snapshot_destination[lock] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1313/test_mutation_rejects_direct_s3')
+writer = 'lock'
+
+    @pytest.mark.parametrize('writer', ['update', 'build', 'proofir', 'lock'])
+    def test_mutation_rejects_direct_snapshot_destination(tmp_path, writer):
+        repo, index = evidence_index(tmp_path)
+        result = update_proof_search_index(repo)
+        snapshot = history_directory(index) / result.payload['preservedSnapshots'][0]['path']
+        original = snapshot.read_bytes()
+        (repo / 'Main.lean').write_text('theorem furtherEdit : True := True.intro\n')
+>       with pytest.raises((RuntimeError, ValueError), match='histor'):
+E       Failed: DID NOT RAISE any of (<class 'RuntimeError'>, <class 'ValueError'>)
+
+tests/test_index_history_immutable_destination.py:20: Failed
+______________ test_snapshot_alias_does_not_bypass_mutation_guard ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1313/test_snapshot_alias_does_not_b0')
+
+    def test_snapshot_alias_does_not_bypass_mutation_guard(tmp_path):
+        repo, index = evidence_index(tmp_path)
+        result = update_proof_search_index(repo)
+        snapshot = history_directory(index) / result.payload['preservedSnapshots'][0]['path']
+        alias = tmp_path / 'looks-active.sqlite'
+        alias.symlink_to(snapshot)
+        original = snapshot.read_bytes()
+>       with pytest.raises((RuntimeError, ValueError), match='histor'):
+E       Failed: DID NOT RAISE any of (<class 'RuntimeError'>, <class 'ValueError'>)
+
+tests/test_index_history_immutable_destination.py:41: Failed
+=========================== short test summary info ============================
+FAILED tests/test_index_history_immutable_destination.py::test_mutation_rejects_direct_snapshot_destination[update]
+FAILED tests/test_index_history_immutable_destination.py::test_mutation_rejects_direct_snapshot_destination[build]
+FAILED tests/test_index_history_immutable_destination.py::test_mutation_rejects_direct_snapshot_destination[proofir]
+FAILED tests/test_index_history_immutable_destination.py::test_mutation_rejects_direct_snapshot_destination[lock]
+FAILED tests/test_index_history_immutable_destination.py::test_snapshot_alias_does_not_bypass_mutation_guard
+5 failed in 0.30s

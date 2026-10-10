@@ -1,0 +1,20 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___________ test_hardlink_alias_is_rejected_before_in_place_mutation ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1319/test_hardlink_alias_is_rejecte0')
+
+    def test_hardlink_alias_is_rejected_before_in_place_mutation(tmp_path):
+        repo, index = evidence_index(tmp_path)
+        result = update_proof_search_index(repo)
+        snapshot = history_directory(index) / result.payload['preservedSnapshots'][0]['path']
+        alias = tmp_path / 'looks-active.sqlite'
+        os.link(snapshot, alias)
+        original = snapshot.read_bytes()
+>       with pytest.raises((RuntimeError, ValueError), match='hardlink'):
+E       Failed: DID NOT RAISE any of (<class 'RuntimeError'>, <class 'ValueError'>)
+
+tests/test_index_history_hardlink.py:22: Failed
+=========================== short test summary info ============================
+FAILED tests/test_index_history_hardlink.py::test_hardlink_alias_is_rejected_before_in_place_mutation
+1 failed in 0.12s

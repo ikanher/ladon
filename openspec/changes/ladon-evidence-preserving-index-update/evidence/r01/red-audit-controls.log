@@ -1,0 +1,88 @@
+FFF.FF                                                                   [100%]
+=================================== FAILURES ===================================
+___________ test_structure_authority_is_archived_before_reextraction ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1293/test_structure_authority_is_ar0')
+
+    def test_structure_authority_is_archived_before_reextraction(tmp_path):
+        repo = tmp_path / 'repo'
+        repo.mkdir()
+        (repo / 'Main.lean').write_text('structure Box where\n  value : Nat\n')
+        index = build_proof_search_index(repo).index_path
+        with sqlite3.connect(index) as connection:
+            connection.execute("UPDATE structures SET authority='lean_environment'")
+            original = connection.execute('SELECT * FROM structures').fetchall()
+        (repo / 'Main.lean').write_text('structure Box where\n  value : Int\n')
+        result = update_proof_search_index(repo)
+>       assert len(result.payload['preservedSnapshots']) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/test_index_history_audit_controls.py:25: AssertionError
+___________ test_existing_history_ceiling_applies_to_lexical_update ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1293/test_existing_history_ceiling_0')
+
+    def test_existing_history_ceiling_applies_to_lexical_update(tmp_path):
+        repo, index = evidence_index(tmp_path)
+        update_proof_search_index(repo)
+        original = index.read_bytes()
+        (repo / 'Main.lean').write_text('theorem third : True := True.intro\n')
+>       with pytest.raises(ProofSearchIndexError) as raised:
+E       Failed: DID NOT RAISE <class 'ladon.proof_search_index.ProofSearchIndexError'>
+
+tests/test_index_history_audit_controls.py:36: Failed
+________ test_orphan_and_temporary_history_are_visible_and_not_deleted _________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1293/test_orphan_and_temporary_hist0')
+
+    def test_orphan_and_temporary_history_are_visible_and_not_deleted(tmp_path):
+        repo, index = evidence_index(tmp_path)
+        update_proof_search_index(repo)
+        folder = history_directory(index)
+        orphan = folder / ('f' * 64 + '.sqlite')
+        orphan.write_bytes(b'uncertain complete archive')
+        temporary = folder / '.snapshot-crash.tmp'
+        temporary.write_bytes(b'partial backup')
+        result = list_history(repo, limit=1)
+>       assert result['unregisteredFiles']['total'] == 2
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'unregisteredFiles'
+
+tests/test_index_history_audit_controls.py:51: KeyError
+______________ test_catalog_observation_substitution_is_rejected _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1293/test_catalog_observation_subst0')
+
+    def test_catalog_observation_substitution_is_rejected(tmp_path):
+        repo, index = evidence_index(tmp_path)
+        result = update_proof_search_index(repo)
+        entry = result.payload['preservedSnapshots'][0]
+        import json
+        with sqlite3.connect(index) as connection:
+            substituted = dict(entry)
+            substituted['metadata'] = {**entry['metadata'], 'sourceFingerprint': 'substituted'}
+            connection.execute('UPDATE index_history SET entry_json=?', (json.dumps(substituted),))
+>       with pytest.raises(ProofSearchIndexError):
+E       Failed: DID NOT RAISE <class 'ladon.proof_search_index.ProofSearchIndexError'>
+
+tests/test_index_history_audit_controls.py:80: Failed
+__________ test_unknown_layout_is_not_presented_as_supported_history ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1293/test_unknown_layout_is_not_pre0')
+
+    def test_unknown_layout_is_not_presented_as_supported_history(tmp_path):
+        repo, index = evidence_index(tmp_path)
+        with sqlite3.connect(index) as connection:
+            connection.execute('CREATE TABLE unknown_evidence(owner TEXT)')
+>       with pytest.raises(ProofSearchIndexError):
+E       Failed: DID NOT RAISE <class 'ladon.proof_search_index.ProofSearchIndexError'>
+
+tests/test_index_history_audit_controls.py:89: Failed
+=========================== short test summary info ============================
+FAILED tests/test_index_history_audit_controls.py::test_structure_authority_is_archived_before_reextraction
+FAILED tests/test_index_history_audit_controls.py::test_existing_history_ceiling_applies_to_lexical_update
+FAILED tests/test_index_history_audit_controls.py::test_orphan_and_temporary_history_are_visible_and_not_deleted
+FAILED tests/test_index_history_audit_controls.py::test_catalog_observation_substitution_is_rejected
+FAILED tests/test_index_history_audit_controls.py::test_unknown_layout_is_not_presented_as_supported_history
+5 failed, 1 passed in 0.27s

@@ -1,0 +1,109 @@
+from __future__ import annotations
+
+import sqlite3
+from pathlib import Path
+
+import pytest
+
+from ladon.proof_search_index import (
+    ProofSearchIndexError,
+    build_proof_search_index,
+    update_proof_search_index,
+)
+
+
+def evidence_index(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "Main.lean").write_text("theorem before : True := True.intro\n")
+    database = build_proof_search_index(repo).index_path
+    with sqlite3.connect(database) as connection:
+        declaration = connection.execute("SELECT id FROM declarations LIMIT 1").fetchone()[0]
+        connection.execute("INSERT INTO binders VALUES(?,?,?,?,?,?,?,?)",
+                           (declaration, 0, "h", "explicit", "True", 1, "lean_environment", "True"))
+    (repo / "Main.lean").write_text("theorem after : True := True.intro\n")
+    return repo, database
+
+
+def test_history_budget_failure_preserves_base_and_reports_bound(tmp_path):
+    repo, database = evidence_index(tmp_path)
+    original = database.read_bytes()
+    with pytest.raises(ProofSearchIndexError) as raised:
+        update_proof_search_index(repo, max_history_bytes=1)
+    assert raised.value.code == "history-storage-limit"
+    assert raised.value.details["maxHistoryBytes"] == 1
+    assert raised.value.details["requiredHistoryBytes"] > 1
+    assert database.read_bytes() == original
+
+
+def test_post_replace_failure_is_uncertain_and_retains_history(tmp_path, monkeypatch):
+    import ladon.proof_search_index_update as owner
+
+    repo, database = evidence_index(tmp_path)
+    replace = owner.durable_replace
+
+    def uncertain(temporary, destination):
+        replace(temporary, destination)
+        raise OSError("directory fsync failed after replacement")
+
+    monkeypatch.setattr(owner, "durable_replace", uncertain)
+    with pytest.raises(ProofSearchIndexError) as raised:
+        update_proof_search_index(repo)
+    assert raised.value.code == "publication-uncertain"
+    with sqlite3.connect(database) as connection:
+        assert connection.execute("SELECT name FROM declarations").fetchall() == [("after",)]
+        assert connection.execute("SELECT COUNT(*) FROM index_history").fetchone()[0] == 1
+
+
+def test_observed_source_change_lists_paths_and_keeps_base(tmp_path, monkeypatch):
+    import ladon.proof_search_index_update as owner
+
+    repo, database = evidence_index(tmp_path)
+    original = database.read_bytes()
+    populate = owner._populate_updated_copy
+
+    def source_changes(*args, **kwargs):
+        value = populate(*args, **kwargs)
+        (repo / "New.lean").write_text("theorem additional : True := True.intro\n")
+        return value
+
+    monkeypatch.setattr(owner, "_populate_updated_copy", source_changes)
+    with pytest.raises(ProofSearchIndexError) as raised:
+        update_proof_search_index(repo)
+    assert raised.value.code == "source-changed"
+    assert raised.value.details["sourceChanges"]["added"] == [{"module": "New", "path": "New.lean"}]
+    assert "settle" in raised.value.remediation
+    assert database.read_bytes() == original
+
+
+def test_old_reader_finishes_on_a_complete_generation(tmp_path):
+    repo, database = evidence_index(tmp_path)
+    reader = sqlite3.connect(f"file:{database}?mode=ro", uri=True)
+    try:
+        assert reader.execute("SELECT name FROM declarations").fetchall() == [("before",)]
+        update_proof_search_index(repo)
+        assert reader.execute("SELECT name FROM declarations").fetchall() == [("before",)]
+        with sqlite3.connect(database) as current:
+            assert current.execute("SELECT name FROM declarations").fetchall() == [("after",)]
+    finally:
+        reader.close()
+
+
+def test_legacy_noop_retains_actual_generation_and_bytes(tmp_path):
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "Main.lean").write_text("theorem result : True := True.intro\n")
+    database = build_proof_search_index(repo).index_path
+    with sqlite3.connect(database) as connection:
+        connection.execute("DROP TABLE index_history")
+        for key, value in {
+            "indexSchema": "ladon-proof-search-index-v5",
+            "schemaGeneration": "sqlite-v5-name2-fts2-lineage1-proofir1",
+            "schemaVersion": "5", "generationIdentity": "legacy-generation",
+        }.items():
+            connection.execute("UPDATE metadata SET value=? WHERE key=?", (value, key))
+    original = database.read_bytes()
+    result = update_proof_search_index(repo)
+    assert result.payload["status"] == "unchanged"
+    assert result.payload["generationIdentity"] == "legacy-generation"
+    assert database.read_bytes() == original

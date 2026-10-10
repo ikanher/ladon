@@ -1,0 +1,77 @@
+F.F.F                                                                    [100%]
+=================================== FAILURES ===================================
+__________ test_changed_legacy_v5_layout_migrates_with_original_rows ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1299/test_changed_legacy_v5_layout_0')
+
+    def test_changed_legacy_v5_layout_migrates_with_original_rows(tmp_path):
+        repo, index = evidence_index(tmp_path)
+        with sqlite3.connect(index) as connection:
+            connection.execute('DROP TABLE index_history')
+            connection.execute('PRAGMA user_version=5')
+            for key, value in {'indexSchema': 'ladon-proof-search-index-v5',
+                               'schemaGeneration': 'sqlite-v5-name2-fts2-lineage1-proofir1',
+                               'schemaVersion': '5'}.items():
+                connection.execute('UPDATE metadata SET value=? WHERE key=?', (value, key))
+        with sqlite3.connect(index) as connection:
+            original = _all_table_rows(connection)
+        result = update_proof_search_index(repo)
+        entry = result.payload['preservedSnapshots'][0]
+        with open_history_snapshot(repo, index, entry['snapshotId']) as (connection, _entry, metadata):
+            assert metadata['indexSchema'] == 'ladon-proof-search-index-v5'
+>           assert _all_table_rows(connection) == original
+E           AssertionError: assert {'aliases': [...0f53c0>], ...} == {'aliases': [...', ...)], ...}
+E             
+E             Omitting 43 identical items, use -vv to show
+E             Differing items:
+E             {'modules': [<sqlite3.Row object at 0x79b1050f4a60>]} != {'modules': [('Main', 'Main.lean', 'conventional', 0, 'ea19c6abedcc4c60c7c2d0bce458c5a8c331129cb1cb2bfe91a8265021c09a5c', 36, ...)]}
+E             {'declaration_search_idx': [<sqlite3.Row object at 0x79b1050f47f0>]} != {'declaration_search_idx': [(1, b'', 2)]}
+E             {'module_semantic_state': [<sqlite3.Row object at 0x79b1050f51e0>]} != {'module_semantic_state': [('Main', 'ea19c6abedcc4c60c7c2d0bce458c5a8c331129cb1cb2bfe91a8265021c09a5c', '', '705b56dce...b5c65a74c408f552e05116...
+E             
+E             ...Full output truncated (14 lines hidden), use '-vv' to show
+
+tests/test_index_history_recovery.py:32: AssertionError
+_________ test_existing_publisher_prevents_archive_and_active_mutation _________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1299/test_existing_publisher_preven0')
+
+    def test_existing_publisher_prevents_archive_and_active_mutation(tmp_path):
+        repo, index = evidence_index(tmp_path)
+        original = index.read_bytes()
+        lock = acquire_publication_lock(index)
+        try:
+            with pytest.raises(ProofSearchIndexError) as raised:
+                update_proof_search_index(repo)
+>           assert raised.value.code == 'publisher-active'
+E           AssertionError: assert 'invalid-invocation' == 'publisher-active'
+E             
+E             - publisher-active
+E             + invalid-invocation
+
+tests/test_index_history_recovery.py:60: AssertionError
+_______________ test_joint_relocation_retains_history_selection ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1299/test_joint_relocation_retains_0')
+
+    def test_joint_relocation_retains_history_selection(tmp_path):
+        repo, index = evidence_index(tmp_path)
+        result = update_proof_search_index(repo)
+        selected = result.payload['preservedSnapshots'][0]['snapshotId']
+        folder = tmp_path / 'moved'
+        folder.mkdir()
+        moved = folder / index.name
+        index.rename(moved)
+        history_directory(index).rename(history_directory(moved))
+        with open_history_snapshot(repo, moved, selected) as (connection, _entry, _metadata):
+>           assert connection.execute('SELECT name FROM declarations').fetchall() == [('before',)]
+E           AssertionError: assert [<sqlite3.Row...79b1050f4940>] == [('before',)]
+E             
+E             At index 0 diff: <sqlite3.Row object at 0x79b1050f4940> != ('before',)
+E             Use -v to get more diff
+
+tests/test_index_history_recovery.py:86: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_index_history_recovery.py::test_changed_legacy_v5_layout_migrates_with_original_rows
+FAILED tests/test_index_history_recovery.py::test_existing_publisher_prevents_archive_and_active_mutation
+FAILED tests/test_index_history_recovery.py::test_joint_relocation_retains_history_selection
+3 failed, 2 passed in 0.24s
