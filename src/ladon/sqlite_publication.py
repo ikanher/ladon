@@ -5,6 +5,7 @@ from __future__ import annotations
 import fcntl
 import json
 import os
+import re
 import secrets
 from dataclasses import dataclass
 from pathlib import Path
@@ -31,6 +32,12 @@ def acquire_publication_lock(destination: Path) -> PublicationLock:
     """Acquire the persistent sibling lock for one publication destination."""
 
     resolved = Path(destination).resolve()
+    if resolved.exists() and resolved.stat().st_nlink > 1:
+        raise ValueError(f'hardlinked publication destination is unsupported: {resolved}')
+    if resolved.parent.name.endswith('.history') and re.fullmatch(
+        r'[0-9a-f]{64}\.sqlite', resolved.name
+    ):
+        raise ValueError(f'historical snapshot is immutable: {resolved}')
     path = resolved.with_name(f"{resolved.name}.lock")
     path.parent.mkdir(parents=True, exist_ok=True)
     descriptor = os.open(path, os.O_CREAT | os.O_RDWR, 0o600)

@@ -1,0 +1,93 @@
+"""Preservation and failure contracts discovered by independent audit."""
+from __future__ import annotations
+
+import hashlib
+import sqlite3
+
+import pytest
+from test_index_history_publication import evidence_index
+
+from ladon.proof_search_history import list_history, open_history_snapshot
+from ladon.proof_search_history_store import archive_base, history_directory
+from ladon.proof_search_index import (
+    ProofSearchIndexError,
+    build_proof_search_index,
+    update_proof_search_index,
+)
+
+
+def test_structure_authority_is_archived_before_reextraction(tmp_path):
+    repo = tmp_path / 'repo'
+    repo.mkdir()
+    (repo / 'Main.lean').write_text('structure Box where\n  value : Nat\n')
+    index = build_proof_search_index(repo).index_path
+    with sqlite3.connect(index) as connection:
+        connection.execute("UPDATE structures SET authority='lean_environment'")
+        original = connection.execute('SELECT * FROM structures').fetchall()
+    (repo / 'Main.lean').write_text('structure Box where\n  value : Int\n')
+    result = update_proof_search_index(repo)
+    assert len(result.payload['preservedSnapshots']) == 1
+    entry = result.payload['preservedSnapshots'][0]
+    with sqlite3.connect(history_directory(index) / entry['path']) as connection:
+        assert connection.execute('SELECT * FROM structures').fetchall() == original
+
+
+def test_existing_history_ceiling_applies_to_lexical_update(tmp_path):
+    repo, index = evidence_index(tmp_path)
+    update_proof_search_index(repo)
+    original = index.read_bytes()
+    (repo / 'Main.lean').write_text('theorem third : True := True.intro\n')
+    with pytest.raises(ProofSearchIndexError) as raised:
+        update_proof_search_index(repo, max_history_bytes=1)
+    assert raised.value.code == 'history-storage-limit'
+    assert index.read_bytes() == original
+
+
+def test_orphan_and_temporary_history_are_visible_and_not_deleted(tmp_path):
+    repo, index = evidence_index(tmp_path)
+    update_proof_search_index(repo)
+    folder = history_directory(index)
+    orphan = folder / ('f' * 64 + '.sqlite')
+    orphan.write_bytes(b'uncertain complete archive')
+    temporary = folder / '.snapshot-crash.tmp'
+    temporary.write_bytes(b'partial backup')
+    result = list_history(repo, limit=1)
+    assert result['unregisteredFiles']['total'] == 2
+    assert result['unregisteredFiles']['bytes'] == orphan.stat().st_size + temporary.stat().st_size
+    assert {row['name'] for row in result['unregisteredFiles']['rows']} == {orphan.name, temporary.name}
+    assert all(row['classification'] == 'protected' for row in result['unregisteredFiles']['rows'])
+    assert orphan.is_file() and temporary.is_file()
+
+
+def test_same_generation_different_evidence_has_distinct_content_identity(tmp_path):
+    _repo, index = evidence_index(tmp_path)
+    folder = history_directory(index)
+    with sqlite3.connect(index) as connection:
+        first = archive_base(connection, folder)
+        connection.execute("UPDATE binders SET type_text='False'")
+        connection.commit()
+        second = archive_base(connection, folder)
+    assert first['generationIdentity'] == second['generationIdentity']
+    assert first['snapshotId'] != second['snapshotId']
+    assert hashlib.sha256((folder / (first['snapshotId'] + '.sqlite')).read_bytes()).hexdigest() == first['snapshotId']
+
+
+def test_catalog_observation_substitution_is_rejected(tmp_path):
+    repo, index = evidence_index(tmp_path)
+    result = update_proof_search_index(repo)
+    entry = result.payload['preservedSnapshots'][0]
+    import json
+    with sqlite3.connect(index) as connection:
+        substituted = dict(entry)
+        substituted['metadata'] = {**entry['metadata'], 'sourceFingerprint': 'substituted'}
+        connection.execute('UPDATE index_history SET entry_json=?', (json.dumps(substituted),))
+    with pytest.raises(ProofSearchIndexError), open_history_snapshot(repo, index, entry['snapshotId']):
+        pass
+
+
+def test_unknown_layout_is_not_presented_as_supported_history(tmp_path):
+    repo, index = evidence_index(tmp_path)
+    with sqlite3.connect(index) as connection:
+        connection.execute('CREATE TABLE unknown_evidence(owner TEXT)')
+    with pytest.raises(ProofSearchIndexError):
+        list_history(repo)

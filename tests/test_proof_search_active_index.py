@@ -187,7 +187,7 @@ def _assert_lexical_tables_equal(updated: Path, clean: Path) -> None:
 @pytest.mark.parametrize("retained_kind", [
     "proofir", "binder", "lineage", "diagnostic", "v3-environment", "future-proofir",
 ])
-def test_incremental_update_refuses_retained_evidence_and_keeps_base(
+def test_incremental_update_preserves_supported_evidence_and_refuses_unknown(
     tmp_path: Path, retained_kind: str
 ) -> None:
     repo = sample_repository(tmp_path)
@@ -198,13 +198,22 @@ def test_incremental_update_refuses_retained_evidence_and_keeps_base(
         ).fetchone()[0]
         _insert_retained_evidence(connection, retained_kind, generation, repo)
     previous = database.read_bytes()
+    with sqlite3.connect(database) as connection:
+        retained_rows = _all_table_rows(connection)
     assert update_proof_search_index(repo).payload["status"] == "unchanged"
     assert database.read_bytes() == previous
     (repo / "Base.lean").write_text("def another : Nat := 1\n", encoding="utf-8")
-    with pytest.raises(ProofSearchIndexError) as raised:
-        update_proof_search_index(repo)
-    assert raised.value.code == "full-build-required"
-    assert database.read_bytes() == previous
+    if retained_kind == "future-proofir":
+        with pytest.raises(ProofSearchIndexError) as raised:
+            update_proof_search_index(repo)
+        assert raised.value.code == "full-build-required"
+        assert database.read_bytes() == previous
+    else:
+        result = update_proof_search_index(repo)
+        assert result.payload["status"] == "complete"
+        entry = result.payload["preservedSnapshots"][0]
+        archive = database.with_name(database.name + ".history") / entry["path"]
+        _assert_retained_archive(archive, entry, retained_rows, database, previous)
 
 
 def _insert_retained_evidence(
@@ -372,7 +381,7 @@ def test_incremental_update_publication_failure_preserves_base(
         raise OSError("injected publication failure")
 
     monkeypatch.setattr(owner, "durable_replace", fail_publication)
-    with pytest.raises(OSError, match="injected publication failure"):
+    with pytest.raises(ProofSearchIndexError, match="injected publication failure"):
         update_proof_search_index(repo)
     assert database.read_bytes() == original
     assert not list(database.parent.glob(".proof-search.sqlite.*.tmp"))
@@ -432,3 +441,18 @@ end Demo
         encoding="utf-8",
     )
     return root
+
+
+def _all_table_rows(connection):
+    tables = connection.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
+    return {name: sorted(connection.execute('SELECT * FROM "' + name.replace('"', '""') + '"').fetchall(), key=repr)
+            for (name,) in tables}
+
+
+def _assert_retained_archive(archive, entry, retained_rows, database, previous):
+    import hashlib
+    assert hashlib.sha256(archive.read_bytes()).hexdigest() == entry["snapshotId"]
+    assert archive.stat().st_size == entry["bytes"]
+    with sqlite3.connect(archive) as connection:
+        assert _all_table_rows(connection) == retained_rows
+    assert database.read_bytes() != previous

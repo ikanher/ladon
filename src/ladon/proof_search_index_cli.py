@@ -32,7 +32,14 @@ def _dispatch_index(
         ).payload
         return payload
     if args.index_operation == "update":
-        return update_proof_search_index(repo_root, index_path=index_path).payload
+        return update_proof_search_index(
+            repo_root, index_path=index_path,
+            max_history_bytes=args.max_history_mib * 1024 * 1024 if args.max_history_mib else None,
+        ).payload
+    if args.index_operation == "history":
+        from ladon.proof_search_history import list_history
+
+        return list_history(repo_root, index_path=index_path, limit=args.limit, offset=args.offset)
     if args.index_operation == "list":
         return list_indexes(repo_root, directory=args.directory, limit=args.limit)
     if args.index_operation == "prune":

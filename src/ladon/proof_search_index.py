@@ -235,6 +235,9 @@ def build_proof_search_index(
     destination.parent.mkdir(parents=True, exist_ok=True)
     lock = _acquire_build_lock(destination)
     try:
+        from ladon.proof_search_history_store import refuse_history_replacement
+
+        refuse_history_replacement(destination)
         _build_progress(progress, "discovery")
         snapshot = capture_repository_snapshot(root)
         temporary = _temporary_database_path(destination)
@@ -276,12 +279,13 @@ def update_proof_search_index(
     repo_root: Path,
     *,
     index_path: Path | None = None,
+    max_history_bytes: int | None = None,
 ) -> IndexBuildResult:
     """Refresh a compatible lexical generation without changing the public API."""
 
     from ladon.proof_search_index_update import update_proof_search_index as update
 
-    return update(repo_root, index_path=index_path)
+    return update(repo_root, index_path=index_path, max_history_bytes=max_history_bytes)
 
 
 def inspect_proof_search_index(
@@ -303,13 +307,21 @@ def inspect_proof_search_index(
     try:
         with _open_readonly(database) as connection:
             metadata = _metadata(connection)
+            from ladon.proof_search_history_schema import require_supported_layout
+
+            _require_query_schema(metadata)
+            require_supported_layout(connection, verify_integrity=False)
             counts = _database_counts(connection)
             stored_sources = _stored_sources(connection) if verify_sources else {}
             indexes = schema_lookup_indexes(connection)
             index_columns = schema_index_columns(connection)
             query_surfaces = schema_query_surfaces(connection)
             foreign_keys = schema_foreign_keys(connection)
-    except (OSError, sqlite3.Error, ValueError) as exc:
+            from ladon.proof_search_history import history_status
+            from ladon.proof_search_history_store import read_history
+
+            retained_history = history_status(database, read_history(connection))
+    except (OSError, sqlite3.Error, ValueError, ProofSearchIndexError) as exc:
         return _unavailable_status(root, database, f"index_unreadable: {exc}")
     freshness, current_generation, source_changes = _freshness_details(
         root, metadata, stored_sources, verify_sources=verify_sources,
@@ -330,6 +342,8 @@ def inspect_proof_search_index(
         "helperIdentity": metadata.get("helperIdentity"),
         "currentGenerationIdentity": current_generation,
         "freshness": freshness,
+        "history": retained_history,
+        "currentEvidenceAssociation": "not-established",
         "sourceChanges": source_changes,
         "generationIdentityMeaning": "stored rows in the queried index",
         "currentGenerationIdentityMeaning": "currently observed supported inputs",
@@ -392,6 +406,9 @@ def query_proof_search_index(
         with _open_readonly(database) as connection:
             metadata = _metadata(connection)
             _require_query_schema(metadata)
+            from ladon.proof_search_history_schema import require_supported_layout
+
+            require_supported_layout(connection, verify_integrity=False)
             stored_sources = _stored_sources(connection) if freshness == "verify" else {}
             rows, truncated, selected_module_count, scope_omissions = query_name_database(
                 connection,
@@ -1288,10 +1305,9 @@ def _metadata(connection: sqlite3.Connection) -> dict[str, str]:
 def _require_query_schema(metadata: Mapping[str, str]) -> None:
     """Reject stale query layouts before any schema-specific SQL executes."""
 
-    if (
-        metadata.get("indexSchema") != PROOF_SEARCH_INDEX_SCHEMA
-        or metadata.get("schemaGeneration") != PROOF_SEARCH_SCHEMA_GENERATION
-    ):
+    from ladon.proof_search_history_schema import supported_index_schema
+
+    if not supported_index_schema(metadata):
         raise ProofSearchIndexError(
             "proof-search index schema is incompatible; rebuild it before querying"
         )

@@ -67,6 +67,12 @@ def _inspect(repo_root: Path, path: Path, *, owner_held: bool = False) -> dict[s
 def _inspect_candidate(
     repo_root: Path, path: Path, row: dict[str, Any], *, owner_held: bool
 ) -> dict[str, Any]:
+    from ladon.proof_search_history_store import history_directory
+
+    folder = history_directory(path)
+    if folder.exists() or folder.is_symlink():
+        row["reason"] = "retained-or-uncertain-history"
+        return row
     row["publisher"] = "owned-by-cleanup" if owner_held else publication_lock_status(path)["status"]
     if path.name == "proof-search.sqlite":
         row["reason"] = "default-index"
@@ -92,11 +98,18 @@ def _inspect_sqlite(repo_root: Path, path: Path, row: dict[str, Any]) -> dict[st
             if metadata.get("repository") != str(repo_root.resolve()):
                 row["reason"] = "foreign-repository"
                 return row
+            from ladon.proof_search_history_schema import require_supported_layout
+            from ladon.proof_search_history_store import read_history
+
+            if read_history(connection):
+                row["reason"] = "retained-history"
+                return row
             retained = first_retained_evidence_table(connection)
             if retained is not None:
                 row["reason"] = f"retained-evidence:{retained}"
                 return row
-    except (OSError, sqlite3.Error, ValueError) as exc:
+            require_supported_layout(connection, verify_integrity=False)
+    except (OSError, sqlite3.Error, ValueError, ProofSearchIndexError) as exc:
         row["reason"] = f"unreadable-index:{exc}"
         return row
     row["classification"] = "disposable-private"

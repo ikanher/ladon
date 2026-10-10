@@ -32,6 +32,10 @@ def run_lineage_command(args: Any) -> int:
     started = time.monotonic()
     repo_root = Path(args.repo_root).resolve()
     index = _index_path(args, repo_root)
+    if getattr(args, "history", None) is not None:
+        from ladon.theorem_lineage_history import run_historical_lineage
+
+        return run_historical_lineage(args, repo_root, index)
     lock = None
     try:
         if args.refresh != "never":
@@ -168,6 +172,10 @@ def _progress(phase: str, detail: str) -> None:
 
 def _render_text(result: dict[str, Any]) -> str:
     lines = [f"Theorem lineage: {result.get('theorem', '')}", f"Status: {result.get('status', '')}"]
+    if result.get("selectionBasis") == "historical-snapshot":
+        lines.extend((f"Historical snapshot: {result['snapshotId']}",
+                      f"Original association: {result['historicalAssociation']}",
+                      "Current compiled association: not established"))
     lines.extend(receipt_text_lines(result.get("evidenceReceipt")))
     for route in result.get("routes", []):
         lines.append("  " + " -> ".join(route["nodes"]))

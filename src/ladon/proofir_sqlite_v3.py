@@ -1607,6 +1607,9 @@ def publish_v3_database(
         Path(str(temporary) + suffix) for suffix in ("-journal", "-wal", "-shm")
     ]
     try:
+        from ladon.proof_search_history_store import refuse_history_replacement
+
+        refuse_history_replacement(destination.absolute())
         with sqlite3.connect(temporary) as connection:
             connection.execute("PRAGMA foreign_keys = ON")
             connection.execute("PRAGMA journal_mode = DELETE")

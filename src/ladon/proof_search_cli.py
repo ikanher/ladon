@@ -95,6 +95,13 @@ def build_proof_search_parser() -> argparse.ArgumentParser:
     update = commands.add_parser("update", help="Explicitly refresh changed lexical modules.")
     _add_repository_options(update)
     _add_output_options(update)
+    update.add_argument("--max-history-mib", type=_positive_integer)
+
+    history = commands.add_parser("history", help="List preserved evidence snapshots.")
+    _add_repository_options(history)
+    _add_output_options(history)
+    history.add_argument("--limit", type=_positive_integer, default=100)
+    history.add_argument("--offset", type=int, default=0)
 
     status = commands.add_parser("status", help="Inspect index identity and freshness.")
     _add_repository_options(status)
@@ -661,6 +668,10 @@ def _write_payload(
 
 
 def _render_text(payload: Mapping[str, Any]) -> str:
+    if payload.get("schema") == "ladon-proof-search-index-history-v1":
+        from ladon.proof_search_history import render_history
+
+        return render_history(payload)
     if payload.get("schema") == "ladon-proof-search-index-lifecycle-v1":
         from ladon.proof_search_index_text import render_lifecycle
 

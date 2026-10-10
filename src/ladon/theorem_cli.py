@@ -95,6 +95,7 @@ def build_theorem_parser() -> argparse.ArgumentParser:
     lineage.add_argument("theorem", help="Fully qualified Lean theorem name.")
     _add_repository_options(lineage)
     lineage.add_argument("--index", help="Override the project-local proof-search SQLite index.")
+    lineage.add_argument("--history", help="Inspect an exact registered snapshot offline; requires --refresh never.")
     lineage.add_argument(
         "--view",
         choices=("summary", "graph", "routes", "spines", "tree", "bottlenecks"),

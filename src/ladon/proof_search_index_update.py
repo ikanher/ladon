@@ -6,10 +6,22 @@ import sqlite3
 import time
 from pathlib import Path
 
+from ladon.proof_search_history_schema import (
+    clear_retained_projection,
+    require_supported_layout,
+    semantic_modules,
+    supported_index_schema,
+)
+from ladon.proof_search_history_store import (
+    archive_base,
+    create_history_catalog,
+    enforce_history_budget,
+    history_directory,
+    read_history,
+    validate_history,
+)
 from ladon.proof_search_index import (
-    PROOF_SEARCH_INDEX_SCHEMA,
     PROOF_SEARCH_RESULT_SCHEMA,
-    PROOF_SEARCH_SCHEMA_GENERATION,
     IndexBuildResult,
     ProofSearchIndexError,
     _acquire_build_lock,
@@ -41,6 +53,7 @@ def update_proof_search_index(
     repo_root: Path,
     *,
     index_path: Path | None = None,
+    max_history_bytes: int | None = None,
 ) -> IndexBuildResult:
     """Reuse unchanged lexical modules in an owned, atomically published copy."""
 
@@ -58,34 +71,48 @@ def update_proof_search_index(
             base_generation = metadata.get("generationIdentity")
             old_sources = _stored_sources(old)
             changed, removed = _source_delta(snapshot, old_sources)
-            if not changed and not removed and metadata.get("generationIdentity") == snapshot.generation_identity:
+            history = read_history(old)
+            validate_history(destination, history)
+            enforce_history_budget(history_directory(destination), max_history_bytes)
+            if not changed and not removed:
                 _ensure_source_stable(root, snapshot)
                 return IndexBuildResult({
                     "schema": PROOF_SEARCH_RESULT_SCHEMA, "operation": "update",
                     "status": "unchanged", "indexPath": str(destination),
                     "baseGenerationIdentity": base_generation,
-                    "generationIdentity": snapshot.generation_identity,
+                    "generationIdentity": base_generation,
                     "reusedModules": len(snapshot.sources), "extractedModules": 0,
                     "sourceChanges": {"added": 0, "changed": 0, "removed": 0},
                     "databaseBytes": destination.stat().st_size,
                     "elapsedSeconds": round(time.monotonic() - started, 6),
                 })
-            if not changed and not removed:
-                raise _full_build_required("generation identity changed without a source delta")
-            _require_no_retained_evidence(old)
+            require_supported_layout(old)
+            retained = first_retained_evidence_table(old)
+            preserved = []
+            if retained is not None:
+                entry = archive_base(old, history_directory(destination), max_history_bytes)
+                entry["path"] = Path(entry["path"]).name
+                preserved.append(entry)
+                history = [row for row in history if row["snapshotId"] != entry["snapshotId"]] + preserved
+            recovery_modules = semantic_modules(old) - removed
             max_index_bytes = _integer_metadata(metadata, "maxIndexBytes")
             if not max_index_bytes:
                 raise _full_build_required("base index has no stored size policy")
             counts, temporary_bytes = _publish_copy(
-                root, destination, old, snapshot, changed, removed, max_index_bytes
+                root, destination, old, snapshot, changed | recovery_modules, removed,
+                max_index_bytes, history,
             )
         return IndexBuildResult({
             "schema": PROOF_SEARCH_RESULT_SCHEMA, "operation": "update",
             "status": "complete", "indexPath": str(destination),
             "baseGenerationIdentity": base_generation,
             "generationIdentity": snapshot.generation_identity, "freshness": "fresh",
-            "reusedModules": len(snapshot.sources) - len(changed),
-            "extractedModules": len(changed), "removedModules": len(removed),
+            "reusedModules": len(snapshot.sources) - len(changed | recovery_modules),
+            "extractedModules": len(changed | recovery_modules), "removedModules": len(removed),
+            "lexicalRecoveryModules": len(recovery_modules - changed - removed),
+            "preservedSnapshots": preserved,
+            "historyBytes": sum(row["bytes"] for row in history),
+            "currentEvidenceAssociation": "not-established",
             "sourceChanges": {
                 "added": len(changed - old_sources.keys()),
                 "changed": len(changed & old_sources.keys()),
@@ -116,19 +143,32 @@ def _source_delta(snapshot, old_sources):
 
 
 def _ensure_source_stable(root: Path, snapshot) -> None:
-    if capture_repository_snapshot(root).generation_identity != snapshot.generation_identity:
+    observed = capture_repository_snapshot(root)
+    if observed.generation_identity != snapshot.generation_identity:
+        from ladon.proof_search_freshness import _changed_sources
+
+        changes = _changed_sources(
+            _source_identity_rows(observed), _source_identity_rows(snapshot),
+        )
         raise ProofSearchIndexError(
             "supported repository inputs changed during index update",
             exit_class="operational", code="source-changed",
-            remediation="Retry when the source tree stops changing.",
+            remediation="Retry after concurrent edits settle.",
+            details={"sourceChanges": {kind: rows[:20] for kind, rows in changes.items()},
+                     "truncated": {kind: len(rows) > 20 for kind, rows in changes.items()}},
         )
 
 
-def _publish_copy(root, destination, old, snapshot, changed, removed, max_index_bytes):
+def _source_identity_rows(snapshot):
+    return {source.module: (source.relative_path, source.sha256, source.package,
+                            source.generated, source.source_bytes) for source in snapshot.sources}
+
+
+def _publish_copy(root, destination, old, snapshot, changed, removed, max_index_bytes, history):
     temporary = _temporary_database_path(destination)
     try:
         counts = _populate_updated_copy(
-            temporary, old, snapshot, changed, removed, max_index_bytes
+            temporary, old, snapshot, changed, removed, max_index_bytes, history
         )
         if temporary.stat().st_size > max_index_bytes:
             raise _index_storage_limit_error(max_index_bytes)
@@ -136,6 +176,14 @@ def _publish_copy(root, destination, old, snapshot, changed, removed, max_index_
         _ensure_source_stable(root, snapshot)
         durable_replace(temporary, destination)
         return counts, temporary_bytes
+    except OSError as error:
+        uncertain = not temporary.exists()
+        raise ProofSearchIndexError(
+            f"index publication {'durability is uncertain' if uncertain else 'failed'}: {error}",
+            exit_class="operational",
+            code="publication-uncertain" if uncertain else "publication-failed",
+            remediation="Inspect the active generation and retained history before retrying.",
+        ) from error
     except sqlite3.Error as exc:
         if "database or disk is full" in str(exc).lower():
             raise _index_storage_limit_error(max_index_bytes) from exc
@@ -144,12 +192,14 @@ def _publish_copy(root, destination, old, snapshot, changed, removed, max_index_
         temporary.unlink(missing_ok=True)
 
 
-def _populate_updated_copy(temporary, old, snapshot, changed, removed, max_index_bytes):
+def _populate_updated_copy(temporary, old, snapshot, changed, removed, max_index_bytes, history):
     with sqlite3.connect(temporary) as copy:
         old.backup(copy)
     with sqlite3.connect(temporary) as copy:
         copy.execute("PRAGMA foreign_keys = ON")
         copy.execute("PRAGMA synchronous = FULL")
+        clear_retained_projection(copy)
+        create_history_catalog(copy, history)
         page_size = int(copy.execute("PRAGMA page_size").fetchone()[0])
         copy.execute(f"PRAGMA max_page_count = {max(1, max_index_bytes // page_size)}")
         # FTS5's external-content index has no deletion triggers.
@@ -181,6 +231,7 @@ def _populate_updated_copy(temporary, old, snapshot, changed, removed, max_index
         _insert_proofir_catalog(copy, snapshot)
         copy.execute("DELETE FROM metadata")
         _insert_metadata(copy, snapshot, max_index_bytes=max_index_bytes)
+        copy.execute("PRAGMA user_version = 6")
         copy.execute("PRAGMA optimize")
         copy.commit()
         _validate_database(copy)
@@ -189,9 +240,7 @@ def _populate_updated_copy(temporary, old, snapshot, changed, removed, max_index
 
 
 def _require_compatible_base(metadata, snapshot, root: Path) -> None:
-    if metadata.get("indexSchema") != PROOF_SEARCH_INDEX_SCHEMA or (
-        metadata.get("schemaGeneration") != PROOF_SEARCH_SCHEMA_GENERATION
-    ):
+    if not supported_index_schema(metadata):
         raise _full_build_required("base index schema is incompatible")
     if metadata.get("repository") != str(root):
         raise _full_build_required("index belongs to another repository")
@@ -201,15 +250,9 @@ def _require_compatible_base(metadata, snapshot, root: Path) -> None:
         raise _full_build_required("toolchain, configuration or source layout changed")
 
 
-def _require_no_retained_evidence(old) -> None:
-    table = first_retained_evidence_table(old)
-    if table is not None:
-        raise _full_build_required(f"retained {table} evidence needs its original generation")
-
-
 def _full_build_required(reason: str) -> ProofSearchIndexError:
     return ProofSearchIndexError(
         f"incremental update needs an explicit full build: {reason}",
         exit_class="operational", code="full-build-required",
-        remediation="Run 'ladon proof-search index build' with the intended --repo-root and --index.",
+        remediation="Preserve the old index; build with the intended --repo-root and a new --index path.",
     )

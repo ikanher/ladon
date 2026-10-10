@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import sqlite3
 
-PROOF_SEARCH_INDEX_SCHEMA = "ladon-proof-search-index-v5"
-PROOF_SEARCH_INDEX_SCHEMA_VERSION = 5
-PROOF_SEARCH_SCHEMA_GENERATION = "sqlite-v5-name2-fts2-lineage1-proofir1"
+PROOF_SEARCH_INDEX_SCHEMA = "ladon-proof-search-index-v6"
+PROOF_SEARCH_INDEX_SCHEMA_VERSION = 6
+PROOF_SEARCH_SCHEMA_GENERATION = "sqlite-v6-name2-fts2-lineage1-proofir1-history1"
+LEGACY_INDEX_SCHEMA = "ladon-proof-search-index-v5"
+LEGACY_SCHEMA_GENERATION = "sqlite-v5-name2-fts2-lineage1-proofir1"
 PROOF_SEARCH_HELPER_IDENTITY = "lexical-navigation-v3;theorem-lineage-v2;proofir-catalog-v3"
 
 REQUIRED_LOOKUP_INDEX_COLUMNS = {
@@ -98,6 +100,11 @@ def create_proof_search_schema(connection: sqlite3.Connection) -> None:
         CREATE TABLE metadata (
             key TEXT PRIMARY KEY,
             value TEXT NOT NULL
+        );
+
+        CREATE TABLE index_history (
+            snapshot_id TEXT PRIMARY KEY,
+            entry_json TEXT NOT NULL
         );
 
         CREATE TABLE source_roots (
