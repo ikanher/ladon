@@ -1,0 +1,69 @@
+{
+  "caseId": "7efc5c13032b",
+  "arm": "ordinary",
+  "verdict": "faithful",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 2,
+      "quote": "For integers x and y, establish that x + y equals y + x. One proof can rearrange terms using commutativity; another can evaluate equality by the integer expression procedure."
+    }
+  ],
+  "explanation": "The passage states the correct endpoint and offers two proof routes. The supplied Lean source defines arithmeticEvaluation (x y : Int) : x + y = y + x using omega, then proves result by exact arithmeticEvaluation x y. That formal proof does not itself rearrange terms with an explicit commutativity theorem; it matches the second, broadly worded arithmetic-procedure route. If ‘integer expression procedure’ is meant to mean only evaluation of closed numeral expressions, it is too narrow for this variable equality; under the ordinary reading of an integer arithmetic decision procedure, omega fits. The first route is a valid alternative but is not the route used in the supplied proof.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "The passage presents commutativity and an integer arithmetic procedure as alternative ways to prove the same universally quantified equality.",
+      "dependencies": [
+        "x and y range over Int.",
+        "The equality is x + y = y + x."
+      ],
+      "qualification": "The phrase ‘integer expression procedure’ is not defined. The correspondence to omega holds when it means a symbolic integer arithmetic procedure; a ground-only evaluator could not evaluate the variables."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "Lean check",
+      "attribution": "Executed in this ordinary arm.",
+      "detail": "Lean 4.32.1 imported Main and printed arithmeticEvaluation (x y : Int) : x + y = y + x and result (x y : Int) : x + y = y + x. An additional example applying arithmeticEvaluation to the same endpoint elaborated successfully (exit 0). The supplied Main.lean source shows arithmeticEvaluation proved by omega and result proved with exact arithmeticEvaluation x y. This checks the declaration types/application and documents the supplied proof route; it does not test a separate commutativity proof."
+    },
+    {
+      "kind": "mathematical reasoning",
+      "attribution": "Not separately formalized in this arm.",
+      "detail": "Integer addition is commutative, so the endpoint itself is true; this fact does not imply that the supplied proof explicitly used commutativity."
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/15-7efc5c13032b-ordinary/output/Check.lean"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/15-7efc5c13032b-ordinary/input",
+      "env": {
+        "LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/15-7efc5c13032b-ordinary/input"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.4339403389021754,
+      "stdout": "arithmeticEvaluation (x y : Int) : x + y = y + x\nresult (x y : Int) : x + y = y + x\n",
+      "stderr": "",
+      "receipt": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/15-7efc5c13032b-ordinary/output/lean-check-receipt.json"
+    }
+  ],
+  "omissions": [
+    "No separate proof using commutativity was executed; it is an alternative described by the prose, not the supplied proof route.",
+    "The phrase ‘integer expression procedure’ has no formal definition in the source, so a ground-expression-only reading remains unsupported by the variable theorem.",
+    "No Ladon, online/model API, package installation, Lake command, or shared build was used."
+  ],
+  "identities": {
+    "source.txt": "e0feaf33151961828ce9972995fd2e3511b7ac7f63813b12eee475353e0da5f4",
+    "Main.lean": "edb28e68e9dbf8c31a66b7da0ba8027f951216193aeeb53bb1534c2d13df273f",
+    "Main.olean": "2c9a6a438ec769e049598943824a84bb95dfb7ae56dc2652735a5bdc3d02a0e3",
+    "lean-toolchain": "8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af"
+  },
+  "checker": {
+    "identity": "Lean (version 4.32.1, x86_64-unknown-linux-gnu, commit f054605aea4b840552cca2e725580bffd1e1b704, Release)",
+    "toolUse": "Local Lean executable only; no assisted tool or other API."
+  }
+}

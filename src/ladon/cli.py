@@ -93,6 +93,7 @@ commands:
   theorem   Plan, materialize, and independently replay theorem capsules.
   proof-search  Build and query local Lean proof-navigation evidence.
   proofir       Validate, canonicalize, or inspect ProofIR artifacts.
+  investigation Inventory source-bound claims and gate audit finalization.
   runset    Execute a versioned set of ordinary analyses.
   preview   Resolve roots, scope, policies, and costs without target execution.
   inspect   Inspect canonical rows from one existing report or source index.
@@ -290,7 +291,9 @@ def build_parser() -> argparse.ArgumentParser:
         default="generic",
         help="Evidence profile used for --packet-dir summaries.",
     )
-    parser.add_argument("--verify-export-surface", action="store_true")
+    parser.add_argument(
+        "--verify-export-surface", action="store_true", help=argparse.SUPPRESS
+    )
     parser.add_argument("--certificate-artifact", action="append", default=[])
     return parser
 
@@ -324,20 +327,19 @@ def selected_roots(args: argparse.Namespace) -> tuple[str, ...]:
 
 def delegated_command(arguments: Sequence[str]) -> int | None:
     """Dispatch an installed subcommand before parsing analysis options."""
+    from importlib import import_module
 
-    if arguments and arguments[0] == "theorem":
-        from ladon.theorem_cli import theorem_main
-
-        return theorem_main(arguments[1:])
-    if arguments and arguments[0] == "proof-search":
-        from ladon.proof_search_cli import proof_search_main
-
-        return proof_search_main(arguments[1:])
-    if arguments and arguments[0] == "runset":
-        from ladon.runset_cli import runset_main
-
-        return runset_main(arguments[1:])
-    if arguments and arguments[0] in REPORTSET_COMMANDS:
+    commands = {
+        "investigation": ("ladon.investigation_cli", "investigation_main"),
+        "theorem": ("ladon.theorem_cli", "theorem_main"),
+        "proof-search": ("ladon.proof_search_cli", "proof_search_main"),
+        "runset": ("ladon.runset_cli", "runset_main"),
+    }
+    command = arguments[0] if arguments else None
+    if command in commands:
+        module, function = commands[command]
+        return getattr(import_module(module), function)(arguments[1:])
+    if command in REPORTSET_COMMANDS:
         return reportset_main(arguments)
     return None
 

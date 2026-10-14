@@ -1,0 +1,237 @@
+{
+  "caseId": "4549693104b8",
+  "arm": "assisted",
+  "verdict": "faithful",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "A proposition P is true, and P implies Q. Applying that implication yields Q."
+    }
+  ],
+  "explanation": "The prose supplies P and P → Q and concludes Q by applying the implication. In Main.lean, result has exactly the corresponding context hp : P and hpq : P → Q and result type Q; its selected body is modusPonens P Q hp hpq. The separately declared modusPonens is proved by exact hpq hp. Thus the stated inference and the described application agree. The actual source-bound Ladon slice was complete and showed both local premises and result type. Ladon’s generated conditional-validity obligation was supported by elaborating and replaying the extracted closed proof. Its four other generated correspondence obligations were unresolved because the supplied terms failed checker validation; this does not refute the inference or affect the direct conditional check. The prose-to-formula encoding remains an attributed interpretation, not a machine certification of author intent.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "P and P → Q are the premises; Q is the conclusion. “Applying that implication” means modus ponens.",
+      "dependencies": [
+        "P",
+        "P → Q"
+      ],
+      "qualification": "The bound interpretation was authored from the full supplied sentence and bound to source.txt bytes. Its fidelity is attributed and unreviewed; the direct Lean context independently matches the interpretation."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "source-bound-extraction",
+      "source": "Main.lean",
+      "declaration": "result",
+      "application": "modusPonens P Q hp hpq",
+      "occurrence": 0,
+      "status": "complete",
+      "sliceId": "7cbd204243daff3723b586747b60af170c15116550980059c53341d03d6ad605",
+      "sourceSha256": "b47104718eef4532571b0688845ae6e168661f63910c1b2600513f719dd53ea2",
+      "helperSha256": "280b46403dc0f61a24b86600b3aa455d39dea76f50c60a2e68ab50b5f8f397f6",
+      "environment": "sha256:6c03bbee72cbba8c7882075acdd76ab7b59eb1253d3095ec60c6df97d6e7377c",
+      "observedPremises": [
+        "P provided by hp",
+        "P → Q provided by hpq"
+      ],
+      "resultType": "Q"
+    },
+    {
+      "kind": "formal-replay",
+      "claim": "Selected result proof has the type ∀ (P Q : Prop) (hp : P) (hpq : P → Q), Q.",
+      "checker": "Ladon correspondence check with installed Lean 4.32.1; output check.json",
+      "status": "conditional-validity supported; attributed parent correspondence unresolved",
+      "implementationDigest": "sha256:96f8bc1983e28aae07df70f8feecc50e86e9d34b50890167c3425b9d6967c2cf",
+      "automaticTerm": "fun (P Q : Prop) (hp : P) (hpq : P → Q) => modusPonens P Q hp hpq",
+      "qualification": "The conditional check used the exact extracted closed proof and succeeded. Premise-supply, object-map, and conclusion-transfer supplied terms were rejected (including incorrect binder arity/projection); no claim is made that these generated obligations were checked successfully."
+    },
+    {
+      "kind": "formal-source-proof",
+      "claim": "modusPonens P Q hp hpq proves Q from hp : P and hpq : P → Q.",
+      "attribution": "Mathematical reading of actual Main.lean; the source states exact hpq hp."
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "proof",
+        "slice",
+        "--repo",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/input",
+        "--source",
+        "Main.lean",
+        "--module",
+        "Main",
+        "--declaration",
+        "result",
+        "--application",
+        "modusPonens",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/slice.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 6.303594084,
+      "stdout": "",
+      "stderr": "",
+      "outputPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/slice.json",
+      "toolReceipts": "slice.json processReceipts"
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "interpret",
+        "--record",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/interpretation.json",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/input",
+        "--slice",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/slice.json",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/interpretation-bound.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.009465,
+      "stdout": "",
+      "stderr": "",
+      "outputPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/interpretation-bound.json"
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "align",
+        "--interpretation",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/interpretation-bound.json",
+        "--slice",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/slice.json",
+        "--map",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/map.json",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/input",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/plan.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.017377563,
+      "stdout": "",
+      "stderr": "",
+      "outputPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/plan.json"
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "check",
+        "--plan",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/plan.json",
+        "--terms",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/terms.json",
+        "--repo",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/input",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/input",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/check.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 140.696767,
+      "stdout": "",
+      "stderr": "",
+      "outputPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/check.json",
+      "toolReceipts": "check.json (all generated captures/completions, typechecks, replay receipts)"
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "proof",
+        "slice",
+        "--repo",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/input",
+        "--source",
+        "Main.lean",
+        "--module",
+        "Main",
+        "--declaration",
+        "result",
+        "--application",
+        "modusPonens",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/07-4549693104b8-assisted/output/slice.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 127,
+      "elapsedSeconds": 1.1491e-05,
+      "stdout": "",
+      "stderr": "/bin/bash: line 1: /home/codex/.venv/bin/python: No such file or directory"
+    }
+  ],
+  "omissions": [
+    "No independent standalone Lean command was run; proof checks occurred through Ladon using pinned Lean 4.32.1 and the installed standard library.",
+    "No unexecuted proof is presented as checked.",
+    "No interpretation review was available in this first response.",
+    "Generated premise-supply/object-map/conclusion-transfer proofs remained unresolved after the submitted proof terms were rejected.",
+    "No online/model API, added package, download, Lake build, or shared build was used."
+  ],
+  "identities": {
+    "inputs": {
+      "source.txt": "sha256:7aa841f9d915913170a64c94045b61462c2b70ce24c4a62b95f64a777b49caef",
+      "Main.lean": "sha256:b47104718eef4532571b0688845ae6e168661f63910c1b2600513f719dd53ea2",
+      "Main.olean": "sha256:ae41d74d5aa1055d7a27a27250e8532ac3d37e6eb926996fe128417d573d02b7",
+      "lean-toolchain": "sha256:8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af"
+    },
+    "lean": "Lean 4.32.1; commit f054605aea4b840552cca2e725580bffd1e1b704; executable /home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+    "tool": "Ladon current checkout; correspondence checker digest above",
+    "toolObservedTimingSeconds": {
+      "slice": 6.303594084,
+      "interpret": 0.009465,
+      "align": 0.017377563,
+      "check": 110.692
+    }
+  },
+  "outputs": [
+    "slice.json",
+    "interpretation.json",
+    "interpretation-bound.json",
+    "map.json",
+    "plan.json",
+    "terms.json",
+    "check.json"
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "schema": "ladon-derivation-challenge-v1",
+  "scope": {
+    "path": "rational-05/source.txt",
+    "sha256": "c58430ba93e7d8f9df5e71ab50e843d9582465f68fbd4a446674cffe4988d786",
+    "startLine": 1,
+    "endLine": 1
+  },
+  "claim": {
+    "id": "rational-05",
+    "unit": "unit-0001",
+    "startLine": 1,
+    "endLine": 1,
+    "quote": "For rational x and y, if x plus y equals zero, then x equals zero.",
+    "contract": {
+      "objects": "Rational scalars: x, y",
+      "assumptions": "[{\"left\": {\"args\": [{\"var\": \"x\"}, {\"var\": \"y\"}], \"op\": \"add\"}, \"op\": \"eq\", \"right\": {\"rat\": 0}}]",
+      "domains": "Every declared variable ranges over the rational numbers.",
+      "quantifiers": "For all declared variables satisfying every premise.",
+      "conclusion": "{\"left\": {\"var\": \"x\"}, \"op\": \"eq\", \"right\": {\"rat\": 0}}",
+      "dependencies": "Only the explicitly supplied premises; inspect the source argument.",
+      "neededImplication": "The premises jointly imply exactly the encoded conclusion."
+    }
+  },
+  "author": "case-transcriber",
+  "steps": [
+    {
+      "id": "inference",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "For rational x and y, if x plus y equals zero, then x equals zero.",
+      "contract": {
+        "objects": "Rational scalars: x, y",
+        "assumptions": "[{\"left\": {\"args\": [{\"var\": \"x\"}, {\"var\": \"y\"}], \"op\": \"add\"}, \"op\": \"eq\", \"right\": {\"rat\": 0}}]",
+        "domains": "Every declared variable ranges over the rational numbers.",
+        "quantifiers": "For all declared variables satisfying every premise.",
+        "conclusion": "{\"left\": {\"var\": \"x\"}, \"op\": \"eq\", \"right\": {\"rat\": 0}}",
+        "dependencies": "Only the explicitly supplied premises; inspect the source argument.",
+        "neededImplication": "The premises jointly imply exactly the encoded conclusion."
+      },
+      "rule": "The inference stated in the source quotation.",
+      "substitution": "Each scalar name refers to the same rational in source and AST.",
+      "dependsOn": [],
+      "arithmetic": {
+        "variables": [
+          "x",
+          "y"
+        ],
+        "premises": [
+          {
+            "op": "eq",
+            "left": {
+              "op": "add",
+              "args": [
+                {
+                  "var": "x"
+                },
+                {
+                  "var": "y"
+                }
+              ]
+            },
+            "right": {
+              "rat": 0
+            }
+          }
+        ],
+        "conclusion": {
+          "op": "eq",
+          "left": {
+            "var": "x"
+          },
+          "right": {
+            "rat": 0
+          }
+        }
+      },
+      "subjectSha256": "91c516b52e0fcf684eb0f573f059f2d37adbc94b4e08f41d3fe00dc66020bbe6"
+    }
+  ],
+  "instructions": "Challenge each original implication. Save first responses separately; a sampled success is not a proof. Reviewer identity and interpretation remain attributed, and this packet does not enforce filesystem isolation."
+}

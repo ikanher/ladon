@@ -1,0 +1,95 @@
+{
+  "id": "B11-cubic-endpoint",
+  "source": {
+    "path": "runs/independent-01/exposition.txt",
+    "startLine": 7782,
+    "endLine": 7796,
+    "quote": "   The analytic scalar comparison function is\n                                                      (−z/2)α\n                                          f 0 (z) = ∑               .\n                                                  α≥0 α! ( α + 1) !\nFor 0 ≤ z ≤ 4.1, set t = z/2. The alternating tail after the cubic term has decreasing\nmagnitudes, and hence\n                             t    t2    t3      305719\n                  f 0 (z) ≥ 1 −+     −      ≥            > .265,    f 0 (z) ≤ 1.       (B.11)\n                             2 12 144          1152000\nThe cubic is decreasing on [0, 2.05], giving its stated endpoint value. For the upper bound\ngroup the alternating tail after the constant term; its magnitudes decrease from the linear\nterm onward.\nProposition B.2. With the axis data of Section B.1, there are Λ0 and, for each Λ ≥ Λ0 , an amplitude\nthreshold C0 (Λ) such that every C ≥ C0 (Λ) admits an analytic axis profile with vanishing leading\nresidual stress on 0 ≤ Y = ΛX ≤ 4.1. It has the form",
+    "sha256": "168ebbc105b9685ee7310341a7cc227eab9dd59ec255c9ac77ce98c47d2839b6"
+  },
+  "formula": {
+    "tag": "forall",
+    "binder": {
+      "id": "t",
+      "name": "t",
+      "domain": "ℝ"
+    },
+    "body": {
+      "tag": "implies",
+      "premise": {
+        "tag": "and",
+        "items": [
+          {
+            "tag": "le",
+            "left": {
+              "tag": "const",
+              "name": "0"
+            },
+            "right": {
+              "tag": "var",
+              "id": "t"
+            }
+          },
+          {
+            "tag": "le",
+            "left": {
+              "tag": "var",
+              "id": "t"
+            },
+            "right": {
+              "tag": "app",
+              "symbol": "realDiv",
+              "args": [
+                {
+                  "tag": "const",
+                  "name": "41"
+                },
+                {
+                  "tag": "const",
+                  "name": "20"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "conclusion": {
+        "tag": "le",
+        "left": {
+          "tag": "app",
+          "symbol": "realDiv",
+          "args": [
+            {
+              "tag": "const",
+              "name": "305719"
+            },
+            {
+              "tag": "const",
+              "name": "1152000"
+            }
+          ]
+        },
+        "right": {
+          "tag": "app",
+          "symbol": "cubic",
+          "args": [
+            {
+              "tag": "var",
+              "id": "t"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "symbols": {
+    "realDiv": {
+      "leanName": "HDiv.hDiv",
+      "leanType": "ℝ → ℝ → ℝ"
+    },
+    "cubic": {
+      "leanName": "NavierStokes.AxisProfile.cubicLower",
+      "leanType": "ℝ → ℝ"
+    }
+  }
+}

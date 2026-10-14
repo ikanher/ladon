@@ -1,0 +1,86 @@
+{
+  "caseId": "85f7f1c843c4",
+  "arm": "ordinary",
+  "verdict": "method-difference",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "At a small archive, each record is either tagged local or remote. The first record is local, and all local records are retained. The clerk concludes that the first record carries catalog code 7. A separate inventory note says that this record carries catalog code 7."
+    }
+  ],
+  "explanation": "Under the natural reading that “this record” refers to the first record, the endpoint that it carries code 7 is independently stated by the inventory note. The Lean theorem result proves its codeSeven endpoint from hIndependent : codeSeven by applying inventoryRecordCode. It separately forms _hRetained from hNearby and hRule, but does not use that value or the locality/retention reasoning to derive the code. This is a method difference: the supplied theorem’s effective justification corresponds to the independent inventory note, while the clerk’s locality/retention route is not formalized as a route to the code. The formal source has only generic propositions (nearby, retained, codeSeven), so the exact record identity and the prose-to-proposition mapping remain informal; the verdict relies on the ordinary referent reading of “this record.”",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "“this record” refers to the first record",
+      "dependencies": [
+        "the inventory note states that this record has catalog code 7"
+      ],
+      "qualification": "On this reading the endpoint is supported directly, independent of locality and retention."
+    },
+    {
+      "meaning": "the clerk’s preceding locality/retention facts are intended as the reason for the code conclusion",
+      "dependencies": [
+        "first record is local",
+        "all local records are retained"
+      ],
+      "qualification": "Those facts alone do not state or imply a catalog code in the supplied formalization; the actual theorem instead assumes codeSeven directly as hIndependent."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "checked Lean output",
+      "detail": "Lean printed result as fun nearby retained codeSeven hNearby hRule hIndependent => have _hRetained := localRetention nearby retained hNearby hRule; inventoryRecordCode codeSeven hIndependent. The output also says result does not depend on any axioms. See lean.stdout.txt."
+    },
+    {
+      "kind": "source identity",
+      "detail": "source.txt SHA-256 1e89e02c92a1798a827c656381aaf841de10ae4c3fe89f827397cdd98fdd82fe; Main.lean SHA-256 dba78d7582e328e06e9e11073a6e24a82a0a19c35be6ab78f9635ed1d7b0ef77; Main.olean SHA-256 cb262c922476e7bd92180a012b803852773583c36afb04ab02984e3ef1977f37; lean-toolchain SHA-256 8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af."
+    },
+    {
+      "kind": "observed tool use",
+      "detail": "Used only local Lean v4.32.1 and standard library; no Ladon, online source, or model API. Successful Lean invocation elapsed 0.4217687069904059 seconds."
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "Check.lean"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/01-85f7f1c843c4-ordinary/input",
+      "env": {
+        "LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/01-85f7f1c843c4-ordinary/input"
+      },
+      "exitCode": 1,
+      "elapsedSeconds": 0.03082212689332664,
+      "stdoutPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/01-85f7f1c843c4-ordinary/output/lean.failed.stdout.txt",
+      "stderrPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/01-85f7f1c843c4-ordinary/output/lean.failed.stderr.txt",
+      "stdout": "",
+      "stderr": "no such file or directory (error code: 4294967294)\n  file: Check.lean\n"
+    },
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/01-85f7f1c843c4-ordinary/output/Check.lean"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/01-85f7f1c843c4-ordinary/input",
+      "env": {
+        "LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/01-85f7f1c843c4-ordinary/input"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.4217687069904059,
+      "stdoutPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/01-85f7f1c843c4-ordinary/output/lean.stdout.txt",
+      "stderrPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/01-85f7f1c843c4-ordinary/output/lean.stderr.txt",
+      "stdout": "theorem result : ∀ (nearby retained codeSeven : Prop), nearby → (nearby → retained) → codeSeven → codeSeven :=\nfun nearby retained codeSeven hNearby hRule hIndependent =>\n  have _hRetained := localRetention nearby retained hNearby hRule;\n  inventoryRecordCode codeSeven hIndependent\n'result' does not depend on any axioms\nresult (nearby retained codeSeven : Prop) (hNearby : nearby) (hRule : nearby → retained) (hIndependent : codeSeven) :\n  codeSeven\n",
+      "stderr": ""
+    }
+  ],
+  "omissions": [
+    "No direct Lean refutation was attempted: the passage’s natural endpoint reading is directly supported by its inventory sentence and by hIndependent in result.",
+    "The failed initial Lean invocation (Check.lean relative to the input directory) was retained; the corrected invocation checked output/Check.lean successfully.",
+    "No formal encoding of the prose entities or their identity was supplied or constructed; the interpretation mapping remains informal.",
+    "No Ladon use, Lake build, package installation, downloads, or cache operations."
+  ]
+}

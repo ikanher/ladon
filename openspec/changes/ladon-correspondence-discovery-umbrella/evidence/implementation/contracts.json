@@ -1,0 +1,61 @@
+{
+  "kind": "ordinary attributed comparison worksheet, not a Ladon v1 schema",
+  "comparisons": [
+    {
+      "id": "inverse",
+      "claimSource": {
+        "path": "inverse-passage.txt",
+        "locator": "Lemma 8.6 / (8.19), pages 95\u201396",
+        "sha256": "06c6f53efae976434009ba37786d7e79ef583f0058aba5c990576be656a9fa00"
+      },
+      "formalSource": {
+        "path": "formal-sources/NavierStokes/SmoothFamilyTorusInverse.lean",
+        "line": 1059,
+        "name": "NavierStokes.SmoothFamilyTorusInverse.norm_derivativeWord_inverse_le",
+        "sha256": "165c097077dc3687fd1d6f93c356059e5254be17c799950873f54d91a71e90c8"
+      },
+      "context": "smooth zero-mean torus source; fixed direction and slow parameters; integer m>=0",
+      "claim": "C^m output <= C_m * C^(m+4) input",
+      "formal": "order m output bounded from input size and two pure jets of order m+5; finite-order maximum gives C^(m+5)-based guarantee",
+      "constants": "chosen independently of F; may depend on m and fixed direction",
+      "neededImplication": "Prose context -> formal premises -> exact four-loss quantitative conclusion",
+      "statementJudgment": "cited estimate has a weaker quantitative guarantee; strengthening unresolved",
+      "methodJudgment": "different Fourier decay exponent: prose -3; cited formal proof -4",
+      "authority": "Codex source review; answer-informed",
+      "checks": [
+        "runs/target-01/record.json"
+      ],
+      "unresolved": "No original four-loss adapter or counterexample to the original paper estimate obtained."
+    },
+    {
+      "id": "pressure",
+      "claimSource": {
+        "path": "comparison-passage.txt",
+        "locator": "Lemma 10.5 / (10.19), pages 122\u2013123",
+        "sha256": "91ff3427242625a805f197dcafd6217d6d48b4416d770fd3357b73dd8952beff"
+      },
+      "formalSource": {
+        "path": "formal-sources/NavierStokes/R3/PressureFlux.lean",
+        "line": 576,
+        "name": "NavierStokesR3.PressureFlux.exists_uniform_actual_pressure_flux_bound",
+        "sha256": "0adffc7879e8e5e226e5d4b2d721139a4ff12a04b4c9b4ebc12cf0d0f597fc2a"
+      },
+      "context": "smooth solutions, compact reference velocity, finite energy, same force and initial datum; R>=1",
+      "claim": "flux <= C_T*((B+1)*sqrt(B)/R + R^(-7/4)*B^(3/4)), a.e. t",
+      "formal": "flux <= C_T*((sqrt(B)+1)*(A/R+1/R^2) + R^(-7/4)*B^(3/4)), every t in open interval",
+      "definitions": {
+        "A": "weighted L2 gradient norm",
+        "B": "L6 norm of phi_R^4 w"
+      },
+      "constants": "uniform in R and t after fixing field/time bounds",
+      "neededImplication": "Produce B-only bound independently or justify a separately revised consumer; B<=C*(A+...) cannot upper-bound A",
+      "statementJudgment": "different local guarantee; comparison does not establish implication to original bound",
+      "methodJudgment": "L^(3/2) Riesz route in prose versus L2/Sobolev route with different cutoff weights",
+      "authority": "Codex source review; answer-informed",
+      "checks": [
+        "runs/target-01/record.json"
+      ],
+      "unresolved": "No original B-only adapter or counterexample to the original paper estimate obtained."
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "caseId": "c4d5434284cb",
+  "arm": "source-review",
+  "verdict": "argument-fault",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "Mira chose blue and chose tea. Therefore Mira chose coffee."
+    },
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "The survey separately records that Mira chose coffee."
+    },
+    {
+      "path": "Main.lean",
+      "startLine": 11,
+      "endLine": 13,
+      "quote": "have _hSurvey := surveyDisjunction blue tea coffee hBlue hRule\n  exact recordedChoice coffee hCoffee"
+    }
+  ],
+  "explanation": "Blue implies tea-or-coffee, and tea is given, but neither fact entails coffee: the tea-only interpretation is a countermodel. The separate record asserts coffee independently, so the prose endpoint can be true. Lean result uses hCoffee and leaves the disjunction derivation unused.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "The inference from blue, the blue-to-(tea-or-coffee) rule, and tea to coffee is invalid.",
+      "dependencies": [
+        "Mira chose blue",
+        "blue implies tea or coffee",
+        "Mira chose tea"
+      ],
+      "qualification": "The separately recorded coffee choice directly supplies the conclusion."
+    },
+    {
+      "meaning": "Lean result proves coffee.",
+      "dependencies": [
+        "hCoffee : coffee"
+      ],
+      "qualification": "_hSurvey is unused by the result proof."
+    }
+  ],
+  "evidence": [
+    {
+      "status": "attributed",
+      "detail": "A valuation with blue=true, tea=true, coffee=false satisfies the implication and tea premise but falsifies coffee."
+    },
+    {
+      "status": "checked",
+      "detail": "Static proof-term reading shows result returns recordedChoice coffee hCoffee. No reviewer Lean execution."
+    }
+  ],
+  "commands": [],
+  "omissions": [
+    "No direct Lean check; no assessment of the separate record’s reliability."
+  ],
+  "reviewerRole": "independent source/step reviewer",
+  "reviewerStart": "2026-10-11T00:38:12Z"
+}

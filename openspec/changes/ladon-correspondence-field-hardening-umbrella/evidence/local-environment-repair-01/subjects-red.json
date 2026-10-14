@@ -1,0 +1,700 @@
+{
+  "global": {
+    "ordinary": {
+      "applications": [
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "instScopeProbe",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instScopeProbe\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "ScopeProbe",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@ScopeProbe.value instScopeProbe",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",0,1]],\"root\":2}"
+          },
+          "operator": {
+            "display": "@ScopeProbe.value",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "[self : ScopeProbe] → Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe\",\"[]\"],[\"const\",\"`Nat\",\"[]\"],[\"forallE\",\"`self\",\"Lean.BinderInfo.instImplicit\",0,1]],\"root\":2}"
+          },
+          "resultType": {
+            "display": "Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "nat_lit 1",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"lit\",\"Lean.Literal.natVal 1\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "instOfNatNat (nat_lit 1)",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",0,1]],\"root\":2}"
+          },
+          "operator": {
+            "display": "instOfNatNat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "(n : Nat) → OfNat.{0} Nat n",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"],[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"app\",1,0],[\"bvar\",0],[\"app\",2,3],[\"forallE\",\"`n\",\"Lean.BinderInfo.default\",0,4]],\"root\":5}"
+          },
+          "resultType": {
+            "display": "OfNat.{0} Nat (nat_lit 1)",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3]],\"root\":4}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Type",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "nat_lit 1",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"lit\",\"Lean.Literal.natVal 1\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "instOfNatNat (nat_lit 1)",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",0,1]],\"root\":2}"
+              },
+              "type": {
+                "display": "OfNat.{0} Nat (nat_lit 1)",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3]],\"root\":4}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",5,3],[\"app\",4,6]],\"root\":7}"
+          },
+          "operator": {
+            "display": "@OfNat.ofNat.{0}",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "{α : Type} → (x : Nat) → [self : OfNat.{0} α x] → α",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"],[\"const\",\"`Nat\",\"[]\"],[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"bvar\",1],[\"app\",2,3],[\"bvar\",0],[\"app\",4,5],[\"bvar\",2],[\"forallE\",\"`self\",\"Lean.BinderInfo.instImplicit\",6,7],[\"forallE\",\"Lean.Name.mkNum (Lean.Name.mkStr (Lean.Name.mkStr (Lean.Name.mkNum `x.«_@».Init.Prelude 1822880135) \\\"_hygCtx\\\") \\\"_hyg\\\") 3\",\"Lean.BinderInfo.default\",1,8],[\"forallE\",\"`α\",\"Lean.BinderInfo.implicit\",0,9]],\"root\":10}"
+          },
+          "resultType": {
+            "display": "Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Type",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "@ScopeProbe.value instScopeProbe",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",0,1]],\"root\":2}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",5,3],[\"app\",4,6]],\"root\":7}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@Eq.{1} Nat (@ScopeProbe.value instScopeProbe) (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",3,4],[\"app\",2,5],[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"app\",7,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",8,9],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",11,9],[\"app\",10,12],[\"app\",6,13]],\"root\":14}"
+          },
+          "operator": {
+            "display": "@Eq.{1}",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "{α : Type} → α → α → Prop",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"],[\"bvar\",0],[\"bvar\",1],[\"sort\",\"Lean.Level.zero\"],[\"forallE\",\"Lean.Name.mkNum `a._@._internal._hyg 0\",\"Lean.BinderInfo.default\",2,3],[\"forallE\",\"Lean.Name.mkNum `a._@._internal._hyg 0\",\"Lean.BinderInfo.default\",1,4],[\"forallE\",\"`α\",\"Lean.BinderInfo.implicit\",0,5]],\"root\":6}"
+          },
+          "resultType": {
+            "display": "Prop",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.zero\"]],\"root\":0}"
+          }
+        }
+      ],
+      "profile": "typed-operators-v2",
+      "subject": {
+        "display": "@Eq.{1} Nat (@ScopeProbe.value instScopeProbe) (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))",
+        "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",3,4],[\"app\",2,5],[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"app\",7,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",8,9],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",11,9],[\"app\",10,12],[\"app\",6,13]],\"root\":14}"
+      },
+      "type": {
+        "display": "Prop",
+        "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.zero\"]],\"root\":0}"
+      }
+    },
+    "request": {
+      "applications": [
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "instScopeProbe",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instScopeProbe\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "ScopeProbe",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@ScopeProbe.value instScopeProbe",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",0,1]],\"root\":2}"
+          },
+          "operator": {
+            "display": "@ScopeProbe.value",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "[self : ScopeProbe] → Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe\",\"[]\"],[\"const\",\"`Nat\",\"[]\"],[\"forallE\",\"`self\",\"Lean.BinderInfo.instImplicit\",0,1]],\"root\":2}"
+          },
+          "resultType": {
+            "display": "Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "nat_lit 1",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"lit\",\"Lean.Literal.natVal 1\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "instOfNatNat (nat_lit 1)",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",0,1]],\"root\":2}"
+          },
+          "operator": {
+            "display": "instOfNatNat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "(n : Nat) → OfNat.{0} Nat n",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"],[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"app\",1,0],[\"bvar\",0],[\"app\",2,3],[\"forallE\",\"`n\",\"Lean.BinderInfo.default\",0,4]],\"root\":5}"
+          },
+          "resultType": {
+            "display": "OfNat.{0} Nat (nat_lit 1)",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3]],\"root\":4}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Type",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "nat_lit 1",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"lit\",\"Lean.Literal.natVal 1\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "instOfNatNat (nat_lit 1)",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",0,1]],\"root\":2}"
+              },
+              "type": {
+                "display": "OfNat.{0} Nat (nat_lit 1)",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3]],\"root\":4}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",5,3],[\"app\",4,6]],\"root\":7}"
+          },
+          "operator": {
+            "display": "@OfNat.ofNat.{0}",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "{α : Type} → (x : Nat) → [self : OfNat.{0} α x] → α",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"],[\"const\",\"`Nat\",\"[]\"],[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"bvar\",1],[\"app\",2,3],[\"bvar\",0],[\"app\",4,5],[\"bvar\",2],[\"forallE\",\"`self\",\"Lean.BinderInfo.instImplicit\",6,7],[\"forallE\",\"Lean.Name.mkNum (Lean.Name.mkStr (Lean.Name.mkStr (Lean.Name.mkNum `x.«_@».Init.Prelude 1822880135) \\\"_hygCtx\\\") \\\"_hyg\\\") 3\",\"Lean.BinderInfo.default\",1,8],[\"forallE\",\"`α\",\"Lean.BinderInfo.implicit\",0,9]],\"root\":10}"
+          },
+          "resultType": {
+            "display": "Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Type",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "@ScopeProbe.value instScopeProbe",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",0,1]],\"root\":2}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",5,3],[\"app\",4,6]],\"root\":7}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@Eq.{1} Nat (@ScopeProbe.value instScopeProbe) (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",3,4],[\"app\",2,5],[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"app\",7,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",8,9],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",11,9],[\"app\",10,12],[\"app\",6,13]],\"root\":14}"
+          },
+          "operator": {
+            "display": "@Eq.{1}",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "{α : Type} → α → α → Prop",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"],[\"bvar\",0],[\"bvar\",1],[\"sort\",\"Lean.Level.zero\"],[\"forallE\",\"Lean.Name.mkNum `a._@._internal._hyg 0\",\"Lean.BinderInfo.default\",2,3],[\"forallE\",\"Lean.Name.mkNum `a._@._internal._hyg 0\",\"Lean.BinderInfo.default\",1,4],[\"forallE\",\"`α\",\"Lean.BinderInfo.implicit\",0,5]],\"root\":6}"
+          },
+          "resultType": {
+            "display": "Prop",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.zero\"]],\"root\":0}"
+          }
+        }
+      ],
+      "profile": "typed-operators-v2",
+      "subject": {
+        "display": "@Eq.{1} Nat (@ScopeProbe.value instScopeProbe) (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))",
+        "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",3,4],[\"app\",2,5],[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"app\",7,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",8,9],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",11,9],[\"app\",10,12],[\"app\",6,13]],\"root\":14}"
+      },
+      "type": {
+        "display": "Prop",
+        "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.zero\"]],\"root\":0}"
+      }
+    },
+    "equal": true
+  },
+  "local": {
+    "ordinary": {
+      "applications": [
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "instScopeProbe_1",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instScopeProbe_1\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "ScopeProbe",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@ScopeProbe.value instScopeProbe_1",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe_1\",\"[]\"],[\"app\",0,1]],\"root\":2}"
+          },
+          "operator": {
+            "display": "@ScopeProbe.value",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "[self : ScopeProbe] → Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe\",\"[]\"],[\"const\",\"`Nat\",\"[]\"],[\"forallE\",\"`self\",\"Lean.BinderInfo.instImplicit\",0,1]],\"root\":2}"
+          },
+          "resultType": {
+            "display": "Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "nat_lit 1",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"lit\",\"Lean.Literal.natVal 1\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "instOfNatNat (nat_lit 1)",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",0,1]],\"root\":2}"
+          },
+          "operator": {
+            "display": "instOfNatNat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "(n : Nat) → OfNat.{0} Nat n",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"],[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"app\",1,0],[\"bvar\",0],[\"app\",2,3],[\"forallE\",\"`n\",\"Lean.BinderInfo.default\",0,4]],\"root\":5}"
+          },
+          "resultType": {
+            "display": "OfNat.{0} Nat (nat_lit 1)",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3]],\"root\":4}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Type",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "nat_lit 1",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"lit\",\"Lean.Literal.natVal 1\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "instOfNatNat (nat_lit 1)",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",0,1]],\"root\":2}"
+              },
+              "type": {
+                "display": "OfNat.{0} Nat (nat_lit 1)",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3]],\"root\":4}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",5,3],[\"app\",4,6]],\"root\":7}"
+          },
+          "operator": {
+            "display": "@OfNat.ofNat.{0}",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "{α : Type} → (x : Nat) → [self : OfNat.{0} α x] → α",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"],[\"const\",\"`Nat\",\"[]\"],[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"bvar\",1],[\"app\",2,3],[\"bvar\",0],[\"app\",4,5],[\"bvar\",2],[\"forallE\",\"`self\",\"Lean.BinderInfo.instImplicit\",6,7],[\"forallE\",\"Lean.Name.mkNum (Lean.Name.mkStr (Lean.Name.mkStr (Lean.Name.mkNum `x.«_@».Init.Prelude 1822880135) \\\"_hygCtx\\\") \\\"_hyg\\\") 3\",\"Lean.BinderInfo.default\",1,8],[\"forallE\",\"`α\",\"Lean.BinderInfo.implicit\",0,9]],\"root\":10}"
+          },
+          "resultType": {
+            "display": "Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Type",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "@ScopeProbe.value instScopeProbe_1",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe_1\",\"[]\"],[\"app\",0,1]],\"root\":2}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",5,3],[\"app\",4,6]],\"root\":7}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@Eq.{1} Nat (@ScopeProbe.value instScopeProbe_1) (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe_1\",\"[]\"],[\"app\",3,4],[\"app\",2,5],[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"app\",7,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",8,9],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",11,9],[\"app\",10,12],[\"app\",6,13]],\"root\":14}"
+          },
+          "operator": {
+            "display": "@Eq.{1}",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "{α : Type} → α → α → Prop",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"],[\"bvar\",0],[\"bvar\",1],[\"sort\",\"Lean.Level.zero\"],[\"forallE\",\"Lean.Name.mkNum `a._@._internal._hyg 0\",\"Lean.BinderInfo.default\",2,3],[\"forallE\",\"Lean.Name.mkNum `a._@._internal._hyg 0\",\"Lean.BinderInfo.default\",1,4],[\"forallE\",\"`α\",\"Lean.BinderInfo.implicit\",0,5]],\"root\":6}"
+          },
+          "resultType": {
+            "display": "Prop",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.zero\"]],\"root\":0}"
+          }
+        }
+      ],
+      "profile": "typed-operators-v2",
+      "subject": {
+        "display": "@Eq.{1} Nat (@ScopeProbe.value instScopeProbe_1) (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))",
+        "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe_1\",\"[]\"],[\"app\",3,4],[\"app\",2,5],[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"app\",7,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",8,9],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",11,9],[\"app\",10,12],[\"app\",6,13]],\"root\":14}"
+      },
+      "type": {
+        "display": "Prop",
+        "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.zero\"]],\"root\":0}"
+      }
+    },
+    "request": {
+      "applications": [
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "instScopeProbe",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instScopeProbe\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "ScopeProbe",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@ScopeProbe.value instScopeProbe",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",0,1]],\"root\":2}"
+          },
+          "operator": {
+            "display": "@ScopeProbe.value",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "[self : ScopeProbe] → Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe\",\"[]\"],[\"const\",\"`Nat\",\"[]\"],[\"forallE\",\"`self\",\"Lean.BinderInfo.instImplicit\",0,1]],\"root\":2}"
+          },
+          "resultType": {
+            "display": "Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "nat_lit 1",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"lit\",\"Lean.Literal.natVal 1\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "instOfNatNat (nat_lit 1)",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",0,1]],\"root\":2}"
+          },
+          "operator": {
+            "display": "instOfNatNat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "(n : Nat) → OfNat.{0} Nat n",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"],[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"app\",1,0],[\"bvar\",0],[\"app\",2,3],[\"forallE\",\"`n\",\"Lean.BinderInfo.default\",0,4]],\"root\":5}"
+          },
+          "resultType": {
+            "display": "OfNat.{0} Nat (nat_lit 1)",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3]],\"root\":4}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Type",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "nat_lit 1",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"lit\",\"Lean.Literal.natVal 1\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "instOfNatNat (nat_lit 1)",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`instOfNatNat\",\"[]\"],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",0,1]],\"root\":2}"
+              },
+              "type": {
+                "display": "OfNat.{0} Nat (nat_lit 1)",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3]],\"root\":4}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",5,3],[\"app\",4,6]],\"root\":7}"
+          },
+          "operator": {
+            "display": "@OfNat.ofNat.{0}",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "{α : Type} → (x : Nat) → [self : OfNat.{0} α x] → α",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"],[\"const\",\"`Nat\",\"[]\"],[\"const\",\"`OfNat\",\"[Lean.Level.zero]\"],[\"bvar\",1],[\"app\",2,3],[\"bvar\",0],[\"app\",4,5],[\"bvar\",2],[\"forallE\",\"`self\",\"Lean.BinderInfo.instImplicit\",6,7],[\"forallE\",\"Lean.Name.mkNum (Lean.Name.mkStr (Lean.Name.mkStr (Lean.Name.mkNum `x.«_@».Init.Prelude 1822880135) \\\"_hygCtx\\\") \\\"_hyg\\\") 3\",\"Lean.BinderInfo.default\",1,8],[\"forallE\",\"`α\",\"Lean.BinderInfo.implicit\",0,9]],\"root\":10}"
+          },
+          "resultType": {
+            "display": "Nat",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+          }
+        },
+        {
+          "arguments": [
+            {
+              "expression": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              },
+              "type": {
+                "display": "Type",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "@ScopeProbe.value instScopeProbe",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",0,1]],\"root\":2}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            },
+            {
+              "expression": {
+                "display": "@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",2,3],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",5,3],[\"app\",4,6]],\"root\":7}"
+              },
+              "type": {
+                "display": "Nat",
+                "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Nat\",\"[]\"]],\"root\":0}"
+              }
+            }
+          ],
+          "expression": {
+            "display": "@Eq.{1} Nat (@ScopeProbe.value instScopeProbe) (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",3,4],[\"app\",2,5],[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"app\",7,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",8,9],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",11,9],[\"app\",10,12],[\"app\",6,13]],\"root\":14}"
+          },
+          "operator": {
+            "display": "@Eq.{1}",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"]],\"root\":0}"
+          },
+          "operatorType": {
+            "display": "{α : Type} → α → α → Prop",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (Lean.Level.zero)\"],[\"bvar\",0],[\"bvar\",1],[\"sort\",\"Lean.Level.zero\"],[\"forallE\",\"Lean.Name.mkNum `a._@._internal._hyg 0\",\"Lean.BinderInfo.default\",2,3],[\"forallE\",\"Lean.Name.mkNum `a._@._internal._hyg 0\",\"Lean.BinderInfo.default\",1,4],[\"forallE\",\"`α\",\"Lean.BinderInfo.implicit\",0,5]],\"root\":6}"
+          },
+          "resultType": {
+            "display": "Prop",
+            "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.zero\"]],\"root\":0}"
+          }
+        }
+      ],
+      "profile": "typed-operators-v2",
+      "subject": {
+        "display": "@Eq.{1} Nat (@ScopeProbe.value instScopeProbe) (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))",
+        "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"const\",\"`Eq\",\"[Lean.Level.succ (Lean.Level.zero)]\"],[\"const\",\"`Nat\",\"[]\"],[\"app\",0,1],[\"const\",\"`ScopeProbe.value\",\"[]\"],[\"const\",\"`instScopeProbe\",\"[]\"],[\"app\",3,4],[\"app\",2,5],[\"const\",\"`OfNat.ofNat\",\"[Lean.Level.zero]\"],[\"app\",7,1],[\"lit\",\"Lean.Literal.natVal 1\"],[\"app\",8,9],[\"const\",\"`instOfNatNat\",\"[]\"],[\"app\",11,9],[\"app\",10,12],[\"app\",6,13]],\"root\":14}"
+      },
+      "type": {
+        "display": "Prop",
+        "structural": "ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.zero\"]],\"root\":0}"
+      }
+    },
+    "equal": false
+  }
+}

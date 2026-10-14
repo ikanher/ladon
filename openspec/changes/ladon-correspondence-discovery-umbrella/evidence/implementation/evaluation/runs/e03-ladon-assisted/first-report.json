@@ -1,0 +1,30 @@
+{
+  "verdict": "discrepancy",
+  "statementAssessment": "The exposition’s assertion is false: it requires one real y to work for every real x. The supplied formal proposition instead allows y to depend on x.",
+  "methodAssessment": "The formal argument is rendered only as a statement of the proposition; no proof method is supplied to compare with the exposition.",
+  "findings": [
+    {
+      "sourceAssertion": "“There is a real y such that x+y=0 for every real x.”",
+      "formalCounterpart": "“For every real x, there exists real y with x+y=0.”",
+      "classification": "false statement; quantifier-order discrepancy",
+      "explanation": "The exposition asserts ∃y ∀x, while the formal proposition asserts ∀x ∃y. The latter does not support the former.",
+      "evidence": "If a single y worked for every x, taking x=0 would give y=0, while taking x=1 would require 1+0=0, a contradiction. For the formal proposition, each x can be paired with y=−x.",
+      "uncertainty": "None about the quantifier mismatch or the counterexample. The proof method is unavailable in the rendered input."
+    }
+  ],
+  "examinedAssertions": [
+    {
+      "assertion": "There is one real y such that x+y=0 for every real x.",
+      "assessment": "False.",
+      "evidence": "x=0 forces y=0; x=1 then contradicts the required equation."
+    },
+    {
+      "assertion": "For every real x, there exists real y with x+y=0.",
+      "assessment": "True, but it is a different assertion from the exposition.",
+      "evidence": "For each real x, choosing y=−x gives x+y=0."
+    }
+  ],
+  "omissions": "The supplied material contains only the proposition’s rendered description, not a proof body. No formal argument or method correspondence can be assessed. The entire supplied exposition and proposition description were examined.",
+  "toolsUsed": "Read /procedure.md and /input/INPUT.md using the shell.",
+  "checkingStatus": "No Lean checks were run. The input provides rendered text rather than an original Lean module."
+}

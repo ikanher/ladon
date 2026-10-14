@@ -29,22 +29,30 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 def _dispatch_lightweight(arguments: list[str]) -> int | None:
     """Dispatch lightweight command families without loading the analyzer."""
-
     if arguments == ["--version"]:
         return version_main(())
-    if arguments and arguments[0] == "version":
+    if not arguments:
+        return None
+    if arguments[0] == "version":
         return version_main(arguments[1:], force_json=True)
-    if arguments and arguments[0] == "doctor":
+    if arguments[0] == "doctor":
         return doctor_main(arguments[1:])
-    if arguments and arguments[0] == "proof-search":
-        from ladon.proof_search_cli import proof_search_main
+    return _dispatch_lazy_family(arguments[0], arguments[1:])
 
-        return proof_search_main(arguments[1:])
-    if arguments and arguments[0] == "proofir":
-        from ladon.proofir_v3_cli import proofir_v3_main
 
-        return proofir_v3_main(arguments[1:])
-    return None
+def _dispatch_lazy_family(command: str, arguments: list[str]) -> int | None:
+    from importlib import import_module
+
+    families = {
+        "investigation": ("ladon.investigation_cli", "investigation_main"),
+        "proof-search": ("ladon.proof_search_cli", "proof_search_main"),
+        "proofir": ("ladon.proofir_v3_cli", "proofir_v3_main"),
+    }
+    family = families.get(command)
+    if family is None:
+        return None
+    module, function = family
+    return getattr(import_module(module), function)(arguments)
 
 
 def version_main(arguments: Sequence[str], *, force_json: bool = False) -> int:

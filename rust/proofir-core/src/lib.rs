@@ -319,7 +319,20 @@ pub fn validation_diagnostics(value: &Value) -> Vec<Diagnostic> {
             retained: false,
         }];
     }
+    if unsupported_correspondence_kind(object.get("artifactKind").unwrap()) {
+        return vec![Diagnostic {
+            artifact_id: artifact_id.into(),
+            stage: "kind-schema-valid".into(),
+            code: "unsupported-artifact-kind".into(),
+            pointer: "/artifactKind".into(),
+            retained: false,
+        }];
+    }
     Vec::new()
+}
+
+fn unsupported_correspondence_kind(kind: &Value) -> bool {
+    matches!(kind.as_str(), Some("proofir.interpretation" | "proofir.correspondence"))
 }
 
 impl std::fmt::Display for ProofIrError {
@@ -485,6 +498,12 @@ pub fn validate_envelope(value: Value) -> Result<Artifact, ProofIrError> {
         return Err(ProofIrError(
             "artifactKind must be a non-empty string".into(),
         ));
+    }
+    if unsupported_correspondence_kind(&m["artifactKind"]) {
+        return Err(ProofIrError(format!(
+            "unsupported artifact kind: {}; Rust correspondence payload validation is unavailable",
+            m["artifactKind"]
+        )));
     }
     if !m["producer"].is_object() || !m["coverage"].is_object() {
         return Err(ProofIrError("producer and coverage must be objects".into()));

@@ -1,0 +1,297 @@
+{
+  "caseId": "df83178b3496",
+  "arm": "assisted",
+  "verdict": "faithful",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "For natural numbers a and b, suppose a ≤ b and b ≤ c. Chaining the two bounds gives a ≤ c."
+    }
+  ],
+  "explanation": "The sentence states the exact Nat ≤ transitivity inference proved by the selected application. Its assumptions are a ≤ b and b ≤ c, and its conclusion is a ≤ c. In the actual proof, Nat.le_trans is applied to h₁ and h₂, which have those respective types. The endpoint is true and the described chaining method matches the formal proof. The assisted alignment output retains residuals because local names h₁ and h₂ fail its ASCII-name gate; this left automated premise/object transfer unresolved, but did not refute the source claim or the actual theorem proof.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "For arbitrary a,b,c : Nat, from a ≤ b and b ≤ c infer a ≤ c. “Chaining” describes transitivity of ≤.",
+      "dependencies": [
+        "a,b,c are natural numbers",
+        "a ≤ b",
+        "b ≤ c"
+      ],
+      "qualifications": "No alternate interpretation is needed for this short passage; the selected formal application and premises align directly."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "assisted-proof-slice",
+      "path": "slice.json",
+      "identity": "sliceId bd13664a71764c9331abe5ca08caf136a709d562792f4d986e02533abf231ac2",
+      "observation": "Selected result / Nat.le_trans; observed premises h₁ : a ≤ b and h₂ : b ≤ c; application type a ≤ c."
+    },
+    {
+      "kind": "assisted-source-goal-replay",
+      "path": "check-result.json",
+      "identity": "check-run sha256:1198ac4618b275a10eb62f74e27ae72cbd27ff66de3d475d92dd91e65d6d827c",
+      "observation": "conditionalValidity=supported; captured and independently replayed original goal ∀ (a b c : Nat), a ≤ b → b ≤ c → a ≤ c. Accepted term display: fun a b c h₁ h₂ => Nat.le_trans h₁ h₂; Lean typecheck exit 0."
+    },
+    {
+      "kind": "formal-residual",
+      "path": "plan.json",
+      "observation": "Alignment recorded unsupported-local-names, premise-supply and conclusion-transfer residuals for h₁/h₂. Parent support remains unresolved; this reflects the alignment gate, not endpoint falsity."
+    },
+    {
+      "kind": "input-identities",
+      "observation": "Main.lean sha256 1f7b784fc93720272d11c02350bcea501a3cf849cab70d4ad6ccd03947f40e20; Main.olean sha256 3c921dcc2a736a4d75cd5640a3c5527a7f2529af969cc3ab66b8504bc0a43dca; source.txt sha256 de9d46bbea80e04f6f14013a670d6cd36647f3c759c5b8e3dbf0ba89d40c633b; Lean 4.32.1 commit f054605aea4b840552cca2e725580bffd1e1b704."
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "--version"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.02890004008077085,
+      "stdout": "Lean (version 4.32.1, x86_64-unknown-linux-gnu, commit f054605aea4b840552cca2e725580bffd1e1b704, Release)\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "proof",
+        "slice",
+        "--repo",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+        "--source",
+        "Main.lean",
+        "--module",
+        "Main",
+        "--declaration",
+        "result",
+        "--application",
+        "Nat.le_trans",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/slice.json"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 127,
+      "elapsedSeconds": 0.00019944598898291588,
+      "stdout": "",
+      "stderr": "FileNotFoundError: [Errno 2] No such file or directory: '/home/codex/.venv/bin/python'\n"
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "proof",
+        "slice",
+        "--repo",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+        "--source",
+        "Main.lean",
+        "--module",
+        "Main",
+        "--declaration",
+        "result",
+        "--application",
+        "Nat.le_trans",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/slice.json"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 6.996261917985976,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "interpret",
+        "--record",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/interpretation-record.json",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+        "--slice",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/slice.json",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/interpretation.json"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.07200046489015222,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "align",
+        "--interpretation",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/interpretation.json",
+        "--slice",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/slice.json",
+        "--map",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/object-map.json",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/plan.json"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.1713443361222744,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "check",
+        "--plan",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/plan.json",
+        "--terms",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/terms.json",
+        "--repo",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/check-result.json"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 2,
+      "elapsedSeconds": 37.300233118003234,
+      "stdout": "{\"status\": \"invalid\", \"error\": \"[Errno 17] File exists: '/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/output/check-result.json'\"}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "interpret",
+        "--help"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.06218756292946637,
+      "stdout": "usage: ladon investigation interpret [-h] --record RECORD --root ROOT\n                                     [--slice SLICE] [--output OUTPUT]\n\noptions:\n  -h, --help       show this help message and exit\n  --record RECORD\n  --root ROOT\n  --slice SLICE    Use this actual slice's environment for native references\n  --output OUTPUT\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "align",
+        "--help"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.06232402194291353,
+      "stdout": "usage: ladon investigation align [-h] --interpretation INTERPRETATION --slice\n                                 SLICE --map MAP --root ROOT [--output OUTPUT]\n\noptions:\n  -h, --help            show this help message and exit\n  --interpretation INTERPRETATION\n  --slice SLICE\n  --map MAP\n  --root ROOT\n  --output OUTPUT\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "check",
+        "--help"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.0609027249738574,
+      "stdout": "usage: ladon investigation check [-h] --plan PLAN --terms TERMS --repo REPO\n                                 --root ROOT [--output OUTPUT]\n\noptions:\n  -h, --help       show this help message and exit\n  --plan PLAN\n  --terms TERMS\n  --repo REPO\n  --root ROOT\n  --output OUTPUT\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "proof",
+        "slice",
+        "--help"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.1240209829993546,
+      "stdout": "usage: ladon proof-search proof slice [-h] --repo REPO --source SOURCE\n                                      --module MODULE --declaration\n                                      DECLARATION --application APPLICATION\n                                      [--occurrence OCCURRENCE] [--scoped]\n                                      [--output OUTPUT]\n\noptions:\n  -h, --help            show this help message and exit\n  --repo REPO\n  --source SOURCE\n  --module MODULE\n  --declaration DECLARATION\n  --application APPLICATION\n  --occurrence OCCURRENCE\n  --scoped              Open bounded nested local scopes\n  --output OUTPUT\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input/.ladon/correspondence/goal-h9pu3st9/LadonCorrespondence.lean"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input",
+      "env": {
+        "preparedBy": "Ladon correspondence check; exact child environment not exposed"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.47978079691529274,
+      "stdout": "∀ (a b c : Nat), a ≤ b → b ≤ c → a ≤ c : Prop\n/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input/.ladon/correspondence/goal-h9pu3st9/LadonCorrespondence.lean:10:25: warning: Variable name `h₁` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\n/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/10-df83178b3496-assisted/input/.ladon/correspondence/goal-h9pu3st9/LadonCorrespondence.lean:10:61: warning: Variable name `h₂` is not explicitly referenced.\n\nThe binding can be removed (if unused) or named `_` (if used implicitly).\n\nNote: This linter can be disabled with `set_option linter.unusedVariables false`\n",
+      "stderr": "",
+      "preservedReceipt": "check-result.json#/checks/0/typecheck"
+    }
+  ],
+  "omissions": [
+    "A successful Ladon investigation check result is preserved in check-result.json, but its wrapper receipt was not retained before a repeated invocation encountered the exclusive-output collision. The repeated invocation is retained in commands.json with exit 2; the inner Lean goal capture, completion and replay receipt is present in check-result.json.",
+    "The inner check-result receipt records Lean argv, cwd, exit, elapsed time, stdout and stderr; Ladon did not expose the child environment, recorded as such. No separate user-authored Lean proof was executed; source-goal capture/replay supplied the checked term.",
+    "No online sources, other cases/arms, reports, keys, development fixtures, or additional packages were used."
+  ]
+}

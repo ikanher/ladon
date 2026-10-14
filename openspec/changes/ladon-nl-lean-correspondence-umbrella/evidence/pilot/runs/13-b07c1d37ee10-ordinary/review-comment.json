@@ -1,0 +1,59 @@
+{
+  "caseId": "b07c1d37ee10",
+  "arm": "source-review",
+  "verdict": "argument-fault",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "The technician knows that whenever x ≤ 5, x ≤ 9, and writes x ≤ 9. The technician next asserts x = 4."
+    },
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "A calibration note says x is exactly four."
+    },
+    {
+      "path": "Main.lean",
+      "startLine": 11,
+      "endLine": 13,
+      "quote": "have _hRelaxed := relaxedBound x hSmall hRule\n  exact calibrationRecord x hCalibration"
+    }
+  ],
+  "explanation": "The relaxed bound x≤9 does not imply x=4; for example x=0 satisfies the bound. The independent calibration note supplies x=4, making the endpoint supported if the note is accepted. In Lean the equality result depends only on hCalibration; hSmall and hRule produce an unused bound.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "The apparent inference from x≤9 to x=4 is invalid.",
+      "dependencies": [
+        "x≤9"
+      ],
+      "qualification": "The calibration note states the endpoint independently."
+    },
+    {
+      "meaning": "Lean result proves x=4.",
+      "dependencies": [
+        "hCalibration : x=4"
+      ],
+      "qualification": "The relaxedBound proof does not support the equality conclusion."
+    }
+  ],
+  "evidence": [
+    {
+      "status": "attributed",
+      "detail": "Counterexample to x≤9 ⇒ x=4: x=0."
+    },
+    {
+      "status": "checked",
+      "detail": "Static proof-term reading: result invokes calibrationRecord with hCalibration. No reviewer Lean execution."
+    }
+  ],
+  "commands": [],
+  "omissions": [
+    "No direct Lean check; no assessment of the calibration note’s reliability."
+  ],
+  "reviewerRole": "independent source/step reviewer",
+  "reviewerStart": "2026-10-11T00:38:12Z"
+}

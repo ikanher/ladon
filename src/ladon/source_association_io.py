@@ -92,6 +92,12 @@ def _read_regular(path: Path, maximum: int) -> bytes:
 
 
 def _file_identity(path: Path) -> tuple[str, int]:
+    from ladon.correspondence_import_cache import cached_import_identity
+    identity = cached_import_identity(path)
+    return identity if identity is not None else _uncached_file_identity(path)
+
+
+def _uncached_file_identity(path: Path) -> tuple[str, int]:
     descriptor = os.open(
         path,
         os.O_RDONLY | os.O_NONBLOCK | getattr(os, "O_NOFOLLOW", 0),

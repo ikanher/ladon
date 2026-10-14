@@ -1,0 +1,40 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________________ test_public_derivation_initialization _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1473/test_public_derivation_initial0')
+
+    def test_public_derivation_initialization(tmp_path):
+        source = tmp_path / "source.txt"
+        source.write_text("For positive x and y, multiply the inequality by y.\n")
+        plan = tmp_path / "plan.json"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "ladon.entrypoint",
+                "investigation",
+                "init",
+                "--text",
+                str(source),
+                "--root",
+                str(tmp_path),
+                "--output",
+                str(plan),
+                "--derivations",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: usage: ladon investigation [-h] {init,status,next,finish} ...
+E         ladon investigation: error: unrecognized arguments: --derivations
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.entrypoint', 'investigation', 'init...investigation [-h] {init,status,next,finish} ...\nladon investigation: error: unrecognized arguments: --derivations\n').returncode
+
+tests/test_investigation_derivation_cli.py:31: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_investigation_derivation_cli.py::test_public_derivation_initialization
+1 failed in 0.08s

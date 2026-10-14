@@ -1,0 +1,57 @@
+{
+  "caseId": "d4fbe7ff5619",
+  "arm": "ordinary",
+  "verdict": "ambiguous",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "The report says: “For a measured value t in the safe interval, the alarm is usually quiet; this reading is within that interval, so the alarm should be quiet.” It does not define “usually” or “should,” and supplies no rule connecting these expressions."
+    }
+  ],
+  "explanation": "Reconciliation leaves the first-response verdict unchanged. The independent source reviewer also labels the passage ambiguous, identifies the same unresolved meanings of “usually” and “should,” and notes that the Lean theorem requires the unstated rule : safe → quiet. The source-review comment therefore reinforces the ambiguity judgment without resolving endpoint truth or changing the first response.",
+  "claimFalse": null,
+  "interpretations": [
+    {
+      "reading": "Statistical tendency plus predictive or normative “should”.",
+      "dependencies": "“Usually” allows individual exceptions; no premise states that this particular reading is quiet, and no rule maps tendency to obligation.",
+      "result": "The inference is unsupported on this reading, but the endpoint truth for this reading is unknown."
+    },
+    {
+      "reading": "Universal or deterministic rule-like “usually” and predictive “should”.",
+      "dependencies": "Treat the prose as supplying that every safe reading is quiet, with “should” expressing that same prediction.",
+      "result": "The conclusion may follow, but this interpretation strengthens or resolves terms that the passage leaves undefined."
+    },
+    {
+      "reading": "“Should” as a normative requirement.",
+      "dependencies": "A frequency statement alone does not state a requirement; a normative bridge would be needed.",
+      "result": "No such bridge is supplied."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "Retained first-response Lean output",
+      "source": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/output/check.stdout",
+      "observation": "The supplied result is checked under the explicit premise rule : safe → quiet and hs : safe; Lean reports no axioms. The reviewer likewise notes this premise is absent from the prose. No Lean command was newly run during correction."
+    },
+    {
+      "kind": "Independent source-review comment",
+      "identity": {
+        "path": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/review-comment.json",
+        "bytes": 2926,
+        "sha256": "5b439043c013c7c516324e81c9c59761f4377a729e58c3d6b7d0432508faef05",
+        "crc32": "700fde2a"
+      },
+      "observation": "The reviewer selects the original inference and its underspecification, concludes ambiguous, and reports that no formal bridge is supplied. This matches the first-response classification."
+    }
+  ],
+  "commands": [],
+  "omissions": [
+    "No model of the English frequency/modal terms was supplied, so no Lean refutation or direct formalization of the prose was attempted.",
+    "The failed wrapper command did not invoke Lean; its error is retained and is not treated as mathematical evidence.",
+    "No Ladon, network, new package, Lake, or shared build was used.",
+    "Correction phase ran no new Lean or other evidence command; reconciliation used only the authorized common reviewer comment and the frozen first-response artifact."
+  ],
+  "firstResponseRef": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/output/report.json"
+}

@@ -1,0 +1,28 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_actual_prepared_capture_cannot_support_a_different_original_subject ___
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-231/test_actual_prepared_capture_c0')
+
+    def test_actual_prepared_capture_cannot_support_a_different_original_subject(tmp_path):
+        root, source, toolchain, fresh = _case(tmp_path, 'local instance : ScopeProbe := ⟨1⟩')
+        # Deliberately bypass finite admission to exercise the independent per-goal
+        # authority boundary: ordinary source makes this proposition false, while
+        # the imported module has lost the local instance and can prove it by rfl.
+        context = PreparedSourceContext(root, fresh, source, toolchain,
+                                        root / '.lake/build/lib/lean')
+        try:
+            context.compile(source)
+            checked = _check_goal('ScopeProbe.value = 0', 'by rfl', root, source, {}, toolchain,
+                                  prepared=context)
+>           assert checked['status'] == 'unresolved', checked
+E           AssertionError: {'capture': {'capture': {'captureId': 'sha256:7d2411b13e9e31edde6020bd52e472c89fcdb642bccdd1b56b3610d10c9def13', 'envi...ration': 'complete-source-goal', ...}, 'goalOrigin': 'generated-correspondence-obligation', 'status': 'supported', ...}
+E           assert 'supported' == 'unresolved'
+E             
+E             - unresolved
+E             + supported
+
+tests/test_correspondence_prepared_subject_equivalence.py:20: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_correspondence_prepared_subject_equivalence.py::test_actual_prepared_capture_cannot_support_a_different_original_subject
+1 failed in 32.76s

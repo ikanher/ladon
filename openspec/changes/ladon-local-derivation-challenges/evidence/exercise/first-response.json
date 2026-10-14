@@ -1,0 +1,44 @@
+[
+  {
+    "id": "rational-01",
+    "outcome": "supported",
+    "evidence": "The premise fixes x=2. Substitution gives x+3=2+3=5, so the conclusion follows for every rational satisfying the premise. Sample: x=2 satisfies both premise and conclusion.",
+    "assignment": {"x": "2"},
+    "subjectSha256": "6fca04771c04a550fc3e23108de8c0957b5a2c1f63814aba14af28b83ed00d36"
+  },
+  {
+    "id": "rational-02",
+    "outcome": "supported",
+    "evidence": "For any rational x>0, x is nonnegative and the product of two nonnegative rationals is nonnegative; hence x²=x·x≥0. Sample: x=1 satisfies the premise and conclusion.",
+    "assignment": {"x": "1"},
+    "subjectSha256": "1886e21cbb2bc828a5d5934223b6c142d267c743acccb7e8b03b67fb9bf16bb7"
+  },
+  {
+    "id": "rational-03",
+    "outcome": "supported",
+    "evidence": "By symmetry of rational equality, x=y gives y=x; combining y=x with y=z by transitivity gives x=z. Sample: x=0, y=0, z=0 satisfies both premises and the conclusion.",
+    "assignment": {"x": "0", "y": "0", "z": "0"},
+    "subjectSha256": "cd3f5395c15ccfd2e67e16f470c62dee2d6833cf30f51a271fb8093bde85d112"
+  },
+  {
+    "id": "rational-04",
+    "outcome": "refuted",
+    "evidence": "The premise x<y does not ensure both numbers are nonnegative, where squaring preserves order. With x=0 and y=1, the premise 0<1 holds but the conclusion 0²<1² is false since 0<1 actually holds—correction: this is not a counterexample. Take x=-2 and y=-1: -2<-1, but 4<1 is false.",
+    "assignment": {"x": "-2", "y": "-1"},
+    "subjectSha256": "87dfd847fdac4885e4e89a055717f1f674b95008df8f1d975aab64467eaa9708"
+  },
+  {
+    "id": "rational-05",
+    "outcome": "refuted",
+    "evidence": "The premise x+y=0 permits y=-x and does not force x=0. At x=1, y=-1, the premise holds while the conclusion 1=0 is false.",
+    "assignment": {"x": "1", "y": "-1"},
+    "subjectSha256": "91c516b52e0fcf684eb0f573f059f2d37adbc94b4e08f41d3fe00dc66020bbe6"
+  },
+  {
+    "id": "rational-06",
+    "outcome": "refuted",
+    "evidence": "Nonzero rationals can be negative. At x=-1, the premise x≠0 holds but the conclusion -1>0 is false.",
+    "assignment": {"x": "-1"},
+    "subjectSha256": "5b3a315f120f907aaff7f558490fe9114ab913ef7beb1d2d2ec1bfcf3b2b0aa3"
+  }
+]

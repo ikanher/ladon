@@ -1,0 +1,67 @@
+NavierStokes.SmoothFamilyTorusInverse.norm_derivativeWord_inverse_le {P : Type} [NormedAddCommGroup P] [NormedSpace ℝ P]
+  (d : NavierStokes.TorusInverse.Direction) {f : NavierStokes.SmoothFamilyTorusInverse.Source P}
+  (hf : ContDiff ℝ (↑⊤) f) (hp : NavierStokes.SmoothFamilyTorusInverse.Periodic f) (w : List Bool) (p : P)
+  (Y : NavierStokes.TorusInverse.Plane) {C : ℝ} (hzero : ∀ x ∈ Set.Icc 0 1, ∀ y ∈ Set.Icc 0 1, ‖f (p, x, y)‖ ≤ C)
+  (hfirst :
+    ∀ x ∈ Set.Icc 0 1,
+      ∀ y ∈ Set.Icc 0 1,
+        ‖NavierStokes.SmoothFourierData.xJet (w.length + 5) (NavierStokes.SmoothFamilyTorusInverse.slice f p) (x, y)‖ ≤
+          C)
+  (hsecond :
+    ∀ x ∈ Set.Icc 0 1,
+      ∀ y ∈ Set.Icc 0 1,
+        ‖NavierStokes.SmoothFourierData.xJet (w.length + 5)
+              (NavierStokes.SmoothFourierData.swapFunction (NavierStokes.SmoothFamilyTorusInverse.slice f p)) (x, y)‖ ≤
+          C) :
+  ‖NavierStokes.TorusInverse.derivativeWord w
+        (NavierStokes.SmoothFamilyTorusInverse.slice (NavierStokes.SmoothFamilyTorusInverse.inverse d f) p) Y‖ ≤
+    NavierStokes.ParametricTorusInverse.mixedLossConstant w.length * C
+NavierStokes.SmoothFamilyTorusInverse.inverse_finiteJets {P : Type} [NormedAddCommGroup P] [NormedSpace ℝ P]
+  [FiniteDimensional ℝ P] (d : NavierStokes.TorusInverse.Direction) (n : ℕ) :
+  ∃ K,
+    0 ≤ K ∧
+      ∀ (f : NavierStokes.SmoothFamilyTorusInverse.Source P) (S : Set P) (C : ℝ),
+        ContDiff ℝ (↑⊤) f →
+          NavierStokes.SmoothFamilyTorusInverse.Periodic f →
+            0 ≤ C →
+              NavierStokes.SmoothFamilyTorusInverse.JetBound f S (n + 5) C →
+                NavierStokes.SmoothFamilyTorusInverse.JetBound (NavierStokes.SmoothFamilyTorusInverse.inverse d f) S n
+                  (K * C)
+NavierStokesR3.PressureFlux.exists_uniform_actual_pressure_flux_bound {T : ℝ}
+  {u v : NavierStokesR3.ProblemStatement.VelocityField} {p q : NavierStokesR3.ProblemStatement.PressureField}
+  (H : NavierStokesR3.PressureRecovery.Hypotheses T u v p q) (M₀ U₀ G₀ : ℝ) (hM₀ : 0 ≤ M₀) (hU₀ : 0 ≤ U₀) (hG₀ : 0 ≤ G₀)
+  (hM :
+    ∀ t ∈ Set.Icc 0 T,
+      MeasureTheory.MemLp (fun x => (u - v) (t, x)) 2 MeasureTheory.volume ∧
+        (NavierStokesR3.Comparison.comparisonLpNorm 2 fun x => (u - v) (t, x)) ≤ M₀)
+  (hU :
+    ∀ t ∈ Set.Icc 0 T,
+      MeasureTheory.MemLp (fun x => u (t, x)) 3 MeasureTheory.volume ∧
+        (NavierStokesR3.Comparison.comparisonLpNorm 3 fun x => u (t, x)) ≤ U₀)
+  (hG :
+    ∀ t ∈ Set.Icc 0 T,
+      ∀ (i j : Fin 3),
+        MeasureTheory.Integrable (NavierStokesR3.Comparison.tensorDiff u v t i j) MeasureTheory.volume ∧
+          NavierStokesR3.Comparison.comparisonLpNorm 1 (NavierStokesR3.Comparison.tensorDiff u v t i j) ≤ G₀) :
+  ∃ CP,
+    0 ≤ CP ∧
+      ∀ (R : ℝ),
+        1 ≤ R →
+          ∀ t ∈ Set.Ioo 0 T,
+            |∫ (x : NavierStokes.ProblemStatement.Space),
+                  (p - q) (t, x) * (fderiv ℝ (NavierStokesR3.ComparisonCutoffs.weight R) x) ((u - v) (t, x))| ≤
+              CP *
+                ((NavierStokesR3.Comparison.cutoffL6 (NavierStokesR3.ComparisonCutoffs.cutoff R) (u - v) t ^ (1 / 2) +
+                      1) *
+                    (NavierStokesR3.Comparison.dissipationRoot (NavierStokesR3.ComparisonCutoffs.cutoff R) (u - v) t /
+                        R +
+                      1 / R ^ 2) +
+                  R ^ (-(7 / 4)) *
+                    NavierStokesR3.Comparison.cutoffL6 (NavierStokesR3.ComparisonCutoffs.cutoff R) (u - v) t ^ (3 / 4))
+'NavierStokes.SmoothFamilyTorusInverse.norm_derivativeWord_inverse_le' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'NavierStokes.SmoothFamilyTorusInverse.inverse_finiteJets' depends on axioms: [propext, Classical.choice, Quot.sound]
+'NavierStokesR3.PressureFlux.exists_uniform_actual_pressure_flux_bound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]

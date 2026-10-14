@@ -1,0 +1,27 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+___ test_prepared_subject_mismatch_projects_unknown_without_completed_proof ____
+
+    def test_prepared_subject_mismatch_projects_unknown_without_completed_proof():
+        plan = {'planId': 'control', 'slice': {'environment': 'sha256:' + '1' * 64,
+                                            'selection': {'declaration': 'selected'}}}
+        diagnostic = {'code': 'prepared-goal-subject-mismatch',
+                      'message': 'Original-source proposition differs from prepared captured goal.'}
+        row = {'obligation': 'interpretation', 'mode': 'prove', 'goal': 'True',
+               'status': 'unresolved', 'diagnostic': diagnostic,
+               'typecheck': {'command': [sys.executable], 'stdout': '', 'stderr': ''}}
+        result = {'checks': [row], 'implementationDigest': 'sha256:' + '2' * 64}
+        artifacts, refs = completion_artifacts(plan, result)
+        validate_envelope_batch(artifacts)
+        check, attempt = artifacts
+        assert check['payload']['results'][0]['result'] == 'unknown'
+        assert check['payload']['guarantee']['scope'] == 'none'
+        native = check['payload']['results'][0]['diagnostics']
+>       assert len(native) == 1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/test_correspondence_subject_mismatch_receipt.py:25: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_correspondence_subject_mismatch_receipt.py::test_prepared_subject_mismatch_projects_unknown_without_completed_proof
+1 failed in 0.08s

@@ -1,0 +1,158 @@
+                               FINITE TIME BLOWUP FOR NAVIER–STOKES                                           121
+
+10.3. Energy and comparison. In this subsection we first prove that the smooth compactly
+supported force f of Lemma 10.3 gives a uniform energy bound for the constructed velocity
+u up to time one (Lemma 10.4). We then show that any smooth solution with the same
+force, zero datum, and bounded kinetic energy agrees with it on every shorter time interval
+(Lemma 10.5). This comparison will transfer the local velocity growth (3.6) to a hypothetical
+global smooth solution. In these whole-space energy estimates, ∥ · ∥ p denotes the spatial
+L p (R3 ) norm, and unmarked spatial integrals are over R3 .
+                         ∫︁ t
+Lemma 10.4. Let F (t) = 0 ∥ f (s)∥2 ds for 0 ≤ t ≤ 1. Then F (1) < ∞, and
+                                       ∫︂ t
+                      ∥u(t)∥22 + 2            ∥∇u(s)∥22 ds ≤ F (t)2           (0 ≤ t < 1).                (10.13)
+                                         0
+In particular the kinetic energy is uniformly bounded, and the total dissipation on [0, 1) is finite.
+Proof. On each [0, T ], T < 1, the localized velocity and pressure are smooth with fixed
+compact spatial support. Integrating the equation against u therefore gives
+                            1 d
+                                 ∥u(t)∥22 + ∥∇u(t)∥22 = ⟨ f (t), u(t)⟩.                   (10.14)
+                            2 dt
+For δ > 0, we divide this identity by (∥u(t)∥22 + δ2 )1/2 , discard dissipation, and use Cauchy–
+Schwarz. Integration from the zero datum and δ ↓ 0 yield ∥u(t)∥2 ≤ F (t). Returning to
+(10.14) and integrating gives
+                                  ∫︂ t                        ∫︂ t
+                   ∥u(t)∥22 + 2          ∥∇u(s)∥22 ds ≤ 2            F ′ (s)F (s) ds = F (t)2 .
+                                   0                           0
+The compact smooth force has F (1) < ∞. Monotone convergence gives finite integrated
+dissipation on [0, 1), using the bounds for t < 1 alone.                           □
+  The comparison argument uses smoothness and a uniform spatial L2 bound on [0, T ],
+where T < 1. These hypotheses leave the growth of spatial derivatives at infinity unrestricted.
+We recover the pressure gradient from the equation before passing to the limit in the localized
+energy identity.
+Lemma 10.5. Fix T < 1. If v, P is a smooth solution of (1.1) at viscosity one on R3 × [0, T ], with
+the force f of Lemma 10.3, zero initial velocity, and v ∈ L∞ ([0, T ]; L2 (R3 )), then v = u on that
+interval, where u is the localized velocity of Proposition 10.1.
+Proof. We estimate the difference of the two solutions on expanding balls. The pressure
+term requires separate control because no spatial growth condition has been imposed on P.
+Constants denoted by CT below may depend on T and the stated bounds for the fields, but
+not on the cutoff radius. We set
+            w = v − u,        π = P − p,             gij = vi v j − ui u j = wi w j + wi u j + ui w j .
+We use the convention (div g)i = ∑ j ∂ j gij . On [0, T ], ∥w(t)∥2 ≤ CT and ∑i,j ∥ gij (t)∥1 ≤ CT .
+The common force cancels, so
+                     ∂t w + (v · ∇)w + (w · ∇)u = ∆w − ∇π,                       div w = 0.               (10.15)
+  Pressure gradient. Let Ri be the Riesz transform with Fourier multiplier iξ i /|ξ |, and define
+the distribution
+                                                       3
+                                                π∗ = ∑ Ri R j gij .                                       (10.16)
+                                                      i,j=1
+122                                                            OPENAI
+
+Its multiplier is −ξ i ξ j /|ξ |2 , with the value at zero irrelevant. Since the Fourier transform of
+an L1 function is bounded, π∗ lies uniformly         in H −s (R3 ) for each s > 3/2: its squared norm
+is bounded by a constant times ∥ g∥1 R3 (1 + |ξ |2 )−s dξ. The multiplier gives
+                                            2
+                                              ∫︁
+
+                                                    ∆π∗ = − ∑ ∂i ∂ j gij .
+                                                                     i,j
+
+We claim that ∇π = ∇π∗ in the space–time interior. For a ∈ Cc∞ (0, T ), the conservative form
+of (10.15) gives
+                     ∫︂ T                       ∫︂ T                  ∫︂ T                            ∫︂ T
+                                                                                ′
+                            a∇π dt = ∆                  aw dt +                a w dt − div                   ag dt.
+                      0                             0                      0                              0
+The three terms on the right belong respectively to H −2 , L2 , and H −3 : the last assertion
+follows from g ∈ L∞  1                                                           ∞ −2
+                  t L x and the Fourier estimate above with s = 2. Also π∗ ∈ Lt Hx , so
+                                          ∫︂ T
+                              Ha : =                a(∇π − ∇π∗ ) dt ∈ H −3 (R3 ).
+                                           0
+Taking divergence of the difference equation gives ∆π = − ∑i,j ∂i ∂ j gij = ∆π∗ . Hence
+∆Ha = 0. The Fourier transform of Ha is a weighted L2 function supported at {0}, and is
+therefore zero. Testing also in space proves the claim. This determines the pressure gradient
+under the stated hypotheses, with the spatial growth of P unrestricted.
+   Pressure flux. We now bound the pressure contribution at the boundary
+                                                                      ∫︁       of an expanding
+ball in terms of the weighted dissipation inside it. We first estimate πw · ∇χ R by powers of
+a weighted L6 norm of w that can be absorbed by dissipation. We choose 0 ≤ φ ≤ 1 smooth,
+compactly supported and equal to one on the unit ball. For R ≥ 1, we write φ R ( x ) = φ( x/R),
+χ R = φ8R , and set
+                     ∫︂                   (︃∫︂            )︃1/2
+                             2                          2
+               ER = χ R | w | ,     AR =       χ R |∇w|         ,  BR = ∥ φ4R w∥6 .
+
+The Sobolev inequality and the product rule imply
+                             BR ≤ C ∥∇( φ4R w)∥2 ≤ C ( A R + R−1 ∥w∥2 ).                                               (10.17)
+We use the standard L p boundedness of Riesz transforms for 1 < p < ∞; see [20]. For
+multiplication by a scalar function a and a linear operator T , we write [ a, T ] g = a(T g) −
+T ( ag). Multiplication of (10.16) by φ4R then gives
+                             φ4R π∗ = ∑ Ri R j ( φ4R gij ) + ∑[ φ4R , Ri R j ] gij .                                   (10.18)
+                                              i,j                              i,j
+
+The first sum has L3/2 norm at most CT ( BR + 1), since
+                    ∥ φ4R wi w j ∥3/2 ≤ BR ∥w∥2 ,                      ∥ φ4R wi u j ∥3/2 ≤ ∥w∥2 ∥u∥6 .
+The nonlocal kernel of Ri R j is bounded by C | x − y|−3 . The possible multiple of the identity
+cancels in the commutator, whose kernel is therefore bounded in absolute value by
+                            K R ( x − y) = C | x − y|−3 min{| x − y|/R, 1}.
+Direct radial integration gives
+                                     [︃                 ∫︂ R                        ∫︂ ∞             ]︃
+                                              −4/3                 −2/3                        −2
+                    ∥K R ∥4/3
+                          4/3 ≤ C         R                    r           dr +            r        dr ≤ CR−1 .
+                                                         0                           R
+                             FINITE TIME BLOWUP FOR NAVIER–STOKES                            123
+
+Young’s convolution inequality bounds the second sum in (10.18) in L4/3 by CT R−3/4 . These
+identities hold first for compact smooth cutoffs of g, then for g by convergence in L1 , the
+uniform commutator bound, and convergence of its Riesz transforms in H −s . In particular
+π∗ is locally integrable in space and time.
+  The equality of pressure gradients, tested against the compact vector field a(t)χ R w, now
+gives          ∫︂                 ∫︂
+                 π w · ∇χ R dx =    π∗ w · ∇χ R dx       for almost every t ∈ (0, T ).
+Since |∇χ R | ≤ CR−1 φ7R , the two terms in (10.18) pair with CR−1 φ3R |w|. Interpolation yields
+               ∥ φ3R w∥3 ≤ ∥ φ2R w∥3 ≤ BR1/2 ∥w∥1/2
+                                                2 ,         ∥ φ3R w∥4 ≤ BR3/4 ∥w∥1/4
+                                                                                 2 .
+Consequently        ⃓∫︂          ⃓         [︂                          ]︂
+                    ⃓ π w · ∇χ R ⃓ ≤ CT R−1 ( BR + 1) B1/2 + R−3/4 B3/4 .
+                    ⃓            ⃓
+                    ⃓            ⃓                     R            R                    (10.19)
+   Difference energy. The pressure flux can now be included in the energy estimate for the
+difference. All integrations have compact support, so smoothness suffices. Pairing (10.15)
+with χ R w gives
+                       1 ′                                       1
+                                      ∫︂                           ∫︂
+                         ER + A2R = − χ R (w · ∇)u · w +              |w|2 ∆χ R
+                       2                                         2
+                                       1
+                                         ∫︂                   ∫︂
+                                    +       | w |2 v · ∇ χ R + π w · ∇ χ R .
+                                       2
+We take R large enough that χ R = 1 on a neighborhood of supp u. Then v = w on supp ∇χ R ,
+and the transport flux is bounded by
+                                       ∫︂
+                                CR−1        φ6R |w|3 ≤ CT R−1 BR3/2 .
+
+Here φ2R |w| = ( φ4R |w|)1/2 |w|1/2 and Hölder’s inequality give the last bound. The Laplacian
+term is at most CT R−2 . Using (10.17) in (10.19), every power of A R in these flux bounds is at
+most 3/2 < 2. Young’s inequality therefore gives
+                 1 ′      1                    CT
+                   ER + A2R ≤ ∥∇u∥∞ ER +             for almost every t ∈ (0, T ).
+                 2        2                     R
+For example, R−1 A3/2  R   ≤ δA2R + Cδ R−4 ; the terms of powers 1/2 and 3/4 have the same
+required bound. The coefficient ∥∇u∥∞ is bounded on [0, T ], and ER (0) = 0. Gronwall gives
+                                  2CT t                                 C′
+                                      ∫︂    (︃ ∫︂ t             )︃
+                       ER ( t ) ≤        exp 2      ∥∇u( a)∥∞ da ds ≤ T .
+                                   R 0           s                       R
+Since χ R = 1 on each fixed ball for all sufficiently large R, letting R → ∞ gives w = 0
+throughout [0, T ].                                                                           □
+10.4. Growth, lifespan, and viscosity. The force extension and energy estimate are now
+established for the localized fields (u, p) (Lemma 10.3, (10.13)). In this subsection we use the
+inner growth asymptotic (3.6) from Theorem 3.1 to identify the maximal classical lifespan
+and, with the comparison lemma (Lemma 10.5), exclude a global smooth solution of bounded
+energy. A spatial rescaling then gives the result for every fixed positive viscosity without
+changing the singular time.
+

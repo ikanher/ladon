@@ -1,0 +1,9 @@
+import NavierStokes.SmoothFamilyTorusInverse
+import NavierStokes.R3.PressureFlux
+
+#check NavierStokes.SmoothFamilyTorusInverse.norm_derivativeWord_inverse_le
+#check NavierStokes.SmoothFamilyTorusInverse.inverse_finiteJets
+#check NavierStokesR3.PressureFlux.exists_uniform_actual_pressure_flux_bound
+#print axioms NavierStokes.SmoothFamilyTorusInverse.norm_derivativeWord_inverse_le
+#print axioms NavierStokes.SmoothFamilyTorusInverse.inverse_finiteJets
+#print axioms NavierStokesR3.PressureFlux.exists_uniform_actual_pressure_flux_bound

@@ -1,0 +1,56 @@
+FFFF.                                                                    [100%]
+=================================== FAILURES ===================================
+____ test_unknown_standalone_version_is_preserved_without_native_tables[1] _____
+
+version = 1
+
+    @pytest.mark.parametrize("version", [1, 8, 10, 42])
+    def test_unknown_standalone_version_is_preserved_without_native_tables(version):
+        with owner_database(version) as connection:
+            before = tuple(connection.iterdump())
+>           with pytest.raises(RuntimeError, match="disposable rebuild"):
+E           Failed: DID NOT RAISE <class 'RuntimeError'>
+
+tests/test_correspondence_schema_version_owner.py:23: Failed
+____ test_unknown_standalone_version_is_preserved_without_native_tables[8] _____
+
+version = 8
+
+    @pytest.mark.parametrize("version", [1, 8, 10, 42])
+    def test_unknown_standalone_version_is_preserved_without_native_tables(version):
+        with owner_database(version) as connection:
+            before = tuple(connection.iterdump())
+>           with pytest.raises(RuntimeError, match="disposable rebuild"):
+E           Failed: DID NOT RAISE <class 'RuntimeError'>
+
+tests/test_correspondence_schema_version_owner.py:23: Failed
+____ test_unknown_standalone_version_is_preserved_without_native_tables[10] ____
+
+version = 10
+
+    @pytest.mark.parametrize("version", [1, 8, 10, 42])
+    def test_unknown_standalone_version_is_preserved_without_native_tables(version):
+        with owner_database(version) as connection:
+            before = tuple(connection.iterdump())
+>           with pytest.raises(RuntimeError, match="disposable rebuild"):
+E           Failed: DID NOT RAISE <class 'RuntimeError'>
+
+tests/test_correspondence_schema_version_owner.py:23: Failed
+____ test_unknown_standalone_version_is_preserved_without_native_tables[42] ____
+
+version = 42
+
+    @pytest.mark.parametrize("version", [1, 8, 10, 42])
+    def test_unknown_standalone_version_is_preserved_without_native_tables(version):
+        with owner_database(version) as connection:
+            before = tuple(connection.iterdump())
+>           with pytest.raises(RuntimeError, match="disposable rebuild"):
+E           Failed: DID NOT RAISE <class 'RuntimeError'>
+
+tests/test_correspondence_schema_version_owner.py:23: Failed
+=========================== short test summary info ============================
+FAILED tests/test_correspondence_schema_version_owner.py::test_unknown_standalone_version_is_preserved_without_native_tables[1]
+FAILED tests/test_correspondence_schema_version_owner.py::test_unknown_standalone_version_is_preserved_without_native_tables[8]
+FAILED tests/test_correspondence_schema_version_owner.py::test_unknown_standalone_version_is_preserved_without_native_tables[10]
+FAILED tests/test_correspondence_schema_version_owner.py::test_unknown_standalone_version_is_preserved_without_native_tables[42]
+4 failed, 1 passed in 0.06s

@@ -1,0 +1,115 @@
+{
+  "currentGenerationIdentity": "8f59fff96166bf1ff8782c7842a73ac2c03eef95d78cf766febf0940319b09d3",
+  "currentGenerationIdentityMeaning": "currently observed supported inputs",
+  "elapsedSeconds": 0.681401,
+  "evidenceStatus": "lexical-fallback",
+  "freshness": "fresh",
+  "freshnessStatus": "verified-fresh",
+  "generationIdentity": "8f59fff96166bf1ff8782c7842a73ac2c03eef95d78cf766febf0940319b09d3",
+  "generationIdentityMeaning": "stored rows in the queried index",
+  "indexPath": "/home/codex/projects/quux/src/NavierStokesAndEuler/.ladon/index/proof-search.sqlite",
+  "matchMode": "exact-name+fts",
+  "matchSummary": {
+    "basenameExactMatches": 1,
+    "exactCountScope": "selected-indexed-population",
+    "exactMatches": 1,
+    "lexicalSuggestionsReturned": 0,
+    "qualifiedExactMatches": 0
+  },
+  "nonclaim": "The v1 index is navigation evidence. Lexical rows are not Lean-resolved identities, type matches, proof dependencies, or theorem verdicts.",
+  "normalization": "semantic-name-segments-v1",
+  "operation": "search-name",
+  "query": {
+    "downweightedTerms": [
+      "bound"
+    ],
+    "exclude": [],
+    "limit": 20,
+    "minMatchedSegments": 1,
+    "mode": "all",
+    "queryTerms": [
+      "exists",
+      "uniform",
+      "actual",
+      "pressure",
+      "flux",
+      "bound"
+    ],
+    "rankingPolicy": "generic-token-downweight-v1",
+    "roots": [],
+    "scope": "repository",
+    "text": "exists_uniform_actual_pressure_flux_bound"
+  },
+  "queryImpact": "current",
+  "results": [
+    {
+      "authority": "lexical_text",
+      "candidateName": "NavierStokesR3.PressureFlux.exists_uniform_actual_pressure_flux_bound",
+      "column": 9,
+      "id": "ladon.lexical_declaration.b44d8e3ee3fbf9d42232",
+      "kind": "theorem",
+      "line": 576,
+      "module": "NavierStokes.R3.PressureFlux",
+      "name": "exists_uniform_actual_pressure_flux_bound",
+      "namespace": "NavierStokesR3.PressureFlux",
+      "package": "NavierStokes",
+      "path": "NavierStokes/R3/PressureFlux.lean",
+      "ranking": {
+        "contribution": "exact",
+        "matchedSegments": [
+          "actual",
+          "bound",
+          "exists",
+          "flux",
+          "pressure",
+          "uniform"
+        ],
+        "score": 10561,
+        "specificSegments": [
+          "actual",
+          "exists",
+          "flux",
+          "pressure",
+          "uniform"
+        ]
+      },
+      "structureName": null,
+      "typeStatus": "lexical-signature",
+      "typeText": "{T : ℝ} {u v : VelocityField} {p q : PressureField} (H : PressureRecovery.Hypotheses T u v p q) (M₀ U₀ G₀ : ℝ) (hM₀ : 0 ≤ M₀) (hU₀ : 0 ≤ U₀) (hG₀ : 0 ≤ G₀) (hM : ∀ t ∈ Icc 0 T, MemLp (fun x => (u - v) (t, x)) 2 volume ∧ comparisonLpNorm 2 (fun x => (u - v) (t, x)) ≤ M₀) (hU : ∀ t ∈ Icc 0 T, MemLp (fun x => u (t, x)) 3 volume ∧ comparisonLpNorm 3 (fun x => u (t, x)) ≤ U₀) (hG : ∀ t ∈ Icc 0 T, ∀ i j : Fin 3, Integrable (tensorDiff u v t i j) volume ∧ comparisonLpNorm 1 (tensorDiff u v t i j) ≤ G₀) : ∃ CP : ℝ, 0 ≤ CP ∧ ∀ R : ℝ, 1 ≤ R → ∀ t ∈ Ioo 0 T, |∫ x, (p - q) (t, x) * fderiv ℝ (ComparisonCutoffs.weight R) x ((u - v) (t, x))| ≤ CP * ((cutoffL6 (ComparisonCutoffs.cutoff R) (u - v) t ^ (1 / 2 : ℝ) + 1) * (dissipationRoot (ComparisonCutoffs.cutoff R) (u - v) t / R + 1 / R ^ 2) + R ^ (-(7 / 4 : ℝ)) * cutoffL6 (ComparisonCutoffs.cutoff R) (u - v) t ^ (3 / 4 : ℝ))",
+      "typeTextBytes": 963,
+      "typeTextTruncated": false
+    }
+  ],
+  "returned": 1,
+  "schema": "ladon-proof-search-name-result-v2",
+  "scope": {
+    "includedModules": null,
+    "kind": "repository",
+    "omissions": [],
+    "roots": []
+  },
+  "sourceChanges": {
+    "counts": {
+      "added": 0,
+      "changed": 0,
+      "removed": 0
+    },
+    "currentConfigurationFingerprint": "24be2810c296c26425f8609be9896da56e5803ec993b3c5c1e86183a5884f457",
+    "currentLayoutStatus": "lake_declared",
+    "currentSourceFingerprint": "1e7ff7200043930971620837e056b75c565492f5b4b775a1a25ca6eccc47e547",
+    "queryImpact": "current",
+    "samples": {
+      "added": [],
+      "changed": [],
+      "removed": []
+    },
+    "status": "compared",
+    "truncated": {
+      "added": false,
+      "changed": false,
+      "removed": false
+    }
+  },
+  "status": "available",
+  "truncated": false
+}

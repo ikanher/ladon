@@ -1,0 +1,60 @@
+{
+  "caseId": "85f7f1c843c4",
+  "arm": "source-review",
+  "verdict": "argument-fault",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "The first record is local, and all local records are retained. The clerk concludes that the first record carries catalog code 7."
+    },
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "A separate inventory note says that this record carries catalog code 7."
+    },
+    {
+      "path": "Main.lean",
+      "startLine": 13,
+      "endLine": 15,
+      "quote": "have _hRetained := localRetention nearby retained hNearby hRule\n  exact inventoryRecordCode codeSeven hIndependent"
+    }
+  ],
+  "explanation": "The local/retention facts do not imply catalog code 7. In the source, the code claim is independently asserted by the inventory note, so the endpoint is supported if that note is accepted. The Lean result likewise proves the endpoint from hIndependent and does not use the retention derivation; its nearby/retained propositions are not linked to codeSeven.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "The inference from local status plus retention to catalog code 7 is unsupported; those predicates have no stated bridge to a catalog-code predicate.",
+      "dependencies": [
+        "first record local",
+        "all local records retained"
+      ],
+      "qualification": "The independently stated inventory note supplies the endpoint directly."
+    },
+    {
+      "meaning": "The Lean theorem result has endpoint codeSeven.",
+      "dependencies": [
+        "hIndependent : codeSeven"
+      ],
+      "qualification": "The localRetention proof is computed into an unused local; it is irrelevant to the returned proof."
+    }
+  ],
+  "evidence": [
+    {
+      "status": "attributed",
+      "detail": "Source prose attributes code 7 to the separate inventory note; no proof or reliability criterion for that note is supplied."
+    },
+    {
+      "status": "checked",
+      "detail": "Static proof-term reading: result returns inventoryRecordCode codeSeven hIndependent; local retention result does not feed this term. No reviewer Lean execution."
+    }
+  ],
+  "commands": [],
+  "omissions": [
+    "No direct Lean check; no assessment of the inventory note’s external reliability."
+  ],
+  "reviewerRole": "independent source/step reviewer",
+  "reviewerStart": "2026-10-11T00:38:12Z"
+}

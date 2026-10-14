@@ -127,8 +127,36 @@ def validate_kind_payload(value: Mapping[str, Any]) -> None:
         "proofir.source-map": _validate_source,
         "proofir.attachment-set": _validate_attachment,
         "proofir.governance-observation": _validate_governance,
+        "proofir.interpretation": _validate_interpretation,
+        "proofir.correspondence": _validate_correspondence,
     }[kind]
     validator(p, value, subjects, env)
+
+
+def _validate_interpretation(p, value, subjects, env):
+    from ladon.proofir_correspondence_payloads import validate_interpretation_payload
+
+    try:
+        validate_interpretation_payload(p)
+    except (ValueError, TypeError, KeyError) as error:
+        _invalid_field(value, "/payload", str(error))
+    if ("interpretation", p["interpretationId"]) not in subjects:
+        _invalid_field(value, "/subjectRefs", "interpretation must own its exact typed subject")
+    _require_ref(p["sourceRef"], "/payload/sourceRef", subjects, env, value, "source-map")
+
+
+def _validate_correspondence(p, value, subjects, env):
+    from ladon.proofir_correspondence_payloads import validate_correspondence_payload
+
+    try:
+        validate_correspondence_payload(p)
+    except (ValueError, TypeError, KeyError) as error:
+        _invalid_field(value, "/payload", str(error))
+    if ("correspondence", p["correspondenceId"]) not in subjects:
+        _invalid_field(value, "/subjectRefs", "correspondence must own its exact typed subject")
+    _require_ref(p["interpretationRef"], "/payload/interpretationRef", subjects, env, value, "interpretation")
+    for index, ref in enumerate(p["checkRunRefs"]):
+        _require_ref(ref, f"/payload/checkRunRefs/{index}", subjects, env, value, "check-run")
 
 
 def _validate_environment(p, value, _subjects, env) -> None:

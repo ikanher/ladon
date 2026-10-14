@@ -1,0 +1,11 @@
+# Portable public 02 boundary challenge
+
+Reviewed only `evidence/portable-public-02/review-packet.json`, its immutable `first-response.json`, and the allowed `investigation_correspondence_inputs.py` response/boundary code.
+
+The first response's mismatch rests on conflating two different fields. The packet's top-level `subject` is the opaque identifier `3906b9c4…`; it is not a proposition. The nested `observedContext.elaboratedInterpretations[0].subject` is indeed `P → P`, but that is the typed observation for the `interpretation` / `welltypedness` obligation. The packet explicitly labels its scope `typing-only; P implies P establishes neither P nor source fidelity`. The producer code at `investigation_correspondence_inputs.py:167-177` attaches those observations and scope separately from `originalGoals`.
+
+At the proposition boundary, the source quote is “Every natural less than eight is less than nine”; the structured interpretation is `∀ n : Nat, n < 8 → n < 9`. The selected application has context `x₀ : Nat`, `h₀ : x₀ < 8` and application type `x₀ < 9` (`observedContext.applicationType`); the original `conditional` goal is that same closed proposition. The other goals separate object-map representation, premise supply, conclusion transfer, and provider validity. Thus the observed `P → P` typing probe is not the exported mathematical claim and does not establish a claim mismatch.
+
+My boundary judgments are: correspondence aligned at the structured proposition/application boundary; source fidelity faithful for this quoted sentence-to-formula mapping, as an independent reading judgment rather than a Lean-derived result; method unresolved. The packet gives typed expressions, an application and its type, but no evidence sufficient to identify the proof method used to derive the application. This says nothing about theorem truth, independent proof execution, or broader manuscript fidelity.
+
+Pointers: packet `/subject`; `/sourceQuote`; `/interpretation/formula`; `/observedContext/interpretationCheckScope`; `/observedContext/elaboratedInterpretations/0/subject`; `/observedContext/applicationType`; `/originalGoals` entries `interpretation`, `conditional`, `premise-1`, `conclusion`, and `provider-1`. First response: `/evidence`.

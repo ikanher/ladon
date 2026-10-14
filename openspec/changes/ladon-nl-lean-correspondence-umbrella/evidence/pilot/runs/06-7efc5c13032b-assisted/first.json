@@ -1,0 +1,169 @@
+{
+  "caseId": "7efc5c13032b",
+  "arm": "assisted",
+  "verdict": "faithful",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "For integers x and y, establish that x + y equals y + x. One proof can rearrange terms using commutativity; another can evaluate equality by the integer expression procedure."
+    },
+    {
+      "path": "Main.lean",
+      "startLine": 3,
+      "endLine": 4,
+      "quote": "theorem arithmeticEvaluation (x y : Int) : x + y = y + x := by\n  omega"
+    },
+    {
+      "path": "Main.lean",
+      "startLine": 6,
+      "endLine": 7,
+      "quote": "theorem result (x y : Int) : x + y = y + x := by\n  exact arithmeticEvaluation x y"
+    }
+  ],
+  "explanation": "The prose's endpoint is the universally quantified integer identity x + y = y + x. The supplied source proves that identity: arithmeticEvaluation uses omega, and result applies that theorem. I read the prose's second method as allowing an integer arithmetic decision procedure to establish the equality; that is consistent with the visible omega proof. This is a qualified method correspondence, since the prose does not name omega or specify its algorithm, and this audit did not establish that omega literally evaluates a closed integer expression. The commutativity method is presented as one possible proof, not asserted to be the method used in Main.lean. No premise or endpoint fault is apparent.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "For every pair of integers x and y, their sum is equal when the operands are exchanged.",
+      "dependencies": "x and y have type Int; no additional hypotheses.",
+      "qualification": "The source prose presents two possible justifications. It does not claim that the Lean proof uses the commutativity route specifically. The phrase 'integer expression procedure' is underspecified; I interpret it broadly as symbolic integer-arithmetic automation, consistent with omega."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "source-bound elaborated proof slice",
+      "path": "output/slice.json",
+      "observation": "Ladon extracted a complete slice for the application arithmeticEvaluation in result. It records the closed proof as fun (x y : Int) => arithmeticEvaluation x y and the expected equality type. Its internal Lean compilation receipts returned 0; individual process elapsed times were 0.4841696429, 1.0490046229, 0.5375826040, and 1.0794305019 seconds. These receipts show the source-bound application, not source-to-prose fidelity by themselves."
+    },
+    {
+      "kind": "direct Lean elaboration/kernel check",
+      "path": "output/Check.lean",
+      "observation": "Lean accepted import Main and example (x y : Int) : x + y = y + x := result x y. #print reported arithmeticEvaluation as fun x y => Decidable.byContradiction fun a => arithmeticEvaluation._proof_1_1 x y a, and result as fun x y => arithmeticEvaluation x y. This supports endpoint truth and the delegation in result; it does not independently reconstruct omega's internal arithmetic argument."
+    },
+    {
+      "kind": "attributed mathematical reasoning",
+      "observation": "Integer addition is commutative, so the endpoint is true. This is separate from the direct Lean check and is not a counterexample/refutation."
+    },
+    {
+      "kind": "input and checker identities",
+      "observation": "Input hashes observed before checking: source.txt sha256 e0feaf33151961828ce9972995fd2e3511b7ac7f63813b12eee475353e0da5f4; Main.lean sha256 edb28e68e9dbf8c31a66b7da0ba8027f951216193aeeb53bb1534c2d13df273f; Main.olean sha256 2c9a6a438ec769e049598943824a84bb95dfb7ae56dc2652735a5bdc3d02a0e3; lean-toolchain sha256 8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af. Lean executable: Lean 4.32.1, sha256 e8baaa71855a616dc351028f3ad2200051b0671f423a1696a100e809302d5550. Ladon checkout HEAD observed as 0b2167cae0888cff77acfb2f971541b3d6979f07."
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "correspondence",
+        "--help"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 2,
+      "elapsedSeconds": 0.2,
+      "stdout": "{\"diagnostic\":{\"code\":\"invalid-invocation\",\"message\":\"argument proof_search_operation: invalid choice: 'correspondence' (choose from 'proof', 'index', 'evidence', 'search', 'explain', 'discover', 'consumers', 'constructor', 'goal', 'check')\"},\"exitClass\":\"invocation\",\"exitCode\":2,\"operation\":\"correspondence\",\"schema\":\"ladon-proof-search-terminal-v1\",\"status\":\"failed\"}"
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "proof",
+        "slice",
+        "--repo",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/input",
+        "--source",
+        "Main.lean",
+        "--module",
+        "Main",
+        "--declaration",
+        "result",
+        "--application",
+        "arithmeticEvaluation x y",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/output/slice.json"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 2,
+      "elapsedSeconds": 0.2,
+      "stdout": "{\"status\": \"invalid\", \"error\": \"slice selection requires ordinary qualified names\"}",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "proof",
+        "slice",
+        "--repo",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/input",
+        "--source",
+        "Main.lean",
+        "--module",
+        "Main",
+        "--declaration",
+        "result",
+        "--application",
+        "arithmeticEvaluation",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/output/slice.json"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/input",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": null,
+      "stdout": "",
+      "stderr": "",
+      "preservedOutput": "output/slice.json",
+      "timingNote": "This invocation shared a shell call with a subsequent failed Lean invocation, so its standalone wall time was not isolated. The retained slice gives timings for four internal Lean processes."
+    },
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "Check.lean"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/input",
+      "env": {
+        "LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/input"
+      },
+      "exitCode": 1,
+      "elapsedSeconds": 0.31,
+      "stdout": "",
+      "stderr": "no such file or directory (error code: 4294967294)\n  file: Check.lean"
+    },
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/output/Check.lean"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/input",
+      "env": {
+        "LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/06-7efc5c13032b-assisted/input"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.314,
+      "stdout": "theorem arithmeticEvaluation : ∀ (x y : Int), x + y = y + x :=\nfun x y => Decidable.byContradiction fun a => arithmeticEvaluation._proof_1_1 x y a\ntheorem result : ∀ (x y : Int), x + y = y + x :=\nfun x y => arithmeticEvaluation x y\n",
+      "stderr": ""
+    }
+  ],
+  "omissions": [
+    "No correspondence interpret, align, or check command was run; no explicit natural-language-to-Lean obligation was generated. The verdict relies on the original source, the extracted application, the direct endpoint check, and the stated qualified interpretation.",
+    "No refutation was attempted because the endpoint is true; no alternate commutativity proof was executed.",
+    "The initial slice attempt used a non-name application string and failed; the successful extraction selected the actual theorem application arithmeticEvaluation. The first Lean check used a path relative to the input directory although Check.lean was saved in output; the corrected invocation succeeded.",
+    "No online/model APIs, new packages, external sources, or other case/arm materials were used."
+  ]
+}

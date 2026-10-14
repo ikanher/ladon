@@ -61,6 +61,8 @@ SUPPORTED_ARTIFACT_KINDS = frozenset(
         "proofir.source-map",
         "proofir.attachment-set",
         "proofir.governance-observation",
+        "proofir.interpretation",
+        "proofir.correspondence",
     }
 )
 LEGACY_ARTIFACT_KINDS = frozenset(
@@ -1089,7 +1091,11 @@ def _expected_external_kind(pointer: str) -> str | None:
         "surfaceRef": "surface",
         "sourceMapRef": "source-map",
         "attachmentSetRef": "attachment-set",
+        "interpretationRef": "interpretation",
+        "checkRunRefs": "check-run",
     }
+    if pointer == "/payload/sourceRef":
+        return "source-map"
     for field, kind in fields.items():
         if f"/{field}" in pointer:
             return kind

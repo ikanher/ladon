@@ -20,6 +20,7 @@ from pathlib import Path
 from time import monotonic
 from typing import IO
 
+from ladon.correspondence_execution_accounting import measured_bounded_process
 from ladon.progress import process_tree_rss_bytes
 
 TERMINATE_GRACE_SECONDS = 2.0
@@ -124,6 +125,7 @@ def run_target_process(
     )
 
 
+@measured_bounded_process
 def run_bounded_target_process(
     command: Sequence[str],
     *,

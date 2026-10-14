@@ -64,6 +64,7 @@ EXPECTED_TABLES = frozenset(
         "proofir_v3_coverage",
         "proofir_v3_omissions",
         "proofir_v3_extensions",
+
     }
 )
 
@@ -99,7 +100,11 @@ def index_columns(connection: sqlite3.Connection, table: str) -> list[tuple[str,
 
 def test_schema_has_every_normalized_family_and_declared_index() -> None:
     connection = memory_database()
-    assert REQUIRED_TABLES == EXPECTED_TABLES
+    assert REQUIRED_TABLES == EXPECTED_TABLES | {
+        "proofir_v3_interpretations", "proofir_v3_correspondences",
+        "proofir_v3_correspondence_obligations", "proofir_v3_correspondence_residuals",
+        "proofir_v3_correspondence_checks",
+    }
     assert EXPECTED_TABLES <= schema_objects(connection, "table")
     assert REQUIRED_INDEXES <= schema_objects(connection, "index")
     assert "proofir_v3_legacy_artifacts" not in schema_objects(connection, "table")

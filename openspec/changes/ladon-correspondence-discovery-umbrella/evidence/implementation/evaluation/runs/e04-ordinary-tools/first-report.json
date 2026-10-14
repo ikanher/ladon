@@ -1,0 +1,35 @@
+{
+  "verdict": "discrepancy",
+  "statementAssessment": "The exposition’s claim of a bound independent of n is false. Each individual function is bounded, but the supplied formal argument establishes only bounds that depend on n.",
+  "methodAssessment": "The formal argument is a valid method for proving each f_n is bounded on [0,1]: choose C_n = n and use 0 ≤ t ≤ 1. That is a different, weaker claim than a common bound for the family.",
+  "findings": [
+    {
+      "sourceAssertion": "“Since each f_n is bounded, the family has a bound C independent of n.”",
+      "formalCounterpart": "“For every n≥1 the formal result chooses C_n=n and proves |f_n(t)|≤C_n for t in [0,1].”",
+      "classification": "False statement; valid different method",
+      "explanation": "The asserted uniform bound does not exist. The formal argument proves only an individual bound for each n, with the bound depending on n.",
+      "evidence": "At t=1, |f_n(1)|=n. For any proposed finite common bound C, choose an integer n>C; then |f_n(1)|>C. For fixed n, however, 0≤t≤1 gives |nt|=nt≤n, so C_n=n is valid.",
+      "uncertainty": "None."
+    }
+  ],
+  "examinedAssertions": [
+    {
+      "assertion": "“On [0,1], let f_n(t)=n*t for integers n>=1.”",
+      "assessment": "Faithful definition of the family used by the formal argument.",
+      "evidence": "The rendered formal result refers to f_n, the domain [0,1], and n≥1."
+    },
+    {
+      "assertion": "“Since each f_n is bounded, the family has a bound C independent of n.”",
+      "assessment": "The individual boundedness premise is true; the conclusion and the stated inference are false.",
+      "evidence": "For each fixed n, |nt|≤n on [0,1]. But at t=1 the values are n, so they have no common finite upper bound."
+    },
+    {
+      "assertion": "For every n≥1, choose C_n=n and prove |f_n(t)|≤C_n for t∈[0,1].",
+      "assessment": "Valid individual boundedness result; it does not establish the exposition’s uniform-bound claim.",
+      "evidence": "Since n≥1 and 0≤t≤1, |nt|=nt≤n."
+    }
+  ],
+  "omissions": "The rendered formal argument does not claim or prove a bound independent of n.",
+  "toolsUsed": "Read /input/INPUT.md with a shell cat command; used direct mathematical reasoning. No external references or Lean checks.",
+  "checkingStatus": "Audited the supplied exposition and rendered formal argument only. No original Lean module was provided or checked."
+}

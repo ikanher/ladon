@@ -1,0 +1,51 @@
+{
+  "caseId": "4549693104b8",
+  "arm": "ordinary",
+  "verdict": "faithful",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "A proposition P is true, and P implies Q. Applying that implication yields Q."
+    }
+  ],
+  "explanation": "The entire supplied passage expresses one inference: from P and P → Q, infer Q. This is exactly the inference in modusPonens, and result delegates to modusPonens with the same premises. Under the ordinary scoped reading of ‘P is true’ as an available premise hp : P, there is no unsupported step or method difference. The passage supplies no additional inferential steps to assess.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "‘P is true’ supplies P; ‘P implies Q’ supplies P → Q; applying the implication means modus ponens.",
+      "dependencies": ["P", "P → Q"],
+      "qualifications": "Truth of Q is conditional on both stated premises; the text does not claim Q without them."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "lean-check",
+      "detail": "A local check imported the supplied Main module and typechecked proseInference (P Q : Prop) (hp : P) (hpq : P → Q) : Q := hpq hp. It also printed the supplied result theorem with the same premise/conclusion type. This supports the formal correspondence for the direct scoped reading; it does not determine any unstated contextual meaning.",
+      "receipt": "lean-receipt.json"
+    },
+    {
+      "kind": "input-identities",
+      "detail": "SHA-256: source.txt 7aa841f9d915913170a64c94045b61462c2b70ce24c4a62b95f64a777b49caef; Main.lean b47104718eef4532571b0688845ae6e168661f63910c1b2600513f719dd53ea2; Main.olean ae41d74d5aa1055d7a27a27250e8532ac3d37e6eb926996fe128417d573d02b7; lean-toolchain 8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af. Lean executable: /home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean; pinned toolchain file: leanprover/lean4:v4.32.1."
+    }
+  ],
+  "commands": [
+    {
+      "argv": ["/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean", "Check.lean"],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/12-4549693104b8-ordinary/output",
+      "env": {
+        "LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/12-4549693104b8-ordinary/input"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.4079253817908466,
+      "stdout": "proseInference (P Q : Prop) (hp : P) (hpq : P → Q) : Q\nresult (P Q : Prop) (hp : P) (hpq : P → Q) : Q\n",
+      "stderr": "",
+      "receipt": "lean-receipt.json"
+    }
+  ],
+  "omissions": [
+    "No online sources, Ladon, other arms, reviewer material, curation, or keys were accessed.",
+    "No alternative interpretations beyond the ordinary premise reading were required by the supplied one-sentence passage."
+  ]
+}

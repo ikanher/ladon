@@ -1,0 +1,70 @@
+{
+  "caseId": "85f7f1c843c4",
+  "arm": "assisted",
+  "verdict": "argument-fault",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "The first record is local, and all local records are retained. The clerk concludes that the first record carries catalog code 7."
+    },
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "A separate inventory note says that this record carries catalog code 7."
+    }
+  ],
+  "explanation": "Read as written, the locality/retention facts do not establish that the record has code 7. The independent inventory note does support that endpoint, so the conclusion is true on the full passage while the clerk's stated inference is unsupported. In result, the localRetention application only creates _hRetained : retained; it is not used to produce the result. The returned codeSeven is produced solely from hIndependent : codeSeven via inventoryRecordCode. Thus the formal theorem proves the endpoint under an independent code premise, but does not formalize the clerk's inference from locality and retention.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "reading": "The first two sentences are the clerk's stated reason for the code claim; the last sentence supplies an independent assertion of the same endpoint.",
+      "dependencies": "Locality and the retention rule yield retention only. No code fact follows from those premises. The inventory note directly supplies the code fact.",
+      "qualification": "The prose does not explicitly say the inventory note is the clerk's reason. Even if it independently makes the endpoint true, it does not repair the earlier inference as stated."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "tool-observation",
+      "path": "slice.json",
+      "detail": "Ladon source-bound slice id 49722b879dcd49923fb6d64d497ef786e4171a349bdcd0e9e6f39e492b6180d5; complete=true; selected Main.result application inventoryRecordCode occurrence 0. Its sole premise is codeSeven provided by hIndependent, and the returned type is codeSeven. The closed proof also shows the preceding _hRetained binding and the final inventoryRecordCode codeSeven hIndependent."
+    },
+    {
+      "kind": "direct-lean-check",
+      "path": "Check.lean",
+      "detail": "Lean 4.32.1 successfully checked a counterexample to entailment from locality and retention: isLocal=True, retained=True, codeSeven=False, with isLocal and isLocal -> retained both satisfied and not codeSeven. A second checked term confirms an independent hInventory : codeSeven proves codeSeven. This checks the abstracted implication/counterexample, not a source-to-prose identity claim."
+    },
+    {
+      "kind": "input-identity",
+      "detail": "Main.lean SHA-256 dba78d7582e328e06e9e11073a6e24a82a0a19c35be6ab78f9635ed1d7b0ef77; source.txt SHA-256 1e89e02c92a1798a827c656381aaf841de10ae4c3fe89f827397cdd98fdd82fe; lean-toolchain SHA-256 8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af; Main.olean SHA-256 cb262c922476e7bd92180a012b803852773583c36afb04ab02984e3ef1977f37. Lean version: 4.32.1, commit f054605aea4b840552cca2e725580bffd1e1b704."
+    }
+  ],
+  "commands": [
+    {
+      "argv": ["/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean", "Check.lean"],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/03-85f7f1c843c4-assisted/output",
+      "env": {"LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/03-85f7f1c843c4-assisted/input"},
+      "exitCode": 0,
+      "elapsedSeconds": 0.5,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": ["/home/codex/.venv/bin/python", "-m", "ladon.entrypoint", "proof-search", "proof", "slice", "--repo", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/03-85f7f1c843c4-assisted/input", "--source", "Main.lean", "--module", "Main", "--declaration", "result", "--application", "inventoryRecordCode", "--output", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/03-85f7f1c843c4-assisted/output/slice.json"],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {"PYTHONPATH": "/home/codex/projects/ladon/src"},
+      "exitCode": 0,
+      "elapsedSeconds": 6.7,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "omissions": [
+    "No checker was run against a constructed prose interpretation; the slice evidence and Lean counterexample were inspected directly, avoiding a hand-authored alignment that could overstate source fidelity.",
+    "The counterexample uses abstract propositions and establishes invalidity of the stated locality/retention entailment; the mapping of those propositions to the prose is my attributed reading.",
+    "No token usage was exposed. No online sources, other arms, curation, private references, or historical reports were consulted.",
+    "A first Check.lean invocation failed because its redirection path incorrectly repeated the output-directory prefix while cwd was already that directory; it produced no file or Lean result. The corrected invocation above succeeded."
+  ]
+}

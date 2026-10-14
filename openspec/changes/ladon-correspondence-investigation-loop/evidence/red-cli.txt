@@ -1,0 +1,58 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_public_command_does_not_finish_while_source_work_remains _________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1426/test_public_command_does_not_f0')
+
+    def test_public_command_does_not_finish_while_source_work_remains(tmp_path):
+        text = tmp_path / "exposition.txt"
+        text.write_text("First assertion.\nSecond assertion.\n")
+        plan = tmp_path / "investigation.json"
+        base = [sys.executable, "-m", "ladon.entrypoint", "investigation"]
+        initialized = subprocess.run(base + ["init", "--text", str(text), "--root", str(tmp_path),
+            "--output", str(plan), "--minutes", "90", "--unit-lines", "1"],
+            capture_output=True, text=True)
+>       assert initialized.returncode == 0, initialized.stderr
+E       AssertionError: usage: entrypoint.py [-h] [--repo-root REPO_ROOT] [--root ANALYSIS_ROOTS]
+E                              [--scope {changed-set,closure,inventory,multi-root,namespace,owner}]
+E                              [--changed-path CHANGED_PATH]
+E                              [--changed-manifest CHANGED_MANIFEST]
+E                              [--max-modules MAX_MODULES]
+E                              [--max-context-modules MAX_CONTEXT_MODULES]
+E                              [--cache-dir CACHE_DIR] [--no-cache] [--build]
+E                              [--build-timeout BUILD_TIMEOUT]
+E                              [--extraction-backend {text,lean}]
+E                              [--lean-extraction-scope {root,inventory}]
+E                              [--lean-cache-dir LEAN_CACHE_DIR]
+E                              [--lean-batch-size LEAN_BATCH_SIZE]
+E                              [--lean-timeout LEAN_TIMEOUT] [--lean-strict]
+E                              [--progress {auto,plain,json,off}]
+E                              [--overall-timeout OVERALL_TIMEOUT]
+E                              [--max-rss-mib MAX_RSS_MIB]
+E                              [--max-report-bytes MAX_REPORT_BYTES]
+E                              [--format {text,json}] [--output OUTPUT]
+E                              [--emit FORMAT=PATH] [--report-version {v3,v2,v1}]
+E                              [--projection {summary,review,full}]
+E                              [--output-json LEGACY_JSON] [--output-text LEGACY_TEXT]
+E                              [--fail-on FAIL_ON] [--generated-at-utc GENERATED_AT_UTC]
+E                              [--doc-file DOC_FILE] [--packet-dir PACKET_DIR]
+E                              [--architecture-policy ARCHITECTURE_POLICY]
+E                              [--source-pattern-policy SOURCE_PATTERN_POLICY]
+E                              [--generated-family-policy GENERATED_FAMILY_POLICY]
+E                              [--generated-family-candidate-profile GENERATED_FAMILY_CANDIDATE_PROFILE]
+E                              [--module-system-witness MODULE_SYSTEM_WITNESS]
+E                              [--import-diet-witness IMPORT_DIET_WITNESS]
+E                              [--proof-xray PROOF_XRAY]
+E                              [--packet-profile {generic,review_packet,witness_bundle,release_bundle}]
+E                              [--verify-export-surface]
+E                              [--certificate-artifact CERTIFICATE_ARTIFACT]
+E                              [target]
+E         entrypoint.py: error: unrecognized arguments: init --minutes 90 --unit-lines 1
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.entrypoint', 'investigation', 'init...ACT]\n                     [target]\nentrypoint.py: error: unrecognized arguments: init --minutes 90 --unit-lines 1\n').returncode
+
+tests/test_investigation_cli.py:16: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_investigation_cli.py::test_public_command_does_not_finish_while_source_work_remains
+1 failed in 0.23s

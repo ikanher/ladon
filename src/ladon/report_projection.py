@@ -12,6 +12,7 @@ from ladon.report_declaration_compaction import (
     compact_declaration_rows,
     is_compact_declaration_container,
     is_raw_declaration_container,
+    validate_declaration_evidence_owners,
 )
 from ladon.report_projection_evidence import (
     reconcile_registered_evidence_routes,
@@ -76,6 +77,10 @@ def project_sections(
 
     omissions: list[dict[str, Any]] = []
     strata: list[dict[str, Any]] = []
+    for name, value in sections.items():
+        validate_declaration_evidence_owners(
+            value, pointer=f"#/sections/{_pointer_token(name)}"
+        )
     projected = {
         name: _project_section(
             name,
@@ -724,6 +729,7 @@ def _bounded_declaration_container(
         omissions=omissions,
         strata=strata,
     )
+    selected_rows = _rebase_declaration_evidence_refs(selected_rows, pointer=pointer)
     references = _evidence_references(selected_rows)
     evidence = value["_declarationEvidence"]
     selected_evidence = {
@@ -831,6 +837,25 @@ def _evidence_references(rows: Any) -> set[str]:
         for row in rows
         if isinstance(row, Mapping) and isinstance(row.get("evidenceRef"), str)
     }
+
+
+def _rebase_declaration_evidence_refs(rows: Any, *, pointer: str) -> Any:
+    """Retarget compact row refs to the owner path used by this projection."""
+
+    if not isinstance(rows, list):
+        return rows
+    prefix = f"{pointer}/_declarationEvidence/"
+    result: list[Any] = []
+    for row in rows:
+        if not isinstance(row, Mapping) or not isinstance(row.get("evidenceRef"), str):
+            result.append(row)
+            continue
+        reference = row["evidenceRef"]
+        key = reference.rsplit("/", maxsplit=1)[-1]
+        copied = dict(row)
+        copied["evidenceRef"] = prefix + key
+        result.append(copied)
+    return result
 
 
 def _bounded_container_fields(

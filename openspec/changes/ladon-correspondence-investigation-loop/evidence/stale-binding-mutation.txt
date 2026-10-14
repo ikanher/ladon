@@ -1,0 +1,20 @@
+Initial broad stale-source mutation replay still rejected changed quotations, so that test did not isolate digest enforcement. Added a separate targeted test: change LF to CRLF while preserving all decoded source lines. It passes canonical source and fails an explicitly injected isolated module with digest enforcement bypassed. No frozen test or canonical runtime weakened.
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________________ test_same_lines_different_bytes_reject ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1438/test_same_lines_different_byte0')
+
+    def test_same_lines_different_bytes_reject(tmp_path):
+        source = tmp_path / "source.txt"
+        source.write_bytes(b"An assertion.\n")
+        now = datetime.now(UTC)
+        plan = initialize(source, tmp_path, now=now)
+        source.write_bytes(b"An assertion.\r\n")
+>       with pytest.raises(ValueError, match="stale source digest"):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+/home/codex/projects/ladon/tests/test_investigation_binding.py:16: Failed
+=========================== short test summary info ============================
+FAILED ../../home/codex/projects/ladon/tests/test_investigation_binding.py::test_same_lines_different_bytes_reject
+1 failed in 0.03s

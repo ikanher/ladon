@@ -1,0 +1,34 @@
+{
+  "verdict": "discrepancy",
+  "statementAssessment": "The exposition asserts a single real y that works for every real x. This is false. The formal proposition instead allows y to depend on x.",
+  "methodAssessment": "No proof method or formal argument is supplied; only the formal proposition is stated. Method correspondence cannot be assessed.",
+  "findings": [
+    {
+      "sourceAssertion": "There is a real y such that x+y=0 for every real x.",
+      "formalCounterpart": "For every real x, there exists real y with x+y=0.",
+      "classification": "discrepancy: quantifier order changes the claim",
+      "explanation": "The exposition requires one fixed y for all x; the formal proposition permits a different y for each x. The formal proposition is true, but it does not express the exposition’s assertion.",
+      "evidence": "If a fixed y works for every x, taking x=0 forces y=0. Taking x=1 then requires 1+0=0, which is false.",
+      "uncertainty": "None about the quantifier mismatch or the counterexample."
+    }
+  ],
+  "examinedAssertions": [
+    {
+      "assertion": "“There is a real y such that x+y=0 for every real x.”",
+      "assessment": "False as written.",
+      "evidence": "x=0 forces y=0, but then x=1 does not satisfy x+y=0."
+    },
+    {
+      "assertion": "“For every real x, there exists real y with x+y=0.”",
+      "assessment": "True, and not equivalent to the exposition.",
+      "evidence": "For each x, choosing y=-x gives x+y=0."
+    }
+  ],
+  "omissions": [
+    "No proof or method accompanies the formal proposition, so there is no argument to compare."
+  ],
+  "toolsUsed": [
+    "Read /input/INPUT.md with cat."
+  ],
+  "checkingStatus": "No Lean checks run; the input contains a rendered proposition, not an original Lean module."
+}

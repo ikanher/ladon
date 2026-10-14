@@ -1,0 +1,113 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_____ test_counts_follow_rows_and_tied_detection_has_no_detection_benefit ______
+
+    def test_counts_follow_rows_and_tied_detection_has_no_detection_benefit():
+        cases, rows = population()
+        rows[0]['verdict'] = 'unresolved'
+        rows[0]['evidenceStatus'] = 'unresolved'
+>       result = load().aggregate(cases, rows)
+                 ^^^^^^
+
+.codex/state/nl-lean-e/test_scoring_contract.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.codex/state/nl-lean-e/test_scoring_contract.py:13: in load
+    spec.loader.exec_module(module)
+<frozen importlib._bootstrap_external>:936: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1073: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x7358218d9490>
+path = '/home/codex/projects/ladon/.codex/state/nl-lean-e/score.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/home/codex/projects/ladon/.codex/state/nl-lean-e/score.py'
+
+<frozen importlib._bootstrap_external>:1130: FileNotFoundError
+______ test_invalid_evidence_and_interpretation_errors_cannot_be_promoted ______
+
+    def test_invalid_evidence_and_interpretation_errors_cannot_be_promoted():
+        cases, rows = population()
+        rows[0]['evidenceStatus'] = 'unresolved'
+        rows[2]['interpretationError'] = True
+>       result = load().aggregate(cases, rows)
+                 ^^^^^^
+
+.codex/state/nl-lean-e/test_scoring_contract.py:49: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.codex/state/nl-lean-e/test_scoring_contract.py:13: in load
+    spec.loader.exec_module(module)
+<frozen importlib._bootstrap_external>:936: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1073: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x735821820b90>
+path = '/home/codex/projects/ladon/.codex/state/nl-lean-e/score.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/home/codex/projects/ladon/.codex/state/nl-lean-e/score.py'
+
+<frozen importlib._bootstrap_external>:1130: FileNotFoundError
+______ test_duplicate_missing_and_cross_arm_key_disagreement_are_rejected ______
+
+    def test_duplicate_missing_and_cross_arm_key_disagreement_are_rejected():
+        cases, rows = population()
+        bad = copy.deepcopy(rows)
+        bad[1] = copy.deepcopy(bad[0])
+        with pytest.raises(ValueError, match='duplicate|population'):
+>           load().aggregate(cases, bad)
+            ^^^^^^
+
+.codex/state/nl-lean-e/test_scoring_contract.py:59: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.codex/state/nl-lean-e/test_scoring_contract.py:13: in load
+    spec.loader.exec_module(module)
+<frozen importlib._bootstrap_external>:936: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1073: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x735823192510>
+path = '/home/codex/projects/ladon/.codex/state/nl-lean-e/score.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/home/codex/projects/ladon/.codex/state/nl-lean-e/score.py'
+
+<frozen importlib._bootstrap_external>:1130: FileNotFoundError
+__________ test_false_alarm_and_inclusive_budget_prevent_cost_benefit __________
+
+    def test_false_alarm_and_inclusive_budget_prevent_cost_benefit():
+        cases, rows = population()
+        rows[8]['verdict'] = 'argument-fault'
+        rows[8]['elapsedSeconds'] = 1
+>       result = load().aggregate(cases, rows)
+                 ^^^^^^
+
+.codex/state/nl-lean-e/test_scoring_contract.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.codex/state/nl-lean-e/test_scoring_contract.py:13: in load
+    spec.loader.exec_module(module)
+<frozen importlib._bootstrap_external>:936: in exec_module
+    ???
+<frozen importlib._bootstrap_external>:1073: in get_code
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <_frozen_importlib_external.SourceFileLoader object at 0x7358218a1790>
+path = '/home/codex/projects/ladon/.codex/state/nl-lean-e/score.py'
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/home/codex/projects/ladon/.codex/state/nl-lean-e/score.py'
+
+<frozen importlib._bootstrap_external>:1130: FileNotFoundError
+=========================== short test summary info ============================
+FAILED .codex/state/nl-lean-e/test_scoring_contract.py::test_counts_follow_rows_and_tied_detection_has_no_detection_benefit
+FAILED .codex/state/nl-lean-e/test_scoring_contract.py::test_invalid_evidence_and_interpretation_errors_cannot_be_promoted
+FAILED .codex/state/nl-lean-e/test_scoring_contract.py::test_duplicate_missing_and_cross_arm_key_disagreement_are_rejected
+FAILED .codex/state/nl-lean-e/test_scoring_contract.py::test_false_alarm_and_inclusive_budget_prevent_cost_benefit
+4 failed in 0.03s

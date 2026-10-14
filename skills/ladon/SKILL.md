@@ -99,6 +99,42 @@ successful index query supplies no theorem-verification authority.
 
 Architecture review is secondary; evidence and lineage are the audit layer.
 
+## Discover correspondence problems in an exposition
+
+When investigating an exposition without a supplied diagnosis, start from its
+source claims before selecting formal endpoints. Read the selected source range
+broadly, inventory intermediate assertions and uses, and retain unexamined spans.
+Give the inventory's attribution and completeness limits. Mapping every supplied
+component does not establish complete source coverage.
+
+For a concrete correspondence discrepancy, use the [local derivation challenge workflow](../../docs/DERIVATION_CHALLENGES.md): `init --derivations`, exact source-bound steps, `challenge` export for a fresh reviewer, and `witness` for rational scalar counterexamples. Prioritize unresolved local inferences over expanding the inventory. A sampled success does not prove the step, and a rational refutation applies only to its faithfully interpreted assumptions.
+
+Follow the [source-first audit procedure](../../docs/CORRESPONDENCE_DISCOVERY.md) and [investigation loop](../../docs/INVESTIGATION_LOOP.md). Initialize the source-bound plan at the actual start with an explicit budget. After every batch save a plan snapshot and use `ladon investigation next`. Before reporting, use `finish`: if it returns `continue` (exit 2), continue useful work within the budget. A budget or blocker exit remains incomplete. The commands validate source bindings and authored workflow records; they do not compare mathematical meanings or certify inventory completeness.
+Compare exact local hypotheses, domains, quantifiers, conclusions and quantitative
+dependencies. State the implication required by the consumer, check it in that
+direction, and inspect the concrete producers of premise-bearing structures.
+Keep statement correspondence and proof-method correspondence separate.
+
+For actual Lean counterparts, follow [scoped correspondence and v3 review](../../docs/NL_LEAN_CORRESPONDENCE.md).
+Use the current Ladon checkout explicitly (`PYTHONPATH="$PWD/src" uv run --project "$PWD" python -m ladon.entrypoint`),
+not an independently installed pip copy. Author the source-bound interpretation
+once, extract the actual application (`proof-search proof slice --scoped` for
+nested local providers), then `interpret`, `align`, `check`, and `inspect`.
+Conditional replay, provider closures, original prose premise supply, parent
+support, interpretation fidelity and described method are separate outcomes.
+`init --correspondence` opts into investigation v3. Attach the native bundle,
+export a sanitized challenge, and ingest an independently obtained response.
+Preserve first responses; use a separate `reconcile` record for corrections.
+Neither attributed reviews nor stored native labels are fresh mathematical
+checks. Retain absent counterparts and unexamined spans in the review queue.
+
+Freeze an interpreted local goal before checking it. A changed premise or goal
+is a separately reviewed repair. An accepted endpoint cannot clear an unexamined
+intermediate step; a failed application does not refute it. Retain unresolved
+questions and coverage gaps when the work budget ends. Save initial findings
+before a reference answer is supplied. Built-in command help remains sufficient
+for invocation details; development examples are not required investigation inputs.
+
 For lineage routes, `--max-nodes` also limits traversal rows. Repeated paths can
 visit the same declaration, so `acquisition.rowsObserved` differs from returned
 distinct nodes. One extra row detects truncation. A closure's distinct-node
@@ -120,3 +156,16 @@ independent maintainer labels, and release approval are separate evidence.
 Current external-outcome and owner-decision admission fails closed. Retain
 unavailable imports, stale populations, and evidence caps as operational
 limitations; they do not establish an incorrect mathematical suggestion.
+
+When applying current field-hardening behavior, run the checkout from its own
+Ladon directory with `uv run --locked python -m ladon.entrypoint`; an installed
+pip executable can have older semantics. Use immutable `investigation checkpoint`
+receipts for progress and `investigation finalize` for termination. If finalization
+returns `continue`/exit 2, consume the queue with real work under the original
+clock. Never reset the deadline or wait idly to manufacture budget exhaustion.
+An actual cancellation can be attributed with `--stop-record`; it is not
+identity-authenticated and must not be invented. Explicit per-work blockers must
+cover every remaining queue item to permit early blocked termination; retain
+policy-limited references as unverified. Terminal permission does not certify
+mathematical completion, and plain prose is not mechanically controlled by these
+commands. See [the investigation guide](../../docs/INVESTIGATION_LOOP.md).

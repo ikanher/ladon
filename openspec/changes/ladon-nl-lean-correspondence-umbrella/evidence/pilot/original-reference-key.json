@@ -1,0 +1,130 @@
+[
+  {
+    "caseId": "85f7f1c843c4",
+    "category": "faulty",
+    "exactSourceQuote": "The first record is local, and all local records are retained. The clerk concludes that the first record carries catalog code 7.",
+    "sourceSpan": {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1
+    },
+    "interpretations": "The selected inference treats local status and the retention rule as support for catalog code 7. Those premises establish retention, not the catalog code; the separate inventory note makes the endpoint true.",
+    "argumentDiagnosis": "The selected inference treats local status and the retention rule as support for catalog code 7. Those premises establish retention, not the catalog code; the separate inventory note makes the endpoint true.",
+    "endpointTruth": "True from the separate inventory note, independently of the selected inference.",
+    "requiredEvidence": "Show that local and local-implies-retained do not entail catalog code 7; distinguish the separate inventory premise that proves the endpoint.",
+    "uncertainty": "low",
+    "suggestedCoordinatorChecks": "Compile Main.lean with the pinned Lean toolchain; evaluate the cited source inference against its stated premises and conclusion."
+  },
+  {
+    "caseId": "fe3d1c600ea6",
+    "category": "faulty",
+    "exactSourceQuote": "A counter stores a natural number n. It is known that n is even, and every even number is divisible by two. The analyst then says n is greater than zero. Separately, the counter is known to contain at least two.",
+    "sourceSpan": {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1
+    },
+    "interpretations": "The selected inference is the move from evenness to strict positivity. The later independent lower bound makes the endpoint true.",
+    "argumentDiagnosis": "The selected inference is the move from evenness to strict positivity. The later independent lower bound makes the endpoint true.",
+    "endpointTruth": "True: the theorem in the case Main.lean compiles as stated under its listed premises.",
+    "requiredEvidence": "Check whether evenness alone entails strict positivity; the independent lower bound supports the endpoint.",
+    "uncertainty": "low",
+    "suggestedCoordinatorChecks": "Compile Main.lean with the pinned Lean toolchain; evaluate the cited source inference against its stated premises and conclusion."
+  },
+  {
+    "caseId": "c4d5434284cb",
+    "category": "faulty",
+    "exactSourceQuote": "In a finite survey, every respondent who chose blue also chose either tea or coffee. Mira chose blue and chose tea. Therefore Mira chose coffee. The survey separately records that Mira chose coffee.",
+    "sourceSpan": {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1
+    },
+    "interpretations": "The stated alternatives permit tea without coffee; Mira\u2019s separate recorded choice makes the conclusion true without repairing the selected inference.",
+    "argumentDiagnosis": "The stated alternatives permit tea without coffee; Mira\u2019s separate recorded choice makes the conclusion true without repairing the selected inference.",
+    "endpointTruth": "True: the theorem in the case Main.lean compiles as stated under its listed premises.",
+    "requiredEvidence": "Check whether blue plus the disjunction rule and tea entail coffee; keep Mira\u2019s separate coffee fact distinct.",
+    "uncertainty": "low",
+    "suggestedCoordinatorChecks": "Compile Main.lean with the pinned Lean toolchain; evaluate the cited source inference against its stated premises and conclusion."
+  },
+  {
+    "caseId": "b07c1d37ee10",
+    "category": "faulty",
+    "exactSourceQuote": "A machine reports x \u2264 5. The technician knows that whenever x \u2264 5, x \u2264 9, and writes x \u2264 9. The technician next asserts x = 4. A calibration note says x is exactly four.",
+    "sourceSpan": {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1
+    },
+    "interpretations": "The first implication is valid. The inference from x \u2264 9 to x = 4 is unsupported; the calibration note independently supplies the endpoint.",
+    "argumentDiagnosis": "The first implication is valid. The inference from x \u2264 9 to x = 4 is unsupported; the calibration note independently supplies the endpoint.",
+    "endpointTruth": "True: the theorem in the case Main.lean compiles as stated under its listed premises.",
+    "requiredEvidence": "Check whether x \u2264 9 entails x = 4; keep the calibration premise distinct.",
+    "uncertainty": "low",
+    "suggestedCoordinatorChecks": "Compile Main.lean with the pinned Lean toolchain; evaluate the cited source inference against its stated premises and conclusion."
+  },
+  {
+    "caseId": "df83178b3496",
+    "category": "faithful",
+    "exactSourceQuote": "For natural numbers a and b, suppose a \u2264 b and b \u2264 c. Chaining the two bounds gives a \u2264 c.",
+    "sourceSpan": {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1
+    },
+    "interpretations": "The transitivity step directly supports the conclusion.",
+    "argumentDiagnosis": "The transitivity step directly supports the conclusion.",
+    "endpointTruth": "True: the theorem in the case Main.lean compiles as stated under its listed premises.",
+    "requiredEvidence": "Verify the stated premises and conclusion directly in Lean and assess whether the described inference matches the theorem.",
+    "uncertainty": "low",
+    "suggestedCoordinatorChecks": "Compile Main.lean with the pinned Lean toolchain; evaluate the cited source inference against its stated premises and conclusion."
+  },
+  {
+    "caseId": "4549693104b8",
+    "category": "faithful",
+    "exactSourceQuote": "A proposition P is true, and P implies Q. Applying that implication yields Q.",
+    "sourceSpan": {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1
+    },
+    "interpretations": "The named implication applies to the supplied premise and yields the conclusion.",
+    "argumentDiagnosis": "The named implication applies to the supplied premise and yields the conclusion.",
+    "endpointTruth": "True: the theorem in the case Main.lean compiles as stated under its listed premises.",
+    "requiredEvidence": "Verify the stated premises and conclusion directly in Lean and assess whether the described inference matches the theorem.",
+    "uncertainty": "low",
+    "suggestedCoordinatorChecks": "Compile Main.lean with the pinned Lean toolchain; evaluate the cited source inference against its stated premises and conclusion."
+  },
+  {
+    "caseId": "7efc5c13032b",
+    "category": "method-difference",
+    "exactSourceQuote": "For integers x and y, establish that x + y equals y + x. One proof can rearrange terms using commutativity; another can evaluate equality by the integer expression procedure.",
+    "sourceSpan": {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1
+    },
+    "interpretations": "Both proof methods are expressly allowed by the passage; Main.lean calls the named arithmeticEvaluation theorem, whose proof uses omega arithmetic normalization.",
+    "argumentDiagnosis": "The prose explicitly describes both commutativity and arithmetic evaluation as valid methods. The selected proof uses arithmetic normalization inside the named helper; this is a valid alternative-method control, not a contradiction with the prose.",
+    "endpointTruth": "True for all integers x and y.",
+    "requiredEvidence": "Verify x + y = y + x and that arithmeticEvaluation proves it using omega; compare this selected method with both approaches listed in source.txt.",
+    "uncertainty": "low; both methods are stated explicitly",
+    "suggestedCoordinatorChecks": "Compile the theorem, inspect the arithmeticEvaluation application in result, and verify its omega proof against the two methods explicitly listed in source.txt."
+  },
+  {
+    "caseId": "d4fbe7ff5619",
+    "category": "ambiguous",
+    "exactSourceQuote": "The report says: \u201cFor a measured value t in the safe interval, the alarm is usually quiet; this reading is within that interval, so the alarm should be quiet.\u201d It does not define \u201cusually\u201d or \u201cshould,\u201d and supplies no rule connecting these expressions.",
+    "sourceSpan": {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1
+    },
+    "interpretations": "The prose does not specify whether \u201cusually\u201d is a universal rule or a statistical tendency, nor whether \u201cshould\u201d means a prediction or a recommendation. Treat as genuinely ambiguous; formal source records only an explicit conditional case.",
+    "argumentDiagnosis": "The prose does not specify whether \u201cusually\u201d is a universal rule or a statistical tendency, nor whether \u201cshould\u201d means a prediction or a recommendation. Treat as genuinely ambiguous; formal source records only an explicit conditional case.",
+    "endpointTruth": "True: the theorem in the case Main.lean compiles as stated under its listed premises.",
+    "requiredEvidence": "Record the plausible readings of \u201cusually\u201d and \u201cshould\u201d; the explicit Lean conditional proves only the universal conditional reading.",
+    "uncertainty": "material ambiguity in wording",
+    "suggestedCoordinatorChecks": "Compile Main.lean with the pinned Lean toolchain; evaluate the cited source inference against its stated premises and conclusion."
+  }
+]

@@ -1,0 +1,23 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_ test_nonexported_local_environment_declines_request_preparation[local instance : ScopeProbe := \u27e81\u27e9] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-230/test_nonexported_local_environ0')
+command = 'local instance : ScopeProbe := ⟨1⟩'
+
+    @pytest.mark.parametrize('command', [
+        'local instance : ScopeProbe := ⟨1⟩',
+        'local notation "localOne" => (1 : Nat)',
+        'attribute [local simp] ScopeProbe.value',
+    ])
+    def test_nonexported_local_environment_declines_request_preparation(tmp_path, command):
+        root, source, toolchain, fresh = _case(tmp_path, command)
+        with prepare_source_context(root, fresh, source, toolchain) as prepared:
+>           assert prepared is None, 'local environment state is not exported through an ordinary import'
+E           AssertionError: local environment state is not exported through an ordinary import
+E           assert <ladon.correspondence_preparation.PreparedSourceContext object at 0x78500fb08a10> is None
+
+tests/test_correspondence_local_environment.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_correspondence_local_environment.py::test_nonexported_local_environment_declines_request_preparation[local instance : ScopeProbe := \u27e81\u27e9]
+1 failed, 3 deselected in 9.14s

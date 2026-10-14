@@ -1,0 +1,58 @@
+{
+  "caseId": "df83178b3496",
+  "arm": "ordinary",
+  "verdict": "faithful",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "For natural numbers a and b, suppose a ≤ b and b ≤ c. Chaining the two bounds gives a ≤ c."
+    }
+  ],
+  "explanation": "The sentence states the same implication as theorem result: for a,b,c : Nat, assumptions a ≤ b and b ≤ c imply a ≤ c. The formal proof applies Nat.le_trans directly to those two assumptions, which is exactly the stated chaining. I found no unsupported intermediate inference or mismatch between the prose and the proof. This judgment concerns this supplied natural-number statement and proof.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "The ordinary order on natural numbers is transitive: from a ≤ b and b ≤ c conclude a ≤ c.",
+      "dependencies": ["a ≤ b", "b ≤ c", "transitivity of Nat.le"],
+      "qualifications": "The prose leaves c implicit in its opening phrase, but the following bound and conclusion identify it; Main.lean binds a, b, and c as natural numbers."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "source comparison",
+      "detail": "Main.lean declares result (a b c : Nat) (h₁ : a ≤ b) (h₂ : b ≤ c) : a ≤ c and its proof is exact Nat.le_trans h₁ h₂."
+    },
+    {
+      "kind": "Lean kernel check",
+      "detail": "Lean imported the supplied Main module, printed result with type ∀ (a b c : Nat), a ≤ b → b ≤ c → a ≤ c and body fun a b c h₁ h₂ => Nat.le_trans h₁ h₂, and accepted a second theorem applying result to the same two premises. Exit code 0. This checks the supplied declaration/application, not an independently formalized English semantics."
+    },
+    {
+      "kind": "input and checker identity",
+      "detail": "source.txt SHA-256 de9d46bbea80e04f6f14013a670d6cd36647f3c759c5b8e3dbf0ba89d40c633b; Main.lean SHA-256 1f7b784fc93720272d11c02350bcea501a3cf849cab70d4ad6ccd03947f40e20; supplied Main.olean SHA-256 3c921dcc2a736a4d75cd5640a3c5527a7f2529af969cc3ab66b8504bc0a43dca; lean-toolchain SHA-256 8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af; Lean executable /home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean SHA-256 e8baaa71855a616dc351028f3ad2200051b0671f423a1696a100e809302d5550."
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/16-df83178b3496-ordinary/output/Check.lean"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/16-df83178b3496-ordinary/input",
+      "env": {
+        "LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/16-df83178b3496-ordinary/input"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.41913832491263747,
+      "stdoutPath": "lean.stdout.txt",
+      "stderrPath": "lean.stderr.txt",
+      "stdout": "result (a b c : Nat) (h₁ : a ≤ b) (h₂ : b ≤ c) : a ≤ c\ntheorem result : ∀ (a b c : Nat), a ≤ b → b ≤ c → a ≤ c :=\nfun a b c h₁ h₂ => Nat.le_trans h₁ h₂\n",
+      "stderr": ""
+    }
+  ],
+  "omissions": [
+    "This ordinary arm did not read or invoke Ladon, online/model APIs, packages, caches, other cases/arms, reviewer comments, or private reference material.",
+    "No separate counterexample search was needed for the direct transitivity inference; no claim is made about statements or interpretations beyond the supplied Nat theorem and prose."
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "caseId": "d4fbe7ff5619",
+  "arm": "source-review",
+  "verdict": "ambiguous",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "“For a measured value t in the safe interval, the alarm is usually quiet; this reading is within that interval, so the alarm should be quiet.”"
+    },
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "It does not define “usually” or “should,” and supplies no rule connecting these expressions."
+    },
+    {
+      "path": "Main.lean",
+      "startLine": 6,
+      "endLine": 7,
+      "quote": "theorem result (safe quiet : Prop) (hs : safe) (rule : safe → quiet) : quiet := by\n  exact conditionalApplication safe quiet hs rule"
+    }
+  ],
+  "explanation": "The informal claim is expressly underspecified: “usually” may allow exceptions, and “should” can be normative or predictive. The stated interval membership alone does not entail quietness under any given formal bridge because none is supplied. Lean proves quiet only after adding rule : safe → quiet, a premise absent from the source. Therefore the Lean theorem is valid as a conditional but correspondence to the original report is unresolved; endpoint truth in the intended reading cannot be assessed.",
+  "claimFalse": null,
+  "interpretations": [
+    {
+      "meaning": "Predictive reading: “usually quiet” is statistical/default and may admit exceptions, so this particular reading need not be quiet.",
+      "dependencies": [
+        "within safe interval"
+      ],
+      "qualification": "No frequency threshold or exception model is specified."
+    },
+    {
+      "meaning": "Normative reading: alarm should be quiet expresses what ought to happen, not that it is in fact quiet.",
+      "dependencies": [
+        "within safe interval"
+      ],
+      "qualification": "No deontic semantics or bridge to actual state is supplied."
+    },
+    {
+      "meaning": "A stronger deterministic reading could treat safe interval membership as sufficient for quietness.",
+      "dependencies": [
+        "within safe interval",
+        "implicit deterministic rule"
+      ],
+      "qualification": "That bridge is not stated; Lean explicitly assumes it as safe→quiet."
+    }
+  ],
+  "evidence": [
+    {
+      "status": "unresolved",
+      "detail": "Original modal/frequency language has no defined semantics or connecting rule."
+    },
+    {
+      "status": "checked",
+      "detail": "Static source-to-proof comparison shows Lean conclusion depends on additional rule : safe → quiet. No reviewer Lean execution."
+    }
+  ],
+  "commands": [],
+  "omissions": [
+    "No original-goal Lean check is possible without a formal interpretation of “usually” and “should”; no direct Lean execution."
+  ],
+  "reviewerRole": "independent source/step reviewer",
+  "reviewerStart": "2026-10-11T00:38:12Z"
+}

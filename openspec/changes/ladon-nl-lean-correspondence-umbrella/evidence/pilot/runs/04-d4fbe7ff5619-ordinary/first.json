@@ -1,0 +1,104 @@
+{
+  "caseId": "d4fbe7ff5619",
+  "arm": "ordinary",
+  "verdict": "ambiguous",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "The report says: “For a measured value t in the safe interval, the alarm is usually quiet; this reading is within that interval, so the alarm should be quiet.” It does not define “usually” or “should,” and supplies no rule connecting these expressions."
+    }
+  ],
+  "explanation": "The single inference is underdetermined by the passage as written. “Usually quiet” can describe a frequency or tendency that permits exceptions, while “should be quiet” can express either a prediction or a normative expectation. The passage explicitly leaves both terms undefined and gives no bridge between them. If “should” is a deterministic consequence and “usually” allows exceptions, the conclusion does not follow; if the terms are assigned a stronger universal or rule-like meaning, the conclusion could follow. The supplied Lean proof establishes quiet only from the explicit premise `rule : safe → quiet` together with `hs : safe`; that premise has no identified counterpart in the prose. This supports an ambiguity judgment rather than a claim that the endpoint itself is false.",
+  "claimFalse": null,
+  "interpretations": [
+    {
+      "reading": "Statistical tendency plus predictive or normative “should”.",
+      "dependencies": "“Usually” allows individual exceptions; no premise states that this particular reading is quiet, and no rule maps tendency to obligation.",
+      "result": "The inference is unsupported on this reading, but the endpoint truth for this reading is unknown."
+    },
+    {
+      "reading": "Universal or deterministic rule-like “usually” and predictive “should”.",
+      "dependencies": "Treat the prose as supplying that every safe reading is quiet, with “should” expressing that same prediction.",
+      "result": "The conclusion may follow, but this interpretation strengthens or resolves terms that the passage leaves undefined."
+    },
+    {
+      "reading": "“Should” as a normative requirement.",
+      "dependencies": "A frequency statement alone does not state a requirement; a normative bridge would be needed.",
+      "result": "No such bridge is supplied."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "Lean kernel output",
+      "source": "output/check.stdout",
+      "identity": {
+        "inputMainLeanSha256": "90438133eca2c7ed820c37eb04ce9c3fed093569979046f1b093d189b20fc40e",
+        "inputMainOleanSha256": "6160382217fc5f311490ace11e448981e03a966f3200dc391d7d0521b5e64e4e",
+        "inputSourceSha256": "2358e4a0d8fc3a23962529f87ad341104771bd35d58802455726b892bf08924b",
+        "inputLeanToolchainSha256": "8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af",
+        "checkerPath": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "checkerSha256": "e8baaa71855a616dc351028f3ad2200051b0671f423a1696a100e809302d5550",
+        "checkerVersion": "Lean (version 4.32.1, x86_64-unknown-linux-gnu, commit f054605aea4b840552cca2e725580bffd1e1b704, Release)",
+        "checkFileSha256": "9c62d0d6d08994ef9670240ea28ca701ddc337303aa3e8fa8cf5b3f6b7d4a395"
+      },
+      "observation": "Lean printed conditionalApplication and result with type ∀ (safe quiet : Prop), safe → (safe → quiet) → quiet, and reported that result depends on no axioms. The actual formal proof uses the explicit safe → quiet rule premise. This verifies the supplied conditional theorem; it does not establish that the prose supplies that premise or determine the meaning/truth of “usually” and “should”."
+    },
+    {
+      "kind": "Attributed mathematical reasoning",
+      "observation": "A frequency/tendency claim can allow an exception for an individual safe reading. Without a definition of “usually,” a rule relating it to “should,” or truth conditions for “should,” the English inference cannot be assigned a unique validity judgment."
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "-"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/output",
+      "env": {
+        "inheritEnvironment": true
+      },
+      "exitCode": 1,
+      "elapsedSeconds": 0.1,
+      "stdoutPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/output/wrapper-failure.stdout",
+      "stderrPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/output/wrapper-failure.stderr",
+      "note": "Failed receipt wrapper; Python syntax error occurred before Lean was invoked. The wrapper receipt was saved in output/wrapper-failure.json."
+    },
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "../output/Check.lean"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/input",
+      "env": {
+        "inheritEnvironment": true,
+        "LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/input"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.4237002320587635,
+      "stdoutPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/output/check.stdout",
+      "stderrPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/output/check.stderr"
+    },
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "--version"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/input",
+      "env": {
+        "inheritEnvironment": true
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.029004428058763555,
+      "stdoutPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/output/lean-version.stdout",
+      "stderrPath": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/04-d4fbe7ff5619-ordinary/output/lean-version.stderr"
+    }
+  ],
+  "omissions": [
+    "No model of the English frequency/modal terms was supplied, so no Lean refutation or direct formalization of the prose was attempted.",
+    "The failed wrapper command did not invoke Lean; its error is retained and is not treated as mathematical evidence.",
+    "No Ladon, network, new package, Lake, or shared build was used."
+  ]
+}

@@ -31,7 +31,7 @@ from ladon.sqlite_publication import (
     release_publication_lock,
 )
 
-V3_SCHEMA_VERSION = 8
+V3_SCHEMA_VERSION = 9
 MAX_EXTENSION_BYTES = 64 * 1024
 DEFAULT_MAX_DATABASE_BYTES = 512 * 1024 * 1024
 
@@ -87,6 +87,11 @@ REQUIRED_TABLES = frozenset(
         "proofir_v3_coverage",
         "proofir_v3_omissions",
         "proofir_v3_extensions",
+        "proofir_v3_interpretations",
+        "proofir_v3_correspondences",
+        "proofir_v3_correspondence_obligations",
+        "proofir_v3_correspondence_residuals",
+        "proofir_v3_correspondence_checks",
     }
 )
 
@@ -126,6 +131,9 @@ REQUIRED_INDEXES = frozenset(
         "idx_v3_omission_artifact",
         "idx_v3_omission_triage",
         "idx_v3_extension_namespace",
+        "idx_v3_interpretation_source",
+        "idx_v3_correspondence_interpretation",
+        "idx_v3_correspondence_check",
     }
 )
 
@@ -243,7 +251,8 @@ CREATE TABLE IF NOT EXISTS proofir_v3_artifacts (
     artifact_kind TEXT NOT NULL CHECK(artifact_kind IN (
         'proofir.claim','proofir.derivation','proofir.plan','proofir.attempt-log',
         'proofir.environment','proofir.check-run','proofir.source-map',
-        'proofir.attachment-set','proofir.governance-observation')),
+        'proofir.attachment-set','proofir.governance-observation',
+        'proofir.interpretation','proofir.correspondence')),
     proofir_version TEXT NOT NULL CHECK(proofir_version='3.0'),
     environment_ref TEXT NOT NULL,
     canonical_json TEXT NOT NULL CHECK(json_valid(canonical_json)),
@@ -680,6 +689,58 @@ CREATE INDEX IF NOT EXISTS idx_v3_omission_triage ON proofir_v3_omissions(stage,
 CREATE INDEX IF NOT EXISTS idx_v3_extension_namespace ON proofir_v3_extensions(namespace,content_artifact_id);
 """
 
+# Native correspondence additions preserve the original nine dialects. Old
+# projections are disposable and must take the explicit rebuild path.
+_SCHEMA += r"""
+CREATE TABLE IF NOT EXISTS proofir_v3_interpretations (
+    content_artifact_id TEXT PRIMARY KEY,
+    interpretation_id TEXT NOT NULL,
+    record_json TEXT NOT NULL CHECK(json_valid(record_json)),
+    lowered_formula TEXT,
+    fidelity TEXT NOT NULL CHECK(fidelity IN ('attributed-unreviewed','reviewed-qualified')),
+    source_owner TEXT NOT NULL, source_kind TEXT NOT NULL CHECK(source_kind='source-map'), source_local_id TEXT NOT NULL,
+    source_pointer TEXT NOT NULL,
+    FOREIGN KEY(content_artifact_id) REFERENCES proofir_v3_artifacts(content_artifact_id) ON DELETE CASCADE,
+    FOREIGN KEY(source_owner,source_kind,source_local_id) REFERENCES proofir_v3_subjects(owner_content_artifact_id,subject_kind,local_id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE IF NOT EXISTS proofir_v3_correspondences (
+    content_artifact_id TEXT PRIMARY KEY,
+    correspondence_id TEXT NOT NULL,
+    interpretation_owner TEXT NOT NULL, interpretation_kind TEXT NOT NULL CHECK(interpretation_kind='interpretation'), interpretation_local_id TEXT NOT NULL,
+    slice_json TEXT NOT NULL CHECK(json_valid(slice_json)),
+    object_map_json TEXT NOT NULL CHECK(json_valid(object_map_json)),
+    dimensions_json TEXT NOT NULL CHECK(json_valid(dimensions_json)),
+    source_pointer TEXT NOT NULL,
+    FOREIGN KEY(content_artifact_id) REFERENCES proofir_v3_artifacts(content_artifact_id) ON DELETE CASCADE,
+    FOREIGN KEY(interpretation_owner,interpretation_kind,interpretation_local_id) REFERENCES proofir_v3_subjects(owner_content_artifact_id,subject_kind,local_id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE TABLE IF NOT EXISTS proofir_v3_correspondence_obligations (
+    content_artifact_id TEXT NOT NULL, ordinal INTEGER NOT NULL CHECK(ordinal>=0),
+    obligation_id TEXT NOT NULL, kind TEXT NOT NULL, goal TEXT NOT NULL,
+    status TEXT NOT NULL CHECK(status IN ('open','supported','refuted','unresolved')),
+    source_pointer TEXT NOT NULL,
+    PRIMARY KEY(content_artifact_id,ordinal), UNIQUE(content_artifact_id,obligation_id),
+    FOREIGN KEY(content_artifact_id) REFERENCES proofir_v3_correspondences(content_artifact_id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS proofir_v3_correspondence_residuals (
+    content_artifact_id TEXT NOT NULL, ordinal INTEGER NOT NULL CHECK(ordinal>=0),
+    residual_json TEXT NOT NULL CHECK(json_valid(residual_json)), source_pointer TEXT NOT NULL,
+    PRIMARY KEY(content_artifact_id,ordinal),
+    FOREIGN KEY(content_artifact_id) REFERENCES proofir_v3_correspondences(content_artifact_id) ON DELETE CASCADE
+);
+CREATE TABLE IF NOT EXISTS proofir_v3_correspondence_checks (
+    content_artifact_id TEXT NOT NULL, ordinal INTEGER NOT NULL CHECK(ordinal>=0),
+    check_owner TEXT NOT NULL, check_kind TEXT NOT NULL CHECK(check_kind='check-run'), check_local_id TEXT NOT NULL,
+    source_pointer TEXT NOT NULL,
+    PRIMARY KEY(content_artifact_id,ordinal),
+    FOREIGN KEY(content_artifact_id) REFERENCES proofir_v3_correspondences(content_artifact_id) ON DELETE CASCADE,
+    FOREIGN KEY(check_owner,check_kind,check_local_id) REFERENCES proofir_v3_subjects(owner_content_artifact_id,subject_kind,local_id) DEFERRABLE INITIALLY DEFERRED
+);
+CREATE INDEX IF NOT EXISTS idx_v3_interpretation_source ON proofir_v3_interpretations(source_owner,source_kind,source_local_id);
+CREATE INDEX IF NOT EXISTS idx_v3_correspondence_interpretation ON proofir_v3_correspondences(interpretation_owner,interpretation_kind,interpretation_local_id);
+CREATE INDEX IF NOT EXISTS idx_v3_correspondence_check ON proofir_v3_correspondence_checks(check_owner,check_kind,check_local_id);
+"""
+
 # Every semantic row pointer is an RFC 6901 JSON Pointer.  SQLite cannot decode
 # escape sequences, but it can reject missing roots, dangling ``~``, and every
 # escape other than ``~0``/``~1`` before a row reaches the projection.
@@ -693,6 +754,11 @@ _SCHEMA = _SCHEMA.replace(
 
 
 _DELETE_ORDER = (
+    "proofir_v3_correspondence_checks",
+    "proofir_v3_correspondence_residuals",
+    "proofir_v3_correspondence_obligations",
+    "proofir_v3_correspondences",
+    "proofir_v3_interpretations",
     "proofir_v3_attachment_candidates",
     "proofir_v3_attachments",
     "proofir_v3_attachment_sets",
@@ -742,6 +808,25 @@ def _escape_pointer(value: str) -> str:
     return value.replace("~", "~0").replace("/", "~1")
 
 
+def _reject_obsolete_artifact_schema(
+    connection: sqlite3.Connection, *, manage_user_version: bool
+) -> None:
+    version = connection.execute("PRAGMA user_version").fetchone()[0]
+    if manage_user_version and version not in {0, V3_SCHEMA_VERSION}:
+        raise RuntimeError("obsolete ProofIR v3 schema version requires a disposable rebuild")
+    existing = connection.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='proofir_v3_artifacts'"
+    ).fetchone()
+    if existing is None:
+        return
+    # A shared database's user_version belongs to its owner. Check our table's
+    # actual definition too, including when a stale projection was relabeled.
+    definition = _SCHEMA.split("CREATE TABLE IF NOT EXISTS proofir_v3_artifacts", 1)[1]
+    expected = "CREATE TABLE proofir_v3_artifacts" + definition.split(";", 1)[0]
+    if " ".join(str(existing[0]).split()) != " ".join(expected.split()):
+        raise RuntimeError("obsolete ProofIR v3 artifact schema requires a disposable rebuild")
+
+
 def create_v3_schema(
     connection: sqlite3.Connection,
     *,
@@ -749,6 +834,7 @@ def create_v3_schema(
 ) -> None:
     """Create native-v3 tables, optionally owning database-wide version metadata."""
 
+    _reject_obsolete_artifact_schema(connection, manage_user_version=manage_user_version)
     connection.execute("PRAGMA foreign_keys = ON")
     existing = connection.execute(
         "SELECT sql FROM sqlite_master WHERE type='table' AND name='proofir_v3_subjects'"
@@ -1213,6 +1299,33 @@ def _project_observation(
     )
 
 
+def _project_interpretation(connection, artifact):
+    p = artifact["payload"]
+    connection.execute(
+        "INSERT INTO proofir_v3_interpretations VALUES(?,?,?,?,?,?,?,?,?)",
+        (artifact["artifactId"], p["interpretationId"], _json(p["record"]), p["loweredFormula"], p["fidelity"],
+         *_ref_values(p["sourceRef"], artifact["artifactId"]), "/payload"),
+    )
+
+
+def _project_correspondence(connection, artifact):
+    p, owner = artifact["payload"], artifact["artifactId"]
+    connection.execute(
+        "INSERT INTO proofir_v3_correspondences VALUES(?,?,?,?,?,?,?,?,?)",
+        (owner, p["correspondenceId"], *_ref_values(p["interpretationRef"], owner),
+         _json(p["slice"]), _json(p["objectMap"]), _json(p["dimensions"]), "/payload"),
+    )
+    for ordinal, row in enumerate(p["obligations"]):
+        connection.execute("INSERT INTO proofir_v3_correspondence_obligations VALUES(?,?,?,?,?,?,?)",
+                           (owner, ordinal, row["id"], row["kind"], row["goal"], row["status"], f"/payload/obligations/{ordinal}"))
+    for ordinal, row in enumerate(p["residuals"]):
+        connection.execute("INSERT INTO proofir_v3_correspondence_residuals VALUES(?,?,?,?)",
+                           (owner, ordinal, _json(row), f"/payload/residuals/{ordinal}"))
+    for ordinal, row in enumerate(p["checkRunRefs"]):
+        connection.execute("INSERT INTO proofir_v3_correspondence_checks VALUES(?,?,?,?,?,?)",
+                           (owner, ordinal, *_ref_values(row, owner), f"/payload/checkRunRefs/{ordinal}"))
+
+
 _FAMILY_PROJECTORS = {
     "proofir.claim": _project_claim,
     "proofir.derivation": _project_derivation,
@@ -1222,6 +1335,8 @@ _FAMILY_PROJECTORS = {
     "proofir.source-map": _project_source_map,
     "proofir.attachment-set": _project_attachment_set,
     "proofir.governance-observation": _project_observation,
+    "proofir.interpretation": _project_interpretation,
+    "proofir.correspondence": _project_correspondence,
 }
 
 

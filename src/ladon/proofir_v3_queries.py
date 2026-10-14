@@ -569,3 +569,82 @@ __all__ = [
     "query_v3_theorem_evidence",
     "query_v3_triage",
 ]
+
+
+def query_v3_correspondence(connection, correspondence_ref, *, limit):
+    """Inspect one exact native owner, retaining bounded child rows and omissions.
+
+    Stored dimension labels describe the producer's evidence. Projection does
+    not execute Lean or review prose fidelity.
+    """
+    _validate_limit(limit)
+    _validate_correspondence_reference(correspondence_ref)
+    result = {"schema": "ladon-native-correspondence-inspection-v1", "status": "unavailable",
+              "subject": dict(correspondence_ref), "coverage": {"complete": False, "limit": limit},
+              "authority": "stored-evidence-only"}
+    required_tables = ("proofir_v3_correspondences", "proofir_v3_correspondence_obligations",
+                       "proofir_v3_correspondence_residuals", "proofir_v3_correspondence_checks",
+                       "proofir_v3_omissions")
+    if not all(_has_table(connection, table) for table in required_tables):
+        return result
+    row = connection.execute(
+        "SELECT interpretation_owner,interpretation_kind,interpretation_local_id,dimensions_json,object_map_json "
+        "FROM proofir_v3_correspondences WHERE content_artifact_id=? AND correspondence_id=?",
+        (correspondence_ref["artifactRef"], correspondence_ref["localId"]),
+    ).fetchone()
+    if row is None:
+        return result
+    result.update(status="observed", interpretationRef=dict(zip(
+        ("artifactRef", "kind", "localId"), row[:3])), dimensions=json.loads(row[3]), objectMap=json.loads(row[4]))
+    sections = (
+        ("obligations", "proofir_v3_correspondence_obligations", "obligation_id,kind,goal,status,source_pointer"),
+        ("residuals", "proofir_v3_correspondence_residuals", "residual_json,source_pointer"),
+        ("checks", "proofir_v3_correspondence_checks", "check_owner,check_kind,check_local_id,source_pointer"),
+    )
+    total_omitted = _copy_correspondence_sections(
+        connection, correspondence_ref["artifactRef"], limit, sections, result
+    )
+    result["coverage"].update(complete=total_omitted == 0, omitted=total_omitted)
+    omission_count = connection.execute(
+        "SELECT COUNT(*) FROM proofir_v3_omissions WHERE content_artifact_id=?",
+        (correspondence_ref["artifactRef"],),
+    ).fetchone()[0]
+    omissions = connection.execute(
+        "SELECT source_pointer,stage,reason_code,details_json FROM proofir_v3_omissions "
+        "WHERE content_artifact_id=? ORDER BY ordinal LIMIT ?",
+        (correspondence_ref["artifactRef"], limit),
+    ).fetchall()
+    result["omissions"] = {"rows": [list(row) for row in omissions], "total": omission_count,
+                           "omitted": max(0, omission_count - len(omissions))}
+    result["coverage"].update(complete=total_omitted == 0 and omission_count == 0,
+                              storedOmissions=omission_count)
+    return result
+
+
+def _validate_correspondence_reference(reference):
+    import re
+
+    if (not isinstance(reference, dict)
+            or set(reference) != {"artifactRef", "kind", "localId"}
+            or reference["kind"] != "correspondence"
+            or not isinstance(reference["artifactRef"], str)
+            or not re.fullmatch(r"sha256:[0-9a-f]{64}", reference["artifactRef"])
+            or not isinstance(reference["localId"], str)
+            or not reference["localId"]):
+        raise ValueError("correspondence requires an exact owner-qualified typed reference")
+
+
+def _copy_correspondence_sections(connection, artifact_ref, limit, sections, result):
+    total_omitted = 0
+    for name, table, columns in sections:
+        count = connection.execute(
+            f"SELECT COUNT(*) FROM {table} WHERE content_artifact_id=?", (artifact_ref,)
+        ).fetchone()[0]
+        rows = connection.execute(
+            f"SELECT {columns} FROM {table} WHERE content_artifact_id=? ORDER BY ordinal LIMIT ?",
+            (artifact_ref, limit),
+        ).fetchall()
+        omitted = max(0, count - len(rows))
+        result[name] = {"rows": [list(row) for row in rows], "total": count, "omitted": omitted}
+        total_omitted += omitted
+    return total_omitted

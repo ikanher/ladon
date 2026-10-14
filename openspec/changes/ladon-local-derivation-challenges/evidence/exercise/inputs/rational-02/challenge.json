@@ -1,0 +1,79 @@
+{
+  "schema": "ladon-derivation-challenge-v1",
+  "scope": {
+    "path": "rational-02/source.txt",
+    "sha256": "cafc26eea2dda5b9f2e78dd2e7f4f5fbaec6b7d59a620be2eb527ad19960de5d",
+    "startLine": 1,
+    "endLine": 1
+  },
+  "claim": {
+    "id": "rational-02",
+    "unit": "unit-0001",
+    "startLine": 1,
+    "endLine": 1,
+    "quote": "For rational x, suppose x is positive. Then its square is at least zero.",
+    "contract": {
+      "objects": "Rational scalars: x",
+      "assumptions": "[{\"left\": {\"var\": \"x\"}, \"op\": \"gt\", \"right\": {\"rat\": 0}}]",
+      "domains": "Every declared variable ranges over the rational numbers.",
+      "quantifiers": "For all declared variables satisfying every premise.",
+      "conclusion": "{\"left\": {\"args\": [{\"var\": \"x\"}], \"exponent\": 2, \"op\": \"pow\"}, \"op\": \"ge\", \"right\": {\"rat\": 0}}",
+      "dependencies": "Only the explicitly supplied premises; inspect the source argument.",
+      "neededImplication": "The premises jointly imply exactly the encoded conclusion."
+    }
+  },
+  "author": "case-transcriber",
+  "steps": [
+    {
+      "id": "inference",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "For rational x, suppose x is positive. Then its square is at least zero.",
+      "contract": {
+        "objects": "Rational scalars: x",
+        "assumptions": "[{\"left\": {\"var\": \"x\"}, \"op\": \"gt\", \"right\": {\"rat\": 0}}]",
+        "domains": "Every declared variable ranges over the rational numbers.",
+        "quantifiers": "For all declared variables satisfying every premise.",
+        "conclusion": "{\"left\": {\"args\": [{\"var\": \"x\"}], \"exponent\": 2, \"op\": \"pow\"}, \"op\": \"ge\", \"right\": {\"rat\": 0}}",
+        "dependencies": "Only the explicitly supplied premises; inspect the source argument.",
+        "neededImplication": "The premises jointly imply exactly the encoded conclusion."
+      },
+      "rule": "The inference stated in the source quotation.",
+      "substitution": "Each scalar name refers to the same rational in source and AST.",
+      "dependsOn": [],
+      "arithmetic": {
+        "variables": [
+          "x"
+        ],
+        "premises": [
+          {
+            "op": "gt",
+            "left": {
+              "var": "x"
+            },
+            "right": {
+              "rat": 0
+            }
+          }
+        ],
+        "conclusion": {
+          "op": "ge",
+          "left": {
+            "op": "pow",
+            "args": [
+              {
+                "var": "x"
+              }
+            ],
+            "exponent": 2
+          },
+          "right": {
+            "rat": 0
+          }
+        }
+      },
+      "subjectSha256": "1886e21cbb2bc828a5d5934223b6c142d267c743acccb7e8b03b67fb9bf16bb7"
+    }
+  ],
+  "instructions": "Challenge each original implication. Save first responses separately; a sampled success is not a proof. Reviewer identity and interpretation remain attributed, and this packet does not enforce filesystem isolation."
+}

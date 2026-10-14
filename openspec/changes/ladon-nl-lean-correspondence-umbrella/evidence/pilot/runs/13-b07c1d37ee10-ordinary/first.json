@@ -1,0 +1,41 @@
+{
+  "caseId": "b07c1d37ee10",
+  "arm": "ordinary",
+  "verdict": "faithful",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "A machine reports x ≤ 5. The technician knows that whenever x ≤ 5, x ≤ 9, and writes x ≤ 9. The technician next asserts x = 4. A calibration note says x is exactly four."
+    }
+  ],
+  "explanation": "The prose gives two independent derivations. The bound follows by applying the stated rule to the reported premise. The equality follows from the calibration note. Main.lean mirrors both: relaxedBound applies hRule hSmall, while calibrationRecord returns hCalibration; result invokes both and concludes the equality from calibrationRecord. The relaxed bound is unused in the final equality proof, but the prose does not claim it entails x = 4. The account is faithful to the stated theorem and proof structure.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "x is an integer; the supplied machine premise and implication establish x ≤ 9.",
+      "dependencies": ["hSmall : x ≤ 5", "hRule : x ≤ 5 → x ≤ 9"],
+      "qualification": "This is a valid weakening of the premise under the supplied rule."
+    },
+    {
+      "meaning": "The calibration note supplies x = 4, and the technician asserts the same equality.",
+      "dependencies": ["hCalibration : x = 4"],
+      "qualification": "The equality does not follow from the relaxed bound; it follows from the separate calibration premise."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "source inspection",
+      "detail": "Input source.txt line 1 contains the entire prose passage. Main.lean declares relaxedBound with `exact hRule hSmall`, calibrationRecord with `exact hCalibration`, and result with a relaxedBound invocation followed by `exact calibrationRecord x hCalibration`. These source terms directly exhibit the correspondence; no independent Lean command was run."
+    },
+    {
+      "kind": "input identities",
+      "detail": "SHA-256 source.txt 7c7e645271604e26c7a9a457c837595f8a7968969eaea50297667d9167f9f400; Main.lean cc4619a00d56660bbcfca2138c3cac07b3a34d4569e8dc41e762588ec32b6b24; Main.olean 913dfa004b27a666f5cd947cb0165ba6a89a681b668a2368757d6a9513f645c6; lean-toolchain 8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af. Toolchain file specifies leanprover/lean4:v4.32.1."
+    }
+  ],
+  "commands": [],
+  "omissions": [
+    "No direct Lean execution or private implication/refutation check was performed; the proof comparison is based on the supplied Main.lean text and identities. No source-fidelity proof beyond this small constructed passage was attempted."
+  ]
+}

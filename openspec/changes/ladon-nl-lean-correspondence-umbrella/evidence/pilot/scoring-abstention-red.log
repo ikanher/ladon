@@ -1,0 +1,19 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_cheaper_all_abstention_has_no_cost_benefit ________________
+
+    def test_cheaper_all_abstention_has_no_cost_benefit():
+        cases, rows = population()
+        for row in rows:
+            row['verdict'] = 'unresolved'
+            row['evidenceStatus'] = 'unresolved'
+            row['elapsedSeconds'] = 1 if row['arm'] == 'assisted' else 100
+        result = load().aggregate(cases, rows)
+        assert result['detectionBenefit'] is False
+>       assert result['costBenefit'] is False
+E       assert True is False
+
+.codex/state/nl-lean-e/test_scoring_abstention.py:13: AssertionError
+=========================== short test summary info ============================
+FAILED .codex/state/nl-lean-e/test_scoring_abstention.py::test_cheaper_all_abstention_has_no_cost_benefit
+1 failed in 0.02s

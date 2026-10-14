@@ -153,6 +153,24 @@ def is_compact_declaration_container(value: Mapping[str, Any]) -> bool:
     )
 
 
+def validate_declaration_evidence_owners(value: Any, *, pointer: str) -> None:
+    """Validate every reserved container against its incoming JSON owner path."""
+
+    if isinstance(value, list):
+        for index, item in enumerate(value):
+            validate_declaration_evidence_owners(item, pointer=f"{pointer}/{index}")
+        return
+    if not isinstance(value, Mapping):
+        return
+    if _RESERVED_EVIDENCE_KEY in value:
+        _require_canonical_compact_container(value, pointer=pointer)
+    for key, item in value.items():
+        if key != _RESERVED_EVIDENCE_KEY:
+            validate_declaration_evidence_owners(
+                item, pointer=f"{pointer}/{pointer_token(key)}"
+            )
+
+
 def is_raw_declaration_container(value: Mapping[str, Any]) -> bool:
     """Return whether a mapping owns uncompressed declaration rows."""
 

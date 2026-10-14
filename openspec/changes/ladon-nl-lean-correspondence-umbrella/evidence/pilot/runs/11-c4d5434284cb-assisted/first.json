@@ -1,0 +1,159 @@
+{
+  "caseId": "c4d5434284cb",
+  "arm": "assisted",
+  "verdict": "argument-fault",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "In a finite survey, every respondent who chose blue also chose either tea or coffee. Mira chose blue and chose tea. Therefore Mira chose coffee. The survey separately records that Mira chose coffee."
+    }
+  ],
+  "explanation": "The inference selected is from Mira choosing blue, the rule that blue respondents chose tea or coffee, and Mira choosing tea to Mira choosing coffee. That inference is invalid: tea-or-coffee together with tea does not force coffee. The closing sentence independently asserts a survey record of coffee, and the formal declaration supplies hCoffee, so the endpoint is true under the full supplied premises. The theorem result is therefore proved, but by the separate coffee premise rather than the disputed inference.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "Read the first three sentences as an inference from blue, the conditional disjunction, and tea to coffee. The word either is modeled by inclusive disjunction in the Lean source; even on this reading, tea does not eliminate the tea disjunct or imply coffee.",
+      "dependencies": [
+        "Mira chose blue",
+        "blue respondents chose tea or coffee",
+        "Mira chose tea"
+      ],
+      "qualification": "The text's separate final sentence says the survey records coffee; treating that sentence as a premise makes the endpoint true without validating the earlier inference."
+    },
+    {
+      "meaning": "Read the final sentence as an independently supplied fact, as the hCoffee premise in theorem result.",
+      "dependencies": [
+        "hCoffee : coffee"
+      ],
+      "qualification": "This is the dependency used to prove the formal endpoint."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "source",
+      "detail": "Original prose is source.txt line 1 (sha256 31c6791ff7e143e88cbb41a6ed113d732c754d35d7786a338bbf4809aede49f6). Main.lean sha256 4b325474530a4fd5a228a7bc7ba4d597e281863d24f307d759fe82d4fce08de0; target Main.olean sha256 76585dfa758215713029576c566ef716c0960faef72f2c5e0acf8012fc2675cc; lean-toolchain sha256 8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af."
+    },
+    {
+      "kind": "assisted-slice",
+      "detail": "Ladon extracted the actual application recordedChoice coffee hCoffee in declaration result. Its premise list contains only occurrence 1, coffee, provided by hCoffee. Its closed proof shows the local have _hSurvey := surveyDisjunction ... followed by recordedChoice coffee hCoffee. Slice is complete; source digest matches Main.lean. Helper SHA256 is 280b46403dc0f61a24b86600b3aa455d39dea76f50c60a2e68ab50b5f8f397f6; environment identity is sha256:c9c4ead4c9be6564df2a2a4d4922550264f2a34efafcf4491bad55af0e1dc0b8. The slice itself retains four process receipts (two repeated source/helper pairs), with successful Lean return codes and observed times in slice.json."
+    },
+    {
+      "kind": "lean-countermodel",
+      "detail": "A private Lean check proved ¬ ((True → (True ∨ False)) → True → False), instantiating blue=True, tea=True, coffee=False and satisfying the rule by the left disjunct. The same check replayed the full conclusion with hCoffee via result. Both examples kernel-checked successfully; this formalizes the disputed propositional step and the sufficiency of the actual extra premise."
+    },
+    {
+      "kind": "interpretation-residual",
+      "detail": "Ladon accepted an explicitly opaque, source-bound interpretation. It reported an unsupported-interpretation residual; this is attribution of the proposed reading, not an elaborated correspondence check. No align/check obligation was run."
+    }
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/output/Check.lean"
+      ],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/input",
+      "env": {
+        "LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/input"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.313,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "proof",
+        "slice",
+        "--repo",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/input",
+        "--source",
+        "Main.lean",
+        "--module",
+        "Main",
+        "--declaration",
+        "result",
+        "--application",
+        "recordedChoice",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/output/slice.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 6.707,
+      "stdout": "",
+      "stderr": "",
+      "preservedOutputPath": ".codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/output/slice.json"
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "proof",
+        "slice",
+        "--repo",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/input",
+        "--source",
+        "Main.lean",
+        "--module",
+        "Main",
+        "--declaration",
+        "result",
+        "--application",
+        "recordedChoice coffee hCoffee",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/output/slice.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 2,
+      "elapsedSeconds": 0.001,
+      "stdout": "{\"status\": \"invalid\", \"error\": \"slice selection requires ordinary qualified names\"}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "interpret",
+        "--record",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/output/interpretation.json",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/input",
+        "--slice",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/output/slice.json",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/output/interpretation-result.json"
+      ],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {
+        "PYTHONPATH": "/home/codex/projects/ladon/src"
+      },
+      "exitCode": 0,
+      "elapsedSeconds": 0.001,
+      "stdout": "",
+      "stderr": "",
+      "preservedOutputPath": ".codex/state/nl-lean-e/runs/11-c4d5434284cb-assisted/output/interpretation-result.json"
+    }
+  ],
+  "omissions": [
+    "The natural-language inference was not encoded as a machine-checked Ladon correspondence. The authored interpretation is opaque and leaves the proposition, respondent identity, and relation to the separate record as residuals.",
+    "No Ladon align/check command was executed, and no command proving the endpoint from only the first three prose premises was executed. A propositional countermodel was kernel-checked; the scoped natural-language attribution remains mathematical interpretation.",
+    "The source/helper Lean receipts are preserved in slice.json; stdout and stderr contents for the internal scratch Lean processes were not retained by Ladon, which exposes byte counts and SHA256 digests there. No token usage was exposed."
+  ]
+}

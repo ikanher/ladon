@@ -1,0 +1,84 @@
+{
+  "schema": "ladon-derivation-challenge-v1",
+  "scope": {
+    "path": "rational-03/source.txt",
+    "sha256": "ebb8a5572dbd454ca515f56f4eefebcfa9a3e1a7b0d3735dc3bdcac62be01d73",
+    "startLine": 1,
+    "endLine": 1
+  },
+  "claim": {
+    "id": "rational-03",
+    "unit": "unit-0001",
+    "startLine": 1,
+    "endLine": 1,
+    "quote": "For rationals x, y, and z, if x equals y and y equals z, then x equals z.",
+    "contract": {
+      "objects": "Rational scalars: x, y, z",
+      "assumptions": "[{\"left\": {\"var\": \"x\"}, \"op\": \"eq\", \"right\": {\"var\": \"y\"}}, {\"left\": {\"var\": \"y\"}, \"op\": \"eq\", \"right\": {\"var\": \"z\"}}]",
+      "domains": "Every declared variable ranges over the rational numbers.",
+      "quantifiers": "For all declared variables satisfying every premise.",
+      "conclusion": "{\"left\": {\"var\": \"x\"}, \"op\": \"eq\", \"right\": {\"var\": \"z\"}}",
+      "dependencies": "Only the explicitly supplied premises; inspect the source argument.",
+      "neededImplication": "The premises jointly imply exactly the encoded conclusion."
+    }
+  },
+  "author": "case-transcriber",
+  "steps": [
+    {
+      "id": "inference",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "For rationals x, y, and z, if x equals y and y equals z, then x equals z.",
+      "contract": {
+        "objects": "Rational scalars: x, y, z",
+        "assumptions": "[{\"left\": {\"var\": \"x\"}, \"op\": \"eq\", \"right\": {\"var\": \"y\"}}, {\"left\": {\"var\": \"y\"}, \"op\": \"eq\", \"right\": {\"var\": \"z\"}}]",
+        "domains": "Every declared variable ranges over the rational numbers.",
+        "quantifiers": "For all declared variables satisfying every premise.",
+        "conclusion": "{\"left\": {\"var\": \"x\"}, \"op\": \"eq\", \"right\": {\"var\": \"z\"}}",
+        "dependencies": "Only the explicitly supplied premises; inspect the source argument.",
+        "neededImplication": "The premises jointly imply exactly the encoded conclusion."
+      },
+      "rule": "The inference stated in the source quotation.",
+      "substitution": "Each scalar name refers to the same rational in source and AST.",
+      "dependsOn": [],
+      "arithmetic": {
+        "variables": [
+          "x",
+          "y",
+          "z"
+        ],
+        "premises": [
+          {
+            "op": "eq",
+            "left": {
+              "var": "x"
+            },
+            "right": {
+              "var": "y"
+            }
+          },
+          {
+            "op": "eq",
+            "left": {
+              "var": "y"
+            },
+            "right": {
+              "var": "z"
+            }
+          }
+        ],
+        "conclusion": {
+          "op": "eq",
+          "left": {
+            "var": "x"
+          },
+          "right": {
+            "var": "z"
+          }
+        }
+      },
+      "subjectSha256": "cd3f5395c15ccfd2e67e16f470c62dee2d6833cf30f51a271fb8093bde85d112"
+    }
+  ],
+  "instructions": "Challenge each original implication. Save first responses separately; a sampled success is not a proof. Reviewer identity and interpretation remain attributed, and this packet does not enforce filesystem isolation."
+}

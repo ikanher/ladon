@@ -1,0 +1,75 @@
+{
+  "caseId": "c4d5434284cb",
+  "arm": "ordinary",
+  "verdict": "argument-fault",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "Mira chose blue and chose tea. Therefore Mira chose coffee."
+    }
+  ],
+  "explanation": "The selected inference does not follow from the stated blue rule and tea choice: the rule guarantees tea or coffee, and tea can already satisfy that disjunction without establishing coffee. The supplied Lean source also records coffee separately. The endpoint therefore has an independent supplied premise, so the endpoint claim is true in the described setting even though the selected inference is faulty. The formal result theorem uses hCoffee through recordedChoice; it binds the survey disjunction to an unused local and does not derive coffee from tea.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "The second sentence is read as an inference from Mira choosing blue, the universal survey rule, and Mira choosing tea to Mira choosing coffee.",
+      "dependencies": ["blue choice", "blue implies tea or coffee", "tea choice"],
+      "qualification": "On this reading, coffee does not follow. A valuation with blue=true, tea=true, coffee=false satisfies all three premises and falsifies the conclusion."
+    },
+    {
+      "meaning": "The final sentence supplies a separate record that Mira chose coffee.",
+      "dependencies": ["separate recorded coffee fact"],
+      "qualification": "This makes the endpoint true independently of the preceding inference."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "lean-check",
+      "claim": "The supplied source's result theorem has coffee as endpoint and uses the separate hCoffee assumption; the survey disjunction is not used to produce that endpoint.",
+      "output": "Lean successfully printed: result (blue tea coffee : Prop) (hBlue : blue) (hRule : blue → tea ∨ coffee) (hTea : tea) (hCoffee : coffee) : coffee. The source body binds surveyDisjunction as _hSurvey then returns recordedChoice coffee hCoffee.",
+      "commandReceipt": "commands.json entry 2; stdout in lean.stdout.txt"
+    },
+    {
+      "kind": "lean-checked-counterexample",
+      "claim": "The universal implication from blue, the survey rule, and tea to coffee is invalid.",
+      "output": "Lean accepted original_inference_not_valid : ¬ (∀ (blue tea coffee : Prop), blue → (blue → tea ∨ coffee) → tea → coffee), with blue=True, tea=True, coffee=False as the refuting instance.",
+      "commandReceipt": "commands.json entry 2; proof source in Check.lean"
+    },
+    {
+      "kind": "identity",
+      "claim": "Input source and pinned compiled artifact identities observed for this arm.",
+      "output": "source.txt SHA-256 31c6791ff7e143e88cbb41a6ed113d732c754d35d7786a338bbf4809aede49f6; Main.lean SHA-256 4b325474530a4fd5a228a7bc7ba4d597e281863d24f307d759fe82d4fce08de0; Main.olean SHA-256 76585dfa758215713029576c566ef716c0960faef72f2c5e0acf8012fc2675cc; lean-toolchain SHA-256 8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af. Pinned toolchain file says leanprover/lean4:v4.32.1; checker path is /home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean."
+    }
+  ],
+  "commands": [
+    {
+      "argv": ["/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean", "Check.lean"],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/05-c4d5434284cb-ordinary/output",
+      "env": {"LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/05-c4d5434284cb-ordinary/input"},
+      "exitCode": 1,
+      "elapsedSeconds": 0.4101199440192431,
+      "stdoutPath": "lean-attempt-1.stdout.txt",
+      "stderrPath": "lean-attempt-1.stderr.txt",
+      "checkSourcePath": "Check-attempt-1.lean",
+      "note": "Initial counterexample proof had a Lean proof-term elaboration error; it did not establish the inference invalid."
+    },
+    {
+      "argv": ["/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean", "Check.lean"],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/05-c4d5434284cb-ordinary/output",
+      "env": {"LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/05-c4d5434284cb-ordinary/input"},
+      "exitCode": 0,
+      "elapsedSeconds": 0.42826417298056185,
+      "stdoutPath": "lean.stdout.txt",
+      "stderrPath": "lean.stderr.txt",
+      "checkSourcePath": "Check.lean"
+    }
+  ],
+  "omissions": [
+    "No attempt was made to build Main.lean from source; the supplied Main.olean was imported by the successful Lean check.",
+    "No other interpretations, source claims, or alternative inference selections were checked beyond the selected inference and the separate endpoint record.",
+    "No Ladon tool, network, model API, package installation, or Lake command was used.",
+    "The first attempted counterexample check failed due to a proof-term elaboration mistake; the corrected check succeeded."
+  ]
+}

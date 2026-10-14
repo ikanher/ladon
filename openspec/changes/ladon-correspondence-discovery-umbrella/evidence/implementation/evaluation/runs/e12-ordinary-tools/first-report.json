@@ -1,0 +1,44 @@
+{
+  "verdict": "unresolved",
+  "statementAssessment": "The exposition's formula for the sum from 1 to n is correct. The supplied formal text does not state a proposition, so exact statement correspondence cannot be assessed.",
+  "methodAssessment": "The rendered description says the proof uses induction on n, adds n+1, and simplifies the successor polynomial. That is consistent with the exposition's method, but the abbreviated description does not provide enough detail to compare individual proof steps.",
+  "findings": [
+    {
+      "sourceAssertion": "For natural n, the sum of the integers from 1 to n is n(n+1)/2.",
+      "formalCounterpart": "No formal proposition is supplied; only a description of its proof method appears.",
+      "classification": "unresolved correspondence",
+      "explanation": "The mathematical assertion is correct, but without the formal statement there is no exact local claim to compare.",
+      "evidence": "The input states the formula in the exposition and describes induction in the formal argument, but gives no formal proposition or definition of the sum.",
+      "uncertainty": "Cannot determine whether the omitted formal statement matches the exposition."
+    },
+    {
+      "sourceAssertion": "The proof proceeds by induction, with the zero case immediate and the successor case proved by adding n+1.",
+      "formalCounterpart": "The rendered formal argument says it uses the same induction on n, adding n+1 and simplifying the polynomial at the successor step.",
+      "classification": "faithful method correspondence at the description level",
+      "explanation": "The two descriptions give the same proof outline. The missing proposition and proof details prevent a more exact comparison.",
+      "evidence": "Both supplied descriptions specify induction on n and addition of n+1 at the successor step.",
+      "uncertainty": "The rendered argument is only a summary, so exact step-by-step correspondence is unverified."
+    }
+  ],
+  "examinedAssertions": [
+    {
+      "assertion": "For natural n, the sum of the integers from 1 to n is n(n+1)/2.",
+      "assessment": "Mathematically correct; correspondence with a formal proposition is unresolved because none is included.",
+      "evidence": "This is the standard finite-sum formula, and the input provides no formal statement to compare."
+    },
+    {
+      "assertion": "Induction proves the formula: the zero case is immediate, and adding n+1 proves the successor formula.",
+      "assessment": "Valid proof outline and consistent with the rendered formal method description.",
+      "evidence": "At the successor step, n(n+1)/2 + (n+1) = (n+1)(n+2)/2."
+    }
+  ],
+  "omissions": [
+    "The formal proposition itself.",
+    "The formal definition of the sum.",
+    "The actual rendered formal proof steps beyond a brief method summary."
+  ],
+  "toolsUsed": [
+    "Read /input/INPUT.md with cat."
+  ],
+  "checkingStatus": "No Lean checks were run. The input contains a rendered proof description, not an original Lean module."
+}

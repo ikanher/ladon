@@ -577,3 +577,84 @@ only compact counts unless explicitly requested.
 Overall: indexed exact-name search and packet evidence are now useful in real proof
 work. The most urgent fixes are updating the installed skill examples, improving
 multi-segment ranking, and making owner reports locally scoped by default.
+
+## Follow-Up: 2026-10-08 Stale Shared Index During Active Proof Work
+
+Reported by Claude, from matrix-factorization (DP-Adam telemetry audit, board #508).
+
+**Environment.**
+- Ladon: `ladon 0.2.0`, source commit `a073ead`, clean. Installed content identity
+  `sha256:89a0eb83…`.
+- Entrypoint: `/home/codex/miniconda3/bin/ladon`.
+- Target: `~/projects/lean/matrix-factorization`. The root agent was actively adding and
+  editing `Mf/Optimization/FiniteMemoryAdam/Telemetry*.lean` during the session.
+
+### What happened
+
+I needed four new declarations (`actualCorrectedSecondMemory`,
+`actual_secondMemory_decode`, `actualReleaseHistory_measurePreserving`,
+`scalarRelease_actualReleaseHistory`) and one older one (`streamRun_memories`).
+
+1. **The default index was stale.** `index status` on `.ladon/index/proof-search.sqlite`
+   (built 2026-10-06 22:16) reported `freshness: stale-source` and
+   `evidenceStatus: lexical-fallback`.
+2. **Name search on that index:**
+   - `--text streamRun_memories` returned **0 rows**. The declaration exists, but the whole
+     `Mf/Optimization/FiniteMemoryAdam/` tree is untracked and newer than the generation
+     (`History.lean` mtime 2026-10-07 05:24). `sqlite3 … "select count(*) from declarations
+     where name like 'Mf.Optimization.FiniteMemoryAdam.%'"` gives 0.
+   - `--text actualCorrectedSecondMemory` returned **4 unrelated lexical hits**
+     (`…coordinate_correctedReferenceSecond_eq_memory_ratio_of_rawSecond_eq`, …) with no
+     indication that the exact identifier was absent from the generation.
+   - With `--freshness stored`, the text header said only `freshness: unchecked`.
+3. **Workaround.** Per the skill, I built a PID-qualified private index:
+   `--index .ladon/index/proof-search.claude1075816.sqlite`. It took 1 min 33 s and 118 MB RSS,
+   and produced a 775 MB database. Name search then found every declaration immediately.
+   Within minutes, every query on the private index reported `stale-source` again, because
+   root kept editing sources.
+
+The tool behaved as documented: the freshness field was correct, and the skill says empty
+lexical search is not semantic absence. The failure is that the stale state was easy to miss,
+and the cost and size of the recommended fix are high.
+
+### Problems to fix
+
+1. **Silent wrong-looking answers from a stale generation (high).**
+   - An exact-identifier query that has no exact hit in a `stale-source` generation should
+     state so prominently, e.g. "0 exact matches; N source files added/changed since this
+     generation, including <path> which matches the query's namespace/path".
+   - The unrelated fallback hits should be visibly separated from exact-name results.
+   - `--freshness stored` printing only `unchecked` invites the mistake.
+2. **No stale-source detail (high).** `index status` returns only a `sourceFingerprint`. It
+   should list or count added, changed and removed modules, so a user can decide whether the
+   staleness affects the query. One idea: a `--changed` listing and a per-query
+   "affected by staleness" flag.
+3. **No incremental refresh (medium).** A full rebuild (≈1.5 min, ≈775 MB) is the only way to
+   pick up a handful of new modules. A cheap incremental lexical update for changed or
+   untracked files would fit active multi-agent work, where sources change every few minutes.
+4. **Disk accumulation from PID-qualified indexes (medium).**
+   - `.ladon/index/` in matrix-factorization is now **18 GB**: about 25 private databases of
+     550–800 MB each, plus stale `.lock` files and an orphaned
+     `.proof-search.strictgap-fixed…sqlite.…tmp` with its journal from 2026-08-23.
+   - The skill recommends a fresh private index per concurrent writer, but there is no
+     `index list` / `index prune` or age-based cleanup. My session added one more 775 MB
+     database (`proof-search.claude1075816.sqlite`, left in place for inspection).
+5. **Two generation identities in one result (low).** Name-search JSON carries both
+   `generationIdentity` (`f35c71c6…`) and `currentGenerationIdentity` (`d2f77e72…`) with
+   different values. Build JSON exposes only `generationIdentity`. Document which is which: the
+   rows' generation versus the currently published one? Also say whether a mismatch is itself
+   a staleness signal.
+
+### Reproduction
+
+```bash
+cd ~/projects/lean/matrix-factorization
+ladon proof-search index status --repo-root "$PWD" --format json --output - | jq .freshness
+ladon proof-search search name --repo-root "$PWD" --text streamRun_memories \
+  --freshness verify --format json --output - | jq '{freshness,returned}'
+sqlite3 .ladon/index/proof-search.sqlite \
+  "select count(*) from declarations where name like 'Mf.Optimization.FiniteMemoryAdam.%'"
+du -sh .ladon/index
+```
+
+At the time of writing this printed `"stale-source"`, `returned: 0`, `0` and `18G`.

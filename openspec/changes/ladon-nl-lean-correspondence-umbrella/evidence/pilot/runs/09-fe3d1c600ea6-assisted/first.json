@@ -1,0 +1,145 @@
+{
+  "caseId": "fe3d1c600ea6",
+  "arm": "assisted",
+  "verdict": "argument-fault",
+  "selectedSpans": [
+    {
+      "path": "source.txt",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "A counter stores a natural number n. It is known that n is even, and every even number is divisible by two. The analyst then says n is greater than zero. Separately, the counter is known to contain at least two."
+    },
+    {
+      "path": "Main.lean",
+      "startLine": 8,
+      "endLine": 9,
+      "quote": "theorem result (n : Nat) (hEven : IsEvenValue n) (hBound : n ≥ 2) : n > 0 := by\n  exact positiveFromLowerBound n hBound"
+    }
+  ],
+  "explanation": "I selected the apparent inference from evenness (with divisibility by two) to positivity. That inference is false for Nat: n = 0 is even, is divisible by two, and is not positive. The endpoint itself is true under all facts stated in the passage because the separately stated lower bound n ≥ 2 suffices. The formal result theorem has both hEven and hBound in scope, but its selected application is positiveFromLowerBound n hBound; the extracted application uses hBound and does not pass hEven. Thus the formal proof supports the endpoint by the separate bound, while the apparent parity-based justification remains faulty. The prose places the bound after the analyst's assertion and says it is separate, so I preserve the distinction between endpoint truth and the inference used to justify it.",
+  "claimFalse": false,
+  "interpretations": [
+    {
+      "meaning": "The apparent parity-based inference is that every even natural number (even when the divisibility-by-two fact is also supplied) is positive.",
+      "dependencies": ["n is even", "every even number is divisible by two"],
+      "qualification": "Refuted by n = 0, which satisfies both supplied properties but not n > 0."
+    },
+    {
+      "meaning": "The separate lower-bound fact is n ≥ 2, and the endpoint is n > 0.",
+      "dependencies": ["n ≥ 2"],
+      "qualification": "This implication is valid; the Lean result proof uses this bound. Its mapping to the lower-bound sentence is my attributed interpretation, not a claim that tooling establishes prose intent."
+    }
+  ],
+  "evidence": [
+    {
+      "kind": "assisted-source-slice",
+      "path": "slice.json",
+      "sha256": "9588ca4cbacd6c48ebbfc9b42dceeb3151e3e4d433b21a4fff4bf2f24f62acaf",
+      "sliceId": "8052de6ff4043f5dd9df97a9b68e8969f18f01ff1814eea0931b470a88d6fbc9",
+      "observation": "Complete selected application in Main.result: positiveFromLowerBound n hBound. The formal local context contains n, hEven, and hBound; the application argument list contains n and hBound, and its premise is n ≥ 2. Slice extraction Lean receipts returned zero for all four recorded Lean invocations."
+    },
+    {
+      "kind": "assisted-correspondence-check",
+      "path": "check-result.json",
+      "sha256": "2f315ab6b4d45990c521ac00363210454c3e11af96a124b809284eee46ea4df2",
+      "observation": "The actual conditional result proof was reported supported, as were interpretation well-typedness, object-map, and premise-provider checks. My supplied premise-transfer and conclusion-transfer proof terms were rejected, so those generated correspondence obligations remain unresolved in this run. The overall fields premiseEstablishment and parentSupport are unresolved; methodCorrespondence is unreviewed and interpretationFidelity is attributed-unreviewed. I do not count the failed supplied tactics as refutations."
+    },
+    {
+      "kind": "direct-lean-check",
+      "path": "Check.lean",
+      "sha256": "c4edb4b8dc9ee4a3ad5ee33ba01242511289cedca3431d182a083b94d7f2af5b",
+      "observation": "The pinned Lean executable accepted the file with exit code 0. It checks IsEvenValue 0, 2 ∣ 0, ¬(0 > 0), a theorem refuting ∀ n, IsEvenValue n → n > 0, a theorem IsEvenValue n → 2 ∣ n for arbitrary n, and the application result n hEven hBound."
+    },
+    {
+      "kind": "input-identities",
+      "items": {
+        "Main.lean": "sha256:4dfedfdd7a50ca00cd2b49bd0e617bc0b06316de9939c1a4c2012c85a77f3e80",
+        "source.txt": "sha256:db4a6f33719c6d65e640705b153b3aafdcceb8fc354b988d35d87b5e42151d54",
+        "Main.olean": "sha256:f49cf9c94287a5743bbe92e8ffd61be9de74408bca9f9b019656ff364b96d934",
+        "lean-toolchain": "sha256:8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af"
+      },
+      "leanExecutable": "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean"
+    }
+  ],
+  "commands": [
+    {
+      "argv": ["/home/codex/projects/ladon/.venv/bin/python", "-m", "ladon.entrypoint", "proof-search", "proof", "slice", "--repo", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/input", "--source", "Main.lean", "--module", "Main", "--declaration", "result", "--application", "positiveFromLowerBound", "--scoped", "--output", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/slice.json"],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {"PYTHONPATH": "/home/codex/projects/ladon/src"},
+      "exitCode": 0,
+      "elapsedSeconds": 6.2,
+      "stdout": "",
+      "stderr": "",
+      "outputPath": "slice.json"
+    },
+    {
+      "argv": ["/home/codex/projects/ladon/.venv/bin/python", "-m", "ladon.entrypoint", "investigation", "interpret", "--record", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/interpretation.json", "--root", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/input", "--slice", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/slice.json", "--output", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/interpreted.json"],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {"PYTHONPATH": "/home/codex/projects/ladon/src"},
+      "exitCode": 2,
+      "elapsedSeconds": 0.1,
+      "stdout": "{\"status\": \"invalid\", \"error\": \"quoted source span changed\"}",
+      "stderr": "",
+      "outputPath": null,
+      "note": "The initial quote selected only a sentence inside the one-line source file; SourceReader rejected it. I corrected the record to quote the exact full source line before the successful interpret run."
+    },
+    {
+      "argv": ["/home/codex/projects/ladon/.venv/bin/python", "-m", "ladon.entrypoint", "investigation", "interpret", "--record", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/interpretation.json", "--root", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/input", "--slice", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/slice.json", "--output", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/interpreted.json"],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {"PYTHONPATH": "/home/codex/projects/ladon/src"},
+      "exitCode": 0,
+      "elapsedSeconds": 0.1,
+      "stdout": "",
+      "stderr": "",
+      "outputPath": "interpreted.json"
+    },
+    {
+      "argv": ["/home/codex/projects/ladon/.venv/bin/python", "-m", "ladon.entrypoint", "investigation", "align", "--interpretation", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/interpreted.json", "--slice", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/slice.json", "--map", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/object-map.json", "--root", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/input", "--output", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/plan.json"],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {"PYTHONPATH": "/home/codex/projects/ladon/src"},
+      "exitCode": 0,
+      "elapsedSeconds": 0.2,
+      "stdout": "",
+      "stderr": "",
+      "outputPath": "plan.json"
+    },
+    {
+      "argv": ["/home/codex/projects/ladon/.venv/bin/python", "-m", "ladon.entrypoint", "investigation", "check", "--plan", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/plan.json", "--terms", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/terms.json", "--repo", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/input", "--root", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/input", "--output", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/check-result.json"],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {"PYTHONPATH": "/home/codex/projects/ladon/src"},
+      "exitCode": 0,
+      "elapsedSeconds": null,
+      "stdout": "",
+      "stderr": "",
+      "outputPath": "check-result.json",
+      "note": "The completed first invocation's elapsed duration and session exit metadata were not exposed by the wrapper session; the file contains the finished result and each check status. No elapsed value is inferred."
+    },
+    {
+      "argv": ["/home/codex/projects/ladon/.venv/bin/python", "-m", "ladon.entrypoint", "investigation", "check", "--plan", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/plan.json", "--terms", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/terms.json", "--repo", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/input", "--root", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/input", "--output", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/check-result.json"],
+      "cwd": "/home/codex/projects/ladon",
+      "env": {"PYTHONPATH": "/home/codex/projects/ladon/src"},
+      "exitCode": 2,
+      "elapsedSeconds": 120.8,
+      "stdout": "{\"status\": \"invalid\", \"error\": \"[Errno 17] File exists: '/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/check-result.json'\"}",
+      "stderr": "",
+      "outputPath": null,
+      "note": "This duplicate ran while the first invocation was still producing the same exclusive output path, then failed because that path existed. The first invocation's result was preserved."
+    },
+    {
+      "argv": ["/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean", "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/output/Check.lean"],
+      "cwd": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/input",
+      "env": {"LEAN_PATH": "/home/codex/projects/ladon/.codex/state/nl-lean-e/runs/09-fe3d1c600ea6-assisted/input"},
+      "exitCode": 0,
+      "elapsedSeconds": 0.5,
+      "stdout": "",
+      "stderr": "",
+      "outputPath": "Check.lean"
+    }
+  ],
+  "omissions": [
+    "The generated correspondence premise-transfer and conclusion-transfer terms in terms.json were attempted and rejected due to my intro tactic terms; no claim rests on those failed checks.",
+    "No online search, model API, package installation, Lake command, target-paper material, peer report, private key, or other arm's response was used.",
+    "Tool --help invocations were used for public usage only. A malformed proof-search help route and one mistaken Python path were attempted during setup; those did not provide mathematical evidence.",
+    "The claim that the source sentence was intended to justify positivity from parity is an interpretation of its sequencing. The separate lower-bound fact makes the endpoint true, and the report retains this distinction."
+  ]
+}

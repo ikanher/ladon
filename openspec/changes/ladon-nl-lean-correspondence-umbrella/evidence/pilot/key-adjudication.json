@@ -1,0 +1,137 @@
+{
+  "reviewer": "eval/reviewer",
+  "assignmentPostId": 292,
+  "observedStart": "2026-10-11T01:01:38Z",
+  "observedEnd": "2026-10-11T01:02:08Z",
+  "postKeySourceAdjudication": true,
+  "sourceBoundary": "Read only PROTOCOL.md, private/key.json, manifest-listed public source.txt and Main.lean, and own reviewer/*.json. No primary reports, other-arm outputs, historical/development material, target sources, online research, or builds.",
+  "entries": [
+    {
+      "caseId": "85f7f1c843c4",
+      "referenceCategory": "faulty",
+      "adjudication": "accepted",
+      "sourceQuote": "The first record is local, and all local records are retained. The clerk concludes that the first record carries catalog code 7. A separate inventory note says that this record carries catalog code 7.",
+      "selectedInference": "Local status and the retention rule do not entail catalog code 7; no source premise connects retention with catalog codes. The later inventory note independently asserts code 7.",
+      "endpointTruth": {
+        "sourceLevel": "True if the separate inventory note is accepted as a premise; note reliability is not evaluated.",
+        "formalLevel": "Lean result returns codeSeven using hIndependent; it does not use the local-retention result. Static inspection only in this review."
+      },
+      "keyNotes": "Key diagnosis and endpoint separation match the source. Suggested compile is unnecessary to identify the prose gap and is not evidence for source correspondence. A compile would establish the supplied theorem only."
+    },
+    {
+      "caseId": "fe3d1c600ea6",
+      "referenceCategory": "faulty",
+      "adjudication": "accepted_with_qualification",
+      "sourceQuote": "It is known that n is even, and every even number is divisible by two. The analyst then says n is greater than zero. Separately, the counter is known to contain at least two.",
+      "selectedInference": "The natural reading associates the analyst’s positivity claim with evenness/divisibility, which is invalid: n=0 satisfies evenness and divisibility but not positivity. The prose then gives n≥2 separately, which independently entails n>0.",
+      "endpointTruth": {
+        "sourceLevel": "True under the separately asserted lower-bound premise.",
+        "formalLevel": "The theorem’s goal follows from hBound; hEven is unused. Key phrase “the theorem ... compiles” is an attributed report about compilation, not source-level proof and not a substitute for checking the inference."
+      },
+      "keyNotes": "Accept faulty category and true endpoint. Qualify any implication that the analyst explicitly says positivity follows from evenness: “then says” gives sequencing, while the lower bound is separately stated. The original local inference is still naturally selected."
+    },
+    {
+      "caseId": "c4d5434284cb",
+      "referenceCategory": "faulty",
+      "adjudication": "accepted",
+      "sourceQuote": "Mira chose blue and chose tea. Therefore Mira chose coffee. The survey separately records that Mira chose coffee.",
+      "selectedInference": "Blue plus the blue→(tea∨coffee) rule and tea do not entail coffee; assign blue and tea true, coffee false. The survey’s later record separately asserts coffee.",
+      "endpointTruth": {
+        "sourceLevel": "True if the separate survey record is accepted.",
+        "formalLevel": "Lean result consumes hCoffee; the disjunction fact is unused by the returned proof. Static source inspection, not a new kernel run."
+      },
+      "keyNotes": "Key precisely separates the invalid inference and independently true endpoint."
+    },
+    {
+      "caseId": "b07c1d37ee10",
+      "referenceCategory": "faulty",
+      "adjudication": "accepted_with_qualification",
+      "sourceQuote": "The technician knows that whenever x ≤ 5, x ≤ 9, and writes x ≤ 9. The technician next asserts x = 4. A calibration note says x is exactly four.",
+      "selectedInference": "The first step x≤5→x≤9 is valid. The apparent further inference from x≤9 to x=4 is invalid (x=0 is a counterexample). The calibration note separately asserts the equality.",
+      "endpointTruth": {
+        "sourceLevel": "True if the calibration note is accepted.",
+        "formalLevel": "Lean result consumes hCalibration alone; the relaxed-bound proof is unused by the equality term. Static inspection only."
+      },
+      "keyNotes": "The key’s “inference from x≤9 to x=4” is a reasonable discourse inference from sequence, but the source says “next asserts” rather than explicitly “therefore”; preserve that qualification. The first inference itself is valid."
+    },
+    {
+      "caseId": "df83178b3496",
+      "referenceCategory": "faithful",
+      "adjudication": "accepted",
+      "sourceQuote": "For natural numbers a and b, suppose a ≤ b and b ≤ c. Chaining the two bounds gives a ≤ c.",
+      "selectedInference": "Transitivity of ≤ on Nat directly yields the conclusion.",
+      "endpointTruth": {
+        "sourceLevel": "True from the two stated bounds.",
+        "formalLevel": "Main.lean applies Nat.le_trans to h₁ and h₂. My review was static; the task assignment reports root compiled the frozen sources, but that compilation alone does not prove prose correspondence."
+      },
+      "keyNotes": "Faithful label and source interpretation are correct. Do not describe a compile as the correspondence argument; the matching transitivity application is the reason."
+    },
+    {
+      "caseId": "4549693104b8",
+      "referenceCategory": "faithful",
+      "adjudication": "accepted",
+      "sourceQuote": "A proposition P is true, and P implies Q. Applying that implication yields Q.",
+      "selectedInference": "Apply hpq : P→Q to hp : P to obtain Q (modus ponens).",
+      "endpointTruth": {
+        "sourceLevel": "True given the two stated premises.",
+        "formalLevel": "Main.lean’s modusPonens helper applies hpq hp and result delegates to that helper. Static review; no reviewer execution."
+      },
+      "keyNotes": "Faithful label and interpretation are correct."
+    },
+    {
+      "caseId": "7efc5c13032b",
+      "referenceCategory": "method-difference",
+      "adjudication": "qualified_acceptance",
+      "sourceQuote": "For integers x and y, establish that x + y equals y + x. One proof can rearrange terms using commutativity; another can evaluate equality by the integer expression procedure.",
+      "selectedInference": "The endpoint is commutativity of integer addition. Prose explicitly offers two methods. Main.lean invokes omega in arithmeticEvaluation then result returns that theorem, so it does not demonstrate the rearrangement method; it is consistent with the described alternative arithmetic-procedure method.",
+      "endpointTruth": {
+        "sourceLevel": "True for integers by commutativity.",
+        "formalLevel": "The source code shows omega is invoked, but this reviewer did not run Lean or inspect elaborated proof evidence. Exact identity between omega’s procedure and the informal “integer expression procedure” remains a method-interpretation claim, not established by source text alone."
+      },
+      "keyNotes": "Keep method-difference as the case-specific reference label if useful, but normalize it with faithful as a correct-control outcome for inference accuracy: no faulty inference is present. Preserve a separate method-match field because a valid proof of the endpoint does not establish which informal proof method was used. Key’s “omega arithmetic normalization” is plausible, but qualify as an interpretation absent tactic-output inspection."
+    },
+    {
+      "caseId": "d4fbe7ff5619",
+      "referenceCategory": "ambiguous",
+      "adjudication": "accepted_with_endpoint_dispute",
+      "sourceQuote": "“For a measured value t in the safe interval, the alarm is usually quiet; this reading is within that interval, so the alarm should be quiet.” It does not define “usually” or “should,” and supplies no rule connecting these expressions.",
+      "selectedInference": "The wording itself declares “usually” and “should” undefined and no connecting rule supplied. Statistical/default, predictive and normative readings differ; none gives a determinate safe→quiet premise. Main.lean assumes safe→quiet explicitly, so its conditional application cannot establish the source claim without added semantics/premise.",
+      "endpointTruth": {
+        "sourceLevel": "Unresolved/ambiguous from this text. Do not mark true merely because a differently formalized Lean theorem compiles.",
+        "formalLevel": "Lean result is true conditionally on hs and rule : safe→quiet; the source does not state that rule. Compilation, even if confirmed, only checks the formal conditional."
+      },
+      "keyNotes": "Accept ambiguous category and its reading qualifications. Dispute/qualify endpointTruth “True: theorem ... compiles as stated”: that is at most theorem-level truth under an added premise, not truth of the informal endpoint. Key’s claim that “formal source records only an explicit conditional case” overstates source correspondence: the actual Lean conditional premise is absent from the prose."
+    }
+  ],
+  "normalizationAdvice": {
+    "faithful_and_method_difference": "Keep original labels in the audit data, while treating both as correct-control outcomes for inference-validity scoring. Track whether the method stated in prose is actually evidenced as a separate dimension.",
+    "argument_fault_with_true_endpoint": "Keep the faulty-step label separate from endpoint truth; the four constructed examples have a gap in the selected inference and a separately asserted endpoint premise.",
+    "endpoint_truth": "Separate source-level truth/underdetermination from theorem-level truth under formal hypotheses. A successful compile establishes neither the source interpretation nor the identity of premises."
+  },
+  "commands": [
+    {
+      "argv": [
+        "cat",
+        ".codex/state/nl-lean-e/PROTOCOL.md",
+        ".codex/state/nl-lean-e/curation/private/key.json"
+      ],
+      "exitCode": 0,
+      "observedElapsedSeconds": 0.1,
+      "purpose": "read permitted protocol and source key"
+    },
+    {
+      "argv": [
+        "python3",
+        "-"
+      ],
+      "stdinPurpose": "read manifest and print all eight listed source.txt, Main.lean and own reviewer JSON files",
+      "exitCode": 0,
+      "observedElapsedSeconds": 0.1,
+      "purpose": "compare key against permitted original sources and own comments"
+    }
+  ],
+  "leanChecks": [],
+  "omissions": [
+    "No compilation or Lean command performed during post-key adjudication; compilation information is attributed to root’s frozen-source compilation."
+  ]
+}

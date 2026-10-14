@@ -1,0 +1,105 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+___ test_rational_witness_classifies_exact_counterexample_and_wrong_premise ____
+
+    def test_rational_witness_classifies_exact_counterexample_and_wrong_premise():
+>       from ladon.rational_witness import check_witness
+E       ModuleNotFoundError: No module named 'ladon.rational_witness'
+
+tests/test_derivation_contract.py:19: ModuleNotFoundError
+_ test_rational_witness_rejects_bool_float_extra_binding_and_division_by_zero __
+
+    def test_rational_witness_rejects_bool_float_extra_binding_and_division_by_zero():
+>       from ladon.rational_witness import check_witness
+E       ModuleNotFoundError: No module named 'ladon.rational_witness'
+
+tests/test_derivation_contract.py:39: ModuleNotFoundError
+_____ test_full_goal_validation_does_not_short_circuit_after_false_premise _____
+
+    def test_full_goal_validation_does_not_short_circuit_after_false_premise():
+>       from ladon.rational_witness import check_witness
+E       ModuleNotFoundError: No module named 'ladon.rational_witness'
+
+tests/test_derivation_contract.py:60: ModuleNotFoundError
+_____ test_initialize_derivations_is_opt_in_and_assess_keeps_v1_compatible _____
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1476/test_initialize_derivations_is0')
+
+    def test_initialize_derivations_is_opt_in_and_assess_keeps_v1_compatible(tmp_path):
+        from ladon.investigation import assess, initialize
+    
+        source = tmp_path / "source.txt"
+        source.write_text("For every x, x equals x.\n", encoding="utf-8")
+        legacy = initialize(source, tmp_path, now=datetime(2026, 1, 1, tzinfo=UTC))
+>       modern = initialize(source, tmp_path, derivations=True, now=datetime(2026, 1, 1, tzinfo=UTC))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: initialize() got an unexpected keyword argument 'derivations'
+
+tests/test_derivation_contract.py:81: TypeError
+_ test_step_subject_binds_predecessor_math_and_assessment_but_not_workflow_state _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1476/test_step_subject_binds_predec0')
+
+    def test_step_subject_binds_predecessor_math_and_assessment_but_not_workflow_state(tmp_path):
+>       from ladon.investigation import step_subject
+E       ImportError: cannot import name 'step_subject' from 'ladon.investigation' (/home/codex/projects/ladon/src/ladon/investigation.py)
+
+tests/test_derivation_contract.py:89: ImportError
+_______ test_suspicious_v2_claim_schedules_contract_before_decomposition _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1476/test_suspicious_v2_claim_sched0')
+
+    def test_suspicious_v2_claim_schedules_contract_before_decomposition(tmp_path):
+        from ladon.investigation import assess, initialize
+    
+        source = tmp_path / "source.txt"
+        source.write_text("Suspicious inference is stated here.\n", encoding="utf-8")
+>       plan = initialize(source, tmp_path, derivations=True, now=datetime(2026, 1, 1, tzinfo=UTC))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       TypeError: initialize() got an unexpected keyword argument 'derivations'
+
+tests/test_derivation_contract.py:171: TypeError
+____________________ test_public_derivation_initialization _____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1476/test_public_derivation_initial0')
+
+    def test_public_derivation_initialization(tmp_path):
+        source = tmp_path / "source.txt"
+        source.write_text("For positive x and y, multiply the inequality by y.\n")
+        plan = tmp_path / "plan.json"
+        result = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "ladon.entrypoint",
+                "investigation",
+                "init",
+                "--text",
+                str(source),
+                "--root",
+                str(tmp_path),
+                "--output",
+                str(plan),
+                "--derivations",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+>       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: usage: ladon investigation [-h] {init,status,next,finish} ...
+E         ladon investigation: error: unrecognized arguments: --derivations
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.entrypoint', 'investigation', 'init...investigation [-h] {init,status,next,finish} ...\nladon investigation: error: unrecognized arguments: --derivations\n').returncode
+
+tests/test_investigation_derivation_cli.py:31: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_derivation_contract.py::test_rational_witness_classifies_exact_counterexample_and_wrong_premise
+FAILED tests/test_derivation_contract.py::test_rational_witness_rejects_bool_float_extra_binding_and_division_by_zero
+FAILED tests/test_derivation_contract.py::test_full_goal_validation_does_not_short_circuit_after_false_premise
+FAILED tests/test_derivation_contract.py::test_initialize_derivations_is_opt_in_and_assess_keeps_v1_compatible
+FAILED tests/test_derivation_contract.py::test_step_subject_binds_predecessor_math_and_assessment_but_not_workflow_state
+FAILED tests/test_derivation_contract.py::test_suspicious_v2_claim_schedules_contract_before_decomposition
+FAILED tests/test_investigation_derivation_cli.py::test_public_derivation_initialization
+7 failed in 0.12s
