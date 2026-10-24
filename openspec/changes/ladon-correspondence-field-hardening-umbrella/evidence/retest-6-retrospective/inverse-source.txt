@@ -1,0 +1,57 @@
+5060: at every slow point, by (3.9). In this subsection we construct its correction through the
+5061: fast time derivative, whose Fourier multiplier is invertible on nonzero torus frequencies
+5062: (Equation (6.7)). The axial velocity increment is then realized through its azimuthal potential
+5063: in (8.14) to preserve incompressibility.
+5064:    Recall from Equations (6.4) and (6.6) that Nabs = vt · ∂Y acts in the original auxiliary
+5065: coordinate. On a common torus y = Yi0 , the normalized fast time derivative is ci0 Ni0 ,
+5066: where Ni0 = vt · ∂y and ci0 = Tgi0 Q1+h . Here the normalized physical time derivative splits
+5067: as t∗ = −ε∂ T + ci0 Ni0 . The slow term −ε∂ T differentiates the coefficient’s explicit time
+5068: dependence while holding y fixed. The fast term ci0 Ni0 differentiates its auxiliary oscillations
+5069: along the physical phase map. We invert the fast term here and retain the slow term in the
+5070: residual.
+5071: Lemma 8.6. Let N = vt · ∂y on T2 , with vt as in (6.2), and let F be a smooth function of zero Haar
+5072: mean. Then N φ = F has a unique smooth zero-mean solution φ = N −1 F. This solution is given by
+5073: the following Fourier series and satisfies the displayed norm bound for every integer m ≥ 0:
+5074:                                         Fˆ︁(k ) 2πik·y
+5075:                  N −1 F =      ∑       2πivt · k
+5076:                                                  e     ,     ∥ N −1 F ∥Cym ≤ Cm ∥ F ∥Cym+4 .        (8.19)
+5077:                             k ∈Z2 \{0}
+5078: 
+5079: For a pair Eθ , Ez ∈ Mα of normalized angularly invariant residual coefficients, use this inverse in the
+5080:                                                                             −1     ◦         ◦
+5081: original auxiliary coordinate Y to define the physical tangential update − Nabs ( Eθ,phys , Ez,phys ). Here
+5082: 
+5083: 96                                                     OPENAI
+5084: 
+5085: residuals and velocities have the normalizations in (8.11). This physical definition ensures agreement
+5086: on chart overlaps. Its chart representatives are
+5087:                     ∆v = −ci−0 1 Ni−0 1 Eθ◦ ,     γd = −ci−0 1 Ni−0 1 Ez◦ ,    ci−0 1 ≤ CS∗ .           (8.20)
+5088:    Both desired increments ∆v, γd lie in Mα and have zero auxiliary mean at each slow and radial
+5089: point. The realization of γd by (8.14) gives the actual velocity increment
+5090:                            (∆β, ∆v, ∆γ) = −ε∂ Z T1 γd , ∆v, γd − A1 γd ,
+5091:                                             (︁                             )︁
+5092:                                                                                           (8.21)
+5093:                            (∆β, ∆v, ∆γ) ∈ Mα+1 × Mα × Mα .
+5094: This field is divergence-free and its addition preserves both integral constraints in (8.2). If a = −A1 γd
+5095: denotes the cutoff remainder in the axial increment, then its fast-time cancellation equations are
+5096:                           ci0 Ni0 ∆v = − Eθ◦ ,         ci0 Ni0 ∆γ = − Ez◦ + ci0 Ni0 a.                  (8.22)
+5097: The angular cancellation is exact, and ci0 Ni0 a is flat at every fixed coefficient derivative order.
+5098: Proof. The divisor bound (6.7) gives |vt · k |−1 ≤ C (1 + |k |). Four more derivatives of F than
+5099: the requested output leave a summable (1 + |k|)−3 bound on the Fourier series in two
+5100: dimensions. This proves (8.19), smoothness, and uniqueness after fixing the zero Fourier
+5101: coefficient. The multiplier commutes with every slow coefficient derivative and preserves
+5102: reality. It acts at fixed ( R, Z, T ), so it preserves slow and radial support and their smooth
+5103: zero extensions, although it need not preserve auxiliary-torus support.
+5104:   Let Pi F (Y ) = F ( Jgi Y ). A mode k on the i-torus has frequency ( Jgi )T k in the original
+5105: auxiliary coordinate Y. Since Jg vt = Tg vt ,
+5106:                                                            −1
+5107:                                Nabs Pi = Tgi Pi Ni ,      Nabs Pi = Tg−i Pi Ni−1 .                      (8.23)
+5108: The finite covering preserves Haar average, as follows also from its injective map of frequency
+5109: lattices. Applying (8.19) in the common frequency coordinate k gives the same fixed
+5110: derivative loss in every chart.
+5111:                                               −1 ◦
+5112:    In physical variables the update is − Nabs    Ephys . Its chart velocity value has factor
+5113: Q A−(2A+1/2) Tg−i0 = Q−1−h Tg−i0 = ci−0 1 , which proves (8.20). This factor is bounded by CS∗ by
+5114: the choice of covering level and its bounded difference from a band level. For each output
+5115: derivative, four additional derivatives in the torus variables suffice, so the class estimates at
+5116: every fixed derivative order retain their ε exponent. Applying the slow-time term −ε∂ T to

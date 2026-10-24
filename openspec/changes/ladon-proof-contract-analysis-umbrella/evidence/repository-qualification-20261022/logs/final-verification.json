@@ -1,0 +1,91 @@
+{
+  "recordedAtUtc": "2026-10-22T11:21:29.309745+00:00",
+  "checks": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--locked",
+        "--offline",
+        "python",
+        "-m",
+        "ruff",
+        "check",
+        "src",
+        "tests",
+        "scripts"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.027068404015153646,
+      "stdout": "All checks passed!\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "python",
+        "/home/codex/.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+        "../codex-skills/ladon"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.027754681650549173,
+      "stdout": "Skill is valid!\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "python",
+        "/home/codex/.codex/skills/.system/skill-creator/scripts/quick_validate.py",
+        "skills/ladon"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.026444052811712027,
+      "stdout": "Skill is valid!\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.019711242988705635,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "../codex-skills",
+        "diff",
+        "--check",
+        "--",
+        "ladon"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.001718937885016203,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "sharedSkillObservedHead": "03fa69ff66a0e97e6fa5518e5174ddfac3d23b46",
+  "sharedSkillChanges": [
+    " M ladon/SKILL.md",
+    " M ladon/references/source-goals.md",
+    " M ladon/references/verified-discovery.md",
+    "?? ladon/references/contract-analysis.md"
+  ],
+  "dependencyManifestDiff": "",
+  "forbiddenPythonImportScan": {
+    "argv": [
+      "rg",
+      "-n",
+      "^\\s*(from\\s+quux\\b|import\\s+quux\\b)",
+      "src",
+      "scripts"
+    ],
+    "exitCode": 1,
+    "matches": ""
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "schema": "ladon-investigation-progress-v2",
+  "status": "recorded-work-complete",
+  "mayFinalize": true,
+  "elapsedSeconds": 11969.865444,
+  "remainingSeconds": 0,
+  "next": [],
+  "blocked": [],
+  "counts": {
+    "units": 111,
+    "pendingUnits": 0,
+    "claims": 0,
+    "reviewedClaims": 0,
+    "actionable": 0,
+    "blockedClaims": 0,
+    "structuredSubjects": 0,
+    "firstResponses": 0,
+    "reconciliations": 0,
+    "observations": 1,
+    "pendingObservations": 0
+  },
+  "authority": "source binding, attributed reviews and stored native evidence only",
+  "nonclaims": [
+    "No Lean check was replayed by status or response ingestion.",
+    "Stored formal labels and reviewer labels do not verify truth or identity.",
+    "Review completion covers the authored inventory and subjects only."
+  ],
+  "findings": [
+    {
+      "kind": "observation",
+      "findingId": "06bd0fd1dff3f8157281a089b297a026fc245dc4f923e786e9ae3d8fbca87001",
+      "source": {
+        "endLine": 5116,
+        "path": "runs/independent-01/exposition.txt",
+        "sha256": "168ebbc105b9685ee7310341a7cc227eab9dd59ec255c9ac77ce98c47d2839b6",
+        "startLine": 5060,
+        "quote": "at every slow point, by (3.9). In this subsection we construct its correction through the\nfast time derivative, whose Fourier multiplier is invertible on nonzero torus frequencies\n(Equation (6.7)). The axial velocity increment is then realized through its azimuthal potential\nin (8.14) to preserve incompressibility.\n   Recall from Equations (6.4) and (6.6) that Nabs = vt · ∂Y acts in the original auxiliary\ncoordinate. On a common torus y = Yi0 , the normalized fast time derivative is ci0 Ni0 ,\nwhere Ni0 = vt · ∂y and ci0 = Tgi0 Q1+h . Here the normalized physical time derivative splits\nas t∗ = −ε∂ T + ci0 Ni0 . The slow term −ε∂ T differentiates the coefficient’s explicit time\ndependence while holding y fixed. The fast term ci0 Ni0 differentiates its auxiliary oscillations\nalong the physical phase map. We invert the fast term here and retain the slow term in the\nresidual.\nLemma 8.6. Let N = vt · ∂y on T2 , with vt as in (6.2), and let F be a smooth function of zero Haar\nmean. Then N φ = F has a unique smooth zero-mean solution φ = N −1 F. This solution is given by\nthe following Fourier series and satisfies the displayed norm bound for every integer m ≥ 0:\n                                        Fˆ︁(k ) 2πik·y\n                 N −1 F =      ∑       2πivt · k\n                                                 e     ,     ∥ N −1 F ∥Cym ≤ Cm ∥ F ∥Cym+4 .        (8.19)\n                            k ∈Z2 \\{0}\n\nFor a pair Eθ , Ez ∈ Mα of normalized angularly invariant residual coefficients, use this inverse in the\n                                                                            −1     ◦         ◦\noriginal auxiliary coordinate Y to define the physical tangential update − Nabs ( Eθ,phys , Ez,phys ). Here\n\n96                                                     OPENAI\n\nresiduals and velocities have the normalizations in (8.11). This physical definition ensures agreement\non chart overlaps. Its chart representatives are\n                    ∆v = −ci−0 1 Ni−0 1 Eθ◦ ,     γd = −ci−0 1 Ni−0 1 Ez◦ ,    ci−0 1 ≤ CS∗ .           (8.20)\n   Both desired increments ∆v, γd lie in Mα and have zero auxiliary mean at each slow and radial\npoint. The realization of γd by (8.14) gives the actual velocity increment\n                           (∆β, ∆v, ∆γ) = −ε∂ Z T1 γd , ∆v, γd − A1 γd ,\n                                            (︁                             )︁\n                                                                                          (8.21)\n                           (∆β, ∆v, ∆γ) ∈ Mα+1 × Mα × Mα .\nThis field is divergence-free and its addition preserves both integral constraints in (8.2). If a = −A1 γd\ndenotes the cutoff remainder in the axial increment, then its fast-time cancellation equations are\n                          ci0 Ni0 ∆v = − Eθ◦ ,         ci0 Ni0 ∆γ = − Ez◦ + ci0 Ni0 a.                  (8.22)\nThe angular cancellation is exact, and ci0 Ni0 a is flat at every fixed coefficient derivative order.\nProof. The divisor bound (6.7) gives |vt · k |−1 ≤ C (1 + |k |). Four more derivatives of F than\nthe requested output leave a summable (1 + |k|)−3 bound on the Fourier series in two\ndimensions. This proves (8.19), smoothness, and uniqueness after fixing the zero Fourier\ncoefficient. The multiplier commutes with every slow coefficient derivative and preserves\nreality. It acts at fixed ( R, Z, T ), so it preserves slow and radial support and their smooth\nzero extensions, although it need not preserve auxiliary-torus support.\n  Let Pi F (Y ) = F ( Jgi Y ). A mode k on the i-torus has frequency ( Jgi )T k in the original\nauxiliary coordinate Y. Since Jg vt = Tg vt ,\n                                                           −1\n                               Nabs Pi = Tgi Pi Ni ,      Nabs Pi = Tg−i Pi Ni−1 .                      (8.23)\nThe finite covering preserves Haar average, as follows also from its injective map of frequency\nlattices. Applying (8.19) in the common frequency coordinate k gives the same fixed\nderivative loss in every chart.\n                                              −1 ◦\n   In physical variables the update is − Nabs    Ephys . Its chart velocity value has factor\nQ A−(2A+1/2) Tg−i0 = Q−1−h Tg−i0 = ci−0 1 , which proves (8.20). This factor is bounded by CS∗ by\nthe choice of covering level and its bounded difference from a band level. For each output\nderivative, four additional derivatives in the torus variables suffice, so the class estimates at\nevery fixed derivative order retain their ε exponent. Applying the slow-time term −ε∂ T to"
+      },
+      "assertion": "Fixed torus derivatives and source-independent constants. The original reviewer inspected inverse_finiteJets/mixedJet_inverse_bound; this retrospective additionally checks norm_derivativeWord_inverse_le. No claim of exhaustive counterpart search.",
+      "comparison": "selected-formal-guarantee-weaker",
+      "statementRelation": "mismatch",
+      "methodRelation": "different",
+      "sourceFidelity": "faithful",
+      "formalSupport": "not-established",
+      "mathematicalFalsity": "not-established",
+      "evidence": "Formal SmoothFamilyTorusInverse.inverse_finiteJets and mixedJet_inverse_bound inspected here use five additional torus derivatives. Prose (8.19) states four, which is independently justified by O(|k|) divisor loss plus a summable |k|^-3 series in dimension two. Thus inspected formal theorem gives weaker derivative count, sufficient for the all-orders coefficient classes; exact four-loss formal counterpart remains unlocated.",
+      "dependencies": "Original source assumptions; exact native bridge not established in recorded run.",
+      "attribution": "answer-informed-curator",
+      "responses": [
+        {
+          "responseId": "3382bc0436beea1856c5d6ee4ed9b4e414b2ff7dc97d5858107440f734cecd63",
+          "reviewer": "development-projection-check",
+          "subject": "06bd0fd1dff3f8157281a089b297a026fc245dc4f923e786e9ae3d8fbca87001",
+          "challengeDigest": "fb12fe2609e5512ba0bc722f436a00b7fe5adf42989be6703f9f7d88b5860b79",
+          "classification": "mismatch",
+          "method": "different",
+          "sourceFidelity": "faithful",
+          "evidence": "Answer-informed transcription of frozen review observation, not a new blind assessment: Formal SmoothFamilyTorusInverse.inverse_finiteJets and mixedJet_inverse_bound inspected here use five additional torus derivatives. Prose (8.19) states four, which is independently justified by O(|k|) divisor loss plus a summable |k|^-3 series in dimension two. Thus inspected formal theorem gives weaker derivative count, sufficient for the all-orders coefficient classes; exact four-loss formal counterpart remains unlocated."
+        }
+      ],
+      "reconciliations": [],
+      "effectiveResponses": [
+        {
+          "responseId": "3382bc0436beea1856c5d6ee4ed9b4e414b2ff7dc97d5858107440f734cecd63",
+          "reviewer": "development-projection-check",
+          "subject": "06bd0fd1dff3f8157281a089b297a026fc245dc4f923e786e9ae3d8fbca87001",
+          "challengeDigest": "fb12fe2609e5512ba0bc722f436a00b7fe5adf42989be6703f9f7d88b5860b79",
+          "classification": "mismatch",
+          "method": "different",
+          "sourceFidelity": "faithful",
+          "evidence": "Answer-informed transcription of frozen review observation, not a new blind assessment: Formal SmoothFamilyTorusInverse.inverse_finiteJets and mixedJet_inverse_bound inspected here use five additional torus derivatives. Prose (8.19) states four, which is independently justified by O(|k|) divisor loss plus a summable |k|^-3 series in dimension two. Thus inspected formal theorem gives weaker derivative count, sufficient for the all-orders coefficient classes; exact four-loss formal counterpart remains unlocated."
+        }
+      ]
+    }
+  ],
+  "coverage": {
+    "totalUnits": 111,
+    "surveyedUnits": 111,
+    "totalClaims": 0,
+    "reviewedClaims": 0,
+    "wholePaperCertified": false,
+    "authority": "Authored inventory and review records only.",
+    "reviewedObservations": 1
+  },
+  "bundles": [],
+  "mathematicalReview": "complete-attributed",
+  "formalCorrespondence": "incomplete-no-counterpart",
+  "operation": "finalize",
+  "terminal": true,
+  "terminalReason": "elapsed-budget",
+  "planId": "59a066928d0d9faa318844921bf8cdb826c2119b6fe89ca4dc0d14fc7debbdbd",
+  "scopeId": "8cb877428d644c14eb49c493575748ecfa79604751966f276c956e8de469a52c",
+  "startedAt": "2026-10-17T19:13:45.912296+00:00",
+  "budgetSeconds": 5400,
+  "recordedAt": "2026-10-17T22:33:15.777740+00:00",
+  "stopRecord": null,
+  "attribution": "Authored workflow evidence, not authenticated user identity.",
+  "receiptId": "f998021e997a36648b3b82ff3521f1adfdedb59487337361cf38a79143778e21"
+}

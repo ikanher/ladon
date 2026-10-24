@@ -1,0 +1,82 @@
+{
+  "command": [
+    "bwrap",
+    "--bind",
+    "/",
+    "/",
+    "--dev-bind",
+    "/dev",
+    "/dev",
+    "--proc",
+    "/proc",
+    "--ro-bind",
+    "/home/codex/projects/lean/matrix-factorization/.lake",
+    "/tmp/ladon-matrix-lake-live",
+    "--ro-bind",
+    "/home/codex/projects/ladon/.codex/state/proof-contract-analysis/deleted-source-fix/matrix-snapshot",
+    "/home/codex/projects/lean/matrix-factorization",
+    "--chdir",
+    "/home/codex/projects/ladon",
+    "--",
+    "uv",
+    "run",
+    "--locked",
+    "--offline",
+    "python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/test_rational_branch_plan_v4.py::test_plan_identity_is_stable_recomputed_and_binds_semantic_inputs",
+    "tests/test_rational_branch_plan_v7.py::test_native_validation_rejects_reidentified_rational_analysis_tampering[tampered-stage]"
+  ],
+  "startedAtUtc": "2026-10-24T09:15:32.543930+00:00",
+  "timeoutSeconds": 300,
+  "rssLimitBytes": 12884901888,
+  "samplingIntervalSeconds": 0.5,
+  "samplingScope": "parent process group and descendants; sum of VmRSS and Pss",
+  "sourceManifestSha256": "0a4767d1988a3e4dc56f8f994dfc337cae3d86a3b5aef6372a7860e7b5330098",
+  "changedInputsBefore": [],
+  "cgroupBefore": {
+    "anon": 1007587328,
+    "file": 42094194688,
+    "kernel": 4766371840,
+    "shmem": 820912128,
+    "current": 47870001152
+  },
+  "cgroupEventsBefore": {
+    "low": 0,
+    "high": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "sock_throttled": 0
+  },
+  "exitCode": 0,
+  "elapsedSeconds": 41.571,
+  "stopReason": null,
+  "observedPeak": {
+    "rssBytes": 6916714496,
+    "pssBytes": 6902727680,
+    "swapBytes": 0,
+    "processes": 4
+  },
+  "minimumHostAvailableBytes": 55233970176,
+  "cgroupAfter": {
+    "anon": 997769216,
+    "file": 42094284800,
+    "kernel": 4766048256,
+    "shmem": 820912128,
+    "current": 47859376128
+  },
+  "cgroupEventsAfter": {
+    "low": 0,
+    "high": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "sock_throttled": 0
+  },
+  "changedInputsAfter": []
+}

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="0.490" timestamp="2026-10-20T15:27:43.298199+03:00" hostname="mindfields"><testcase classname="tests.test_proof_contract_audit_binding_stop" name="test_source_binding_memory_stop_keeps_receipt_and_never_dispatches" time="0.298"><failure message="ValueError: Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 12 GiB (12884901888 bytes). Observed sampled peak 12 GiB (12884902912 bytes). Ask the user before retrying with a higher --max-rss-mib limit.">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-940/test_source_binding_memory_sto0')
+
+    def test_source_binding_memory_stop_keeps_receipt_and_never_dispatches(tmp_path):
+        from ladon.proof_contract_audit import run_contract_audit
+    
+        root, *_rest = _repo(tmp_path / 'repo')
+        (root / 'quote.txt').write_text('Selected source')
+        plan = _fixture_plan()
+        plan.update(repoRoot=str(root), sourceFiles=['quote.txt'])
+        path = _write_plan(tmp_path / 'plan.json', plan)
+        calls = []
+        cap = 12 * 1024**3
+        peak = cap + 1024
+    
+        def memory_worker(command, **kwargs):
+            job = json.loads(kwargs['input_bytes'])
+            calls.append(job['operation'])
+            assert job['operation'] == 'audit-source-binding'
+            return ProcessResult(tuple(command), -9, '', '', .01,
+                                 memory_limited=True, peak_rss_bytes=peak)
+    
+&gt;       report = run_contract_audit(path, tmp_path / 'stopped', runner=memory_worker)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_audit_binding_stop.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.codex/state/proof-contract-analysis/audit-driver-nested-red/src/ladon/proof_contract_audit.py:46: in run_contract_audit
+    session = _prepare_session(plan, output_dir, resume, runner)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.codex/state/proof-contract-analysis/audit-driver-nested-red/src/ladon/proof_contract_audit.py:70: in _prepare_session
+    source_binding = _capture_source_binding(root, normalized["sourceFiles"],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-940/test_source_binding_memory_sto0/repo')
+source_files = ['quote.txt']
+limits = {'max_output_bytes': 8388608, 'max_rss_bytes': 12884901888, 'timeout_seconds': 5400.0}
+clock = {'bootIdentity': 'e82feb72-3335-4068-9f17-f446402b4c2a', 'createdUtc': 1792499263.7321393, 'deadlineMonotonic': 2136217.700008255, 'deadlineUtc': 1792504663.7321393}
+runner = &lt;function test_source_binding_memory_stop_keeps_receipt_and_never_dispatches.&lt;locals&gt;.memory_worker at 0x7bdaebf7e480&gt;
+
+    def _capture_source_binding(root, source_files, limits, clock, runner):
+        if root is None:
+            return None
+        request = {"repoRoot": str(root), "sourceFiles": source_files,
+                   "deadlineMonotonic": clock["deadlineMonotonic"],
+                   "deadlineUtc": clock["deadlineUtc"], "limits": limits}
+        job = {"version": 1, "operation": "audit-source-binding", "request": request,
+               "analysisId": "source-binding", "deadlineObservation": None}
+        bounds = {"timeout_seconds": min(limits["timeout_seconds"], _remaining(clock)),
+                  "max_output_bytes": limits["max_output_bytes"],
+                  "max_rss_bytes": limits["max_rss_bytes"],
+                  "deadlineMonotonic": clock["deadlineMonotonic"]}
+        checked = _execute_job(job, bounds, {"receipt": None, "inputDigest": None, "bounds": None},
+                               runner, worker_module="ladon.proof_contract_audit_worker")
+        if checked["status"] != "completed" or not isinstance(checked.get("result"), dict):
+            diagnostic = checked.get("diagnostic") or {}
+&gt;           raise ValueError(diagnostic.get("message", "bounded source identity capture did not complete"))
+E           ValueError: Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 12 GiB (12884901888 bytes). Observed sampled peak 12 GiB (12884902912 bytes). Ask the user before retrying with a higher --max-rss-mib limit.
+
+.codex/state/proof-contract-analysis/audit-driver-nested-red/src/ladon/proof_contract_audit.py:116: ValueError</failure></testcase><testcase classname="tests.test_proof_contract_audit_child_resources" name="test_existing_child_memory_shapes_stop_progress_and_preserve_evidence[formal]" time="0.012"><failure message="AssertionError: assert 'partial' == 'stopped'&#10;  &#10;  - stopped&#10;  + partial">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-940/test_existing_child_memory_sha0')
+shape = 'formal'
+
+    @pytest.mark.parametrize('shape', ['formal', 'replay'])
+    def test_existing_child_memory_shapes_stop_progress_and_preserve_evidence(tmp_path, shape):
+        from ladon.proof_contract_audit import run_contract_audit
+    
+        cap, peak = 1024**2, 2 * 1024**2
+        message = memory_limit_message(cap, peak)
+        receipt = {'memoryLimited': True, 'requestedMaxRssBytes': cap, 'peakRssBytes': peak}
+        child = {'schema': 'ladon-contract-production-v1', 'channel': 'formal',
+                 'status': 'unavailable', 'contract': None,
+                 'processReceipts': [receipt],
+                 'residuals': [{'code': 'memory-limit', 'message': message, 'feature': 'statement'}]}
+        if shape == 'replay':
+            child = {'status': 'incomplete', 'code': 'memory-limit', 'message': message,
+                     'processReceipt': receipt, 'result': None}
+        calls = []
+    
+        def memory_worker(command, **_kwargs):
+            calls.append(True)
+            return ProcessResult(tuple(command), 0, json.dumps({
+                'status': 'completed', 'result': child, 'diagnostic': None}), '', .01)
+    
+        path = _write_plan(tmp_path / 'plan.json', _fixture_plan())
+        report = run_contract_audit(path, tmp_path / 'run', runner=memory_worker)
+&gt;       assert report['status'] == 'stopped'
+E       AssertionError: assert 'partial' == 'stopped'
+E         
+E         - stopped
+E         + partial
+
+tests/test_proof_contract_audit_child_resources.py:34: AssertionError</failure></testcase><testcase classname="tests.test_proof_contract_audit_child_resources" name="test_existing_child_memory_shapes_stop_progress_and_preserve_evidence[replay]" time="0.012"><failure message="AssertionError: assert 'partial' == 'stopped'&#10;  &#10;  - stopped&#10;  + partial">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-940/test_existing_child_memory_sha1')
+shape = 'replay'
+
+    @pytest.mark.parametrize('shape', ['formal', 'replay'])
+    def test_existing_child_memory_shapes_stop_progress_and_preserve_evidence(tmp_path, shape):
+        from ladon.proof_contract_audit import run_contract_audit
+    
+        cap, peak = 1024**2, 2 * 1024**2
+        message = memory_limit_message(cap, peak)
+        receipt = {'memoryLimited': True, 'requestedMaxRssBytes': cap, 'peakRssBytes': peak}
+        child = {'schema': 'ladon-contract-production-v1', 'channel': 'formal',
+                 'status': 'unavailable', 'contract': None,
+                 'processReceipts': [receipt],
+                 'residuals': [{'code': 'memory-limit', 'message': message, 'feature': 'statement'}]}
+        if shape == 'replay':
+            child = {'status': 'incomplete', 'code': 'memory-limit', 'message': message,
+                     'processReceipt': receipt, 'result': None}
+        calls = []
+    
+        def memory_worker(command, **_kwargs):
+            calls.append(True)
+            return ProcessResult(tuple(command), 0, json.dumps({
+                'status': 'completed', 'result': child, 'diagnostic': None}), '', .01)
+    
+        path = _write_plan(tmp_path / 'plan.json', _fixture_plan())
+        report = run_contract_audit(path, tmp_path / 'run', runner=memory_worker)
+&gt;       assert report['status'] == 'stopped'
+E       AssertionError: assert 'partial' == 'stopped'
+E         
+E         - stopped
+E         + partial
+
+tests/test_proof_contract_audit_child_resources.py:34: AssertionError</failure></testcase><testcase classname="tests.test_proof_contract_audit_formal_stop" name="test_statement_observation_memory_receipt_is_terminal_for_audit" time="0.011"><failure message="AssertionError: assert 'partial' == 'stopped'&#10;  &#10;  - stopped&#10;  + partial">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-940/test_statement_observation_mem0')
+
+    def test_statement_observation_memory_receipt_is_terminal_for_audit(tmp_path):
+        from ladon.proof_contract_audit import run_contract_audit
+    
+        cap, peak = 1024**2, 2 * 1024**2
+        stopped = ProcessResult(('lean',), -9, '', '', .01,
+                                memory_limited=True, peak_rss_bytes=peak)
+        captured = {'sourceHash': '0' * 64, 'helperHash': '1' * 64,
+                    'toolchain': SimpleNamespace(context_identity='fixture-environment')}
+        observation = _process_observation(captured, stopped, 'Source.lean', 'Source',
+                                          'test', 30, cap)
+    
+        def worker(command, **_kwargs):
+            return ProcessResult(tuple(command), 0, json.dumps({
+                'status': 'completed', 'result': observation, 'diagnostic': None}), '', .01)
+    
+        path = _write_plan(tmp_path / 'plan.json', _fixture_plan())
+        report = run_contract_audit(path, tmp_path / 'run', runner=worker)
+&gt;       assert report['status'] == 'stopped'
+E       AssertionError: assert 'partial' == 'stopped'
+E         
+E         - stopped
+E         + partial
+
+tests/test_proof_contract_audit_formal_stop.py:29: AssertionError</failure></testcase></testsuite></testsuites>

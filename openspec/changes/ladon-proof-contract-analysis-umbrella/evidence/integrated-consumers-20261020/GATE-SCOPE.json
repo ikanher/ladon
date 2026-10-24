@@ -1,0 +1,41 @@
+{
+  "task": "ladon-proof-contract-analysis-umbrella 3.1",
+  "purpose": "Qualify existing integrated consumers against frozen runtime and input identities.",
+  "coverage": {
+    "nativePayloadAndReferenceValidation": [
+      "tests/test_proofir*.py",
+      "tests/test_proof_contract_*native*.py",
+      "rust/proofir-core/tests/contract_boundary.rs"
+    ],
+    "producerIdentities": [
+      "tests/test_proof_contract_production.py",
+      "tests/test_proof_contract_formal_snapshot.py",
+      "tests/test_proof_contract_formal_cli.py",
+      "tests/test_proof_contract_source.py"
+    ],
+    "propagation": [
+      "tests/test_proof_contract_propagation*.py"
+    ],
+    "correspondence": [
+      "tests/test_correspondence*.py"
+    ],
+    "investigationFindings": [
+      "tests/test_investigation*.py"
+    ],
+    "installedCli": [
+      "INSTALLED-COMMAND.json",
+      "INSTALLED-RESULT.json",
+      "WHEEL.json",
+      "console/COMMANDS.json",
+      "console/RESULT.json"
+    ]
+  },
+  "adjacentOpenGates": {
+    "2.1": "Previously selected independent matrix pair unsupported; bounded read-only scout found no fitting independent replacement in inspected local evidence. This is not proof that no compatible source exists.",
+    "2.3": "Refinement implementation not started.",
+    "3.2": "Full repository verification and quality remain separate. General distribution gate references absent tests/test_installed_cli_contract.py; worktree export rejects untracked maintained inputs; prior strict complexity issue remains unaddressed.",
+    "evaluation": "Known development fixtures only; no new held-out cases, source-fidelity judgment, detection-benefit measurement or paper audit."
+  },
+  "changes": "Planning artifacts and qualification evidence only; no production or existing test edits.",
+  "publication": "Nothing committed, pushed or published."
+}

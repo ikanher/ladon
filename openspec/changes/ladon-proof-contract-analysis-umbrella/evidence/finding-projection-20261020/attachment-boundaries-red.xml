@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="0.368" timestamp="2026-10-20T16:03:15.691700+03:00" hostname="mindfields"><testcase classname="tests.test_investigation_contract_attachment_boundaries" name="test_attachment_accepts_the_ordinary_native_batch_contract[separate-target]" time="0.033"><failure message="ValueError: contract analysis artifact is absent or altered in its closed context">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-966/test_attachment_accepts_the_or0')
+shape = 'separate-target'
+
+    @pytest.mark.parametrize('shape', ['separate-target', 'native-context-population'])
+    def test_attachment_accepts_the_ordinary_native_batch_contract(tmp_path, shape):
+        attachment = _native_attachment()
+        artifacts = attachment['context']['artifacts']
+        if shape == 'separate-target':
+            attachment['context']['artifacts'] = [
+                value for value in artifacts
+                if value['artifactId'] != attachment['artifact']['artifactId']]
+        else:
+            artifacts.extend(copy.deepcopy(artifacts[0]) for _ in range(257))
+        # Establish that the fixture obeys the existing public native batch limits.
+        validate_envelope_batch([*attachment['context']['artifacts'], attachment['artifact']])
+&gt;       plan = _contract_observation(tmp_path, attachment)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_attachment_boundaries.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/investigation_observations.py:124: in record_observation
+    validated_observations(owned, root)
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/investigation_observations.py:91: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/investigation_observations.py:97: in _validate_entry
+    _record(entry["record"], reader, scope)
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/investigation_observations.py:34: in _record
+    _validate_record_shape(record)
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/investigation_observations.py:27: in _validate_record_shape
+    validate_contract_analysis(record["contractAnalysis"])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'artifact': {'artifactId': 'sha256:be08a5499742cc115dd3880d45a73416be6a122a27612803ecdd5472dd7fc388', 'artifactKind':...xpected': 5, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}
+
+    def validate_contract_analysis(value):
+        closed(value, ATTACHMENT_KEYS, "contract analysis attachment")
+        context = value["context"]
+        closed(context, {"artifacts"}, "contract analysis context")
+        artifacts = context["artifacts"]
+        if type(artifacts) is not list or not artifacts or len(artifacts) &gt; 256:
+            raise ValueError("invalid bounded contract analysis context")
+        target = value["artifact"]
+        if not isinstance(target, dict) or target.get("artifactKind") != "proofir.contract-analysis":
+            raise ValueError("contract analysis artifact has the wrong kind")
+        checked = validate_envelope_batch(copy.deepcopy(artifacts))
+        target_id = target.get("artifactId")
+        matches = [item.to_dict() for item in checked if item.to_dict().get("artifactId") == target_id]
+        if len(matches) != 1 or matches[0] != target:
+&gt;           raise ValueError("contract analysis artifact is absent or altered in its closed context")
+E           ValueError: contract analysis artifact is absent or altered in its closed context
+
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/_investigation_contract_observations.py:25: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_attachment_boundaries" name="test_attachment_accepts_the_ordinary_native_batch_contract[native-context-population]" time="0.094"><failure message="ValueError: invalid bounded contract analysis context">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-966/test_attachment_accepts_the_or1')
+shape = 'native-context-population'
+
+    @pytest.mark.parametrize('shape', ['separate-target', 'native-context-population'])
+    def test_attachment_accepts_the_ordinary_native_batch_contract(tmp_path, shape):
+        attachment = _native_attachment()
+        artifacts = attachment['context']['artifacts']
+        if shape == 'separate-target':
+            attachment['context']['artifacts'] = [
+                value for value in artifacts
+                if value['artifactId'] != attachment['artifact']['artifactId']]
+        else:
+            artifacts.extend(copy.deepcopy(artifacts[0]) for _ in range(257))
+        # Establish that the fixture obeys the existing public native batch limits.
+        validate_envelope_batch([*attachment['context']['artifacts'], attachment['artifact']])
+&gt;       plan = _contract_observation(tmp_path, attachment)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_attachment_boundaries.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/investigation_observations.py:124: in record_observation
+    validated_observations(owned, root)
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/investigation_observations.py:91: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/investigation_observations.py:97: in _validate_entry
+    _record(entry["record"], reader, scope)
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/investigation_observations.py:34: in _record
+    _validate_record_shape(record)
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/investigation_observations.py:27: in _validate_record_shape
+    validate_contract_analysis(record["contractAnalysis"])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'artifact': {'artifactId': 'sha256:be08a5499742cc115dd3880d45a73416be6a122a27612803ecdd5472dd7fc388', 'artifactKind':...ed': 8, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}, ...]}}
+
+    def validate_contract_analysis(value):
+        closed(value, ATTACHMENT_KEYS, "contract analysis attachment")
+        context = value["context"]
+        closed(context, {"artifacts"}, "contract analysis context")
+        artifacts = context["artifacts"]
+        if type(artifacts) is not list or not artifacts or len(artifacts) &gt; 256:
+&gt;           raise ValueError("invalid bounded contract analysis context")
+E           ValueError: invalid bounded contract analysis context
+
+.codex/state/proof-contract-analysis/finding-projection-green/proposal/src/ladon/_investigation_contract_observations.py:17: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_attachment_boundaries" name="test_contract_status_does_not_deny_its_native_semantic_revalidation" time="0.070"><failure message="assert not True&#10; +  where True = any(&lt;generator object test_contract_status_does_not_deny_its_native_semantic_revalidation.&lt;locals&gt;.&lt;genexpr&gt; at 0x72ec8deabae0&gt;)">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-966/test_contract_status_does_not_0')
+
+    def test_contract_status_does_not_deny_its_native_semantic_revalidation(tmp_path):
+        plan = _contract_observation(tmp_path)
+        reviewed, _, _ = review_observation(plan, tmp_path)
+        # Exercise the legacy-plan status branch, whose old nonclaim denies all comparison.
+        reviewed.update(version=1)
+        for key in ('correspondenceBundles', 'responses', 'reconciliations'):
+            reviewed.pop(key, None)
+        status = assess(reviewed, tmp_path, now=NOW)
+        assert 'bounded native' in status['authority'].lower()
+&gt;       assert not any('no lean, network, model service or automatic semantic comparison' in value.lower()
+                       for value in status['nonclaims'])
+E       assert not True
+E        +  where True = any(&lt;generator object test_contract_status_does_not_deny_its_native_semantic_revalidation.&lt;locals&gt;.&lt;genexpr&gt; at 0x72ec8deabae0&gt;)
+
+tests/test_investigation_contract_attachment_boundaries.py:40: AssertionError</failure></testcase><testcase classname="tests.test_investigation_contract_attachment_boundaries" name="test_contract_finding_and_receipt_keep_selected_formal_source_locations" time="0.079"><failure message="KeyError: 'formalSources'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-966/test_contract_finding_and_rece0')
+
+    def test_contract_finding_and_receipt_keep_selected_formal_source_locations(tmp_path):
+        plan = _contract_observation(tmp_path)
+        record = copy.deepcopy(plan.pop('observations')[0]['record'])
+        source = b'theorem example : True := True.intro\n'
+        (tmp_path / 'Formal.lean').write_bytes(source)
+        formal = {'path': 'Formal.lean', 'sha256': hashlib.sha256(source).hexdigest(),
+                  'startLine': 1, 'endLine': 1, 'statement': source.decode().strip()}
+        record['formalSources'] = [formal]
+        plan = record_observation(plan, record, tmp_path)
+        reviewed, _, _ = review_observation(plan, tmp_path)
+        finding = assess(reviewed, tmp_path, now=NOW)['findings'][0]
+&gt;       assert finding['formalSources'] == [formal]
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'formalSources'
+
+tests/test_investigation_contract_attachment_boundaries.py:56: KeyError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,25 @@
+{
+  "attempt": "full-strict-03",
+  "status": "completed-with-test-failure",
+  "command": [
+    "timeout",
+    "--signal=INT",
+    "--kill-after=30s",
+    "7200",
+    "uv",
+    "run",
+    "--locked",
+    "--offline",
+    "python",
+    "scripts/python_quality.py",
+    "--strict"
+  ],
+  "startedUtc": "2026-10-22T16:39:28.268961+00:00",
+  "timeoutSeconds": 7200,
+  "elapsedSeconds": null,
+  "exitCode": 1,
+  "pytestSummary": "1 failed, 4816 passed, 1 skipped in 3486.02s (0:58:06)",
+  "failure": "tests/test_supported_feature_matrix.py::test_matrix_profiles_and_semantic_requirements_have_collectable_nodes: generated matrix referenced deleted tests/test_installed_cli_contract.py; maintained test is tests/test_installed_cli_contract_v2.py",
+  "sourceManifestSha256": "8a450421f959b2e53d3bcc7f8bed238936a78ba23806b7412e26d8856f6c9675",
+  "testPopulation": "pytest -q tests; no deselections or exclusions"
+}

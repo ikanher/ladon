@@ -1,0 +1,127 @@
+{
+  "schema": "ladon-contract-domain-validation-v1",
+  "scope": "domain; parent and later children remain open",
+  "broadPython": {
+    "command": ".venv/bin/python -m pytest -q tests/test_proofir*.py tests/test_correspondence_interpretation_contract.py tests/test_proof_contract*.py",
+    "result": {
+      "tests": "412",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0",
+      "time": "5.603"
+    },
+    "timing": "after scope/coherence fixes; before additive storage-only test"
+  },
+  "storageTest": {
+    "command": ".venv/bin/python -m pytest -q tests/test_proof_contract_storage.py",
+    "passed": 1
+  },
+  "rust": {
+    "command": "cargo test -p proofir-core --test contract_boundary --test correspondence_boundary",
+    "passed": 2,
+    "newPayloadParity": false
+  },
+  "quality": {
+    "scopedStrictIssues": 0,
+    "ruff": "passed",
+    "diffCheck": "passed"
+  },
+  "testsFirst": {
+    "initialDomain": "missing module; collection error",
+    "initialNative": "13failed missing implementation",
+    "sourceBinding": "2failed then passed",
+    "constantAnchor": "3failed1passed then passed",
+    "constantWitnessCoherence": "1failed4passed then passed",
+    "fixtureCorrection": "root native helper detached aliases; frozen test assertions unchanged, original helper bytes/revision retained"
+  },
+  "independentReview": "INDEPENDENT-REVIEW.json",
+  "lean": "LEAN-FEASIBILITY.json",
+  "limitations": [
+    "Authored profile comparisons do not certify source fidelity or arbitrary analytic norms.",
+    "Only comparison stage is implemented in this child.",
+    "No discovery improvement measurement or full-paper audit has run.",
+    "Full parent repository release qualification remains outstanding."
+  ],
+  "files": [
+    {
+      "path": "src/ladon/proof_contract_rules.py",
+      "sha256": "66bac50200852f4cabdafeb3bf239d0ace2649370e2d9988fb9d8e1b453f9e90"
+    },
+    {
+      "path": "src/ladon/proof_contract_sqlite.py",
+      "sha256": "25be69509b4fe35760c29988c7cdef80883f8fff586a4cbf31197e5270a97dfb"
+    },
+    {
+      "path": "src/ladon/proof_contract_payloads.py",
+      "sha256": "b12063ccd4f2d722d69e6eea155435ea132b9a6b0076d8b23a1fc11a8be5f3e0"
+    },
+    {
+      "path": "src/ladon/proof_contracts.py",
+      "sha256": "ab206086a2b6e19d8cf7331005098e285fa1abb591697bf3b78f5adf1a6ffaaf"
+    },
+    {
+      "path": "src/ladon/proof_contract_artifacts.py",
+      "sha256": "dfd7d355764f1198bc052f8b97db34fee6ce995d12536489e2694998a844b8ef"
+    },
+    {
+      "path": "src/ladon/proofir_v3.py",
+      "sha256": "3c60a416b9fa7bcbae95c5d12dc2097493b8577f0bf4f3ded98133fca210a4c8"
+    },
+    {
+      "path": "src/ladon/proofir_v3_payloads.py",
+      "sha256": "26c5d471d7a138d303a07a87c9a5bf8ca03e764fd9dce0e7cc3c35c5f12f0056"
+    },
+    {
+      "path": "src/ladon/proofir_sqlite_v3.py",
+      "sha256": "c6af639e89335d0882803c8099488aca182d1e654f025b51fb5f2e849a969ba2"
+    },
+    {
+      "path": "tests/test_proof_contract_authority.py",
+      "sha256": "da5b38c54abcc42d53b3424d4baae2c29aaaf75d7900719764f754ba97318c43"
+    },
+    {
+      "path": "tests/test_proof_contract_native.py",
+      "sha256": "2572614a6d57f95f58181a4fa8d1f87f73b6ef0fc7cddfe986649d4cda892e84"
+    },
+    {
+      "path": "tests/test_proof_contract_properties.py",
+      "sha256": "fda1f809c0678b2c823a7bb66585064c0e9cf83569e1e6125d9ba4f73398a2b8"
+    },
+    {
+      "path": "tests/test_proof_contract_constant_scope.py",
+      "sha256": "730aa994a142b0a9cdc662b51b4fc876feb35890cdd6690209349bea6e07d3a0"
+    },
+    {
+      "path": "tests/test_proof_contracts.py",
+      "sha256": "d5bbe6e9076eaae5b24ecf786b1dac8d79c84720231bce25243e70ea3a839f9b"
+    },
+    {
+      "path": "tests/test_proof_contract_storage.py",
+      "sha256": "9db2fc084b0c6e53bb4c18ddc49c19d32156450eecd0ac6f17b9f7aa8692c873"
+    },
+    {
+      "path": "tests/support/proof_contract_native.py",
+      "sha256": "94d7ae6bc270b3d4661f956176851250e70a3ee01fc9f0e665f60c1863832249"
+    },
+    {
+      "path": "tests/fixtures/proof_contracts/ContractMath.lean",
+      "sha256": "ad8600670268461e7635479057003d1bcfcf9b04953c4435d67c7c09c75a100c"
+    },
+    {
+      "path": "rust/proofir-core/src/lib.rs",
+      "sha256": "6efc68b3e664baa539f70df81d550bdee36c788ba1af6e74ccec5ee0e11ee1ff"
+    },
+    {
+      "path": "rust/proofir-core/tests/contract_boundary.rs",
+      "sha256": "3a32e5ab4a9fe83691bb2ed4fc952676cbafca9dc22da90858d3fa79a66b37af"
+    },
+    {
+      "path": "docs/PROOF_CONTRACTS.md",
+      "sha256": "36f0cd89d6d87b63b2922b39e243c50844562bce31f47fa863a157e4997930cc"
+    },
+    {
+      "path": "docs/proof-contract-profile.json",
+      "sha256": "361424107e7f866387411adbd4b27d8552712fcf27b81904ca7bd60646644f46"
+    }
+  ]
+}

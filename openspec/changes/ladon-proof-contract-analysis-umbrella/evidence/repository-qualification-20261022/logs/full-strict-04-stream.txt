@@ -1,0 +1,43 @@
+
+== strict radon/vulture checks ==
+Traceback (most recent call last):
+  File "/home/codex/projects/ladon/scripts/python_quality.py", line 177, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/codex/projects/ladon/scripts/python_quality.py", line 120, in main
+    return run_strict(root, targets)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/scripts/python_quality.py", line 92, in run_strict
+    issues = strict_quality_issues(target_paths)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/src/ladon/quality.py", line 190, in strict_quality_issues
+    *collect_radon_mi_issues(targets),
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/src/ladon/quality.py", line 109, in collect_radon_mi_issues
+    return [
+           ^
+  File "/home/codex/projects/ladon/src/ladon/quality.py", line 112, in <listcomp>
+    for issue in maintainability_issues_for_file(path, max_rank=max_rank)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/src/ladon/quality.py", line 122, in maintainability_issues_for_file
+    score = mi_visit(source, multi=True)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/.venv/lib/python3.11/site-packages/radon/metrics.py", line 147, in mi_visit
+    return mi_compute(*mi_parameters(code, multi))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/.venv/lib/python3.11/site-packages/radon/metrics.py", line 134, in mi_parameters
+    raw = analyze(code)
+          ^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/.venv/lib/python3.11/site-packages/radon/raw.py", line 210, in analyze
+    tokens, parsed_lines = _get_all_tokens(line, lines)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/.venv/lib/python3.11/site-packages/radon/raw.py", line 107, in _get_all_tokens
+    tokens = _generate(buffer)
+             ^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/.venv/lib/python3.11/site-packages/radon/raw.py", line 59, in _generate
+    return list(tokenize.generate_tokens(io.StringIO(code).readline))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/miniconda3/lib/python3.11/tokenize.py", line 454, in _tokenize
+    line = readline()
+           ^^^^^^^^^^
+KeyboardInterrupt

@@ -1,0 +1,21 @@
++ /home/codex/miniconda3/bin/uv build --force-pep517 --build-constraints /tmp/ladon-candidate-3alk_zq7/source/build-constraints.txt --out-dir /tmp/ladon-benchmarks-y9c4qerr/dist --clear .
+Building source distribution...
+Building wheel from source distribution...
+Successfully built /tmp/ladon-benchmarks-y9c4qerr/dist/ladon-0.3.0.tar.gz
+Successfully built /tmp/ladon-benchmarks-y9c4qerr/dist/ladon-0.3.0-py3-none-any.whl
++ /home/codex/miniconda3/bin/uv venv --python /home/codex/projects/ladon/.venv/bin/python3 /tmp/ladon-benchmarks-y9c4qerr/installed
+Using CPython 3.11.15 interpreter at: /home/codex/projects/ladon/.venv/bin/python3
+Creating virtual environment at: installed
+Activate with: source installed/bin/activate
++ /home/codex/miniconda3/bin/uv pip install --python /tmp/ladon-benchmarks-y9c4qerr/installed/bin/python /tmp/ladon-benchmarks-y9c4qerr/dist/ladon-0.3.0-py3-none-any.whl
+Using Python 3.11.15 environment at: installed
+Resolved 1 package in 1ms
+Prepared 1 package in 4ms
+Installed 1 package in 2ms
+ + ladon==0.3.0 (from file:///tmp/ladon-benchmarks-y9c4qerr/dist/ladon-0.3.0-py3-none-any.whl)
++ /home/codex/miniconda3/bin/uv pip check --python /tmp/ladon-benchmarks-y9c4qerr/installed/bin/python
+Using Python 3.11.15 environment at: installed
+Checked 1 package in 0.19ms
+All installed packages are compatible
++ /tmp/ladon-benchmarks-y9c4qerr/installed/bin/python -c from importlib import resources; print(resources.files('ladon').joinpath('lean', 'ladon_parser_helper.lean'))
+ladon benchmarks: FAIL: one or more required benchmark contracts failed

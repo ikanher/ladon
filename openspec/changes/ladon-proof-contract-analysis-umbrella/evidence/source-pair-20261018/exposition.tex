@@ -1,0 +1,2321 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=0.95in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{array,booktabs,longtable}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{placeins}
+% Support compilation from the repository root or this source directory.
+\graphicspath{{data/runtime/poisson-fixed-participation/independent-batch-sweep-eps-1-2-4-8/figures/}{../../data/runtime/poisson-fixed-participation/independent-batch-sweep-eps-1-2-4-8/figures/}}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb R}
+\newcommand{\N}{\mathbb N}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Normal}{\mathcal N}
+\newcommand{\TV}{\operatorname{TV}}
+\newcommand{\AO}{\mathrm{AO}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\title{Batch Size and Frozen-Gradient Variance\\
+at Fixed Expected Participation}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We compare batch sizes for equal-weight averages of frozen-gradient estimates
+under a fixed expected participation budget and a common privacy target.
+For a positive integer $E$, a run with $T\geq E$ independent releases uses
+Poisson sampling at rate $q=E/T$. Gaussian noise is calibrated using the
+exact two-sided privacy profile of the canonical sampled-Gaussian transcript
+under add/remove adjacency.
+
+Let $v_{\mathrm{FB}}$ denote the calibrated privacy variance of the full-batch
+average, and set $a=\Delta/\sqrt{v_{\mathrm{FB}}}$, where $\Delta>0$ is the
+sensitivity. For $\varepsilon>0$ and $0<\delta<1$, we prove that
+\[
+  a^2\leq\frac{6E}{3E+2}\,\varepsilon
+\]
+guarantees strictly smaller variance at full batch than at every integer
+horizon $T>E$, for every nonnegative frozen-gradient energy. We also give a
+sharper horizon-dependent condition. Both finite guarantees hold when
+privacy is calibrated for the canonical average alone. A certified counterexample at
+$(\varepsilon,\delta)=(1/4,3/4)$ shows that full-batch optimality need not hold
+without a privacy restriction.
+
+For transcript calibration, in the sparse limit $T\to\infty$ with $E$ fixed,
+we determine the exact
+critical-window privacy profile. For $0<\delta<1-e^{-E}$, we identify the
+resulting limiting offset of
+$\Delta/\sigma_{E,T}-\sqrt{2\log T}$, where $\sigma_{E,T}$ is the calibrated
+raw noise standard deviation. Consequently, full batch eventually has
+strictly smaller transcript-calibrated variance at every nonnegative
+frozen-gradient energy. Calibration for the canonical average alone permits
+Gaussian variance bounded uniformly in $T$.
+These results concern frozen-gradient averages, not optimizer trajectories
+or final training losses.
+\end{abstract}
+
+\section{Introduction}
+Increasing the batch size changes both sampling variability and the noise
+needed for privacy. We compare these effects while fixing the expected
+number of participations of each record. With a positive integer budget $E$,
+a horizon $T\geq E$ uses independent Poisson sampling at rate $q=E/T$.
+The question is when full batch, $T=E$, minimizes the variance of an unbiased
+average under a common privacy target. Optimality is within this family of
+independent Poisson releases with homogeneous independent Gaussian noise
+and equal-weight averaging of fixed clipped contributions.
+
+Our main finite result gives an explicit sufficient condition under which
+full batch strictly minimizes this variance over every finite smaller-batch
+horizon (Corollary~\ref{cor:fixed-epoch-all-horizon}). It follows from a
+sharper comparison at each fixed horizon
+(Theorem~\ref{thm:rate-adaptive-pointwise}). The proof uses a tail event
+of the average, reduces it to a binomial count, and establishes a sign inequality for a Gaussian CDF averaged over
+that count. It first proves the comparison for average-only calibration;
+data processing then gives the transcript comparison. A finite
+counterexample then shows why a privacy qualification is necessary
+(Theorem~\ref{thm:strict-interior-counterexample}).
+
+The sparse limit gives a complementary conclusion. When $T\to\infty$ with
+$Tq=E$ fixed, the calibrated raw noise tends to zero, but the privacy variance
+of the average diverges. Theorem~\ref{thm:smallbatch} identifies both the exact
+constant offset in the standardized shift and the leading variance growth.
+Thus sufficiently small batches are worse than full batch throughout the
+stated subcritical privacy regime, even when the finite sufficient condition
+does not apply.
+
+When only the canonical average is protected, its calibrated Gaussian
+variance stays bounded uniformly in the horizon. This contrasts with the
+sparse behavior under transcript calibration.
+
+R\"ais\"a, J\"alk\"o, and Honkela~\cite{raisa2024} study fixed positive
+sampling rates as the number of releases grows. Kalinin~\cite{kalinin2024}
+proves their sufficient-condition conjecture for the single-release
+comparison, including $\varepsilon,q\geq4\delta$. Neither comparison holds
+$Tq$ fixed while varying the transcript length. We explain the distinction
+in Section~\ref{sec:sparse}. The appendices contain the binomial proof,
+the sparse-limit argument, the rational certificate for the counterexample,
+and several supplementary comparisons.
+
+\section{Model and calibration}\label{sec:model}
+Fix the same parameter value across neighboring datasets and one coordinate
+of its clipped per-example gradients. For a dataset of size $N$, let the fixed contributions satisfy
+$|\widetilde g_i|\leq\Delta$, where $\Delta>0$, and write
+\[
+ G=\sum_{i=1}^N\widetilde g_i,\qquad
+ S=\sum_{i=1}^N\widetilde g_i^2.
+\]
+Our target is the clipped full sum $G$. Fix an expected participation budget
+$E\in\N_{>0}$ and a privacy target $\varepsilon\geq0$, $0<\delta<1$.
+For each integer horizon $T\geq E$, use
+\begin{equation}\label{eq:rate}
+ q=E/T,\qquad B=qN=EN/T,\qquad Tq=E,\qquad TB=EN.
+\end{equation}
+Here $B$ is the expected batch size on the dataset being evaluated. The
+privacy comparison holds $q$ and the other mechanism parameters fixed across
+neighboring datasets; $B=qN$ does not prescribe changing $q$ with dataset
+size. Increasing $T$ produces smaller
+expected batches while preserving $EN$ expected record participations across
+the run. Participation is independent across records and releases;
+$E$ is not a deterministic participation count. Full batch is $T=E$, and
+its nearest smaller-batch competitor is $T=E+1$.
+
+\paragraph{The estimator and its variance.}
+Let $B_{it}\sim\operatorname{Bernoulli}(q)$ be independent inclusion
+indicators, and let $\xi_t\sim\Normal(0,\sigma^2)$ be independent of all
+indicators and of each other. Before calibrating the raw standard deviation
+$\sigma\geq0$, define
+\[
+ \widehat G_{E,T}=\frac1E\sum_{t=1}^T
+       \left(\sum_i B_{it}\widetilde g_i+\xi_t\right).
+\]
+We hold the dataset and parameter value fixed; the randomness comes from the
+inclusion indicators and Gaussian noises. Since $Tq=E$, the estimator satisfies
+$\E\widehat G_{E,T}=G$. Independence makes all cross-covariances vanish, so
+\begin{equation}\label{eq:uncalibrated-variance}
+ \begin{aligned}
+ \operatorname{Var}(\widehat G_{E,T})
+ &=\frac1{E^2}\sum_{t=1}^T\sum_i
+   \widetilde g_i^2\operatorname{Var}(B_{it})
+   +\frac1{E^2}\sum_{t=1}^T\operatorname{Var}(\xi_t)\\
+ &=\frac{Tq(1-q)}{E^2}S+\frac{T\sigma^2}{E^2}\\
+ &=\frac{1-q}{E}S+\frac{T\sigma^2}{E^2}.
+ \end{aligned}
+\end{equation}
+The first term is the Poisson sampling variance, evaluated using
+$\operatorname{Var}(B_{it})=q(1-q)$; $S$ is the sum of squared fixed
+contributions.
+Unbiasedness refers to the clipped full sum, not the unclipped gradient.
+The remaining question is how the Gaussian variance required for privacy
+changes with the horizon.
+
+Writing $Y_t=\sum_i B_{it}\widetilde g_i+\xi_t$ and
+$K_{i,T}=\sum_t B_{it}$ makes the normalization explicit:
+\begin{equation}\label{eq:participation-decomposition}
+ \widehat G_{E,T}=\frac1T\sum_{t=1}^T\frac{Y_t}{q}
+ =\sum_i\frac{K_{i,T}}E\widetilde g_i+\frac1E\sum_{t=1}^T\xi_t.
+\end{equation}
+Since $\E K_{i,T}=E$, the data term remains unbiased as $T$ increases.
+The accumulated raw Gaussian noise is divided by the fixed budget $E$.
+When noise is instead specified by a dimensionless multiplier
+$\sigma_{\mathrm{DP}}$, the conversion is $\sigma=\Delta\sigma_{\mathrm{DP}}$.
+
+\paragraph{Protected output.}
+Transcript calibration protects all individual releases jointly.
+Average-only calibration protects their aggregate; it does not guarantee
+privacy if the individual releases are also disclosed. The finite dominance
+theorem holds for either output choice. The sparse divergence is specific
+to transcript calibration, so these are different release choices, not
+merely different accountants for the same public output.
+
+\paragraph{The canonical privacy experiment.}
+At raw noise standard deviation $\sigma\geq0$, define
+\[
+ Q_\sigma=\Normal(0,\sigma^2),\qquad
+ P_{q,\sigma}=(1-q)\Normal(0,\sigma^2)+q\Normal(\Delta,\sigma^2).
+\]
+The differing record contributes the fixed shift $\Delta$ when selected;
+$\Normal(\mu,0)$ denotes a point mass. We calibrate the noise using the exact
+privacy profile of this binary experiment. It is the canonical sampled-Gaussian
+comparison used in~\cite{raisa2024}.
+
+For probability laws $P,Q$ and $\alpha\geq0$, write
+\[
+ H_\alpha(P,Q)=\sup_A\{P(A)-\alpha Q(A)\},
+\]
+where the supremum is over measurable events. This definition includes
+singular zero-noise laws. When $P\ll Q$, it also equals
+$\E_Q[(dP/dQ-\alpha)_+]$. Following~\cite{raisa2024}, write the accounting
+oracle of the canonical $T$-release experiment as
+\begin{equation}\label{eq:canonical-accountant}
+ \begin{split}
+ \AO_S(\sigma,\Delta,q,T,\varepsilon)=\max\bigl\{&
+ H_{e^\varepsilon}(P_{q,\sigma}^{\otimes T},Q_\sigma^{\otimes T}),\\
+ &H_{e^\varepsilon}(Q_\sigma^{\otimes T},P_{q,\sigma}^{\otimes T})\bigr\}.
+ \end{split}
+\end{equation}
+The subscript $S$ in $\AO_S$ labels the sampled-Gaussian mechanism; it does
+not denote the gradient energy $S$.
+For fixed $(\varepsilon,\delta,\Delta)$, $T\in\N_{>0}$, and $q\in[0,1]$,
+define the calibrated raw Gaussian noise standard deviation by
+\begin{equation}\label{eq:calibration}
+ \begin{split}
+ \sigma(q,T)&=\inf\{\sigma\geq0:
+                  \AO_S(\sigma,\Delta,q,T,\varepsilon)\leq\delta\},\\
+ \sigma_{E,T}&=\sigma(E/T,T).
+ \end{split}
+\end{equation}
+We use $\phi$, $\Phi$, and $\overline\Phi=1-\Phi$ for the standard Gaussian
+density, CDF, and upper tail, and $\Phi^{-1}$ for its quantile function.
+
+\paragraph{The calibrated variance benchmark.}
+With the calibrated noise from \eqref{eq:calibration}, define
+\begin{equation}\label{eq:variance}
+ V_E(T,S)=\frac{T-E}{ET}S+v_{E,T},
+ \qquad v_{E,T}=\frac{\sigma_{E,T}^2}{Tq^2}
+                   =\frac{T}{E^2}\sigma_{E,T}^2.
+\end{equation}
+We call $v_{E,T}$ the \emph{privacy variance} of the average. The noise added
+to each raw release has standard deviation $\sigma_{E,T}$, whereas one
+unbiased full-sum estimate has noise standard deviation $\sigma_{E,T}/q$.
+In the effective-noise notation of~\cite{raisa2024}, for $q>0$,
+\begin{equation}\label{eq:effective-noise-normalization}
+ \sigma_{\mathrm{eff}}(q,T)=\frac{\sigma(q,T)}q,\qquad
+ v_{E,T}=\frac{\sigma_{\mathrm{eff}}(E/T,T)^2}{T}.
+\end{equation}
+The factor $1/T$ accounts for the additional averaging step. The comparison
+uses full-sum normalization rather than dataset-mean normalization. Write
+\begin{equation}\label{eq:privacycomponents}
+ v_{\mathrm{FB}}=v_{E,E}=\sigma_{E,E}^2/E,
+ \qquad v_T=v_{E,T},\quad v_E=v_{\mathrm{FB}}
+\end{equation}
+when $E$ is fixed.
+
+For the connection to clipped-query privacy, the recordwise query is held
+fixed across neighboring datasets, and the clipping bound holds for every
+record in the query domain. The canonical experiment then bounds the
+corresponding neighboring transcript profiles: a smaller differing
+contribution is obtained by a Gaussian channel, and the shared sampled
+contributions are common independent randomness. We give the argument in
+Appendix~\ref{app:canonical-domination}. A particular neighboring pair may
+therefore have a smaller privacy profile than the canonical pair. Noise is
+calibrated uniformly using $\Delta$, whereas $S$ describes the particular
+frozen dataset on which utility is evaluated. The primary calibration protects
+the complete transcript, while utility uses its average. We also consider
+direct calibration of the canonical average below.
+
+\paragraph{Calibration in variance units.}
+At a candidate privacy variance $v$, put
+\begin{equation}\label{eq:runvariance-accountant}
+ \mathcal A_{E,T}(v;\varepsilon)
+ =\AO_S\!\left(E\sqrt{v/T},\Delta,E/T,T,\varepsilon\right).
+\end{equation}
+The change of variables $v=T\sigma^2/E^2$ is an increasing continuous
+bijection of $[0,\infty)$, so
+\[
+v_{E,T}=\inf\{v\geq0:\mathcal A_{E,T}(v;\varepsilon)\leq\delta\}.
+\]
+
+\paragraph{Calibration for the canonical average alone.}
+For comparison, suppose that only the average of the canonical transcript
+is released. At Gaussian variance $v\geq0$, its two laws are
+\begin{equation}\label{eq:average-experiment}
+ \overline P_{E,T,v}
+ =\sum_{k=0}^T\Pr\{K=k\}\Normal(k\Delta/E,v),\qquad
+ \overline Q_v=\Normal(0,v),\qquad
+ K\sim\operatorname{Binomial}(T,E/T).
+\end{equation}
+Define its profile and calibrated Gaussian variance by
+\[
+ \overline{\mathcal A}_{E,T}(v;\varepsilon)
+ =\max\{H_{e^\varepsilon}(\overline P_{E,T,v},\overline Q_v),
+         H_{e^\varepsilon}(\overline Q_v,\overline P_{E,T,v})\},
+\]
+\[
+ \overline v_{E,T}=\inf\{v\geq0:
+       \overline{\mathcal A}_{E,T}(v;\varepsilon)\leq\delta\}.
+\]
+The map $(x_1,\ldots,x_T)\mapsto E^{-1}\sum_t x_t$ sends the canonical
+transcript at variance $v$ to this pair. Data processing therefore gives
+\begin{equation}\label{eq:average-transcript-order}
+ \overline{\mathcal A}_{E,T}(v;\varepsilon)
+ \leq\mathcal A_{E,T}(v;\varepsilon),\qquad
+ \overline v_{E,T}\leq v_{E,T}.
+\end{equation}
+Both calibrations use the same sampling-variance term $(1-q)S/E$ when
+evaluating the frozen-gradient benchmark. Define the corresponding total
+variance under average-only calibration by
+\begin{equation}\label{eq:average-total-variance}
+ \overline V_E(T,S)=\frac{1-q}{E}S+\overline v_{E,T}.
+\end{equation}
+Appendix~\ref{app:canonical-domination} gives a direct channel from the
+canonical average pair to each neighboring average of the fixed query,
+so this calibration also provides a uniform privacy bound for that class.
+
+\begin{lemma}[Calibration properties]\label{lem:calibration}
+For every finite admissible horizon and fixed $\varepsilon$, the transcript
+accountant value is continuous and nonincreasing in the raw noise, including
+at zero. Its feasible set is nonempty, and the calibration infimum is
+attained. At a positive minimizing noise, the accountant value equals
+$\delta$. The same properties hold for the average-only accountant value
+as a function of $v$.
+
+At full batch, $v_{\mathrm{FB}}>0$ is independent of $E$ and is uniquely
+specified by
+\begin{equation}\label{eq:gaussian-calibration}
+ G_\varepsilon(a)=\delta,\qquad a=\Delta/\sqrt{v_{\mathrm{FB}}},\qquad
+ G_\varepsilon(a)=\Phi\!\left(\frac a2-\frac\varepsilon a\right)
+ -e^\varepsilon\Phi\!\left(-\frac a2-\frac\varepsilon a\right).
+\end{equation}
+At full batch, $\overline v_{E,E}=v_{\mathrm{FB}}$.
+The forward and reverse full-batch profiles coincide, and
+$G_\varepsilon'(a)=\phi(a/2-\varepsilon/a)>0$ for $a>0$.
+\end{lemma}
+
+The proof is in Appendix~\ref{app:calibration}. The full-batch formula is the
+analytical Gaussian calibration of Balle and Wang~\cite{ballewang2018}.
+Thus $a$ depends only on $(\varepsilon,\delta)$ and
+$v_{\mathrm{FB}}=\Delta^2/a^2$. The sufficient conditions below depend
+on the participation schedule and privacy target, but not on the sensitivity
+scale $\Delta$.
+Monotonicity and attainment also give the implication used throughout:
+\begin{equation}\label{eq:calibration-transfer}
+ \begin{aligned}
+ \mathcal A_{E,T}(v_*;\varepsilon)>\delta
+ &\quad\Longrightarrow\quad v_{E,T}>v_*,\\
+ \overline{\mathcal A}_{E,T}(v_*;\varepsilon)>\delta
+ &\quad\Longrightarrow\quad \overline v_{E,T}>v_*.
+ \end{aligned}
+\end{equation}
+Indeed, $v_{E,T}\leq v_*$ would imply
+$\mathcal A_{E,T}(v_*;\varepsilon)
+\leq\mathcal A_{E,T}(v_{E,T};\varepsilon)\leq\delta$.
+The same argument applies to the average-only profile.
+
+Finally,
+\[
+ V_E(T,S)-V_E(E,S)=\frac{1-q}{E}S+v_{E,T}-v_{\mathrm{FB}}.
+\]
+For $T>E$ and $S\geq0$, full batch has no larger total variance exactly when
+\begin{equation}\label{eq:threshold}
+ S\geq S_{\min}(E,T):=
+ \frac{E}{1-q}\max\{v_{\mathrm{FB}}-v_{E,T},0\}.
+\end{equation}
+Thus strict privacy-variance dominance implies strict total-variance
+dominance at every nonnegative energy.
+
+\section{Full-batch optimality}\label{sec:near-full}
+The main finite conclusion is that full batch strictly minimizes the variance
+over every admissible horizon whenever
+\[
+ a^2\leq\frac{6E}{3E+2}\,\varepsilon,
+ \qquad a=\Delta/\sqrt{v_{\mathrm{FB}}}.
+\]
+We prove a sharper sufficient condition at each fixed horizon first, then
+derive this uniform conclusion in Corollary~\ref{cor:fixed-epoch-all-horizon}.
+Define
+\begin{equation}\label{eq:rate-adaptive-signal-factor}
+ \Lambda_{E,T}=\begin{cases}
+  6ET/(3ET+2T-4E),&T>2E,\\
+  2,&E<T\leq2E.
+ \end{cases}
+\end{equation}
+Equivalently,
+$\Lambda_{E,T}^{-1}=\tfrac12+\max\{c_{E,T},0\}/E$ with
+$c_{E,T}=(1-2E/T)/3$; the proof explains the role of $c_{E,T}$.
+
+\begin{theorem}[Horizon-dependent full-batch dominance]
+\label{thm:rate-adaptive-pointwise}
+Let $E,T\in\N_{>0}$ with $T>E$, $\Delta>0$, $\varepsilon>0$, and
+$0<\delta<1$. Put $a=\Delta/\sqrt{v_{\mathrm{FB}}}$, where
+$v_{\mathrm{FB}}$ is the calibrated full-batch privacy variance. If
+\begin{equation}\label{eq:rate-adaptive-signal-condition}
+ a^2\leq\Lambda_{E,T}\varepsilon,
+\end{equation}
+then
+\[
+ v_{\mathrm{FB}}<\overline v_{E,T}\leq v_{E,T},
+\]
+and, for every $S\geq0$,
+\[
+ V_E(E,S)=\overline V_E(E,S)<\overline V_E(T,S)\leq V_E(T,S).
+\]
+\end{theorem}
+
+\begin{proof}
+By~\eqref{eq:calibration-transfer} and~\eqref{eq:average-transcript-order},
+it suffices to show that
+$\overline{\mathcal A}_{E,T}(v_{\mathrm{FB}};\varepsilon)>\delta$: some event
+for the average must have value larger than $\delta$ at the full-batch
+variance. We test the event that is optimal at full batch.
+
+Evaluate the smaller-batch canonical experiment at $v_{\mathrm{FB}}$ and
+divide the sum of the raw releases by $E\sqrt{v_{\mathrm{FB}}}$. Without the
+differing record (the reference law) this standardized sum is $\Normal(0,1)$.
+With it (the source law), conditional on the record's participation count
+$K\sim\operatorname{Binomial}(T,E/T)$, it is $\Normal(aK/E,1)$. At full batch
+$K=E$, and the likelihood ratio $e^{ay-a^2/2}$ exceeds $e^\varepsilon$
+exactly on the ray $y>c_*:=a/2+\varepsilon/a$. This \emph{sum event}
+therefore attains the full-batch forward profile:
+\begin{equation}\label{eq:fullbatch-event-identity}
+ \delta=\overline\Phi(c_*-a)-e^\varepsilon\overline\Phi(c_*).
+\end{equation}
+
+Put
+\[
+ Z=K-E,\qquad h=a/E,\qquad
+ \theta=E\left(\frac{\varepsilon}{a^2}-\frac12\right).
+\]
+Then $c_*-a=h\theta$ and $aK/E-c_*=h(Z-\theta)$. Thus $\theta$ is the signed
+offset of the full-batch threshold from the full-batch signal mean, in units
+of one participation; Appendix~\ref{app:binomial-signs} calls it the
+\emph{center}. The sampled value of the sum event is
+$\E[\Phi(h(Z-\theta))]-e^\varepsilon\overline\Phi(c_*)$, and its difference
+from the full-batch value~\eqref{eq:fullbatch-event-identity} is
+\begin{equation}\label{eq:main-count-gap}
+ \Gamma_{E,T}(\theta,h)
+ :=\E[\Phi(h(Z-\theta))]-\Phi(-h\theta).
+\end{equation}
+Consequently,
+\begin{equation}\label{eq:event-profile-bound}
+\mathcal A_{E,T}(v_{\mathrm{FB}};\varepsilon)
+ \geq\overline{\mathcal A}_{E,T}(v_{\mathrm{FB}};\varepsilon)
+ \geq\delta+\Gamma_{E,T}(\theta,h).
+\end{equation}
+A positive gap therefore suffices; the tied symmetric case will be handled
+by changing the threshold.
+
+Since $\E Z=0$, Jensen's inequality would give $\Gamma_{E,T}\geq0$ at once
+if $z\mapsto\Phi(h(z-\theta))$ were convex on the support of $Z$. It is
+convex only for $z<\theta$ and concave beyond, so the sign depends on how the
+count distributes mass around the inflection. To see which feature of the
+count matters, hold $E,T,\theta$ fixed and let $h\downarrow0$. The linear term
+cancels because $\E Z=0$, and expansion over the finite support gives
+\begin{equation}\label{eq:gap-small-scale}
+ \Gamma_{E,T}(\theta,h)
+ =\frac{\phi(0)\operatorname{Var}(Z)}{2}
+  \left(\theta-\frac{\E Z^3}{3\E Z^2}\right)h^3+O(h^5).
+\end{equation}
+In this expansion, increasing the center contributes positively, while a
+positive third centered moment contributes negatively. This reflects the
+competition between the convex and concave parts of the CDF. For the binomial count,
+$\E Z^3/(3\E Z^2)=(1-2E/T)/3=c_{E,T}$, so at a fixed center positivity for
+small $h$ requires $\theta\geq c_{E,T}$. The expansion is only a necessary
+condition. It says nothing about larger $h$.
+
+Theorem~\ref{thm:rate-adaptive-center} supplies the argument at every scale.
+It shows that $\Gamma_{E,T}(\theta,h)>0$ for all $h>0$ whenever
+$\theta\geq\max\{c_{E,T},0\}$. The one exception is $T=2E$ with $\theta=0$,
+where the gap is zero. In particular, for $T>2E$ the small-scale condition is
+also sufficient. Since $\theta=E(\varepsilon/a^2-1/2)$, the reciprocal form
+of~\eqref{eq:rate-adaptive-signal-factor} gives
+\[
+ \theta\geq\max\{c_{E,T},0\}
+ \iff\frac{\varepsilon}{a^2}\geq\frac12+\frac{\max\{c_{E,T},0\}}{E}
+ =\Lambda_{E,T}^{-1}
+ \iff a^2\leq\Lambda_{E,T}\varepsilon.
+\]
+Thus the average-only profile exceeds $\delta$ except possibly when $T=2E$ and
+$a^2=2\varepsilon$.
+
+At that endpoint $c_*=a$, and the symmetry of $K-E$ gives zero gap for the
+sum event. This does not settle the profile, which is a supremum over events.
+The optimal event for the average is where its likelihood ratio $L$ exceeds
+$e^\varepsilon$, and the ray $(a,\infty)$ is not of that form near its
+endpoint: completing the square gives
+\[
+ L(a)=e^\varepsilon\E\exp\!\left[
+       -\frac{a^2}{2}(K/E-1)^2\right]<e^\varepsilon.
+\]
+Points just above $a$ therefore lower the event value, and removing them
+raises it strictly above $\delta$. Lemma~\ref{lem:strict-average-endpoint}
+makes this precise.
+
+In every case the average-only profile exceeds $\delta$ at $v_{\mathrm{FB}}$.
+Equations~\eqref{eq:calibration-transfer} and~\eqref{eq:average-transcript-order}
+give $v_{\mathrm{FB}}<\overline v_{E,T}\leq v_{E,T}$. Adding the nonnegative
+sampling term proves the total-variance comparison for transcript calibration
+and also for calibration of the canonical average alone.
+\end{proof}
+
+\begin{corollary}[Full-batch dominance at every finite horizon]
+\label{cor:fixed-epoch-all-horizon}
+Fix $E\in\N_{>0}$, $\Delta>0$, $\varepsilon>0$, and $0<\delta<1$, and put
+$a=\Delta/\sqrt{v_{\mathrm{FB}}}$. If
+\begin{equation}\label{eq:epoch-uniform-condition}
+ a^2\leq\Lambda_E\varepsilon,
+ \qquad \Lambda_E:=\frac{6E}{3E+2},
+\end{equation}
+then, for every finite integer $T>E$,
+\[
+ v_{\mathrm{FB}}<\overline v_{E,T}\leq v_{E,T},
+\]
+and, for every $S\geq0$,
+\[
+ V_E(E,S)=\overline V_E(E,S)<\overline V_E(T,S)\leq V_E(T,S).
+\]
+\end{corollary}
+
+\begin{proof}
+For $T>2E$,
+\[
+ \Lambda_{E,T}=\frac{6E}{3E+2-4E/T}>\Lambda_E.
+\]
+For $E<T\leq2E$, $\Lambda_{E,T}=2>\Lambda_E$. The conclusion follows from
+Theorem~\ref{thm:rate-adaptive-pointwise}.
+\end{proof}
+
+The uniform condition is equivalent to $\theta\geq1/3$ in the proof above.
+Strict monotonicity of $G_\varepsilon$ also expresses it directly in terms
+of the privacy target:
+\begin{equation}\label{eq:epoch-uniform-delta-threshold}
+ \delta\leq G_\varepsilon(\sqrt{\Lambda_E\varepsilon})
+ \quad\Longleftrightarrow\quad a^2\leq\Lambda_E\varepsilon.
+\end{equation}
+At $(\varepsilon,\delta)=(1,10^{-5})$, Gaussian calibration gives
+$a^2\approx0.0718514$. The condition holds for every positive integer $E$,
+since $\Lambda_E\geq6/5$. This measures slack in the sufficient condition,
+not a variance ratio.
+
+Appendix~\ref{app:elementary} gives shorter proofs based on full-support
+convexity and finite-support secants. Their conditions are more restrictive
+than~\eqref{eq:rate-adaptive-signal-condition}; they provide alternative
+arguments rather than additional parameter coverage.
+
+\paragraph{Numerical illustration.}
+Figure~\ref{fig:fixed-participation-variance} illustrates transcript calibration
+at $\varepsilon\in\{1,2,4,8\}$. The normalization is
+\begin{equation}\label{eq:plotted-variance-ratio}
+ R_E(q):=\frac{v_{E,T}}{v_{\mathrm{FB}}}
+ =\frac1q\left(\frac{\sigma_{E,T}}{\sigma_{E,E}}\right)^2,
+ \qquad q=E/T,\quad T\in\{E,E+1,\ldots\}.
+\end{equation}
+Thus reducing raw noise improves the average's privacy variance only if
+its ratio to full-batch raw noise falls below $\sqrt q$. A ratio $R_E(q)>1$
+implies larger total variance than full batch for every $S\geq0$.
+For these four targets at $\delta=10^{-5}$, analytical Gaussian calibration
+gives $a^2/\varepsilon<0.347<6/5\leq\Lambda_E$ for every positive integer
+$E$. Thus the uniform dominance condition applies throughout the figure:
+the sweep illustrates the magnitude of the increase, rather than establishing
+its sign. Appendix~\ref{app:numerical-methods} describes the two-sided
+profile computation, accuracy checks, and the separate numerical
+supplement~\cite{numerical-supplement} containing the code, data, and figure.
+The extreme endpoint is a mathematical stress test: $E=1000$ and $q=10^{-6}$
+require $T=10^9$ releases.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{paper_raw_noise_row.pdf}\\[0.5em]
+\includegraphics[width=\linewidth]{paper_variance_row.pdf}
+\caption{Transcript-calibrated raw-noise ratio (top) and privacy-variance
+ratio $R_E(q)$ (bottom) at fixed expected participation $Tq=E$, with
+$\delta=10^{-5}$ and $\Delta=1$. Both axes are logarithmic; $q$ increases
+from $10^{-6}$ to full batch at $q=1$. The upper dashed curve $\sqrt q$
+is the raw-noise reduction required for equal privacy variance; the lower
+dashed line is $R_E=1$. Each $\varepsilon$ panel uses its own calibrated
+full-batch denominator, so cross-panel heights compare relative ratios,
+not absolute noise or variance. Markers are numerical transcript calibrations
+at integer horizons, not certified bounds; lines are guides, not a
+monotonicity claim. These are not average-only calibrations.}
+\label{fig:fixed-participation-variance}
+\end{figure}
+\FloatBarrier
+
+\section{Why a privacy condition is necessary}
+At zero noise, the privacy profile is $1-(1-E/T)^T$, which tends to
+$1-e^{-E}$ as $T\to\infty$; see Appendix~\ref{app:zero-noise}.
+The counterexample below has $\delta=3/4<1-e^{-2}$, below this limiting
+nonparticipation boundary. Its zero-noise profiles are $1$ at $T=2$ and
+$26/27$ at $T=3$, so both calibrated noise levels are positive by continuity.
+It therefore shows that a smaller batch can have lower variance even when
+neither experiment admits zero noise.
+
+\begin{theorem}[A finite reversal below the nonparticipation boundary]
+\label{thm:strict-interior-counterexample}
+Let $\Delta=1$, $E=2$, $\varepsilon=1/4$, and $\delta=3/4$. At the adjacent
+smaller-batch horizon $T=3$, with $q=2/3$, the calibrated privacy variances
+satisfy
+\[
+ v_3\leq\frac5{32}<\frac4{25}<v_2.
+\]
+Consequently,
+\[
+ 0\leq S\leq\frac9{400}
+ \quad\Longrightarrow\quad V_2(3,S)<V_2(2,S).
+\]
+\end{theorem}
+
+\begin{proof}
+The rational bounds in Appendix~\ref{app:rational-calculation} show that
+both directed sampled profiles at $v=5/32$ are below $3/4$, whereas the
+full-batch profile at $v=4/25$ exceeds $19/25>3/4$. Feasibility and
+\eqref{eq:calibration-transfer} give
+$v_3\leq5/32<4/25<v_2$. The sampling term at $E=2,T=3$ is $S/6$, so
+\[
+ V_2(3,S)\leq\frac S6+\frac5{32}\leq\frac4{25}<v_2=V_2(2,S)
+ \qquad(0\leq S\leq9/400).
+\]
+The endpoint follows from $6(4/25-5/32)=9/400$.
+\end{proof}
+
+The same energy interval gives a reversal under average-only calibration:
+$\overline V_2(3,S)\leq V_2(3,S)<V_2(2,S)=\overline V_2(2,S)$ for
+$0\leq S\leq9/400$.
+
+The example refutes unconditional full-batch optimality: moving from full
+batch $T=E$ to its nearest smaller-batch competitor $T=E+1$ can reduce the
+variance, even below the nonparticipation boundary.
+The stated energy interval is not maximal: under transcript calibration,
+the exact reversal condition is
+$S<6(v_2-v_3)$, and $9/400<6(v_2-v_3)$. The loose target $\delta=3/4$ shows
+that some privacy restriction is necessary; it does not indicate how often
+reversals occur at stringent privacy targets.
+
+\section{The sparse regime}\label{sec:sparse}
+For fixed $E$, the path $q=E/T\to0$ behaves differently from the fixed-rate
+limit. Assume
+\begin{equation}\label{eq:interior}
+ \Delta>0,\qquad\varepsilon\geq0,\qquad0<\delta<1-e^{-E}.
+\end{equation}
+\paragraph{Participation does not vanish.}
+At zero noise, the differing record is invisible exactly when it is omitted
+from every release, so the privacy profile is
+$1-(1-E/T)^T\to1-e^{-E}$; see Appendix~\ref{app:zero-noise}. Decreasing $q$
+makes participation rare in each release, but the number of opportunities
+grows so that $Tq=E$. The probability of at least one participation therefore
+tends to $1-e^{-E}$, not to zero, and a target
+$\delta<1-e^{-E}$ cannot be met by ignoring participations. In
+\eqref{eq:participation-decomposition}, the data term stays unbiased and its
+sampling variance tends to $S/E$. The Gaussian term has variance
+$T\sigma_{E,T}^2/E^2$, so a bounded privacy variance would require
+per-release noise variance $O(1/T)$. We show that the calibrated noise
+variance is instead of order $1/\log T$.
+
+\paragraph{The maximum test.}
+A participation shifts one of $T$ coordinates by $\Delta$. The noise must hide
+this shift among $T$ independent reference coordinates. The simplest test,
+which looks at the largest coordinate, already rules out bounded privacy
+variance. Suppose that $v_{E,T}\leq M$ along an unbounded sequence of
+horizons, with $M>0$. Write $\sigma_T=\sigma_{E,T}$ along that sequence.
+These calibrated noises are feasible by Lemma~\ref{lem:calibration} and
+satisfy $\sigma_T^2\leq ME^2/T$. For the canonical raw transcript $X$,
+consider
+\[
+ M_T=\{\max_{1\leq t\leq T}X_t>\Delta/2\},\qquad
+ u_T=\overline\Phi(\Delta/(2\sigma_T)),
+\]
+with $u_T=0$ if $\sigma_T=0$. A Gaussian tail bound gives
+\[
+ Q_{\sigma_T}^{\otimes T}(M_T)\leq Tu_T
+ \leq T\exp\!\left(-\frac{\Delta^2T}{8ME^2}\right)\longrightarrow0.
+\]
+Under the source law, a coordinate exceeds $\Delta/2$ with probability
+$p_T=(1-q)u_T+q(1-u_T)$. Hence $Tp_T\to E$, and independence yields
+\[
+ P_{q,\sigma_T}^{\otimes T}(M_T)=1-(1-p_T)^T\longrightarrow1-e^{-E}.
+\]
+The forward event value tends to $1-e^{-E}>\delta$, contradicting
+feasibility. Every bounded subsequence is therefore excluded, and
+$v_{E,T}\to\infty$. This proves divergence, but not its rate.
+
+\paragraph{The critical window.}
+To locate the critical window, let $\sigma_T$ now be any noise sequence with
+$\Delta/\sigma_T=b_T+s+o(1)$, where $b_T=\sqrt{2\log T}$, and use a maximum
+test with threshold $\sigma_T b_T$ rather than the fixed threshold $\Delta/2$
+above. Under the reference law its probability is at most
+$T\overline\Phi(b_T)\to0$. A selected coordinate exceeds this threshold with
+probability tending to $\Phi(s)$.
+Independence and $Tq=E$ make the number of selected exceedances converge to a
+Poisson variable with mean $E\Phi(s)$; the probability of any exceedance from
+unselected coordinates tends to zero. The forward value of this event thus
+tends to $1-e^{-E\Phi(s)}$, giving an asymptotic lower bound for the two-sided
+profile. Other transcript events might give a larger value. The
+likelihood-ratio argument in Appendix~\ref{app:sparse-limit} proves the
+matching upper bound and hence the exact limit. For fixed $E$, $\Delta>0$,
+$\varepsilon\geq0$, and eventually positive $\sigma_T$,
+\begin{equation}\label{eq:main-profile-limit}
+ \frac{\Delta}{\sigma_T}-\sqrt{2\log T}\longrightarrow s\in\R
+ \quad\Longrightarrow\quad
+ \AO_S(\sigma_T,\Delta,E/T,T,\varepsilon)
+ \longrightarrow1-e^{-E\Phi(s)}.
+\end{equation}
+This is the fixed-$E$ case of Theorem~\ref{thm:accountant-limit}.
+
+The threshold $e^\varepsilon$ does not appear in the limit. Let $R_T$ be the
+likelihood ratio of the source to the reference transcript law. Under the
+reference law, $R_T\to c_s=e^{-E\Phi(s)}<1$ in probability, although
+$\E R_T=1$: rare large values, consistent with the visible-selection picture,
+carry the missing mean. The directed profiles
+$1-\E\min(R_T,e^\varepsilon)$ and $1-e^\varepsilon\E\min(R_T,e^{-\varepsilon})$
+involve only bounded functions of $R_T$. Since $c_s<1\leq e^\varepsilon$, they
+tend to $1-c_s$ and $(1-e^\varepsilon c_s)_+\leq1-c_s$ for every fixed
+$\varepsilon\geq0$.
+
+Inverting~\eqref{eq:main-profile-limit} at $\delta$ gives the calibrated
+offset. Let $s_{E,\delta}$ solve $1-e^{-E\Phi(s)}=\delta$. The limit increases
+with $s$. So for each $\eta>0$, the candidate noise
+$\Delta/(\sqrt{2\log T}+s_{E,\delta}+\eta)$ is eventually infeasible and
+$\Delta/(\sqrt{2\log T}+s_{E,\delta}-\eta)$ is eventually feasible.
+Monotonicity of the finite accountant traps the calibrated noise between the
+two candidates.
+
+\begin{theorem}[Sparse calibration and variance]\label{thm:smallbatch}
+Fix a positive integer $E$ and assume~\eqref{eq:interior}. As $T\to\infty$
+through integers,
+\[
+ \frac{\Delta}{\sigma_{E,T}}-\sqrt{2\log T}
+ \longrightarrow s_{E,\delta}:=
+ \Phi^{-1}\!\left(-\frac{\log(1-\delta)}{E}\right).
+\]
+In particular,
+\begin{equation}\label{eq:sigmaasymptotic}
+ \sigma_{E,T}\sim\frac{\Delta}{\sqrt{2\log T}}\longrightarrow0,
+\end{equation}
+whereas
+\begin{equation}\label{eq:privacydivergence}
+ v_{E,T}\sim\frac{\Delta^2T}{2E^2\log T}\longrightarrow+\infty.
+\end{equation}
+For every fixed $S\geq0$,
+\begin{equation}\label{eq:total-equivalent}
+ V_E(T,S)\sim v_{E,T}.
+\end{equation}
+\end{theorem}
+
+Appendix~\ref{app:sparse-limit} proves the more general case $Tq_T\to\rho>0$
+and then derives this theorem.
+
+\begin{corollary}[Uniform eventual full-batch dominance]\label{cor:eventual}
+Under~\eqref{eq:interior}, there is an integer $T_0\geq E$ such that
+$V_E(E,S)<V_E(T,S)$ for every $T\geq T_0$ and every $S\geq0$.
+\end{corollary}
+
+\begin{proof}
+Choose $T_0$ so that $v_{E,T}>v_{\mathrm{FB}}$ for every $T\geq T_0$.
+The sampling term is nonnegative, so the same cutoff works for all $S\geq0$.
+\end{proof}
+
+This compares each sufficiently sparse horizon with full batch; it does not
+assert monotonicity between smaller-batch horizons.
+
+\paragraph{Contrast with average-only calibration.}
+\begin{proposition}[Uniform bound for average-only calibration]
+\label{prop:average-uniform-bound}
+For every integer $T\geq E>0$, $\Delta>0$, $\varepsilon\geq0$, and
+$0<\delta<1$,
+\[
+ \overline v_{E,T}\leq\frac{\Delta^2}{2\pi\delta^2}.
+\]
+\end{proposition}
+
+\begin{proof}
+Use $\TV(P,Q)=\sup_A|P(A)-Q(A)|$. For $m\geq0$ and $v>0$, the Gaussian
+density crossing at $m/2$ gives
+\[
+ \TV(\Normal(m,v),\Normal(0,v))
+ =2\Phi\!\left(\frac{m}{2\sqrt v}\right)-1
+ \leq\frac{m}{\sqrt{2\pi v}}.
+\]
+The inequality follows by bounding the standard Gaussian density by
+$\phi(0)$. Convexity under mixtures and $\E K=E$ now give
+\[
+ \TV(\overline P_{E,T,v},\overline Q_v)
+ \leq\E\!\left[\frac{K\Delta/E}{\sqrt{2\pi v}}\right]
+ =\frac{\Delta}{\sqrt{2\pi v}}.
+\]
+For $\varepsilon\geq0$, both directed hockey-stick profiles are bounded
+by total variation. Thus $v=\Delta^2/(2\pi\delta^2)$ is feasible.
+\end{proof}
+
+This bound is a uniform-in-horizon feasibility estimate; it need not be a
+close approximation to the calibrated variance.
+
+For fixed $S\geq0$, the sampling term is at most $S/E$, so
+\[
+ \overline V_E(T,S)\leq\frac SE+\frac{\Delta^2}{2\pi\delta^2}
+ \qquad(T\geq E).
+\]
+Consequently, in the subcritical regime \eqref{eq:interior},
+\[
+ V_E(T,S)\longrightarrow\infty,\qquad
+ \sup_{T\geq E}\overline V_E(T,S)
+ \leq\frac SE+\frac{\Delta^2}{2\pi\delta^2}<\infty.
+\]
+The two release choices differ in what they reveal. At positive noise the
+product likelihood ratio of the canonical transcript depends only on the
+multiset of observations, so the order of the releases carries no
+information. Their individual magnitudes do, and the maximum test exploits
+exactly this; averaging discards it. The finite sufficient conditions hold
+for both outputs, but the divergence is specific to transcript calibration.
+
+\paragraph{Comparison with fixed-rate asymptotics.}
+With $\sigma(q,T)$ defined in~\eqref{eq:calibration}, for fixed $q>0$,
+Corollary~5.4 of R\"ais\"a, J\"alk\"o, and
+Honkela~\cite{raisa2024} gives
+\[
+ \frac{\sigma(q,T)}{q\sigma(1,T)}\to1,\qquad
+ \sigma(1,T)=\kappa\sqrt T,\qquad
+ \kappa=\sqrt{v_{\mathrm{FB}}}.
+\]
+Hence
+\begin{equation}\label{eq:fixedratecontrast}
+ \frac{\sigma(q,T)^2}{q^2T}\to v_{\mathrm{FB}}
+ \qquad(q>0\text{ fixed}),
+\end{equation}
+whereas
+\begin{equation}\label{eq:fixedepochcontrast}
+ \frac{\sigma_{E,T}^2}{q^2T}
+ \sim\frac{\Delta^2T}{2E^2\log T}\to\infty
+ \qquad(Tq=E).
+\end{equation}
+These paths impose different participation budgets. The fixed-rate limit
+cannot be applied to the vanishing-rate path without a further uniformity
+argument.
+
+Ertan and van Dijk~\cite{ertanvandijk2026} obtain the same critical noise scale
+through a one-epoch shuffling analysis and a Poisson transfer under zero-out
+adjacency. Appendix~\ref{app:separation} relates their separation metric to
+the canonical experiment and gives its exact critical-window limit.
+
+\section{Discussion}
+The finite theorem identifies a sufficient domain for full-batch optimality;
+the reversal shows why a qualification is needed. Neither result classifies
+all privacy parameters or proves monotonicity between every pair of
+smaller-batch horizons.
+
+For a dataset of size $N$, the expected batch size is $EN/T$. At fixed $N$
+it eventually falls below one along the sparse path. Maintaining a
+nonvanishing batch size requires a joint limit with $N\to\infty$. The sparse
+theorem also fixes $\delta$ and does not address joint scalings such as
+$\delta\asymp1/N$. The finite theorem applies pointwise to $\delta=1/N$
+whenever its displayed target condition holds.
+
+The variance benchmark assumes independent Poisson participation,
+homogeneous independent Gaussian noise, and an equal-weight average of
+frozen gradients. The average-only comparison concerns the explicit
+canonical pair in~\eqref{eq:average-experiment}. These results do not cover
+shuffled or balanced participation, heterogeneous or correlated noise,
+adaptive optimizer trajectories, or excess risk.
+
+\paragraph{Formalization and reproducibility.}
+The versioned Lean supplement~\cite{rational-supplement} supports the
+transcript conclusions of Corollary~\ref{cor:fixed-epoch-all-horizon} and
+Theorem~\ref{thm:strict-interior-counterexample}, and those of
+Theorem~\ref{thm:rate-adaptive-pointwise} except at $T=2E$,
+$a^2=2\varepsilon$. It also supports the general sparse profile and
+calibration limits, Theorems~\ref{thm:accountant-limit}
+and~\ref{thm:fixed-participation-calibration}, and the fixed-epoch variance
+limits and eventual dominance. A current coverage addendum~\cite{formal-coverage}
+records exact statements, hypotheses and the translations to this article.
+No formal-verification claim is made for the average-only extensions, the
+closed symmetric endpoint, continuity at zero and attainment in
+Lemma~\ref{lem:calibration}, or the fixed-query domination arguments in
+Appendix~\ref{app:canonical-domination}. These are proved conventionally here.
+
+\clearpage
+\appendix
+\section{Calibration and the canonical experiment}\label{app:calibration}
+\begin{proof}[Proof of Lemma~\ref{lem:calibration}]
+We establish the finite-noise properties for arbitrary $T\geq1$ and
+$0<q\leq1$, then specialize to full batch.
+
+\paragraph{Monotonicity and feasibility.}
+If $0\leq\sigma_1\leq\sigma_2$, adding independent centered Gaussian noise of
+variance $\sigma_2^2-\sigma_1^2$ to each coordinate maps both transcript laws
+at $\sigma_1$ to their counterparts at $\sigma_2$. Data processing for
+hockey-stick divergence therefore makes the two-sided profile nonincreasing
+in $\sigma$.
+
+The sampled pair is also a common randomized postprocessing of the ordinary
+Gaussian pair $\Normal(\Delta,\sigma^2)$ versus $\Normal(0,\sigma^2)$: retain
+the input with probability $q$, and otherwise replace it with a fresh
+$\Normal(0,\sigma^2)$ draw. Applying this channel independently gives
+\[
+ \AO_S(\sigma,\Delta,q,T,\varepsilon)
+ \leq
+ \AO_S(\sigma,\Delta,1,T,\varepsilon).
+\]
+The Gaussian product profile tends to zero as $\sigma\to\infty$, so the
+feasible set is nonempty for every $\delta>0$.
+
+\paragraph{Continuity and attainment.}
+For $\sigma>0$, standardize the reference law to $T$ independent standard
+normals and write
+\[
+ R_\sigma(z)=\prod_{i=1}^T
+ \left[1-q+q\exp\left(\frac{\Delta z_i}{\sigma}
+                         -\frac{\Delta^2}{2\sigma^2}\right)\right].
+\]
+With $\alpha=e^\varepsilon$, the directed profiles are
+\begin{align*}
+ H_\alpha(P_{q,\sigma}^{\otimes T}, Q_\sigma^{\otimes T})
+ &=1-\E\min(R_\sigma,\alpha),\\
+ H_\alpha(Q_\sigma^{\otimes T}, P_{q,\sigma}^{\otimes T})
+ &=1-\alpha\E\min(R_\sigma,\alpha^{-1}).
+\end{align*}
+For fixed $z$, $R_\sigma(z)$ is continuous at positive $\sigma$. The truncated
+integrands are bounded independently of $\sigma$, so bounded convergence
+proves continuity there.
+
+As $\sigma\downarrow0$, $R_\sigma(z)\to w:=(1-q)^T$ for every fixed $z$.
+The same argument gives limits $1-w$ and $(1-\alpha w)_+$. At zero noise,
+$Q_0^{\otimes T}$ is concentrated at the origin, and $P_{q,0}^{\otimes T}$
+assigns it mass $w$. Direct optimization over events gives precisely these
+two profiles. Their maximum is therefore continuous at zero as well.
+
+The feasible set is closed and nonempty. A sequence of feasible noises
+converging to its nonnegative infimum shows that the infimum is feasible.
+If a positive minimum had profile strictly below $\delta$, continuity would
+make a slightly smaller noise feasible. Hence the profile equals $\delta$
+at every positive minimizing noise.
+
+\paragraph{Full-batch calibration.}
+At privacy variance $v>0$, each of the $E$ full-batch releases has variance
+$Ev$. The product likelihood ratio is
+\[
+ \frac{dP^{\otimes E}}{dQ^{\otimes E}}(x)
+ =\exp\left(\frac{\Delta}{Ev}\sum_{t=1}^E x_t
+                     -\frac{\Delta^2}{2v}\right).
+\]
+It depends only on the sum, so the sum preserves both directed profiles.
+After division by $E$, the two laws are $\Normal(\Delta,v)$ and
+$\Normal(0,v)$. Their directed profiles agree by reflection, and the Gaussian
+likelihood-threshold formula gives~\eqref{eq:gaussian-calibration}.
+
+The identity
+\[
+ e^\varepsilon\phi(-a/2-\varepsilon/a)=\phi(a/2-\varepsilon/a)
+\]
+gives $G_\varepsilon'(a)=\phi(a/2-\varepsilon/a)>0$. Moreover,
+$G_\varepsilon(a)\to0$ as $a\downarrow0$ and
+$G_\varepsilon(a)\to1$ as $a\to\infty$, including when $\varepsilon=0$.
+Thus the profile is continuous and strictly decreasing in $v>0$, from one
+to zero. There is a unique positive $v_{\mathrm{FB}}$ with profile $\delta$,
+and it is independent of $E$. Equivalently,
+\begin{equation}\label{eq:fullbatch}
+ \sigma_{E,E}=\kappa_{\varepsilon,\delta,\Delta}\sqrt E,
+ \qquad V_E(E,S)=\kappa_{\varepsilon,\delta,\Delta}^2,
+\end{equation}
+where $\kappa_{\varepsilon,\delta,\Delta}$ is the one-release Gaussian
+calibrated standard deviation. This is the analytical Gaussian calibration
+of Balle and Wang~\cite{ballewang2018}.
+
+\paragraph{Average-only calibration.}
+For fixed $E,T$, write $p_k=\Pr\{K=k\}$ and $m_k=k\Delta/E$ in
+\eqref{eq:average-experiment}. Adding independent Gaussian noise makes the
+average-only profile nonincreasing in $v$, and
+\eqref{eq:average-transcript-order} gives finite feasibility. At $v>0$,
+standardizing the reference observation to $Z\sim\Normal(0,1)$ gives the
+likelihood ratio
+\[
+ \overline R_v(z)=\sum_{k=0}^T p_k
+       \exp\!\left(\frac{m_kz}{\sqrt v}-\frac{m_k^2}{2v}\right).
+\]
+This finite sum is pointwise continuous for $v>0$. As $v\downarrow0$, it
+converges pointwise to $p_0=(1-E/T)^T$: every term with $k>0$ tends to zero.
+The same bounded-truncation formulas used above prove continuity of both
+directed profiles, including at zero. At zero the source has mass $p_0$
+at the reference atom and the remaining mass at positive locations, giving
+the same directed endpoint values $1-p_0$ and $(1-e^\varepsilon p_0)_+$.
+Closedness and the same minimum argument prove attainment and equality to
+the target at a positive minimizer. At $T=E$, $K=E$ almost surely, so the
+average pair is $\Normal(\Delta,v)$ versus $\Normal(0,v)$ and
+$\overline v_{E,E}=v_{\mathrm{FB}}$.
+\end{proof}
+
+\subsection{Domination for fixed recordwise queries}\label{app:canonical-domination}
+For completeness, consider a fixed recordwise query whose contributions
+have magnitude at most $\Delta$. Under add/remove adjacency, let $d$ be the
+differing contribution, so $|d|\leq\Delta$. The Gaussian channel
+\[
+ x\longmapsto\frac d\Delta x+\zeta,
+ \qquad
+ \zeta\sim\Normal\left(0,\sigma^2\left(1-\frac{d^2}{\Delta^2}\right)\right)
+\]
+maps $\Normal(0,\sigma^2)$ to itself and $\Normal(\Delta,\sigma^2)$ to
+$\Normal(d,\sigma^2)$. It therefore maps the canonical one-release pair to
+the pair with differing contribution $d$. The statement also holds at
+$\sigma=0$, with degenerate Gaussian noise.
+
+Apply this channel independently across releases, then add the vector of
+shared sampled contributions. That vector is independent of the differing
+record's inclusion indicators and of the Gaussian noise, and it has the
+same law on the two neighboring datasets. These common channels produce
+the clipped-sum transcript, so data processing bounds its profile by the
+canonical profile. The query must be held fixed across the neighboring
+comparison; a dataset-dependent choice of the query would require a
+separate argument.
+
+For the average-only comparison, let
+$C_T=E^{-1}\sum_{t=1}^T\sum_{i\,\mathrm{shared}} B_{it}\widetilde g_i$
+be the shared sampled contribution to the average. It is independent of
+the differing record's participation count and of the added noise. Apply
+directly to the canonical average the common channel
+\[
+ X\longmapsto\frac d\Delta X+\zeta+C_T,\qquad
+ \zeta\sim\Normal\!\left(0,v\left(1-\frac{d^2}{\Delta^2}\right)\right),
+\]
+where $\zeta$ and $C_T$ are independent of $X$ and of each other. Under the
+reference law the output is $C_T+\Normal(0,v)$. Conditional on $K=k$ under
+the source law, it is $C_T+kd/E+\Normal(0,v)$: scaling the input noise and
+adding $\zeta$ leaves Gaussian variance $v$. These are exactly the two
+neighboring averages when each raw release receives Gaussian noise of
+variance $E^2v/T$. The construction
+also holds at $v=0$. Data processing therefore bounds each such neighboring
+average profile by $\overline{\mathcal A}_{E,T}(v;\varepsilon)$.
+
+\section{Binomial sign comparisons}\label{app:binomial-signs}
+Throughout this appendix, $T>E>0$ are integers,
+$p=E/T$, $r=1-p$, $K\sim\operatorname{Binomial}(T,p)$, and $Z=K-E$.
+The gap $\Gamma_{E,T}$ is defined in~\eqref{eq:main-count-gap}. Its relevant
+moments are
+\begin{equation}\label{eq:binomial-moments}
+ \E Z=0,\qquad \E Z^2=Er,\qquad \E Z^3=Er(1-2p).
+\end{equation}
+These follow by expanding the sum of $T$ independent centered Bernoulli
+variables: every mixed term containing a singleton centered factor vanishes.
+Both sign arguments below also use the size-bias identities: if
+$K\sim\operatorname{Binomial}(T,p)$ and $L\sim\operatorname{Binomial}(T-1,p)$,
+then for every integer $k$,
+\begin{equation}\label{eq:binomial-size-bias}
+ k\Pr\{K=k\}=Tp\Pr\{L=k-1\},\qquad
+ (T-k)\Pr\{K=k\}=Tr\Pr\{L=k\}.
+\end{equation}
+Adding them gives
+$\Pr\{K=k\}=r\Pr\{L=k\}+p\Pr\{L=k-1\}$.
+
+\begin{theorem}[The binomial center comparison]\label{thm:rate-adaptive-center}
+Let $T>E>0$ be integers and $h>0$. Then
+$\Gamma_{E,T}(\theta,h)>0$ under the following conditions:
+\begin{equation}\label{eq:rate-adaptive-center-condition}
+ \begin{array}{c|c}
+ T>2E & \theta\geq c_{E,T}:=(1-2E/T)/3,\\
+ T=2E & \theta>0,\\
+ E<T<2E & \theta\geq0.
+ \end{array}
+\end{equation}
+At $T=2E$ and $\theta=0$, the gap is zero.
+\end{theorem}
+
+We first show that a nonnegative gap becomes positive when the center is
+increased. We then establish the starting comparison at $c_{E,T}$ in the
+low-rate case and at zero in the high-rate case. Symmetry handles the
+half-rate case.
+
+\subsection*{Propagation in the center}
+\begin{lemma}[Propagation of positivity]\label{lem:binomial-propagation}
+Fix $h>0$ and $0\leq\theta_1<\theta_2$. If
+$\Gamma_{E,T}(\theta_1,h)\geq0$, then
+$\Gamma_{E,T}(\theta_2,h)>0$.
+\end{lemma}
+
+\begin{proof}
+For $t\in\R$, put $k_\theta(t)=h\phi(h(t-\theta))$. For every integer $z$,
+\[
+ \Phi(h(z-\theta))-\Phi(-h\theta)=\int_0^z k_\theta(t)\,dt.
+\]
+Let $A_\theta$ be the expectation of the positive integrals and $B_\theta$
+the expectation of the absolute values of the negative integrals. Then
+$\Gamma_{E,T}(\theta,h)=A_\theta-B_\theta$, and
+\[
+ \frac{k_{\theta_2}(t)}{k_{\theta_1}(t)}
+ =\chi\exp\bigl(h^2(\theta_2-\theta_1)t\bigr),
+ \qquad
+ \chi=\exp\left(-\frac{h^2}{2}(\theta_2^2-\theta_1^2)\right)>0.
+\]
+The ratio is strictly larger than $\chi$ for $t>0$ and strictly smaller for
+$t<0$. The centered nondegenerate binomial law has positive mass on both
+sides of zero, so
+\[
+ A_{\theta_2}>\chi A_{\theta_1},\qquad
+ B_{\theta_2}<\chi B_{\theta_1}.
+\]
+Subtracting yields
+$\Gamma_{E,T}(\theta_2,h)>\chi\Gamma_{E,T}(\theta_1,h)\geq0$.
+\end{proof}
+
+\subsection*{Low rate: the critical center}
+Assume $T>2E$ and abbreviate $c=c_{E,T}=(1-2p)/3$, so $0<c<1/3$.
+By~\eqref{eq:gap-small-scale}, the cubic term of $\Gamma_{E,T}(c,h)$
+vanishes at this center, so the cubic expansion does not decide the sign.
+We need an argument valid at every scale. Since $\Gamma_{E,T}(c,0)=0$, it is
+enough to show that $\Gamma_{E,T}(c,\cdot)$ is strictly increasing on
+$(0,\infty)$. Differentiation over the finite support gives
+\begin{equation}\label{eq:binomial-scale-derivative}
+ \frac{d}{dh}\Gamma_{E,T}(c,h)=\phi(0)D(h^2/2),
+\end{equation}
+where
+\begin{equation}\label{eq:binomial-laplace}
+ D(s)=\E[(Z-c)e^{-s(Z-c)^2}]+ce^{-sc^2}.
+\end{equation}
+
+Each support value enters $D$ through a signed weight $z-c$ and a squared
+distance $(z-c)^2$. Accordingly, place an atom of weight
+$\nu_z=\Pr\{Z=z\}(z-c)$ at $y_z=(z-c)^2$ for each support value $z$, and one
+more atom of weight $c$ at $c^2$ for the second term. Then
+$D(s)=\sum\nu e^{-sy}$ is the Laplace transform of the finite signed
+measure~$\nu$. Its first two moments are the coefficients that vanished in the
+expansion:
+\begin{equation}\label{eq:binomial-cancellations}
+ \sum\nu=\E Z=0,\qquad
+ \sum\nu y=\E[(Z-c)^3]+c^3=\E Z^3-3c\E Z^2=0,
+\end{equation}
+so $D(0)=0$ because the count has mean $E$, and $D'(0)=0$ because of the
+choice of $c$.
+
+The positive and negative parts of $\nu$ therefore have equal mass and equal
+first moment. $D(s)$ compares their integrals of the convex function
+$y\mapsto e^{-sy}$, so the sign should come from which part is more spread
+out. For measures of equal mass and first moment, spread is measured by the
+hinge transform
+\begin{equation}\label{eq:binomial-double-cumulative}
+ J(t)=\sum\nu(t-y)_+,\qquad (u)_+=\max\{u,0\}:
+\end{equation}
+$J\geq0$ says that the positive part dominates the negative part in convex
+order. We use $J$ only through an exact identity, which also yields
+strictness. For $s>0$, finite summation and
+\[
+ e^{-sy}=s^2\int_y^\infty e^{-st}(t-y)\,dt
+\]
+give
+\begin{equation}\label{eq:binomial-laplace-hinge}
+ D(s)=s^2\int_0^\infty e^{-st}J(t)\,dt.
+\end{equation}
+By~\eqref{eq:binomial-cancellations}, $J(t)=t\sum\nu-\sum\nu y=0$ beyond
+the largest location, so $J$ is continuous, piecewise affine and compactly
+supported. The low-rate comparison thus reduces to showing that $J\geq0$
+and $J\not\equiv0$.
+
+To locate the kinks of $J$, note that the atoms at $c^2$ from $Z=0$ and from
+the extra term combine to net weight $c(1-\Pr\{Z=0\})>0$. The other positive
+weights come from displacements $z=j\geq1$ and sit at the \emph{positive
+knots} $(j-c)^2$. The negative weights come from $z=-j\leq-1$ and sit at
+$(j+c)^2$. Because $0<c<1/2$, the locations interlace:
+\[
+ c^2<(1-c)^2<(1+c)^2<(2-c)^2<(2+c)^2<\cdots.
+\]
+Between consecutive positive knots, $J$ has at most one kink, and its slope
+there drops. So $J$ is concave on each such interval, and it suffices to check
+$J\geq0$ at the positive knots. At a positive knot $t=(j-c)^2$, $J(t)$ is a
+truncated cubic expectation over $|z-c|<j-c$. For $j\leq E$ we sum it
+exactly. Put $C=T-E$, let $L\sim\operatorname{Binomial}(T-1,p)$, and write
+$\ell_k=\Pr\{L=k\}$, with zero mass outside its support.
+By~\eqref{eq:binomial-size-bias},
+\[
+ r(E+z)\Pr\{Z=z\}=Er\,\ell_{E+z-1},\qquad
+ p(C-z)\Pr\{Z=z\}=Er\,\ell_{E+z}.
+\]
+Hence any summand of the form $r(E+z)A(z)-p(C-z)A(z+1)$, weighted by
+$\Pr\{Z=z\}$, becomes $Er\{\ell_{E+z-1}A(z)-\ell_{E+z}A(z+1)\}$. Summed over
+consecutive integers, it telescopes to two boundary terms. The expression
+$r(E+z)A(z)-p(C-z)A(z+1)$ is the binomial Stein operator applied to $A$.
+Our summand is cubic in $z$, so we look for a quadratic $A$.
+
+\begin{lemma}[A binomial telescoping identity]\label{lem:binomial-stein-polynomial}
+Put $C=T-E$. For $1\leq j\leq E$, define
+\[
+ R_j=j-c,\qquad A_j(z)=R_j^2-2Er-3c^2+z-z^2.
+\]
+Then, for every real $z$,
+\begin{equation}\label{eq:binomial-cubic-stein-polynomial}
+ \begin{split}
+ &(z-c)\{R_j^2-(z-c)^2\}+c(R_j^2-c^2)\\
+ &\hspace{2em}=r(E+z)A_j(z)-p(C-z)A_j(z+1).
+ \end{split}
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Try $A(z)=\alpha+\beta z-z^2$ on the right and compare coefficients of the
+two cubics, using $pT=E$, $rT=C$ and $Er=pC$. The $z^3$ coefficients are
+both $-1$. The $z^2$ coefficient forces $\beta=2p+3c$, which equals $1$
+precisely because $c=(1-2p)/3$. The $z$ coefficient then gives
+$\alpha=R_j^2-2Er-3c^2$. Finally, the constant coefficients differ by
+$Er(\beta-1)=0$. The critical center is thus used once, through $\beta=1$.
+The identity holds for every real $R_j$; only the evaluation below uses
+$R_j=j-c$.
+\end{proof}
+
+\begin{lemma}[Nonnegativity of the hinge transform]
+\label{lem:binomial-double-cumulative}
+If $T>2E$, then $J(t)\geq0$ for every $t\geq0$, and
+$J((1-c)^2)>0$.
+\end{lemma}
+
+\begin{proof}
+\emph{Positive knots with $j\leq E$.} Fix $1\leq j\leq E$ and
+$t=R_j^2=(j-c)^2$. The atom at $y_z$ is active, $(t-y_z)_+>0$, exactly when
+$|z-c|<j-c$, that is, $2c-j<z<j$; since $0<2c<1$, this means
+$1-j\leq z\leq j-1$. The extra atom at $c^2$ is active as well. Splitting its
+weight as $c=c\Pr\{|Z|\leq j-1\}+c\Pr\{|Z|\geq j\}$ puts the first part inside
+the sum:
+\[
+ J((j-c)^2)=\sum_{z=1-j}^{j-1}\Pr\{Z=z\}
+ \bigl[(z-c)\{R_j^2-(z-c)^2\}+c(R_j^2-c^2)\bigr]
+ +c(R_j^2-c^2)\Pr\{|Z|\geq j\}.
+\]
+The bracket is the left side of~\eqref{eq:binomial-cubic-stein-polynomial}.
+By Lemma~\ref{lem:binomial-stein-polynomial} and the size-bias identities,
+the sum telescopes:
+\begin{align*}
+ &Er\sum_{z=1-j}^{j-1}
+ \{\ell_{E+z-1}A_j(z)-\ell_{E+z}A_j(z+1)\}\\
+ &\hspace{2em}=Er\{\ell_{E-j}A_j(1-j)-\ell_{E+j-1}A_j(j)\}.
+\end{align*}
+Both endpoint values equal
+\[
+ A_j(1-j)=A_j(j)=b_j:=j(1-2c)-2Er-2c^2,
+\]
+and $R_j^2-c^2=j(j-2c)$. Thus
+\begin{equation}\label{eq:binomial-positive-knot}
+ \begin{split}
+ J((j-c)^2)={}&Er b_j(\ell_{E-j}-\ell_{E+j-1})\\
+              &+cj(j-2c)\Pr\{|Z|\geq j\}.
+ \end{split}
+\end{equation}
+The tail term is nonnegative. For the boundary term, $1-2c>0$ gives
+$b_j\leq b_E$, and the identity $1-2r=-3c$ gives
+\[
+ b_E=-5Ec-2c^2<0.
+\]
+So the boundary term is nonnegative as soon as the lower mass of each pair
+is the smaller one:
+\begin{equation}\label{eq:binomial-pairing}
+ \ell_{E-j}\leq\ell_{E+j-1}\qquad(1\leq j\leq E).
+\end{equation}
+At $j=1$ the two masses are equal. For $1\leq j<E$, the ratios taking the
+upper and lower members of one pair to the next are
+\[
+ \frac{\ell_{E+j}}{\ell_{E+j-1}}
+ =\frac{C-j}{E+j}\frac EC,\qquad
+ \frac{\ell_{E-j-1}}{\ell_{E-j}}
+ =\frac{E-j}{C+j}\frac CE.
+\]
+The first ratio is at least the second: after clearing positive
+denominators, their difference has the sign of $j^2(C^2-E^2)\geq0$, since
+$C>E$. Induction proves~\eqref{eq:binomial-pairing}, so
+$J((j-c)^2)\geq0$ for $1\leq j\leq E$. At $j=1$ the boundary term vanishes,
+while the tail term is $c(1-2c)\Pr\{|Z|\geq1\}>0$. Hence $J((1-c)^2)>0$.
+
+\emph{Positive knots with $j>E$.} Now every negative displacement satisfies
+$|z-c|\leq E+c<j-c$, so all atoms except the positive ones with $z\geq j$ are
+active. Subtracting the vanishing full sum
+$\sum\nu(t-y)=t\sum\nu-\sum\nu y=0$ leaves
+\[
+ J((j-c)^2)=\sum_{z\geq j}\Pr\{Z=z\}(z-c)
+             \bigl((z-c)^2-(j-c)^2\bigr)\geq0.
+\]
+
+\emph{Between the knots.} Before $c^2$, $J$ vanishes. On
+$[c^2,(1-c)^2]$ only the net atom at $c^2$ is active, so
+\[
+ J(t)=c(1-\Pr\{Z=0\})(t-c^2)\geq0
+ \qquad(c^2\leq t\leq(1-c)^2).
+\]
+Between $(j-c)^2$ and $(j+1-c)^2$, $j\geq1$, the only possible interior knot
+is $(j+c)^2$, with weight $(-j-c)\Pr\{Z=-j\}\leq0$. So $J$ is concave there
+and lies above the chord joining its nonnegative endpoint values. Beyond the
+largest location $J$ vanishes. This proves $J(t)\geq0$ for all $t\geq0$.
+\end{proof}
+
+By Lemma~\ref{lem:binomial-double-cumulative}, $J$ is continuous,
+nonnegative, and positive at $(1-c)^2$. Hence the integral
+in~\eqref{eq:binomial-laplace-hinge} is strictly positive for every $s>0$.
+Equation~\eqref{eq:binomial-scale-derivative} and
+$\Gamma_{E,T}(c,0)=0$ now give
+\begin{equation}\label{eq:binomial-low-boundary-strict}
+ \Gamma_{E,T}(c,h)>0\qquad(T>2E,\ h>0).
+\end{equation}
+
+\subsection*{Zero-center signs and reflection}
+\begin{lemma}[The zero-center sign]\label{lem:binomial-reflected-zero}
+For $h>0$, the gap $\Gamma_{E,T}(0,h)$ is negative when $T>2E$, zero when
+$T=2E$, and positive when $E<T<2E$.
+\end{lemma}
+
+\begin{proof}
+We first treat a general low-rate mean $m$, so that the same computation also
+serves the high-rate case after reflection. Fix an integer $m$ with
+$0<m<T/2$. Let $K\sim\operatorname{Binomial}(T,m/T)$ and
+$L\sim\operatorname{Binomial}(T-1,m/T)$, and put
+\[
+ \psi_h(k)=\exp\left(-\frac{h^2(k-m)^2}{2}\right).
+\]
+The size-bias identities~\eqref{eq:binomial-size-bias} with $p=m/T$ give,
+for every function $f$,
+\[
+ \E[(K-m)f(K)]
+ =m(1-m/T)\E[f(L+1)-f(L)].
+\]
+Differentiating the gap and applying this identity gives
+\begin{equation}\label{eq:binomial-reflected-stein}
+ \frac{d}{dh}\Gamma_{m,T}(0,h)
+ =\phi(0)m(1-m/T)\E[\psi_h(L+1)-\psi_h(L)].
+\end{equation}
+Pair $L=m-1-j$ with $L=m+j$ for $0\leq j<m$. Their increments are $d_j$
+and $-d_j$, respectively, where
+\[
+ d_j=e^{-h^2j^2/2}-e^{-h^2(j+1)^2/2}>0.
+\]
+By~\eqref{eq:binomial-pairing}, applied with $E=m$, the upper mass is at
+least the lower mass, so each pair contributes a nonpositive amount.
+The remaining upper atoms, indexed by $m\leq j<T-m$, have positive mass
+and negative increment $-d_j$. At least one exists because $m<T/2$.
+Thus the derivative in~\eqref{eq:binomial-reflected-stein} is negative for
+$h>0$. Since $\Gamma_{m,T}(0,0)=0$, the low-rate gap is negative.
+
+If $T=2E$, the law of $Z$ is symmetric and Gaussian symmetry gives
+$\Gamma_{E,T}(0,h)=0$. If $E<T<2E$, put $m=T-E<T/2$ and reflect the count:
+$K'=T-K\sim\operatorname{Binomial}(T,m/T)$, with $K'-m=-Z$. Hence
+\[
+ \Gamma_{E,T}(0,h)=-\Gamma_{m,T}(0,h)>0.
+\]
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:rate-adaptive-center}]
+For $T>2E$, equation~\eqref{eq:binomial-low-boundary-strict} proves positivity
+at $\theta=c_{E,T}$, and Lemma~\ref{lem:binomial-propagation} extends it to
+larger centers. For $E<T<2E$, Lemma~\ref{lem:binomial-reflected-zero} gives
+positivity at zero, and the same propagation lemma handles every positive
+center. At $T=2E$, symmetry gives equality at zero and propagation gives
+strict positivity for $\theta>0$.
+\end{proof}
+
+\subsection*{Strict comparison at the symmetric endpoint}
+At the symmetric endpoint of Theorem~\ref{thm:rate-adaptive-pointwise}, the
+full-batch threshold gives a tie. A slightly larger threshold already
+gives a strict improvement using the average alone.
+
+\begin{lemma}[Improving the threshold at half rate]\label{lem:strict-average-endpoint}
+Let $E\in\N_{>0}$, $a>0$, and $K\sim\operatorname{Binomial}(2E,1/2)$.
+Let $Q=\Normal(0,1)$, and let $P$ be the mixture whose conditional law
+given $K=k$ is $\Normal(ak/E,1)$. With $\varepsilon=a^2/2$,
+\[
+ H_{e^\varepsilon}(P, Q)
+ >\frac12-e^\varepsilon\overline\Phi(a).
+\]
+\end{lemma}
+
+\begin{proof}
+Symmetry of $K-E$ and of the Gaussian noise makes $P$ symmetric about
+$a$, with no atom there. Thus $P((a,\infty))=1/2$, and the value of this
+ray is $\delta_*:=1/2-e^\varepsilon\overline\Phi(a)$.
+The likelihood ratio of the mixture is the continuous function
+\[
+ L(y)=\E\exp\!\left(\frac{aK}{E}y-\frac{a^2K^2}{2E^2}\right).
+\]
+Completing the square at the threshold gives
+\[
+ L(a)=e^{a^2/2}\E\exp\!\left[
+       -\frac{a^2}{2}(K/E-1)^2\right]<e^{a^2/2}=e^\varepsilon.
+\]
+The inequality is strict because $a>0$ and $\Pr\{K\ne E\}>0$.
+By continuity there is $\eta>0$ such that $L(y)<e^\varepsilon$ for
+$a\leq y\leq a+\eta$. Since $\phi(y)>0$,
+\[
+ P((a+\eta,\infty))-e^\varepsilon Q((a+\eta,\infty))
+ =\delta_*-\int_a^{a+\eta}(L(y)-e^\varepsilon)\phi(y)\,dy
+ >\delta_*.
+\]
+Taking the supremum over events proves the claim.
+\end{proof}
+
+\subsection*{Sharpness uniformly over the Gaussian scale}
+Equation~\eqref{eq:gap-small-scale} identifies the cubic coefficient.
+Since $\operatorname{Var}(Z)>0$, every $\theta<c_{E,T}$ gives a negative gap
+for sufficiently small $h>0$. Together with
+Theorem~\ref{thm:rate-adaptive-center}, this proves that, in the low-rate
+regime, $\theta\geq c_{E,T}$ is necessary and sufficient for positivity at
+every $h>0$. This is sharpness of the scale-uniform sum-event comparison,
+not a classification of the full transcript profile when the scale and
+privacy parameters are coupled.
+
+\section{The fixed-participation privacy limit}\label{app:sparse-limit}
+We first prove the profile limit for $Tq_T\to\rho>0$, then invert it to
+obtain the calibrated-noise offset.
+
+\begin{theorem}[The fixed-participation profile limit]\label{thm:accountant-limit}
+Let $\rho>0$, $\Delta>0$, and $\varepsilon\geq0$. Suppose
+$q_T\in[0,1]$, $Tq_T\to\rho$, $\sigma_T>0$ eventually, and
+\[
+ \frac{\Delta}{\sigma_T}-\sqrt{2\log T}\longrightarrow s\in\R.
+\]
+Then
+\[
+ \AO_S(\sigma_T,\Delta,q_T,T,\varepsilon)
+ \longrightarrow1-\exp\{-\rho\Phi(s)\}.
+\]
+\end{theorem}
+
+\begin{proof}
+Put $\mu_T=\Delta/\sigma_T$ and $b_T=\sqrt{2\log T}$. Standardizing every
+coordinate by $\sigma_T$ makes the reference observations independent
+$Z_i\sim\Normal(0,1)$. Their likelihood ratio is
+\begin{equation}\label{eq:sparse-likelihood-ratio}
+ R_T=\prod_{i=1}^T
+ \left[1-q_T+q_T\exp\left(\mu_TZ_i-\frac{\mu_T^2}{2}\right)\right].
+\end{equation}
+
+Write $Y_T(z)=\exp(\mu_Tz-\mu_T^2/2)$. We linearize $\log R_T$ after
+truncating each coordinate at a level $t_T$.
+The level has two jobs. It must be high enough that, with reference
+probability tending to one, no coordinate exceeds it, so truncation changes
+nothing. We therefore need $T\overline\Phi(t_T)\to0$; Mills' bound makes
+$T/t_T=o(e^{t_T^2/2})$ sufficient. The level must also be low enough that every
+perturbation $q_T(Y_T-1)$ of the likelihood ratio is uniformly small and the
+perturbations have vanishing total second moment. Below this level,
+$Y_T\leq e^{t_T^2/2}$; together with the moment bound below, this makes
+$e^{t_T^2/2}=o(T)$ sufficient. The naive level $t_T=b_T$ gives
+$e^{t_T^2/2}=T$, and our coarse second-moment bound stays of order one.
+Lowering the level by $\log b_T/(2b_T)$ gives
+$e^{t_T^2/2}=Tb_T^{-1/2}(1+o(1))$, which lies between $T/t_T$ and $T$. The first
+truncated moment then produces the limit, and the second moment controls both
+the fluctuation of the linear term and the linearization error.
+
+\paragraph{The reference maximum.}
+For all sufficiently large $T$, define
+\[
+ t_T=b_T-\frac{\log b_T}{2b_T}.
+\]
+Mills' upper bound gives
+\[
+ T\Pr\{Z>t_T\}\leq T\frac{\phi(t_T)}{t_T}\longrightarrow0,
+\]
+because
+\[
+ \log T-\frac{t_T^2}{2}
+ =\frac{\log b_T}{2}-\frac{(\log b_T)^2}{8b_T^2}.
+\]
+The upper bound is of order $b_T^{-1/2}$. Thus every coordinate lies below
+$t_T$ with probability tending to one. We will also use
+\begin{equation}\label{eq:truncation-scales}
+ \frac{e^{t_T^2/2}}{T}=b_T^{-1/2}(1+o(1)),\qquad
+ q_Te^{t_T^2/2}\to0,\qquad Tq_T^2e^{t_T^2/2}\to0.
+\end{equation}
+The last two estimates follow by multiplying the first by $Tq_T\to\rho$
+and by $(Tq_T)^2$, respectively.
+
+\paragraph{Truncated moments.}
+Define
+\[
+ X_T(z)=q_T(Y_T(z)-1)\mathbf1_{\{z\leq t_T\}}.
+\]
+Completing the square gives
+\begin{align}
+ \E[Y_T(Z)\mathbf1_{\{Z\leq t_T\}}]
+ &=\Phi(t_T-\mu_T),\label{eq:tilted-first}\\
+ \E[Y_T(Z)^2\mathbf1_{\{Z\leq t_T\}}]
+ &=e^{\mu_T^2}\Phi(t_T-2\mu_T).\label{eq:tilted-second}
+\end{align}
+Hence
+\[
+ T\E X_T(Z)=Tq_T[\Phi(t_T-\mu_T)-\Phi(t_T)]
+ \longrightarrow-\rho\Phi(s),
+\]
+since $t_T-\mu_T\to-s$ and $\Phi(t_T)\to1$.
+
+Because $Y_T\geq0$, $(Y_T-1)^2\leq Y_T^2+1$, so
+\begin{equation}\label{eq:truncated-second-bound}
+ T\E X_T(Z)^2\leq Tq_T^2
+ \left[e^{\mu_T^2}\Phi(t_T-2\mu_T)+\Phi(t_T)\right].
+\end{equation}
+The second term tends to zero. For the first,
+$2\mu_T-t_T=b_T+2s+o(1)\to\infty$, and eventually $2\mu_T-t_T\geq1$.
+Mills' bound and the identity
+\[
+ \mu_T^2-\frac{(2\mu_T-t_T)^2}{2}
+ =\frac{t_T^2}{2}-(\mu_T-t_T)^2
+\]
+therefore imply
+\[
+ e^{\mu_T^2}\Phi(t_T-2\mu_T)
+ \leq\frac{e^{t_T^2/2}}{\sqrt{2\pi}}.
+\]
+By~\eqref{eq:truncation-scales}, the right side
+of~\eqref{eq:truncated-second-bound} tends to zero. Independence gives
+\[
+ \operatorname{Var}\left(\sum_{i=1}^T X_T(Z_i)\right)
+ \leq T\E X_T(Z)^2\longrightarrow0.
+\]
+Chebyshev's inequality yields
+\begin{equation}\label{eq:linear-sum-limit}
+ \sum_{i=1}^T X_T(Z_i)\longrightarrow-\rho\Phi(s)
+ \quad\text{in reference probability}.
+\end{equation}
+
+\paragraph{The log likelihood ratio.}
+Let $A_T=\{\max_i Z_i\leq t_T\}$, so $\Pr(A_T^c)\to0$.
+Eventually $\mu_T\geq0$, and for $z\leq t_T$,
+\[
+ |q_T(Y_T(z)-1)|
+ \leq q_T+q_T\exp\left(\mu_Tt_T-\frac{\mu_T^2}{2}\right)
+ \leq q_T+q_Te^{t_T^2/2}\longrightarrow0.
+\]
+The bound is uniform in $z\leq t_T$. Eventually every truncated perturbation
+therefore has absolute value at most $1/2$, where
+$|\log(1+x)-x|\leq x^2$. On $A_T$,
+\begin{align*}
+ \mathbf1_{A_T}\left|\log R_T-\sum_{i=1}^T X_T(Z_i)\right|
+ &\leq\mathbf1_{A_T}\sum_{i=1}^T
+   |\log(1+X_T(Z_i))-X_T(Z_i)|\\
+ &\leq\sum_{i=1}^T X_T(Z_i)^2.
+\end{align*}
+The expectation of the last expression tends to zero by
+\eqref{eq:truncated-second-bound}. Markov's inequality, the bound on
+$\Pr(A_T^c)$, and~\eqref{eq:linear-sum-limit} imply
+\begin{equation}\label{eq:log-likelihood-limit}
+ \log R_T\longrightarrow-\rho\Phi(s)
+ \quad\text{in reference probability}.
+\end{equation}
+Thus $R_T\to c_s:=e^{-\rho\Phi(s)}$ in reference probability.
+Although $\E R_T=1$ for every $T$, $c_s<1$: rare large values retain the
+missing mean, so convergence of unbounded expectations cannot be used.
+
+\paragraph{The directed privacy limits.}
+Let $\alpha=e^\varepsilon\geq1$. Writing $P_T,Q_T$ for the two transcript
+laws, the directed profiles are
+\begin{align*}
+ H_\alpha(P_T, Q_T)&=1-\E_{Q_T}\min\{R_T,\alpha\},\\
+ H_\alpha(Q_T, P_T)&=1-\alpha\E_{Q_T}\min\{R_T,\alpha^{-1}\}.
+\end{align*}
+Convergence in probability to a constant implies convergence of expectations
+for bounded continuous functions. Applying this fact to the two truncations
+gives
+\[
+ H_\alpha(P_T, Q_T)\to1-c_s,\qquad
+ H_\alpha(Q_T, P_T)\to(1-\alpha c_s)_+.
+\]
+Since $(1-\alpha c_s)_+\leq1-c_s$, taking the maximum proves the theorem.
+\end{proof}
+
+\begin{theorem}[Fixed-participation calibration]
+\label{thm:fixed-participation-calibration}
+Let $\rho>0$, $\Delta>0$, $\varepsilon\geq0$, and
+$0<\delta<1-e^{-\rho}$. Suppose $q_T\in[0,1]$ and $Tq_T\to\rho$, and define
+\[
+ \sigma_T^{\mathrm{cal}}:=\inf\left\{\sigma\geq0:
+ \AO_S(\sigma,\Delta,q_T,T,\varepsilon)\leq\delta\right\}.
+\]
+Then $\sigma_T^{\mathrm{cal}}>0$ eventually, and
+\[
+ \frac{\Delta}{\sigma_T^{\mathrm{cal}}}-\sqrt{2\log T}
+ \longrightarrow s_{\rho,\delta}:=
+ \Phi^{-1}\!\left(-\frac{\log(1-\delta)}\rho\right).
+\]
+For the capped exact-budget schedule $q_T=\min\{1,\rho/T\}$, it follows that
+\[
+ \frac{\sigma_T^{\mathrm{cal}}\sqrt{2\log(1/q_T)}}\Delta\longrightarrow1.
+\]
+\end{theorem}
+
+\begin{proof}
+The function $L_\rho(s)=1-e^{-\rho\Phi(s)}$ is continuous and strictly
+increasing, with range $(0,1-e^{-\rho})$ and inverse value
+$L_\rho(s_{\rho,\delta})=\delta$. For a fixed offset $u$, consider the
+eventually positive candidate
+\[
+ \sigma_T(u)=\frac\Delta{b_T+u},\qquad b_T=\sqrt{2\log T}.
+\]
+Given $\eta>0$,
+\[
+ L_\rho(s_{\rho,\delta}-\eta)<\delta
+ <L_\rho(s_{\rho,\delta}+\eta).
+\]
+Theorem~\ref{thm:accountant-limit} makes the higher-noise candidate
+$\sigma_T(s_{\rho,\delta}-\eta)$ eventually feasible and the lower-noise
+candidate $\sigma_T(s_{\rho,\delta}+\eta)$ eventually infeasible.
+The finite calibration properties proved in Appendix~\ref{app:calibration}
+apply once $q_T>0$, which holds eventually. Monotonicity and feasibility give
+\[
+ \frac\Delta{b_T+s_{\rho,\delta}+\eta}
+ \leq\sigma_T^{\mathrm{cal}}
+ \leq\frac\Delta{b_T+s_{\rho,\delta}-\eta}.
+\]
+In particular, the calibrated noise is eventually positive. Taking
+reciprocals gives
+\[
+ s_{\rho,\delta}-\eta
+ \leq\frac\Delta{\sigma_T^{\mathrm{cal}}}-b_T
+ \leq s_{\rho,\delta}+\eta.
+\]
+Since $\eta$ is arbitrary, the offset limit follows. For the capped schedule,
+$q_T=\rho/T$ eventually and $\log(1/q_T)/\log T\to1$, giving the final claim.
+\end{proof}
+
+Equivalently, the calibrated standard deviation satisfies
+\begin{equation}\label{eq:offset-approximation}
+ \sigma_T^{\mathrm{cal}}
+ =\frac\Delta{\sqrt{2\log T}+s_{\rho,\delta}+o(1)}.
+\end{equation}
+
+\begin{proof}[Proof of Theorem~\ref{thm:smallbatch}]
+Apply Theorem~\ref{thm:fixed-participation-calibration} with $\rho=E$.
+For $T\geq E$, its capped schedule is exactly $q=E/T$, so the offset limit
+and~\eqref{eq:sigmaasymptotic} follow. Squaring and multiplying by $T/E^2$
+gives~\eqref{eq:privacydivergence}. The sampling term in~\eqref{eq:variance}
+converges to $S/E$, while the privacy variance diverges. Their sum is
+therefore asymptotic to $v_{E,T}$, proving~\eqref{eq:total-equivalent}.
+\end{proof}
+
+\section{Rational bounds for the finite reversal}\label{app:rational-calculation}
+This appendix proves the privacy bounds used in
+Theorem~\ref{thm:strict-interior-counterexample}. We partition the first two
+reference coordinates into rectangles and integrate over the third
+coordinate exactly. Rational interval arithmetic then bounds both directed
+profiles. The supplement~\cite{rational-supplement} contains the individual
+logarithm brackets and unrounded interval expressions. Decimal values, where
+given, are for orientation only.
+
+\subsection{Conditional tails and rectangle bounds}
+Fix $E=2$, $T=3$, $\Delta=1$, and $\varepsilon=1/4$. The candidate
+privacy variance $v=5/32$ corresponds to
+\[
+ \sigma^2=\frac{E^2v}{T}=\frac5{24},\qquad
+ \mu=\frac\Delta\sigma=\sqrt{\frac{24}{5}}.
+\]
+Write $P=P_{2/3,\sqrt{5/24}}$, $Q=Q_{\sqrt{5/24}}$, $q=2/3$, and
+$\alpha=e^{1/4}$. After standardization, the one-coordinate likelihood ratio
+under the reference law is
+\[
+ r(z)=\frac13+\frac23\exp\left(\mu z-\frac{\mu^2}{2}\right).
+\]
+Condition on the first two reference coordinates and put
+$A=r(Z_1)r(Z_2)$. The remaining conditional hinges are
+\[
+ F(A)=\E[(Ar(Z)-\alpha)_+],\qquad
+ G(A)=\E[(1-\alpha Ar(Z))_+],
+\]
+where $Z$ is standard normal. If $\alpha>A(1-q)$, define
+\[
+ c_F(A)=\frac{\log((\alpha/A-(1-q))/q)+\mu^2/2}{\mu}.
+\]
+Gaussian tail integration gives
+\[
+ F(A)=\bigl(A(1-q)-\alpha\bigr)\overline\Phi(c_F(A))
+       +Aq\,\overline\Phi(c_F(A)-\mu).
+\]
+If $\alpha\leq A(1-q)$, then $F(A)=A-\alpha$. Similarly, if
+$1>\alpha A(1-q)$, define
+\[
+ c_R(A)=\frac{\log((1/(\alpha A)-(1-q))/q)+\mu^2/2}{\mu}.
+\]
+Then
+\[
+ G(A)=\bigl(1-\alpha A(1-q)\bigr)\Phi(c_R(A))
+       -\alpha Aq\,\Phi(c_R(A)-\mu),
+\]
+whereas $G(A)=0$ if $1\leq\alpha A(1-q)$.
+
+Both $F$ and $G$ are convex in $A$, being expectations of positive parts of
+affine functions. Let $\gamma=\Normal(0,1)$. On a rectangle $C$ where
+$L\leq A\leq U$ with $L<U$, convexity gives
+\begin{equation}\label{eq:rectangle-chord}
+ \int_C F(A)\,d\gamma^{\otimes2}
+ \leq\frac{UQ_C-P_C}{U-L}F(L)
+      +\frac{P_C-LQ_C}{U-L}F(U),
+\end{equation}
+where $Q_C=\gamma^{\otimes2}(C)$ and
+$P_C=\int_C A\,d\gamma^{\otimes2}$. The same bound holds for $G$.
+For $C=(x_i,x_{i+1}]\times(x_j,x_{j+1}]$, put
+\begin{align*}
+ Q_i&=\Phi(x_{i+1})-\Phi(x_i),\\
+ P_i&=(1-q)Q_i+q[\Phi(x_{i+1}-\mu)-\Phi(x_i-\mu)].
+\end{align*}
+Then $Q_C=Q_iQ_j$, $P_C=P_iP_j$, and monotonicity of $r$ gives
+\[
+ L=r(x_i)r(x_j),\qquad U=r(x_{i+1})r(x_{j+1}).
+\]
+We insert outward bounds on these quantities into~\eqref{eq:rectangle-chord}.
+Outside the rectangle union, the bounds $F(A)\leq A$ and $G(A)\leq1$ control
+the complement contributions.
+
+The eleven rational edges are
+\[
+ -\frac{31}{10},\ \frac35,\ \frac{21}{20},\ \frac{27}{20},\
+ \frac{33}{20},\ \frac{19}{10},\ \frac{43}{20},\ \frac{12}{5},\
+ \frac{53}{20},\ \frac{57}{20},\ \frac{31}{10}.
+\]
+They form one hundred rectangles. The next subsection specifies the
+interval rules; Table~\ref{tab:rational-cells} gives the resulting bounds.
+
+\subsection{Elementary interval rules}
+All interval endpoints are rational. Addition and subtraction use the usual
+outward endpoint rules; multiplication takes the minimum and maximum of the
+four endpoint products; reciprocation of $[l,u]$ with $l>0$ gives
+$[1/u,1/l]$. The required signs are checked before reciprocation.
+
+\paragraph{Exponential and logarithm.}
+Choose integers $b\geq0$, $n\geq1$ with $|x|\leq2^b$, and put
+$y=|x|/2^b$. Define
+\[
+ L_n(y)=\sum_{k=0}^{n-1}\frac{y^k}{k!},\qquad
+ U_n(y)=L_n(y)+\frac{y^n(n+1)}{n!\,n}.
+\]
+For $0\leq y\leq1$,
+$L_n(y)\leq e^y\leq U_n(y)$: the tail starting at order $n$ is bounded by
+$y^n/n!$ times a geometric sum with ratio $1/(n+1)$. Raise the endpoints to
+the power $2^b$ and, for negative $x$, reciprocate with reversed endpoints.
+Monotonicity handles interval inputs. The calculation uses $(b,n)=(1,20)$
+for $e^{1/4}$, $(5,20)$ for the likelihood-ratio edges, and $(6,24)$ for
+Gaussian density exponentials.
+
+A logarithm bracket $[l,u]$ for a positive interval $[a,b]$ is accepted only
+if the exponential upper bound at $l$ is at most $a$ and the exponential
+lower bound at $u$ is at least $b$. Monotonicity of $\log$ then proves the
+enclosure. The supplement lists the individual rational brackets and Taylor
+orders; floating-point logarithms do not justify any bound.
+
+\paragraph{Square roots.}
+For an integer $m>0$, let $N=10^6$ and choose the integer $j$ satisfying
+$j^2\leq mN^2<(j+1)^2$. Then
+$\sqrt m\in[j/N,(j+1)/N]$. Reciprocal interval arithmetic gives the required
+quantities
+\[
+ \mu=\frac{24}{\sqrt{120}},\qquad
+ \mu^{-1}=\frac5{\sqrt{120}}.
+\]
+
+\paragraph{Central Gaussian CDF values.}
+Use the enclosure
+\[
+ n_-:=\frac{39894228040143}{10^{14}}
+ <\phi(0)<
+ n_+:=\frac{39894228040144}{10^{14}}.
+\]
+For $0\leq x\leq7/5$, put
+\[
+ P_0(x)=x-\frac{x^3}{6}+\frac{x^5}{40}-\frac{x^7}{336}
+       +\frac{x^9}{3456}-\frac{x^{11}}{42240}+\frac{x^{13}}{599040}.
+\]
+Taylor's theorem for $e^{-u}$, followed by integration, gives
+\[
+ \left|\frac{\Phi(x)-1/2}{\phi(0)}-P_0(x)\right|
+ \leq\frac{x^{15}}{2^7 7!\,15}
+ \leq\frac{x^{15}}{8467200}.
+\]
+Here $2^7 7!\,15=9676800$; the final denominator deliberately gives a
+weaker rational bound. Interval multiplication with $[n_-,n_+]$ gives the central CDF bounds.
+The supplement includes the normalizer enclosure and its rational square
+comparisons.
+
+\paragraph{Gaussian tails.}
+For $x>0$, define
+\[
+ d_{k,0}(x)=x,\qquad
+ d_{k,n+1}(x)=x+\frac{k}{d_{k+1,n}(x)},\qquad
+ M_n(x)=\frac1{d_{1,n}(x)}.
+\]
+The Mills bounds used in the calculation are
+\[
+ \phi(x)M_{13}(x)\leq\Phi(-x)\leq\phi(x)M_{14}(x).
+\]
+To verify their directions, let
+\[
+ I_k(x)=\int_0^\infty t^k e^{-xt-t^2/2}\,dt.
+\]
+Integration by parts gives $1=xI_0+I_1$ and
+$kI_{k-1}=xI_k+I_{k+1}$ for $k\geq1$. Every ratio $I_k/I_{k-1}$ is positive.
+Iterating these identities expresses $I_0=\Phi(-x)/\phi(x)$ as the continued
+fraction above with a positive last remainder. Replacing that remainder by
+zero alternates the direction at each reciprocal, giving a lower bound at
+odd depth and an upper bound at even depth.
+
+The calculation uses these tail bounds for $x>7/5$. Negative arguments are
+handled by $\Phi(-x)=1-\Phi(x)$, and interval arguments by evaluating the
+appropriate endpoints.
+
+\subsection{The certificate and final bounds}
+Let $x_0,\ldots,x_{10}$ be the eleven edges above in increasing order.
+For each rectangle, the table gives upper-bound numerators with denominator
+$10^{10}$, obtained by rounding the rational chord bound upward. The bounds
+are symmetric in $i,j$, so only $i\leq j$ is shown; each off-diagonal row
+is counted twice.
+
+The outward complement bounds are
+\[
+ B_+=\frac{2286836197}{10^{10}},\qquad
+ B_-=\frac{38961008}{10^{10}}.
+\]
+They round upward the rational bounds
+\[
+ \frac{223323847325382457311}{976562500000000000000},\qquad
+ \frac{974025185261562567831}{250000000000000000000000},
+\]
+respectively. Adding the table entries, with off-diagonal multiplicity two,
+and the complement contributions yields
+\begin{align}
+ H_{e^{1/4}}(P^{\otimes3}, Q^{\otimes3})
+ &\leq\frac{7420364678}{10^{10}}<\frac34,
+ \label{eq:rational-forward-total}\\
+ H_{e^{1/4}}(Q^{\otimes3}, P^{\otimes3})
+ &\leq\frac{7237647581}{10^{10}}<\frac34.
+ \label{eq:rational-reverse-total}
+\end{align}
+Thus the sampled candidate is feasible, and $v_3\leq5/32$.
+
+For the full-batch lower bracket, evaluate the profile at $v=4/25$. Then
+$a=5/2$, and the Gaussian formula gives
+\[
+ G_{1/4}(5/2)=\Phi(23/20)-e^{1/4}\Phi(-27/20).
+\]
+The central CDF bounds and the exponential interval with $(b,n)=(1,20)$ give
+\[
+ \Phi(23/20)-e^{1/4}\Phi(-27/20)>\frac{19}{25}>\frac34.
+\]
+Hence $4/25$ is infeasible at full batch, and
+\eqref{eq:calibration-transfer} gives $4/25<v_2$. Together with the sampled
+bounds, this proves the privacy-variance inequalities in
+Theorem~\ref{thm:strict-interior-counterexample}.
+
+\begingroup\small
+\begin{longtable}{@{}rrrr@{}}
+\caption{Directed rectangle bounds, with denominator $10^{10}$.
+Off-diagonal rows are counted twice.}
+\label{tab:rational-cells}\\
+\toprule $i$ & $j$ & Forward numerator & Reverse numerator \\\midrule
+\endfirsthead
+\toprule $i$ & $j$ & Forward numerator & Reverse numerator \\\midrule
+\endhead
+\midrule
+\multicolumn{4}{r}{\small Continued on the next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+0 & 0 & 179309587 & 4541683687 \\
+0 & 1 & 75622963 & 718523085 \\
+0 & 2 & 69056184 & 283059965 \\
+0 & 3 & 91045268 & 147341455 \\
+0 & 4 & 94610823 & 49317043 \\
+0 & 5 & 113839529 & 15318582 \\
+0 & 6 & 131941862 & 0 \\
+0 & 7 & 139954908 & 0 \\
+0 & 8 & 111297082 & 0 \\
+0 & 9 & 125975330 & 0 \\
+1 & 1 & 30525041 & 104528577 \\
+1 & 2 & 27152594 & 35842913 \\
+1 & 3 & 35097753 & 15069211 \\
+1 & 4 & 36770950 & 3637515 \\
+1 & 5 & 44506072 & 0 \\
+1 & 6 & 49279269 & 0 \\
+1 & 7 & 50820946 & 0 \\
+1 & 8 & 38394831 & 0 \\
+1 & 9 & 42280938 & 0 \\
+2 & 2 & 23806351 & 9614344 \\
+2 & 3 & 31009020 & 3290409 \\
+2 & 4 & 32740303 & 0 \\
+2 & 5 & 37920442 & 0 \\
+2 & 6 & 41171906 & 0 \\
+2 & 7 & 40662238 & 0 \\
+2 & 8 & 30071802 & 0 \\
+2 & 9 & 32717715 & 0 \\
+3 & 3 & 40879835 & 59609 \\
+3 & 4 & 40928790 & 0 \\
+3 & 5 & 46327961 & 0 \\
+3 & 6 & 48166599 & 0 \\
+3 & 7 & 46477322 & 0 \\
+3 & 8 & 33960816 & 0 \\
+3 & 9 & 36690918 & 0 \\
+4 & 4 & 40398228 & 0 \\
+4 & 5 & 43807871 & 0 \\
+4 & 6 & 44478157 & 0 \\
+4 & 7 & 42346729 & 0 \\
+4 & 8 & 30722365 & 0 \\
+4 & 9 & 33052386 & 0 \\
+5 & 5 & 46472095 & 0 \\
+5 & 6 & 46582913 & 0 \\
+5 & 7 & 44021815 & 0 \\
+5 & 8 & 31809211 & 0 \\
+5 & 9 & 34139592 & 0 \\
+6 & 6 & 46337541 & 0 \\
+6 & 7 & 43592151 & 0 \\
+6 & 8 & 31420920 & 0 \\
+6 & 9 & 33672920 & 0 \\
+7 & 7 & 40898832 & 0 \\
+7 & 8 & 29435883 & 0 \\
+7 & 9 & 31517496 & 0 \\
+8 & 8 & 21168396 & 0 \\
+8 & 9 & 22654198 & 0 \\
+9 & 9 & 24237093 & 0 \\
+\end{longtable}
+\endgroup
+
+\section{Elementary sufficient conditions}\label{app:elementary}
+The next two arguments give simpler sufficient conditions for finite-horizon
+dominance. Both use the sum event from the proof of
+Theorem~\ref{thm:rate-adaptive-pointwise} and are subsumed by that theorem.
+
+\begin{proposition}[Full-support convexity]\label{thm:near-full-accountant}
+Let $E,T\in\N_{>0}$ with $T\geq E$, $\Delta>0$, $\varepsilon\geq0$, and
+$0<\delta<1$. If
+\begin{equation}\label{eq:nearfull-region}
+ \frac TE\leq\frac12+\frac{\varepsilon v_{\mathrm{FB}}}{\Delta^2},
+\end{equation}
+then $\mathcal A_{E,T}(v_{\mathrm{FB}};\varepsilon)\geq\delta$.
+For $T>E$, the inequality is strict, and
+\[
+ v_{E,T}>v_{\mathrm{FB}},\qquad
+ V_E(E,S)<V_E(T,S)\quad(S\geq0).
+\]
+\end{proposition}
+
+\begin{proof}
+Put $a=\Delta/\sqrt{v_{\mathrm{FB}}}$ and $c_*=a/2+\varepsilon/a$.
+At variance $v_{\mathrm{FB}}$, the sum event has sampled value
+\[
+ \E\left[\overline\Phi\left(c_*-\frac{aK}{E}\right)\right]
+ -e^\varepsilon\overline\Phi(c_*),
+ \qquad K\sim\operatorname{Binomial}(T,E/T).
+\]
+Define $f(x)=\overline\Phi(c_*-ax)$. Since
+\[
+ f''(x)=a^2(c_*-ax)\phi(c_*-ax),
+\]
+condition~\eqref{eq:nearfull-region} makes $f$ convex on $[0,T/E]$.
+Jensen's inequality and $\E[K/E]=1$ therefore bound the event value below
+by~\eqref{eq:fullbatch-event-identity}.
+
+If $T>E$, the count is nondegenerate. Even at equality
+in~\eqref{eq:nearfull-region}, $f''$ is positive before the right endpoint,
+so $f$ is strictly convex on the whole interval. Strict Jensen makes the
+sampled profile exceed $\delta$. Equation~\eqref{eq:calibration-transfer}
+and the nonnegative sampling term give the variance comparisons.
+\end{proof}
+
+\begin{theorem}[Finite-support secants]\label{thm:support-width-accountant}
+Let $T>E>0$ be integers, $\Delta>0$, $\varepsilon>0$, and $0<\delta<1$.
+If
+\begin{equation}\label{eq:support-width-region}
+ a^2:=\frac{\Delta^2}{v_{\mathrm{FB}}}
+ \leq\frac{2\varepsilon E}{T-1},
+\end{equation}
+then $\mathcal A_{E,T}(v_{\mathrm{FB}};\varepsilon)>\delta$, and
+\[
+ v_{E,T}>v_{\mathrm{FB}},\qquad
+ V_E(E,S)<V_E(T,S)\quad(S\geq0).
+\]
+\end{theorem}
+
+\begin{proof}
+Put
+\[
+ u=\frac a2-\frac\varepsilon a,\qquad h=\frac aE,\qquad
+ g(k)=\Phi(u+h(k-E)),\quad k=0,\ldots,T.
+\]
+As in~\eqref{eq:event-profile-bound}, it is enough to prove
+\begin{equation}\label{eq:support-width-expectation}
+ \E[g(K)]>g(E),\qquad K\sim\operatorname{Binomial}(T,E/T),
+\end{equation}
+except for an endpoint where changing the ray's threshold supplies strictness.
+
+First suppose~\eqref{eq:support-width-region} is strict. Since $T-1\geq E$,
+we have $a^2<2\varepsilon$ and $u<0$. Let $\ell$ be the affine line through
+$g(E-1)$ and $g(E)$:
+\[
+ \ell(k)=g(E)+(k-E)[g(E)-g(E-1)].
+\]
+Convexity on the negative half-line gives $g(k)\geq\ell(k)$ for every
+integer $0\leq k\leq E$.
+
+For $k=E+d$, with $1\leq d\leq T-E$, and $0<t<1$,
+\begin{align*}
+ (u-ht)^2-(u+hdt)^2
+ &=ht(d+1)[-2u-h(d-1)t],\\
+ aE[-2u-h(d-1)t]
+ &=2\varepsilon E-a^2[E+(d-1)t]\\
+ &\geq2\varepsilon E-a^2(T-1)>0.
+\end{align*}
+Thus $\phi(u+hdt)>\phi(u-ht)$. Integrating yields
+\begin{align*}
+ g(E+d)-g(E)
+ &=dh\int_0^1\phi(u+hdt)\,dt\\
+ &>dh\int_0^1\phi(u-ht)\,dt
+ =d[g(E)-g(E-1)].
+\end{align*}
+Hence $g(k)\geq\ell(k)$ on the entire support, with strict inequality at
+$k=T$. Since $\E K=E$ and $\Pr\{K=T\}>0$,
+\[
+ \E[g(K)]>\E[\ell(K)]=g(E).
+\]
+
+At equality in~\eqref{eq:support-width-region}, put $m=T-E$. Then
+$u=-h(m-1)/2$, and
+\[
+ -2u-h(d-1)t=h[(m-1)-(d-1)t].
+\]
+For $m>1$, this is positive whenever $0<t<1$ and $1\leq d\leq m$, so the
+same argument applies. For $m=1$, $u=0$ and the right adjacent secant ties
+by symmetry. Every support value still lies on or above $\ell$. If $E\geq2$,
+strict convexity on the negative half-line gives
+$g(E-2)>\ell(E-2)$, and that count has positive probability.
+Thus~\eqref{eq:support-width-expectation} remains strict.
+
+The remaining case is $E=1,T=2$, where $a^2=2\varepsilon$ and the selected
+ray ties. Lemma~\ref{lem:strict-average-endpoint} improves its threshold,
+so even the average-only forward profile is strictly larger than $\delta$.
+In every case, equation~\eqref{eq:calibration-transfer} yields
+$v_{E,T}>v_{\mathrm{FB}}$, and adding the sampling term gives the final claim.
+\end{proof}
+
+\paragraph{Comparison of the sufficient conditions.}
+The coefficients multiplying $\varepsilon$ in these two conditions satisfy
+\[
+ B_{\mathrm{conv}}:=\frac{2E}{2T-E}
+ <B_{\mathrm{sec}}:=\frac{2E}{T-1}
+ \leq\Lambda_{E,T}\qquad(T>E).
+\]
+The first inequality follows from $2T-E>T-1$. If $E<T\leq2E$, then
+$B_{\mathrm{sec}}\leq2=\Lambda_{E,T}$, with equality exactly at $T=E+1$.
+If $T>2E$, integrality gives $T-1\geq2E$, so
+\[
+ B_{\mathrm{sec}}\leq1<\frac{6E}{3E+2}<\Lambda_{E,T}.
+\]
+Thus the secant condition improves on full-support convexity, but neither
+condition enlarges the coverage of Theorem~\ref{thm:rate-adaptive-pointwise}.
+
+In terms of the sampling rate, the secant condition is
+\[
+ q\geq\frac{a^2E}{a^2+2\varepsilon E}.
+\]
+Strict monotonicity of $G_\varepsilon$ gives the equivalent target condition
+\[
+ \delta\leq
+ G_\varepsilon\!\left(\sqrt{\frac{2\varepsilon E}{T-1}}\right).
+\]
+For the nearest competitor $T=E+1$, it reduces to $a^2\leq2\varepsilon$, or
+\[
+ \delta\leq\frac12-e^\varepsilon\Phi(-\sqrt{2\varepsilon}).
+\]
+At $\varepsilon=0$ the secant condition has no solutions. These are
+sufficient conditions; failure of a condition does not imply that a smaller
+batch has lower variance.
+
+\section{A forward integer-order R\'enyi comparison}\label{app:renyi}
+A global comparison is available for forward integer-order R\'enyi
+divergence~\cite{mironov2017}. Fix a privacy variance $v>0$. The raw variance
+at $(E,T)$ is $Eqv$. For an integer $m\geq2$, put
+$z=\Delta^2/(Eqv)$. The one-step forward likelihood moment is
+\begin{equation}\label{eq:moment}
+ M_m(q,z)=\sum_{k=0}^m\binom{m}{k}q^k(1-q)^{m-k}
+          \exp\left(\frac{k(k-1)z}{2}\right),
+\end{equation}
+and the transcript moment is $M_m(q,z)^T$. Exact sampled-Gaussian moments
+of this form are studied by Mironov, Talwar, and
+Zhang~\cite{mironovtalwarzhang2019}. More generally, for $P\ll Q$, write
+\[
+ \mathcal P_m(P\mid Q)=\E_Q\left[\left(\frac{dP}{dQ}\right)^m\right],
+ \qquad D_m(P\mid Q)=\frac1{m-1}\log\mathcal P_m(P\mid Q).
+\]
+
+\begin{theorem}[Forward integer-order R\'enyi dominance]\label{thm:renyi}
+For every admissible $(E,T)$, integer $m\geq2$, $v>0$, and $\Delta>0$,
+\begin{equation}\label{eq:powerdominance}
+ \exp\left(\frac{m(m-1)\Delta^2}{2v}\right)\leq M_m(q,z)^T.
+\end{equation}
+The left side is the full-batch transcript moment. If $T>E$, the inequality
+is strict, as is the corresponding forward R\'enyi-divergence comparison.
+Thus full batch uniquely minimizes this quantity at the supplied variance.
+\end{theorem}
+
+\begin{proof}
+Interpret the weights in~\eqref{eq:moment} as the law of
+$J\sim\operatorname{Binomial}(m,q)$. Jensen's inequality gives
+\[
+ M_m(q,z)\geq\exp\left(\frac{\E[J(J-1)]z}{2}\right)
+ =\exp\left(\frac{m(m-1)q^2z}{2}\right).
+\]
+After raising both sides to $T$, the exponent simplifies using $Tq=E$:
+\[
+ T\frac{m(m-1)q^2}{2}\frac{\Delta^2}{Eqv}
+ =\frac{m(m-1)\Delta^2}{2v}.
+\]
+If $T>E$, then $0<q<1$, every binomial weight is positive, and $J(J-1)$ is
+not constant. Strict convexity of the exponential gives strictness. Taking
+logarithms and dividing by $m-1>0$ preserves the comparison.
+\end{proof}
+
+In particular, any forward order-$m$ R\'enyi budget met by a smaller-batch
+point at variance $v$ is also met by full batch at the same variance.
+The theorem concerns the forward divergence at integer orders. It does not
+establish a forward/reverse comparison, cover noninteger orders, or imply
+an ordering of the exact two-sided $(\varepsilon,\delta)$ privacy profiles.
+
+\section{Nonparticipation and zero noise}\label{app:zero-noise}
+Recall the zero-noise computation in Appendix~\ref{app:calibration}:
+for $\Delta>0$, $\varepsilon\geq0$, $T\in\N_{>0}$, and $q\in[0,1]$,
+\begin{equation}\label{eq:zero-noise-profile}
+ \AO_S(0,\Delta,q,T,\varepsilon)=1-(1-q)^T.
+\end{equation}
+The formula includes $q=0$, when the two transcript laws coincide.
+
+For a simple reversal, take $E=1$, $T=2$, and $q=1/2$. The zero-noise profile
+is $3/4$, whereas at full batch it is one. At $\varepsilon=0$ and
+$\delta=4/5$, the smaller-batch calibrated noise is therefore zero, while
+$v_{\mathrm{FB}}>0$. The two total variances are
+\[
+ V_1(2,S)=S/2,\qquad V_1(1,S)=v_{\mathrm{FB}},
+\]
+so the smaller batch wins whenever $0\leq S<2v_{\mathrm{FB}}$.
+
+This example is driven by nonparticipation: the differing record is never
+selected with probability $1/4$. Its target lies above the boundary
+$1-e^{-1}<4/5$, so it does not contradict eventual full-batch dominance in
+the subcritical regime. The finite reversal in
+Theorem~\ref{thm:strict-interior-counterexample} lies below the corresponding
+boundary and therefore does not rely on zero-noise feasibility.
+
+\section{Trade-off separation}\label{app:separation}
+Ertan and van Dijk~\cite{ertanvandijk2026} study a related one-epoch Poisson
+experiment with $q=1/M$ through the geometry of its $f$-DP trade-off curve.
+Their lower bound for noise at a given separation has the same critical scale
+$1/\sqrt{2\log M}$. Their main analysis concerns shuffling, with a Poisson
+transfer under zero-out adjacency. Our calibration is stated for the
+canonical add/remove experiment. At a fixed sampling rate, a zero-contribution
+ghost record yields the same reduced scalar Poisson pair; the relevant
+distinctions here are the surrounding mechanism assumptions and the
+quantities being compared. Their separation bound is not an exact
+hockey-stick calibration or a finite-horizon variance ordering.
+
+We use the total-variation convention
+\[
+ \TV(P,Q)=\sup_A|P(A)-Q(A)|,
+\]
+where the supremum is over measurable events.
+For the canonical transcript pair $P_T,Q_T$, define
+\[
+ f_T(\alpha)=\inf\{1-\E_{P_T}\psi:
+     0\leq\psi\leq1,\ \E_{Q_T}\psi\leq\alpha\},
+ \qquad0\leq\alpha\leq1,
+\]
+where $\psi$ ranges over measurable randomized tests. Let
+$\operatorname{sep}(f_T)$ be the maximum Euclidean distance from the graph
+of $f_T$ to the random-guessing segment. Since
+$0\leq f_T(\alpha)\leq1-\alpha$, orthogonal projection onto that segment gives
+\[
+ \operatorname{sep}(f_T)
+ =\frac1{\sqrt2}\sup_{\alpha\in[0,1]}(1-\alpha-f_T(\alpha))
+ =\frac{\TV(P_T,Q_T)}{\sqrt2}.
+\]
+The last equality follows by optimizing
+$\E_{P_T}\psi-\E_{Q_T}\psi$; symmetry of the trade-off curve is not needed.
+At $\varepsilon=0$, the two-sided privacy profile is total variation.
+Theorem~\ref{thm:accountant-limit} therefore gives the exact separation limit
+\[
+ \operatorname{sep}(f_T)\longrightarrow
+ \frac{1-e^{-\rho\Phi(s)}}{\sqrt2}.
+\]
+This identifies the critical-window limit of the geometric metric for the
+canonical Poisson experiment.
+
+\section{Numerical calibration for the variance illustration}
+\label{app:numerical-methods}
+
+Figure~\ref{fig:fixed-participation-variance} uses $\Delta=1$,
+$\delta=10^{-5}$, $\varepsilon\in\{1,2,4,8\}$, and
+$E\in\{1,10,100,1000\}$. For each $E$, the horizons are the distinct
+integers obtained by rounding $19$ logarithmically spaced values from $E$
+to $10^6E$ and adding $E\{1,2,10,10^2,\ldots,10^6\}$. There are
+$316$ calibrations in total, with the actual sampling rate $q=E/T$.
+
+\paragraph{Privacy quantity and inversion.}
+The calculation numerically evaluates the two-sided transcript accountant
+$\mathcal A_{E,T}$, not a R\'enyi upper bound or the profile of the average.
+For one release under the reference law, write
+\[
+ L(Z)=\log\bigl(1-q+q e^{Z/\sigma-1/(2\sigma^2)}\bigr),
+ \qquad Z\sim\mathcal N(0,1),\qquad
+ K(z)=T\log\E e^{zL(Z)}.
+\]
+The implementation evaluates the two positive-part expectations by
+bilateral Laplace inversion: it integrates
+$e^{K(z)-(z-1)\varepsilon}/[z(z-1)]$ on a vertical line with
+$\Re z>1$ for the forward direction, and
+$e^{K(z)+z\varepsilon}/[z(z-1)]$ with $\Re z<0$ for the reverse direction.
+Their maximum is calibrated to $\delta$. For $q<1$, when
+$\varepsilon\geq-T\log(1-q)$, the reverse profile is exactly zero,
+since the product likelihood ratio is at least $(1-q)^T$.
+Composition is computed through $K$; it does not allocate $T$ observations
+or substitute the sparse-limit formula at large $T$.
+
+\paragraph{Numerical controls and checks.}
+Gauss--Legendre quadrature integrates the normal coordinate on
+$[-R,R]$, initially with $R=\max\{12,2/\sigma+8\}$.
+Calibration compares $1024$ and $2048$ nodes, doubling up to $8192$ if
+needed; later passes use $R\geq14$. Small-argument expansions and the
+identity $\E[q(e^{Z/\sigma-1/(2\sigma^2)}-1)]=0$ control cancellation
+in the one-step moment. Adaptive oscillatory quadrature integrates
+frequencies on $[0,\infty)$, with limits of $200$ cycles and subdivisions.
+Its requested absolute tolerance, scaled to each final directed profile,
+is $2\times10^{-12}$ initially and $5\times10^{-13}$ in later passes.
+Brent root finding uses absolute and relative tolerances $2\times10^{-8}$
+in $\sigma$; integration warnings and nonfinite values are rejected.
+
+The saved finer-resolution pass reevaluates all $316$ rows with
+$\max\{4096,2m\}$ nodes, where $m$ is the row's final calibration
+resolution, $R=\max\{16,2/\sigma+8\}$, and frequency tolerance
+$5\times10^{-13}$. The largest directed-profile change is
+$2.59\times10^{-12}$; the largest residual from $10^{-5}$ is
+$1.70\times10^{-11}$, with no integration warnings. A separate
+discretized privacy-loss calculation using \texttt{dp-accounting} 0.6.0
+checks six moderate-horizon points, halving the mesh from
+$\varepsilon/5000$ to at least $\varepsilon/20000$ and further as needed.
+Each final comparison differs by less than $2\times10^{-9}$.
+These resolution and cross-method checks are numerical diagnostics,
+not certified bounds on truncation or discretization error.
+
+Full-batch rows use analytical Gaussian calibration directly. A separate
+$80$-digit evaluation of the Gaussian formula checks their stored raw
+noise against $\sigma_{E,E}=\sqrt{E v_{\mathrm{FB}}}$, with maximum
+relative discrepancy below $10^{-12}$. This checks the noise values,
+not merely the normalized endpoint $R_E(1)=1$.
+
+\paragraph{Reproduction files.}
+The numerical supplement~\cite{numerical-supplement} is separate from
+the earlier r05 transcript-proof snapshot. It contains
+\nolinkurl{numerical_batch_sweep.py} (grid, calibration, and checks),
+\nolinkurl{plot_batch_sweep.py} (rendering),
+\nolinkurl{calibration_data.csv}, the saved resolution and independent
+privacy-loss reports, and both figure panels:
+\nolinkurl{paper_raw_noise_row.pdf} and
+\nolinkurl{paper_variance_row.pdf}.
+Its README gives exact commands and dependency versions; the manifest
+records source and data hashes. The $\varepsilon=1$ rows were reused from
+the earlier sweep; the other $237$ rows were calibrated separately.
+Plot reproduction uses only the supplied CSV and does not recalibrate it.
+
+\begin{thebibliography}{9}
+
+\bibitem{raisa2024}
+O.~R\"ais\"a, J.~J\"alk\"o, and A.~Honkela.
+\newblock Subsampling is not Magic: Why Large Batch Sizes Work for
+Differentially Private Stochastic Optimisation.
+\newblock In \emph{Proceedings of the 41st International Conference on
+Machine Learning}, PMLR 235:41959--41981, 2024.
+\newblock \url{https://proceedings.mlr.press/v235/raisa24a.html}.
+
+\bibitem{ballewang2018}
+B.~Balle and Y.-X.~Wang.
+\newblock Improving the Gaussian Mechanism for Differential Privacy:
+Analytical Calibration and Optimal Denoising.
+\newblock In \emph{Proceedings of the 35th International Conference on
+Machine Learning}, PMLR 80:394--403, 2018.
+\newblock \url{https://proceedings.mlr.press/v80/balle18a.html}.
+
+\bibitem{mironov2017}
+I.~Mironov.
+\newblock R\'enyi Differential Privacy.
+\newblock In \emph{30th IEEE Computer Security Foundations Symposium},
+pages 263--275, 2017.
+\newblock \url{https://doi.org/10.1109/CSF.2017.11}.
+
+\bibitem{mironovtalwarzhang2019}
+I.~Mironov, K.~Talwar, and L.~Zhang.
+\newblock R\'enyi Differential Privacy of the Sampled Gaussian Mechanism.
+\newblock arXiv:1908.10530, 2019.
+\newblock \url{https://arxiv.org/abs/1908.10530}.
+
+\bibitem{ertanvandijk2026}
+M.~B.~Ertan and M.~van Dijk.
+\newblock Fundamental Limitations of Favorable Privacy--Utility Guarantees for
+DP-SGD.
+\newblock arXiv:2601.10237v3, revised August 9, 2026.
+\newblock \url{https://arxiv.org/abs/2601.10237v3}.
+
+\bibitem{kalinin2024}
+N.~P.~Kalinin.
+\newblock Notes on Sampled Gaussian Mechanism.
+\newblock arXiv:2409.04636v1, 2024.
+\newblock \url{https://arxiv.org/abs/2409.04636v1}.
+
+\bibitem{rational-supplement}
+{\raggedright
+Source supplement for fixed-epoch large-batch optimality, revision r05,
+September 17, 2026.
+\newblock Earlier transcript-result snapshot:
+\href{poisson-fixed-epoch-large-batch-optimality-review-data-r05.zip}{%
+\nolinkurl{poisson-fixed-epoch-large-batch-optimality-review-data-r05.zip}}.
+\newblock Distributed alongside the PDF, with archive SHA-256 in the
+accompanying checksum file.
+\newblock Includes statement-level formalization coverage, rational bounds,
+source manifests, and replay instructions; predates the average-only
+extensions in this article.\par}
+
+\bibitem{formal-coverage}
+{\raggedright
+Statement-level formalization coverage for the current fixed-participation
+manuscript, September 30, 2026.
+\newblock \href{formal_coverage.md}{\nolinkurl{formal_coverage.md}}.
+\newblock Distributed alongside this paper; maps finite and sparse results
+to the unchanged r05 Lean snapshot and identifies conventional-only additions.\par}
+
+\bibitem{numerical-supplement}
+{\raggedright
+Numerical supplement for the fixed-participation variance illustration,
+revision r03, September 30, 2026.
+\newblock
+\href{poisson-fixed-participation-numerical-review-data-r03.zip}{%
+\nolinkurl{poisson-fixed-participation-numerical-review-data-r03.zip}}.
+\newblock Distributed alongside the PDF with checksums, calibration and
+plotting sources, input data, numerical diagnostics, and the figure.\par}
+
+\end{thebibliography}
+
+\end{document}

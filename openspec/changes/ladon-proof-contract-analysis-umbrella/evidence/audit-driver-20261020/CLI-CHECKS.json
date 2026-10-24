@@ -1,0 +1,94 @@
+[
+  {
+    "name": "cli-help",
+    "command": [
+      "/home/codex/projects/ladon/.venv/bin/python",
+      "-m",
+      "ladon.entrypoint",
+      "investigation",
+      "contract",
+      "audit",
+      "--help"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.07982743810862303
+  },
+  {
+    "name": "cli-first",
+    "command": [
+      "/home/codex/projects/ladon/.venv/bin/python",
+      "-m",
+      "ladon.entrypoint",
+      "investigation",
+      "contract",
+      "audit",
+      "--input",
+      "tests/fixtures/proof_contract_audit/propagate-inspect.json",
+      "--output-dir",
+      "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/audit-driver-20261020/run-first",
+      "--max-stages",
+      "1"
+    ],
+    "exitCode": 2,
+    "elapsedSeconds": 0.18007109826430678
+  },
+  {
+    "name": "cli-resumed",
+    "command": [
+      "/home/codex/projects/ladon/.venv/bin/python",
+      "-m",
+      "ladon.entrypoint",
+      "investigation",
+      "contract",
+      "audit",
+      "--input",
+      "tests/fixtures/proof_contract_audit/propagate-inspect.json",
+      "--resume",
+      "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/audit-driver-20261020/run-first",
+      "--output-dir",
+      "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/audit-driver-20261020/run-resumed"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.17701924685388803
+  },
+  {
+    "name": "cli-unsupported",
+    "command": [
+      "/home/codex/projects/ladon/.venv/bin/python",
+      "-m",
+      "ladon.entrypoint",
+      "investigation",
+      "contract",
+      "audit",
+      "--input",
+      "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/audit-driver-20261020/unsupported-plan.json",
+      "--output-dir",
+      "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/audit-driver-20261020/run-unsupported"
+    ],
+    "exitCode": 2,
+    "elapsedSeconds": 0.34006873797625303
+  },
+  {
+    "name": "cli-memory",
+    "command": [
+      "/home/codex/projects/ladon/.venv/bin/python",
+      "-m",
+      "ladon.entrypoint",
+      "investigation",
+      "contract",
+      "audit",
+      "--input",
+      "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/audit-driver-20261020/memory-plan.json",
+      "--output-dir",
+      "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/audit-driver-20261020/run-memory"
+    ],
+    "exitCode": 2,
+    "elapsedSeconds": 0.125476302113384
+  },
+  {
+    "sharedClockAndBounds": "preserved",
+    "prefixBytes": "identical",
+    "memoryStop": "actual bounded process; explicit 1 MiB cap, no retry",
+    "unsupported": "prefix retained; refinement-unavailable"
+  }
+]

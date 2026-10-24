@@ -1,0 +1,79 @@
+{
+  "command": [
+    "bwrap",
+    "--bind",
+    "/",
+    "/",
+    "--dev-bind",
+    "/dev",
+    "/dev",
+    "--proc",
+    "/proc",
+    "--ro-bind",
+    "/home/codex/projects/lean/matrix-factorization/.lake",
+    "/tmp/ladon-matrix-lake-live",
+    "--ro-bind",
+    "/home/codex/projects/ladon/.codex/state/proof-contract-analysis/deleted-source-fix/matrix-snapshot",
+    "/home/codex/projects/lean/matrix-factorization",
+    "--chdir",
+    "/home/codex/projects/ladon",
+    "--",
+    "uv",
+    "run",
+    "--locked",
+    "--offline",
+    "python",
+    "scripts/python_quality.py",
+    "--strict"
+  ],
+  "startedAtUtc": "2026-10-24T09:17:19.257987+00:00",
+  "timeoutSeconds": 5400,
+  "rssLimitBytes": 12884901888,
+  "samplingIntervalSeconds": 0.5,
+  "samplingScope": "parent process group and descendants; sum of VmRSS and Pss",
+  "sourceManifestSha256": "517a677f0f001508b4ec53cb983d5d7f1c43cda751b987a29f5da85f714047c9",
+  "changedInputsBefore": [],
+  "cgroupBefore": {
+    "anon": 1010900992,
+    "file": 42098302976,
+    "kernel": 4766359552,
+    "shmem": 820912128,
+    "current": 47877152768
+  },
+  "cgroupEventsBefore": {
+    "low": 0,
+    "high": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "sock_throttled": 0
+  },
+  "exitCode": -2,
+  "elapsedSeconds": 1074.47,
+  "stopReason": "external-SIGINT",
+  "observedPeak": {
+    "rssBytes": 4022374400,
+    "pssBytes": 3989176320,
+    "swapBytes": 0,
+    "processes": 6
+  },
+  "minimumHostAvailableBytes": 53175566336,
+  "cgroupAfter": {
+    "anon": 1703301120,
+    "file": 42548281344,
+    "kernel": 4223995904,
+    "shmem": 988114944,
+    "current": 48478511104
+  },
+  "cgroupEventsAfter": {
+    "low": 0,
+    "high": 0,
+    "max": 0,
+    "oom": 0,
+    "oom_kill": 0,
+    "oom_group_kill": 0,
+    "sock_throttled": 0
+  },
+  "changedInputsAfter": []
+}

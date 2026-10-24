@@ -1,0 +1,36 @@
+
+== strict radon/vulture checks ==
+radon/vulture: clean
+
+== scoped ruff ==
++ /home/codex/projects/ladon/.venv/bin/python3 -m ruff check src tests scripts
+I001 [*] Import block is un-sorted or un-formatted
+ --> src/ladon/_proof_contract_probe_domain_contracts.py:2:1
+  |
+1 |   """Contract checks for the exact restricted-domain-v2 proposition pair."""
+2 | / from __future__ import annotations
+3 | |
+4 | | from ladon.proof_contracts import validate_contract
+5 | | from ._proof_contract_probe_templates import _residual
+  | |______________________________________________________^
+help: Organize imports
+  |
+4 | from ladon.proof_contracts import validate_contract
+5 +
+6 | from ._proof_contract_probe_templates import _residual
+  |
+
+RUF059 Unpacked variable `source` is never used
+  --> src/ladon/proof_contract_rational_worker.py:45:18
+   |
+43 |         if isinstance(prepared, dict):
+44 |             return prepared
+45 |         context, source, source_digest, target_positions, receipt = prepared
+   |                  ^^^^^^
+46 |         captured, stop = _capture_goal(job, root, context, source_digest, target_positions)
+47 |         if stop is not None:
+   |
+help: Prefix it with an underscore or any other dummy variable pattern
+
+Found 2 errors.
+[*] 1 fixable with the `--fix` option (1 hidden fix can be enabled with the `--unsafe-fixes` option).

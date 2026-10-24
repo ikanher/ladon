@@ -1,0 +1,67 @@
+6452:                                                                       ∫︁       of an expanding
+6453: ball in terms of the weighted dissipation inside it. We first estimate πw · ∇χ R by powers of
+6454: a weighted L6 norm of w that can be absorbed by dissipation. We choose 0 ≤ φ ≤ 1 smooth,
+6455: compactly supported and equal to one on the unit ball. For R ≥ 1, we write φ R ( x ) = φ( x/R),
+6456: χ R = φ8R , and set
+6457:                      ∫︂                   (︃∫︂            )︃1/2
+6458:                              2                          2
+6459:                ER = χ R | w | ,     AR =       χ R |∇w|         ,  BR = ∥ φ4R w∥6 .
+6460: 
+6461: The Sobolev inequality and the product rule imply
+6462:                              BR ≤ C ∥∇( φ4R w)∥2 ≤ C ( A R + R−1 ∥w∥2 ).                                               (10.17)
+6463: We use the standard L p boundedness of Riesz transforms for 1 < p < ∞; see [20]. For
+6464: multiplication by a scalar function a and a linear operator T , we write [ a, T ] g = a(T g) −
+6465: T ( ag). Multiplication of (10.16) by φ4R then gives
+6466:                              φ4R π∗ = ∑ Ri R j ( φ4R gij ) + ∑[ φ4R , Ri R j ] gij .                                   (10.18)
+6467:                                               i,j                              i,j
+6468: 
+6469: The first sum has L3/2 norm at most CT ( BR + 1), since
+6470:                     ∥ φ4R wi w j ∥3/2 ≤ BR ∥w∥2 ,                      ∥ φ4R wi u j ∥3/2 ≤ ∥w∥2 ∥u∥6 .
+6471: The nonlocal kernel of Ri R j is bounded by C | x − y|−3 . The possible multiple of the identity
+6472: cancels in the commutator, whose kernel is therefore bounded in absolute value by
+6473:                             K R ( x − y) = C | x − y|−3 min{| x − y|/R, 1}.
+6474: Direct radial integration gives
+6475:                                      [︃                 ∫︂ R                        ∫︂ ∞             ]︃
+6476:                                               −4/3                 −2/3                        −2
+6477:                     ∥K R ∥4/3
+6478:                           4/3 ≤ C         R                    r           dr +            r        dr ≤ CR−1 .
+6479:                                                          0                           R
+6480: 
+6481:                              FINITE TIME BLOWUP FOR NAVIER–STOKES                            123
+6482: 
+6483: Young’s convolution inequality bounds the second sum in (10.18) in L4/3 by CT R−3/4 . These
+6484: identities hold first for compact smooth cutoffs of g, then for g by convergence in L1 , the
+6485: uniform commutator bound, and convergence of its Riesz transforms in H −s . In particular
+6486: π∗ is locally integrable in space and time.
+6487:   The equality of pressure gradients, tested against the compact vector field a(t)χ R w, now
+6488: gives          ∫︂                 ∫︂
+6489:                  π w · ∇χ R dx =    π∗ w · ∇χ R dx       for almost every t ∈ (0, T ).
+6490: Since |∇χ R | ≤ CR−1 φ7R , the two terms in (10.18) pair with CR−1 φ3R |w|. Interpolation yields
+6491:                ∥ φ3R w∥3 ≤ ∥ φ2R w∥3 ≤ BR1/2 ∥w∥1/2
+6492:                                                 2 ,         ∥ φ3R w∥4 ≤ BR3/4 ∥w∥1/4
+6493:                                                                                  2 .
+6494: Consequently        ⃓∫︂          ⃓         [︂                          ]︂
+6495:                     ⃓ π w · ∇χ R ⃓ ≤ CT R−1 ( BR + 1) B1/2 + R−3/4 B3/4 .
+6496:                     ⃓            ⃓
+6497:                     ⃓            ⃓                     R            R                    (10.19)
+6498:    Difference energy. The pressure flux can now be included in the energy estimate for the
+6499: difference. All integrations have compact support, so smoothness suffices. Pairing (10.15)
+6500: with χ R w gives
+6501:                        1 ′                                       1
+6502:                                       ∫︂                           ∫︂
+6503:                          ER + A2R = − χ R (w · ∇)u · w +              |w|2 ∆χ R
+6504:                        2                                         2
+6505:                                        1
+6506:                                          ∫︂                   ∫︂
+6507:                                     +       | w |2 v · ∇ χ R + π w · ∇ χ R .
+6508:                                        2
+6509: We take R large enough that χ R = 1 on a neighborhood of supp u. Then v = w on supp ∇χ R ,
+6510: and the transport flux is bounded by
+6511:                                        ∫︂
+6512:                                 CR−1        φ6R |w|3 ≤ CT R−1 BR3/2 .
+6513: 
+6514: Here φ2R |w| = ( φ4R |w|)1/2 |w|1/2 and Hölder’s inequality give the last bound. The Laplacian
+6515: term is at most CT R−2 . Using (10.17) in (10.19), every power of A R in these flux bounds is at
+6516: most 3/2 < 2. Young’s inequality therefore gives
+6517:                  1 ′      1                    CT
+6518:                    ER + A2R ≤ ∥∇u∥∞ ER +             for almost every t ∈ (0, T ).

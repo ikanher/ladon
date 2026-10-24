@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-18",
+  "runtimeCommit": "9695596ed9db287076251649ae57051331f83775",
+  "runtimeChanged": false,
+  "checks": [
+    {
+      "command": "python3 openspec/changes/ladon-correspondence-field-hardening-umbrella/evidence/retest-6-retrospective/verify.py",
+      "exitCode": 0,
+      "result": "31 source identities; 8 development cases; 6 controls; 40 recorded obligations"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q openspec/changes/ladon-correspondence-field-hardening-umbrella/evidence/retest-6-retrospective/test_reporting_contract.py",
+      "exitCode": 1,
+      "passed": 1,
+      "failed": 2,
+      "disposition": "Expected red acceptance proposal; missing mismatch and different-method finding projections. No implementation attempted."
+    },
+    {
+      "command": "openspec validate ladon-correspondence-field-hardening-umbrella --strict",
+      "exitCode": 0
+    },
+    {
+      "command": "python3 verify-inputs.py",
+      "cwd": "/home/codex/projects/navier-stokes-retest-6",
+      "exitCode": 0,
+      "result": "2670 primary files and 416 Ladon inputs unchanged; no audit clock started"
+    },
+    {
+      "command": ".venv/bin/python -m pytest -q openspec/changes/ladon-correspondence-field-hardening-umbrella/evidence/retest-6-retrospective/test_custody_contract.py",
+      "exitCode": 0,
+      "passed": 4,
+      "result": "Wrong source span, theorem selection, evidence quote and absence claim all rejected"
+    }
+  ],
+  "claimsNotEstablished": [
+    "new Lean replay",
+    "autonomous semantic discovery",
+    "whole-paper correctness",
+    "causal tool benefit"
+  ],
+  "productionOrFrozenTestsEdited": false,
+  "historicalRunEdited": false,
+  "pushed": false,
+  "independentReview": {
+    "reviewer": "/root/retrospective_review",
+    "mode": "answer-informed read-only",
+    "centralConclusion": "supported: both reference discrepancies recorded; no mathematical falsity established",
+    "findings": [
+      {
+        "issue": "Absent bridge overstates unlocated counterpart",
+        "disposition": "Changed to not-established-in-recorded-run; added rejection control"
+      },
+      {
+        "issue": "Custody checker omitted source binding/selection and evidence pointers",
+        "disposition": "Added exact frozen-index comparisons, source-span/hash and evidence-pointer checks, four mutation controls"
+      }
+    ]
+  }
+}

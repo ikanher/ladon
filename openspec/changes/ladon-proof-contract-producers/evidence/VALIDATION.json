@@ -1,0 +1,87 @@
+{
+  "schema": "ladon-contract-producer-acceptance-v1",
+  "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+  "sourceGate": "SOURCE-GATE.json",
+  "rootChecks": [
+    {
+      "command": "pytest tests/test_proof_contract*.py (excluding unimplemented propagation at that revision)",
+      "passed": 85,
+      "seconds": 35.59,
+      "scope": "before identity registry addition and helper-only test refactor; not fullrepo"
+    },
+    {
+      "command": "pytest tests/test_proof_contract_{fidelity,formal_cli,production,propagation,formal_snapshot}.py",
+      "passed": 35,
+      "seconds": 17.64,
+      "scope": "canonical after helper refactor, current profile; includes18 corepropagationcases"
+    },
+    {
+      "command": "pytest tests/test_proof_contract_expansion.py",
+      "passed": 1,
+      "seconds": 3.44,
+      "scope": "real axiom statement survives actually unavailable body extraction"
+    },
+    {
+      "command": "pytest proofir/scoped interpretation/source-goal compatibility",
+      "passed": 471,
+      "failed": 1,
+      "seconds": 147.48,
+      "scope": "sole failure: pre-existing _process_failure default removed in memory changes; corrected below"
+    },
+    {
+      "command": "pytest tests/test_source_goal_size_accounting.py tests/test_memory_limit_reporting.py",
+      "passed": 11,
+      "seconds": 0.51,
+      "scope": "exact failed compatibility case and memory-reporting regressions after default restoration"
+    },
+    {
+      "command": "strict_quality_issues([src,tests,scripts])",
+      "issues": 0,
+      "scope": "current whole-repository staticquality; fullpytest not run by this command"
+    },
+    {
+      "command": "ruff check src tests scripts",
+      "exitCode": 0
+    }
+  ],
+  "independentReview": {
+    "board": ".codex/state/ultra-proof-contract.sqlite3",
+    "initialPost": 139,
+    "followupPost": 144,
+    "initialFindings": "stdout impersonation and same-name origin collision; corrected",
+    "reviewer": "/root/producer_audit",
+    "model": "gpt-6-luna",
+    "reasoning": "medium",
+    "scope": "bounded post-integration producer audit; later root shared-validator reuse5red->5green is separately qualified"
+  },
+  "limits": {
+    "timeoutSeconds": 60,
+    "rssBytes": 12884901888,
+    "outputBytes": 8388608
+  },
+  "authority": {
+    "sourceFidelity": "attributed-unreviewed",
+    "checkerAuthority": "none",
+    "mathematicalFalsity": "not-established",
+    "snapshot": "self-consistency and freshness, not authenticated receipt",
+    "execution": "Lean frontend IO executes with caller privileges; not malicious-code sandbox"
+  },
+  "dependenciesAdded": [],
+  "sources": {
+    "src/ladon/proof_contract_source.py": "b380babc236df7a344a6a3fd17f51ba9234fd408214a0dd4db3d09b85841d9ff",
+    "src/ladon/proof_contract_rules.py": "d1e740d28309ac03ef5b765351cbefab4696664e8effee03282a53c597a5ee8b",
+    "src/ladon/proof_contract_formal.py": "c24697c6ab256cf243b3af5697edc38ec9a7e8049d0e7f6d8dcd60a6cab26d97",
+    "src/ladon/proof_contract_recognition.py": "9677cce39fc959ab5596678ffaf3d82b79bf9e0f8aab0ae470aaab92a41912a8",
+    "src/ladon/proof_contract_cli.py": "2ae36a351e1564191cbfeb13fa79d6f7e593436cd203e0129a8dc6733b1b5ec9",
+    "src/ladon/proof_contract_sqlite.py": "25be69509b4fe35760c29988c7cdef80883f8fff586a4cbf31197e5270a97dfb",
+    "src/ladon/proof_contract_production.py": "c68665cd899a8ba09ed5cf14aed843d9032bb7ff505615fb41b37913d2dbc10c",
+    "src/ladon/proof_contract_propagation.py": "d71f0dbb71075a40a1e8338227502c6090a4f785b359e160f575ba6df36bc6c4",
+    "src/ladon/proof_contract_payloads.py": "b12063ccd4f2d722d69e6eea155435ea132b9a6b0076d8b23a1fc11a8be5f3e0",
+    "src/ladon/proof_contracts.py": "ab206086a2b6e19d8cf7331005098e285fa1abb591697bf3b78f5adf1a6ffaaf",
+    "src/ladon/proof_contract_expressions.py": "1b60e8b5606f558d40058fd042ffdbd2a5e932e5b65da32e49028a2dc9af2f59",
+    "src/ladon/proof_contract_worker.py": "3a6677f6ed482d5ffbf2933e165b8e28a5e635827d3553e76c3694255eea3e1b",
+    "src/ladon/proof_contract_artifacts.py": "e9a3dd56edda3dcea7b1ab5220ad745a76aa57813faa4d58275ba224e4ce0b9c",
+    "src/ladon/lean/ladon_formal_contract_helper.lean": "c4f5b31403ab9056ef21cd8132645fe9e7895e993673e92819935d2cbe0dd645",
+    "src/ladon/source_goal_capture.py": "c2def4acfb722bb748146c580defb4386041d0c4c4ea637b9079c81d0c3773f3"
+  }
+}

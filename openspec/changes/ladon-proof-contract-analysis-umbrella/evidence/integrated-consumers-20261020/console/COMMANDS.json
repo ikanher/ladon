@@ -1,0 +1,190 @@
+[
+  {
+    "name": "help",
+    "argv": [
+      "/tmp/ladon-integrated-consumers-20261020-installed/bin/ladon",
+      "investigation",
+      "contract",
+      "audit",
+      "--help"
+    ],
+    "cwd": "/tmp/ladon-integrated-consumers-20261020-source",
+    "expectedExit": 0,
+    "exitCode": 0,
+    "elapsedSeconds": 0.07267123879864812
+  },
+  {
+    "name": "checkpoint",
+    "argv": [
+      "/tmp/ladon-integrated-consumers-20261020-installed/bin/ladon",
+      "investigation",
+      "contract",
+      "audit",
+      "--input",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/audit-plan.json",
+      "--output-dir",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/checkpoint",
+      "--max-stages",
+      "1"
+    ],
+    "cwd": "/tmp/ladon-integrated-consumers-20261020-source",
+    "expectedExit": 0,
+    "exitCode": 2,
+    "elapsedSeconds": 0.16374963568523526
+  },
+  {
+    "name": "resume",
+    "argv": [
+      "/tmp/ladon-integrated-consumers-20261020-installed/bin/ladon",
+      "investigation",
+      "contract",
+      "audit",
+      "--input",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/audit-plan.json",
+      "--output-dir",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/resumed",
+      "--resume",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/checkpoint"
+    ],
+    "cwd": "/tmp/ladon-integrated-consumers-20261020-source",
+    "expectedExit": 0,
+    "exitCode": 0,
+    "elapsedSeconds": 0.17097978200763464
+  },
+  {
+    "name": "observe",
+    "argv": [
+      "/tmp/ladon-integrated-consumers-20261020-installed/bin/ladon",
+      "investigation",
+      "observe",
+      "--plan",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/plan.json",
+      "--root",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/source",
+      "--record",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/record.json",
+      "--output",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/observed.json"
+    ],
+    "cwd": "/tmp/ladon-integrated-consumers-20261020-source",
+    "expectedExit": 0,
+    "exitCode": 0,
+    "elapsedSeconds": 0.08360230829566717
+  },
+  {
+    "name": "inspect",
+    "argv": [
+      "/tmp/ladon-integrated-consumers-20261020-installed/bin/ladon",
+      "investigation",
+      "inspect-observations",
+      "--plan",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/observed.json",
+      "--root",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/source"
+    ],
+    "cwd": "/tmp/ladon-integrated-consumers-20261020-source",
+    "expectedExit": 0,
+    "exitCode": 0,
+    "elapsedSeconds": 0.09087337227538228
+  },
+  {
+    "name": "challenge",
+    "argv": [
+      "/tmp/ladon-integrated-consumers-20261020-installed/bin/ladon",
+      "investigation",
+      "challenge",
+      "--plan",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/observed.json",
+      "--root",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/source",
+      "--claim",
+      "9c865b24b2da43bf28130427e69d2e15462cbb5e270ccb69014bfc4e77a0aebf",
+      "--output",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/challenge.json"
+    ],
+    "cwd": "/tmp/ladon-integrated-consumers-20261020-source",
+    "expectedExit": 0,
+    "exitCode": 0,
+    "elapsedSeconds": 0.09280591178685427
+  },
+  {
+    "name": "ingest",
+    "argv": [
+      "/tmp/ladon-integrated-consumers-20261020-installed/bin/ladon",
+      "investigation",
+      "ingest",
+      "--plan",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/observed.json",
+      "--root",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/source",
+      "--packet",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/challenge.json",
+      "--response",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/response.json",
+      "--output",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/reviewed.json"
+    ],
+    "cwd": "/tmp/ladon-integrated-consumers-20261020-source",
+    "expectedExit": 0,
+    "exitCode": 0,
+    "elapsedSeconds": 0.10973384603857994
+  },
+  {
+    "name": "report",
+    "argv": [
+      "/tmp/ladon-integrated-consumers-20261020-installed/bin/ladon",
+      "investigation",
+      "report",
+      "--plan",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/reviewed.json",
+      "--plan",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/observed.json",
+      "--root",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/source",
+      "--output",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/report.json"
+    ],
+    "cwd": "/tmp/ladon-integrated-consumers-20261020-source",
+    "expectedExit": 0,
+    "exitCode": 0,
+    "elapsedSeconds": 0.11699622124433517
+  },
+  {
+    "name": "finalize",
+    "argv": [
+      "/tmp/ladon-integrated-consumers-20261020-installed/bin/ladon",
+      "investigation",
+      "finalize",
+      "--plan",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/reviewed.json",
+      "--root",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/source",
+      "--output",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/terminal.json"
+    ],
+    "cwd": "/tmp/ladon-integrated-consumers-20261020-source",
+    "expectedExit": 0,
+    "exitCode": 0,
+    "elapsedSeconds": 0.09113076888024807
+  },
+  {
+    "name": "collision",
+    "argv": [
+      "/tmp/ladon-integrated-consumers-20261020-installed/bin/ladon",
+      "investigation",
+      "observe",
+      "--plan",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/plan.json",
+      "--root",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/source",
+      "--record",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/record.json",
+      "--output",
+      "/tmp/ladon-integrated-consumers-20261020-console-corrected/observed.json"
+    ],
+    "cwd": "/tmp/ladon-integrated-consumers-20261020-source",
+    "expectedExit": 2,
+    "exitCode": 2,
+    "elapsedSeconds": 0.08159097284078598
+  }
+]

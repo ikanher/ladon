@@ -1,0 +1,130 @@
+{
+  "schema": "attributed-prose-reading-v1",
+  "readingId": "prose-reading:cor-fixed-epoch-all-horizon-v1",
+  "status": "attributed-unreviewed",
+  "source": {
+    "path": "openspec/changes/ladon-result-understanding-and-release-umbrella/baselines/fixed-epoch-v1/inputs/exposition.tex",
+    "sha256": "a9b3ebb39ebb62db92975c8cdac82d82c978fcbf1bec5b10d9f036fb50b21118",
+    "selectedSpan": {
+      "startLine": 502,
+      "endLine": 517,
+      "quote": "\\label{cor:fixed-epoch-all-horizon}\nFix $E\\in\\N_{>0}$, $\\Delta>0$, $\\varepsilon>0$, and $0<\\delta<1$, and put\n$a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$. If\n\\begin{equation}\\label{eq:epoch-uniform-condition}\n a^2\\leq\\Lambda_E\\varepsilon,\n \\qquad \\Lambda_E:=\\frac{6E}{3E+2},\n\\end{equation}\nthen, for every finite integer $T>E$,\n\\[\n v_{\\mathrm{FB}}<\\overline v_{E,T}\\leq v_{E,T},\n\\]\nand, for every $S\\geq0$,\n\\[\n V_E(E,S)=\\overline V_E(E,S)<\\overline V_E(T,S)\\leq V_E(T,S).\n\\]\n\\end{corollary}\n"
+    }
+  },
+  "selectedClaim": {
+    "component": "strict privacy-variance dominance only",
+    "claim": "For every finite integer horizon T greater than E, the full-batch calibrated privacy variance v_FB is strictly smaller than the transcript-calibrated average privacy variance v_{E,T}.",
+    "scopeNote": "The corollary states the stronger displayed chain v_FB < overline(v)_{E,T} <= v_{E,T}; this reading selects only its strict v_FB < v_{E,T} consequence.",
+    "corollaryTitle": "Full-batch dominance at every finite horizon"
+  },
+  "parameters": [
+    {
+      "symbol": "E",
+      "type": "positive integer",
+      "condition": "E > 0"
+    },
+    {
+      "symbol": "Delta",
+      "type": "positive real sensitivity",
+      "condition": "Delta > 0"
+    },
+    {
+      "symbol": "epsilon",
+      "type": "positive real privacy parameter",
+      "condition": "epsilon > 0"
+    },
+    {
+      "symbol": "delta",
+      "type": "real privacy parameter",
+      "condition": "0 < delta < 1"
+    },
+    {
+      "symbol": "v_FB",
+      "type": "positive real calibrated privacy variance at full batch",
+      "definition": "At full batch it is characterized by the Gaussian calibration relation stated in the source context anchor; the excerpt defines a = Delta/sqrt(v_FB)."
+    },
+    {
+      "symbol": "a",
+      "type": "positive real normalized sensitivity",
+      "definition": "a = Delta/sqrt(v_FB)"
+    },
+    {
+      "symbol": "Lambda_E",
+      "type": "positive real factor depending on E",
+      "definition": "6E/(3E+2)"
+    }
+  ],
+  "assumptions": [
+    "The parameters E, Delta, epsilon and delta satisfy the ranges above.",
+    "The uniform sufficient condition a^2 <= Lambda_E * epsilon holds.",
+    "T ranges over every finite integer horizon strictly greater than E."
+  ],
+  "conclusion": {
+    "quantifier": "For every finite integer T > E",
+    "selectedPrivacyConclusion": "v_FB < v_{E,T}",
+    "otherOriginalConclusionsRetainedOutsideSelectedComponent": [
+      "The average-only privacy variance also satisfies v_FB < overline(v)_{E,T} <= v_{E,T}.",
+      "For every frozen-gradient energy S >= 0, V_E(E,S) = overline(V)_E(E,S) < overline(V)_E(T,S) <= V_E(T,S)."
+    ]
+  },
+  "notationAndContextAnchors": [
+    {
+      "label": "full-batch benchmark and privacy parameters",
+      "lineRange": {
+        "start": 52,
+        "end": 58
+      },
+      "quote": "Let $v_{\\mathrm{FB}}$ denote the calibrated privacy variance of the full-batch\naverage, and set $a=\\Delta/\\sqrt{v_{\\mathrm{FB}}}$, where $\\Delta>0$ is the\nsensitivity. For $\\varepsilon>0$ and $0<\\delta<1$, we prove that\n\\[\n  a^2\\leq\\frac{6E}{3E+2}\\,\\varepsilon\n\\]\nguarantees strictly smaller variance at full batch than at every integer\n"
+    },
+    {
+      "label": "model parameter and horizon meaning",
+      "lineRange": {
+        "start": 128,
+        "end": 141
+      },
+      "quote": "Our target is the clipped full sum $G$. Fix an expected participation budget\n$E\\in\\N_{>0}$ and a privacy target $\\varepsilon\\geq0$, $0<\\delta<1$.\nFor each integer horizon $T\\geq E$, use\n\\begin{equation}\\label{eq:rate}\n q=E/T,\\qquad B=qN=EN/T,\\qquad Tq=E,\\qquad TB=EN.\n\\end{equation}\nHere $B$ is the expected batch size on the dataset being evaluated. The\nprivacy comparison holds $q$ and the other mechanism parameters fixed across\nneighboring datasets; $B=qN$ does not prescribe changing $q$ with dataset\nsize. Increasing $T$ produces smaller\nexpected batches while preserving $EN$ expected record participations across\nthe run. Participation is independent across records and releases;\n$E$ is not a deterministic participation count. Full batch is $T=E$, and\nits nearest smaller-batch competitor is $T=E+1$.\n"
+    },
+    {
+      "label": "transcript privacy variance definition",
+      "lineRange": {
+        "start": 231,
+        "end": 239
+      },
+      "quote": "\\paragraph{The calibrated variance benchmark.}\nWith the calibrated noise from \\eqref{eq:calibration}, define\n\\begin{equation}\\label{eq:variance}\n V_E(T,S)=\\frac{T-E}{ET}S+v_{E,T},\n \\qquad v_{E,T}=\\frac{\\sigma_{E,T}^2}{Tq^2}\n                   =\\frac{T}{E^2}\\sigma_{E,T}^2.\n\\end{equation}\nWe call $v_{E,T}$ the \\emph{privacy variance} of the average. The noise added\nto each raw release has standard deviation $\\sigma_{E,T}$, whereas one\n"
+    },
+    {
+      "label": "average-only privacy variance and comparison",
+      "lineRange": {
+        "start": 288,
+        "end": 304
+      },
+      "quote": "Define its profile and calibrated Gaussian variance by\n\\[\n \\overline{\\mathcal A}_{E,T}(v;\\varepsilon)\n =\\max\\{H_{e^\\varepsilon}(\\overline P_{E,T,v},\\overline Q_v),\n         H_{e^\\varepsilon}(\\overline Q_v,\\overline P_{E,T,v})\\},\n\\]\n\\[\n \\overline v_{E,T}=\\inf\\{v\\geq0:\n       \\overline{\\mathcal A}_{E,T}(v;\\varepsilon)\\leq\\delta\\}.\n\\]\nThe map $(x_1,\\ldots,x_T)\\mapsto E^{-1}\\sum_t x_t$ sends the canonical\ntranscript at variance $v$ to this pair. Data processing therefore gives\n\\begin{equation}\\label{eq:average-transcript-order}\n \\overline{\\mathcal A}_{E,T}(v;\\varepsilon)\n \\leq\\mathcal A_{E,T}(v;\\varepsilon),\\qquad\n \\overline v_{E,T}\\leq v_{E,T}.\n\\end{equation}\n"
+    },
+    {
+      "label": "total variance definitions",
+      "lineRange": {
+        "start": 305,
+        "end": 310
+      },
+      "quote": "Both calibrations use the same sampling-variance term $(1-q)S/E$ when\nevaluating the frozen-gradient benchmark. Define the corresponding total\nvariance under average-only calibration by\n\\begin{equation}\\label{eq:average-total-variance}\n \\overline V_E(T,S)=\\frac{1-q}{E}S+\\overline v_{E,T}.\n\\end{equation}\n"
+    },
+    {
+      "label": "full-batch calibrated variance characterization",
+      "lineRange": {
+        "start": 323,
+        "end": 339
+      },
+      "quote": "At full batch, $v_{\\mathrm{FB}}>0$ is independent of $E$ and is uniquely\nspecified by\n\\begin{equation}\\label{eq:gaussian-calibration}\n G_\\varepsilon(a)=\\delta,\\qquad a=\\Delta/\\sqrt{v_{\\mathrm{FB}}},\\qquad\n G_\\varepsilon(a)=\\Phi\\!\\left(\\frac a2-\\frac\\varepsilon a\\right)\n -e^\\varepsilon\\Phi\\!\\left(-\\frac a2-\\frac\\varepsilon a\\right).\n\\end{equation}\nAt full batch, $\\overline v_{E,E}=v_{\\mathrm{FB}}$.\nThe forward and reverse full-batch profiles coincide, and\n$G_\\varepsilon'(a)=\\phi(a/2-\\varepsilon/a)>0$ for $a>0$.\n\\end{lemma}\n\nThe proof is in Appendix~\\ref{app:calibration}. The full-batch formula is the\nanalytical Gaussian calibration of Balle and Wang~\\cite{ballewang2018}.\nThus $a$ depends only on $(\\varepsilon,\\delta)$ and\n$v_{\\mathrm{FB}}=\\Delta^2/a^2$. The sufficient conditions below depend\non the participation schedule and privacy target, but not on the sensitivity\n"
+    }
+  ],
+  "componentsOutsideSelectedScope": [
+    "The average-only calibration uses a different privacy profile and its own calibrated variance overline(v)_{E,T}; it is not identical to transcript calibration.",
+    "The full corollary also compares total variances, including the shared sampling term and frozen-gradient energy S.",
+    "The source theorem discusses a sharper horizon-dependent sufficient condition; this reading records only the uniform corollary condition."
+  ],
+  "sufficiencyAndScope": "The corollary is stated as a sufficient implication (if the uniform condition, then the conclusions); it does not state that the condition is necessary.",
+  "ambiguities": [
+    "The displayed conclusion includes both privacy-variance and total-variance results; this reading intentionally selects the transcript privacy-variance component while retaining all other components explicitly outside scope."
+  ],
+  "fidelity": "Attributed source-span transcription and structured reading only; no formal source comparison, semantic proof, or fidelity review is claimed."
+}

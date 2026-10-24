@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="1.485" timestamp="2026-10-20T15:34:21.153725+03:00" hostname="mindfields"><testcase classname="tests.test_proof_contract_audit_probe_bounds" name="test_probe_request_cannot_silently_override_a_smaller_nested_cap[probe]" time="0.683"><failure message="Failed: adapter admitted a nested cap that it will silently overwrite">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-945/test_probe_request_cannot_sile0')
+operation = 'probe'
+
+    @pytest.mark.parametrize('operation', ['probe', 'check-probe'])
+    def test_probe_request_cannot_silently_override_a_smaller_nested_cap(tmp_path, operation):
+        from ladon.proof_contract_audit import run_contract_audit
+    
+        path, source_runner = _source_plan(tmp_path)
+        data = fixture()
+        request = {'context': data['context'], 'left': data['sides'][0],
+                   'right': data['sides'][1], 'template': TEMPLATE,
+                   'limits': {'timeout_seconds': 1, 'max_rss_bytes': 1024**2,
+                              'max_output_bytes': 1024}}
+        if operation == 'check-probe':
+            request = {'request': request, 'planId': 'sha256:' + '0' * 64, 'terms': {}}
+        plan = json.loads(path.read_bytes())
+        plan['stages'] = [{'id': 'probe', 'operation': operation, 'request': request}]
+        _write_plan(path, plan)
+    
+        def reject_algorithm(command, **kwargs):
+            if json.loads(kwargs['input_bytes'])['operation'] == 'audit-stage':
+                pytest.fail('adapter admitted a nested cap that it will silently overwrite')
+            return source_runner(command, **kwargs)
+    
+        with pytest.raises((ValueError, TypeError)):
+&gt;           run_contract_audit(path, tmp_path / 'run', runner=reject_algorithm)
+
+tests/test_proof_contract_audit_probe_bounds.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_audit.py:54: in run_contract_audit
+    report = _continue_session(session, max_stages, runner)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_audit.py:250: in _continue_session
+    outcome = _execute_stage(stage, normalized, root, results, clock, out,
+src/ladon/proof_contract_audit.py:290: in _execute_stage
+    checked = _execute_job(job, bounds, state, runner,
+src/ladon/proof_contract_obligation_supervision.py:69: in _execute_job
+    return _execute_worker(job, data, bounds, state, runner, worker_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_obligation_supervision.py:77: in _execute_worker
+    process = _run(data, bounds, runner, scratch_workspace=workspace, **run_options)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_obligation_supervision.py:151: in _run
+    return (run_bounded_target_process if runner is None else runner)(command,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = ['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.proof_contract_audit_worker']
+kwargs = {'cwd': PosixPath('/home/codex/projects/ladon'), 'env': {'ANDROID_HOME': '/home/codex/Android/Sdk', 'ARISTOTLE_API_KEY...ple","version":"regularity-boundary-v1"}},"sourceFiles":["quote.txt"]},"version":1}', 'max_output_bytes': 8388608, ...}
+
+    def reject_algorithm(command, **kwargs):
+        if json.loads(kwargs['input_bytes'])['operation'] == 'audit-stage':
+&gt;           pytest.fail('adapter admitted a nested cap that it will silently overwrite')
+E           Failed: adapter admitted a nested cap that it will silently overwrite
+
+tests/test_proof_contract_audit_probe_bounds.py:28: Failed</failure></testcase><testcase classname="tests.test_proof_contract_audit_probe_bounds" name="test_probe_request_cannot_silently_override_a_smaller_nested_cap[check-probe]" time="0.690"><failure message="Failed: adapter admitted a nested cap that it will silently overwrite">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-945/test_probe_request_cannot_sile1')
+operation = 'check-probe'
+
+    @pytest.mark.parametrize('operation', ['probe', 'check-probe'])
+    def test_probe_request_cannot_silently_override_a_smaller_nested_cap(tmp_path, operation):
+        from ladon.proof_contract_audit import run_contract_audit
+    
+        path, source_runner = _source_plan(tmp_path)
+        data = fixture()
+        request = {'context': data['context'], 'left': data['sides'][0],
+                   'right': data['sides'][1], 'template': TEMPLATE,
+                   'limits': {'timeout_seconds': 1, 'max_rss_bytes': 1024**2,
+                              'max_output_bytes': 1024}}
+        if operation == 'check-probe':
+            request = {'request': request, 'planId': 'sha256:' + '0' * 64, 'terms': {}}
+        plan = json.loads(path.read_bytes())
+        plan['stages'] = [{'id': 'probe', 'operation': operation, 'request': request}]
+        _write_plan(path, plan)
+    
+        def reject_algorithm(command, **kwargs):
+            if json.loads(kwargs['input_bytes'])['operation'] == 'audit-stage':
+                pytest.fail('adapter admitted a nested cap that it will silently overwrite')
+            return source_runner(command, **kwargs)
+    
+        with pytest.raises((ValueError, TypeError)):
+&gt;           run_contract_audit(path, tmp_path / 'run', runner=reject_algorithm)
+
+tests/test_proof_contract_audit_probe_bounds.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_audit.py:54: in run_contract_audit
+    report = _continue_session(session, max_stages, runner)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_audit.py:250: in _continue_session
+    outcome = _execute_stage(stage, normalized, root, results, clock, out,
+src/ladon/proof_contract_audit.py:290: in _execute_stage
+    checked = _execute_job(job, bounds, state, runner,
+src/ladon/proof_contract_obligation_supervision.py:69: in _execute_job
+    return _execute_worker(job, data, bounds, state, runner, worker_module)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_obligation_supervision.py:77: in _execute_worker
+    process = _run(data, bounds, runner, scratch_workspace=workspace, **run_options)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_obligation_supervision.py:151: in _run
+    return (run_bounded_target_process if runner is None else runner)(command,
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+command = ['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.proof_contract_audit_worker']
+kwargs = {'cwd': PosixPath('/home/codex/projects/ladon'), 'env': {'ANDROID_HOME': '/home/codex/Android/Sdk', 'ARISTOTLE_API_KEY...n":"regularity-boundary-v1"}},"terms":{}},"sourceFiles":["quote.txt"]},"version":1}', 'max_output_bytes': 8388608, ...}
+
+    def reject_algorithm(command, **kwargs):
+        if json.loads(kwargs['input_bytes'])['operation'] == 'audit-stage':
+&gt;           pytest.fail('adapter admitted a nested cap that it will silently overwrite')
+E           Failed: adapter admitted a nested cap that it will silently overwrite
+
+tests/test_proof_contract_audit_probe_bounds.py:28: Failed</failure></testcase></testsuite></testsuites>

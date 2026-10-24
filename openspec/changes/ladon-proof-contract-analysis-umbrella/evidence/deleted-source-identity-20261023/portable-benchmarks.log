@@ -1,0 +1,22 @@
++ /home/codex/miniconda3/bin/uv build --force-pep517 --build-constraints /tmp/ladon-candidate-ovjdkuvw/source/build-constraints.txt --out-dir /tmp/ladon-benchmarks-j4xnjtgs/dist --clear .
+Building source distribution...
+Building wheel from source distribution...
+Successfully built /tmp/ladon-benchmarks-j4xnjtgs/dist/ladon-0.3.0.tar.gz
+Successfully built /tmp/ladon-benchmarks-j4xnjtgs/dist/ladon-0.3.0-py3-none-any.whl
++ /home/codex/miniconda3/bin/uv venv --python /home/codex/projects/ladon/.venv/bin/python3 /tmp/ladon-benchmarks-j4xnjtgs/installed
+Using CPython 3.11.15 interpreter at: /home/codex/projects/ladon/.venv/bin/python3
+Creating virtual environment at: installed
+Activate with: source installed/bin/activate
++ /home/codex/miniconda3/bin/uv pip install --python /tmp/ladon-benchmarks-j4xnjtgs/installed/bin/python /tmp/ladon-benchmarks-j4xnjtgs/dist/ladon-0.3.0-py3-none-any.whl
+Using Python 3.11.15 environment at: installed
+Resolved 1 package in 1ms
+Prepared 1 package in 5ms
+Installed 1 package in 2ms
+ + ladon==0.3.0 (from file:///tmp/ladon-benchmarks-j4xnjtgs/dist/ladon-0.3.0-py3-none-any.whl)
++ /home/codex/miniconda3/bin/uv pip check --python /tmp/ladon-benchmarks-j4xnjtgs/installed/bin/python
+Using Python 3.11.15 environment at: installed
+Checked 1 package in 0.18ms
+All installed packages are compatible
++ /tmp/ladon-benchmarks-j4xnjtgs/installed/bin/python -c from importlib import resources; print(resources.files('ladon').joinpath('lean', 'ladon_parser_helper.lean'))
+benchmark results: /home/codex/projects/ladon/openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/deleted-source-identity-20261023/benchmark-results.json
+benchmark summary: correctness failures=0; coverage=17/17; cold=0.597s; warm=0.568s; peak-rss=42.914MiB; warm-cache-hits=1; stability failures=0

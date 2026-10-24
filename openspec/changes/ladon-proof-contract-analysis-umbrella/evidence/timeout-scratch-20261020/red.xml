@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="2" time="3.145" timestamp="2026-10-20T11:02:00.269832+03:00" hostname="mindfields"><testcase classname="tests.test_proof_contract_worker_scratch" name="test_timeout_after_real_goal_write_cleans_only_the_owned_goal_tree" time="2.365"><failure message="AssertionError: timed-out worker left owned goal source /tmp/pytest-of-codex/pytest-855/test_timeout_after_real_goal_w0/repo/.ladon/correspondence/goal-avhxurvl/LadonCorrespondence.lean&#10;assert not True&#10; +  where True = exists()&#10; +    where exists = PosixPath('/tmp/pytest-of-codex/pytest-855/test_timeout_after_real_goal_w0/repo/.ladon/correspondence/goal-avhxurvl/LadonCorrespondence.lean').exists">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-855/test_timeout_after_real_goal_w0')
+
+    def test_timeout_after_real_goal_write_cleans_only_the_owned_goal_tree(tmp_path):
+        root, source, unrelated, concurrent, lake, lean, source_hash, context = _repo(tmp_path / "repo")
+        shim = tmp_path / "worker-shim"
+        _shim(shim)
+        marker = tmp_path / "worker-marker.json"
+        result, state = _run_worker(root, shim, lake, lean, marker)
+        reached = _reached_capture(marker, result, state, source, source_hash, context)
+&gt;       _owned_scratch_gone(root, reached, unrelated, concurrent)
+
+tests/test_proof_contract_worker_scratch.py:214: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-855/test_timeout_after_real_goal_w0/repo')
+reached = {'captureReached': True, 'concurrentPath': '.ladon/correspondence/goal-concurrent/Concurrent.lean', 'generatedBytes': 5774, 'generatedPath': '.ladon/correspondence/goal-avhxurvl/LadonCorrespondence.lean', ...}
+unrelated = PosixPath('/tmp/pytest-of-codex/pytest-855/test_timeout_after_real_goal_w0/repo/.ladon/correspondence/goal-preexisting/Existing.lean')
+concurrent = PosixPath('/tmp/pytest-of-codex/pytest-855/test_timeout_after_real_goal_w0/repo/.ladon/correspondence/goal-concurrent/Concurrent.lean')
+
+    def _owned_scratch_gone(root, reached, unrelated, concurrent):
+        owned_file = root / reached["generatedPath"]
+&gt;       assert not owned_file.exists(), f"timed-out worker left owned goal source {owned_file}"
+E       AssertionError: timed-out worker left owned goal source /tmp/pytest-of-codex/pytest-855/test_timeout_after_real_goal_w0/repo/.ladon/correspondence/goal-avhxurvl/LadonCorrespondence.lean
+E       assert not True
+E        +  where True = exists()
+E        +    where exists = PosixPath('/tmp/pytest-of-codex/pytest-855/test_timeout_after_real_goal_w0/repo/.ladon/correspondence/goal-avhxurvl/LadonCorrespondence.lean').exists
+
+tests/test_proof_contract_worker_scratch.py:191: AssertionError</failure></testcase><testcase classname="tests.test_proof_contract_worker_scratch" name="test_ordinary_typing_failure_uses_normal_temporary_cleanup" time="0.702" /></testsuite></testsuites>

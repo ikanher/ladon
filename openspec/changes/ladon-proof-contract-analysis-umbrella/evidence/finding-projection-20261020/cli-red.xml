@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.098" timestamp="2026-10-20T16:00:11.941944+03:00" hostname="mindfields"><testcase classname="tests.test_investigation_contract_findings_cli" name="test_public_contract_observation_review_report_and_finalize" time="0.032"><failure message="AssertionError: assert 2 == 0&#10; +  where 2 = main(['investigation', 'observe', '--plan', '/tmp/pytest-of-codex/pytest-960/test_public_contract_observati0/plan.json', '--root', '/tmp/pytest-of-codex/pytest-960/test_public_contract_observati0', ...])">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-960/test_public_contract_observati0')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x71e25da63d10&gt;
+
+    def test_public_contract_observation_review_report_and_finalize(tmp_path, capsys):
+        base, plain = observation_case(tmp_path)
+        base['startedAt'] = datetime.now(UTC).isoformat()
+        record = copy.deepcopy(plain['observations'][0]['record'])
+        record.update(schema='ladon-investigation-observation-v2', contractAnalysis=_native_attachment())
+        plan_path, record_path = tmp_path / 'plan.json', tmp_path / 'record.json'
+        plan_path.write_text(json.dumps(base))
+        original = plan_path.read_bytes()
+        record_path.write_text(json.dumps(record))
+        observed = tmp_path / 'observed.json'
+        shared = ['--root', str(tmp_path)]
+&gt;       assert main(['investigation', 'observe', '--plan', str(plan_path), *shared,
+                     '--record', str(record_path), '--output', str(observed)]) == 0
+E       AssertionError: assert 2 == 0
+E        +  where 2 = main(['investigation', 'observe', '--plan', '/tmp/pytest-of-codex/pytest-960/test_public_contract_observati0/plan.json', '--root', '/tmp/pytest-of-codex/pytest-960/test_public_contract_observati0', ...])
+
+tests/test_investigation_contract_findings_cli.py:24: AssertionError</failure></testcase></testsuite></testsuites>

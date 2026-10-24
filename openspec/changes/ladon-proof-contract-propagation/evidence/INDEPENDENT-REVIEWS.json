@@ -1,0 +1,58 @@
+[
+  {
+    "post_id": 178,
+    "created_at": "2026-10-18T03:55:55.515Z",
+    "author": "/root/producer_audit",
+    "role": "auditor",
+    "recipient": null,
+    "topic": "assignment-propagation-audit",
+    "kind": "finding",
+    "state": "refuted",
+    "body": "Bounded independent post-integration propagation-core audit completed (assignment #173). Result: three concrete implementation gaps found; focused frozen/targeted tests pass but do not cover these cases. No production, canonical test, fixture, task, schema, build, or shared-data files were edited.\n\nFindings and scratch-only reproductions are in .codex/state/proof-contract-analysis/propagation-audit/AUDIT.md:\n1. Expired deadline returns before graph/input validation and raw bounds. A 9 MiB goal localId with None graph/wrappers returns a 9,437,907-byte partial result despite maxOutputBytes=8,388,608.\n2. Depth-specific evaluation overwrites the statement's single presentation frontier; an incomplete deeper route can erase shallower known support, leaving a partial goal route whose intermediate frontier is empty.\n3. Output cap is enforced only after constructing/serializing the full result; a valid probe serializes 8,987,798 bytes, then returns an 799-byte envelope with all 256 known witnesses discarded.\n\nValidation: focused propagation core/boundary/resource tests: 43 passed in 0.22s. `ultra_code_bb.py verify-tests` passed after the run; all nine frozen test hashes matched. No whole suite run. Probe scripts and exact hashes are recorded in AUDIT.md. Core authority remains conditional-profile only: calibration evidence says \u201cno source application acceptance\u201d; source-contract bindings and exact rule/check-run evidence remain caller supplied and unauthenticated. Native analysis/CLI wiring is a separate gate.\n\nEvidence target hashes: proof_contract_propagation.py d71f0dbb71075a40a1e8338227502c6090a4f785b359e160f575ba6df36bc6c4; _contract_propagation_evaluator.py f2b12af7124a9ed115d093626823e03b29fbb07b328f52f05cbdb0757ad334ac; _contract_propagation_common.py 1eadb585df86f433e3c0867449097ff9be4b438f23953809708f3b3dc78df4e3. Frozen propagation test hash 0f9dacdc15e775cfe691d68e3c8f67a0a3919993f4bac60482c300279c09b14c.\n",
+    "refs_json": "[\"173\"]",
+    "reply_to_post_id": 173,
+    "supersedes_post_id": null
+  },
+  {
+    "post_id": 194,
+    "created_at": "2026-10-18T04:09:54.997Z",
+    "author": "/root/producer_audit",
+    "role": "auditor",
+    "recipient": null,
+    "topic": "propagation-final-core",
+    "kind": "review",
+    "state": "refuted",
+    "body": "Completed the bounded read-only post-integration audit of correction #186 against findings #178, the frozen regressions, and propagation resource/authority invariants. The three original findings are corrected: bounded goal validation precedes deadline returns; deeper incomplete visits preserve shallow frontiers; streaming reservations retain fitted witness/frontier closure without oversize final serialization. The frozen audit/resource-negative cases and the 43 existing propagation cases passed. Focused propagation plus structural derivation run: 78 passed in 0.91s. Frozen hashes verified before and after; all nine integrated source hashes match #186 MANIFEST; Ruff clean. No canonical edits, no dependency additions, and no authority promotion.\n\nOne additional resource boundary observation is documented in .codex/state/proof-contract-analysis/propagation-final-audit/AUDIT.md: no aggregate canonical-input-byte budget spans the contract artifact list. A scratch-only valid 6,302,099-byte contract input (16 preflight references, individual artifact under ProofIR's 8 MiB limit) produced a 1,465-byte partial result while allocating 25,245,268 additional traced bytes during validation/copying. This is not an output-cap violation, but it means reference and per-artifact caps alone do not bound aggregate input memory. Root disposition recommended before broad resource-guarantee claims. Probe SHA-256: 5088376343fa7679ee6d0d8f7b7606b2a8a5583c7a60053517c874e062901fca; audit SHA-256: cc43b22c333823a81dded7eaa3fc0be5db7af5789c4f0792ef722ffed9f254d4.\n\nRemaining gates: root disposition of the aggregate-input observation and separate native propagation artifact/replay + CLI integration, then parent compatibility/quality verification. This post reports completed bounded review; it does not accept the overall propagation task.\n",
+    "refs_json": "[\"189\"]",
+    "reply_to_post_id": 189,
+    "supersedes_post_id": null
+  },
+  {
+    "post_id": 221,
+    "created_at": "2026-10-18T05:10:20.317Z",
+    "author": "/root/producer_audit",
+    "role": "auditor",
+    "recipient": null,
+    "topic": "propagation-native-audit",
+    "kind": "finding",
+    "state": "info",
+    "body": "# Native propagation integrated audit\n\nAssignment: board post #218. Read-only adversarial audit of integrated native propagation and aggregate input cap. No production or frozen-test files changed.\n\n## Findings\n\n1. **CLI enforces the 8 MiB aggregate cap only after loading all input JSON.** In `proof_contract_cli.py`, `_propagate` loads request, derivation, and every repeatable `--contract` file with `load_plan` before calling `propagation_artifact`. The factory's aggregate-byte preflight correctly rejects inputs above 8 MiB, but at that point the JSON has already been parsed and materialized. `load_plan` has a per-file 32 MiB allowance, and contract count is not limited, so the CLI can allocate substantially more than the advertised aggregate cap before returning the error.\n\n   Reproduction: `cli_aggregate_input_probe.py` supplies two 4.3 MB contract files and small graph/request files. The monkeypatched loader observed all 4 files / 8,606,232 total on-disk bytes loaded before the factory rejected the aggregate, exit status 2. No output artifact was created. The fixture and output are under `cli-inputs/`. Script SHA-256: `1f81d47aa00e50569d4b69782533f23f3124fd092b68074afbe7d845f8b1a558`.\n\n2. **Batch validator accepts a rehashed artifact after the deadline-authenticity limitation is removed.** Producer output and docs designate `deadline-observation-unverified` as an important limitation because serialized trace replay does not authenticate original wall-clock timing. The batch validator currently requires the source-contract-binding limitation but does not require the deadline limitation. `limitation_omission_probe.py` creates a genuinely expired artifact, removes that limitation, rehashes it, and `validate_envelope_batch` accepts it with `firstExceededCheck=1`. Probe SHA-256: `afc7409093d379eb36881523e38003184a4fad3596de369e0399cd24e2a0025c`.\n\n## Areas that survived review\n\nDeadline observations latch first expiry, traces are hashed into the result, and replay consumes exactly the recorded check count without consulting the current clock. Native batch replay resolves exact derivation/goal and contract ownership and recomputes the result. Factory preflight checks goal, refs, bounds, and aggregate bytes before native validation, including on expired input. Output publication is exclusive-create and refuses overwrite; invalid results create no destination. SQLite projection uses normalized owner/goal foreign keys and its exact named index.\n\n## Verification\n\n`python .codex/skills/ultra-code/scripts/ultra_code_bb.py verify-tests --db .codex/state/ultra-proof-contract.sqlite3` passed after probes; all frozen hashes match. Focused behavioral reproductions above are scratch-only. No full test suite run by this auditor.\n",
+    "refs_json": "[]",
+    "reply_to_post_id": 218,
+    "supersedes_post_id": null
+  },
+  {
+    "post_id": 226,
+    "created_at": "2026-10-18T05:14:07.023Z",
+    "author": "/root/producer_audit",
+    "role": "auditor",
+    "recipient": null,
+    "topic": "propagation-native-recheck",
+    "kind": "review",
+    "state": "accepted",
+    "body": "# Native propagation final recheck\n\nAssignment: board post #223. Read-only recheck of root's accepted fixes. No production or frozen-test files changed.\n\n## Results\n\n- The propagation CLI now rejects aggregate raw input before any JSON parser is called. The original scratch probe with two 4.3 MB contracts reports `aggregate raw JSON input exceeds byte limit`, observes zero calls through the legacy loader, exits 2, and leaves no destination. The CLI regression also replaces `json.loads` with a failing sentinel and verifies that oversized aggregate input is refused before parsing.\n- `load_bounded_plans` admits exact aggregate boundaries, reads at most remaining+1 bytes (including a growing-file fake), rejects duplicate keys/nonfinite values/non-object roots/deep JSON, and shares one budget across files. The CLI caps contract count at 4096; native inspection shares one 32 MiB input+context raw budget. The raw buffers are retained only after all reads fit the cap, then decoded; this is finite by the raw-byte and collection limits.\n- Deadline limitation stripping is rejected during `make_envelope` validation itself with `ProofIRV3Error: propagation requires the deadline-observation-unverified limitation`, before batch replay. This prevents the previous rehash omission route earlier than the attempted batch validation. The dedicated regression checks this.\n- Documentation states the 8 MiB raw propagation cap and 32 MiB native inspection cap.\n\n## Commands and evidence\n\n- `PYTHONPATH=src:tests python .codex/state/proof-contract-analysis/native-final-audit/cli_aggregate_input_probe.py`: exit 2, `loadedFiles: 0`, `loadedBytes: 0`, no destination.\n- `PYTHONPATH=src:tests python .codex/state/proof-contract-analysis/native-final-audit/limitation_omission_probe.py`: expected rejection during envelope construction (the prior probe's `else: ACCEPTED` branch is unreachable).\n- `PYTHONPATH=src:tests pytest -q tests/test_proof_contract_io.py tests/test_proof_contract_native_audit.py tests/test_proof_contract_native.py tests/test_proof_contract_propagation_native.py tests/test_proof_contract_propagation_cli.py tests/test_proof_contract_cli.py tests/test_proof_contract_documented_example.py`: 30 passed.\n- `python .codex/skills/ultra-code/scripts/ultra_code_bb.py verify-tests --db .codex/state/ultra-proof-contract.sqlite3`: verified after recheck; all frozen hashes match.\n\nNo remaining defect found within the bounded assignment scope. The raw cap bounds admitted JSON bytes; as usual, decoded Python objects can use more memory than their serialized representation, but parsing remains bounded by the fixed raw cap and schema collection limits.\n",
+    "refs_json": "[]",
+    "reply_to_post_id": 223,
+    "supersedes_post_id": null
+  }
+]

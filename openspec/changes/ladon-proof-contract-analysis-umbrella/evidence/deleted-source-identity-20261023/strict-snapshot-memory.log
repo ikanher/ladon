@@ -1,0 +1,55 @@
+
+== strict radon/vulture checks ==
+radon/vulture: clean
+
+== scoped ruff ==
++ /home/codex/projects/ladon/.venv/bin/python3 -m ruff check src tests scripts
+All checks passed!
+
+== compileall ==
+
+== pytest ==
++ /home/codex/projects/ladon/.venv/bin/python3 -m pytest -q tests
+........F............................................................... [  1%]
+........................................................................ [  2%]
+........................................................................ [  4%]
+........................................................................ [  5%]
+........................................................................ [  7%]
+........................................................................ [  8%]
+.........................................................Traceback (most recent call last):
+  File "/home/codex/miniconda3/lib/python3.11/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/miniconda3/lib/python3.11/subprocess.py", line 2053, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ^^^^^^^^^^^^^^^^^
+  File "/home/codex/miniconda3/lib/python3.11/subprocess.py", line 2011, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/codex/projects/ladon/scripts/python_quality.py", line 177, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/codex/projects/ladon/scripts/python_quality.py", line 120, in main
+    return run_strict(root, targets)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/scripts/python_quality.py", line 112, in run_strict
+    return run_command("pytest", [sys.executable, "-m", "pytest", "-q", "tests"], root)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/projects/ladon/scripts/python_quality.py", line 37, in run_command
+    return subprocess.run(command, cwd=cwd, check=False).returncode
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/miniconda3/lib/python3.11/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/codex/miniconda3/lib/python3.11/subprocess.py", line 1201, in communicate
+    self.wait()
+  File "/home/codex/miniconda3/lib/python3.11/subprocess.py", line 1277, in wait
+    self._wait(timeout=sigint_timeout)
+  File "/home/codex/miniconda3/lib/python3.11/subprocess.py", line 2047, in _wait
+    time.sleep(delay)
+KeyboardInterrupt

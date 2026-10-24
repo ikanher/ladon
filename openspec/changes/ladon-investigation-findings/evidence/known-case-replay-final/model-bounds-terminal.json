@@ -1,0 +1,107 @@
+{
+  "schema": "ladon-investigation-progress-v2",
+  "status": "recorded-work-complete",
+  "mayFinalize": true,
+  "elapsedSeconds": 11988.267582,
+  "remainingSeconds": 0,
+  "next": [],
+  "blocked": [],
+  "counts": {
+    "units": 111,
+    "pendingUnits": 0,
+    "claims": 0,
+    "reviewedClaims": 0,
+    "actionable": 0,
+    "blockedClaims": 0,
+    "structuredSubjects": 1,
+    "firstResponses": 1,
+    "reconciliations": 0
+  },
+  "authority": "source binding, attributed reviews and stored native evidence only",
+  "nonclaims": [
+    "No Lean check was replayed by status or response ingestion.",
+    "Stored formal labels and reviewer labels do not verify truth or identity.",
+    "Review completion covers the authored inventory and subjects only."
+  ],
+  "findings": [
+    {
+      "kind": "native-correspondence-review",
+      "findingId": "8d79090ab0d85fb240f2c9115a0a17358d4bc302c034167f85d4a48aa0132310",
+      "subject": "228b4033284ae16dcb12f5cd76dc7fc2f9f77d1b6d9c743a5b09a1fb39c6a5d8",
+      "source": {
+        "endLine": 7793,
+        "path": "runs/independent-01/exposition.txt",
+        "quote": "   The analytic scalar comparison function is\n                                                      (−z/2)α\n                                          f 0 (z) = ∑               .\n                                                  α≥0 α! ( α + 1) !\nFor 0 ≤ z ≤ 4.1, set t = z/2. The alternating tail after the cubic term has decreasing\nmagnitudes, and hence\n                             t    t2    t3      305719\n                  f 0 (z) ≥ 1 −+     −      ≥            > .265,    f 0 (z) ≤ 1.       (B.11)\n                             2 12 144          1152000\nThe cubic is decreasing on [0, 2.05], giving its stated endpoint value. For the upper bound\ngroup the alternating tail after the constant term; its magnitudes decrease from the linear\nterm onward.",
+        "sha256": "168ebbc105b9685ee7310341a7cc227eab9dd59ec255c9ac77ce98c47d2839b6",
+        "startLine": 7782
+      },
+      "statementRelation": "aligned",
+      "methodRelation": "different",
+      "sourceFidelity": "faithful",
+      "formalSupport": "recorded-links-only",
+      "mathematicalFalsity": "not-established",
+      "evidence": [
+        "The B.11 interpretation is faithful for the complete real-domain comparison chain, visually checked on original PDF page 146 (exposition.txt splitlines 7782-7793). AxisModelBounds.model/model_eq_series (lines 16-21), AxisSeries.profile (174), and AxisProfile.cubicLower (84) identify the exact quoted sum and cubic; observed division and function arguments are Real. The mapped local z has the correct identity and type. For 0<=z<=41/10, t=z/2 lies in [0,41/20]; absolute convergence and decreasing alternating tails from degrees four and one establish respectively cubic<=f0 and f0<=1. c'(t)=-((t-4)^2+8)/48<0, c(41/20)=305719/1152000, and this exceeds 53/200 by 439/1152000. The extracted profile_bounds application supplies only endpoint lower/upper bounds, so the complete conclusion transfer explicitly also uses original cubic_lower_le_bessel and cubicLower_ge_endpoint plus rational arithmetic. All twelve original generated goals were copied unchanged and passed an independent pinned Lean replay on the second attempt; first tactic failures and raw receipts are preserved and are not refutations. All successful replay axiom lists omit sorryAx. The original AxisModelBounds source also re-elaborated. I classify the method as different only for the endpoint subargument: the Lean body proves endpoint minimality by a nonnegative polynomial expansion, whereas the prose invokes cubic monotonicity. Its alternating-series argument otherwise matches. This is a sound proof-method variation, not a mathematical error. For the parent positivity use, B.2 gives 0<=chi<=1, so f0(Y chi)>0.265 on the required real interval; positivity of nonlinear Phi still requires the separate uniform B.13 approximation with sufficiently large Lambda, and positivity of phi uses phi_*>0. This local review does not certify those existence/approximation dependencies or the whole proposition. Supporting details and exact replay receipts are in fresh-model-bound-review/supporting-reasoning.txt. No excluded evidence was accessed; no full native investigation check or fresh dependency-closure build is claimed."
+      ],
+      "dependencies": "Authored correspondence dependencies.",
+      "attribution": "Attributed native review; labels do not establish truth.",
+      "responses": [
+        {
+          "responseId": "56ca4844198b6d061d22d53cb4bf887f05e6291282eca7b0747ff3fba14c7428",
+          "reviewer": "fresh-model-bound-review",
+          "subject": "228b4033284ae16dcb12f5cd76dc7fc2f9f77d1b6d9c743a5b09a1fb39c6a5d8",
+          "challengeDigest": "18b4696722bf92c343502757244a5819906ea6d1f3645087f9cbbfa4c95fd720",
+          "classification": "aligned",
+          "method": "different",
+          "sourceFidelity": "faithful",
+          "evidence": "The B.11 interpretation is faithful for the complete real-domain comparison chain, visually checked on original PDF page 146 (exposition.txt splitlines 7782-7793). AxisModelBounds.model/model_eq_series (lines 16-21), AxisSeries.profile (174), and AxisProfile.cubicLower (84) identify the exact quoted sum and cubic; observed division and function arguments are Real. The mapped local z has the correct identity and type. For 0<=z<=41/10, t=z/2 lies in [0,41/20]; absolute convergence and decreasing alternating tails from degrees four and one establish respectively cubic<=f0 and f0<=1. c'(t)=-((t-4)^2+8)/48<0, c(41/20)=305719/1152000, and this exceeds 53/200 by 439/1152000. The extracted profile_bounds application supplies only endpoint lower/upper bounds, so the complete conclusion transfer explicitly also uses original cubic_lower_le_bessel and cubicLower_ge_endpoint plus rational arithmetic. All twelve original generated goals were copied unchanged and passed an independent pinned Lean replay on the second attempt; first tactic failures and raw receipts are preserved and are not refutations. All successful replay axiom lists omit sorryAx. The original AxisModelBounds source also re-elaborated. I classify the method as different only for the endpoint subargument: the Lean body proves endpoint minimality by a nonnegative polynomial expansion, whereas the prose invokes cubic monotonicity. Its alternating-series argument otherwise matches. This is a sound proof-method variation, not a mathematical error. For the parent positivity use, B.2 gives 0<=chi<=1, so f0(Y chi)>0.265 on the required real interval; positivity of nonlinear Phi still requires the separate uniform B.13 approximation with sufficiently large Lambda, and positivity of phi uses phi_*>0. This local review does not certify those existence/approximation dependencies or the whole proposition. Supporting details and exact replay receipts are in fresh-model-bound-review/supporting-reasoning.txt. No excluded evidence was accessed; no full native investigation check or fresh dependency-closure build is claimed."
+        }
+      ],
+      "history": [],
+      "effectiveResponses": [
+        {
+          "responseId": "56ca4844198b6d061d22d53cb4bf887f05e6291282eca7b0747ff3fba14c7428",
+          "reviewer": "fresh-model-bound-review",
+          "subject": "228b4033284ae16dcb12f5cd76dc7fc2f9f77d1b6d9c743a5b09a1fb39c6a5d8",
+          "challengeDigest": "18b4696722bf92c343502757244a5819906ea6d1f3645087f9cbbfa4c95fd720",
+          "classification": "aligned",
+          "method": "different",
+          "sourceFidelity": "faithful",
+          "evidence": "The B.11 interpretation is faithful for the complete real-domain comparison chain, visually checked on original PDF page 146 (exposition.txt splitlines 7782-7793). AxisModelBounds.model/model_eq_series (lines 16-21), AxisSeries.profile (174), and AxisProfile.cubicLower (84) identify the exact quoted sum and cubic; observed division and function arguments are Real. The mapped local z has the correct identity and type. For 0<=z<=41/10, t=z/2 lies in [0,41/20]; absolute convergence and decreasing alternating tails from degrees four and one establish respectively cubic<=f0 and f0<=1. c'(t)=-((t-4)^2+8)/48<0, c(41/20)=305719/1152000, and this exceeds 53/200 by 439/1152000. The extracted profile_bounds application supplies only endpoint lower/upper bounds, so the complete conclusion transfer explicitly also uses original cubic_lower_le_bessel and cubicLower_ge_endpoint plus rational arithmetic. All twelve original generated goals were copied unchanged and passed an independent pinned Lean replay on the second attempt; first tactic failures and raw receipts are preserved and are not refutations. All successful replay axiom lists omit sorryAx. The original AxisModelBounds source also re-elaborated. I classify the method as different only for the endpoint subargument: the Lean body proves endpoint minimality by a nonnegative polynomial expansion, whereas the prose invokes cubic monotonicity. Its alternating-series argument otherwise matches. This is a sound proof-method variation, not a mathematical error. For the parent positivity use, B.2 gives 0<=chi<=1, so f0(Y chi)>0.265 on the required real interval; positivity of nonlinear Phi still requires the separate uniform B.13 approximation with sufficiently large Lambda, and positivity of phi uses phi_*>0. This local review does not certify those existence/approximation dependencies or the whole proposition. Supporting details and exact replay receipts are in fresh-model-bound-review/supporting-reasoning.txt. No excluded evidence was accessed; no full native investigation check or fresh dependency-closure build is claimed."
+        }
+      ]
+    }
+  ],
+  "coverage": {
+    "totalUnits": 111,
+    "surveyedUnits": 111,
+    "totalClaims": 0,
+    "reviewedClaims": 0,
+    "wholePaperCertified": false,
+    "authority": "Authored inventory and review records only."
+  },
+  "bundles": [
+    {
+      "subject": "228b4033284ae16dcb12f5cd76dc7fc2f9f77d1b6d9c743a5b09a1fb39c6a5d8",
+      "kind": "formal-correspondence",
+      "formalCorrespondence": "recorded-links-complete-unreplayed",
+      "statementReview": "aligned",
+      "mathematicalReview": "complete-attributed",
+      "interpretationFidelity": "faithful-attributed",
+      "methodReview": "different-attributed"
+    }
+  ],
+  "mathematicalReview": "complete-attributed",
+  "formalCorrespondence": "recorded-links-complete-unreplayed",
+  "operation": "finalize",
+  "terminal": true,
+  "terminalReason": "elapsed-budget",
+  "planId": "0f701fac3bb92a3810d2a77a9c63d23238149b48c314e189708d6f7ea083671f",
+  "scopeId": "8cb877428d644c14eb49c493575748ecfa79604751966f276c956e8de469a52c",
+  "startedAt": "2026-10-17T19:13:45.912296+00:00",
+  "budgetSeconds": 5400,
+  "recordedAt": "2026-10-17T22:33:34.179878+00:00",
+  "stopRecord": null,
+  "attribution": "Authored workflow evidence, not authenticated user identity.",
+  "receiptId": "81cd6fbecdc25f93c03a3648d9b276c49c78cbb10f58017249fa98b2f21ec13f"
+}

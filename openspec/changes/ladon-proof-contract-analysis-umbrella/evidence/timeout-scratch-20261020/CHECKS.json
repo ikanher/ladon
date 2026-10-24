@@ -1,0 +1,73 @@
+{
+  "junit": [
+    {
+      "path": "red.xml",
+      "tests": 2,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "compat-before.xml",
+      "tests": 45,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "identity-before.xml",
+      "tests": 53,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "ownership.xml",
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "integration.xml",
+      "tests": 117,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "identity-binding-red.xml",
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "integration-final.xml",
+      "tests": 118,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "standalone-prepared.xml",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "finalPortableCommand": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_correspondence_goal_scratch_identity.py tests/test_proof_contract_worker_scratch.py tests/test_proof_contract_goal_scratch_ownership.py tests/test_proof_contract_bridge_stops.py tests/test_proof_contract_bridge_worker.py tests/test_proof_contract_bridge_caps.py tests/test_proof_contract_obligation_worker.py tests/test_proof_contract_route_context_stops.py tests/test_proof_contract_route_context_output_stops.py tests/test_proof_contract_context_boundary.py tests/test_proof_contract_obligation_check_resources.py tests/test_proof_contract_planned_source_resources.py tests/test_lean_toolchain.py tests/test_source_enumeration_context.py tests/test_correspondence_execution_accounting.py tests/test_proof_contract_context_freshness.py tests/test_proof_contract_route_context_composition.py",
+  "finalStandaloneCommand": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_correspondence_local_environment.py::test_exported_global_instance_keeps_exact_subject_and_trust",
+  "smokeCommand": "PYTHONPATH=src .venv/bin/python .codex/state/proof-contract-analysis/timeout-scratch-smoke.py",
+  "fullRepositorySuite": "not run for this bounded prerequisite",
+  "dependencyCheck": {
+    "command": "uv lock --check --offline",
+    "returnCode": 0
+  },
+  "openspec": {
+    "command": "openspec validate ladon-proof-contract-analysis-umbrella --strict --no-interactive",
+    "returnCode": 0
+  },
+  "preservedSmokeHelper": "run_smoke.py"
+}

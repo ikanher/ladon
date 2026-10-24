@@ -1,0 +1,83 @@
+{
+  "schema": "ladon-contract-evaluation-protocol-v1",
+  "frozenBeforeContractRuntimeEdits": true,
+  "baseline": "BASELINE.json",
+  "trackA": {
+    "cases": 24,
+    "faults": 12,
+    "controls": 8,
+    "unknown": 4,
+    "gate": "all expected classifications with required checked evidence",
+    "labels": [
+      "mismatch",
+      "valid",
+      "unknown"
+    ]
+  },
+  "trackB": {
+    "cases": 12,
+    "matching": 6,
+    "discrepancies": 4,
+    "unsupported": 2,
+    "gate": "10 supported correct after retained review;2 unsupported honestly limited; first pass separately",
+    "featureScoring": "fixed per-case feature inventory frozen before execution; case success and feature precision/recall separate"
+  },
+  "trackC": {
+    "cases": 12,
+    "faults": 6,
+    "controls": 6,
+    "sourceFamilies": "absent from development; actual formal counterparts",
+    "inputPolicy": "No answers, selected fault locations, authored contracts or answer-derived object maps",
+    "keyCustody": "independent of implementers and auditors",
+    "status": "blocked-no-independent-corpus",
+    "admittedCases": 0
+  },
+  "arms": {
+    "model": "gpt-6-luna",
+    "reasoning": "medium",
+    "freshContextPerArm": true,
+    "wallClockMinutesPerArm": 90,
+    "seed": 20261018,
+    "runtime": "exact checkout snapshots; no pip Ladon",
+    "maxRssBytes": 12884901888,
+    "retry": "stop and report user; no automatic cap increase or clock reset",
+    "trackABatches": {
+      "count": 2,
+      "casesPerBatch": 12,
+      "wallClockMinutesPerBatch": 90,
+      "freshContextPerBatch": true,
+      "setupIncluded": true
+    },
+    "sameCaseOrderAcrossArms": true
+  },
+  "metrics": [
+    "TP",
+    "FP",
+    "FN",
+    "justifiedControls",
+    "abstentions",
+    "extractionErrors",
+    "coverage",
+    "timeToFirstSupportedFinding",
+    "checkerAttempts",
+    "wallTime",
+    "peakRss",
+    "unsupportedSelections",
+    "unresolvedAdjudications"
+  ],
+  "promotion": {
+    "requires": [
+      "A-pass",
+      "B-pass",
+      "C-independent"
+    ],
+    "minFaults": 4,
+    "minJustifiedControls": 5,
+    "maxFalseAccusations": 0,
+    "minIncrementalFaultsOverBaseline": 1,
+    "statisticalSignificanceClaim": false
+  },
+  "preservation": "Freeze first reports before key access; all cases retained including timeouts; no earlier experiment edits; no automatic full-paper trial",
+  "falseAccusationUnit": "case: any independently refuted or unsupported asserted discrepancy; all assertion-level judgments retained; unresolved judgments receive no TP/control credit and remain separately counted",
+  "review": "initial independent adjudication frozen before key access; conflicts remain unresolved"
+}

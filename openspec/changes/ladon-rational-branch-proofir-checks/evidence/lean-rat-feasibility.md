@@ -1,0 +1,8 @@
+# Lean rational normalization feasibility
+
+The bounded feasibility check compared the current Python rational checker with Lean core and the known Mathlib-backed workspace.
+
+- In Ladon's default Lean 4.35.0 core environment, `Rat` and literals elaborate, but `by decide` does not normalize rational comparison/equality or arithmetic; core also has no `abs` identifier in this context. The local experiment is retained at `.codex/state/lean-rat-feasibility.lean`.
+- In `../lean/matrix-factorization` (Lean 4.32.1, with its existing Mathlib dependency), a source file importing `Mathlib` compiled successfully with `lake env lean`. `norm_num` discharged closed rational comparison goals for `<`, `≤`, `=`, `≠`, `>`, `≥`, negative values, `abs`, powers, addition, subtraction, multiplication and nonzero division. The matching Python `check_witness` AST cases returned `not-counterexample` with the expected equal rational values. The same file recorded that Lean's totalized rational `1 / 0` evaluates to `0`; Python rejects a zero denominator before any result, so the new route must preserve that rejection. Exact experiment: `.codex/state/lean-rat-mathlib-feasibility.lean`; command: `lake env lean /home/codex/projects/ladon/.codex/state/lean-rat-mathlib-feasibility.lean` from `/home/codex/projects/lean/matrix-factorization`.
+
+This is a narrow feasibility result for the current matrix-factorization environment. It does not establish that every Lean project has Mathlib, validate a generated expression encoder, exercise Ladon's bounded worker, or create a ProofIR receipt. The proposed route therefore requires the exact workspace to provide Mathlib rational normalization and must return unsupported when it does not.

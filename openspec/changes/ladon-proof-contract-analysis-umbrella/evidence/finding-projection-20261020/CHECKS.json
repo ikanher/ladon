@@ -1,0 +1,80 @@
+{
+  "junit": [
+    {
+      "path": "attachment-boundaries-red.xml",
+      "tests": 4,
+      "failures": 4,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "cli-red.xml",
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "compat-before.xml",
+      "tests": 69,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "integration.xml",
+      "tests": 133,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "lean-consumer.xml",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "proposal-replay.xml",
+      "tests": 84,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "path": "red.xml",
+      "tests": 11,
+      "failures": 10,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "commands": [
+    {
+      "command": "PYTHONPATH=src .venv/bin/python -m pytest tests/test_investigation*.py tests/test_correspondence_investigation_init.py tests/test_correspondence_investigation_v3.py tests/test_proof_contract_audit*.py tests/test_proof_contract_goal_scratch_ownership.py tests/test_proof_contract_worker_scratch.py tests/test_correspondence_goal_scratch_identity.py -q --junitxml=openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/finding-projection-20261020/integration.xml",
+      "exitCode": 0
+    },
+    {
+      "command": "timeout --signal=INT --kill-after=10s 300s .venv/bin/python -m pytest tests/test_correspondence_investigation_reporting.py -q --junitxml=openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/finding-projection-20261020/lean-consumer.xml",
+      "exitCode": 0
+    },
+    {
+      "command": "uv lock --check --offline",
+      "exitCode": 0
+    },
+    {
+      "command": "openspec validate ladon-proof-contract-analysis-umbrella --strict",
+      "exitCode": 0
+    }
+  ],
+  "quality": "QUALITY.json",
+  "publicCli": "CLI-CHECKS.json",
+  "baseline": "BASELINE.json",
+  "integratedFiles": "INTEGRATION.json",
+  "frozenTests": "FROZEN-TESTS.json",
+  "independentReviewPost": 1000,
+  "previousAuditPacket": "121 files verified unchanged",
+  "fullRepositoryRegression": "not run; broader tasks remain open",
+  "scope": "Native evidence projection and historical compatibility; no source-fidelity/theorem/detection acceptance"
+}

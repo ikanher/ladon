@@ -1,0 +1,60 @@
+{
+  "schema": "ladon-pre-beam-engineering-baseline-v1",
+  "createdAtUnix": 1792297045.7746732,
+  "baselineManifestSha256": "aa2e523434acff2dad52a2ba82758f24a4f25fb73fcabf893157755474db56a7",
+  "inputs": {
+    "measure.py": "a1a319c3920e6200f686236a4646f6877b5ba746d73b5b964f3713fec96bf882",
+    "CASES.json": "61e9bbbd88016f2abd3bd559b6e22f1a8169becfa19be705a56c4536902d6dcf",
+    "inputs/portable-arithmetic/EvalArithmetic.lean": "782b665d58cfab8d435a160e6923d1f2f6b0fd426a92fb8e57fc2133188724c3",
+    "inputs/portable-arithmetic/lakefile.toml": "46c85abfd29cb36ec9933e9e127b09a339c9ffde8cc278ca0a1195eff894b191",
+    "inputs/portable-arithmetic/lean-toolchain": "8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af",
+    "inputs/portable-logic/EvalLogic.lean": "ba648859f3ddc1035468a9b11f7f8a1e788a0d9de2b379f19072529842ffb2e8",
+    "inputs/portable-logic/lakefile.toml": "805acf336574e77c5b9ce9d944b720067f712e6469b4b701ec118063685d698d",
+    "inputs/portable-logic/lean-toolchain": "8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af",
+    "ROUTES.json": "97a788eb649d15c822563bd07826a77259f6f8b951029a97fb2fb52a70672dbb"
+  },
+  "runtime": "/home/codex/projects/ladon/.codex/state/proof-contract-analysis/baseline",
+  "bounds": {
+    "timeoutSeconds": 60,
+    "maxRssBytes": 12884901888,
+    "maxOutputBytes": 8388608,
+    "maxCandidates": 8,
+    "batchSize": 8
+  },
+  "seed": 20261018,
+  "routeExpansionBudgets": [
+    8,
+    32,
+    128
+  ],
+  "routeDepthCap": 32,
+  "routeCountCap": 20,
+  "caseCount": 8,
+  "positiveCases": 4,
+  "noClosedCandidateControls": 4,
+  "routeCaseCount": 64,
+  "routeLabels": "finite acyclic AND/OR truth oracle",
+  "metrics": [
+    "closedPositiveCases",
+    "falseClosureControlCases",
+    "unresolvedCases",
+    "verifiedCandidateRecall",
+    "semanticTerminalAssessments",
+    "independentReplayAttempts",
+    "timeToFirstAcceptedCandidateSeconds",
+    "runtimeSeconds",
+    "peakRssSampledBytes",
+    "timeouts",
+    "outputLimits",
+    "memoryLimits",
+    "routeCoverage",
+    "expandedStates"
+  ],
+  "policy": "All inputs and outcomes retained; no retries or memory increase; serial Lean processes.",
+  "nonclaims": [
+    "Development fixtures, no independent fault-discovery estimate.",
+    "No NL interpretation or beam policy is exercised.",
+    "Synthetic verified graph labels are not Lean certificates.",
+    "Existing v3 portable cases are reused, not a new held-out sample."
+  ]
+}

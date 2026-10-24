@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.105" timestamp="2026-10-20T15:24:26.404850+03:00" hostname="mindfields"><testcase classname="tests.test_proof_contract_audit_formal_stop" name="test_statement_observation_memory_receipt_is_terminal_for_audit" time="0.048"><failure message="AssertionError: assert 'partial' == 'stopped'&#10;  &#10;  - stopped&#10;  + partial">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-935/test_statement_observation_mem0')
+
+    def test_statement_observation_memory_receipt_is_terminal_for_audit(tmp_path):
+        from ladon.proof_contract_audit import run_contract_audit
+    
+        cap, peak = 1024**2, 2 * 1024**2
+        stopped = ProcessResult(('lean',), -9, '', '', .01,
+                                memory_limited=True, peak_rss_bytes=peak)
+        captured = {'sourceHash': '0' * 64, 'helperHash': '1' * 64,
+                    'toolchain': SimpleNamespace(context_identity='fixture-environment')}
+        observation = _process_observation(captured, stopped, 'Source.lean', 'Source',
+                                          'test', 30, cap)
+    
+        def worker(command, **_kwargs):
+            return ProcessResult(tuple(command), 0, json.dumps({
+                'status': 'completed', 'result': observation, 'diagnostic': None}), '', .01)
+    
+        path = _write_plan(tmp_path / 'plan.json', _fixture_plan())
+        report = run_contract_audit(path, tmp_path / 'run', runner=worker)
+&gt;       assert report['status'] == 'stopped'
+E       AssertionError: assert 'partial' == 'stopped'
+E         
+E         - stopped
+E         + partial
+
+tests/test_proof_contract_audit_formal_stop.py:29: AssertionError</failure></testcase></testsuite></testsuites>

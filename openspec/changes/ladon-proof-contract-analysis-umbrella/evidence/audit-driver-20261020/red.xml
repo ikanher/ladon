@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="7" skipped="0" tests="7" time="0.110" timestamp="2026-10-20T14:47:21.607014+03:00" hostname="mindfields"><testcase classname="tests.test_proof_contract_audit_driver" name="test_real_fixture_propagates_then_inspects_through_public_api" time="0.002"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-885/test_real_fixture_propagates_t0')
+
+    def test_real_fixture_propagates_then_inspects_through_public_api(tmp_path):
+        plan = _write_plan(tmp_path / "plan.json", _fixture_plan())
+&gt;       report = _driver()(plan, tmp_path / "run")
+                 ^^^^^^^^^
+
+tests/test_proof_contract_audit_driver.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _driver():
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_driver.py:19: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_driver" name="test_partial_checkpoint_resumes_same_clock_and_keeps_prefix_bytes" time="0.001"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-885/test_partial_checkpoint_resume0')
+
+    def test_partial_checkpoint_resumes_same_clock_and_keeps_prefix_bytes(tmp_path):
+        plan = _write_plan(tmp_path / "plan.json", _fixture_plan())
+        out = tmp_path / "run"
+&gt;       first = _driver()(plan, out, max_stages=1)
+                ^^^^^^^^^
+
+tests/test_proof_contract_audit_driver.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _driver():
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_driver.py:19: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_driver" name="test_resume_rejects_modified_plan_result_and_runtime_without_launching" time="0.000"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-885/test_resume_rejects_modified_p0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7b3e45de8890&gt;
+
+    def test_resume_rejects_modified_plan_result_and_runtime_without_launching(tmp_path, monkeypatch):
+&gt;       run_contract_audit = _driver()
+                             ^^^^^^^^^
+
+tests/test_proof_contract_audit_driver.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _driver():
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_driver.py:19: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_driver" name="test_refinement_is_reported_unavailable_after_preserving_completed_prefix" time="0.001"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-885/test_refinement_is_reported_un0')
+
+    def test_refinement_is_reported_unavailable_after_preserving_completed_prefix(tmp_path):
+        plan_obj = _fixture_plan(stages=[
+            {"id": "first", "operation": "propagate", "request": {
+                "graph": json.loads((FIXTURE / "graph.json").read_text()),
+                "contracts": [x for x in json.loads((FIXTURE / "context.json").read_text())["artifacts"]
+                              if x.get("artifactKind") == "proofir.contract"],
+                "request": json.loads((FIXTURE / "request.json").read_text()),
+                "analysisId": "audit:prefix",
+            }},
+            {"id": "future", "operation": "refine", "request": {"auditStage": "first", "pointer": ""}},
+        ])
+&gt;       report = _driver()(_write_plan(tmp_path / "plan.json", plan_obj), tmp_path / "run")
+                 ^^^^^^^^^
+
+tests/test_proof_contract_audit_driver.py:135: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _driver():
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_driver.py:19: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_driver" name="test_memory_stop_reports_and_prevents_later_stage_or_resume" time="0.001"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-885/test_memory_stop_reports_and_p0')
+
+    def test_memory_stop_reports_and_prevents_later_stage_or_resume(tmp_path):
+        first_stage = _fixture_plan()["stages"][0]
+        first_stage["id"] = "first"
+        plan_obj = _fixture_plan(stages=[first_stage,
+            {"id": "later", "operation": "refine", "request": {}},
+        ])
+        calls = []
+    
+        def memory_runner(command, **kwargs):
+            calls.append((tuple(command), kwargs))
+            from ladon.process_supervisor import ProcessResult
+            return ProcessResult(tuple(command), -9, "", "synthetic memory stop", 0.01,
+                                 memory_limited=True)
+    
+        out = tmp_path / "run"
+&gt;       report = _driver()(_write_plan(tmp_path / "plan.json", plan_obj), out,
+                 ^^^^^^^^^
+                           runner=memory_runner)
+
+tests/test_proof_contract_audit_driver.py:158: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _driver():
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_driver.py:19: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_driver" name="test_bad_reference_unknown_operation_and_bad_limits_are_rejected_before_output" time="0.001"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-885/test_bad_reference_unknown_ope0')
+
+    def test_bad_reference_unknown_operation_and_bad_limits_are_rejected_before_output(tmp_path):
+        base = _fixture_plan(stages=[
+            {"id": "one", "operation": "inspect", "request": {
+                "artifact": {"auditStage": "missing", "pointer": ""}, "context": []}},
+        ])
+        out = tmp_path / "bad-ref"
+        with pytest.raises((ValueError, TypeError)):
+&gt;           _driver()(_write_plan(tmp_path / "bad-ref.json", base), out)
+            ^^^^^^^^^
+
+tests/test_proof_contract_audit_driver.py:180: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def _driver():
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_driver.py:19: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_driver" name="test_contract_cli_exposes_the_audit_command" time="0.029"><failure message="assert 2 == 0&#10; +  where 2 = SystemExit(2).code&#10; +    where SystemExit(2) = &lt;ExceptionInfo SystemExit(2) tblen=6&gt;.value">def test_contract_cli_exposes_the_audit_command():
+        from ladon.proof_contract_cli import contract_main
+    
+        with pytest.raises(SystemExit) as result:
+            contract_main(["audit", "--help"])
+&gt;       assert result.value.code == 0
+E       assert 2 == 0
+E        +  where 2 = SystemExit(2).code
+E        +    where SystemExit(2) = &lt;ExceptionInfo SystemExit(2) tblen=6&gt;.value
+
+tests/test_proof_contract_audit_driver.py:207: AssertionError</failure></testcase></testsuite></testsuites>

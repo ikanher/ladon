@@ -1,0 +1,361 @@
+ M docs/CLI.md
+ M docs/CORRESPONDENCE_DISCOVERY.md
+ M docs/INVESTIGATION_LOOP.md
+ M docs/NL_LEAN_CORRESPONDENCE.md
+ M docs/ORDINARY_LEAN_HANDOFF.md
+ M docs/RESULT_BUNDLES.md
+ M docs/RESULT_MANIFEST.md
+ M docs/SOURCE_GOAL_CAPTURE.md
+ M docs/SOURCE_GOAL_COMPLETION.md
+ M docs/THEOREM_CAPSULES.md
+ M openspec/changes/ladon-correspondence-field-hardening-umbrella/tasks.md
+ M rust/proofir-core/src/lib.rs
+ M src/ladon/_proof_slice_runtime.py
+ M src/ladon/cli.py
+ M src/ladon/correspondence_check.py
+ M src/ladon/correspondence_implementation.py
+ M src/ladon/correspondence_preparation.py
+ M src/ladon/investigation.py
+ M src/ladon/investigation_cli.py
+ M src/ladon/investigation_correspondence.py
+ M src/ladon/investigation_correspondence_status.py
+ M src/ladon/investigation_finalization.py
+ M src/ladon/lean/ladon_proof_slice_helper.lean
+ M src/ladon/lean/ladon_scoped_slice_helper.lean
+ M src/ladon/lean/ladon_theorem_capsule_helper.lean
+ M src/ladon/progress.py
+ M src/ladon/proof_search_discovery_cli.py
+ M src/ladon/proof_search_goal_cli.py
+ M src/ladon/proof_search_parser.py
+ M src/ladon/proof_slice.py
+ M src/ladon/proofir_sqlite_v3.py
+ M src/ladon/proofir_v3.py
+ M src/ladon/proofir_v3_payloads.py
+ M src/ladon/reportset_cli.py
+ M src/ladon/scratch_replay.py
+ M src/ladon/semantic_candidate_batch_worker.py
+ M src/ladon/semantic_candidate_worker.py
+ M src/ladon/source_association.py
+ M src/ladon/source_goal_capture.py
+ M src/ladon/source_goal_completion.py
+ M src/ladon/theorem_capsule_planning.py
+ M src/ladon/theorem_capsule_replay.py
+ M src/ladon/theorem_cli.py
+ M src/ladon/verified_discovery.py
+ M tests/test_evaluation_corpus.py
+ D tests/test_installed_cli_contract.py
+ M tests/test_progress.py
+ M tests/test_proofir_payload_schema.py
+ M tests/test_proofir_sqlite_native_contract.py
+ M tests/test_semantic_candidate_worker_v3_contract.py
+ M tests/test_source_goal_capture_boundaries.py
+ M tests/test_theorem_capsule_replay.py
+?? docs/INVESTIGATION_FINDINGS.md
+?? docs/PROOF_CONTRACTS.md
+?? docs/proof-contract-profile.json
+?? openspec/changes/archive/2026-10-19-ladon-proof-contract-probes/
+?? openspec/changes/ladon-correspondence-field-hardening-umbrella/evidence/retest-6-retrospective/
+?? openspec/changes/ladon-investigation-findings/
+?? openspec/changes/ladon-proof-contract-analysis-umbrella/
+?? openspec/changes/ladon-proof-contract-bidirectional/
+?? openspec/changes/ladon-proof-contract-domain/
+?? openspec/changes/ladon-proof-contract-evaluation/
+?? openspec/changes/ladon-proof-contract-producers/
+?? openspec/changes/ladon-proof-contract-propagation/
+?? openspec/changes/ladon-proof-contract-refinement/
+?? openspec/specs/ladon-contract-probes/
+?? rust/proofir-core/tests/contract_boundary.rs
+?? src/ladon/_contract_propagation_budget.py
+?? src/ladon/_contract_propagation_common.py
+?? src/ladon/_contract_propagation_deadline.py
+?? src/ladon/_contract_propagation_evaluator.py
+?? src/ladon/_contract_propagation_frontier.py
+?? src/ladon/_contract_propagation_input_budget.py
+?? src/ladon/_contract_propagation_inputs.py
+?? src/ladon/_contract_propagation_sources.py
+?? src/ladon/_contract_propagation_transfer.py
+?? src/ladon/_contract_propagation_validation.py
+?? src/ladon/_investigation_contract_observations.py
+?? src/ladon/_proof_contract_audit_plan.py
+?? src/ladon/_proof_contract_audit_store.py
+?? src/ladon/_proof_contract_bridge_goals.py
+?? src/ladon/_proof_contract_bridge_preparation.py
+?? src/ladon/_proof_contract_context_goals.py
+?? src/ladon/_proof_contract_context_preparation.py
+?? src/ladon/_proof_contract_goal_scratch.py
+?? src/ladon/_proof_contract_obligation_bundle.py
+?? src/ladon/_proof_contract_obligation_bundle_walk.py
+?? src/ladon/_proof_contract_obligation_check_inputs.py
+?? src/ladon/_proof_contract_obligation_check_reporting.py
+?? src/ladon/_proof_contract_obligation_native.py
+?? src/ladon/_proof_contract_obligation_planner_backward.py
+?? src/ladon/_proof_contract_obligation_planner_comparisons.py
+?? src/ladon/_proof_contract_obligation_planner_replay.py
+?? src/ladon/_proof_contract_obligation_planner_result.py
+?? src/ladon/_proof_contract_obligation_planner_routes.py
+?? src/ladon/_proof_contract_obligation_planner_validation.py
+?? src/ladon/_proof_contract_obligations_result.py
+?? src/ladon/_proof_contract_obligations_rules.py
+?? src/ladon/_proof_contract_obligations_validation.py
+?? src/ladon/_proof_contract_planned_source_binding.py
+?? src/ladon/_proof_contract_planned_source_inputs.py
+?? src/ladon/_proof_contract_planned_source_trace.py
+?? src/ladon/_proof_contract_probe_calibration_checks.py
+?? src/ladon/_proof_contract_probe_calibration_inputs.py
+?? src/ladon/_proof_contract_probe_domain.py
+?? src/ladon/_proof_contract_probe_domain_ast.py
+?? src/ladon/_proof_contract_probe_domain_contracts.py
+?? src/ladon/_proof_contract_probe_inequality.py
+?? src/ladon/_proof_contract_probe_inequality_ast.py
+?? src/ladon/_proof_contract_probe_inequality_contracts.py
+?? src/ladon/_proof_contract_probe_inputs.py
+?? src/ladon/_proof_contract_probe_native.py
+?? src/ladon/_proof_contract_probe_pair.py
+?? src/ladon/_proof_contract_probe_regularity_ast.py
+?? src/ladon/_proof_contract_probe_regularity_match.py
+?? src/ladon/_proof_contract_probe_reporting.py
+?? src/ladon/_proof_contract_probe_templates.py
+?? src/ladon/_proof_contract_probe_uniformity.py
+?? src/ladon/_proof_contract_probe_uniformity_ast.py
+?? src/ladon/_proof_contract_probe_uniformity_contracts.py
+?? src/ladon/_proof_contract_probe_witness.py
+?? src/ladon/_proof_contract_probe_witness_ast.py
+?? src/ladon/_proof_contract_probe_witness_contracts.py
+?? src/ladon/_proof_contract_provider_requests.py
+?? src/ladon/_proof_contract_route_context_evidence.py
+?? src/ladon/_proof_contract_route_context_goals.py
+?? src/ladon/_proof_contract_route_context_inputs.py
+?? src/ladon/_proof_contract_route_context_preparation.py
+?? src/ladon/_proof_contract_source_obligations_codec.py
+?? src/ladon/_proof_contract_source_obligations_formula.py
+?? src/ladon/_proof_contract_source_obligations_inputs.py
+?? src/ladon/_proof_contract_source_obligations_prefix.py
+?? src/ladon/_proof_contract_source_obligations_roles.py
+?? src/ladon/_proof_contract_source_obligations_staging.py
+?? src/ladon/investigation_findings.py
+?? src/ladon/investigation_observation_cli.py
+?? src/ladon/investigation_observations.py
+?? src/ladon/investigation_reporting.py
+?? src/ladon/lean/ladon_formal_contract_helper.lean
+?? src/ladon/lean/ladon_probe_separator.lean
+?? src/ladon/proof_contract_artifacts.py
+?? src/ladon/proof_contract_audit.py
+?? src/ladon/proof_contract_audit_worker.py
+?? src/ladon/proof_contract_bridge.py
+?? src/ladon/proof_contract_bridge_supervision.py
+?? src/ladon/proof_contract_bridge_worker.py
+?? src/ladon/proof_contract_cli.py
+?? src/ladon/proof_contract_context_bridge.py
+?? src/ladon/proof_contract_context_cli.py
+?? src/ladon/proof_contract_context_worker.py
+?? src/ladon/proof_contract_expressions.py
+?? src/ladon/proof_contract_formal.py
+?? src/ladon/proof_contract_io.py
+?? src/ladon/proof_contract_obligation_artifacts.py
+?? src/ladon/proof_contract_obligation_checks.py
+?? src/ladon/proof_contract_obligation_cli.py
+?? src/ladon/proof_contract_obligation_planner.py
+?? src/ladon/proof_contract_obligation_supervision.py
+?? src/ladon/proof_contract_obligation_worker.py
+?? src/ladon/proof_contract_obligations.py
+?? src/ladon/proof_contract_payloads.py
+?? src/ladon/proof_contract_planned_source.py
+?? src/ladon/proof_contract_probe_artifacts.py
+?? src/ladon/proof_contract_probe_calibration.py
+?? src/ladon/proof_contract_probe_calibration_cli.py
+?? src/ladon/proof_contract_probe_cli.py
+?? src/ladon/proof_contract_probe_review.py
+?? src/ladon/proof_contract_probe_worker.py
+?? src/ladon/proof_contract_probes.py
+?? src/ladon/proof_contract_production.py
+?? src/ladon/proof_contract_propagation.py
+?? src/ladon/proof_contract_provider_cli.py
+?? src/ladon/proof_contract_provider_expansion.py
+?? src/ladon/proof_contract_provider_supervision.py
+?? src/ladon/proof_contract_provider_worker.py
+?? src/ladon/proof_contract_recognition.py
+?? src/ladon/proof_contract_route_context.py
+?? src/ladon/proof_contract_route_context_cli.py
+?? src/ladon/proof_contract_route_context_worker.py
+?? src/ladon/proof_contract_rules.py
+?? src/ladon/proof_contract_source.py
+?? src/ladon/proof_contract_source_obligations.py
+?? src/ladon/proof_contract_sqlite.py
+?? src/ladon/proof_contract_worker.py
+?? src/ladon/proof_contracts.py
+?? src/ladon/resource_limits.py
+?? tests/fixtures/constant_collector_cases.lean
+?? tests/fixtures/investigation_findings/
+?? tests/fixtures/proof_contract_application_probes/
+?? tests/fixtures/proof_contract_audit/
+?? tests/fixtures/proof_contract_context_bridge/
+?? tests/fixtures/proof_contract_obligation_bundles/
+?? tests/fixtures/proof_contract_obligations/
+?? tests/fixtures/proof_contract_planned_source/
+?? tests/fixtures/proof_contract_presentations/
+?? tests/fixtures/proof_contract_production/
+?? tests/fixtures/proof_contract_propagation/
+?? tests/fixtures/proof_contract_protocol/
+?? tests/fixtures/proof_contract_provider_expansion/
+?? tests/fixtures/proof_contract_route_context/
+?? tests/fixtures/proof_contract_source_obligations/
+?? tests/fixtures/proof_contracts/
+?? tests/support/proof_contract_native.py
+?? tests/support/proof_contract_obligation_planner.py
+?? tests/support/proof_contract_planned_source.py
+?? tests/test_correspondence_goal_scratch_identity.py
+?? tests/test_correspondence_investigation_reporting.py
+?? tests/test_installed_cli_contract_v2.py
+?? tests/test_investigation_contract_attachment_boundaries.py
+?? tests/test_investigation_contract_findings.py
+?? tests/test_investigation_contract_findings_cli.py
+?? tests/test_investigation_findings.py
+?? tests/test_investigation_findings_capture_state.py
+?? tests/test_investigation_findings_edges.py
+?? tests/test_investigation_findings_pending.py
+?? tests/test_investigation_observation_cli.py
+?? tests/test_memory_limit_discovery.py
+?? tests/test_memory_limit_reporting.py
+?? tests/test_memory_limits.py
+?? tests/test_memory_receipt_identity.py
+?? tests/test_proof_contract_application_probe_boundaries.py
+?? tests/test_proof_contract_application_probe_cli_v2.py
+?? tests/test_proof_contract_application_probe_contract.py
+?? tests/test_proof_contract_application_probe_inspect.py
+?? tests/test_proof_contract_audit_adapters.py
+?? tests/test_proof_contract_audit_admission_recovery.py
+?? tests/test_proof_contract_audit_binding_stop.py
+?? tests/test_proof_contract_audit_boundaries.py
+?? tests/test_proof_contract_audit_child_resources.py
+?? tests/test_proof_contract_audit_driver.py
+?? tests/test_proof_contract_audit_formal_stop.py
+?? tests/test_proof_contract_audit_identity_guards.py
+?? tests/test_proof_contract_audit_nested_ownership.py
+?? tests/test_proof_contract_audit_probe_bounds.py
+?? tests/test_proof_contract_authority.py
+?? tests/test_proof_contract_backward.py
+?? tests/test_proof_contract_backward_boundaries.py
+?? tests/test_proof_contract_backward_falsifier.py
+?? tests/test_proof_contract_backward_math.py
+?? tests/test_proof_contract_backward_oracle.py
+?? tests/test_proof_contract_backward_output_reason.py
+?? tests/test_proof_contract_bridge_binding.py
+?? tests/test_proof_contract_bridge_caps.py
+?? tests/test_proof_contract_bridge_contract.py
+?? tests/test_proof_contract_bridge_demand.py
+?? tests/test_proof_contract_bridge_goals.py
+?? tests/test_proof_contract_bridge_stops.py
+?? tests/test_proof_contract_bridge_worker.py
+?? tests/test_proof_contract_cli.py
+?? tests/test_proof_contract_combine.py
+?? tests/test_proof_contract_constant_probe_native.py
+?? tests/test_proof_contract_constant_scope.py
+?? tests/test_proof_contract_constant_uniformity_v2.py
+?? tests/test_proof_contract_context_boundary.py
+?? tests/test_proof_contract_context_checkpoint.py
+?? tests/test_proof_contract_context_cli.py
+?? tests/test_proof_contract_context_freshness.py
+?? tests/test_proof_contract_context_native.py
+?? tests/test_proof_contract_context_output.py
+?? tests/test_proof_contract_deadline.py
+?? tests/test_proof_contract_documented_example.py
+?? tests/test_proof_contract_expansion.py
+?? tests/test_proof_contract_fidelity.py
+?? tests/test_proof_contract_formal_cli.py
+?? tests/test_proof_contract_formal_snapshot.py
+?? tests/test_proof_contract_goal_scratch_ownership.py
+?? tests/test_proof_contract_inequality_direction_context_v2.py
+?? tests/test_proof_contract_inequality_direction_contract_v2.py
+?? tests/test_proof_contract_inequality_direction_scope_v2.py
+?? tests/test_proof_contract_instances.py
+?? tests/test_proof_contract_io.py
+?? tests/test_proof_contract_native.py
+?? tests/test_proof_contract_native_audit.py
+?? tests/test_proof_contract_native_deadline_negatives.py
+?? tests/test_proof_contract_obligation_bundle_truncation.py
+?? tests/test_proof_contract_obligation_bundles.py
+?? tests/test_proof_contract_obligation_check_accounting.py
+?? tests/test_proof_contract_obligation_check_boundaries.py
+?? tests/test_proof_contract_obligation_check_error_bounds.py
+?? tests/test_proof_contract_obligation_check_evidence_budget.py
+?? tests/test_proof_contract_obligation_check_resources.py
+?? tests/test_proof_contract_obligation_check_validation_coverage.py
+?? tests/test_proof_contract_obligation_cli.py
+?? tests/test_proof_contract_obligation_inspect_worker.py
+?? tests/test_proof_contract_obligation_native.py
+?? tests/test_proof_contract_obligation_planner.py
+?? tests/test_proof_contract_obligation_planner_branches.py
+?? tests/test_proof_contract_obligation_planner_comparisons.py
+?? tests/test_proof_contract_obligation_planner_controls.py
+?? tests/test_proof_contract_obligation_planner_coverage.py
+?? tests/test_proof_contract_obligation_planner_explanation.py
+?? tests/test_proof_contract_obligation_planner_identity.py
+?? tests/test_proof_contract_obligation_planner_local.py
+?? tests/test_proof_contract_obligation_planner_oracle.py
+?? tests/test_proof_contract_obligation_planner_partial.py
+?? tests/test_proof_contract_obligation_planner_pruned_method.py
+?? tests/test_proof_contract_obligation_planner_replay.py
+?? tests/test_proof_contract_obligation_planner_witnesses.py
+?? tests/test_proof_contract_obligation_planner_work.py
+?? tests/test_proof_contract_obligation_schema.py
+?? tests/test_proof_contract_obligation_schema_reopen.py
+?? tests/test_proof_contract_obligation_source_cli.py
+?? tests/test_proof_contract_obligation_validation_worker.py
+?? tests/test_proof_contract_obligation_worker.py
+?? tests/test_proof_contract_planned_source.py
+?? tests/test_proof_contract_planned_source_binding.py
+?? tests/test_proof_contract_planned_source_deadline.py
+?? tests/test_proof_contract_planned_source_preflight.py
+?? tests/test_proof_contract_planned_source_resources.py
+?? tests/test_proof_contract_presentations.py
+?? tests/test_proof_contract_probe_calibration_boundary.py
+?? tests/test_proof_contract_probe_calibration_capacity.py
+?? tests/test_proof_contract_probe_calibration_controls.py
+?? tests/test_proof_contract_probe_calibration_fresh_source.py
+?? tests/test_proof_contract_probe_review_cli.py
+?? tests/test_proof_contract_producer_bounds.py
+?? tests/test_proof_contract_production.py
+?? tests/test_proof_contract_propagation.py
+?? tests/test_proof_contract_propagation_audit.py
+?? tests/test_proof_contract_propagation_boundaries.py
+?? tests/test_proof_contract_propagation_cli.py
+?? tests/test_proof_contract_propagation_input_budget.py
+?? tests/test_proof_contract_propagation_native.py
+?? tests/test_proof_contract_propagation_oracle.py
+?? tests/test_proof_contract_propagation_resource_negatives.py
+?? tests/test_proof_contract_propagation_resources.py
+?? tests/test_proof_contract_propagation_sqlite.py
+?? tests/test_proof_contract_properties.py
+?? tests/test_proof_contract_protocol.py
+?? tests/test_proof_contract_provider_binding.py
+?? tests/test_proof_contract_provider_cli.py
+?? tests/test_proof_contract_provider_deadline.py
+?? tests/test_proof_contract_provider_expansion.py
+?? tests/test_proof_contract_provider_output.py
+?? tests/test_proof_contract_provider_preflight.py
+?? tests/test_proof_contract_provider_request_budget.py
+?? tests/test_proof_contract_provider_worker.py
+?? tests/test_proof_contract_restricted_domain_contract_v3.py
+?? tests/test_proof_contract_route_context_boundary.py
+?? tests/test_proof_contract_route_context_cli.py
+?? tests/test_proof_contract_route_context_composition.py
+?? tests/test_proof_contract_route_context_evidence.py
+?? tests/test_proof_contract_route_context_native.py
+?? tests/test_proof_contract_route_context_output.py
+?? tests/test_proof_contract_route_context_output_stops.py
+?? tests/test_proof_contract_route_context_stops.py
+?? tests/test_proof_contract_source.py
+?? tests/test_proof_contract_source_obligation_boundaries.py
+?? tests/test_proof_contract_source_obligation_collisions.py
+?? tests/test_proof_contract_source_obligation_guards.py
+?? tests/test_proof_contract_source_obligation_instances.py
+?? tests/test_proof_contract_source_obligation_parent_deadline.py
+?? tests/test_proof_contract_source_obligation_resources.py
+?? tests/test_proof_contract_source_obligations.py
+?? tests/test_proof_contract_source_staging_rollback.py
+?? tests/test_proof_contract_storage.py
+?? tests/test_proof_contract_transport.py
+?? tests/test_proof_contract_witness_dependence_contract.py
+?? tests/test_proof_contract_worker_scratch.py
+?? tests/test_proof_contracts.py
+?? tests/test_theorem_constant_collector.py

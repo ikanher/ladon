@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="2" time="0.146" timestamp="2026-10-20T15:23:36.229708+03:00" hostname="mindfields"><testcase classname="tests.test_proof_contract_audit_child_resources" name="test_existing_child_memory_shapes_stop_progress_and_preserve_evidence[formal]" time="0.056"><failure message="AssertionError: assert 'partial' == 'stopped'&#10;  &#10;  - stopped&#10;  + partial">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-933/test_existing_child_memory_sha0')
+shape = 'formal'
+
+    @pytest.mark.parametrize('shape', ['formal', 'replay'])
+    def test_existing_child_memory_shapes_stop_progress_and_preserve_evidence(tmp_path, shape):
+        from ladon.proof_contract_audit import run_contract_audit
+    
+        cap, peak = 1024**2, 2 * 1024**2
+        message = memory_limit_message(cap, peak)
+        receipt = {'memoryLimited': True, 'requestedMaxRssBytes': cap, 'peakRssBytes': peak}
+        child = {'schema': 'ladon-contract-production-v1', 'channel': 'formal',
+                 'status': 'unavailable', 'contract': None,
+                 'processReceipts': [receipt],
+                 'residuals': [{'code': 'memory-limit', 'message': message, 'feature': 'statement'}]}
+        if shape == 'replay':
+            child = {'status': 'incomplete', 'code': 'memory-limit', 'message': message,
+                     'processReceipt': receipt, 'result': None}
+        calls = []
+    
+        def memory_worker(command, **_kwargs):
+            calls.append(True)
+            return ProcessResult(tuple(command), 0, json.dumps({
+                'status': 'completed', 'result': child, 'diagnostic': None}), '', .01)
+    
+        path = _write_plan(tmp_path / 'plan.json', _fixture_plan())
+        report = run_contract_audit(path, tmp_path / 'run', runner=memory_worker)
+&gt;       assert report['status'] == 'stopped'
+E       AssertionError: assert 'partial' == 'stopped'
+E         
+E         - stopped
+E         + partial
+
+tests/test_proof_contract_audit_child_resources.py:34: AssertionError</failure></testcase><testcase classname="tests.test_proof_contract_audit_child_resources" name="test_existing_child_memory_shapes_stop_progress_and_preserve_evidence[replay]" time="0.036"><failure message="AssertionError: assert 'partial' == 'stopped'&#10;  &#10;  - stopped&#10;  + partial">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-933/test_existing_child_memory_sha1')
+shape = 'replay'
+
+    @pytest.mark.parametrize('shape', ['formal', 'replay'])
+    def test_existing_child_memory_shapes_stop_progress_and_preserve_evidence(tmp_path, shape):
+        from ladon.proof_contract_audit import run_contract_audit
+    
+        cap, peak = 1024**2, 2 * 1024**2
+        message = memory_limit_message(cap, peak)
+        receipt = {'memoryLimited': True, 'requestedMaxRssBytes': cap, 'peakRssBytes': peak}
+        child = {'schema': 'ladon-contract-production-v1', 'channel': 'formal',
+                 'status': 'unavailable', 'contract': None,
+                 'processReceipts': [receipt],
+                 'residuals': [{'code': 'memory-limit', 'message': message, 'feature': 'statement'}]}
+        if shape == 'replay':
+            child = {'status': 'incomplete', 'code': 'memory-limit', 'message': message,
+                     'processReceipt': receipt, 'result': None}
+        calls = []
+    
+        def memory_worker(command, **_kwargs):
+            calls.append(True)
+            return ProcessResult(tuple(command), 0, json.dumps({
+                'status': 'completed', 'result': child, 'diagnostic': None}), '', .01)
+    
+        path = _write_plan(tmp_path / 'plan.json', _fixture_plan())
+        report = run_contract_audit(path, tmp_path / 'run', runner=memory_worker)
+&gt;       assert report['status'] == 'stopped'
+E       AssertionError: assert 'partial' == 'stopped'
+E         
+E         - stopped
+E         + partial
+
+tests/test_proof_contract_audit_child_resources.py:34: AssertionError</failure></testcase></testsuite></testsuites>

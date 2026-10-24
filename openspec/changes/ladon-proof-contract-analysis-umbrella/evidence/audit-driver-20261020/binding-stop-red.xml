@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.379" timestamp="2026-10-20T15:21:59.035915+03:00" hostname="mindfields"><testcase classname="tests.test_proof_contract_audit_binding_stop" name="test_source_binding_memory_stop_keeps_receipt_and_never_dispatches" time="0.295"><failure message="ValueError: Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 12 GiB (12884901888 bytes). Observed sampled peak 12 GiB (12884902912 bytes). Ask the user before retrying with a higher --max-rss-mib limit.">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-928/test_source_binding_memory_sto0')
+
+    def test_source_binding_memory_stop_keeps_receipt_and_never_dispatches(tmp_path):
+        from ladon.proof_contract_audit import run_contract_audit
+    
+        root, *_rest = _repo(tmp_path / 'repo')
+        (root / 'quote.txt').write_text('Selected source')
+        plan = _fixture_plan()
+        plan.update(repoRoot=str(root), sourceFiles=['quote.txt'])
+        path = _write_plan(tmp_path / 'plan.json', plan)
+        calls = []
+        cap = 12 * 1024**3
+        peak = cap + 1024
+    
+        def memory_worker(command, **kwargs):
+            job = json.loads(kwargs['input_bytes'])
+            calls.append(job['operation'])
+            assert job['operation'] == 'audit-source-binding'
+            return ProcessResult(tuple(command), -9, '', '', .01,
+                                 memory_limited=True, peak_rss_bytes=peak)
+    
+&gt;       report = run_contract_audit(path, tmp_path / 'stopped', runner=memory_worker)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_audit_binding_stop.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.codex/state/proof-contract-analysis/audit-driver-green/proposal/src/ladon/proof_contract_audit.py:48: in run_contract_audit
+    session = _prepare_session(plan, output_dir, resume, runner)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.codex/state/proof-contract-analysis/audit-driver-green/proposal/src/ladon/proof_contract_audit.py:70: in _prepare_session
+    source_binding = _capture_source_binding(root, normalized["sourceFiles"],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-928/test_source_binding_memory_sto0/repo')
+source_files = ['quote.txt']
+limits = {'max_output_bytes': 8388608, 'max_rss_bytes': 12884901888, 'timeout_seconds': 5400.0}
+clock = {'bootIdentity': 'e82feb72-3335-4068-9f17-f446402b4c2a', 'createdUtc': 1792498919.3953247, 'deadlineMonotonic': 2135873.363193685, 'deadlineUtc': 1792504319.3953247}
+runner = &lt;function test_source_binding_memory_stop_keeps_receipt_and_never_dispatches.&lt;locals&gt;.memory_worker at 0x7a9eb29268e0&gt;
+
+    def _capture_source_binding(root, source_files, limits, clock, runner):
+        if root is None:
+            return None
+        request = {"repoRoot": str(root), "sourceFiles": source_files,
+                   "deadlineMonotonic": clock["deadlineMonotonic"],
+                   "deadlineUtc": clock["deadlineUtc"], "limits": limits}
+        job = {"version": 1, "operation": "audit-source-binding", "request": request,
+               "analysisId": "source-binding", "deadlineObservation": None}
+        bounds = {"timeout_seconds": min(limits["timeout_seconds"], _remaining(clock)),
+                  "max_output_bytes": limits["max_output_bytes"],
+                  "max_rss_bytes": limits["max_rss_bytes"],
+                  "deadlineMonotonic": clock["deadlineMonotonic"]}
+        checked = _execute_job(job, bounds, {"receipt": None, "inputDigest": None, "bounds": None},
+                               runner, worker_module="ladon.proof_contract_audit_worker")
+        if checked["status"] != "completed" or not isinstance(checked.get("result"), dict):
+            diagnostic = checked.get("diagnostic") or {}
+&gt;           raise ValueError(diagnostic.get("message", "bounded source identity capture did not complete"))
+E           ValueError: Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 12 GiB (12884901888 bytes). Observed sampled peak 12 GiB (12884902912 bytes). Ask the user before retrying with a higher --max-rss-mib limit.
+
+.codex/state/proof-contract-analysis/audit-driver-green/proposal/src/ladon/proof_contract_audit.py:122: ValueError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="3" time="0.363" timestamp="2026-10-20T14:52:23.274984+03:00" hostname="mindfields"><testcase classname="tests.test_proof_contract_audit_adapters" name="test_obligations_then_native_inspection_keep_conditional_authority" time="0.002"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-889/test_obligations_then_native_i0')
+
+    def test_obligations_then_native_inspection_keep_conditional_authority(tmp_path):
+        _, request = _request()
+        context = {'artifacts': [request.derivation_artifact, *request.contract_artifacts]}
+        plan = _fixture_plan(stages=[
+            {'id': 'demands', 'operation': 'obligations', 'request': {
+                'graph': request.derivation_artifact, 'contracts': request.contract_artifacts,
+                'request': request_payload(request), 'analysisId': 'analysis:audit-demands'}},
+            {'id': 'inspect', 'operation': 'inspect', 'request': {
+                'artifact': {'auditStage': 'demands', 'pointer': ''}, 'context': context}},
+        ])
+&gt;       report = _run(_write_plan(tmp_path / 'plan.json', plan), tmp_path / 'run')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_audit_adapters.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/tmp/pytest-of-codex/pytest-889/test_obligations_then_native_i0/plan.json'), PosixPath('/tmp/pytest-of-codex/pytest-889/test_obligations_then_native_i0/run'))
+kwargs = {}
+
+    def _run(*args, **kwargs):
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_boundaries.py:16: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_adapters" name="test_prose_snapshot_and_inspection_preserve_pre_match_attribution" time="0.268"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-889/test_prose_snapshot_and_inspec0')
+
+    def test_prose_snapshot_and_inspection_preserve_pre_match_attribution(tmp_path):
+        root, _source, _other, _concurrent, lake, lean, _hash, _context = _repo(tmp_path / 'repo')
+        interpretation, contract, origins = prose_inputs(root)
+        plan = _fixture_plan(stages=[
+            {'id': 'reading', 'operation': 'produce-prose', 'request': {
+                'interpretation': interpretation, 'contract': contract, 'featureOrigins': origins,
+                'alternativeId': 'reading:audit', 'environmentRef': ENVIRONMENT, 'author': 'fixture'}},
+            {'id': 'inspect', 'operation': 'inspect', 'request': {
+                'snapshot': {'auditStage': 'reading', 'pointer': ''}}},
+        ])
+        plan.update(repoRoot=str(root), sourceFiles=['claim.txt'])
+&gt;       report = _run(_write_plan(tmp_path / 'plan.json', plan), tmp_path / 'run',
+                      runner=_version_only_runner(lake, lean))
+
+tests/test_proof_contract_audit_adapters.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/tmp/pytest-of-codex/pytest-889/test_prose_snapshot_and_inspec0/plan.json'), PosixPath('/tmp/pytest-of-codex/pytest-889/test_prose_snapshot_and_inspec0/run'))
+kwargs = {'runner': &lt;function _version_only_runner.&lt;locals&gt;.runner at 0x7e687d75a840&gt;}
+
+    def _run(*args, **kwargs):
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_boundaries.py:16: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_adapters" name="test_stricter_child_deadline_is_retained_and_partial_work_is_not_promoted" time="0.001"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-889/test_stricter_child_deadline_i0')
+
+    def test_stricter_child_deadline_is_retained_and_partial_work_is_not_promoted(tmp_path):
+        plan = _fixture_plan()
+        plan['stages'][0]['request']['request']['bounds']['deadlineUtc'] = '2000-01-01T00:00:00Z'
+        path = _write_plan(tmp_path / 'plan.json', plan)
+        original = path.read_bytes()
+        calls = []
+    
+        def tracked(command, **kwargs):
+            calls.append(command)
+            return run_bounded_target_process(command, **kwargs)
+    
+&gt;       result = _run(path, tmp_path / 'run', runner=tracked)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_audit_adapters.py:66: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/tmp/pytest-of-codex/pytest-889/test_stricter_child_deadline_i0/plan.json'), PosixPath('/tmp/pytest-of-codex/pytest-889/test_stricter_child_deadline_i0/run'))
+kwargs = {'runner': &lt;function test_stricter_child_deadline_is_retained_and_partial_work_is_not_promoted.&lt;locals&gt;.tracked at 0x7e687d75a200&gt;}
+
+    def _run(*args, **kwargs):
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_boundaries.py:16: ModuleNotFoundError</failure></testcase></testsuite></testsuites>

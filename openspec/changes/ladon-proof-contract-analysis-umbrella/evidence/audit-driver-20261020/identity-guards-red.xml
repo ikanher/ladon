@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="4" time="1.566" timestamp="2026-10-20T15:12:48.454576+03:00" hostname="mindfields"><testcase classname="tests.test_proof_contract_audit_identity_guards" name="test_saved_manifest_is_exact_and_normalization_does_not_hide_input_drift" time="0.075"><failure message="assert b'{&quot;limits&quot;:{...a&quot;}]}]}}}]}\n' == b'{&quot;limits&quot;: ...a&quot;}]}]}}}]}\n'&#10;  &#10;  At index 10 diff: b'{' != b' '&#10;  Use -v to get more diff">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-917/test_saved_manifest_is_exact_a0')
+
+    def test_saved_manifest_is_exact_and_normalization_does_not_hide_input_drift(tmp_path):
+        original = _fixture_plan()
+        path = _write_plan(tmp_path / 'plan.json', original)
+        first = _run(path, tmp_path / 'first', max_stages=1)
+&gt;       assert (tmp_path / 'first/plan.json').read_bytes() == path.read_bytes()
+E       assert b'{"limits":{...a"}]}]}}}]}\n' == b'{"limits": ...a"}]}]}}}]}\n'
+E         
+E         At index 10 diff: b'{' != b' '
+E         Use -v to get more diff
+
+tests/test_proof_contract_audit_identity_guards.py:14: AssertionError</failure></testcase><testcase classname="tests.test_proof_contract_audit_identity_guards" name="test_source_change_after_initial_binding_cannot_be_accepted_as_a_new_baseline" time="1.218"><failure message="AssertionError: {'authority': 'bounded orchestration only; stage result authority is unchanged', 'bounds': {'max_output_bytes': 838860...tc': 1792498368.8833272, 'deadlineMonotonic': 2135322.851196021, 'deadlineUtc': 1792503768.8833272}, 'code': None, ...}&#10;assert 'completed' != 'completed'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-917/test_source_change_after_initi0')
+
+    def test_source_change_after_initial_binding_cannot_be_accepted_as_a_new_baseline(tmp_path):
+        root, _source, _other, _concurrent, lake, lean, _hash, _context = _repo(tmp_path / 'repo')
+        quote = root / 'quote.txt'
+        quote.write_text('original quote')
+        plan = _fixture_plan(stages=[_fixture_plan()['stages'][0]])
+        plan.update(repoRoot=str(root), sourceFiles=['quote.txt'])
+        path = _write_plan(tmp_path / 'plan.json', plan)
+        base_runner = _version_only_runner(lake, lean)
+    
+        def mutate_before_stage(command, **kwargs):
+            if json.loads(kwargs['input_bytes'])['operation'] == 'audit-stage':
+                quote.write_text('changed between initial binding and dispatch')
+            return base_runner(command, **kwargs)
+    
+        try:
+            report = _run(path, tmp_path / 'run', runner=mutate_before_stage)
+        except (ValueError, OSError):
+            return
+&gt;       assert report['status'] != 'completed', report
+E       AssertionError: {'authority': 'bounded orchestration only; stage result authority is unchanged', 'bounds': {'max_output_bytes': 838860...tc': 1792498368.8833272, 'deadlineMonotonic': 2135322.851196021, 'deadlineUtc': 1792503768.8833272}, 'code': None, ...}
+E       assert 'completed' != 'completed'
+
+tests/test_proof_contract_audit_identity_guards.py:44: AssertionError</failure></testcase><testcase classname="tests.test_proof_contract_audit_identity_guards" name="test_runtime_change_during_dispatch_cannot_produce_a_completed_run" time="0.077"><failure message="AssertionError: {'authority': 'bounded orchestration only; stage result authority is unchanged', 'bounds': {'max_output_bytes': 838860...dUtc': 1792498369.846938, 'deadlineMonotonic': 2135323.814807076, 'deadlineUtc': 1792503769.846938}, 'code': None, ...}&#10;assert 'completed' != 'completed'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-917/test_runtime_change_during_dis0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x72c054d76210&gt;
+
+    def test_runtime_change_during_dispatch_cannot_produce_a_completed_run(tmp_path, monkeypatch):
+        import ladon.proof_contract_audit as audit
+    
+        identity = audit._runtime_identity()
+        observations = []
+    
+        def runtime():
+            observations.append(True)
+            return identity if len(observations) &lt;= 2 else 'sha256:' + '0' * 64
+    
+        monkeypatch.setattr(audit, '_runtime_identity', runtime)
+        plan = _fixture_plan(stages=[_fixture_plan()['stages'][0]])
+        try:
+            report = _run(_write_plan(tmp_path / 'plan.json', plan), tmp_path / 'run')
+        except (ValueError, OSError):
+            return
+&gt;       assert report['status'] != 'completed', report
+E       AssertionError: {'authority': 'bounded orchestration only; stage result authority is unchanged', 'bounds': {'max_output_bytes': 838860...dUtc': 1792498369.846938, 'deadlineMonotonic': 2135323.814807076, 'deadlineUtc': 1792503769.846938}, 'code': None, ...}
+E       assert 'completed' != 'completed'
+
+tests/test_proof_contract_audit_identity_guards.py:63: AssertionError</failure></testcase><testcase classname="tests.test_proof_contract_audit_identity_guards" name="test_oversized_prior_stage_is_rejected_before_unbounded_read" time="0.094"><failure message="Failed: oversized prior stage was read without a byte bound">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-917/test_oversized_prior_stage_is_0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x72c054d74810&gt;
+
+    def test_oversized_prior_stage_is_rejected_before_unbounded_read(tmp_path, monkeypatch):
+        from pathlib import Path
+    
+        path = _write_plan(tmp_path / 'plan.json', _fixture_plan())
+        _run(path, tmp_path / 'first', max_stages=1)
+        stage = tmp_path / 'first/stages/propagate.json'
+        with stage.open('r+b') as stream:
+            stream.truncate(8 * 1024**2 + 1)
+        original_read = Path.read_bytes
+    
+        def guarded_read(file):
+            if file == stage:
+                pytest.fail('oversized prior stage was read without a byte bound')
+            return original_read(file)
+    
+        monkeypatch.setattr(Path, 'read_bytes', guarded_read)
+        with pytest.raises((ValueError, OSError)):
+&gt;           _run(path, tmp_path / 'resume', resume=tmp_path / 'first')
+
+tests/test_proof_contract_audit_identity_guards.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_audit_boundaries.py:17: in _run
+    return run_contract_audit(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.codex/state/proof-contract-analysis/audit-driver-nested-red/src/ladon/proof_contract_audit.py:46: in run_contract_audit
+    session = _prepare_session(plan, output_dir, resume, runner)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.codex/state/proof-contract-analysis/audit-driver-nested-red/src/ladon/proof_contract_audit.py:75: in _prepare_session
+    return _resume_session(Path(resume), out, plan_bytes, value, normalized, root,
+.codex/state/proof-contract-analysis/audit-driver-nested-red/src/ladon/proof_contract_audit.py:121: in _resume_session
+    prefix, prefix_bytes, clock = _validate_prior(prior, out, plan_bytes, normalized,
+.codex/state/proof-contract-analysis/audit-driver-nested-red/src/ladon/proof_contract_audit.py:147: in _validate_prior
+    prefix, prefix_bytes = _verified_prefix(prior, normalized, header)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.codex/state/proof-contract-analysis/audit-driver-nested-red/src/ladon/_proof_contract_audit_store.py:51: in _verified_prefix
+    prefix, data_by_id, _results = _collect_prefix(prior, plan, rows, header)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.codex/state/proof-contract-analysis/audit-driver-nested-red/src/ladon/_proof_contract_audit_store.py:74: in _collect_prefix
+    envelope, data, digest = _verified_stage(prior, stage, record, plan, header, results)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.codex/state/proof-contract-analysis/audit-driver-nested-red/src/ladon/_proof_contract_audit_store.py:91: in _verified_stage
+    data = path.read_bytes()
+           ^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+file = PosixPath('/tmp/pytest-of-codex/pytest-917/test_oversized_prior_stage_is_0/first/stages/propagate.json')
+
+    def guarded_read(file):
+        if file == stage:
+&gt;           pytest.fail('oversized prior stage was read without a byte bound')
+E           Failed: oversized prior stage was read without a byte bound
+
+tests/test_proof_contract_audit_identity_guards.py:78: Failed</failure></testcase></testsuite></testsuites>

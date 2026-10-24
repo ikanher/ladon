@@ -1,0 +1,25 @@
+576: theorem exists_uniform_actual_pressure_flux_bound {T : ℝ} {u v : VelocityField}
+577:     {p q : PressureField} (H : PressureRecovery.Hypotheses T u v p q)
+578:     (M₀ U₀ G₀ : ℝ) (hM₀ : 0 ≤ M₀) (hU₀ : 0 ≤ U₀) (hG₀ : 0 ≤ G₀)
+579:     (hM : ∀ t ∈ Icc 0 T, MemLp (fun x => (u - v) (t, x)) 2 volume ∧
+580:       comparisonLpNorm 2 (fun x => (u - v) (t, x)) ≤ M₀)
+581:     (hU : ∀ t ∈ Icc 0 T, MemLp (fun x => u (t, x)) 3 volume ∧
+582:       comparisonLpNorm 3 (fun x => u (t, x)) ≤ U₀)
+583:     (hG : ∀ t ∈ Icc 0 T, ∀ i j : Fin 3,
+584:       Integrable (tensorDiff u v t i j) volume ∧ comparisonLpNorm 1 (tensorDiff u v t i j) ≤ G₀) :
+585:     ∃ CP : ℝ, 0 ≤ CP ∧ ∀ R : ℝ, 1 ≤ R → ∀ t ∈ Ioo 0 T,
+586:       |∫ x, (p - q) (t, x) * fderiv ℝ (ComparisonCutoffs.weight R) x ((u - v) (t, x))| ≤ CP *
+587:         ((cutoffL6 (ComparisonCutoffs.cutoff R) (u - v) t ^ (1 / 2 : ℝ) + 1) *
+588:           (dissipationRoot (ComparisonCutoffs.cutoff R) (u - v) t / R + 1 / R ^ 2) +
+589:           R ^ (-(7 / 4 : ℝ)) * cutoffL6 (ComparisonCutoffs.cutoff R) (u - v) t ^ (3 / 4 : ℝ)) := by
+590:   obtain ⟨CP, hCP, hbound⟩ := exists_uniform_canonicalCutoffFlux_bound M₀ U₀ G₀ hM₀ hU₀ hG₀
+591:   refine ⟨CP, hCP, ?_⟩
+592:   intro R hR t ht
+593:   have ht' : t ∈ Icc 0 T := Ioo_subset_Icc_self ht
+594:   have hu := NavierStokes.PeriodicUniqueness.spatial_smooth H.smooth_u ht'
+595:   have hv := NavierStokes.PeriodicUniqueness.spatial_smooth H.smooth_v ht'
+596:   exact (actual_flux_integrable_and_le_canonicalNorm H ht (zero_lt_one.trans_le hR) hu hv).2.trans
+597:     (hbound R hR u v t hu hv (hM t ht').1 (hU t ht').1 (fun i j => (hG t ht' i j).1)
+598:       (hM t ht').2 (hU t ht').2 (fun i j => (hG t ht' i j).2))
+599: 
+600: end NavierStokesR3.PressureFlux

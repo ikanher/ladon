@@ -1,0 +1,348 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="10" skipped="0" tests="11" time="0.318" timestamp="2026-10-20T15:58:21.739391+03:00" hostname="mindfields"><testcase classname="tests.test_investigation_contract_findings" name="test_native_attachment_projects_through_status_inspection_report_and_final_receipt" time="0.029"><failure message="ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-957/test_native_attachment_project0')
+capsys = &lt;_pytest.capture.CaptureFixture object at 0x7d6c40c55410&gt;
+
+    def test_native_attachment_projects_through_status_inspection_report_and_final_receipt(tmp_path, capsys):
+        from ladon.investigation import assess
+        from ladon.investigation_finalization import progress_receipt, validate_progress_receipt
+        from ladon.investigation_observations import inspect_observations
+        from ladon.investigation_reporting import aggregate_report
+    
+&gt;       pending = _contract_observation(tmp_path)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_findings.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/investigation_observations.py:104: in record_observation
+    validated_observations(owned, root)
+src/ladon/investigation_observations.py:71: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+src/ladon/investigation_observations.py:77: in _validate_entry
+    _record(entry["record"], reader, scope)
+src/ladon/investigation_observations.py:17: in _record
+    closed(record, RECORD_KEYS, "observation record")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'assertion': 'The displayed bound has no extra parameter.', 'author': 'source-reader', 'comparison': 'A selected form...d': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}, ...}
+keys = {'assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', ...}
+label = 'observation record'
+
+    def closed(value, keys, label):
+        if not isinstance(value, dict) or set(value) != set(keys):
+&gt;           raise ValueError(f"{label} requires exactly {sorted(keys)}")
+E           ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']
+
+src/ladon/correspondence_interpretation.py:29: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_findings" name="test_challenge_omission_or_mutation_of_attachment_is_rejected" time="0.009"><failure message="ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-957/test_challenge_omission_or_mut0')
+
+    def test_challenge_omission_or_mutation_of_attachment_is_rejected(tmp_path):
+        from ladon.investigation_observations import ingest_observation_response
+    
+&gt;       pending = _contract_observation(tmp_path)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_findings.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/investigation_observations.py:104: in record_observation
+    validated_observations(owned, root)
+src/ladon/investigation_observations.py:71: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+src/ladon/investigation_observations.py:77: in _validate_entry
+    _record(entry["record"], reader, scope)
+src/ladon/investigation_observations.py:17: in _record
+    closed(record, RECORD_KEYS, "observation record")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'assertion': 'The displayed bound has no extra parameter.', 'author': 'source-reader', 'comparison': 'A selected form...d': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}, ...}
+keys = {'assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', ...}
+label = 'observation record'
+
+    def closed(value, keys, label):
+        if not isinstance(value, dict) or set(value) != set(keys):
+&gt;           raise ValueError(f"{label} requires exactly {sorted(keys)}")
+E           ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']
+
+src/ladon/correspondence_interpretation.py:29: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_findings" name="test_invalid_or_non_closed_contract_analysis_is_rejected[wrong-kind]" time="0.009"><failure message="ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-957/test_invalid_or_non_closed_con0')
+mutation = 'wrong-kind'
+
+    @pytest.mark.parametrize("mutation", ["wrong-kind", "dangling-context", "altered-identity", "altered-record"])
+    def test_invalid_or_non_closed_contract_analysis_is_rejected(tmp_path, mutation):
+        from ladon.investigation_observations import inspect_observations
+        from ladon.proof_slice import digest
+    
+&gt;       plan = _contract_observation(tmp_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_findings.py:166: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/investigation_observations.py:104: in record_observation
+    validated_observations(owned, root)
+src/ladon/investigation_observations.py:71: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+src/ladon/investigation_observations.py:77: in _validate_entry
+    _record(entry["record"], reader, scope)
+src/ladon/investigation_observations.py:17: in _record
+    closed(record, RECORD_KEYS, "observation record")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'assertion': 'The displayed bound has no extra parameter.', 'author': 'source-reader', 'comparison': 'A selected form...d': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}, ...}
+keys = {'assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', ...}
+label = 'observation record'
+
+    def closed(value, keys, label):
+        if not isinstance(value, dict) or set(value) != set(keys):
+&gt;           raise ValueError(f"{label} requires exactly {sorted(keys)}")
+E           ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']
+
+src/ladon/correspondence_interpretation.py:29: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_findings" name="test_invalid_or_non_closed_contract_analysis_is_rejected[dangling-context]" time="0.009"><failure message="ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-957/test_invalid_or_non_closed_con1')
+mutation = 'dangling-context'
+
+    @pytest.mark.parametrize("mutation", ["wrong-kind", "dangling-context", "altered-identity", "altered-record"])
+    def test_invalid_or_non_closed_contract_analysis_is_rejected(tmp_path, mutation):
+        from ladon.investigation_observations import inspect_observations
+        from ladon.proof_slice import digest
+    
+&gt;       plan = _contract_observation(tmp_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_findings.py:166: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/investigation_observations.py:104: in record_observation
+    validated_observations(owned, root)
+src/ladon/investigation_observations.py:71: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+src/ladon/investigation_observations.py:77: in _validate_entry
+    _record(entry["record"], reader, scope)
+src/ladon/investigation_observations.py:17: in _record
+    closed(record, RECORD_KEYS, "observation record")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'assertion': 'The displayed bound has no extra parameter.', 'author': 'source-reader', 'comparison': 'A selected form...d': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}, ...}
+keys = {'assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', ...}
+label = 'observation record'
+
+    def closed(value, keys, label):
+        if not isinstance(value, dict) or set(value) != set(keys):
+&gt;           raise ValueError(f"{label} requires exactly {sorted(keys)}")
+E           ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']
+
+src/ladon/correspondence_interpretation.py:29: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_findings" name="test_invalid_or_non_closed_contract_analysis_is_rejected[altered-identity]" time="0.009"><failure message="ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-957/test_invalid_or_non_closed_con2')
+mutation = 'altered-identity'
+
+    @pytest.mark.parametrize("mutation", ["wrong-kind", "dangling-context", "altered-identity", "altered-record"])
+    def test_invalid_or_non_closed_contract_analysis_is_rejected(tmp_path, mutation):
+        from ladon.investigation_observations import inspect_observations
+        from ladon.proof_slice import digest
+    
+&gt;       plan = _contract_observation(tmp_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_findings.py:166: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/investigation_observations.py:104: in record_observation
+    validated_observations(owned, root)
+src/ladon/investigation_observations.py:71: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+src/ladon/investigation_observations.py:77: in _validate_entry
+    _record(entry["record"], reader, scope)
+src/ladon/investigation_observations.py:17: in _record
+    closed(record, RECORD_KEYS, "observation record")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'assertion': 'The displayed bound has no extra parameter.', 'author': 'source-reader', 'comparison': 'A selected form...d': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}, ...}
+keys = {'assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', ...}
+label = 'observation record'
+
+    def closed(value, keys, label):
+        if not isinstance(value, dict) or set(value) != set(keys):
+&gt;           raise ValueError(f"{label} requires exactly {sorted(keys)}")
+E           ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']
+
+src/ladon/correspondence_interpretation.py:29: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_findings" name="test_invalid_or_non_closed_contract_analysis_is_rejected[altered-record]" time="0.009"><failure message="ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-957/test_invalid_or_non_closed_con3')
+mutation = 'altered-record'
+
+    @pytest.mark.parametrize("mutation", ["wrong-kind", "dangling-context", "altered-identity", "altered-record"])
+    def test_invalid_or_non_closed_contract_analysis_is_rejected(tmp_path, mutation):
+        from ladon.investigation_observations import inspect_observations
+        from ladon.proof_slice import digest
+    
+&gt;       plan = _contract_observation(tmp_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_findings.py:166: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/investigation_observations.py:104: in record_observation
+    validated_observations(owned, root)
+src/ladon/investigation_observations.py:71: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+src/ladon/investigation_observations.py:77: in _validate_entry
+    _record(entry["record"], reader, scope)
+src/ladon/investigation_observations.py:17: in _record
+    closed(record, RECORD_KEYS, "observation record")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'assertion': 'The displayed bound has no extra parameter.', 'author': 'source-reader', 'comparison': 'A selected form...d': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}, ...}
+keys = {'assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', ...}
+label = 'observation record'
+
+    def closed(value, keys, label):
+        if not isinstance(value, dict) or set(value) != set(keys):
+&gt;           raise ValueError(f"{label} requires exactly {sorted(keys)}")
+E           ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']
+
+src/ladon/correspondence_interpretation.py:29: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_findings" name="test_stale_source_rejects_native_attachment_status_and_report" time="0.009"><failure message="ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-957/test_stale_source_rejects_nati0')
+
+    def test_stale_source_rejects_native_attachment_status_and_report(tmp_path):
+        from ladon.investigation import assess
+        from ladon.investigation_reporting import aggregate_report
+    
+&gt;       plan = _contract_observation(tmp_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_findings.py:189: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/investigation_observations.py:104: in record_observation
+    validated_observations(owned, root)
+src/ladon/investigation_observations.py:71: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+src/ladon/investigation_observations.py:77: in _validate_entry
+    _record(entry["record"], reader, scope)
+src/ladon/investigation_observations.py:17: in _record
+    closed(record, RECORD_KEYS, "observation record")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'assertion': 'The displayed bound has no extra parameter.', 'author': 'source-reader', 'comparison': 'A selected form...d': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}, ...}
+keys = {'assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', ...}
+label = 'observation record'
+
+    def closed(value, keys, label):
+        if not isinstance(value, dict) or set(value) != set(keys):
+&gt;           raise ValueError(f"{label} requires exactly {sorted(keys)}")
+E           ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']
+
+src/ladon/correspondence_interpretation.py:29: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_findings" name="test_effective_reviewer_union_keeps_branch_disagreement_and_pending" time="0.009"><failure message="ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-957/test_effective_reviewer_union_0')
+
+    def test_effective_reviewer_union_keeps_branch_disagreement_and_pending(tmp_path):
+        from ladon.investigation_reporting import aggregate_report
+    
+&gt;       mismatch, disagreement, pending, attachment = _contract_branches(tmp_path)
+                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_findings.py:201: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:218: in _contract_branches
+    pending = record_observation(pending, record, root)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/investigation_observations.py:104: in record_observation
+    validated_observations(owned, root)
+src/ladon/investigation_observations.py:71: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+src/ladon/investigation_observations.py:77: in _validate_entry
+    _record(entry["record"], reader, scope)
+src/ladon/investigation_observations.py:17: in _record
+    closed(record, RECORD_KEYS, "observation record")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'assertion': 'The displayed bound has no extra parameter.', 'author': 'source-reader', 'comparison': 'A selected form...d': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}, ...}
+keys = {'assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', ...}
+label = 'observation record'
+
+    def closed(value, keys, label):
+        if not isinstance(value, dict) or set(value) != set(keys):
+&gt;           raise ValueError(f"{label} requires exactly {sorted(keys)}")
+E           ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']
+
+src/ladon/correspondence_interpretation.py:29: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_findings" name="test_historical_v2_receipt_remains_byte_exact_and_new_attachment_cannot_downgrade" time="0.009"><failure message="ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-957/test_historical_v2_receipt_rem0')
+
+    def test_historical_v2_receipt_remains_byte_exact_and_new_attachment_cannot_downgrade(tmp_path):
+        from ladon.investigation_finalization import (
+            progress_receipt,
+            validate_progress_receipt,
+        )
+    
+        historical_plan = json.loads((EVIDENCE / "historical-v2-plan.json").read_text())
+        historical_receipt = json.loads((EVIDENCE / "historical-v2-receipt.json").read_text())
+        historical_root = EVIDENCE / "historical-source"
+        assert validate_progress_receipt(historical_receipt, historical_plan, historical_root) == \
+            historical_receipt
+    
+&gt;       plan = _contract_observation(tmp_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_findings.py:258: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/investigation_observations.py:104: in record_observation
+    validated_observations(owned, root)
+src/ladon/investigation_observations.py:71: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+src/ladon/investigation_observations.py:77: in _validate_entry
+    _record(entry["record"], reader, scope)
+src/ladon/investigation_observations.py:17: in _record
+    closed(record, RECORD_KEYS, "observation record")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'assertion': 'The displayed bound has no extra parameter.', 'author': 'source-reader', 'comparison': 'A selected form...d': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}, ...}
+keys = {'assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', ...}
+label = 'observation record'
+
+    def closed(value, keys, label):
+        if not isinstance(value, dict) or set(value) != set(keys):
+&gt;           raise ValueError(f"{label} requires exactly {sorted(keys)}")
+E           ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']
+
+src/ladon/correspondence_interpretation.py:29: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_findings" name="test_first_response_and_reconciliation_are_preserved_for_contract_observation" time="0.008"><failure message="ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-957/test_first_response_and_reconc0')
+
+    def test_first_response_and_reconciliation_are_preserved_for_contract_observation(tmp_path):
+        from ladon.investigation import assess
+        from ladon.investigation_observations import ingest_observation_response
+    
+&gt;       plan = _contract_observation(tmp_path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_investigation_contract_findings.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_investigation_contract_findings.py:39: in _contract_observation
+    return record_observation(base, record, tmp_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/investigation_observations.py:104: in record_observation
+    validated_observations(owned, root)
+src/ladon/investigation_observations.py:71: in validated_observations
+    _validate_entry(entry, reader, plan["scope"], identities, names)
+src/ladon/investigation_observations.py:77: in _validate_entry
+    _record(entry["record"], reader, scope)
+src/ladon/investigation_observations.py:17: in _record
+    closed(record, RECORD_KEYS, "observation record")
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'assertion': 'The displayed bound has no extra parameter.', 'author': 'source-reader', 'comparison': 'A selected form...d': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]}}, ...}
+keys = {'assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', ...}
+label = 'observation record'
+
+    def closed(value, keys, label):
+        if not isinstance(value, dict) or set(value) != set(keys):
+&gt;           raise ValueError(f"{label} requires exactly {sorted(keys)}")
+E           ValueError: observation record requires exactly ['assertion', 'author', 'comparison', 'dependencies', 'evidence', 'formalSources', 'id', 'schema', 'source']
+
+src/ladon/correspondence_interpretation.py:29: ValueError</failure></testcase><testcase classname="tests.test_investigation_contract_findings" name="test_plain_observation_keeps_the_existing_report_and_finding_shape" time="0.004" /></testsuite></testsuites>

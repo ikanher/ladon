@@ -1,0 +1,613 @@
+{
+  "candidates": [
+    {
+      "check": {
+        "applicationObservationVersion": 4,
+        "applicationTerm": "EvalArithmetic.reverse ?m.8",
+        "authority": {
+          "analysisCompleteness": "partial",
+          "authorityBasis": "elaborator-check",
+          "environmentMatch": "exact",
+          "executionBinding": "explicit-pinned",
+          "observationState": "derived",
+          "operationOutcome": "accepted",
+          "sourceFreshness": "unknown"
+        },
+        "checkRunRef": {
+          "artifactRef": "sha256:0277e8e3a5b9aec7dc19d9e6093b465fcda62b88e9a7901656b811f8b2f13dda",
+          "kind": "check-run",
+          "localId": "check:dcd04e7ab0e4cc336ecfaabacbb26e9e78d8c3e1e34bf6a93b9642e0bfc47f8b"
+        },
+        "dischargedHypotheses": [],
+        "environmentRef": {
+          "artifactRef": "sha256:12b66bb995043a41d6dc682e3092fd92795c368370e3796e1b14687628645324",
+          "environmentRef": "sha256:1a0d637f47f44d94a900f1e98eb585c431bf5db09d95101bcbc638ccda25f776"
+        },
+        "executionBindingLimitation": null,
+        "failure": null,
+        "receiptIdentity": "sha256:c60985fde6419a31e6999027de608cd3591184fa0cf24d269785a286c0f4fa95",
+        "residualContexts": [
+          {
+            "goalId": "_uniq.16",
+            "localContext": [
+              {
+                "binderInfo": "Lean.BinderInfo.default",
+                "localId": "local:0",
+                "typeDisplay": "Nat",
+                "userName": "m"
+              },
+              {
+                "binderInfo": "Lean.BinderInfo.default",
+                "localId": "local:1",
+                "typeDisplay": "Nat",
+                "userName": "n"
+              }
+            ],
+            "residualOrdinal": 0
+          }
+        ],
+        "residualPremises": [
+          {
+            "typeDisplay": "m = n"
+          }
+        ],
+        "resourceAccounting": {},
+        "scratch": null,
+        "selectedDeclaration": {
+          "binders": [
+            {
+              "binderInfo": "Lean.BinderInfo.implicit",
+              "localId": "local:0",
+              "typeDisplay": "Nat",
+              "userName": "m"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.implicit",
+              "localId": "local:1",
+              "typeDisplay": "Nat",
+              "userName": "n"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.default",
+              "dependencies": [
+                "local:0",
+                "local:1"
+              ],
+              "localId": "local:2",
+              "typeDisplay": "m = n",
+              "userName": "h"
+            }
+          ],
+          "name": "EvalArithmetic.reverse",
+          "typeDisplay": "∀ {m n : Nat}, m = n → n = m"
+        },
+        "semanticProtocol": "ladon-lean-semantic-v4/check-candidates",
+        "sourceReceiptIdentity": "sha256:0a6e0fb125cd4121d85769e5cda66f801409b5e81bc7278719a750d8ff067044",
+        "status": "applicable-with-residuals",
+        "substitutions": [
+          {
+            "termDisplay": "m",
+            "variable": "binder:0:m"
+          },
+          {
+            "termDisplay": "n",
+            "variable": "binder:1:n"
+          },
+          {
+            "termDisplay": "?m.8",
+            "variable": "binder:2:h"
+          }
+        ]
+      },
+      "name": "EvalArithmetic.reverse",
+      "nameFingerprint": "sha256:ef835dc5374ab395901c4daf7d6318c907987fac06f722bcbf723c92bc18f989",
+      "shortlist": {
+        "authority": "lexical_shortlist",
+        "bucket": "text-overlap",
+        "conclusionText": "{m n : Nat} (h : m = n) : n = m",
+        "declarationId": "ladon.lexical_declaration.89884a63c6ea62b8de54",
+        "fieldContributions": {
+          "conclusionText": true,
+          "renderedType": true,
+          "typeText": true
+        },
+        "namespace": "EvalArithmetic",
+        "ordinal": 1,
+        "package": "EvalArithmetic",
+        "renderedType": "{m n : Nat} (h : m = n) : n = m",
+        "typeStatus": "lexical-signature",
+        "typeText": "{m n : Nat} (h : m = n) : n = m",
+        "verification": "not_requested"
+      },
+      "source": {
+        "line": 4,
+        "module": "EvalArithmetic",
+        "moduleFingerprint": "sha256:b7b673373ecaa913e35d59b7860e993f6a96921d7060ea15fc0a832cba5cee38",
+        "path": "EvalArithmetic.lean",
+        "pathFingerprint": "sha256:558dc86c123e1df3197df5aa6c9060cd75a8586c7f33fedaca3a391e13f1f2a5"
+      }
+    },
+    {
+      "check": {
+        "applicationObservationVersion": 4,
+        "applicationTerm": "EvalArithmetic.transitive ?h₁ ?h₂",
+        "authority": {
+          "analysisCompleteness": "partial",
+          "authorityBasis": "elaborator-check",
+          "environmentMatch": "exact",
+          "executionBinding": "explicit-pinned",
+          "observationState": "derived",
+          "operationOutcome": "accepted",
+          "sourceFreshness": "unknown"
+        },
+        "checkRunRef": {
+          "artifactRef": "sha256:37be134b951398230f57add8405622223deb5fe30b17e0498e6a5824fd0cd525",
+          "kind": "check-run",
+          "localId": "check:0af4cd5333f0b268f9f0b277fe12bd581758342b98566ef1b48be489e3b05d5b"
+        },
+        "dischargedHypotheses": [
+          {
+            "dischargedByLocalRef": "local:0",
+            "method": "assumption-definitional-equality",
+            "premiseOrdinal": 2,
+            "premiseTypeDisplay": "Nat"
+          }
+        ],
+        "environmentRef": {
+          "artifactRef": "sha256:12b66bb995043a41d6dc682e3092fd92795c368370e3796e1b14687628645324",
+          "environmentRef": "sha256:1a0d637f47f44d94a900f1e98eb585c431bf5db09d95101bcbc638ccda25f776"
+        },
+        "executionBindingLimitation": null,
+        "failure": null,
+        "receiptIdentity": "sha256:7d40797042878aec87de80af5a4fc51972c8ab6cc5ebac290adb893d6a4e2464",
+        "residualContexts": [
+          {
+            "goalId": "_uniq.21",
+            "localContext": [
+              {
+                "binderInfo": "Lean.BinderInfo.default",
+                "localId": "local:0",
+                "typeDisplay": "Nat",
+                "userName": "m"
+              },
+              {
+                "binderInfo": "Lean.BinderInfo.default",
+                "localId": "local:1",
+                "typeDisplay": "Nat",
+                "userName": "n"
+              }
+            ],
+            "residualOrdinal": 0
+          },
+          {
+            "goalId": "_uniq.22",
+            "localContext": [
+              {
+                "binderInfo": "Lean.BinderInfo.default",
+                "localId": "local:0",
+                "typeDisplay": "Nat",
+                "userName": "m"
+              },
+              {
+                "binderInfo": "Lean.BinderInfo.default",
+                "localId": "local:1",
+                "typeDisplay": "Nat",
+                "userName": "n"
+              }
+            ],
+            "residualOrdinal": 1
+          }
+        ],
+        "residualPremises": [
+          {
+            "typeDisplay": "n = m"
+          },
+          {
+            "typeDisplay": "m = m"
+          }
+        ],
+        "resourceAccounting": {},
+        "scratch": null,
+        "selectedDeclaration": {
+          "binders": [
+            {
+              "binderInfo": "Lean.BinderInfo.implicit",
+              "localId": "local:0",
+              "typeDisplay": "Nat",
+              "userName": "m"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.implicit",
+              "localId": "local:1",
+              "typeDisplay": "Nat",
+              "userName": "n"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.implicit",
+              "localId": "local:2",
+              "typeDisplay": "Nat",
+              "userName": "k"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.default",
+              "dependencies": [
+                "local:0",
+                "local:1"
+              ],
+              "localId": "local:3",
+              "typeDisplay": "m = n",
+              "userName": "h₁"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.default",
+              "dependencies": [
+                "local:1",
+                "local:2"
+              ],
+              "localId": "local:4",
+              "typeDisplay": "n = k",
+              "userName": "h₂"
+            }
+          ],
+          "name": "EvalArithmetic.transitive",
+          "typeDisplay": "∀ {m n k : Nat}, m = n → n = k → m = k"
+        },
+        "semanticProtocol": "ladon-lean-semantic-v4/check-candidates",
+        "sourceReceiptIdentity": "sha256:734a3b469ff5aa6386a5b9125c105d43aff8eb91897a2ee9c0fc95263e9aa8e6",
+        "status": "applicable-with-residuals",
+        "substitutions": [
+          {
+            "termDisplay": "n",
+            "variable": "binder:0:m"
+          },
+          {
+            "termDisplay": "m",
+            "variable": "binder:1:n"
+          },
+          {
+            "termDisplay": "m",
+            "variable": "binder:2:k"
+          },
+          {
+            "termDisplay": "?h₁",
+            "variable": "binder:3:h₁"
+          },
+          {
+            "termDisplay": "?h₂",
+            "variable": "binder:4:h₂"
+          }
+        ]
+      },
+      "name": "EvalArithmetic.transitive",
+      "nameFingerprint": "sha256:be95caada6ca452146f6515086e52eed4c15f405bf5c22aefde6f4b5107adfe0",
+      "shortlist": {
+        "authority": "lexical_shortlist",
+        "bucket": "text-overlap",
+        "conclusionText": "{m n k : Nat} (h₁ : m = n) (h₂ : n = k) : m = k",
+        "declarationId": "ladon.lexical_declaration.465efd7728c9fab84371",
+        "fieldContributions": {
+          "conclusionText": true,
+          "renderedType": true,
+          "typeText": true
+        },
+        "namespace": "EvalArithmetic",
+        "ordinal": 2,
+        "package": "EvalArithmetic",
+        "renderedType": "{m n k : Nat} (h₁ : m = n) (h₂ : n = k) : m = k",
+        "typeStatus": "lexical-signature",
+        "typeText": "{m n k : Nat} (h₁ : m = n) (h₂ : n = k) : m = k",
+        "verification": "not_requested"
+      },
+      "source": {
+        "line": 5,
+        "module": "EvalArithmetic",
+        "moduleFingerprint": "sha256:b7b673373ecaa913e35d59b7860e993f6a96921d7060ea15fc0a832cba5cee38",
+        "path": "EvalArithmetic.lean",
+        "pathFingerprint": "sha256:558dc86c123e1df3197df5aa6c9060cd75a8586c7f33fedaca3a391e13f1f2a5"
+      }
+    },
+    {
+      "check": {
+        "applicationTerm": "",
+        "authority": {
+          "analysisCompleteness": "complete",
+          "authorityBasis": "elaborator-check",
+          "environmentMatch": "exact",
+          "executionBinding": "explicit-pinned",
+          "observationState": "derived",
+          "operationOutcome": "rejected",
+          "sourceFreshness": "unknown"
+        },
+        "checkRunRef": {
+          "artifactRef": "sha256:9b52347e52df96cee65309b20a7f874522c0b2af411c4dc2df73018cc14fcef0",
+          "kind": "check-run",
+          "localId": "check:eddda81eda5418cbf04a87246e741991c04ddd6cb91d4859286f3348cd203019"
+        },
+        "dischargedHypotheses": [],
+        "environmentRef": {
+          "artifactRef": "sha256:12b66bb995043a41d6dc682e3092fd92795c368370e3796e1b14687628645324",
+          "environmentRef": "sha256:1a0d637f47f44d94a900f1e98eb585c431bf5db09d95101bcbc638ccda25f776"
+        },
+        "executionBindingLimitation": null,
+        "failure": {
+          "diagnostic": "candidate application did not unify with the elaborated goal",
+          "stage": "application-rejected"
+        },
+        "receiptIdentity": "sha256:8aecdd571033a6e54bb29bad8a1dc57b68f82e1837782684ab4ef3349831eee3",
+        "residualPremises": [],
+        "resourceAccounting": {},
+        "scratch": null,
+        "sourceReceiptIdentity": "sha256:b1da316ea4cb609b44ea2b78e9fcf8757702ff476fe42d095b7114d69d99234e",
+        "status": "rejected",
+        "substitutions": []
+      },
+      "name": "EvalArithmetic.reflexive",
+      "nameFingerprint": "sha256:320a908ba5491eb266900b3a261f44c1562d3f9f44b27d6de65af68de0e9bafb",
+      "shortlist": {
+        "authority": "lexical_shortlist",
+        "bucket": "text-overlap",
+        "conclusionText": "(n : Nat) : n = n",
+        "declarationId": "ladon.lexical_declaration.2973460bd402bb2b3018",
+        "fieldContributions": {
+          "conclusionText": true,
+          "renderedType": true,
+          "typeText": true
+        },
+        "namespace": "EvalArithmetic",
+        "ordinal": 0,
+        "package": "EvalArithmetic",
+        "renderedType": "(n : Nat) : n = n",
+        "typeStatus": "lexical-signature",
+        "typeText": "(n : Nat) : n = n",
+        "verification": "not_requested"
+      },
+      "source": {
+        "line": 3,
+        "module": "EvalArithmetic",
+        "moduleFingerprint": "sha256:b7b673373ecaa913e35d59b7860e993f6a96921d7060ea15fc0a832cba5cee38",
+        "path": "EvalArithmetic.lean",
+        "pathFingerprint": "sha256:558dc86c123e1df3197df5aa6c9060cd75a8586c7f33fedaca3a391e13f1f2a5"
+      }
+    }
+  ],
+  "coverage": {
+    "candidatePopulation": {
+      "applicableWithResiduals": 2,
+      "closedAccepted": 0,
+      "observed": 3,
+      "omitted": 0,
+      "projected": 3,
+      "scratchStatusCounts": {},
+      "statusCounts": {
+        "applicable-with-residuals": 2,
+        "rejected": 1
+      }
+    },
+    "canonical": {
+      "accepted": 2,
+      "completed": 3,
+      "failed": 0,
+      "invalidWorkerOutput": 0,
+      "memoryLimited": 0,
+      "outputLimited": 0,
+      "rejected": 1,
+      "scratchAttempted": 0,
+      "scratchCompiled": 0,
+      "shortlisted": 3,
+      "submitted": 3,
+      "timeouts": 0,
+      "truncated": false,
+      "unassessed": 0
+    },
+    "omissionPopulation": {
+      "generatedRecords": 0,
+      "observedRecords": 20,
+      "omittedRecords": 0,
+      "projectedRecords": 20,
+      "totalClaims": 57,
+      "transportRecords": 20
+    },
+    "operationalFailure": false
+  },
+  "limitations": [
+    "Artifact bodies and structural Lean expressions are omitted; expand registered evidence for audit.",
+    "Lexical shortlisting is not Lean applicability.",
+    "Rejected and unassessed candidates remain visible."
+  ],
+  "omissions": [
+    {
+      "omitted": 6,
+      "pointer": "/candidates/0/check/residualContexts/0/localContext",
+      "reason": "compact-local-fields-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/residualPremises/0/typeStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 9,
+      "pointer": "/candidates/0/check/selectedDeclaration/binders",
+      "reason": "compact-local-fields-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/selectedDeclaration/typeStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/substitutions/0/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/substitutions/1/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/substitutions/2/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 6,
+      "pointer": "/candidates/1/check/residualContexts/0/localContext",
+      "reason": "compact-local-fields-omitted"
+    },
+    {
+      "omitted": 6,
+      "pointer": "/candidates/1/check/residualContexts/1/localContext",
+      "reason": "compact-local-fields-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/1/check/residualPremises/0/typeStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/1/check/residualPremises/1/typeStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 15,
+      "pointer": "/candidates/1/check/selectedDeclaration/binders",
+      "reason": "compact-local-fields-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/1/check/selectedDeclaration/typeStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/1/check/substitutions/0/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/1/check/substitutions/1/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/1/check/substitutions/2/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/1/check/substitutions/3/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/1/check/substitutions/4/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/2/check/residualContexts",
+      "reason": "canonical-field-unavailable"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/2/check/selectedDeclaration",
+      "reason": "canonical-field-unavailable"
+    }
+  ],
+  "operation": "discover",
+  "projection": {
+    "canonicalPayloadIdentity": "sha256:973b0d1757db63c0c13a4f0351fb2e5a5d3201a729b63572d3c5458b7ab006d3",
+    "canonicalSchema": "ladon-verified-discovery-result-v1",
+    "limits": {
+      "maxBytes": 32768,
+      "measurement": "pretty-json-utf8-v1"
+    },
+    "name": "review",
+    "producerResultIdentity": "sha256:1e216c47aefe34f76af652717b10e5781ec77d77eac45e21158dd03312588e26",
+    "projectionIdentity": "sha256:5de1f51cf582bb0c65b3d5ddcf04ee817e72138eeb23bf4978db0f9e4707f92b"
+  },
+  "ranking": {
+    "contributions": [
+      {
+        "candidate": "EvalArithmetic.reflexive",
+        "priority": 2,
+        "status": "rejected"
+      },
+      {
+        "candidate": "EvalArithmetic.reverse",
+        "priority": 1,
+        "status": "applicable-with-residuals"
+      },
+      {
+        "candidate": "EvalArithmetic.transitive",
+        "priority": 1,
+        "status": "applicable-with-residuals"
+      }
+    ],
+    "policy": "verified-status-priority-v1"
+  },
+  "request": {
+    "freshness": "verify",
+    "goal": "n = m",
+    "goalFingerprint": "sha256:099959186b7f6cac48eaec958fe9e1d2cc23cd73ab38ec2dbe96124dc925d385",
+    "localContext": [
+      {
+        "name": "m",
+        "type": "Nat"
+      },
+      {
+        "name": "n",
+        "type": "Nat"
+      }
+    ],
+    "maxCandidates": 8,
+    "module": "EvalArithmetic",
+    "moduleFingerprint": "sha256:b7b673373ecaa913e35d59b7860e993f6a96921d7060ea15fc0a832cba5cee38",
+    "roots": [
+      "EvalArithmetic"
+    ],
+    "scope": "module",
+    "scratchMode": "advisory"
+  },
+  "schema": "ladon-verified-discovery-projection-v1",
+  "shortlist": {
+    "coverage": {
+      "authority": "sqlite_lexical_shortlist",
+      "cap": 8,
+      "diagnosticCap": 0,
+      "diagnosticReturned": 0,
+      "fieldContributionCounts": {
+        "conclusionText": 3,
+        "renderedType": 3,
+        "typeText": 3
+      },
+      "populationComplete": true,
+      "returned": 3,
+      "rowEvidenceComplete": true,
+      "scope": {
+        "kind": "module",
+        "modules": 1,
+        "omissions": [],
+        "roots": [
+          "EvalArithmetic"
+        ]
+      },
+      "shortlistMatchedLowerBound": 3
+    },
+    "freshnessEvidence": {
+      "configurationFingerprint": "9073e2a086005edd2f04b98a42b416fcac8bda4bbf56fe887c42ebf4f9bca07b",
+      "currentGenerationIdentity": "1c35bc77b0ea775f8152ea9dc7105fe4fc1a15e72e549b454ec19bd7c8f4b4ce",
+      "generationIdentity": "1c35bc77b0ea775f8152ea9dc7105fe4fc1a15e72e549b454ec19bd7c8f4b4ce",
+      "helperIdentity": "lexical-navigation-v4;theorem-lineage-v2;proofir-catalog-v3",
+      "indexSchema": "ladon-proof-search-index-v6",
+      "sourceFingerprint": "0140eb5624660be644b064f78a657645831b17e6f5db786d976134d9b3ddd517",
+      "toolchainIdentity": "leanprover/lean4:v4.32.1"
+    },
+    "omissions": [],
+    "pattern": "Nat",
+    "source": "type-text-shortlist"
+  },
+  "status": "available"
+}

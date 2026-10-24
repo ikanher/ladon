@@ -1,0 +1,150 @@
+{
+  "case": "logic-keep-control",
+  "role": "no-closed-candidate",
+  "result": {
+    "method": "ladon",
+    "status": "passed",
+    "generation": {
+      "commandVector": [
+        "/home/codex/projects/ladon/.codex/state/proof-contract-analysis/current-no-beam-20261018/run-ladon",
+        "proof-search",
+        "discover",
+        "--repo-root",
+        "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-evaluation/evidence/portable-no-beam-20261018/inputs/portable-logic",
+        "--index",
+        "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-evaluation/evidence/portable-no-beam-20261018/results/portable-logic/index.sqlite",
+        "--module",
+        "EvalLogic",
+        "--goal",
+        "P",
+        "--pattern",
+        "P",
+        "--scope",
+        "module",
+        "--freshness",
+        "verify",
+        "--format",
+        "json",
+        "--projection",
+        "review",
+        "--scratch-mode",
+        "advisory",
+        "--toolchain-mode",
+        "explicit",
+        "--lean-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "--lake-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lake",
+        "--max-candidates",
+        "8",
+        "--batch-size",
+        "8",
+        "--timeout-seconds",
+        "60",
+        "--max-rss-mib",
+        "12288",
+        "--max-output-mib",
+        "8",
+        "--evidence-store",
+        "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-evaluation/evidence/portable-no-beam-20261018/results/portable-logic/logic-keep-control/evidence.sqlite",
+        "--root",
+        "EvalLogic",
+        "--local",
+        "P:Prop"
+      ],
+      "workingDirectory": "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-evaluation/evidence/portable-no-beam-20261018/results/portable-logic/logic-keep-control",
+      "exitCode": 0,
+      "status": "passed",
+      "runtimeSeconds": 3.936152669135481,
+      "peakRssSampledBytes": 3770089472,
+      "outputBytes": 14731,
+      "timedOut": false,
+      "outputLimited": false,
+      "memoryLimited": false,
+      "nonclaims": [
+        "RSS is sampled process-group accounting; UTF-8 capture volume is not a kernel byte counter."
+      ],
+      "stdoutArtifact": {
+        "path": "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-evaluation/evidence/portable-no-beam-20261018/results/portable-logic/logic-keep-control/generation.stdout",
+        "digest": "sha256:037bd9d4f763dfebaf7634f6f5c38e909262d9e1b6230e353c50445f145c99ad"
+      },
+      "stderrArtifact": {
+        "path": "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-evaluation/evidence/portable-no-beam-20261018/results/portable-logic/logic-keep-control/generation.stderr",
+        "digest": "sha256:c80c9a5f02bd715c1598e4106960525e0b0a59939e1f65299bc307be055cafa1"
+      }
+    },
+    "assessments": [
+      {
+        "candidate": "EvalLogic.keep",
+        "status": "partial",
+        "availableAfterSeconds": 3.936152669135481,
+        "evidenceReceipt": null,
+        "checkRunRef": {
+          "artifactRef": "sha256:01abd37743dfb642c6a5c31c35ee656235ed0bf571e7e6abf342fb2f3ba41fb8",
+          "kind": "check-run",
+          "localId": "check:61098e754d1184c8d0c9a82d7bfc9cc0438bcc9c441d1f401e4aa740a9be783b"
+        },
+        "failureStage": null,
+        "failureDiagnostic": null,
+        "scratch": null,
+        "measurement": null
+      },
+      {
+        "candidate": "EvalLogic.flip",
+        "status": "rejected",
+        "availableAfterSeconds": 3.936152669135481,
+        "evidenceReceipt": null,
+        "checkRunRef": {
+          "artifactRef": "sha256:3f8d1a3f054f418d758fea0a5edbeb0f562aa94782266bb5f9f76a6851168eab",
+          "kind": "check-run",
+          "localId": "check:989d5d645d62e5bd6ba34fec3ab7002e753c0cc16b5fb304fe11795d1959695d"
+        },
+        "failureStage": "application-rejected",
+        "failureDiagnostic": "candidate application did not unify with the elaborated goal",
+        "scratch": null,
+        "measurement": null
+      },
+      {
+        "candidate": "EvalLogic.pair",
+        "status": "rejected",
+        "availableAfterSeconds": 3.936152669135481,
+        "evidenceReceipt": null,
+        "checkRunRef": {
+          "artifactRef": "sha256:2557b3388dc90a854860250ee5ff94b8d36331c1db16354899a0229cd8df4aeb",
+          "kind": "check-run",
+          "localId": "check:71993cd3e34710994f8e3b550765e359b2b1ea6a73573bade09a23e1546f92fe"
+        },
+        "failureStage": "application-rejected",
+        "failureDiagnostic": "candidate application did not unify with the elaborated goal",
+        "scratch": null,
+        "measurement": null
+      }
+    ],
+    "population": "bounded scoped lexical shortlist",
+    "nonclaims": [
+      "Terminal batches expose acceptance only at completion.",
+      "At most one independently recorded advisory scratch replay is requested."
+    ]
+  },
+  "metrics": {
+    "status": "measured",
+    "verifiedCandidateRecall": null,
+    "timeToFirstAcceptedCandidateSeconds": null,
+    "scratchReplaySuccessRate": null,
+    "closedCandidates": [],
+    "scratchAttempts": 0,
+    "scratchCompiled": 0,
+    "incorrectSuggestionRate": 0.0,
+    "invalidSuggestions": 0,
+    "assessedSuggestions": 1,
+    "closedProofsWithoutLabeledDeclaration": 0,
+    "partialApplications": 1,
+    "rejectedCandidates": 2,
+    "unassessedCandidates": 0,
+    "runtimeSeconds": 3.936152669135481,
+    "peakRssSampledBytes": 3770089472,
+    "outputBytes": 14731,
+    "generationRuntimeSeconds": 3.936152669135481,
+    "verificationRuntimeSeconds": 0
+  }
+}

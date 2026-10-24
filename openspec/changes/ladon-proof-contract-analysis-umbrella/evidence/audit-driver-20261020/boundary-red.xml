@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="6" skipped="0" tests="6" time="0.454" timestamp="2026-10-20T14:50:58.999235+03:00" hostname="mindfields"><testcase classname="tests.test_proof_contract_audit_boundaries" name="test_cli_runs_real_fixture_and_returns_nonzero_for_partial" time="0.076"><failure message="AssertionError: usage: ladon investigation contract [-h]&#10;                                      {obligations,check-obligations,expand-provider,context-obligations,check-context-bridge,route-context-obligations,check-route-context-bridge,probe-calibration-profile,probe-calibration,probe-profile,probe,check-probe,review-probe,produce,inspect,propagate,fidelity-record,expand}&#10;                                      ...&#10;  ladon investigation contract: error: argument operation: invalid choice: 'audit' (choose from 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')&#10;  &#10;assert 2 == 0&#10; +  where 2 = CompletedProcess(args=['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.entrypoint', 'investigation', 'cont...e-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')\n&quot;).returncode">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-886/test_cli_runs_real_fixture_and0')
+
+    def test_cli_runs_real_fixture_and_returns_nonzero_for_partial(tmp_path):
+        plan = _fixture_plan()
+        path = _write_plan(tmp_path / 'plan.json', plan)
+        command = [sys.executable, '-m', 'ladon.entrypoint', 'investigation', 'contract',
+                   'audit', '--input', str(path), '--output-dir', str(tmp_path / 'complete')]
+        result = subprocess.run(command, capture_output=True, text=True, timeout=30, check=False)
+&gt;       assert result.returncode == 0, result.stdout + result.stderr
+E       AssertionError: usage: ladon investigation contract [-h]
+E                                             {obligations,check-obligations,expand-provider,context-obligations,check-context-bridge,route-context-obligations,check-route-context-bridge,probe-calibration-profile,probe-calibration,probe-profile,probe,check-probe,review-probe,produce,inspect,propagate,fidelity-record,expand}
+E                                             ...
+E         ladon investigation contract: error: argument operation: invalid choice: 'audit' (choose from 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.entrypoint', 'investigation', 'cont...e-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')\n").returncode
+
+tests/test_proof_contract_audit_boundaries.py:26: AssertionError</failure></testcase><testcase classname="tests.test_proof_contract_audit_boundaries" name="test_expired_resume_and_existing_output_do_not_launch" time="0.001"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-886/test_expired_resume_and_existi0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x78ac6fb38e90&gt;
+
+    def test_expired_resume_and_existing_output_do_not_launch(tmp_path, monkeypatch):
+        path = _write_plan(tmp_path / 'plan.json', _fixture_plan())
+&gt;       first = _run(path, tmp_path / 'first', max_stages=1)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_audit_boundaries.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/tmp/pytest-of-codex/pytest-886/test_expired_resume_and_existi0/plan.json'), PosixPath('/tmp/pytest-of-codex/pytest-886/test_expired_resume_and_existi0/first'))
+kwargs = {'max_stages': 1}
+
+    def _run(*args, **kwargs):
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_boundaries.py:16: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_boundaries" name="test_resume_recovers_published_prefix_when_final_receipt_was_not_written" time="0.001"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-886/test_resume_recovers_published0')
+
+    def test_resume_recovers_published_prefix_when_final_receipt_was_not_written(tmp_path):
+        path = _write_plan(tmp_path / 'plan.json', _fixture_plan())
+        previous = tmp_path / 'first'
+&gt;       _run(path, previous, max_stages=1)
+
+tests/test_proof_contract_audit_boundaries.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/tmp/pytest-of-codex/pytest-886/test_resume_recovers_published0/plan.json'), PosixPath('/tmp/pytest-of-codex/pytest-886/test_resume_recovers_published0/first'))
+kwargs = {'max_stages': 1}
+
+    def _run(*args, **kwargs):
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_boundaries.py:16: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_boundaries" name="test_nested_memory_stop_retains_the_child_cap_and_guidance" time="0.001"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-886/test_nested_memory_stop_retain0')
+
+    def test_nested_memory_stop_retains_the_child_cap_and_guidance(tmp_path):
+        path = _write_plan(tmp_path / 'plan.json', _fixture_plan())
+        calls = []
+        message = memory_limit_message(1024**2, 2 * 1024**2)
+        body = {'status': 'incomplete', 'diagnostic': {'code': 'memory-limit', 'message': message},
+                'processReceipt': {'memoryLimited': True, 'requestedMaxRssBytes': 1024**2,
+                                   'peakRssBytes': 2 * 1024**2}}
+    
+        def memory_worker(command, **_kwargs):
+            calls.append(command)
+            return ProcessResult(tuple(command), 0, json.dumps({
+                'status': 'completed', 'result': body, 'diagnostic': None}), '', .01)
+    
+&gt;       report = _run(path, tmp_path / 'memory', runner=memory_worker)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_audit_boundaries.py:76: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/tmp/pytest-of-codex/pytest-886/test_nested_memory_stop_retain0/plan.json'), PosixPath('/tmp/pytest-of-codex/pytest-886/test_nested_memory_stop_retain0/memory'))
+kwargs = {'runner': &lt;function test_nested_memory_stop_retains_the_child_cap_and_guidance.&lt;locals&gt;.memory_worker at 0x78ac6fb3cd60&gt;}
+
+    def _run(*args, **kwargs):
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_boundaries.py:16: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_boundaries" name="test_source_binding_resume_rejects_quote_and_lean_mutations" time="0.281"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-886/test_source_binding_resume_rej0')
+
+    def test_source_binding_resume_rejects_quote_and_lean_mutations(tmp_path):
+        root, source, _unrelated, _concurrent, lake, lean, _digest, _context = _repo(tmp_path / 'repo')
+        quote = root / 'quote.txt'
+        quote.write_bytes(b'original prose')
+        plan = _fixture_plan()
+        plan.update(repoRoot=str(root), sourceFiles=['quote.txt'])
+        path = _write_plan(tmp_path / 'plan.json', plan)
+        runner = _version_only_runner(lake, lean)
+&gt;       first = _run(path, tmp_path / 'first', max_stages=1, runner=runner)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_audit_boundaries.py:113: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/tmp/pytest-of-codex/pytest-886/test_source_binding_resume_rej0/plan.json'), PosixPath('/tmp/pytest-of-codex/pytest-886/test_source_binding_resume_rej0/first'))
+kwargs = {'max_stages': 1, 'runner': &lt;function _version_only_runner.&lt;locals&gt;.runner at 0x78ac6fb3d940&gt;}
+
+    def _run(*args, **kwargs):
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_boundaries.py:16: ModuleNotFoundError</failure></testcase><testcase classname="tests.test_proof_contract_audit_boundaries" name="test_source_selection_and_prose_order_are_validated_before_work" time="0.001"><failure message="ModuleNotFoundError: No module named 'ladon.proof_contract_audit'">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-886/test_source_selection_and_pros0')
+
+    def test_source_selection_and_prose_order_are_validated_before_work(tmp_path):
+        root = tmp_path / 'repo'
+        root.mkdir()
+        outside = tmp_path / 'outside.txt'
+        outside.write_text('foreign source')
+        (root / 'quote.txt').symlink_to(outside)
+        plan = _fixture_plan()
+        plan.update(repoRoot=str(root), sourceFiles=['quote.txt'])
+    
+        def forbidden(*_args, **_kwargs):
+            pytest.fail('invalid source plan launched')
+    
+        with pytest.raises((ValueError, OSError)):
+&gt;           _run(_write_plan(tmp_path / 'symlink.json', plan), tmp_path / 'symlink', runner=forbidden)
+
+tests/test_proof_contract_audit_boundaries.py:137: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = (PosixPath('/tmp/pytest-of-codex/pytest-886/test_source_selection_and_pros0/symlink.json'), PosixPath('/tmp/pytest-of-codex/pytest-886/test_source_selection_and_pros0/symlink'))
+kwargs = {'runner': &lt;function test_source_selection_and_prose_order_are_validated_before_work.&lt;locals&gt;.forbidden at 0x78ac6fb3cc20&gt;}
+
+    def _run(*args, **kwargs):
+&gt;       from ladon.proof_contract_audit import run_contract_audit
+E       ModuleNotFoundError: No module named 'ladon.proof_contract_audit'
+
+tests/test_proof_contract_audit_boundaries.py:16: ModuleNotFoundError</failure></testcase></testsuite></testsuites>

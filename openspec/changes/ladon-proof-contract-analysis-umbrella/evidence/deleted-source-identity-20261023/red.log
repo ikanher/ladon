@@ -1,0 +1,164 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___ test_tracked_deleted_source_and_missing_parent_are_current_tree_material ___
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-1247/test_tracked_deleted_source_an0')
+path = PosixPath('/tmp/pytest-of-codex/pytest-1247/test_tracked_deleted_source_an0/src/nested/A.lean')
+relative = 'src/nested/A.lean'
+
+    def _reject_source_symlink_ancestors(root: Path, path: Path, relative: str) -> None:
+        """Reject resolution through a mutable, unframed directory link."""
+    
+        current = root
+        for part in path.relative_to(root).parts[:-1]:
+            current /= part
+            try:
+>               metadata = current.lstat()
+                           ^^^^^^^^^^^^^^^
+
+src/ladon/lean_toolchain.py:370: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.11/pathlib.py:1163: in lstat
+    return self.stat(follow_symlinks=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/pytest-of-codex/pytest-1247/test_tracked_deleted_source_an0/src')
+
+    def stat(self, *, follow_symlinks=True):
+        """
+        Return the result of the stat() system call on this path, like
+        os.stat() does.
+        """
+>       return os.stat(self, follow_symlinks=follow_symlinks)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-codex/pytest-1247/test_tracked_deleted_source_an0/src'
+
+../../miniconda3/lib/python3.11/pathlib.py:1013: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1247/test_tracked_deleted_source_an0')
+
+    def test_tracked_deleted_source_and_missing_parent_are_current_tree_material(
+        tmp_path: Path,
+    ) -> None:
+        lake, lean = _repository(tmp_path)
+        initial = resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+    
+        (tmp_path / "src" / "nested" / "A.lean").unlink()
+        (tmp_path / "src" / "nested" / "B.lean").unlink()
+        (tmp_path / "src" / "nested").rmdir()
+        (tmp_path / "src").rmdir()
+    
+>       deleted = resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.codex/state/proof-contract-analysis/deleted-source-red/test_deleted_source_identity.py:46: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/lean_toolchain.py:194: in resolve_toolchain_context
+    _source_tree_identity(root, enumeration),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/lean_toolchain.py:268: in _source_tree_identity
+    entry = _safe_source_path(root, relative)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/lean_toolchain.py:345: in _safe_source_path
+    _reject_source_symlink_ancestors(root, path, relative)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-1247/test_tracked_deleted_source_an0')
+path = PosixPath('/tmp/pytest-of-codex/pytest-1247/test_tracked_deleted_source_an0/src/nested/A.lean')
+relative = 'src/nested/A.lean'
+
+    def _reject_source_symlink_ancestors(root: Path, path: Path, relative: str) -> None:
+        """Reject resolution through a mutable, unframed directory link."""
+    
+        current = root
+        for part in path.relative_to(root).parts[:-1]:
+            current /= part
+            try:
+                metadata = current.lstat()
+            except OSError as exc:
+>               raise LeanToolchainError(f"cannot read source identity path: {relative}") from exc
+E               ladon.lean_toolchain.LeanToolchainError: cannot read source identity path: src/nested/A.lean
+
+src/ladon/lean_toolchain.py:372: LeanToolchainError
+__ test_staged_and_unstaged_tracked_deletions_have_same_current_tree_identity __
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-1247/test_staged_and_unstaged_track0')
+relative = 'src/nested/A.lean'
+
+    def _safe_source_path(root: Path, relative: str) -> _SourceMaterialPath | None:
+        path = root / relative
+        _reject_source_symlink_ancestors(root, path, relative)
+        if path.is_symlink():
+            return _safe_source_symlink(root, path, relative)
+        try:
+>           resolved = path.resolve(strict=True)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/ladon/lean_toolchain.py:349: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/pytest-of-codex/pytest-1247/test_staged_and_unstaged_track0/src/nested/A.lean')
+strict = True
+
+    def resolve(self, strict=False):
+        """
+        Make the path absolute, resolving all symlinks on the way and also
+        normalizing it.
+        """
+    
+        def check_eloop(e):
+            winerror = getattr(e, 'winerror', 0)
+            if e.errno == ELOOP or winerror == _WINERROR_CANT_RESOLVE_FILENAME:
+                raise RuntimeError("Symlink loop from %r" % e.filename)
+    
+        try:
+>           s = os.path.realpath(self, strict=strict)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-codex/pytest-1247/test_staged_and_unstaged_track0/src/nested/A.lean'
+
+../../miniconda3/lib/python3.11/pathlib.py:993: FileNotFoundError
+
+The above exception was the direct cause of the following exception:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-1247/test_staged_and_unstaged_track0')
+
+    def test_staged_and_unstaged_tracked_deletions_have_same_current_tree_identity(
+        tmp_path: Path,
+    ) -> None:
+        lake, lean = _repository(tmp_path)
+        (tmp_path / "src" / "nested" / "A.lean").unlink()
+>       unstaged = resolve_toolchain_context(tmp_path, lake_path=lake, lean_path=lean)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.codex/state/proof-contract-analysis/deleted-source-red/test_deleted_source_identity.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/lean_toolchain.py:194: in resolve_toolchain_context
+    _source_tree_identity(root, enumeration),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/lean_toolchain.py:268: in _source_tree_identity
+    entry = _safe_source_path(root, relative)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-1247/test_staged_and_unstaged_track0')
+relative = 'src/nested/A.lean'
+
+    def _safe_source_path(root: Path, relative: str) -> _SourceMaterialPath | None:
+        path = root / relative
+        _reject_source_symlink_ancestors(root, path, relative)
+        if path.is_symlink():
+            return _safe_source_symlink(root, path, relative)
+        try:
+            resolved = path.resolve(strict=True)
+        except (OSError, RuntimeError) as exc:
+>           raise LeanToolchainError(f"cannot read source identity path: {relative}") from exc
+E           ladon.lean_toolchain.LeanToolchainError: cannot read source identity path: src/nested/A.lean
+
+src/ladon/lean_toolchain.py:351: LeanToolchainError
+=========================== short test summary info ============================
+FAILED .codex/state/proof-contract-analysis/deleted-source-red/test_deleted_source_identity.py::test_tracked_deleted_source_and_missing_parent_are_current_tree_material
+FAILED .codex/state/proof-contract-analysis/deleted-source-red/test_deleted_source_identity.py::test_staged_and_unstaged_tracked_deletions_have_same_current_tree_identity
+2 failed in 0.72s

@@ -1,0 +1,22 @@
+1059: theorem norm_derivativeWord_inverse_le (d : Direction) {f : Source P}
+1060:     (hf : ContDiff ℝ ∞ f) (hp : Periodic f) (w : List Bool) (p : P) (Y : Plane) {C : ℝ}
+1061:     (hzero : ∀ x ∈ Icc (0 : ℝ) 1, ∀ y ∈ Icc (0 : ℝ) 1, ‖f (p, (x, y))‖ ≤ C)
+1062:     (hfirst : ∀ x ∈ Icc (0 : ℝ) 1, ∀ y ∈ Icc (0 : ℝ) 1,
+1063:       ‖SmoothFourierData.xJet (w.length + 5) (slice f p) (x, y)‖ ≤ C)
+1064:     (hsecond : ∀ x ∈ Icc (0 : ℝ) 1, ∀ y ∈ Icc (0 : ℝ) 1,
+1065:       ‖SmoothFourierData.xJet (w.length + 5)
+1066:         (SmoothFourierData.swapFunction (slice f p)) (x, y)‖ ≤ C) :
+1067:     ‖derivativeWord w (slice (inverse d f) p) Y‖ ≤
+1068:       ParametricTorusInverse.mixedLossConstant w.length * C := by
+1069:   have hbound := SmoothFourierData.coefficient_seminorm_bound (slice_smooth hf p) (hp p)
+1070:     (w.length + 1) hzero (by simpa only [Nat.add_assoc] using hfirst)
+1071:     (by simpa only [Nat.add_assoc] using hsecond)
+1072:   calc
+1073:     _ ≤ ((6 * ‖omega⁻¹‖) * ‖omega‖ ^ w.length) *
+1074:         coeffSeminorm (w.length + 1) (coefficient f p) :=
+1075:       inverse_derivativeWord_bound d
+1076:         (SmoothFourierData.rapid_coefficient (slice_smooth hf p) (hp p)) w Y
+1077:     _ ≤ ((6 * ‖omega⁻¹‖) * ‖omega‖ ^ w.length) *
+1078:         ((3 ^ ((w.length + 1) + 4) * C) * ∑' k : Frequency, (weight k ^ 4)⁻¹) :=
+1079:       mul_le_mul_of_nonneg_left hbound (by positivity)
+1080:     _ = _ := by simp only [ParametricTorusInverse.mixedLossConstant, Nat.add_assoc]; ring

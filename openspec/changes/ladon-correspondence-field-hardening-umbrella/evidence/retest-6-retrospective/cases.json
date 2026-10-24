@@ -1,0 +1,397 @@
+{
+  "schema": "retrospective-regression-corpus-v1",
+  "classificationAuthority": "post-reveal author judgments; development evidence, not fresh detection or new Lean replay",
+  "reference": {
+    "path": "/home/codex/projects/ladon/openspec/changes/ladon-correspondence-discovery-umbrella/evidence/implementation/sources/quux/paper/navier-stokes-exposition-faults/NavierStokes_LostInTranslation_ArXiv.tex",
+    "sha256": "67b27489185bf10baa92192a47ca25d51ecd4ed320b51374b5571a9cba13c084",
+    "bytes": 112538,
+    "role": "answer-informed reference; not a falsity oracle"
+  },
+  "auditRoot": "/home/codex/projects/navier-stokes-retest-6/runs/independent-01",
+  "cases": [
+    {
+      "id": "inverse-loss",
+      "kind": "reference-discrepancy",
+      "source": "inverse-source.txt",
+      "referenceLines": [
+        697,
+        803
+      ],
+      "observedIn": "fresh-phase-geometry/first-assessment.json#/limitations/1",
+      "expected": {
+        "statementRelation": "selected-formal-guarantee-weaker",
+        "methodRelation": "different",
+        "proseFalsity": "not-established",
+        "exactNativeBridge": "not-established-in-recorded-run",
+        "surfaceAsFinding": true
+      },
+      "scope": "Fixed torus derivatives and source-independent constants. The original reviewer inspected inverse_finiteJets/mixedJet_inverse_bound; this retrospective additionally checks norm_derivativeWord_inverse_le. No claim of exhaustive counterpart search.",
+      "observedEvidenceQuote": "Formal SmoothFamilyTorusInverse.inverse_finiteJets and mixedJet_inverse_bound inspected here use five additional torus derivatives. Prose (8.19) states four, which is independently justified by O(|k|) divisor loss plus a summable |k|^-3 series in dimension two. Thus inspected formal theorem gives weaker derivative count, sufficient for the all-orders coefficient classes; exact four-loss formal counterpart remains unlocated."
+    },
+    {
+      "id": "pressure-flux",
+      "kind": "reference-discrepancy",
+      "source": "pressure-source.txt",
+      "referenceLines": [
+        838,
+        911
+      ],
+      "observedIn": "terminal-comparison-audit/first-assessment.md",
+      "expected": {
+        "statementRelation": "different-bound-no-bridge-established",
+        "methodRelation": "different",
+        "proseFalsity": "not-established",
+        "exactNativeBridge": "not-established-in-recorded-run",
+        "surfaceAsFinding": true
+      },
+      "scope": "A_R-dependent formal envelope versus B_R-only prose envelope; no converse Sobolev bound supplied. Both may suffice for uniqueness; neither a failed bridge nor method difference refutes the prose.",
+      "observedEvidenceQuote": "The formal endpoint therefore does not replay the displayed paper inequality (10.19) verbatim. This is a correspondence limitation, not a discovered false inequality."
+    },
+    {
+      "id": "cycle-equality",
+      "kind": "successful-local-control",
+      "sourceBinding": {
+        "endLine": 5716,
+        "path": "runs/independent-01/exposition.txt",
+        "quote": "Proof. The four steps below implement (i)–(iv) in order. For this cycle abbreviate B = 21 + σj\nand C∗ = B + 12 = 1 + σj . At every occurrence of gr and pm below, an asserted improved",
+        "sha256": "168ebbc105b9685ee7310341a7cc227eab9dd59ec255c9ac77ce98c47d2839b6",
+        "startLine": 5715
+      },
+      "selection": {
+        "application": "NavierStokes.ExponentLedger.mean_eq_wave_add_half",
+        "declaration": "NavierStokes.ExponentLedger.particular_tensor_exponent",
+        "module": "NavierStokes.ExponentLedger",
+        "occurrence": 0,
+        "sourceFile": "NavierStokes/ExponentLedger.lean"
+      },
+      "checkedArtifact": "late-audit/exponent-equality-checked.json",
+      "checkedSha256": "1e81fd8bf850dbd0f45323b67624f90b08bdf2a53fc0712896c2b93f7a438ce0",
+      "review": "fresh-equality-review/first-response.json",
+      "originalObligations": [
+        {
+          "id": "interpretation",
+          "kind": "welltypedness"
+        },
+        {
+          "id": "conditional",
+          "kind": "conditional-validity"
+        },
+        {
+          "id": "object-map",
+          "kind": "representation-transport"
+        },
+        {
+          "id": "conclusion",
+          "kind": "conclusion-transfer"
+        }
+      ],
+      "expected": {
+        "statementRelation": "aligned-local",
+        "methodRelation": "same",
+        "proseFalsity": "not-established",
+        "nativeRecordedSupport": "supported",
+        "surfaceMethodDifference": false
+      },
+      "limits": "Local subject only; structural obligations are not substantive claims. No whole-parent or whole-paper certification."
+    },
+    {
+      "id": "weight-ratio",
+      "kind": "successful-local-control",
+      "sourceBinding": {
+        "endLine": 7750,
+        "path": "runs/independent-01/exposition.txt",
+        "quote": "\n  The two weight ratios needed for integration are\n                          aαβ            ( α + 2)2 α + 1\n                                  = 20                       ≤ 80,                                (B.9)\n                        aα+1,β           ( α + 1)2 α + β + 1",
+        "sha256": "168ebbc105b9685ee7310341a7cc227eab9dd59ec255c9ac77ce98c47d2839b6",
+        "startLine": 7746
+      },
+      "selection": {
+        "application": "NavierStokes.AxisWeightEstimates.weight_radial_shift",
+        "declaration": "NavierStokes.AxisWeightEstimates.weight_radial_shift_ratio",
+        "module": "NavierStokes.AxisWeightEstimates",
+        "occurrence": 0,
+        "sourceFile": "NavierStokes/AxisWeightEstimates.lean"
+      },
+      "checkedArtifact": "weight-correspondence/checked.json",
+      "checkedSha256": "03cb2e7b9448022034d57394935ef691d113beafece638fc3c46e17ca1c98e24",
+      "review": "fresh-weight-review/first-response.json",
+      "originalObligations": [
+        {
+          "id": "interpretation",
+          "kind": "welltypedness"
+        },
+        {
+          "id": "conditional",
+          "kind": "conditional-validity"
+        },
+        {
+          "id": "object-map",
+          "kind": "representation-transport"
+        },
+        {
+          "id": "premise-1",
+          "kind": "premise-supply"
+        },
+        {
+          "id": "conclusion",
+          "kind": "conclusion-transfer"
+        },
+        {
+          "id": "provider-1",
+          "kind": "premise-provider-validity"
+        }
+      ],
+      "expected": {
+        "statementRelation": "aligned-local",
+        "methodRelation": "same",
+        "proseFalsity": "not-established",
+        "nativeRecordedSupport": "supported",
+        "surfaceMethodDifference": false
+      },
+      "limits": "Local subject only; structural obligations are not substantive claims. No whole-parent or whole-paper certification."
+    },
+    {
+      "id": "heat-normalization",
+      "kind": "successful-local-control",
+      "sourceBinding": {
+        "endLine": 7286,
+        "path": "runs/independent-01/exposition.txt",
+        "quote": "   Throughout this subsection 0 < h < 1/2, A = 1/2 + h, and D = 1/2 − h. We retain\nd = 1 − η 2 , τ = 1 − t, and L = 1 − 2hη 2 from (4.1). All parameters in the construction\nof the outer radial profile are fixed in the order (A.6) before XR is increased. In the local\nlogarithmic radial coordinate for the tail of (A.12), write y = log( X/Xtail ), Xb = e3 Xtail , and\nEpow = c∞ X − A , where c∞ > 0 is independent of η. Thus the reference tail is Epow f o (y).\n\n138                                               OPENAI\n\n  Set aK = 1 + h, and define the heat factor by\n                                    ∫︂ ∞\n                               1\n                    H( Z ) =             e−v v aK −1 (1 + Zv)−h dv, Z ≥ 0,         (A.32)\n                             Γ( aK ) 0\n               ∫︁ ∞\nHere Γ( aK ) = 0 e−v v aK −1 dv is the gamma integral, so H(0) = 1. Write Eheat ( X, η ) =",
+        "sha256": "168ebbc105b9685ee7310341a7cc227eab9dd59ec255c9ac77ce98c47d2839b6",
+        "startLine": 7272
+      },
+      "selection": {
+        "application": "NavierStokes.RadialHeatProfile.moment_zero",
+        "declaration": "NavierStokes.RadialHeatProfile.profile_zero",
+        "module": "NavierStokes.RadialHeatProfile",
+        "occurrence": 0,
+        "sourceFile": "NavierStokes/RadialHeatProfile.lean"
+      },
+      "checkedArtifact": "appendix-a-audit/heat-zero-checked.json",
+      "checkedSha256": "7841a5639b905dbd6e3aa1a3a370fd20b2ad5341fec7d7ea19d466952c6c6155",
+      "review": "fresh-heat-review/first-response.json",
+      "originalObligations": [
+        {
+          "id": "interpretation",
+          "kind": "welltypedness"
+        },
+        {
+          "id": "conditional",
+          "kind": "conditional-validity"
+        },
+        {
+          "id": "object-map",
+          "kind": "representation-transport"
+        },
+        {
+          "id": "premise-1",
+          "kind": "premise-supply"
+        },
+        {
+          "id": "conclusion",
+          "kind": "conclusion-transfer"
+        },
+        {
+          "id": "provider-1",
+          "kind": "premise-provider-validity"
+        }
+      ],
+      "expected": {
+        "statementRelation": "aligned-local",
+        "methodRelation": "same",
+        "proseFalsity": "not-established",
+        "nativeRecordedSupport": "supported",
+        "surfaceMethodDifference": false
+      },
+      "limits": "Local subject only; structural obligations are not substantive claims. No whole-parent or whole-paper certification."
+    },
+    {
+      "id": "covariance-cone",
+      "kind": "successful-local-control",
+      "sourceBinding": {
+        "endLine": 4435,
+        "path": "runs/independent-01/exposition.txt",
+        "quote": "Define the corresponding positive scalar by\n                                                                 )︃ ∫︂ L\n                                  | det(vr , vt )|\n                                                   (︃∫︂\n                                                                         s\n                          hσ =                          χ2g dξ g ci        ψ2 x2 dv.\n                                        2                              0\nThe Gaussian envelope and the region where ψ = 1 give\n                √        ∫︂ Ls\n                                  2 2\n                                                √            ∫︂ Ls\n                                                                   |v − Ls /2| 2 2\n               c Ls ≤           ψ x dv ≤ C Ls ,                                ψ x dv ≤ C.\n                           0                                   0        Ls\n                                                 √                                         2        2\nIndeed the substitution\n              √          w = (v − Ls /2)/ Ls reduces these to integrals of e−cw and |w|e−cw .\nHence hσ ≍ ci Ls ≍ S∗−1/2 , and the normalized x2 ψ2 average of |v − Ls /2|/Ls is O(S∗−1/2 ).\nThe definitions of Ka , Na , s a in (7.7) give the tangential part of the pulse: thσ,tan = −s a xKa +\nyNa . By Lemma 7.4, its ratio to x differs by O(S∗−1 ) from −s(v)K + c0 1 + s(v)2 N. The\n                                                                                      √︁\n\npreceding√︁weighted average concentrates near v = Ls /2, where s = σu∗ . Thus, setting\nAc = −c0 1 + u2∗ > 0, we obtain\n                       Hσ = hσ (− Ac N − σu∗ K + eσ ),                     |eσ | ≤ CS∗−1/2 .    (7.28)\nThe derivatives of the covariance columns and homogeneous solutions have polynomial\nbounds by Lemma 7.4.\nStep 2: solve for positive squared amplitudes. First omit the errors eσ in (7.28). For a target\nT = TN N + TK K, the two scalar equations then give\n              h+ y+ = 21 (− TN /Ac − TK /u∗ ),               h− y− = 12 (− TN /Ac + TK /u∗ ).\nThus the reference cone is TN < 0, | TK | < (u∗ /Ac )(− TN ). The two formulas above give the\npositive coefficient decomposition. Our choice of u∗ and the uniform leading cone margin\ngive | TK |/u∗ ≤ (1 − ηc )(− TN /Ac ) for some fixed ηc > 0 and T = T0,∗ , by (7.1). Freezing",
+        "sha256": "168ebbc105b9685ee7310341a7cc227eab9dd59ec255c9ac77ce98c47d2839b6",
+        "startLine": 4403
+      },
+      "selection": {
+        "application": "NavierStokes.Covariance.cone_of_ratio",
+        "declaration": "NavierStokes.Covariance.positive_primary",
+        "module": "NavierStokes.Covariance",
+        "occurrence": 0,
+        "sourceFile": "NavierStokes/Covariance.lean"
+      },
+      "checkedArtifact": "middle-audit/covariance-corrected-checked.json",
+      "checkedSha256": "57d57b5516faf7966c301f1c02eb5f6f3669982dfc7acd976eba72496b120c0e",
+      "review": "fresh-covariance-review/first-response.json",
+      "originalObligations": [
+        {
+          "id": "interpretation",
+          "kind": "welltypedness"
+        },
+        {
+          "id": "conditional",
+          "kind": "conditional-validity"
+        },
+        {
+          "id": "object-map",
+          "kind": "representation-transport"
+        },
+        {
+          "id": "premise-4",
+          "kind": "premise-supply"
+        },
+        {
+          "id": "premise-5",
+          "kind": "premise-supply"
+        },
+        {
+          "id": "conclusion",
+          "kind": "conclusion-transfer"
+        },
+        {
+          "id": "provider-4",
+          "kind": "premise-provider-validity"
+        },
+        {
+          "id": "provider-5",
+          "kind": "premise-provider-validity"
+        }
+      ],
+      "expected": {
+        "statementRelation": "aligned-local",
+        "methodRelation": "same",
+        "proseFalsity": "not-established",
+        "nativeRecordedSupport": "supported",
+        "surfaceMethodDifference": false
+      },
+      "limits": "Local subject only; structural obligations are not substantive claims. No whole-parent or whole-paper certification."
+    },
+    {
+      "id": "model-bounds",
+      "kind": "successful-local-control",
+      "sourceBinding": {
+        "endLine": 7793,
+        "path": "runs/independent-01/exposition.txt",
+        "quote": "   The analytic scalar comparison function is\n                                                      (−z/2)α\n                                          f 0 (z) = ∑               .\n                                                  α≥0 α! ( α + 1) !\nFor 0 ≤ z ≤ 4.1, set t = z/2. The alternating tail after the cubic term has decreasing\nmagnitudes, and hence\n                             t    t2    t3      305719\n                  f 0 (z) ≥ 1 −+     −      ≥            > .265,    f 0 (z) ≤ 1.       (B.11)\n                             2 12 144          1152000\nThe cubic is decreasing on [0, 2.05], giving its stated endpoint value. For the upper bound\ngroup the alternating tail after the constant term; its magnitudes decrease from the linear\nterm onward.",
+        "sha256": "168ebbc105b9685ee7310341a7cc227eab9dd59ec255c9ac77ce98c47d2839b6",
+        "startLine": 7782
+      },
+      "selection": {
+        "application": "NavierStokes.AxisModelBounds.profile_bounds",
+        "declaration": "NavierStokes.AxisModelBounds.model_bounds",
+        "module": "NavierStokes.AxisModelBounds",
+        "occurrence": 0,
+        "sourceFile": "NavierStokes/AxisModelBounds.lean"
+      },
+      "checkedArtifact": "fresh-majorant-audit/model-checked-primary-direct-v6.json",
+      "checkedSha256": "be8e866431ac542e2ed59304625c10f59c48a545265657553b8bd4976718be19",
+      "review": "fresh-model-bound-review/first-response.json",
+      "originalObligations": [
+        {
+          "id": "interpretation",
+          "kind": "welltypedness"
+        },
+        {
+          "id": "conditional",
+          "kind": "conditional-validity"
+        },
+        {
+          "id": "object-map",
+          "kind": "representation-transport"
+        },
+        {
+          "id": "premise-2",
+          "kind": "premise-supply"
+        },
+        {
+          "id": "premise-3",
+          "kind": "premise-supply"
+        },
+        {
+          "id": "premise-4",
+          "kind": "premise-supply"
+        },
+        {
+          "id": "premise-5",
+          "kind": "premise-supply"
+        },
+        {
+          "id": "conclusion",
+          "kind": "conclusion-transfer"
+        },
+        {
+          "id": "provider-2",
+          "kind": "premise-provider-validity"
+        },
+        {
+          "id": "provider-3",
+          "kind": "premise-provider-validity"
+        },
+        {
+          "id": "provider-4",
+          "kind": "premise-provider-validity"
+        },
+        {
+          "id": "provider-5",
+          "kind": "premise-provider-validity"
+        }
+      ],
+      "expected": {
+        "statementRelation": "aligned-local",
+        "methodRelation": "different",
+        "proseFalsity": "not-established",
+        "nativeRecordedSupport": "supported",
+        "surfaceMethodDifference": true
+      },
+      "limits": "Local subject only; structural obligations are not substantive claims. Containing theorem supplies a numeric sibling: retain dependency qualification; not independent reconstruction."
+    },
+    {
+      "id": "lattice-count",
+      "kind": "successful-local-control",
+      "sourceBinding": {
+        "endLine": 3599,
+        "path": "runs/independent-01/exposition.txt",
+        "quote": "                                      #(Z2 /Jg∆ Z2 ) = | det Jg |∆ = 14∆ .",
+        "sha256": "168ebbc105b9685ee7310341a7cc227eab9dd59ec255c9ac77ce98c47d2839b6",
+        "startLine": 3599
+      },
+      "selection": {
+        "application": "NavierStokes.TorusCoverLattice.coverRange_index",
+        "declaration": "NavierStokes.TorusCoverLattice.card_sheet",
+        "module": "NavierStokes.TorusCoverLattice",
+        "occurrence": 0,
+        "sourceFile": "NavierStokes/TorusCoverLattice.lean"
+      },
+      "checkedArtifact": "fresh-phase-geometry/native-time-cover/lattice-checked-source-corrected.json",
+      "checkedSha256": "873e837849b93f4714bfecb3e78993542b720dd6860ce64c95174ad30fb2dfc1",
+      "review": "fresh-lattice-endpoint-review/first-response.json",
+      "originalObligations": [
+        {
+          "id": "interpretation",
+          "kind": "welltypedness"
+        },
+        {
+          "id": "conditional",
+          "kind": "conditional-validity"
+        },
+        {
+          "id": "object-map",
+          "kind": "representation-transport"
+        },
+        {
+          "id": "conclusion",
+          "kind": "conclusion-transfer"
+        }
+      ],
+      "expected": {
+        "statementRelation": "aligned-local",
+        "methodRelation": "different",
+        "proseFalsity": "not-established",
+        "nativeRecordedSupport": "supported",
+        "surfaceMethodDifference": true
+      },
+      "limits": "Local subject only; structural obligations are not substantive claims. No whole-parent or whole-paper certification."
+    }
+  ]
+}

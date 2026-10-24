@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.074" timestamp="2026-10-20T11:24:57.990794+03:00" hostname="mindfields"><testcase classname="tests.test_correspondence_goal_scratch_identity" name="test_goal_scratch_helper_change_invalidates_checker_implementation" time="0.017"><failure message="AssertionError: assert 'sha256:d49488a06d16fea73c675b27791a239f1741833b16a0125f3d9bc48998894309' != 'sha256:d49488a06d16fea73c675b27791a239f1741833b16a0125f3d9bc48998894309'&#10; +  where 'sha256:d49488a06d16fea73c675b27791a239f1741833b16a0125f3d9bc48998894309' = &lt;function implementation_digest at 0x7218158c6fc0&gt;()&#10; +    where &lt;function implementation_digest at 0x7218158c6fc0&gt; = implementation.implementation_digest">tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-880/test_goal_scratch_helper_chang0')
+monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x72181550ca90&gt;
+
+    def test_goal_scratch_helper_change_invalidates_checker_implementation(tmp_path, monkeypatch):
+        package = tmp_path / 'ladon'
+        shutil.copytree(Path(implementation.__file__).parent, package,
+                        ignore=shutil.ignore_patterns('__pycache__'))
+        monkeypatch.setattr(implementation, '__file__', str(package / 'correspondence_implementation.py'))
+        before = implementation.implementation_digest()
+        helper = package / '_proof_contract_goal_scratch.py'
+        original = helper.read_bytes()
+        helper.write_bytes(original + b'\n# changed generated-goal writer\n')
+&gt;       assert implementation.implementation_digest() != before
+E       AssertionError: assert 'sha256:d49488a06d16fea73c675b27791a239f1741833b16a0125f3d9bc48998894309' != 'sha256:d49488a06d16fea73c675b27791a239f1741833b16a0125f3d9bc48998894309'
+E        +  where 'sha256:d49488a06d16fea73c675b27791a239f1741833b16a0125f3d9bc48998894309' = &lt;function implementation_digest at 0x7218158c6fc0&gt;()
+E        +    where &lt;function implementation_digest at 0x7218158c6fc0&gt; = implementation.implementation_digest
+
+tests/test_correspondence_goal_scratch_identity.py:17: AssertionError</failure></testcase></testsuite></testsuites>

@@ -1,0 +1,428 @@
+{
+  "schema": "ladon-refinement-cli-qualification-v1",
+  "date": "2026-10-22",
+  "baselineHead": "9695596ed9db287076251649ae57051331f83775",
+  "scope": "constructed-nat-rational-profile-and-consumers-only",
+  "nativeGate": {
+    "passed": true,
+    "elapsedSeconds": 30.901898599229753,
+    "scope": "constructed-example-only"
+  },
+  "nativeStart": {
+    "ladonModule": "/home/codex/projects/ladon/src/ladon/__init__.py",
+    "startedMonotonic": 2296543.714364466,
+    "deadlineMonotonic": 2298343.714364466
+  },
+  "commands": [
+    {
+      "argv": [
+        "/home/codex/miniconda3/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "init",
+        "--text",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/workspace/source.txt",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/workspace",
+        "--correspondence",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/plan.json"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "elapsedSeconds": 0.06815955694764853
+    },
+    {
+      "argv": [
+        "/home/codex/miniconda3/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "contract",
+        "inspect",
+        "--input",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/refinement.json",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/workspace",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/inspection.json"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "elapsedSeconds": 0.16120270499959588
+    },
+    {
+      "argv": [
+        "/home/codex/miniconda3/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "observe",
+        "--plan",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/plan.json",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/workspace",
+        "--record",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/observation.json",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/observed.json"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "elapsedSeconds": 0.06728146970272064
+    },
+    {
+      "argv": [
+        "/home/codex/miniconda3/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "contract",
+        "refine",
+        "--input",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/request.json",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/workspace",
+        "--deadline-monotonic",
+        "2298343.714364466",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/refinement.json"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "elapsedSeconds": 30.232673917897046
+    },
+    {
+      "argv": [
+        "/home/codex/miniconda3/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "report",
+        "--plan",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/observed.json",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/workspace",
+        "--refinement",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/refinement.json",
+        "--output",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/report.json"
+      ],
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "elapsedSeconds": 0.2071241489611566
+    },
+    {
+      "argv": [
+        "/home/codex/miniconda3/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "investigation",
+        "contract",
+        "inspect",
+        "--input",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/refinement.json",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/refinement-cli/native-gate-01/workspace"
+      ],
+      "exitCode": 2,
+      "expectedExitCode": 2,
+      "elapsedSeconds": 0.13779609510675073
+    }
+  ],
+  "nativeSupervision": {
+    "bounds": {
+      "deadlineMonotonic": 2296663.914903019,
+      "effectiveTimeoutSeconds": 119.99254084890708,
+      "max_output_bytes": 8388608,
+      "max_rss_bytes": 12884901888,
+      "timeout_seconds": 120.0
+    },
+    "processReceipt": {
+      "command": [
+        "/home/codex/miniconda3/bin/python",
+        "-m",
+        "ladon.proof_contract_lift_worker"
+      ],
+      "configuredTimeoutSeconds": 120.0,
+      "elapsedSeconds": 29.84041393175721,
+      "inputDigest": "sha256:535fbf716c867906b4ee3b02ddad1bca5fdbd2e5b58e66131fd00ae3f7ff5bea",
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 3822260224,
+      "requestedMaxOutputBytes": 8388608,
+      "requestedMaxRssBytes": 12884901888,
+      "requestedTimeoutSeconds": 119.99254084890708,
+      "returnCode": 0,
+      "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutDigest": "sha256:18502ec397a37eba76d3dc6151283ba73338971d9b7e9d8616c0a3eaa8d3f79c",
+      "timedOut": false
+    },
+    "workerInputDigest": "sha256:535fbf716c867906b4ee3b02ddad1bca5fdbd2e5b58e66131fd00ae3f7ff5bea"
+  },
+  "preserved": {
+    "artifactId": "sha256:d24d7ece51222c2e797ffc7194a512f4d067e227ef9c21dff3007284a2034a38",
+    "originalFindingId": "eacfabd6c6c033dfcba43cc0c072b3bb74f1feb055365041f1df67bbdc96e41f",
+    "liftPlanId": "sha256:6c7af6d12830f2d00e1b74650d926fae9adacc9491c0329f07dca5898241896c",
+    "liftCheckId": "sha256:258d95a454ec14e9a0726beebc3843736469aef15b6cc311b52e32c1d97cd42e",
+    "originalStatus": "counterexample",
+    "liftStatus": "spurious-countermodel",
+    "branches": [
+      {
+        "kind": "source-cited-refinement",
+        "branchId": "sha256:59f4916ebc9adbc4fcc3d8e0a1531cfe0823c070f75796a5390d438c82a20e78",
+        "checkId": "sha256:316908a9ea6f6551b102e22ab3145d1ee39adac66c8ce113769439820bf91444",
+        "witnessStatus": "outside-assumptions"
+      },
+      {
+        "kind": "proposed-repair",
+        "branchId": "sha256:deb13eadffe0d97a6d1d846d2c7459102869db51213c248cd651626d8c467587",
+        "checkId": "sha256:1a44e2fcb473af91f23dcdcb12915beb9f722b3c194dfd45ac72eaab6cc37159",
+        "witnessStatus": "outside-assumptions"
+      }
+    ],
+    "reportSchema": "ladon-investigation-report-v3",
+    "reportAuthority": "Source-bound attributed evidence; no Lean replay or semantic detection. Refinement supplements are id-only-attributed historical evidence; saved Lean evidence was not replayed."
+  },
+  "rawArtifacts": [
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/RESULT.json",
+      "sha256": "16463d6e9a72afd72ad8bf502118774c01c4b8b3218f61da501cef2417674cde",
+      "bytes": 100
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/init.command.json",
+      "sha256": "c8d107ffb90a18edf8139dbf68b1ab76aaeee67894da7f1f78fc232a55144f9f",
+      "bytes": 550
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/init.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/init.stdout",
+      "sha256": "93dfab386c45f0c9967e35695540109ce081dc6058f8f954906e8c130ce54ae8",
+      "bytes": 129
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/inspect.command.json",
+      "sha256": "313ff402b5996342fc094b3d96a1ad373ae1af023ce7dca4fd91755df0242f2e",
+      "bytes": 547
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/inspect.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/inspect.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/inspection.json",
+      "sha256": "8fa284a0f8349d735c79b83f58eab7c3a17eee9a00d1c9795a094bd8089d0fd7",
+      "bytes": 2274798
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/observation.json",
+      "sha256": "33bfbf3fd70b8ab1fa20e41202ee77f22cbc4a890a137b33d9e0cc57174927ef",
+      "bytes": 644
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/observe.command.json",
+      "sha256": "4476f5a7a81f4615269f7ce1a5585f81b4183576836e90bf66d52c406b1c8805",
+      "bytes": 632
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/observe.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/observe.stdout",
+      "sha256": "5302cb53044c2b94dee164377f9ea87af5397ca8bc9bc3f74d8ebd7ceda9918b",
+      "bytes": 145
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/observed.json",
+      "sha256": "83b3d837ee51ca9e2f7e7b9e9ec8e52334982fb7207cd85ec69a6b15fcc49e64",
+      "bytes": 1097
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/plan.json",
+      "sha256": "6b1fb38f03c590d86d2463be1b74a9dfe239991ac5e375f962b3fd8128ba6e33",
+      "bytes": 493
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/refine.command.json",
+      "sha256": "45b5bdee10a6a48057e69291619d8ffafe032f0eedd2b7a518c312cbed48e872",
+      "bytes": 595
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/refine.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/refine.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/refinement.json",
+      "sha256": "bbb65aeb935d7675fd4680e4f8805c1f73c7e4ed92de45f95ece58a1701e3e33",
+      "bytes": 2274567
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/report.command.json",
+      "sha256": "0c8e0e88ee74ae06078c54b858e8c5d548e7cf1d9156f91022f75dd112d1ed10",
+      "bytes": 635
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/report.json",
+      "sha256": "1eec05e9a05bd14d10861e5fae23ed815ad88726264864b70da81da3f950a281",
+      "bytes": 2280796
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/report.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/report.stdout",
+      "sha256": "1f59ec456bfd078f3e76dcd2df0ff7621566874636261bbbaefb01f7bc6d1e47",
+      "bytes": 2338285
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/request.json",
+      "sha256": "8378f59597d22229e63013abc12231804cd117bf6756fb5235146b14f3a3ace9",
+      "bytes": 2460
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/stale-inspect.command.json",
+      "sha256": "f5777852b6e3fd457d8c884ce17f0c554407414635c25d2236055d25c9a07a5e",
+      "bytes": 438
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/stale-inspect.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/stale-inspect.stdout",
+      "sha256": "11a9a48caf058db2dee7449704f86c8c6cb8a54d84c07ed52c71c26532871749",
+      "bytes": 54
+    },
+    {
+      "path": ".codex/state/refinement-cli/native-gate-01/start.json",
+      "sha256": "26002282ca15d685db87ce9c52a3dcebc08bfd4179203e77b01b51c313846f01",
+      "bytes": 155
+    }
+  ],
+  "sourceAndTests": [
+    {
+      "path": "src/ladon/_proof_contract_refinement_workflow.py",
+      "sha256": "133fed5ade9659eb8937cb32e3c48464cb441028b1838acad76e841db956d822",
+      "bytes": 8468
+    },
+    {
+      "path": "src/ladon/proof_contract_refinement_workflow.py",
+      "sha256": "2b0f4fa273aee5ff071715705e421ea7676842b11bdf007a1c8474499ffa3b01",
+      "bytes": 6095
+    },
+    {
+      "path": "src/ladon/proof_contract_refinement_cli.py",
+      "sha256": "8ce40d8004421fe2f585010c03b02694cf5bad3e1e48c3ee714411fb7190069d",
+      "bytes": 1745
+    },
+    {
+      "path": "src/ladon/proof_contract_cli.py",
+      "sha256": "77e2ee9cd905798ada428e775488334cb5fd249ac6163ba9a7e5530f6beb4980",
+      "bytes": 11301
+    },
+    {
+      "path": "src/ladon/_investigation_refinement_reporting.py",
+      "sha256": "0658497b9b3a3e4a679ff066dbbf6ed5f08a6132722a157dd9232efa4974105c",
+      "bytes": 2246
+    },
+    {
+      "path": "src/ladon/investigation_reporting.py",
+      "sha256": "4abd3be271ddc67fa5ff131c38fb5862a4a531a81307d551ef72bbd8a811669b",
+      "bytes": 9116
+    },
+    {
+      "path": "src/ladon/investigation_observation_cli.py",
+      "sha256": "712c50c74158545735a7e9ae5ae04865766bd96bb3e2bc313a61e91ee438ca3a",
+      "bytes": 4086
+    },
+    {
+      "path": "tests/test_proof_contract_refinement_workflow.py",
+      "sha256": "7b38548e3068da1b1c933d728f21b183eab1bdce6bd1882dd4423d570153fbc2",
+      "bytes": 19587
+    },
+    {
+      "path": "tests/test_refinement_workflow_boundaries.py",
+      "sha256": "40ed111e9aaaa395aeb900e5fafc1255ca454962e0cfda97c3328d0b25df2305",
+      "bytes": 5213
+    },
+    {
+      "path": "scripts/check_refinement_cli.py",
+      "sha256": "4feb7ffbdc7810f2544756648c5645485848dbebf71e4d23c175523ebf0b0c66",
+      "bytes": 8560
+    }
+  ],
+  "regression": {
+    "command": "PYTHONPATH=src python -m pytest -q tests/test_public_lift_check.py tests/test_public_lift_evidence_presence.py tests/test_public_lift_gate_policy.py tests/test_public_lift_input_edges.py tests/test_public_lift_missing_identity.py tests/test_public_lift_native_evidence.py tests/test_public_lift_supervision.py tests/test_proof_contract_refinement_branches_v8.py tests/test_proof_contract_refinement_evidence.py tests/test_proof_contract_refinement_json_boundary.py tests/test_proof_contract_refinement_lifting_v2.py tests/test_proof_contract_refinement_workflow.py tests/test_refinement_workflow_boundaries.py tests/test_rational_refinement_adversarial_v2.py tests/test_rational_refinement_identity_v5.py tests/test_rational_refinement_session.py tests/test_rational_refinement_session_boundaries.py tests/test_rational_refinement_session_source_root.py tests/test_rational_refinement_session_stops.py tests/test_rational_refinement_v2.py tests/test_investigation_contract_findings.py tests/test_investigation_contract_findings_cli.py tests/test_investigation_findings.py tests/test_investigation_findings_capture_state.py tests/test_investigation_findings_edges.py tests/test_investigation_findings_pending.py tests/test_investigation_observation_cli.py tests/test_investigation_finalization.py tests/test_correspondence_investigation_reporting.py tests/test_proof_contract_cli.py tests/test_rational_branch_checked_reporting.py --junitxml=.codex/state/refinement-cli/regression.xml",
+    "exitCode": 0,
+    "suites": [
+      {
+        "name": "pytest",
+        "errors": "0",
+        "failures": "0",
+        "skipped": "0",
+        "tests": "250",
+        "time": "182.548",
+        "timestamp": "2026-10-22T13:31:07.861407+03:00",
+        "hostname": "mindfields"
+      }
+    ],
+    "junit": {
+      "path": "openspec/changes/ladon-proof-contract-refinement/evidence/public-refinement-cli-junit.xml",
+      "sha256": "324e61d705e7a0796b30bb27e4425550e2756286ad3b096a9a4cb3891a163cd4",
+      "bytes": 299137
+    },
+    "log": {
+      "path": ".codex/state/refinement-cli/regression.txt",
+      "sha256": "5e2b6784120b579553ee24fcb876b6adeebf0e6d8ab08d24f1075fa069b46d7f",
+      "bytes": 352
+    }
+  },
+  "checks": {
+    "ruff": "passed on sourceAndTests paths",
+    "strictQualityIssues": [],
+    "openspecValidation": [
+      "ladon-proof-contract-refinement --strict",
+      "ladon-proof-contract-analysis-umbrella --strict"
+    ],
+    "knownFrozenMismatch": "tests/test_rational_lean_encoder_v2.py (pre-existing, unchanged)"
+  },
+  "review": {
+    "board": ".codex/state/ultra-proof-contract.sqlite3",
+    "auditPost": 1321,
+    "rootAcceptancePost": 1322,
+    "auditor": "/root/refinement_cli_audit",
+    "model": "gpt-6-luna",
+    "reasoning": "medium",
+    "auditType": "independent-source-review"
+  },
+  "limitations": [
+    "unverified prose fidelity",
+    "historical saved Lean authority without replay",
+    "attributed finding ID association only",
+    "one supplied witness with caller-supplied predicates and proof term",
+    "no generic analytic lifting or unfamiliar-paper detection evidence"
+  ]
+}

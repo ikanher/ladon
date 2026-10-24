@@ -1,0 +1,35 @@
+{
+  "recordedAtUtc": "2026-10-22T18:35:50.681901+00:00",
+  "change": "Updated generated feature-matrix contract node from removed tests/test_installed_cli_contract.py to maintained tests/test_installed_cli_contract_v2.py and regenerated JSON/Markdown.",
+  "checks": [
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--locked",
+        "--offline",
+        "pytest",
+        "-q",
+        "tests/test_supported_feature_matrix.py"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 0.07,
+      "summary": "5 passed"
+    },
+    {
+      "argv": [
+        "uv",
+        "run",
+        "--locked",
+        "--offline",
+        "python",
+        "scripts/generate_supported_feature_matrix.py",
+        "--verify-tests",
+        "--check"
+      ],
+      "exitCode": 0,
+      "elapsedSeconds": 25.86,
+      "summary": "15 passed"
+    }
+  ]
+}

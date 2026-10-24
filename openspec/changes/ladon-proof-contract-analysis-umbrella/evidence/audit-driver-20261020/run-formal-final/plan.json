@@ -1,0 +1,33 @@
+{
+  "schema": "ladon-contract-audit-plan-v1",
+  "repoRoot": "/home/codex/projects/ladon/openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/audit-driver-20261020/formal-source",
+  "sourceFiles": [
+    "ProducerCases.lean"
+  ],
+  "limits": {
+    "timeout_seconds": 120,
+    "max_rss_bytes": 12884901888,
+    "max_output_bytes": 8388608
+  },
+  "stages": [
+    {
+      "id": "formal",
+      "operation": "produce-formal",
+      "request": {
+        "sourceFile": "ProducerCases.lean",
+        "module": "ProducerCases",
+        "declaration": "ProducerCases.supported_base"
+      }
+    },
+    {
+      "id": "inspect",
+      "operation": "inspect",
+      "request": {
+        "snapshot": {
+          "auditStage": "formal",
+          "pointer": ""
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_______ test_versioned_and_sibling_installed_contracts_are_all_selected ________
+tests/test_release_installed_contract_selection.py:30: in test_versioned_and_sibling_installed_contracts_are_all_selected
+    calls = _invoke(tmp_path, monkeypatch)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+tests/test_release_installed_contract_selection.py:18: in _invoke
+    distribution.assert_installed_process_contracts(root, installed, root, {'PYTHONPATH': '/host'})
+scripts/release_gate_distribution.py:321: in assert_installed_process_contracts
+    raise GateError("candidate omits tests/test_installed_cli_contract.py")
+E   release_gate_types.GateError: candidate omits tests/test_installed_cli_contract.py
+=========================== short test summary info ============================
+FAILED tests/test_release_installed_contract_selection.py::test_versioned_and_sibling_installed_contracts_are_all_selected
+1 failed, 1 passed in 0.07s

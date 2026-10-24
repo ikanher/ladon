@@ -1,0 +1,265 @@
+{
+  "sourceCorpus": "../ladon-authority-safe-verified-discovery-umbrella/evaluation/discovery-corpus-v3.json",
+  "cases": [
+    {
+      "id": "logic-keep",
+      "repository": "portable-logic",
+      "module": "EvalLogic",
+      "sourceFile": "EvalLogic.lean",
+      "goal": "P",
+      "localContext": [
+        {
+          "name": "P",
+          "type": "Prop"
+        },
+        {
+          "name": "h",
+          "type": "P"
+        }
+      ],
+      "expectedAcceptableCandidates": [
+        "EvalLogic.keep"
+      ],
+      "candidatePool": [
+        "EvalLogic.keep",
+        "EvalLogic.pair",
+        "EvalLogic.flip"
+      ],
+      "pattern": "P",
+      "scope": "module",
+      "roots": [
+        "EvalLogic"
+      ],
+      "split": "portable-contract",
+      "labelRationale": "The source theorem has this exact proposition after instantiating the listed local parameters. Labels are source-derived and require independent Lean replay; they are not sampled Ladon outputs.",
+      "baselineRole": "positive"
+    },
+    {
+      "id": "logic-pair",
+      "repository": "portable-logic",
+      "module": "EvalLogic",
+      "sourceFile": "EvalLogic.lean",
+      "goal": "P \u2227 Q",
+      "localContext": [
+        {
+          "name": "P",
+          "type": "Prop"
+        },
+        {
+          "name": "Q",
+          "type": "Prop"
+        },
+        {
+          "name": "hP",
+          "type": "P"
+        },
+        {
+          "name": "hQ",
+          "type": "Q"
+        }
+      ],
+      "expectedAcceptableCandidates": [
+        "EvalLogic.pair"
+      ],
+      "candidatePool": [
+        "EvalLogic.keep",
+        "EvalLogic.pair",
+        "EvalLogic.flip"
+      ],
+      "pattern": "P",
+      "scope": "module",
+      "roots": [
+        "EvalLogic"
+      ],
+      "split": "portable-contract",
+      "labelRationale": "The source theorem has this exact proposition after instantiating the listed local parameters. Labels are source-derived and require independent Lean replay; they are not sampled Ladon outputs.",
+      "baselineRole": "positive"
+    },
+    {
+      "id": "arithmetic-reflexive",
+      "repository": "portable-arithmetic",
+      "module": "EvalArithmetic",
+      "sourceFile": "EvalArithmetic.lean",
+      "goal": "n = n",
+      "localContext": [
+        {
+          "name": "n",
+          "type": "Nat"
+        }
+      ],
+      "expectedAcceptableCandidates": [
+        "EvalArithmetic.reflexive"
+      ],
+      "candidatePool": [
+        "EvalArithmetic.reflexive",
+        "EvalArithmetic.reverse",
+        "EvalArithmetic.transitive"
+      ],
+      "pattern": "Nat",
+      "scope": "module",
+      "roots": [
+        "EvalArithmetic"
+      ],
+      "split": "portable-contract",
+      "labelRationale": "The source theorem has this exact proposition after instantiating the listed local parameters. Labels are source-derived and require independent Lean replay; they are not sampled Ladon outputs.",
+      "baselineRole": "positive"
+    },
+    {
+      "id": "arithmetic-reverse",
+      "repository": "portable-arithmetic",
+      "module": "EvalArithmetic",
+      "sourceFile": "EvalArithmetic.lean",
+      "goal": "n = m",
+      "localContext": [
+        {
+          "name": "m",
+          "type": "Nat"
+        },
+        {
+          "name": "n",
+          "type": "Nat"
+        },
+        {
+          "name": "h",
+          "type": "m = n"
+        }
+      ],
+      "expectedAcceptableCandidates": [
+        "EvalArithmetic.reverse"
+      ],
+      "candidatePool": [
+        "EvalArithmetic.reflexive",
+        "EvalArithmetic.reverse",
+        "EvalArithmetic.transitive"
+      ],
+      "pattern": "Nat",
+      "scope": "module",
+      "roots": [
+        "EvalArithmetic"
+      ],
+      "split": "portable-contract",
+      "labelRationale": "The source theorem has this exact proposition after instantiating the listed local parameters. Labels are source-derived and require independent Lean replay; they are not sampled Ladon outputs.",
+      "baselineRole": "positive"
+    },
+    {
+      "id": "logic-keep-control",
+      "repository": "portable-logic",
+      "module": "EvalLogic",
+      "sourceFile": "EvalLogic.lean",
+      "goal": "P",
+      "localContext": [
+        {
+          "name": "P",
+          "type": "Prop"
+        }
+      ],
+      "expectedAcceptableCandidates": [],
+      "candidatePool": [
+        "EvalLogic.keep",
+        "EvalLogic.pair",
+        "EvalLogic.flip"
+      ],
+      "pattern": "P",
+      "scope": "module",
+      "roots": [
+        "EvalLogic"
+      ],
+      "split": "portable-contract",
+      "labelRationale": "Nearby development control; label is absence of closed support from the supplied library candidate pool, not a paper error.",
+      "baselineRole": "no-closed-candidate"
+    },
+    {
+      "id": "logic-pair-control",
+      "repository": "portable-logic",
+      "module": "EvalLogic",
+      "sourceFile": "EvalLogic.lean",
+      "goal": "P \u2227 Q",
+      "localContext": [
+        {
+          "name": "P",
+          "type": "Prop"
+        },
+        {
+          "name": "Q",
+          "type": "Prop"
+        },
+        {
+          "name": "hP",
+          "type": "P"
+        }
+      ],
+      "expectedAcceptableCandidates": [],
+      "candidatePool": [
+        "EvalLogic.keep",
+        "EvalLogic.pair",
+        "EvalLogic.flip"
+      ],
+      "pattern": "P",
+      "scope": "module",
+      "roots": [
+        "EvalLogic"
+      ],
+      "split": "portable-contract",
+      "labelRationale": "Nearby development control; label is absence of closed support from the supplied library candidate pool, not a paper error.",
+      "baselineRole": "no-closed-candidate"
+    },
+    {
+      "id": "arithmetic-reflexive-control",
+      "repository": "portable-arithmetic",
+      "module": "EvalArithmetic",
+      "sourceFile": "EvalArithmetic.lean",
+      "goal": "(0 : Nat) = 1",
+      "localContext": [
+        {
+          "name": "n",
+          "type": "Nat"
+        }
+      ],
+      "expectedAcceptableCandidates": [],
+      "candidatePool": [
+        "EvalArithmetic.reflexive",
+        "EvalArithmetic.reverse",
+        "EvalArithmetic.transitive"
+      ],
+      "pattern": "Nat",
+      "scope": "module",
+      "roots": [
+        "EvalArithmetic"
+      ],
+      "split": "portable-contract",
+      "labelRationale": "Nearby development control; label is absence of closed support from the supplied library candidate pool, not a paper error.",
+      "baselineRole": "no-closed-candidate"
+    },
+    {
+      "id": "arithmetic-reverse-control",
+      "repository": "portable-arithmetic",
+      "module": "EvalArithmetic",
+      "sourceFile": "EvalArithmetic.lean",
+      "goal": "n = m",
+      "localContext": [
+        {
+          "name": "m",
+          "type": "Nat"
+        },
+        {
+          "name": "n",
+          "type": "Nat"
+        }
+      ],
+      "expectedAcceptableCandidates": [],
+      "candidatePool": [
+        "EvalArithmetic.reflexive",
+        "EvalArithmetic.reverse",
+        "EvalArithmetic.transitive"
+      ],
+      "pattern": "Nat",
+      "scope": "module",
+      "roots": [
+        "EvalArithmetic"
+      ],
+      "split": "portable-contract",
+      "labelRationale": "Nearby development control; label is absence of closed support from the supplied library candidate pool, not a paper error.",
+      "baselineRole": "no-closed-candidate"
+    }
+  ]
+}
