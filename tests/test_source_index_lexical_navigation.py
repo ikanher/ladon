@@ -272,7 +272,9 @@ theorem unresolved : True := by trivial
     contexts = {row.identifier: row for row in module.scope_contexts}
     context = contexts[declaration.scope_context_id or ""]
 
-    assert declaration.candidate_status == "unresolved"
+    # Candidate naming accepts implicit EOF closure; context extraction keeps
+    # its separate conservative completeness status.
+    assert declaration.candidate_status == "lexical_candidate"
     assert declaration.scope_context_status == "unresolved"
     assert context.status == "unresolved"
     assert context.reason == "lexical scope remains unclosed at end of source"
@@ -337,8 +339,8 @@ def test_v3_compact_codec_round_trips_and_registers_exact_coverage(
 def assert_v3_payload_shape(payload, module_payload) -> None:
     assert SOURCE_INDEX_SCHEMA.endswith("-v3")
     assert SOURCE_INDEX_FINGERPRINT_VERSION.endswith("-v4")
-    assert SOURCE_INDEX_ALGORITHM_VERSION == 5
-    assert payload["fingerprintManifest"]["algorithmVersion"] == 5
+    assert SOURCE_INDEX_ALGORITHM_VERSION == 6
+    assert payload["fingerprintManifest"]["algorithmVersion"] == 6
     assert module_payload["auditCommandsComplete"] is True
     assert module_payload["commandSkeletonsComplete"] is True
     assert all(

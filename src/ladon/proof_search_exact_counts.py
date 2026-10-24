@@ -38,7 +38,8 @@ def exact_name_counts(
     qualified = _count(connection, "d.candidate_name = ? COLLATE NOCASE", where,
                        (text, *filters.values))
     basename = _count(connection,
-                      "d.name = ? COLLATE NOCASE AND d.candidate_name != ? COLLATE NOCASE",
+                      "d.name = ? COLLATE NOCASE AND (d.candidate_name IS NULL "
+                      "OR d.candidate_name != ? COLLATE NOCASE)",
                       where, (text, text, *filters.values))
     if text.isascii():
         return qualified, basename

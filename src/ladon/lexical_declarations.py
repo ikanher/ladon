@@ -59,10 +59,12 @@ DECL_RE = re.compile(
     re.MULTILINE,
 )
 _SCOPE_COMMAND_RE = re.compile(
-    r"(?m)^[ \t]*(?P<kind>namespace|section|end|mutual)\b"
-    r"(?P<body>[^\n]*)"
+    r"(?m)^[ \t]*(?:@\[[^\]]*\][ \t]*(?:\n[ \t]*)?)*"
+    r"(?P<prefix>(?:(?:[\w']+)[ \t]+)*)"
+    r"(?P<kind>namespace|section|end|mutual)\b(?P<body>[^\n]*)"
 )
 _SCOPE_NAME_RE = re.compile(_LEAN_QUALIFIED_NAME)
+_LEAN_NAME_COMPONENT_RE = re.compile(_LEAN_NAME_COMPONENT)
 _NON_DECLARATION_COMMAND_HEAD_RE = re.compile(
     r"(?P<command>"
     r"#[^\s]+"
@@ -443,6 +445,10 @@ def _apply_scope_command(
 
     kind = match.group("kind")
     body = _visible_source_group(text, match, "body")
+    prefix = match.group("prefix").split()
+    if not _valid_scope_prefix(kind, prefix):
+        state.permanently_unresolved = True
+        return
     if kind == "end":
         _close_scope_frame(state, body)
     elif kind == "mutual":
@@ -451,6 +457,14 @@ def _apply_scope_command(
         _open_section_frame(state, body, match.start())
     else:
         _open_namespace_frame(state, body, match.start())
+
+
+def _valid_scope_prefix(kind: str, prefix: list[str]) -> bool:
+    """Only the current Lean section modifiers belong before scope commands."""
+
+    if kind != "section":
+        return not prefix
+    return all(value in {"private", "noncomputable", "public", "meta"} for value in prefix)
 
 
 def _open_namespace_frame(
@@ -463,14 +477,15 @@ def _open_namespace_frame(
     if not _SCOPE_NAME_RE.fullmatch(body):
         state.permanently_unresolved = True
         return
-    state.frames.append(
-        _LexicalScopeFrame(
-            kind="namespace",
-            name=body,
-            namespace_segments=tuple(body.split(".")),
-            start_offset=start_offset,
+    for segment in _qualified_name_components(body):
+        state.frames.append(
+            _LexicalScopeFrame(
+                kind="namespace",
+                name=segment,
+                namespace_segments=(segment,),
+                start_offset=start_offset,
+            )
         )
-    )
 
 
 def _open_section_frame(
@@ -483,14 +498,15 @@ def _open_section_frame(
     if body and not _SCOPE_NAME_RE.fullmatch(body):
         state.permanently_unresolved = True
         return
-    state.frames.append(
-        _LexicalScopeFrame(
-            kind="section",
-            name=body or None,
-            namespace_segments=(),
-            start_offset=start_offset,
+    for segment in _qualified_name_components(body) if body else (None,):
+        state.frames.append(
+            _LexicalScopeFrame(
+                kind="section",
+                name=segment,
+                namespace_segments=(),
+                start_offset=start_offset,
+            )
         )
-    )
 
 
 def _open_mutual_frame(
@@ -523,20 +539,35 @@ def _close_scope_frame(
     if not state.frames:
         state.permanently_unresolved = True
         return
-    frame = state.frames[-1]
-    if body and body != frame.name:
+    expected = _qualified_name_components(body) if body else ()
+    if body and not expected:
         state.permanently_unresolved = True
         return
-    state.frames.pop()
+    if not expected:
+        state.frames.pop()
+        return
+    names = tuple(frame.name for frame in state.frames)
+    if len(expected) > len(names) or names[-len(expected):] != expected:
+        state.permanently_unresolved = True
+        return
+    del state.frames[-len(expected):]
+
+
+def _qualified_name_components(value: str) -> tuple[str, ...]:
+    """Split a Lean qualified identifier at dots outside escaped atoms."""
+
+    if not value or not _SCOPE_NAME_RE.fullmatch(value):
+        return ()
+    return tuple(_LEAN_NAME_COMPONENT_RE.findall(value))
 
 
 def _invalidate_unbalanced_scope_rows(
     rows: list[LeanTextDeclaration],
     state: _LexicalScopeState,
 ) -> tuple[LeanTextDeclaration, ...]:
-    """Fail closed for declarations inside frames left open at EOF."""
+    """Keep implicit EOF closure only when the scope sequence had no mismatch."""
 
-    if not state.frames:
+    if not state.frames or not state.permanently_unresolved:
         return tuple(rows)
     first = min(frame.start_offset for frame in state.frames)
     return tuple(

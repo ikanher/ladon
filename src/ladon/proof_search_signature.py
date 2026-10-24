@@ -56,7 +56,7 @@ class _StatementScan:
         if self.pending_lets:
             return False
         if token == 'where':
-            return _at_line_start(text, offset)
+            return True
         return token == '|' and not self.has_match and _equation_clause(text, offset)
 
 

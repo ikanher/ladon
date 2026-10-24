@@ -1,0 +1,188 @@
+F.F..FFFF.......FF.                                                      [100%]
+=================================== FAILURES ===================================
+_______ test_modifier_prefixed_section_forms_and_compound_scope_closures _______
+
+    def test_modifier_prefixed_section_forms_and_compound_scope_closures() -> None:
+        rows = by_name(
+            "namespace Real\n"
+            "noncomputable section\n"
+            "theorem inNoncomputable : True := by trivial\n"
+            "end\n"
+            "end Real\n"
+            "@[expose] public section\n"
+            "namespace Outer.Inner\n"
+            "theorem inDottedNamespace : True := by trivial\n"
+            "end Inner\n"
+            "end Outer\n"
+            "public meta section\n"
+            "section IsInducing\nnamespace IsInducing\n"
+            "theorem beforeCompoundEnd : True := by trivial\n"
+            "end IsInducing.IsInducing\n"
+            "section First\nsection Second\n"
+            "theorem beforeCompoundSections : True := by trivial\n"
+            "end First.Second\n"
+        )
+        assert rows["inNoncomputable"].candidate_name == "Real.inNoncomputable"
+>       assert rows["inDottedNamespace"].candidate_name == "Outer.Inner.inDottedNamespace"
+E       AssertionError: assert None == 'Outer.Inner.inDottedNamespace'
+E        +  where None = LeanTextDeclaration(name='inDottedNamespace', kind='theorem', line=8, column=9, start_offset=150, end_offset=167, iden... dependency fact, theorem equivalence, or theorem verdict.', scope_context_id=None, scope_context_status='unavailable').candidate_name
+
+tests/test_lexical_scope_recovery.py:49: AssertionError
+_ test_unknown_modifier_and_mismatched_compound_ends_fail_closed[mystery section\ntheorem unknownModifier : True := by trivial\n] _
+
+text = 'mystery section\ntheorem unknownModifier : True := by trivial\n'
+
+    @pytest.mark.parametrize(
+        "text",
+        [
+            "mystery section\ntheorem unknownModifier : True := by trivial\n",
+            "namespace A\nnamespace B\ntheorem mismatch : True := by trivial\nend A.C\n",
+            "section\ntheorem anonymous : True := by trivial\nend Named\n",
+        ],
+    )
+    def test_unknown_modifier_and_mismatched_compound_ends_fail_closed(text: str) -> None:
+        rows = declarations(text)
+        assert rows
+>       assert all(row.candidate_name is None for row in rows)
+E       assert False
+E        +  where False = all(<generator object test_unknown_modifier_and_mismatched_compound_ends_fail_closed.<locals>.<genexpr> at 0x74af8395e4d0>)
+
+tests/test_lexical_scope_recovery.py:80: AssertionError
+____ test_noncomputable_namespace_is_rejected_without_losing_later_recovery ____
+
+    def test_noncomputable_namespace_is_rejected_without_losing_later_recovery() -> None:
+        rows = by_name(
+            "noncomputable namespace Bad\n"
+            "theorem uncertain : True := by trivial\n"
+            "end Bad\n"
+            "namespace Good\n"
+            "theorem after : True := by trivial\n"
+            "end Good\n"
+        )
+>       assert rows["uncertain"].candidate_status == "unresolved"
+E       AssertionError: assert 'lexical_candidate' == 'unresolved'
+E         
+E         - unresolved
+E         + lexical_candidate
+
+tests/test_lexical_scope_recovery.py:93: AssertionError
+_________ test_eof_open_section_is_kept_only_without_a_scope_mismatch __________
+
+    def test_eof_open_section_is_kept_only_without_a_scope_mismatch() -> None:
+        safe = declarations(
+            "section ClosedIciTopology\n"
+            "theorem atEof : True := by trivial\n"
+        )[0]
+        mismatch = declarations(
+            "section ClosedIciTopology\n"
+            "theorem beforeMismatch : True := by trivial\n"
+            "end Wrong\n"
+        )[0]
+>       assert safe.candidate_name == "atEof"
+E       AssertionError: assert None == 'atEof'
+E        +  where None = LeanTextDeclaration(name='atEof', kind='theorem', line=2, column=9, start_offset=34, end_offset=39, identifier='ladon.... dependency fact, theorem equivalence, or theorem verdict.', scope_context_id=None, scope_context_status='unavailable').candidate_name
+
+tests/test_lexical_scope_recovery.py:110: AssertionError
+_ test_null_candidate_basename_row_is_counted_consistently_with_exact_contribution _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-23/test_null_candidate_basename_r0')
+
+    def test_null_candidate_basename_row_is_counted_consistently_with_exact_contribution(
+        tmp_path: Path,
+    ) -> None:
+        (tmp_path / "Main.lean").write_text(
+            "theorem wanted : True := by trivial\n", encoding="utf-8"
+        )
+        index = build_proof_search_index(tmp_path).index_path
+        with sqlite3.connect(index) as db:
+            db.execute("UPDATE declarations SET candidate_name=NULL WHERE name='wanted'")
+            db.execute("UPDATE declarations SET name='wanted' WHERE name='wanted'")
+        result = query_proof_search_index(
+            tmp_path, text="wanted", freshness="stored", query_mode="phrase"
+        )
+        exact_rows = [row for row in result["rows"] if row["ranking"]["contribution"] == "exact"]
+>       assert result["matchSummary"]["basenameExactMatches"] == len(exact_rows)
+E       AssertionError: assert 0 == 1
+E        +  where 1 = len([{'authority': 'lexical_text', 'candidateName': None, 'column': 9, 'id': 'ladon.lexical_declaration.bb2ebe2602a073f2027b', ...}])
+
+tests/test_lexical_scope_recovery.py:130: AssertionError
+_ test_predecessor_identity_update_archives_evidence_and_is_then_noop[lexical-navigation-v5;theorem-lineage-v2;proofir-catalog-v3] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-23/test_predecessor_identity_upda0')
+prior_identity = 'lexical-navigation-v5;theorem-lineage-v2;proofir-catalog-v3'
+
+    @pytest.mark.parametrize(
+        "prior_identity",
+        [
+            "lexical-navigation-v5;theorem-lineage-v2;proofir-catalog-v3",
+            "lexical-navigation-v4;theorem-lineage-v2;proofir-catalog-v3",
+            PRIOR_LEXICAL_HELPER_IDENTITY,
+        ],
+    )
+    def test_predecessor_identity_update_archives_evidence_and_is_then_noop(
+        tmp_path: Path, prior_identity: str
+    ) -> None:
+        (tmp_path / "Main.lean").write_text(
+            "namespace Real\nnoncomputable section\n"
+            "theorem add_one_le_exp : True := by trivial\nend\nend Real\n",
+            encoding="utf-8",
+        )
+        index = build_proof_search_index(tmp_path).index_path
+        with sqlite3.connect(index) as db:
+            declaration_id = db.execute("SELECT id FROM declarations").fetchone()[0]
+            db.execute("UPDATE metadata SET value=? WHERE key='helperIdentity'", (prior_identity,))
+            db.execute(
+                "INSERT INTO binders VALUES(?,?,?,?,?,?,?,?)",
+                (declaration_id, 0, "h", "explicit", "True", 1, "lean_environment", "True"),
+            )
+        updated = update_proof_search_index(tmp_path).payload
+>       assert updated["status"] == "complete"
+E       AssertionError: assert 'unchanged' == 'complete'
+E         
+E         - complete
+E         + unchanged
+
+tests/test_lexical_scope_recovery.py:159: AssertionError
+_________ test_cli_qualified_name_recovers_after_noncomputable_section _________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-23/test_cli_qualified_name_recove0')
+capsys = <_pytest.capture.CaptureFixture object at 0x74af8386b210>
+
+    def test_cli_qualified_name_recovers_after_noncomputable_section(tmp_path, capsys):
+        (tmp_path / "Main.lean").write_text(
+            "namespace Complex\nnoncomputable section\ntheorem first : True := trivial\nend\nend Complex\n"
+            "namespace Real\ntheorem add_one_le_exp : True := trivial\nend Real\n"
+        )
+        build_proof_search_index(tmp_path)
+        code = main(["proof-search", "search", "name", "--repo-root", str(tmp_path),
+                     "--text", "Real.add_one_le_exp", "--query-mode", "phrase", "--format", "json"])
+        payload = json.loads(capsys.readouterr().out)
+        assert code == 0
+>       assert payload["results"][0]["candidateName"] == "Real.add_one_le_exp"
+               ^^^^^^^^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+tests/test_lexical_scope_recovery.py:194: IndexError
+___ test_dots_inside_escaped_namespace_components_do_not_close_extra_frames ____
+
+    def test_dots_inside_escaped_namespace_components_do_not_close_extra_frames():
+        rows = by_name(
+            'namespace «A.B».C\ntheorem nested : True := trivial\n'
+            'end C\ntheorem outer : True := trivial\nend «A.B»\n'
+            'theorem after : True := trivial\n'
+        )
+>       assert rows['nested'].candidate_name == '«A.B».C.nested'
+E       AssertionError: assert None == '«A.B».C.nested'
+E        +  where None = LeanTextDeclaration(name='nested', kind='theorem', line=2, column=9, start_offset=26, end_offset=32, identifier='ladon... dependency fact, theorem equivalence, or theorem verdict.', scope_context_id=None, scope_context_status='unavailable').candidate_name
+
+tests/test_lexical_scope_recovery.py:204: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_lexical_scope_recovery.py::test_modifier_prefixed_section_forms_and_compound_scope_closures
+FAILED tests/test_lexical_scope_recovery.py::test_unknown_modifier_and_mismatched_compound_ends_fail_closed[mystery section\ntheorem unknownModifier : True := by trivial\n]
+FAILED tests/test_lexical_scope_recovery.py::test_noncomputable_namespace_is_rejected_without_losing_later_recovery
+FAILED tests/test_lexical_scope_recovery.py::test_eof_open_section_is_kept_only_without_a_scope_mismatch
+FAILED tests/test_lexical_scope_recovery.py::test_null_candidate_basename_row_is_counted_consistently_with_exact_contribution
+FAILED tests/test_lexical_scope_recovery.py::test_predecessor_identity_update_archives_evidence_and_is_then_noop[lexical-navigation-v5;theorem-lineage-v2;proofir-catalog-v3]
+FAILED tests/test_lexical_scope_recovery.py::test_cli_qualified_name_recovers_after_noncomputable_section
+FAILED tests/test_lexical_scope_recovery.py::test_dots_inside_escaped_namespace_components_do_not_close_extra_frames
+8 failed, 11 passed in 0.35s

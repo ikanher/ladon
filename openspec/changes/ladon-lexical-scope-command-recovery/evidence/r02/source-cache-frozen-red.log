@@ -1,0 +1,28 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________ test_scope_producer_upgrade_does_not_reuse_v5_module_cache __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-33/test_scope_producer_upgrade_do0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7828c1eb9d10>
+
+    def test_scope_producer_upgrade_does_not_reuse_v5_module_cache(tmp_path, monkeypatch):
+        repository = tmp_path / 'repo'
+        repository.mkdir()
+        (repository / 'Main.lean').write_text('namespace Real\nsection Work\ntheorem t : True := trivial\n')
+        cache = tmp_path / 'cache'
+        current = source_index.SOURCE_INDEX_ALGORITHM_VERSION
+        monkeypatch.setattr(source_index, 'SOURCE_INDEX_ALGORITHM_VERSION', 5)
+        old = source_index.build_source_index(repository, cache_dir=cache)
+        monkeypatch.setattr(source_index, 'SOURCE_INDEX_ALGORITHM_VERSION', current)
+        new = source_index.build_source_index(repository, cache_dir=cache)
+>       assert new.index.fingerprint != old.index.fingerprint
+E       AssertionError: assert 'cc1ba50e46bea2425a9c7c57e2bdd46650e07a7daed2ccbfd9136ba8d9c7520f' != 'cc1ba50e46bea2425a9c7c57e2bdd46650e07a7daed2ccbfd9136ba8d9c7520f'
+E        +  where 'cc1ba50e46bea2425a9c7c57e2bdd46650e07a7daed2ccbfd9136ba8d9c7520f' = SourceIndex(repo_root=PosixPath('/tmp/pytest-of-codex/pytest-33/test_scope_producer_upgrade_do0/repo'), fingerprint='c...on used the repository-relative conventional module layout.', 'severity': 'warning'},), schema='ladon-source-index-v3').fingerprint
+E        +    where SourceIndex(repo_root=PosixPath('/tmp/pytest-of-codex/pytest-33/test_scope_producer_upgrade_do0/repo'), fingerprint='c...on used the repository-relative conventional module layout.', 'severity': 'warning'},), schema='ladon-source-index-v3') = SourceIndexResult(index=SourceIndex(repo_root=PosixPath('/tmp/pytest-of-codex/pytest-33/test_scope_producer_upgrade_do...bdd46650e07a7daed2ccbfd9136ba8d9c7520f.json'), committed=False, reused_entries=1, rebuilt_entries=0, failed_entries=0)).index
+E        +  and   'cc1ba50e46bea2425a9c7c57e2bdd46650e07a7daed2ccbfd9136ba8d9c7520f' = SourceIndex(repo_root=PosixPath('/tmp/pytest-of-codex/pytest-33/test_scope_producer_upgrade_do0/repo'), fingerprint='c...e roots were found; Ladon used the repository-relative conventional module layout.'},), schema='ladon-source-index-v3').fingerprint
+E        +    where SourceIndex(repo_root=PosixPath('/tmp/pytest-of-codex/pytest-33/test_scope_producer_upgrade_do0/repo'), fingerprint='c...e roots were found; Ladon used the repository-relative conventional module layout.'},), schema='ladon-source-index-v3') = SourceIndexResult(index=SourceIndex(repo_root=PosixPath('/tmp/pytest-of-codex/pytest-33/test_scope_producer_upgrade_do...2bdd46650e07a7daed2ccbfd9136ba8d9c7520f.json'), committed=True, reused_entries=0, rebuilt_entries=1, failed_entries=0)).index
+
+tests/test_lexical_scope_source_cache.py:16: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_lexical_scope_source_cache.py::test_scope_producer_upgrade_does_not_reuse_v5_module_cache
+1 failed in 0.06s

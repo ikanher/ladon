@@ -37,7 +37,7 @@ from ladon.source_index_models import (
     SourceIndexResult,
 )
 
-SOURCE_INDEX_ALGORITHM_VERSION = 5
+SOURCE_INDEX_ALGORITHM_VERSION = 6
 SOURCE_INDEX_STABILIZATION_ATTEMPTS = 3
 LAYOUT_STATE_FILES = ("lakefile.toml", "lakefile.lean", "lake-manifest.json")
 

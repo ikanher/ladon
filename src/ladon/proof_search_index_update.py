@@ -46,7 +46,12 @@ from ladon.proof_search_index import (
     capture_repository_snapshot,
 )
 from ladon.proof_search_retained import first_retained_evidence_table
-from ladon.proof_search_schema import PRIOR_LEXICAL_HELPER_IDENTITY, PROOF_SEARCH_HELPER_IDENTITY
+from ladon.proof_search_schema import (
+    PREVIOUS_LEXICAL_HELPER_IDENTITY,
+    PRIOR_LEXICAL_HELPER_IDENTITY,
+    PROOF_SEARCH_HELPER_IDENTITY,
+    SECOND_PREVIOUS_LEXICAL_HELPER_IDENTITY,
+)
 from ladon.sqlite_publication import durable_replace, release_publication_lock
 
 
@@ -262,7 +267,10 @@ def _require_compatible_base(metadata, snapshot, root: Path) -> None:
     if metadata.get("repository") != str(root):
         raise _full_build_required("index belongs to another repository")
     if metadata.get("helperIdentity") not in {
-        PROOF_SEARCH_HELPER_IDENTITY, PRIOR_LEXICAL_HELPER_IDENTITY,
+        PROOF_SEARCH_HELPER_IDENTITY,
+        PREVIOUS_LEXICAL_HELPER_IDENTITY,
+        PRIOR_LEXICAL_HELPER_IDENTITY,
+        SECOND_PREVIOUS_LEXICAL_HELPER_IDENTITY,
     }:
         raise _full_build_required("base extractor identity is not supported")
     if metadata.get("toolchainIdentity") != snapshot.toolchain_identity or (

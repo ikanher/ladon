@@ -1,0 +1,71 @@
+...FFFFF                                                                 [100%]
+=================================== FAILURES ===================================
+_________ test_declaration_only_modifiers_do_not_open_sections[unsafe] _________
+
+prefix = 'unsafe'
+
+    @pytest.mark.parametrize('prefix', ['unsafe', 'partial', 'local', 'protected'])
+    def test_declaration_only_modifiers_do_not_open_sections(prefix):
+        rows = parse_text_declarations(f'{prefix} section\ntheorem t : True := trivial\n')
+>       assert rows[0].candidate_name is None
+E       AssertionError: assert 't' is None
+E        +  where 't' = LeanTextDeclaration(name='t', kind='theorem', line=2, column=9, start_offset=23, end_offset=24, identifier='ladon.lexi... dependency fact, theorem equivalence, or theorem verdict.', scope_context_id=None, scope_context_status='unavailable').candidate_name
+
+tests/test_lexical_scope_invalid_commands.py:19: AssertionError
+________ test_declaration_only_modifiers_do_not_open_sections[partial] _________
+
+prefix = 'partial'
+
+    @pytest.mark.parametrize('prefix', ['unsafe', 'partial', 'local', 'protected'])
+    def test_declaration_only_modifiers_do_not_open_sections(prefix):
+        rows = parse_text_declarations(f'{prefix} section\ntheorem t : True := trivial\n')
+>       assert rows[0].candidate_name is None
+E       AssertionError: assert 't' is None
+E        +  where 't' = LeanTextDeclaration(name='t', kind='theorem', line=2, column=9, start_offset=24, end_offset=25, identifier='ladon.lexi... dependency fact, theorem equivalence, or theorem verdict.', scope_context_id=None, scope_context_status='unavailable').candidate_name
+
+tests/test_lexical_scope_invalid_commands.py:19: AssertionError
+_________ test_declaration_only_modifiers_do_not_open_sections[local] __________
+
+prefix = 'local'
+
+    @pytest.mark.parametrize('prefix', ['unsafe', 'partial', 'local', 'protected'])
+    def test_declaration_only_modifiers_do_not_open_sections(prefix):
+        rows = parse_text_declarations(f'{prefix} section\ntheorem t : True := trivial\n')
+>       assert rows[0].candidate_name is None
+E       AssertionError: assert 't' is None
+E        +  where 't' = LeanTextDeclaration(name='t', kind='theorem', line=2, column=9, start_offset=22, end_offset=23, identifier='ladon.lexi... dependency fact, theorem equivalence, or theorem verdict.', scope_context_id=None, scope_context_status='unavailable').candidate_name
+
+tests/test_lexical_scope_invalid_commands.py:19: AssertionError
+_______ test_declaration_only_modifiers_do_not_open_sections[protected] ________
+
+prefix = 'protected'
+
+    @pytest.mark.parametrize('prefix', ['unsafe', 'partial', 'local', 'protected'])
+    def test_declaration_only_modifiers_do_not_open_sections(prefix):
+        rows = parse_text_declarations(f'{prefix} section\ntheorem t : True := trivial\n')
+>       assert rows[0].candidate_name is None
+E       AssertionError: assert 't' is None
+E        +  where 't' = LeanTextDeclaration(name='t', kind='theorem', line=2, column=9, start_offset=26, end_offset=27, identifier='ladon.lexi... dependency fact, theorem equivalence, or theorem verdict.', scope_context_id=None, scope_context_status='unavailable').candidate_name
+
+tests/test_lexical_scope_invalid_commands.py:19: AssertionError
+________________ test_dotted_section_names_close_component_wise ________________
+
+    def test_dotted_section_names_close_component_wise():
+        rows = parse_text_declarations(
+            'namespace N\nsection A.B\ntheorem first : True := trivial\n'
+            'end B\nend A\ntheorem later : True := trivial\nend N\n'
+        )
+>       assert [row.candidate_name for row in rows] == ['N.first', 'N.later']
+E       AssertionError: assert [None, None] == ['N.first', 'N.later']
+E         
+E         At index 0 diff: None != 'N.first'
+E         Use -v to get more diff
+
+tests/test_lexical_scope_invalid_commands.py:27: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_lexical_scope_invalid_commands.py::test_declaration_only_modifiers_do_not_open_sections[unsafe]
+FAILED tests/test_lexical_scope_invalid_commands.py::test_declaration_only_modifiers_do_not_open_sections[partial]
+FAILED tests/test_lexical_scope_invalid_commands.py::test_declaration_only_modifiers_do_not_open_sections[local]
+FAILED tests/test_lexical_scope_invalid_commands.py::test_declaration_only_modifiers_do_not_open_sections[protected]
+FAILED tests/test_lexical_scope_invalid_commands.py::test_dotted_section_names_close_component_wise
+5 failed, 3 passed in 0.09s

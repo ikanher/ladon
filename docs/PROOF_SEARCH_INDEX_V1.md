@@ -12,6 +12,28 @@ rows mark elaborated binders, declaration dependencies, and structure fields
 unavailable. Consequently, search results are navigation candidates rather
 than Lean-confirmed names, type matches, or proof facts.
 
+Lexical signatures stop at declaration bodies, including same-line `where`
+proofs. They contain the declaration's written header, not elaborated section
+variables, inferred instances, or every compiler-generated declaration. An
+exact-name miss is therefore not evidence that Lean lacks that name. Check a
+shortlisted declaration in the pinned Lean environment when its complete type
+or availability matters. Indexes built with the previous lexical extractor
+identity become stale and `index update` re-extracts them without a source edit.
+
+Candidate names track ordinary namespace and section commands, including
+`public`, `private`, `noncomputable` and `meta` section prefixes, exposed sections,
+and matching compound `end A.B` commands. Dots within escaped identifiers such
+as `«A.B»` remain part of that identifier. Safely recognized scopes may close
+implicitly at EOF, as in Lean 4.33. A scope mismatch or unknown modifier keeps
+affected names unresolved; unsupported mutual blocks also stay unresolved.
+`noncomputable namespace` is rejected under the current Lean grammar. The
+separate source-context completeness status may remain unresolved at EOF even
+when the declaration's candidate name is available.
+
+Extractor v6 can refresh v5, v4 and v3 indexes through `index update`, preserving
+retained evidence through the history policy. No-source-change recovery runs
+one lexical extraction pass; a subsequent unchanged update is a no-op.
+
 ## Constraints and access paths
 
 Every build is written to a same-directory, PID-scoped temporary database and
@@ -32,6 +54,11 @@ evidence, it first preserves a standalone SQLite snapshot, then publishes a
 current lexical generation. Semantic overrides in otherwise unchanged modules
 are re-extracted too. Update never invokes Lean or transfers old checks to new
 source bytes. A no-op leaves the active database unchanged.
+
+The build result's `counts.moduleImports` counts parsed import occurrences.
+The status result's `counts.module_imports` counts stored `(source, target)`
+edges. Repeated imports from the same module are stored once, so the two
+numbers can differ without an index mutation.
 
 Snapshots live beside the index in `<index-filename>.history/`. Their names are
 SHA-256 digests of the archived database, so different evidence under the same

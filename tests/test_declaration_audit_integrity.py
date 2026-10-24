@@ -75,7 +75,7 @@ def test_scope_aware_candidates_fail_closed_and_ignore_masked_text() -> None:
     assert "StringOnly" not in rows
 
 
-def test_unsupported_and_unbalanced_scopes_never_guess_candidate_names() -> None:
+def test_unsupported_scopes_fail_closed_and_safe_eof_scopes_keep_names() -> None:
     unsupported = parse_lean_module(
         FIXTURE_ROOT,
         FIXTURE_ROOT / "UnsupportedScope.lean",
@@ -91,8 +91,8 @@ def test_unsupported_and_unbalanced_scopes_never_guess_candidate_names() -> None
         module="Fixture.Unbalanced",
         source_path="Fixture/Unbalanced.lean",
     )
-    assert unbalanced[0].candidate_status == "unresolved"
-    assert unbalanced[0].candidate_name is None
+    assert unbalanced[0].candidate_status == "lexical_candidate"
+    assert unbalanced[0].candidate_name == "Open.retained"
 
 
 def test_normalized_block_hash_removes_only_comment_and_whitespace_trivia() -> None:
