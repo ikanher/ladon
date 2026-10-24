@@ -784,7 +784,11 @@ def test_installed_resource_limits_fail_without_partial_publication(
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert diagnostic in result.stderr
+    if option == "--max-rss-mib":
+        assert "resource.process_tree_rss" in result.stderr
+        assert "Stop progress and report back to user" in result.stderr
+    else:
+        assert diagnostic in result.stderr
     assert not output.exists()
 
 

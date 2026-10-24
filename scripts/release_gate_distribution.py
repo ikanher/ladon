@@ -316,9 +316,10 @@ def assert_installed_process_contracts(
 ) -> None:
     """Run the complete installed CLI pytest contract against the wheel."""
 
-    contract = candidate_root / "tests" / "test_installed_cli_contract.py"
-    if not contract.is_file():
-        raise GateError("candidate omits tests/test_installed_cli_contract.py")
+    tests = candidate_root / "tests"
+    if not any(tests.glob("test_installed_cli_contract*.py")):
+        raise GateError("candidate omits installed CLI contract tests")
+    contracts = sorted(tests.glob("test_installed_*contract*.py"))
     install_locked_test_runner(
         candidate_root,
         installed,
@@ -343,7 +344,7 @@ def assert_installed_process_contracts(
             "-q",
             "--rootdir",
             str(candidate_root),
-            str(contract),
+            *map(str, contracts),
         ],
         cwd=runtime_root,
         environment=contract_environment,
