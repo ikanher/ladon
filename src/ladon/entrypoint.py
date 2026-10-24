@@ -15,6 +15,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     """Dispatch proof-search without importing the general analyzer first."""
 
     arguments = list(sys.argv[1:] if argv is None else argv)
+    from ladon.help_cli import dispatch_help
+
+    help_status = dispatch_help(arguments)
+    if help_status is not None:
+        return help_status
     if arguments and arguments[0] == "result":
         from ladon.result_cli import result_main
 
