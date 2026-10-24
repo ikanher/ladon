@@ -1,0 +1,260 @@
+{
+  "artifactId": "sha256:68cc9031866e4f30baf18748cb6025272054caf69be909c93e69c5a95770fa46",
+  "artifactKind": "proofir.derivation",
+  "coverage": {
+    "bounds": {
+      "maxSubjects": 1000
+    },
+    "decoded": 22,
+    "discovered": 22,
+    "expected": 22,
+    "omitted": [],
+    "population": {
+      "kind": "artifact-subjects",
+      "selector": {}
+    },
+    "projected": 22,
+    "queryMatched": 22,
+    "status": "complete",
+    "universeKnown": true,
+    "valid": 22
+  },
+  "environmentRef": "sha256:41b86478dce5c0284d7ca6eb2c67078c02263ccac40be1b3390bc6b9e9703e3b",
+  "extensions": {
+    "example.fixture/v1": {
+      "note": "opaque"
+    }
+  },
+  "limitations": [],
+  "payload": {
+    "acyclic": true,
+    "derivationId": "derivation:fixture",
+    "steps": [
+      {
+        "checkRunRef": {
+          "kind": "check-run",
+          "localId": "check:inner-compose"
+        },
+        "conclusionRef": {
+          "kind": "statement",
+          "localId": "inner"
+        },
+        "kind": "theorem-application",
+        "localContextRef": {
+          "kind": "local-context",
+          "localId": "context:shared"
+        },
+        "premiseRefs": [
+          {
+            "kind": "statement",
+            "localId": "first"
+          },
+          {
+            "kind": "statement",
+            "localId": "second"
+          }
+        ],
+        "ruleRef": {
+          "kind": "declaration",
+          "localId": "rule:inner-compose"
+        },
+        "stepRef": {
+          "kind": "derivation-step",
+          "localId": "step:inner-compose"
+        },
+        "substitutions": []
+      },
+      {
+        "checkRunRef": {
+          "kind": "check-run",
+          "localId": "check:outer-compose"
+        },
+        "conclusionRef": {
+          "kind": "statement",
+          "localId": "outer"
+        },
+        "kind": "theorem-application",
+        "localContextRef": {
+          "kind": "local-context",
+          "localId": "context:shared"
+        },
+        "premiseRefs": [
+          {
+            "kind": "statement",
+            "localId": "inner"
+          },
+          {
+            "kind": "statement",
+            "localId": "third"
+          }
+        ],
+        "ruleRef": {
+          "kind": "declaration",
+          "localId": "rule:outer-compose"
+        },
+        "stepRef": {
+          "kind": "derivation-step",
+          "localId": "step:outer-compose"
+        },
+        "substitutions": []
+      },
+      {
+        "checkRunRef": {
+          "kind": "check-run",
+          "localId": "check:finish"
+        },
+        "conclusionRef": {
+          "kind": "statement",
+          "localId": "goal"
+        },
+        "kind": "theorem-application",
+        "localContextRef": {
+          "kind": "local-context",
+          "localId": "context:shared"
+        },
+        "premiseRefs": [
+          {
+            "kind": "statement",
+            "localId": "outer"
+          }
+        ],
+        "ruleRef": {
+          "kind": "declaration",
+          "localId": "rule:finish"
+        },
+        "stepRef": {
+          "kind": "derivation-step",
+          "localId": "step:finish"
+        },
+        "substitutions": []
+      },
+      {
+        "checkRunRef": {
+          "kind": "check-run",
+          "localId": "check:alternative"
+        },
+        "conclusionRef": {
+          "kind": "statement",
+          "localId": "goal"
+        },
+        "kind": "theorem-application",
+        "localContextRef": {
+          "kind": "local-context",
+          "localId": "context:shared"
+        },
+        "premiseRefs": [
+          {
+            "kind": "statement",
+            "localId": "alternate"
+          }
+        ],
+        "ruleRef": {
+          "kind": "declaration",
+          "localId": "rule:alternative"
+        },
+        "stepRef": {
+          "kind": "derivation-step",
+          "localId": "step:alternative"
+        },
+        "substitutions": []
+      }
+    ]
+  },
+  "producer": {
+    "buildDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "implementation": "python",
+    "name": "fixture-producer",
+    "version": "1.0"
+  },
+  "proofirVersion": "3.0",
+  "subjectRefs": [
+    {
+      "kind": "statement",
+      "localId": "first"
+    },
+    {
+      "kind": "statement",
+      "localId": "second"
+    },
+    {
+      "kind": "statement",
+      "localId": "inner"
+    },
+    {
+      "kind": "derivation-step",
+      "localId": "step:inner-compose"
+    },
+    {
+      "kind": "declaration",
+      "localId": "rule:inner-compose"
+    },
+    {
+      "kind": "local-context",
+      "localId": "context:shared"
+    },
+    {
+      "kind": "check-run",
+      "localId": "check:inner-compose"
+    },
+    {
+      "kind": "statement",
+      "localId": "third"
+    },
+    {
+      "kind": "statement",
+      "localId": "outer"
+    },
+    {
+      "kind": "derivation-step",
+      "localId": "step:outer-compose"
+    },
+    {
+      "kind": "declaration",
+      "localId": "rule:outer-compose"
+    },
+    {
+      "kind": "check-run",
+      "localId": "check:outer-compose"
+    },
+    {
+      "kind": "statement",
+      "localId": "goal"
+    },
+    {
+      "kind": "derivation-step",
+      "localId": "step:finish"
+    },
+    {
+      "kind": "declaration",
+      "localId": "rule:finish"
+    },
+    {
+      "kind": "check-run",
+      "localId": "check:finish"
+    },
+    {
+      "kind": "statement",
+      "localId": "alternate"
+    },
+    {
+      "kind": "derivation-step",
+      "localId": "step:alternative"
+    },
+    {
+      "kind": "declaration",
+      "localId": "rule:alternative"
+    },
+    {
+      "kind": "check-run",
+      "localId": "check:alternative"
+    },
+    {
+      "kind": "check-run",
+      "localId": "check:source"
+    },
+    {
+      "kind": "check-run",
+      "localId": "check:interface"
+    }
+  ]
+}

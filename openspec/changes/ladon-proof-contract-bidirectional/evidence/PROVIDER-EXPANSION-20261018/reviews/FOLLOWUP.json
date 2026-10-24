@@ -1,0 +1,24 @@
+{
+  "assignmentPost": 545,
+  "canonicalEdits": false,
+  "currentHashes": {
+    "src/ladon/_proof_contract_provider_requests.py": "feca592399e014a4046e95c78ed85afddff15b91d70d67447e9242ec3fa1c51d",
+    "src/ladon/proof_contract_provider_expansion.py": "6a35055c4e8a32c7ebfcc38e6c587a547763c86427462c6ed5d5531ba29674cf",
+    "tests/test_proof_contract_provider_expansion.py": "9fc61af91057bc2c2dbc00a98b61d0b49cdcf7a71d632d2271bdd3ba79efd067",
+    "tests/test_proof_contract_provider_preflight.py": "5ebcdae42b15bd808786bef246bae9e69b54281670feff7969bd17e318018e52"
+  },
+  "fixesVerified": {
+    "aggregateBuilderInputBound": "_validate_arguments begins with aggregate _planned_input_size over analysis, context, route, demand, requirement, deadline, and limits before envelope validation, member matching, or source-owner scans. New preflight test makes validate_envelope fail if reached and confirms oversized context is rejected first.",
+    "applicationOccurrencePreflight": "_own_inputs invokes _validate_application before deepcopy/native validation dispatch. It checks ordinary Lean name syntax and int occurrence in [0,4096), excluding bool. Six malformed-name/occurrence controls replace run_obligation_validation with a fail spy.",
+    "testHelperProposal": "Approval #546 stands: helper extraction preserves all 33 AST assert nodes and calls the three helpers in source assertion order."
+  },
+  "leanOrExtractionRun": false,
+  "relatedReviewPost": 546,
+  "remaining": "Root-owned final actual public API, CLI/resource, and drift/deadline acceptance gates were not independently rerun in this read-only audit.",
+  "status": "PASS_READ_ONLY",
+  "verification": {
+    "command": "PYTHONPATH=src:tests:tests/support pytest -q tests/test_proof_contract_provider_cli.py tests/test_proof_contract_provider_expansion.py tests/test_proof_contract_provider_preflight.py tests/test_proof_contract_provider_worker.py",
+    "result": "26 passed in 0.96s",
+    "scope": "Pure provider CLI argument/help handling, builder/request validation, fake-runner supervision, and workflow hook. CLI test does not invoke provider/native workers; no Lean/extraction/source fixture worker."
+  }
+}

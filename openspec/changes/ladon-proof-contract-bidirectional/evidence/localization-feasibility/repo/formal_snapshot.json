@@ -1,0 +1,851 @@
+{
+  "schema": "ladon-contract-production-v1",
+  "channel": "formal",
+  "status": "extracted",
+  "contract": {
+    "profileId": "norm-scale-v1",
+    "endpointId": "estimate:ObligationsRed.N3:ObligationsRed.N0:ObligationsRed.H",
+    "context": {
+      "objectId": "operator:ObligationsRed.H",
+      "domainId": "domain:type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "scaleId": "scale:ObligationsRed.N0",
+      "representationId": "representation:original"
+    },
+    "telescope": [
+      {
+        "binderId": "b0",
+        "typeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+        "quantifier": "forall"
+      },
+      {
+        "binderId": "b1",
+        "typeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+        "quantifier": "forall"
+      }
+    ],
+    "assumptions": [],
+    "conclusionId": "estimate:ObligationsRed.N3:ObligationsRed.N0:ObligationsRed.H:conclusion",
+    "features": {
+      "regularity": {
+        "state": "known",
+        "scaleId": "scale:ObligationsRed.N0",
+        "offset": 0,
+        "reason": null
+      },
+      "constantDependencies": {
+        "state": "known",
+        "allowedBinderIds": [],
+        "reason": null
+      },
+      "witnessDependencies": []
+    }
+  },
+  "featureOrigins": {
+    "regularity": [
+      "ObligationsRed.threeStep#/normalizedTypeExpr/forallE/body/forallE/body/app/1/app/1"
+    ],
+    "constantDependencies": [
+      "ObligationsRed.threeStep#/normalizedTypeExpr/forallE/body/forallE/body/app/1/app/0/app/1"
+    ],
+    "witnessDependencies": []
+  },
+  "residuals": [],
+  "source": {
+    "path": "ObligationsRed.lean",
+    "sha256": "f42e538e1a7135435c295ddb3ddade16487272f241e13a66241059c12ffb5079"
+  },
+  "selection": {
+    "module": "ObligationsRed",
+    "declaration": "ObligationsRed.threeStep"
+  },
+  "environment": "sha256:23b281f9a928b1b91361f1746ac80776287a4d2592d417dbdf42b3b4aa1a0cc4",
+  "helper": {
+    "sha256": "c4f5b31403ab9056ef21cd8132645fe9e7895e993673e92819935d2cbe0dd645",
+    "profile": "ladon-formal-contract-observation-v2"
+  },
+  "processReceipts": [
+    {
+      "command": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+        "--run",
+        "/tmp/ladon-formal-contract-_ez_9h3y/helper.lean",
+        "ObligationsRed",
+        "ObligationsRed.lean",
+        "/tmp/ladon-formal-contract-_ez_9h3y/target.lean",
+        "ObligationsRed.threeStep",
+        "/tmp/ladon-formal-contract-_ez_9h3y/statement.json"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.1862210428807884,
+      "timed_out": false,
+      "output_limited": false,
+      "memory_limited": false,
+      "peak_rss_bytes": 2389585920,
+      "stdoutBytes": 0,
+      "stdoutDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrBytes": 0,
+      "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "phase": "lean-statement-observation",
+      "requestedTimeoutSeconds": 60,
+      "requestedMaxRssBytes": 12884901888,
+      "helperResultDigest": "sha256:2417258f99cabc01d6fb583d14afce830dbce9d1da7eec5bc4f1b180140980a3",
+      "helperResultBytes": 3274
+    }
+  ],
+  "observation": {
+    "declarationRange": {
+      "endColumn": 42,
+      "endLine": 38,
+      "selectionEndColumn": 17,
+      "selectionEndLine": 30,
+      "selectionStartColumn": 8,
+      "selectionStartLine": 30,
+      "startColumn": 0,
+      "startLine": 28
+    },
+    "file": "ObligationsRed.lean",
+    "helperVersion": "ladon-formal-contract-helper-v2",
+    "leanVersion": "4.32.1",
+    "module": "ObligationsRed",
+    "normalizedTypeExpr": {
+      "forallE": {
+        "binderInfo": "explicit",
+        "body": {
+          "forallE": {
+            "binderInfo": "explicit",
+            "body": {
+              "app": [
+                {
+                  "app": [
+                    {
+                      "app": [
+                        {
+                          "app": [
+                            {
+                              "const": "LE.le",
+                              "levels": [
+                                "0"
+                              ]
+                            },
+                            {
+                              "const": "Nat",
+                              "levels": []
+                            }
+                          ]
+                        },
+                        {
+                          "const": "instLENat",
+                          "levels": []
+                        }
+                      ]
+                    },
+                    {
+                      "app": [
+                        {
+                          "app": [
+                            {
+                              "const": "ObligationsRed.N3",
+                              "levels": []
+                            },
+                            {
+                              "bvar": 1
+                            }
+                          ]
+                        },
+                        {
+                          "app": [
+                            {
+                              "const": "ObligationsRed.H",
+                              "levels": []
+                            },
+                            {
+                              "bvar": 0
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "app": [
+                    {
+                      "app": [
+                        {
+                          "app": [
+                            {
+                              "app": [
+                                {
+                                  "app": [
+                                    {
+                                      "app": [
+                                        {
+                                          "const": "HMul.hMul",
+                                          "levels": [
+                                            "0",
+                                            "0",
+                                            "0"
+                                          ]
+                                        },
+                                        {
+                                          "const": "Nat",
+                                          "levels": []
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "const": "Nat",
+                                      "levels": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "const": "Nat",
+                                  "levels": []
+                                }
+                              ]
+                            },
+                            {
+                              "app": [
+                                {
+                                  "app": [
+                                    {
+                                      "const": "instHMul",
+                                      "levels": [
+                                        "0"
+                                      ]
+                                    },
+                                    {
+                                      "const": "Nat",
+                                      "levels": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "const": "instMulNat",
+                                  "levels": []
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "const": "ObligationsRed.C",
+                          "levels": []
+                        }
+                      ]
+                    },
+                    {
+                      "app": [
+                        {
+                          "app": [
+                            {
+                              "const": "ObligationsRed.N0",
+                              "levels": []
+                            },
+                            {
+                              "app": [
+                                {
+                                  "app": [
+                                    {
+                                      "app": [
+                                        {
+                                          "app": [
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "const": "HAdd.hAdd",
+                                                      "levels": [
+                                                        "0",
+                                                        "0",
+                                                        "0"
+                                                      ]
+                                                    },
+                                                    {
+                                                      "const": "Nat",
+                                                      "levels": []
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "const": "Nat",
+                                                  "levels": []
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "const": "Nat",
+                                              "levels": []
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "app": [
+                                            {
+                                              "app": [
+                                                {
+                                                  "const": "instHAdd",
+                                                  "levels": [
+                                                    "0"
+                                                  ]
+                                                },
+                                                {
+                                                  "const": "Nat",
+                                                  "levels": []
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "const": "instAddNat",
+                                              "levels": []
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "bvar": 1
+                                    }
+                                  ]
+                                },
+                                {
+                                  "app": [
+                                    {
+                                      "app": [
+                                        {
+                                          "app": [
+                                            {
+                                              "const": "OfNat.ofNat",
+                                              "levels": [
+                                                "0"
+                                              ]
+                                            },
+                                            {
+                                              "const": "Nat",
+                                              "levels": []
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "nat": 0
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "app": [
+                                        {
+                                          "const": "instOfNatNat",
+                                          "levels": []
+                                        },
+                                        {
+                                          "nat": 0
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "bvar": 0
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "name": "x",
+            "type": {
+              "const": "Nat",
+              "levels": []
+            }
+          }
+        },
+        "name": "s",
+        "type": {
+          "const": "Nat",
+          "levels": []
+        }
+      }
+    },
+    "normalizedTypeFingerprint": "4154430098",
+    "protocolVersion": "ladon-formal-contract-observation-v2",
+    "sourceModuleOwned": true,
+    "status": "observed",
+    "target": "ObligationsRed.threeStep",
+    "typeExpr": {
+      "forallE": {
+        "binderInfo": "explicit",
+        "body": {
+          "forallE": {
+            "binderInfo": "explicit",
+            "body": {
+              "app": [
+                {
+                  "app": [
+                    {
+                      "app": [
+                        {
+                          "app": [
+                            {
+                              "const": "LE.le",
+                              "levels": [
+                                "0"
+                              ]
+                            },
+                            {
+                              "const": "Nat",
+                              "levels": []
+                            }
+                          ]
+                        },
+                        {
+                          "const": "instLENat",
+                          "levels": []
+                        }
+                      ]
+                    },
+                    {
+                      "app": [
+                        {
+                          "app": [
+                            {
+                              "const": "ObligationsRed.N3",
+                              "levels": []
+                            },
+                            {
+                              "bvar": 1
+                            }
+                          ]
+                        },
+                        {
+                          "app": [
+                            {
+                              "const": "ObligationsRed.H",
+                              "levels": []
+                            },
+                            {
+                              "bvar": 0
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "app": [
+                    {
+                      "app": [
+                        {
+                          "app": [
+                            {
+                              "app": [
+                                {
+                                  "app": [
+                                    {
+                                      "app": [
+                                        {
+                                          "const": "HMul.hMul",
+                                          "levels": [
+                                            "0",
+                                            "0",
+                                            "0"
+                                          ]
+                                        },
+                                        {
+                                          "const": "Nat",
+                                          "levels": []
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "const": "Nat",
+                                      "levels": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "const": "Nat",
+                                  "levels": []
+                                }
+                              ]
+                            },
+                            {
+                              "app": [
+                                {
+                                  "app": [
+                                    {
+                                      "const": "instHMul",
+                                      "levels": [
+                                        "0"
+                                      ]
+                                    },
+                                    {
+                                      "const": "Nat",
+                                      "levels": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "const": "instMulNat",
+                                  "levels": []
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "const": "ObligationsRed.C",
+                          "levels": []
+                        }
+                      ]
+                    },
+                    {
+                      "app": [
+                        {
+                          "app": [
+                            {
+                              "const": "ObligationsRed.N0",
+                              "levels": []
+                            },
+                            {
+                              "app": [
+                                {
+                                  "app": [
+                                    {
+                                      "app": [
+                                        {
+                                          "app": [
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "const": "HAdd.hAdd",
+                                                      "levels": [
+                                                        "0",
+                                                        "0",
+                                                        "0"
+                                                      ]
+                                                    },
+                                                    {
+                                                      "const": "Nat",
+                                                      "levels": []
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "const": "Nat",
+                                                  "levels": []
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "const": "Nat",
+                                              "levels": []
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "app": [
+                                            {
+                                              "app": [
+                                                {
+                                                  "const": "instHAdd",
+                                                  "levels": [
+                                                    "0"
+                                                  ]
+                                                },
+                                                {
+                                                  "const": "Nat",
+                                                  "levels": []
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "const": "instAddNat",
+                                              "levels": []
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "bvar": 1
+                                    }
+                                  ]
+                                },
+                                {
+                                  "app": [
+                                    {
+                                      "app": [
+                                        {
+                                          "app": [
+                                            {
+                                              "const": "OfNat.ofNat",
+                                              "levels": [
+                                                "0"
+                                              ]
+                                            },
+                                            {
+                                              "const": "Nat",
+                                              "levels": []
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "nat": 0
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "app": [
+                                        {
+                                          "const": "instOfNatNat",
+                                          "levels": []
+                                        },
+                                        {
+                                          "nat": 0
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        },
+                        {
+                          "bvar": 0
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "name": "x",
+            "type": {
+              "const": "Nat",
+              "levels": []
+            }
+          }
+        },
+        "name": "s",
+        "type": {
+          "const": "Nat",
+          "levels": []
+        }
+      }
+    },
+    "typeFingerprint": "4154430098",
+    "version": "1"
+  },
+  "coverage": {
+    "statementFeatures": "complete",
+    "providers": "not-extracted",
+    "proofBody": "not-extracted"
+  },
+  "fidelity": "attributed-unreviewed",
+  "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+  "artifacts": [
+    {
+      "artifactId": "sha256:d7ee73589a5d5af5ab5c31c91503f9df934a9eeeab0062ba34c3ff0d26bf0a00",
+      "artifactKind": "proofir.source-map",
+      "coverage": {
+        "bounds": {},
+        "decoded": 1,
+        "discovered": 1,
+        "expected": 1,
+        "omitted": [],
+        "population": {
+          "kind": "artifact-subjects",
+          "selector": {}
+        },
+        "projected": 1,
+        "queryMatched": 1,
+        "status": "complete",
+        "universeKnown": true,
+        "valid": 1
+      },
+      "environmentRef": "sha256:23b281f9a928b1b91361f1746ac80776287a4d2592d417dbdf42b3b4aa1a0cc4",
+      "extensions": {},
+      "limitations": [
+        {
+          "id": "statement-summary-fidelity-unreviewed",
+          "message": "An observed declaration range does not certify summary fidelity."
+        }
+      ],
+      "payload": {
+        "anchors": [
+          {
+            "contentDigest": "sha256:f42e538e1a7135435c295ddb3ddade16487272f241e13a66241059c12ffb5079",
+            "declName": "ObligationsRed.threeStep",
+            "end": {
+              "byte": 1109,
+              "column": 43,
+              "line": 38
+            },
+            "matchMethod": "producer-declaration",
+            "module": "ObligationsRed",
+            "sourcePath": "ObligationsRed.lean",
+            "start": {
+              "byte": 605,
+              "column": 1,
+              "line": 28
+            },
+            "subjectRef": {
+              "kind": "declaration",
+              "localId": "ObligationsRed.threeStep"
+            }
+          }
+        ],
+        "policy": {
+          "digest": "sha256:3808f1fd0f8c4dd6384426a0bc1b68b3ecb59175c574e21a81ba076e3ab298b9",
+          "version": "elaborated-declaration-range-v1"
+        },
+        "sourceMapId": "source-map:formal:d8690d73d400b05109107041277c2bd7be1e831f912ab595f8f1a7e0e1a0f4cd"
+      },
+      "producer": {
+        "buildDigest": "sha256:cee61abcab2a6e5c0debee59ae8a8678865eb1b974a20f816c396d516c7dd59e",
+        "implementation": "unspecified",
+        "name": "ladon-formal-contract",
+        "version": "1"
+      },
+      "proofirVersion": "3.0",
+      "subjectRefs": [
+        {
+          "kind": "source-map",
+          "localId": "source-map:formal:d8690d73d400b05109107041277c2bd7be1e831f912ab595f8f1a7e0e1a0f4cd"
+        },
+        {
+          "kind": "declaration",
+          "localId": "ObligationsRed.threeStep"
+        }
+      ]
+    },
+    {
+      "artifactId": "sha256:69f3eaa74a8ffefe98785935257d183cabc3459a49576904cb9d1a0df302dde2",
+      "artifactKind": "proofir.contract",
+      "coverage": {
+        "bounds": {},
+        "decoded": 3,
+        "discovered": 3,
+        "expected": 3,
+        "omitted": [],
+        "population": {
+          "kind": "artifact-subjects",
+          "selector": {}
+        },
+        "projected": 3,
+        "queryMatched": 3,
+        "status": "complete",
+        "universeKnown": true,
+        "valid": 3
+      },
+      "environmentRef": "sha256:23b281f9a928b1b91361f1746ac80776287a4d2592d417dbdf42b3b4aa1a0cc4",
+      "extensions": {},
+      "limitations": [
+        {
+          "id": "source-contract-binding-unchecked",
+          "message": "Source-bound contract features remain an attributed interpretation."
+        }
+      ],
+      "payload": {
+        "assumptionRefs": [],
+        "checkRunRefs": [],
+        "conclusionRef": {
+          "kind": "statement",
+          "localId": "estimate:ObligationsRed.N3:ObligationsRed.N0:ObligationsRed.H:conclusion"
+        },
+        "contractId": "formal:d8690d73d400b05109107041277c2bd7be1e831f912ab595f8f1a7e0e1a0f4cd",
+        "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+        "provenance": {
+          "checkerAuthority": "none",
+          "completeness": "complete",
+          "fidelity": "attributed-unreviewed",
+          "mathematicalFalsity": "not-established",
+          "mode": "extracted"
+        },
+        "record": {
+          "assumptions": [],
+          "conclusionId": "estimate:ObligationsRed.N3:ObligationsRed.N0:ObligationsRed.H:conclusion",
+          "context": {
+            "domainId": "domain:type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+            "objectId": "operator:ObligationsRed.H",
+            "representationId": "representation:original",
+            "scaleId": "scale:ObligationsRed.N0"
+          },
+          "endpointId": "estimate:ObligationsRed.N3:ObligationsRed.N0:ObligationsRed.H",
+          "features": {
+            "constantDependencies": {
+              "allowedBinderIds": [],
+              "reason": null,
+              "state": "known"
+            },
+            "regularity": {
+              "offset": 0,
+              "reason": null,
+              "scaleId": "scale:ObligationsRed.N0",
+              "state": "known"
+            },
+            "witnessDependencies": []
+          },
+          "profileId": "norm-scale-v1",
+          "telescope": [
+            {
+              "binderId": "b0",
+              "quantifier": "forall",
+              "typeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c"
+            },
+            {
+              "binderId": "b1",
+              "quantifier": "forall",
+              "typeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c"
+            }
+          ]
+        },
+        "residuals": [],
+        "sourceMapRefs": [
+          {
+            "artifactRef": "sha256:d7ee73589a5d5af5ab5c31c91503f9df934a9eeeab0062ba34c3ff0d26bf0a00",
+            "kind": "source-map",
+            "localId": "source-map:formal:d8690d73d400b05109107041277c2bd7be1e831f912ab595f8f1a7e0e1a0f4cd"
+          }
+        ],
+        "statementRef": {
+          "kind": "statement",
+          "localId": "statement:formal:d8690d73d400b05109107041277c2bd7be1e831f912ab595f8f1a7e0e1a0f4cd"
+        }
+      },
+      "producer": {
+        "buildDigest": "sha256:927d0657670e8e2675a68fb50b0c08134e4cc4aba384ec6933bc22caa5d416c0",
+        "implementation": "unspecified",
+        "name": "ladon-contract-source",
+        "version": "1"
+      },
+      "proofirVersion": "3.0",
+      "subjectRefs": [
+        {
+          "kind": "contract",
+          "localId": "formal:d8690d73d400b05109107041277c2bd7be1e831f912ab595f8f1a7e0e1a0f4cd"
+        },
+        {
+          "kind": "statement",
+          "localId": "estimate:ObligationsRed.N3:ObligationsRed.N0:ObligationsRed.H:conclusion"
+        },
+        {
+          "kind": "statement",
+          "localId": "statement:formal:d8690d73d400b05109107041277c2bd7be1e831f912ab595f8f1a7e0e1a0f4cd"
+        }
+      ]
+    }
+  ],
+  "snapshotId": "sha256:8b24a92672b0cc584a13e36eb441d91f2551eb31861aae86349da4f6d629b73b"
+}

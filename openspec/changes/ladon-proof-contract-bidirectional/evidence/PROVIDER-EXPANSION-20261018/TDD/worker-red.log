@@ -1,0 +1,210 @@
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+_____ test_provider_resource_stop_is_single_and_bounded[timed_out-timeout] _____
+
+flag = 'timed_out', code = 'timeout'
+
+    @pytest.mark.parametrize('flag,code', [('timed_out','timeout'),
+        ('memory_limited','memory-limit'), ('output_limited','output-limit')])
+    def test_provider_resource_stop_is_single_and_bounded(flag, code):
+        calls = []
+    
+        def runner(command, **kwargs):
+            calls.append((command, kwargs))
+            return ProcessResult(tuple(command), -9, '', '', .01, **{flag: True})
+    
+>       result = _run({}, deadline_monotonic=monotonic()+10, runner=runner)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_provider_worker.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_provider_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_provider_supervision').run_provider_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_provider_supervision'
+import_ = <function _gcd_import at 0x75a1eb14fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_provider_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_ test_provider_resource_stop_is_single_and_bounded[memory_limited-memory-limit] _
+
+flag = 'memory_limited', code = 'memory-limit'
+
+    @pytest.mark.parametrize('flag,code', [('timed_out','timeout'),
+        ('memory_limited','memory-limit'), ('output_limited','output-limit')])
+    def test_provider_resource_stop_is_single_and_bounded(flag, code):
+        calls = []
+    
+        def runner(command, **kwargs):
+            calls.append((command, kwargs))
+            return ProcessResult(tuple(command), -9, '', '', .01, **{flag: True})
+    
+>       result = _run({}, deadline_monotonic=monotonic()+10, runner=runner)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_provider_worker.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_provider_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_provider_supervision').run_provider_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_provider_supervision'
+import_ = <function _gcd_import at 0x75a1eb14fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_provider_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_ test_provider_resource_stop_is_single_and_bounded[output_limited-output-limit] _
+
+flag = 'output_limited', code = 'output-limit'
+
+    @pytest.mark.parametrize('flag,code', [('timed_out','timeout'),
+        ('memory_limited','memory-limit'), ('output_limited','output-limit')])
+    def test_provider_resource_stop_is_single_and_bounded(flag, code):
+        calls = []
+    
+        def runner(command, **kwargs):
+            calls.append((command, kwargs))
+            return ProcessResult(tuple(command), -9, '', '', .01, **{flag: True})
+    
+>       result = _run({}, deadline_monotonic=monotonic()+10, runner=runner)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_provider_worker.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_provider_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_provider_supervision').run_provider_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_provider_supervision'
+import_ = <function _gcd_import at 0x75a1eb14fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_provider_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+___________________ test_provider_expiry_launches_no_worker ____________________
+
+    def test_provider_expiry_launches_no_worker():
+>       result = _run({}, deadline_monotonic=monotonic()-1,
+            runner=lambda *args, **_kwargs: pytest.fail('expired provider launched'))
+
+tests/test_proof_contract_provider_worker.py:38: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_provider_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_provider_supervision').run_provider_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_provider_supervision'
+import_ = <function _gcd_import at 0x75a1eb14fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_provider_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+____________________ test_provider_caps_cannot_be_expanded _____________________
+
+    def test_provider_caps_cannot_be_expanded():
+        calls = []
+    
+        def runner(command, **kwargs):
+            calls.append(kwargs)
+            return ProcessResult(tuple(command), -9, '', '', 0, timed_out=True)
+    
+>       _run({},deadline_monotonic=monotonic()+1000,
+             limits={'timeout_seconds':600,'max_rss_bytes':64*1024**3,'max_output_bytes':8388608},
+             runner=runner)
+
+tests/test_proof_contract_provider_worker.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_provider_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_provider_supervision').run_provider_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_provider_supervision'
+import_ = <function _gcd_import at 0x75a1eb14fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_provider_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_____________ test_provider_cycle_is_rejected_before_serialization _____________
+
+    def test_provider_cycle_is_rejected_before_serialization():
+        value = {}; value['cycle'] = value
+>       result = _run(value, deadline_monotonic=monotonic()+30,
+            runner=lambda *args, **_kwargs: pytest.fail('invalid provider launched'))
+
+tests/test_proof_contract_provider_worker.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_provider_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_provider_supervision').run_provider_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_provider_supervision'
+import_ = <function _gcd_import at 0x75a1eb14fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_provider_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_provider_worker.py::test_provider_resource_stop_is_single_and_bounded[timed_out-timeout]
+FAILED tests/test_proof_contract_provider_worker.py::test_provider_resource_stop_is_single_and_bounded[memory_limited-memory-limit]
+FAILED tests/test_proof_contract_provider_worker.py::test_provider_resource_stop_is_single_and_bounded[output_limited-output-limit]
+FAILED tests/test_proof_contract_provider_worker.py::test_provider_expiry_launches_no_worker
+FAILED tests/test_proof_contract_provider_worker.py::test_provider_caps_cannot_be_expanded
+FAILED tests/test_proof_contract_provider_worker.py::test_provider_cycle_is_rejected_before_serialization
+6 failed in 0.07s

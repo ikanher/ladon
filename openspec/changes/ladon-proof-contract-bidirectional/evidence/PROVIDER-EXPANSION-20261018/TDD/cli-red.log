@@ -1,0 +1,127 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+____________ test_provider_expansion_cli_help_exposes_bound_inputs _____________
+
+capsys = <_pytest.capture.CaptureFixture object at 0x72432bd55a90>
+
+    def test_provider_expansion_cli_help_exposes_bound_inputs(capsys):
+        from ladon.proof_contract_cli import _parser
+        parser = _parser()
+>       assert 'expand-provider' in parser.format_help()
+E       AssertionError: assert 'expand-provider' in 'usage: ladon investigation contract [-h]\n                                    {obligations,check-obligations,produce,...t a selected application for a named obligation\n\noptions:\n  -h, --help            show this help message and exit\n'
+E        +  where 'usage: ladon investigation contract [-h]\n                                    {obligations,check-obligations,produce,...t a selected application for a named obligation\n\noptions:\n  -h, --help            show this help message and exit\n' = format_help()
+E        +    where format_help = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True).format_help
+
+tests/test_proof_contract_provider_cli.py:10: AssertionError
+__________ test_provider_expansion_cli_invalid_input_is_bounded_json ___________
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+args = ['expand-provider', '--input', '/tmp/pytest-of-codex/pytest-692/test_provider_expansion_cli_in0/analysis.json', '--context', '/tmp/pytest-of-codex/pytest-692/test_provider_expansion_cli_in0/context.json', '--request', ...]
+namespace = Namespace(operation=None)
+
+    def parse_known_args(self, args=None, namespace=None):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+>               namespace, args = self._parse_known_args(args, namespace)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../miniconda3/lib/python3.11/argparse.py:1907: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.11/argparse.py:2110: in _parse_known_args
+    positionals_end_index = consume_positionals(start_index)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:2087: in consume_positionals
+    take_action(action, args)
+../../miniconda3/lib/python3.11/argparse.py:1967: in take_action
+    argument_values = self._get_values(action, argument_strings)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:2516: in _get_values
+    self._check_value(action, value[0])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+action = _SubParsersAction(option_strings=[], dest='operation', nargs='A...', const=None, default=None, type=None, choices={'ob...ss=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)}, required=True, help=None, metavar=None)
+value = 'expand-provider'
+
+    def _check_value(self, action, value):
+        # converted value must be one of the choices (if specified)
+        if action.choices is not None and value not in action.choices:
+            args = {'value': value,
+                    'choices': ', '.join(map(repr, action.choices))}
+            msg = _('invalid choice: %(value)r (choose from %(choices)s)')
+>           raise ArgumentError(action, msg % args)
+E           argparse.ArgumentError: argument operation: invalid choice: 'expand-provider' (choose from 'obligations', 'check-obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')
+
+../../miniconda3/lib/python3.11/argparse.py:2563: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-692/test_provider_expansion_cli_in0')
+capsys = <_pytest.capture.CaptureFixture object at 0x72432b1515d0>
+
+    def test_provider_expansion_cli_invalid_input_is_bounded_json(tmp_path, capsys):
+        paths = [tmp_path/name for name in ('analysis.json','context.json','request.json')]
+        for path in paths:
+            path.write_text('{}')
+>       code = contract_main(['expand-provider','--input',str(paths[0]),
+            '--context',str(paths[1]),'--request',str(paths[2]),'--root',str(tmp_path),
+            '--application','Eq.trans','--timeout-seconds','0'])
+
+tests/test_proof_contract_provider_cli.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_cli.py:59: in contract_main
+    args = _parser().parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1874: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1909: in parse_known_args
+    self.error(str(err))
+../../miniconda3/lib/python3.11/argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = "ladon investigation contract: error: argument operation: invalid choice: 'expand-provider' (choose from 'obligations', 'check-obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')\n"
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.11/argparse.py:2627: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: ladon investigation contract [-h]
+                                    {obligations,check-obligations,produce,inspect,propagate,fidelity-record,expand}
+                                    ...
+ladon investigation contract: error: argument operation: invalid choice: 'expand-provider' (choose from 'obligations', 'check-obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_provider_cli.py::test_provider_expansion_cli_help_exposes_bound_inputs
+FAILED tests/test_proof_contract_provider_cli.py::test_provider_expansion_cli_invalid_input_is_bounded_json
+2 failed in 0.16s

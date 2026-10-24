@@ -1,0 +1,24 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________ test_pending_provider_request_admission_retains_earlier_target ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-702/test_pending_provider_request_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73dc31c444d0>
+
+    def test_pending_provider_request_admission_retains_earlier_target(tmp_path,monkeypatch):
+        _,plan=_request();request=_workflow_request(tmp_path,plan)
+        request['sourceBindings']['providers']=[]
+        _mock_native_validation(monkeypatch,request['analysisArtifact'])
+        # Synthetic bookkeeping only; no source or proof observation is asserted.
+        monkeypatch.setattr(expansion,'make_provider_slice_request',lambda *args: {
+            'status':'not-dispatched','scope':'synthetic-budget-control','padding':'x'*(7*1024**2)})
+        report=check_obligation_sources(request)
+        assert report['status']=='incomplete'
+>       assert len(report['providerSliceRequests'])==1
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/test_proof_contract_provider_request_budget.py:21: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_provider_request_budget.py::test_pending_provider_request_admission_retains_earlier_target
+1 failed in 0.15s

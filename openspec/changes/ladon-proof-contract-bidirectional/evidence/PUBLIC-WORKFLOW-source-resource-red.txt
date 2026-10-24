@@ -1,0 +1,106 @@
+.FF.                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_memory_stop_preserves_exact_report_back_and_prevents_later_work[construction] _
+
+api = <module 'ladon.proof_contract_obligation_checks' from '/home/codex/projects/ladon/src/ladon/proof_contract_obligation_checks.py'>
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-664/test_memory_stop_preserves_exa0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7384a9fd8090>
+stop_stage = 'construction'
+
+    @pytest.mark.parametrize("stop_stage", ["construction", "completion"])
+    def test_memory_stop_preserves_exact_report_back_and_prevents_later_work(
+        api, tmp_path, monkeypatch, stop_stage,
+    ):
+        plan_request = _base_plan("two-leaves")
+        request = _workflow_request(tmp_path, plan_request, max_attempts=8)
+        _mock_native_validation(monkeypatch, request["analysisArtifact"])
+        stop_message = memory_limit_message(DEFAULT_MAX_RSS_BYTES, DEFAULT_MAX_RSS_BYTES + 1)
+        constructors = []
+        completions = []
+    
+        if stop_stage == "construction":
+            from ladon import proof_contract_source_obligations as source
+    
+            def construct(source_request):
+                constructors.append(source_request)
+                return {"status": "incomplete", "diagnostic": {
+                    "code": "resource-limit", "message": stop_message}}
+    
+            monkeypatch.setattr(source, "instantiate_planned_source_leaf_requirement", construct)
+        else:
+            _mock_candidate_constructor(monkeypatch, calls=constructors)
+            _mock_completion(monkeypatch, {"status": "memory-limit", "diagnostic": {
+                "message": stop_message}}, calls=completions)
+    
+        result = api.check_obligation_sources(request)
+    
+        assert result["status"] == "incomplete"
+        assert result["memoryReportBackRequired"] is True
+        assert len(constructors) == 1
+        assert len(completions) == (0 if stop_stage == "construction" else 1)
+        assert len(result["sourceChecks"]) == 2  # later demand is still visible as unresolved
+        assert all(row["status"] == "unresolved" for row in result["sourceChecks"])
+        assert all(row["sourceCheckStatus"] == "unresolved" for row in result["routes"])
+        assert result["wholeMethodAuthority"] == "none"
+        assert stop_message.startswith("Stop progress and report back to user:")
+>       assert result["stopReason"] == stop_message
+E       AssertionError: assert 'shared absol...dline expired' == 'Stop progres...ss-mib limit.'
+E         
+E         - Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 12 GiB (12884901888 bytes). Observed sampled peak 12 GiB (12884901889 bytes). Ask the user before retrying with a higher --max-rss-mib limit.
+E         + shared absolute deadline expired
+
+tests/test_proof_contract_obligation_check_resources.py:158: AssertionError
+_ test_memory_stop_preserves_exact_report_back_and_prevents_later_work[completion] _
+
+api = <module 'ladon.proof_contract_obligation_checks' from '/home/codex/projects/ladon/src/ladon/proof_contract_obligation_checks.py'>
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-664/test_memory_stop_preserves_exa1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7384aa997a50>
+stop_stage = 'completion'
+
+    @pytest.mark.parametrize("stop_stage", ["construction", "completion"])
+    def test_memory_stop_preserves_exact_report_back_and_prevents_later_work(
+        api, tmp_path, monkeypatch, stop_stage,
+    ):
+        plan_request = _base_plan("two-leaves")
+        request = _workflow_request(tmp_path, plan_request, max_attempts=8)
+        _mock_native_validation(monkeypatch, request["analysisArtifact"])
+        stop_message = memory_limit_message(DEFAULT_MAX_RSS_BYTES, DEFAULT_MAX_RSS_BYTES + 1)
+        constructors = []
+        completions = []
+    
+        if stop_stage == "construction":
+            from ladon import proof_contract_source_obligations as source
+    
+            def construct(source_request):
+                constructors.append(source_request)
+                return {"status": "incomplete", "diagnostic": {
+                    "code": "resource-limit", "message": stop_message}}
+    
+            monkeypatch.setattr(source, "instantiate_planned_source_leaf_requirement", construct)
+        else:
+            _mock_candidate_constructor(monkeypatch, calls=constructors)
+            _mock_completion(monkeypatch, {"status": "memory-limit", "diagnostic": {
+                "message": stop_message}}, calls=completions)
+    
+        result = api.check_obligation_sources(request)
+    
+        assert result["status"] == "incomplete"
+        assert result["memoryReportBackRequired"] is True
+        assert len(constructors) == 1
+        assert len(completions) == (0 if stop_stage == "construction" else 1)
+        assert len(result["sourceChecks"]) == 2  # later demand is still visible as unresolved
+        assert all(row["status"] == "unresolved" for row in result["sourceChecks"])
+        assert all(row["sourceCheckStatus"] == "unresolved" for row in result["routes"])
+        assert result["wholeMethodAuthority"] == "none"
+        assert stop_message.startswith("Stop progress and report back to user:")
+>       assert result["stopReason"] == stop_message
+E       AssertionError: assert 'shared absol...dline expired' == 'Stop progres...ss-mib limit.'
+E         
+E         - Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 12 GiB (12884901888 bytes). Observed sampled peak 12 GiB (12884901889 bytes). Ask the user before retrying with a higher --max-rss-mib limit.
+E         + shared absolute deadline expired
+
+tests/test_proof_contract_obligation_check_resources.py:158: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_obligation_check_resources.py::test_memory_stop_preserves_exact_report_back_and_prevents_later_work[construction]
+FAILED tests/test_proof_contract_obligation_check_resources.py::test_memory_stop_preserves_exact_report_back_and_prevents_later_work[completion]
+2 failed, 2 passed in 0.26s

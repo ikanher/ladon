@@ -1,0 +1,48 @@
+{
+  "assignmentPost": 574,
+  "contractPost": 560,
+  "evidence": {
+    "cloneBudget": "_admit_bindings computes bounded row size plus row_count * (bounded binding size + 256 bytes) and raises ContextOutputLimit before the loop that deepcopy(binding) into each row. The fixed reserve is conservative for added binding key, digest, and JSON punctuation.",
+    "dispatch": "Public context bridge _check_goal invokes _stage(check-context-goal,...), and _stage uses the dedicated ladon.proof_contract_context_worker under the existing supervised executor. Worker rejects raw stdin above 8 MiB; bridge stage gets shared absolute deadline and capped limits.",
+    "execution": "No tests, Lean, source workflow, or canonical file edits performed.",
+    "frozenContextTests": [
+      {
+        "matchesFrozen": true,
+        "path": "/home/codex/projects/ladon/tests/test_proof_contract_context_boundary.py",
+        "sha256": "395f8cad437db8a05bfde9ccb8362e1e0f666c98df3f5ff3abfbb11bdbef888f"
+      },
+      {
+        "matchesFrozen": true,
+        "path": "/home/codex/projects/ladon/tests/test_proof_contract_context_checkpoint.py",
+        "sha256": "41a9f7d249e0f7fad40d0a484f1efc9649d4038296b2d483ce792166c2aef6bd"
+      },
+      {
+        "matchesFrozen": true,
+        "path": "/home/codex/projects/ladon/tests/test_proof_contract_context_cli.py",
+        "sha256": "6057a1ccbbc65e4cb6eca657ca02a0672ec7646f1ea2906fddb2fa78d8237420"
+      },
+      {
+        "matchesFrozen": true,
+        "path": "/home/codex/projects/ladon/tests/test_proof_contract_context_freshness.py",
+        "sha256": "efc541f6eac43febd8df7868a3abefefa9b56d88c7fbeaaede21343558c0a5d7"
+      },
+      {
+        "matchesFrozen": true,
+        "path": "/home/codex/projects/ladon/tests/test_proof_contract_context_native.py",
+        "sha256": "01da00ad1f9ea24c0e888dc085ab2fa178d68fb6d030ef4f8a5cf63c65635dbd"
+      },
+      {
+        "matchesFrozen": true,
+        "path": "/home/codex/projects/ladon/tests/test_proof_contract_context_output.py",
+        "sha256": "e3947c61e3602ccf1bf89ff852925772b1167f2da6ef95df3241d5b5e3b6b2cb"
+      }
+    ],
+    "memoryGuidance": "_resource_stop recognizes status/code memory-limit recursively; _stop_message uses memory_limit_message(max_rss_bytes); context _fail sets memoryReportBackRequired exactly for memory-limit; final result compaction preserves that memory-limit status and message.",
+    "termStageCustody": "check-context-goal uses _verify_original_inputs before and after _check_goal; that verifies pinned toolchain context_identity, original Lean source digest, and original interpretation quote digest. _verified_source is captured before check and compared again after check, covering the strict-prefix digest.",
+    "workerOutput": "_response applies bounded_json_size(envelope, MAX_BYTES) before json.dumps. On overflow it replaces the large result with a small output-limit result, or memory-limit if the recursive resource-stop scan finds a memory stop. No oversized JSON serialization occurs first."
+  },
+  "findings": [],
+  "limitations": "This verifies code structure and frozen hashes only; root owns final runtime/source and full-regression gates.",
+  "reviewScope": "Read-only source review of clone-budget admission, worker response preflight, term-stage custody, bounded dispatch, and retained memory-limit reporting.",
+  "status": "PASS_NO_FINDINGS"
+}

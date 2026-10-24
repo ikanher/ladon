@@ -1,0 +1,67 @@
+{
+  "assignmentPost": 594,
+  "contractPost": 587,
+  "findings": [
+    {
+      "impact": "The preparation path reports a rejected request instead of an incomplete timeout. During term checking, _resource_stop sees no timeout flag/code, so _check_goal treats the goal as an ordinary unresolved failure and the loop can attempt later goals after a resource deadline has expired. This violates the shared-deadline stop/no-later-stage contract and loses resource-stop reporting.",
+      "locations": [
+        {
+          "lines": [
+            74,
+            78
+          ],
+          "path": "src/ladon/proof_contract_route_context_worker.py"
+        },
+        {
+          "lines": [
+            90,
+            96
+          ],
+          "path": "src/ladon/proof_contract_route_context.py"
+        },
+        {
+          "lines": [
+            37,
+            49
+          ],
+          "path": "src/ladon/_proof_contract_source_obligations_staging.py"
+        }
+      ],
+      "recommendation": "Handle TimeoutError separately as an incomplete timeout result (or otherwise make the supervised receipt expose timedOut=true) so the parent _resource_stop recognizes it and halts the remaining goal stages.",
+      "severity": "P2",
+      "title": "Preserve deadline expiry as a resource stop in the route worker",
+      "trigger": "The shared absolute deadline expires while route preparation is staging the guarded prefix (the staging helper raises TimeoutError at its deadline checks) or while a term-stage operation raises TimeoutError. The worker main catches TimeoutError in the generic invalid-input exception handler and emits status=rejected with a nonzero exit; the supervisor then classifies it as worker-rejected rather than timeout."
+    }
+  ],
+  "limitations": "No positive route runtime or full integrated regression gate was executed as part of this read-only audit; root owns those gates. No other source issue met the finding bar.",
+  "reviewTarget": [
+    "src/ladon/_proof_contract_route_context_inputs.py",
+    "src/ladon/_proof_contract_route_context_preparation.py",
+    "src/ladon/_proof_contract_route_context_goals.py",
+    "src/ladon/proof_contract_route_context.py",
+    "src/ladon/proof_contract_route_context_worker.py",
+    "src/ladon/proof_contract_route_context_cli.py",
+    "src/ladon/proof_contract_cli.py",
+    "reused native planner/context/source helpers"
+  ],
+  "reviewedInvariants": {
+    "closedInputsAndAggregatePreflight": "Reviewed exact request/sourceBindings/selectedIdentity schemas, aggregate input before deep copy, typed refs, bounded terms, and caller source-requirement prohibition.",
+    "limitsAndOutput": "Reviewed shared absolute deadline clipping, 30s/12GiB/8MiB stage caps, bounded worker input/response, aggregate result admission before attaching each goal, memory guidance, stop-on-capacity and no retry.",
+    "nativePlanAndOwnerBinding": "Reviewed native envelope batch validation, planner-v2 whole-plan recomputation and unique selected occurrence, admitted rule/demand binding, exact provider contract/source-map anchor, parent interpretation nativeartifactId identity and owner source-map closure.",
+    "semanticGoals": "Reviewed all original context goals retained in order, plus source-reading I, I->P_req, Q->J, and source-requirement; final P_req term composed only from independently accepted/replayed/trusted source-reading and contract-transfer rows; support requires every goal accepted and no residuals; authority/falsity remain none/not-established.",
+    "sourceAndPrefixCustody": "Reviewed exact provider source/module/declaration/environment match; original endpoint snapshot/source/quote/context source/prose/environment rechecks around each term; context prefix guard and route prefix endpoint guard."
+  },
+  "status": "FINDING",
+  "verification": {
+    "canonicalEdits": false,
+    "contextFrozenTestsUnchanged": true,
+    "evidenceOnly": "Read-only source review, contract/spec reading, and frozen hash inspection.",
+    "frozenMismatches": 0,
+    "frozenTestRows": 96,
+    "leanRun": false,
+    "productionEdits": false,
+    "routeBoundaryTestSha256": "246f3381b4dabcc1366cd7f7531b16ab54347034d36b4ad2597f39a7d1a8c548",
+    "sourceWorkflowRun": false,
+    "testsRun": false
+  }
+}

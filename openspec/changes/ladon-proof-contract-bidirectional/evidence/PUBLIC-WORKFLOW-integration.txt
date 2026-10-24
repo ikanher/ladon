@@ -1,0 +1,1792 @@
+........................................................................ [  8%]
+........................................................................ [ 16%]
+........................................................................ [ 25%]
+........................................................................ [ 33%]
+........................................................................ [ 42%]
+.................................................F...................... [ 50%]
+........................................................................ [ 59%]
+........................................................................ [ 67%]
+......................FF................................................ [ 76%]
+............................................................EEEEF.FF.... [ 84%]
+......FFFFFFFFFFF.FF..FFFFF.FFF................FFFFFFFFF................ [ 93%]
+..........................................FFFF..F.........               [100%]
+==================================== ERRORS ====================================
+_ ERROR at setup of test_public_queries_reject_nonpositive_limits[query_v3_triage] _
+
+    @pytest.fixture()
+    def connection() -> sqlite3.Connection:
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [native_artifacts()["proofir.claim"]])
+
+tests/test_proofir_query_contracts.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdd8a0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ ERROR at setup of test_public_queries_reject_nonpositive_limits[query_v3_artifacts] _
+
+    @pytest.fixture()
+    def connection() -> sqlite3.Connection:
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [native_artifacts()["proofir.claim"]])
+
+tests/test_proofir_query_contracts.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdcf40>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ ERROR at setup of test_theorem_dossier_exposes_exact_or_bounded_match_accounting _
+
+    @pytest.fixture()
+    def connection() -> sqlite3.Connection:
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [native_artifacts()["proofir.claim"]])
+
+tests/test_proofir_query_contracts.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdef20>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+__ ERROR at setup of test_semantic_candidate_query_rejects_nonpositive_limit ___
+
+    @pytest.fixture()
+    def connection() -> sqlite3.Connection:
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [native_artifacts()["proofir.claim"]])
+
+tests/test_proofir_query_contracts.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdf880>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+=================================== FAILURES ===================================
+_____ test_complete_rebuild_removes_previous_analysis_and_exact_goal_rows ______
+
+    def test_complete_rebuild_removes_previous_analysis_and_exact_goal_rows():
+        connection, graph, contracts, _ = database()
+>       project_envelopes(connection, [graph, *contracts])
+
+tests/test_proof_contract_propagation_sqlite.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcddd50>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+______ test_incremental_external_check_reference_matches_batch_projection ______
+
+    def test_incremental_external_check_reference_matches_batch_projection() -> None:
+        check, derivation = _check_and_derivation()
+        batch_connection = sqlite3.connect(":memory:")
+        batch_counts = project_envelopes(batch_connection, [check, derivation])
+    
+        incremental_connection = sqlite3.connect(":memory:")
+        create_v3_schema(incremental_connection)
+>       project_envelope(incremental_connection, check)
+
+tests/test_proofir_incremental_resolution.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1492: in project_envelope
+    create_v3_schema(connection)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dd4ccb80>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+___ test_incremental_dangling_external_reference_fails_before_rows_are_added ___
+
+    def test_incremental_dangling_external_reference_fails_before_rows_are_added() -> None:
+        _check, derivation = _check_and_derivation()
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+        with pytest.raises(Exception, match="external reference"):
+>           project_envelope(connection, derivation)
+
+tests/test_proofir_incremental_resolution.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1492: in project_envelope
+    create_v3_schema(connection)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdd5d0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+
+During handling of the above exception, another exception occurred:
+
+    def test_incremental_dangling_external_reference_fails_before_rows_are_added() -> None:
+        _check, derivation = _check_and_derivation()
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       with pytest.raises(Exception, match="external reference"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'external reference'
+E         Actual message: 'obsolete contract-analysis schema requires a disposable rebuild'
+
+tests/test_proofir_incremental_resolution.py:49: AssertionError
+________________ test_dossier_subject_queries_are_set_oriented _________________
+
+    def test_dossier_subject_queries_are_set_oriented() -> None:
+        import copy
+        from pathlib import Path
+    
+        from ladon.proofir_v3 import detached_content_id
+    
+        first = native_artifacts()["proofir.claim"]
+        second = copy.deepcopy(first)
+        second["producer"]["name"] = "second"
+        second["artifactId"] = detached_content_id(second)
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [first, second])
+
+tests/test_proofir_query_contracts.py:62: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dba5c220>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+__ test_derivation_occurrence_order_is_stable_under_reverse_unordered_selects __
+
+    def test_derivation_occurrence_order_is_stable_under_reverse_unordered_selects() -> None:
+        from ladon.proofir_v3_queries import query_v3_theorem_evidence
+    
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [native_artifacts()["proofir.derivation"]])
+
+tests/test_proofir_query_contracts.py:109: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdec50>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_________ test_dossier_preserves_limitations_from_derivation_artifacts _________
+
+    def test_dossier_preserves_limitations_from_derivation_artifacts() -> None:
+        import copy
+    
+        from ladon.proofir_v3 import detached_content_id
+    
+        derivation = copy.deepcopy(native_artifacts()["proofir.derivation"])
+        derivation["limitations"].append(
+            {"id": "custom-critical", "message": "derivation interpretation bound"}
+        )
+        derivation["artifactId"] = detached_content_id(derivation)
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [derivation])
+
+tests/test_proofir_query_contracts.py:130: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdd7b0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+______ test_projection_validates_before_writing_and_rolls_back_on_failure ______
+
+    def test_projection_validates_before_writing_and_rolls_back_on_failure() -> None:
+        connection = memory_database()
+        valid = claim_artifact()
+>       project_envelopes(connection, [valid])
+
+tests/test_proofir_sqlite_native_contract.py:187: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdef20>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+____________ test_rebuild_is_complete_and_stale_rows_do_not_survive ____________
+
+    def test_rebuild_is_complete_and_stale_rows_do_not_survive() -> None:
+        connection = memory_database()
+        first = native_artifacts()["proofir.claim"]
+>       project_envelopes(connection, [first])
+
+tests/test_proofir_sqlite_native_contract.py:201: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdc400>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_____ test_local_observation_identity_is_artifact_scoped_without_overwrite _____
+
+    def test_local_observation_identity_is_artifact_scoped_without_overwrite() -> None:
+        first = native_artifacts()["proofir.governance-observation"]
+        second = copy.deepcopy(first)
+        second["payload"]["details"] = {"policyId": "review:2"}
+        second["artifactId"] = detached_content_id(second)
+        assert first["payload"]["observationId"] == second["payload"]["observationId"]
+        assert first["artifactId"] != second["artifactId"]
+    
+        connection = memory_database()
+>       project_envelopes(connection, [first, second])
+
+tests/test_proofir_sqlite_native_contract.py:225: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcde3e0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+____ test_environment_manifest_is_resolved_without_fabricated_placeholders _____
+
+    def test_environment_manifest_is_resolved_without_fabricated_placeholders() -> None:
+        manifest = environment_artifact()
+        ordinary = claim_artifact()
+        connection = memory_database()
+>       project_envelopes(connection, [manifest, ordinary])
+
+tests/test_proofir_sqlite_native_contract.py:245: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdf3d0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+____________ test_owner_scope_is_part_of_subject_and_claim_identity ____________
+
+    def test_owner_scope_is_part_of_subject_and_claim_identity() -> None:
+        connection = memory_database()
+>       project_envelopes(connection, [claim_artifact()])
+
+tests/test_proofir_sqlite_native_contract.py:272: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdfa60>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_______ test_all_native_families_project_with_source_pointer_provenance ________
+
+    def test_all_native_families_project_with_source_pointer_provenance() -> None:
+        artifacts = list(native_artifacts().values())
+        connection = memory_database()
+>       counts = project_envelopes(connection, artifacts)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proofir_sqlite_native_contract.py:296: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dd4ccb80>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+__ test_projection_preserves_all_attachment_candidates_and_attempt_residuals ___
+
+    def test_projection_preserves_all_attachment_candidates_and_attempt_residuals() -> None:
+        attachment = attachment_set_artifact()
+        second_surface = ref("surface", "surface:2")
+        attachment["subjectRefs"].append(second_surface)
+        attachment["payload"]["attachments"][0]["candidates"].append(
+            {
+                "declarationId": "declaration:ambiguous",
+                "sourceRef": second_surface,
+                "method": "name-only-diagnostic",
+                "confidence": "none",
+                "freshness": "unknown",
+                "rank": 6,
+                "policyVersion": POLICY_VERSION,
+                "decisiveEvidence": [{"kind": "declarationName", "value": "goal"}],
+                "rejectionReasons": ["name-only-is-not-an-attachment"],
+            }
+        )
+        attachment["payload"]["attachments"][0]["rejectionReasons"] = ["ambiguous-name"]
+        attachment["artifactId"] = detached_content_id(attachment)
+    
+        attempts = attempt_log_artifact()
+        second_residual = ref("statement", "statement:residual-2")
+        attempts["subjectRefs"].append(second_residual)
+        attempts["payload"]["summary"]["residualPremiseRefs"].append(second_residual)
+        attempts["artifactId"] = detached_content_id(attempts)
+    
+        connection = memory_database()
+>       project_envelopes(connection, [attachment, attempts])
+
+tests/test_proofir_sqlite_native_contract.py:358: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcde980>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_ambiguous_attachment_projects_no_selected_source_or_semantic_acceptance _
+
+    def test_ambiguous_attachment_projects_no_selected_source_or_semantic_acceptance() -> None:
+        artifact = attachment_set_artifact()
+        attachment = artifact["payload"]["attachments"][0]
+        attachment["selectionDecision"] = "ambiguous"
+        attachment["selectedCandidateId"] = None
+        attachment["selectedSourceRef"] = None
+        attachment["freshness"] = "unknown"
+        attachment["decisiveEvidence"] = []
+        attachment["rejectionReasons"] = ["multiple-strongest-candidates"]
+        artifact["artifactId"] = detached_content_id(artifact)
+    
+        connection = memory_database()
+>       project_envelopes(connection, [artifact])
+
+tests/test_proofir_sqlite_native_contract.py:419: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdc4f0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+________ test_attachment_constraints_reject_authority_and_policy_drift _________
+
+    def test_attachment_constraints_reject_authority_and_policy_drift() -> None:
+        connection = memory_database()
+>       project_envelopes(connection, [attachment_set_artifact()])
+
+tests/test_proofir_sqlite_native_contract.py:437: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdc400>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_____ test_sqlite_persists_the_native_resolver_decision_without_reranking ______
+
+    def test_sqlite_persists_the_native_resolver_decision_without_reranking() -> None:
+        source_ref = ref("surface", "surface:1")
+        surface = {
+            "declarationName": "Alias",
+            "environmentRef": ENVIRONMENT,
+            "declarationFingerprint": "sha256:" + "f" * 64,
+            "declarationRef": "lean-decl:Fixture.goal",
+            "sourcePath": "Fixture/Main.lean",
+            "contentHash": "sha256:" + "c" * 64,
+            "sourceRange": {"startLine": 1, "endLine": 2},
+            "module": "Fixture.Main",
+        }
+        declaration = {
+            "id": "declaration:Fixture.goal",
+            "declaration": "Fixture.goal",
+            "declarationRef": "lean-decl:Fixture.goal",
+            "environmentRef": ENVIRONMENT,
+            "declarationFingerprint": "sha256:" + "f" * 64,
+            "sourceRef": source_ref,
+            "sourcePath": "Fixture/Main.lean",
+            "contentHash": "sha256:" + "c" * 64,
+            "sourceRange": {"startLine": 1, "endLine": 2},
+            "module": "Fixture.Main",
+        }
+        decision = resolve_attachment(surface, [declaration])
+        artifact = attachment_set_artifact()
+        artifact["payload"]["resolver"] = decision["resolver"]
+        artifact["payload"]["attachments"] = [
+            {
+                "subjectRef": ref("statement", "statement:goal"),
+                **{
+                    key: decision[key]
+                    for key in (
+                        "selectionDecision",
+                        "selectedCandidateId",
+                        "selectedSourceRef",
+                        "candidates",
+                        "freshness",
+                        "decisiveEvidence",
+                        "rejectionReasons",
+                        "semanticAcceptance",
+                    )
+                },
+            }
+        ]
+        artifact["artifactId"] = detached_content_id(artifact)
+    
+        connection = memory_database()
+>       project_envelopes(connection, [artifact])
+
+tests/test_proofir_sqlite_native_contract.py:505: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdd5d0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_______ test_identical_artifacts_are_idempotent_but_conflicts_roll_back ________
+
+    def test_identical_artifacts_are_idempotent_but_conflicts_roll_back() -> None:
+        artifact = claim_artifact()
+        connection = memory_database()
+>       project_envelopes(connection, [artifact, copy.deepcopy(artifact)])
+
+tests/test_proofir_sqlite_native_contract.py:544: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbab5030>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+___________________ test_query_plans_use_named_access_paths ____________________
+
+    def test_query_plans_use_named_access_paths() -> None:
+        connection = memory_database()
+>       project_envelopes(connection, list(native_artifacts().values()))
+
+tests/test_proofir_sqlite_native_contract.py:566: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbc73c40>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_________ test_file_publication_is_fresh_atomic_and_integrity_checked __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-677/test_file_publication_is_fresh0')
+
+    def test_file_publication_is_fresh_atomic_and_integrity_checked(tmp_path: Path) -> None:
+        destination = tmp_path / "proofir.sqlite3"
+        first = native_artifacts()["proofir.claim"]
+>       publish_v3_database(destination, [first])
+
+tests/test_proofir_sqlite_native_contract.py:623: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proofir_sqlite_native_contract.py:34: in publish_v3_database
+    return implementation(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proofir_sqlite_v3.py:1770: in publish_v3_database
+    project_envelopes(connection, artifacts)
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdd030>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_____ test_recursive_derivation_projection_is_normalized_and_attributable ______
+
+    def test_recursive_derivation_projection_is_normalized_and_attributable() -> None:
+        connection = database()
+        artifact = recursive_derivation()
+>       project_envelopes(connection, [artifact])
+
+tests/test_proofir_sqlite_wave3_contract.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdfc40>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+______ test_source_pointer_constraints_reject_non_pointer_and_bad_escape _______
+
+    def test_source_pointer_constraints_reject_non_pointer_and_bad_escape() -> None:
+        connection = database()
+>       project_envelopes(connection, [claim_artifact()])
+
+tests/test_proofir_sqlite_wave3_contract.py:175: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcde3e0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_________ test_typed_reference_columns_reject_semantically_wrong_kinds _________
+
+    def test_typed_reference_columns_reject_semantically_wrong_kinds() -> None:
+        connection = database()
+>       project_envelopes(connection, [derivation_artifact()])
+
+tests/test_proofir_sqlite_wave3_contract.py:185: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdf3d0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+______ test_large_unknown_extension_is_digest_bound_and_omitted_from_core ______
+
+    def test_large_unknown_extension_is_digest_bound_and_omitted_from_core() -> None:
+        artifact = claim_artifact()
+        artifact["extensions"] = {"unknown.large/v1": {"blob": "x" * (MAX_EXTENSION_BYTES + 1)}}
+        artifact["artifactId"] = detached_content_id(artifact)
+        connection = database()
+>       project_envelopes(connection, [artifact])
+
+tests/test_proofir_sqlite_wave3_contract.py:202: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdcf40>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_________ test_extension_changes_identity_but_not_core_claim_decisions _________
+
+    def test_extension_changes_identity_but_not_core_claim_decisions() -> None:
+        first = claim_artifact()
+        second = copy.deepcopy(first)
+        second["extensions"] = {"unknown.policy/v9": {"assertionState": "accepted"}}
+        second["artifactId"] = detached_content_id(second)
+        observed = []
+        for artifact in (first, second):
+            connection = database()
+>           project_envelopes(connection, [artifact])
+
+tests/test_proofir_sqlite_wave3_contract.py:235: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbab55d0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+__________ test_populated_coverage_query_uses_covering_selector_index __________
+
+    def test_populated_coverage_query_uses_covering_selector_index() -> None:
+        artifacts = []
+        for index in range(80):
+            artifact = claim_artifact()
+            artifact["coverage"]["population"]["selector"] = {"theorem": f"goal:{index}"}
+            artifact["artifactId"] = detached_content_id(artifact)
+            artifacts.append(artifact)
+        connection = database()
+>       project_envelopes(connection, artifacts)
+
+tests/test_proofir_sqlite_wave3_contract.py:286: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdcf40>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_publication_reports_accounting_pid_and_preserves_prior_on_budget_failure _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-677/test_publication_reports_accou0')
+
+    def test_publication_reports_accounting_pid_and_preserves_prior_on_budget_failure(
+        tmp_path: Path,
+    ) -> None:
+        destination = tmp_path / "proofir.sqlite3"
+>       metrics = publish_v3_database(destination, [claim_artifact()])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proofir_sqlite_wave3_contract.py:303: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1770: in publish_v3_database
+    project_envelopes(connection, artifacts)
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdef20>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_________ test_registered_query_plan_gate_passes_on_native_population __________
+
+    def test_registered_query_plan_gate_passes_on_native_population() -> None:
+        connection = database()
+>       project_envelopes(connection, _skewed_native_artifacts())
+
+tests/test_proofir_sqlite_wave3_contract.py:321: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdec50>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.attachment-set] _
+
+kind = 'proofir.attachment-set'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_every_registered_kind_has_valid_invalid_and_projection_cases(kind: str) -> None:
+        source = native_artifacts()[kind]
+        assert validate_envelope(source).to_dict() == source
+    
+        invalid = copy.deepcopy(source)
+        invalid["payload"]["unexpected"] = True
+        invalid["artifactId"] = detached_content_id(invalid)
+        with pytest.raises(ProofIRV3Error) as captured:
+            validate_envelope(invalid)
+        assert captured.value.diagnostic.code == "unexpected-payload-key"
+    
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [source])
+
+tests/test_proofir_v3_corpus_complete.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbc727a0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.attempt-log] _
+
+kind = 'proofir.attempt-log'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_every_registered_kind_has_valid_invalid_and_projection_cases(kind: str) -> None:
+        source = native_artifacts()[kind]
+        assert validate_envelope(source).to_dict() == source
+    
+        invalid = copy.deepcopy(source)
+        invalid["payload"]["unexpected"] = True
+        invalid["artifactId"] = detached_content_id(invalid)
+        with pytest.raises(ProofIRV3Error) as captured:
+            validate_envelope(invalid)
+        assert captured.value.diagnostic.code == "unexpected-payload-key"
+    
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [source])
+
+tests/test_proofir_v3_corpus_complete.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdd8a0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.check-run] _
+
+kind = 'proofir.check-run'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_every_registered_kind_has_valid_invalid_and_projection_cases(kind: str) -> None:
+        source = native_artifacts()[kind]
+        assert validate_envelope(source).to_dict() == source
+    
+        invalid = copy.deepcopy(source)
+        invalid["payload"]["unexpected"] = True
+        invalid["artifactId"] = detached_content_id(invalid)
+        with pytest.raises(ProofIRV3Error) as captured:
+            validate_envelope(invalid)
+        assert captured.value.diagnostic.code == "unexpected-payload-key"
+    
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [source])
+
+tests/test_proofir_v3_corpus_complete.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdeb60>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.claim] _
+
+kind = 'proofir.claim'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_every_registered_kind_has_valid_invalid_and_projection_cases(kind: str) -> None:
+        source = native_artifacts()[kind]
+        assert validate_envelope(source).to_dict() == source
+    
+        invalid = copy.deepcopy(source)
+        invalid["payload"]["unexpected"] = True
+        invalid["artifactId"] = detached_content_id(invalid)
+        with pytest.raises(ProofIRV3Error) as captured:
+            validate_envelope(invalid)
+        assert captured.value.diagnostic.code == "unexpected-payload-key"
+    
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [source])
+
+tests/test_proofir_v3_corpus_complete.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdfa60>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.derivation] _
+
+kind = 'proofir.derivation'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_every_registered_kind_has_valid_invalid_and_projection_cases(kind: str) -> None:
+        source = native_artifacts()[kind]
+        assert validate_envelope(source).to_dict() == source
+    
+        invalid = copy.deepcopy(source)
+        invalid["payload"]["unexpected"] = True
+        invalid["artifactId"] = detached_content_id(invalid)
+        with pytest.raises(ProofIRV3Error) as captured:
+            validate_envelope(invalid)
+        assert captured.value.diagnostic.code == "unexpected-payload-key"
+    
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [source])
+
+tests/test_proofir_v3_corpus_complete.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbacc220>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.environment] _
+
+kind = 'proofir.environment'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_every_registered_kind_has_valid_invalid_and_projection_cases(kind: str) -> None:
+        source = native_artifacts()[kind]
+        assert validate_envelope(source).to_dict() == source
+    
+        invalid = copy.deepcopy(source)
+        invalid["payload"]["unexpected"] = True
+        invalid["artifactId"] = detached_content_id(invalid)
+        with pytest.raises(ProofIRV3Error) as captured:
+            validate_envelope(invalid)
+        assert captured.value.diagnostic.code == "unexpected-payload-key"
+    
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [source])
+
+tests/test_proofir_v3_corpus_complete.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbacc4f0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.governance-observation] _
+
+kind = 'proofir.governance-observation'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_every_registered_kind_has_valid_invalid_and_projection_cases(kind: str) -> None:
+        source = native_artifacts()[kind]
+        assert validate_envelope(source).to_dict() == source
+    
+        invalid = copy.deepcopy(source)
+        invalid["payload"]["unexpected"] = True
+        invalid["artifactId"] = detached_content_id(invalid)
+        with pytest.raises(ProofIRV3Error) as captured:
+            validate_envelope(invalid)
+        assert captured.value.diagnostic.code == "unexpected-payload-key"
+    
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [source])
+
+tests/test_proofir_v3_corpus_complete.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbacd7b0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.plan] _
+
+kind = 'proofir.plan'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_every_registered_kind_has_valid_invalid_and_projection_cases(kind: str) -> None:
+        source = native_artifacts()[kind]
+        assert validate_envelope(source).to_dict() == source
+    
+        invalid = copy.deepcopy(source)
+        invalid["payload"]["unexpected"] = True
+        invalid["artifactId"] = detached_content_id(invalid)
+        with pytest.raises(ProofIRV3Error) as captured:
+            validate_envelope(invalid)
+        assert captured.value.diagnostic.code == "unexpected-payload-key"
+    
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [source])
+
+tests/test_proofir_v3_corpus_complete.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dd4ccb80>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.source-map] _
+
+kind = 'proofir.source-map'
+
+    @pytest.mark.parametrize("kind", KINDS)
+    def test_every_registered_kind_has_valid_invalid_and_projection_cases(kind: str) -> None:
+        source = native_artifacts()[kind]
+        assert validate_envelope(source).to_dict() == source
+    
+        invalid = copy.deepcopy(source)
+        invalid["payload"]["unexpected"] = True
+        invalid["artifactId"] = detached_content_id(invalid)
+        with pytest.raises(ProofIRV3Error) as captured:
+            validate_envelope(invalid)
+        assert captured.value.diagnostic.code == "unexpected-payload-key"
+    
+        connection = sqlite3.connect(":memory:")
+        create_v3_schema(connection)
+>       project_envelopes(connection, [source])
+
+tests/test_proofir_v3_corpus_complete.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcde3e0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_________ test_same_local_ids_in_distinct_owner_artifacts_do_not_join __________
+
+    def test_same_local_ids_in_distinct_owner_artifacts_do_not_join() -> None:
+        left = claim(fingerprint="sha256:" + "1" * 64)
+        right = claim(fingerprint="sha256:" + "2" * 64)
+        assert left["artifactId"] != right["artifactId"]
+        validate_batch([left, right])
+    
+        connection = memory_database()
+>       proofir_sqlite_v3.project_envelopes(connection, [left, right])
+
+tests/test_proofir_v3_subject_scope.py:109: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdcf40>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+______ test_supported_fingerprint_candidate_does_not_merge_exact_subjects ______
+
+    def test_supported_fingerprint_candidate_does_not_merge_exact_subjects() -> None:
+        left = claim(fingerprint="sha256:" + "3" * 64)
+        right = claim(fingerprint="sha256:" + "3" * 64)
+        right["producer"]["buildDigest"] = "sha256:" + "c" * 64
+        _reidentify(right)
+        assert left["artifactId"] != right["artifactId"]
+        connection = memory_database()
+>       proofir_sqlite_v3.project_envelopes(connection, [left, right])
+
+tests/test_proofir_v3_subject_scope.py:128: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcdf5b0>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+_ test_search_and_opaque_subject_metadata_round_trip_without_becoming_identity _
+
+    def test_search_and_opaque_subject_metadata_round_trip_without_becoming_identity() -> (
+        None
+    ):
+        artifact = claim()
+        subject = artifact["subjectRefs"][0]
+        subject["searchShape"] = {"head": "Fixture.goal", "arity": 2}
+        subject["opaquePayloadRef"] = "sha256:" + "d" * 64
+        _reidentify(artifact)
+    
+        checked = validate_batch([artifact])
+        assert checked[0].to_dict()["subjectRefs"][0]["searchShape"] == {
+            "head": "Fixture.goal",
+            "arity": 2,
+        }
+    
+        connection = memory_database()
+>       proofir_sqlite_v3.project_envelopes(connection, [artifact])
+
+tests/test_proofir_v3_subject_scope.py:162: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbcded40>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+___ test_unknown_fingerprint_scheme_is_opaque_and_cannot_establish_equality ____
+
+    def test_unknown_fingerprint_scheme_is_opaque_and_cannot_establish_equality() -> None:
+        left = claim(fingerprint="sha256:" + "4" * 64, scheme=UNKNOWN_SCHEME)
+        right = claim(fingerprint="sha256:" + "4" * 64, scheme=UNKNOWN_SCHEME)
+        connection = memory_database()
+>       proofir_sqlite_v3.project_envelopes(connection, [left, right])
+
+tests/test_proofir_v3_subject_scope.py:184: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbaccd60>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+__ test_same_step_and_context_ids_in_distinct_derivations_remain_owner_scoped __
+
+    def test_same_step_and_context_ids_in_distinct_derivations_remain_owner_scoped() -> (
+        None
+    ):
+        left = derivation(derivation_id="derivation:left")
+        right = derivation(derivation_id="derivation:right")
+        assert left["artifactId"] != right["artifactId"]
+        validate_batch([left, right])
+        connection = memory_database()
+>       proofir_sqlite_v3.project_envelopes(connection, [left, right])
+
+tests/test_proofir_v3_subject_scope.py:265: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_sqlite_v3.py:1477: in project_envelopes
+    create_v3_schema(connection, manage_user_version=manage_user_version)
+src/ladon/proofir_sqlite_v3.py:861: in create_v3_schema
+    reject_obsolete_contract_schema(connection)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+connection = <sqlite3.Connection object at 0x7599dbacda80>
+
+    def reject_obsolete_contract_schema(connection):
+        """Fail before projection writes when an older stage constraint is present."""
+        name = "proofir_v3_contract_analyses"
+        row = connection.execute(
+            "SELECT sql FROM sqlite_master WHERE type='table' AND name=?", (name,),
+        ).fetchone()
+        if row is None:
+            return
+        definition = SCHEMA.split("CREATE TABLE IF NOT EXISTS " + name, 1)[1]
+        expected = "CREATE TABLE " + name + definition.split(";", 1)[0]
+        if " ".join(str(row[0]).split()) != " ".join(expected.split()):
+>           raise RuntimeError("obsolete contract-analysis schema requires a disposable rebuild")
+E           RuntimeError: obsolete contract-analysis schema requires a disposable rebuild
+
+src/ladon/proof_contract_sqlite.py:97: RuntimeError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_propagation_sqlite.py::test_complete_rebuild_removes_previous_analysis_and_exact_goal_rows
+FAILED tests/test_proofir_incremental_resolution.py::test_incremental_external_check_reference_matches_batch_projection
+FAILED tests/test_proofir_incremental_resolution.py::test_incremental_dangling_external_reference_fails_before_rows_are_added
+FAILED tests/test_proofir_query_contracts.py::test_dossier_subject_queries_are_set_oriented
+FAILED tests/test_proofir_query_contracts.py::test_derivation_occurrence_order_is_stable_under_reverse_unordered_selects
+FAILED tests/test_proofir_query_contracts.py::test_dossier_preserves_limitations_from_derivation_artifacts
+FAILED tests/test_proofir_sqlite_native_contract.py::test_projection_validates_before_writing_and_rolls_back_on_failure
+FAILED tests/test_proofir_sqlite_native_contract.py::test_rebuild_is_complete_and_stale_rows_do_not_survive
+FAILED tests/test_proofir_sqlite_native_contract.py::test_local_observation_identity_is_artifact_scoped_without_overwrite
+FAILED tests/test_proofir_sqlite_native_contract.py::test_environment_manifest_is_resolved_without_fabricated_placeholders
+FAILED tests/test_proofir_sqlite_native_contract.py::test_owner_scope_is_part_of_subject_and_claim_identity
+FAILED tests/test_proofir_sqlite_native_contract.py::test_all_native_families_project_with_source_pointer_provenance
+FAILED tests/test_proofir_sqlite_native_contract.py::test_projection_preserves_all_attachment_candidates_and_attempt_residuals
+FAILED tests/test_proofir_sqlite_native_contract.py::test_ambiguous_attachment_projects_no_selected_source_or_semantic_acceptance
+FAILED tests/test_proofir_sqlite_native_contract.py::test_attachment_constraints_reject_authority_and_policy_drift
+FAILED tests/test_proofir_sqlite_native_contract.py::test_sqlite_persists_the_native_resolver_decision_without_reranking
+FAILED tests/test_proofir_sqlite_native_contract.py::test_identical_artifacts_are_idempotent_but_conflicts_roll_back
+FAILED tests/test_proofir_sqlite_native_contract.py::test_query_plans_use_named_access_paths
+FAILED tests/test_proofir_sqlite_native_contract.py::test_file_publication_is_fresh_atomic_and_integrity_checked
+FAILED tests/test_proofir_sqlite_wave3_contract.py::test_recursive_derivation_projection_is_normalized_and_attributable
+FAILED tests/test_proofir_sqlite_wave3_contract.py::test_source_pointer_constraints_reject_non_pointer_and_bad_escape
+FAILED tests/test_proofir_sqlite_wave3_contract.py::test_typed_reference_columns_reject_semantically_wrong_kinds
+FAILED tests/test_proofir_sqlite_wave3_contract.py::test_large_unknown_extension_is_digest_bound_and_omitted_from_core
+FAILED tests/test_proofir_sqlite_wave3_contract.py::test_extension_changes_identity_but_not_core_claim_decisions
+FAILED tests/test_proofir_sqlite_wave3_contract.py::test_populated_coverage_query_uses_covering_selector_index
+FAILED tests/test_proofir_sqlite_wave3_contract.py::test_publication_reports_accounting_pid_and_preserves_prior_on_budget_failure
+FAILED tests/test_proofir_sqlite_wave3_contract.py::test_registered_query_plan_gate_passes_on_native_population
+FAILED tests/test_proofir_v3_corpus_complete.py::test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.attachment-set]
+FAILED tests/test_proofir_v3_corpus_complete.py::test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.attempt-log]
+FAILED tests/test_proofir_v3_corpus_complete.py::test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.check-run]
+FAILED tests/test_proofir_v3_corpus_complete.py::test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.claim]
+FAILED tests/test_proofir_v3_corpus_complete.py::test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.derivation]
+FAILED tests/test_proofir_v3_corpus_complete.py::test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.environment]
+FAILED tests/test_proofir_v3_corpus_complete.py::test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.governance-observation]
+FAILED tests/test_proofir_v3_corpus_complete.py::test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.plan]
+FAILED tests/test_proofir_v3_corpus_complete.py::test_every_registered_kind_has_valid_invalid_and_projection_cases[proofir.source-map]
+FAILED tests/test_proofir_v3_subject_scope.py::test_same_local_ids_in_distinct_owner_artifacts_do_not_join
+FAILED tests/test_proofir_v3_subject_scope.py::test_supported_fingerprint_candidate_does_not_merge_exact_subjects
+FAILED tests/test_proofir_v3_subject_scope.py::test_search_and_opaque_subject_metadata_round_trip_without_becoming_identity
+FAILED tests/test_proofir_v3_subject_scope.py::test_unknown_fingerprint_scheme_is_opaque_and_cannot_establish_equality
+FAILED tests/test_proofir_v3_subject_scope.py::test_same_step_and_context_ids_in_distinct_derivations_remain_owner_scoped
+ERROR tests/test_proofir_query_contracts.py::test_public_queries_reject_nonpositive_limits[query_v3_triage]
+ERROR tests/test_proofir_query_contracts.py::test_public_queries_reject_nonpositive_limits[query_v3_artifacts]
+ERROR tests/test_proofir_query_contracts.py::test_theorem_dossier_exposes_exact_or_bounded_match_accounting
+ERROR tests/test_proofir_query_contracts.py::test_semantic_candidate_query_rejects_nonpositive_limit
+41 failed, 805 passed, 4 errors in 379.12s (0:06:19)

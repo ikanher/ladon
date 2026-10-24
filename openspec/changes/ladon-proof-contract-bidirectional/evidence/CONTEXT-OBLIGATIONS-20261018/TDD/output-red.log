@@ -1,0 +1,36 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___________ test_expansion_budget_checked_before_full_binding_copies ___________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x75a5de2f8e90>
+
+    def test_expansion_budget_checked_before_full_binding_copies(monkeypatch):
+        path = Path(__file__).parent / 'fixtures/proof_contract_context_bridge/observed-plan.json'
+        prepared = json.loads(path.read_text())
+        binding = {'untrusted-large-bookkeeping': 'x' * (2 * 1024**2)}
+        original = goals.copy.deepcopy
+        copies = []
+    
+        def track(value):
+            if value is binding:
+                copies.append(True)
+            return original(value)
+    
+        monkeypatch.setattr(goals.copy, 'deepcopy', track)
+>       with pytest.raises(ValueError, match='output|budget'):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_proof_contract_context_output.py:24: Failed
+____ test_worker_oversized_preparation_is_a_small_incomplete_resource_stop _____
+
+    def test_worker_oversized_preparation_is_a_small_incomplete_resource_stop():
+        result = {'status': 'prepared', 'goals': ['x' * (8 * 1024**2 + 1)]}
+>       body = worker._response(result)
+               ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'ladon.proof_contract_context_worker' has no attribute '_response'
+
+tests/test_proof_contract_context_output.py:31: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_context_output.py::test_expansion_budget_checked_before_full_binding_copies
+FAILED tests/test_proof_contract_context_output.py::test_worker_oversized_preparation_is_a_small_incomplete_resource_stop
+2 failed in 0.12s

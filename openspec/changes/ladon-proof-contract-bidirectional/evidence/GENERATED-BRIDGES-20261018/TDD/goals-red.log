@@ -1,0 +1,66 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___________ test_derived_offset_is_selected_requirement_not_provider ___________
+
+    def test_derived_offset_is_selected_requirement_not_provider():
+        selected = {'contractRecord': {'features': {'regularity': {'offset': 0}}}}
+        symbols = {'leftOperator': 'T.out', 'inputScale': 'T.input', 'map': 'T.map',
+                   'constantName': 'T.C', 'offset': 2}
+>       record = _api().bridge_interpretation(selected, symbols, {'path': 'derived.txt'})
+                 ^^^^^^
+
+tests/test_proof_contract_bridge_goals.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_goals.py:6: in _api
+    return importlib.import_module('ladon._proof_contract_bridge_goals')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon._proof_contract_bridge_goals'
+import_ = <function _gcd_import at 0x772c43b0bd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon._proof_contract_bridge_goals'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+______ test_goal_channels_are_separate_and_do_not_add_desired_assumption _______
+
+    def test_goal_channels_are_separate_and_do_not_add_desired_assumption():
+        selected = {'contractRecord': {'features': {'regularity': {'offset': 0}}}}
+        symbols = {'leftOperator': 'T.out', 'inputScale': 'T.input', 'map': 'T.map',
+                   'constantName': 'T.C', 'offset': 2}
+>       record = _api().bridge_interpretation(selected, symbols, {'path': 'derived.txt'})
+                 ^^^^^^
+
+tests/test_proof_contract_bridge_goals.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_goals.py:6: in _api
+    return importlib.import_module('ladon._proof_contract_bridge_goals')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon._proof_contract_bridge_goals'
+import_ = <function _gcd_import at 0x772c43b0bd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon._proof_contract_bridge_goals'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_bridge_goals.py::test_derived_offset_is_selected_requirement_not_provider
+FAILED tests/test_proof_contract_bridge_goals.py::test_goal_channels_are_separate_and_do_not_add_desired_assumption
+2 failed in 0.05s

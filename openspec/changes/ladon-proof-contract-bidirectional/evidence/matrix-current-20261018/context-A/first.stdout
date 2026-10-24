@@ -1,0 +1,355 @@
+{
+  "candidates": [
+    {
+      "check": {
+        "applicationObservationVersion": 4,
+        "applicationTerm": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg point h boundary query hNonFull hh hBoundaryNonneg hBoundaryQuery\n  hBoundaryGap",
+        "authority": {
+          "analysisCompleteness": "complete",
+          "authorityBasis": "elaborator-check",
+          "environmentMatch": "exact",
+          "executionBinding": "explicit-pinned",
+          "observationState": "derived",
+          "operationOutcome": "accepted",
+          "sourceFreshness": "unknown"
+        },
+        "checkRunRef": {
+          "artifactRef": "sha256:eb159b5fa80e1a6928cfa5c046f48295f2a7702bde5d63ea33a4baa75033bc96",
+          "kind": "check-run",
+          "localId": "check:295e8f350d70dc7bf5e02c51ff04cc1b7c7bd5c60c83ba810be9fdaa01f087be"
+        },
+        "dischargedHypotheses": [
+          {
+            "dischargedByLocalRef": "local:4",
+            "method": "assumption-definitional-equality",
+            "premiseOrdinal": 0,
+            "premiseTypeDisplay": "point.epoch < point.horizon"
+          },
+          {
+            "dischargedByLocalRef": "local:5",
+            "method": "assumption-definitional-equality",
+            "premiseOrdinal": 1,
+            "premiseTypeDisplay": "0 < h"
+          },
+          {
+            "dischargedByLocalRef": "local:6",
+            "method": "assumption-definitional-equality",
+            "premiseOrdinal": 2,
+            "premiseTypeDisplay": "0 ≤ boundary"
+          },
+          {
+            "dischargedByLocalRef": "local:7",
+            "method": "assumption-definitional-equality",
+            "premiseOrdinal": 3,
+            "premiseTypeDisplay": "boundary < query"
+          },
+          {
+            "dischargedByLocalRef": "local:8",
+            "method": "assumption-definitional-equality",
+            "premiseOrdinal": 4,
+            "premiseTypeDisplay": "0 ≤ Mf.DP.fixedEpochCenterGap point h boundary"
+          }
+        ],
+        "environmentRef": {
+          "artifactRef": "sha256:d60be6b24231f976dde992645611eb852f90132574c64be83e3e9c452d037621",
+          "environmentRef": "sha256:66d5c14004bf850938aeae9d787b4686b912291194f4b06577a03c52f36600c0"
+        },
+        "executionBindingLimitation": null,
+        "failure": null,
+        "receiptIdentity": "sha256:1754982c57fb85cf36c6c814cb4984d39db8a78514356b951ff0cefff6dda480",
+        "residualContexts": [],
+        "residualPremises": [],
+        "resourceAccounting": {},
+        "scratch": {
+          "authority": {
+            "analysisCompleteness": "partial",
+            "authorityBasis": "process-observation",
+            "environmentMatch": "exact",
+            "executionBinding": "explicit-pinned",
+            "observationState": "derived",
+            "operationOutcome": "accepted",
+            "sourceFreshness": "unknown"
+          },
+          "checkRunRef": {
+            "artifactRef": "sha256:c05289179a14383e951b3ab872146fa115d70def400017f93af9a20af2025a2b",
+            "kind": "check-run",
+            "localId": "check:e7d67a26f569301ddbb5034c9c56c6e2fc22f9e65911d41d656ed3fcfeed08bb"
+          },
+          "environmentRef": {
+            "artifactRef": "sha256:d60be6b24231f976dde992645611eb852f90132574c64be83e3e9c452d037621",
+            "environmentRef": "sha256:66d5c14004bf850938aeae9d787b4686b912291194f4b06577a03c52f36600c0"
+          },
+          "executionBindingLimitation": null,
+          "receiptIdentity": "sha256:67d3253f8b1dd30c875e3e8ad7aef300f8fbb953ab9ce501cbbd748b289013bc",
+          "sourceReceiptIdentity": "sha256:acee2cb524a8c1b45c4ec80bd4a0e9d1c64cba1de36275cf9d4d5b98dcf3119a",
+          "status": "compiled"
+        },
+        "selectedDeclaration": {
+          "binders": [
+            {
+              "binderInfo": "Lean.BinderInfo.default",
+              "localId": "local:0",
+              "typeDisplay": "Mf.DP.PoissonFixedEpochPoint",
+              "userName": "point"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.default",
+              "localId": "local:1",
+              "typeDisplay": "ℝ",
+              "userName": "h"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.default",
+              "localId": "local:2",
+              "typeDisplay": "ℝ",
+              "userName": "boundary"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.default",
+              "localId": "local:3",
+              "typeDisplay": "ℝ",
+              "userName": "query"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.default",
+              "dependencies": [
+                "local:0"
+              ],
+              "localId": "local:4",
+              "typeDisplay": "point.epoch < point.horizon",
+              "userName": "hNonFull"
+            },
+            {
+              "binderInfo": "Lean.BinderInfo.default",
+              "dependencies": [
+                "local:1"
+              ],
+              "localId": "local:5",
+              "typeDisplay": "0 < h",
+              "userName": "hh"
+            }
+          ],
+          "name": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+          "typeDisplay": "∀ (point : Mf.DP.PoissonFixedEpochPoint) (h boundary query : ℝ),\n  point.epoch < point.horizon →\n    0 < h →\n      0 ≤ boundary →\n        boundary < query → 0 ≤ Mf.DP.fixedEpochCenterGap point h boundary → 0 < Mf.DP.fixedEpochCenterGap point h query"
+        },
+        "semanticProtocol": "ladon-lean-semantic-v4/check-candidates",
+        "sourceReceiptIdentity": "sha256:f2e40beceefc72889a587bed6eb125919b313efb9347d6131c4fa3247b48fd56",
+        "status": "accepted",
+        "substitutions": [
+          {
+            "termDisplay": "point",
+            "variable": "binder:0:point"
+          },
+          {
+            "termDisplay": "h",
+            "variable": "binder:1:h"
+          },
+          {
+            "termDisplay": "boundary",
+            "variable": "binder:2:boundary"
+          },
+          {
+            "termDisplay": "query",
+            "variable": "binder:3:query"
+          },
+          {
+            "termDisplay": "hNonFull",
+            "variable": "binder:4:hNonFull"
+          },
+          {
+            "termDisplay": "hh",
+            "variable": "binder:5:hh"
+          }
+        ]
+      },
+      "name": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+      "nameFingerprint": "sha256:b96d018a3734db10d78916c31db8d2fd92373a529c91498d029372321d5a6f15",
+      "shortlist": {
+        "authority": null,
+        "bucket": null,
+        "fieldContributions": {},
+        "ordinal": 0
+      },
+      "source": null
+    }
+  ],
+  "coverage": {
+    "candidatePopulation": {
+      "applicableWithResiduals": 0,
+      "closedAccepted": 1,
+      "observed": 1,
+      "omitted": 0,
+      "projected": 1,
+      "scratchStatusCounts": {
+        "compiled": 1
+      },
+      "statusCounts": {
+        "accepted": 1
+      }
+    },
+    "canonical": {
+      "accepted": 1,
+      "completed": 1,
+      "failed": 0,
+      "invalidWorkerOutput": 0,
+      "memoryLimited": 0,
+      "outputLimited": 0,
+      "rejected": 0,
+      "scratchAttempted": 1,
+      "scratchCompiled": 1,
+      "shortlisted": 1,
+      "submitted": 1,
+      "timeouts": 0,
+      "truncated": false,
+      "unassessed": 0
+    },
+    "omissionPopulation": {
+      "generatedRecords": 0,
+      "observedRecords": 12,
+      "omittedRecords": 0,
+      "projectedRecords": 12,
+      "totalClaims": 33,
+      "transportRecords": 12
+    },
+    "operationalFailure": false
+  },
+  "limitations": [
+    "Artifact bodies and structural Lean expressions are omitted; expand registered evidence for audit.",
+    "Lexical shortlisting is not Lean applicability.",
+    "Rejected and unassessed candidates remain visible."
+  ],
+  "omissions": [
+    {
+      "omitted": 18,
+      "pointer": "/candidates/0/check/selectedDeclaration/binders",
+      "reason": "compact-local-fields-omitted"
+    },
+    {
+      "omitted": 3,
+      "pointer": "/candidates/0/check/selectedDeclaration/binders",
+      "reason": "projection-collection-limit"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/selectedDeclaration/typeStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 3,
+      "pointer": "/candidates/0/check/substitutions",
+      "reason": "projection-collection-limit"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/substitutions/0/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/substitutions/1/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/substitutions/2/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/substitutions/3/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/substitutions/4/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/check/substitutions/5/termStructural",
+      "reason": "structural-evidence-omitted"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidates/0/source",
+      "reason": "source-location-unavailable"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/request/localContext",
+      "reason": "projection-collection-limit"
+    }
+  ],
+  "operation": "discover",
+  "projection": {
+    "canonicalPayloadIdentity": "sha256:8cf74d6b9d856d7181d1bd6d0f925adb15a274f55f8da11ba2df9fff140bc3b5",
+    "canonicalSchema": "ladon-verified-discovery-result-v1",
+    "limits": {
+      "maxBytes": 32768,
+      "measurement": "pretty-json-utf8-v1"
+    },
+    "name": "review",
+    "producerResultIdentity": "sha256:c003e4fc5105ba42e2d01119b8c7222c49ba10dc569bf79272e45e4ef1451775",
+    "projectionIdentity": "sha256:cd3ec8e9fa310bd7151d00ec7e312407d0192a46986b14f64bcfc7e34c4db9e5"
+  },
+  "ranking": {
+    "contributions": [
+      {
+        "candidate": "Mf.DP.fixedEpochCenterGap_pos_of_boundary_nonneg",
+        "priority": 0,
+        "status": "accepted"
+      }
+    ],
+    "policy": "verified-status-priority-v1"
+  },
+  "request": {
+    "freshness": "stored",
+    "goal": "0 < Mf.DP.fixedEpochCenterGap point h query",
+    "goalFingerprint": "sha256:2f13f6f9373020a31da11f12c4a937f79b187569576cd4f0f990cac8718e069d",
+    "localContext": [
+      {
+        "name": "point",
+        "type": "Mf.DP.PoissonFixedEpochPoint"
+      },
+      {
+        "name": "h",
+        "type": "ℝ"
+      },
+      {
+        "name": "boundary",
+        "type": "ℝ"
+      },
+      {
+        "name": "query",
+        "type": "ℝ"
+      },
+      {
+        "name": "hNonFull",
+        "type": "point.epoch < point.horizon"
+      },
+      {
+        "name": "hh",
+        "type": "0 < h"
+      },
+      {
+        "name": "hBoundaryNonneg",
+        "type": "0 ≤ boundary"
+      },
+      {
+        "name": "hBoundaryQuery",
+        "type": "boundary < query"
+      }
+    ],
+    "maxCandidates": 1,
+    "module": "Mf.DP.PoissonFixedEpochCenterGapPropagation",
+    "moduleFingerprint": "sha256:43b9d35c0d04f302f9097273dec373079d7623af21f40f694877118bd6b89fbc",
+    "roots": [],
+    "scope": "repository",
+    "scratchMode": "advisory"
+  },
+  "schema": "ladon-verified-discovery-projection-v1",
+  "shortlist": {
+    "source": "explicit-candidates"
+  },
+  "status": "available"
+}

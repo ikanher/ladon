@@ -1,0 +1,15 @@
+{
+  "assignmentPost": 551,
+  "canonicalEdits": false,
+  "findings": [],
+  "leanOrExtractionOrSourceRun": false,
+  "limitations": "Did not run tests, source workflow, extraction, or Lean. Runtime matrix and custody remain root-owned.",
+  "reviewed": {
+    "admission": "_missing_provider appends only after _admit_provider_request succeeds; the helper checks current saved bytes plus existing and newly required summary reserve against MAX_BYTES (8 MiB), then commits the reserve before append.",
+    "sizeBound": "_planned_input_size uses the shared aggregate JSON counter; it counts compact JSON punctuation and UTF-8 string bytes. Adding one byte per retained request conservatively covers the array separator/newline increment. _reserve_summary already accounts for base summary structure; _publish_summary separately includes its summary-path and accounting fields.",
+    "stopAndCoverage": "If admission fails, providerSliceRequests is unchanged and state.stopped plus a budget stop reason are set. The preinitialized sourceChecks and route coverage remain in the final summary with unresolved coverage, and the top-level status becomes incomplete. The later route loop exits on stopped.",
+    "testReview": "The targeted test models two 7 MiB pending requests, asserts exactly one retained, status incomplete, all two native coverage checks still represented, and both reported/file bytes within 8 MiB. No test was run in this read-only audit.",
+    "writes": "_save_json subtracts summaryReserve from MAX_BYTES before each evidence write, so later source/proof artifacts cannot consume bytes reserved for already retained requests."
+  },
+  "status": "PASS_READ_ONLY"
+}

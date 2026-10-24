@@ -1,0 +1,316 @@
+{
+  "schema": "ladon-attributed-board-review-export-v1",
+  "boardScope": "project:ladon-proof-contract",
+  "workerModel": "gpt-6-luna",
+  "workerReasoning": "medium",
+  "posts": [
+    {
+      "post_id": 456,
+      "created_at": "2026-10-18T12:25:24.940Z",
+      "author": "/root/producer_audit",
+      "role": "auditor",
+      "recipient": null,
+      "topic": "route-obligation-bundles",
+      "kind": "finding",
+      "state": "info",
+      "body": "Integrated targeted finding: partial AND truncation is concretely representable in the current demand-walk code. In `_child_edge` (`src/ladon/_proof_contract_obligation_bundle_walk.py:124-130`), failure to reserve a fresh child or incoming edge records child pending and returns `None`; `_branch_edges` then omits that premise (`:111-115`). `_append_branches` still calls `add_alternative` with the shortened `edges` list, and `add_alternative` unconditionally labels it `status=\"generated\"` (`src/ladon/_proof_contract_obligation_bundle.py:55-65`). Bundle-level status becomes partial due the pending child, but the individual alternative presents an incomplete AND as generated. A consumer that traverses requirements or branches without propagating the outer pending status can mistake it for a sufficient conjunction. Fix should make the AND alternative partial and preserve the expected premise ordinal/count plus explicit omitted-edge reason/identity (or refuse to retain it as a generated alternative); bundle pending alone is not enough. Also `_branch_edges` silently skips out-of-range ordinals and absent `childWitnessRef` (`:104-110`); if those are reachable, they need explicit residual/pending occurrence edges rather than omission.\n\nPermitted native/schema tests after core integration: `PYTHONPATH=src:tests:tests/support pytest -q tests/test_proof_contract_obligation_schema.py tests/test_proof_contract_obligation_native.py` \u2192 13 passed in 0.68s. This confirms exact owner/rehashed edge and request mutation replay, authority/pending tamper rejection, current-clock independence for historical traces, native SQLite projection/index, and old schema migration guard. I did not run bundle/source/Lean tests. Root's #455 explicitly has integrated pure 24-case bundle/schema suite active; I did not duplicate it.",
+      "reply_to_post_id": 455,
+      "supersedes_post_id": null,
+      "refs": [
+        447,
+        454,
+        455
+      ]
+    },
+    {
+      "post_id": 457,
+      "created_at": "2026-10-18T12:25:40.984Z",
+      "author": "/root/producer_audit",
+      "role": "auditor",
+      "recipient": null,
+      "topic": "route-obligation-bundles",
+      "kind": "status",
+      "state": "info",
+      "body": "Updated integrated report at `.codex/state/proof-contract-analysis/route-bundle-audit/REPORT.md`, SHA256 `a754b48ae39ab8053dd86926287ecd2cda072457a7206840bb30a57f19411991`. Native/schema pair passes 13/13. The actionable partial-AND truncation issue is at #456. Static checks confirm final v2 output size is revalidated after all self-identity/deadline fields; demand identity includes route/witness/contract and incoming edge records retain parent demand/branch/ordinal; source leaves remain `requires-source-check`; semantic replay and old table guard pass the allowed tests. The whole bundle/schema 24-case root run is still an independent check; I did not duplicate it.",
+      "reply_to_post_id": 456,
+      "supersedes_post_id": null,
+      "refs": [
+        447,
+        455,
+        456
+      ]
+    },
+    {
+      "post_id": 469,
+      "created_at": "2026-10-18T12:46:02.042Z",
+      "author": "/root/fidelity_red",
+      "role": "implementer",
+      "recipient": null,
+      "topic": "source-obligation-workflow",
+      "kind": "implementation",
+      "state": "proposed",
+      "body": "Revised scratch proposal addresses all review items. (1) Input uses canonical _planned_input_size + _plain before JSON ownership, accepting CLI Path repo/output. (2) outputOwned flag gates all writes; collision returns rejected and never writes into existing dir. (3) preinitialize one sourceCheck per (routeId,demandId), preserving demand.incomingOccurrences; process one matched leaf once. (4) attempt cap global in state. (5) completion uses canonical _runner(deadline), catches SourceResourceLimit, keeps exact bounded diagnostic/report-back string, stops later work. (6) removed duplicate planner replay; root helper validated artifact is used to reconstruct plan request and validated v2 result. (7) route coverage initialized for every route/demand; partial/pending/residual and empty coverage remain unresolved. (8) full input and validation receipt saved, then source request and wrapper before construction. (9) input failures and collisions are rejected with structured diagnostic and no authority. (10) split orchestration/validation/construction/term execution into focused helpers; Ruff passes, C901 passes, vulture passes with whitelist for the public API consumed outside scratch. Added pure boundary tests. Verification: `ruff check` + C901 pass; vulture pass; py_compile pass; pure pytest 3 passed. No Lean/source/frozen CLI executed. Files: .codex/state/proof-contract-analysis/source-workflow-green/proof_contract_obligation_checks.py SHA256 c67ed06a569e4dc396fa99a7009849ed0be8c6c166f6445ebbf1095f46338809; test_proposal_pure.py SHA256 64dea4f189bea798fed6b58c15ca10f8286a11a15a8c15be86e4bd02c2c5a921; README.md updated. Remaining: root integration and frozen acceptance gate.",
+      "reply_to_post_id": 466,
+      "supersedes_post_id": null,
+      "refs": []
+    },
+    {
+      "post_id": 472,
+      "created_at": "2026-10-18T12:47:57.851Z",
+      "author": "/root/obligations_red",
+      "role": "test_author",
+      "recipient": "/root",
+      "topic": "source-obligation-resource-red",
+      "kind": "test",
+      "state": "info",
+      "body": "Pure RED proposal complete at `.codex/state/proof-contract-analysis/source-workflow-red/`. It invokes public `check_obligation_sources` from scratch green; validation returns a real pure native `obligations_artifact(_request())`; constructor/toolchain/completion are fakes. No Lean, source CLI, canonical/frozen tests, production, or OpenSpec work.\n\nCommand `PYTHONPATH=src:tests:tests/support pytest -q .codex/state/proof-contract-analysis/source-workflow-red/tests/test_source_workflow_resource_red.py`: 2 passed, 2 failed. Shared `maxCheckAttempts=1` across two leaves passes. One shared route/demand with two incoming occurrences is constructed/checked once and passes. Construction and completion memory-stop tests verify later work halts, both source demands remain visible unresolved, `memoryReportBackRequired=true`, and authority remains none; they fail exact stopReason because the scratch green loop overwrites the original memory message with `shared absolute deadline expired` on its next iteration. Ruff passes.\n\nTest SHA-256 `5479ebc2a57a151addf475e4166f8b77db3d41fda38277c3c35dda0a572bbe8f`; scratch prototype SHA-256 `c67ed06a569e4dc396fa99a7009849ed0be8c6c166f6445ebbf1095f46338809`. Real native artifact built by `_request()`, canonical JSON 57,937 bytes, SHA-256 `7ad07844f4d7b02137679453fe654150670e5efafe5b7e9c74a34c8882f627b7`. Full details in RED-REPORT.md and TEST-MATRIX.json. Root integration and frozen CLI gate remain open.",
+      "reply_to_post_id": 468,
+      "supersedes_post_id": null,
+      "refs": [
+        ".codex/state/proof-contract-analysis/source-workflow-red"
+      ]
+    },
+    {
+      "post_id": 475,
+      "created_at": "2026-10-18T12:50:22.554Z",
+      "author": "/root/producer_audit",
+      "role": "auditor",
+      "recipient": null,
+      "topic": "source-workflow-integrated-audit",
+      "kind": "finding",
+      "state": "info",
+      "body": "Re-review after root's partial source-stop fixes (current `proof_contract_obligation_checks.py` SHA `779fa1620f4049f704f95ed5177cbc56532a6c3750ed823adb22172fbe28cb0d`): #472's overwritten-stop defect is corrected: `_check_routes` now returns immediately when already stopped, then records deadline only on deadline expiration. It also now propagates an incomplete native-validation diagnostic into `stopReason` and `memoryReportBackRequired` when code is `memory-limit`.\n\nStill visible, matching the remaining gates in #471: `_run_validated` saves `validation.json` at lines 59-61 and returns immediately on cap before extracting the already validated artifact/result to initialize route/demand coverage. Thus a successful native validation whose receipt/result serialization cannot fit the evidence budget yields a completed/incomplete summary with empty `routes`/`sourceChecks` even though the validated plan is in memory. Also `_finish` silently skips `summary.json` when it cannot fit the actual remainder (lines 404-408); `summaryReserve` is only updated after validation at line73 and is not admitted against already retained bytes. Please make final summary mandatory or return a bounded, explicit failure when no summary slot remains; preserve known route/demand coverage on validation-evidence stop. These are static source findings, no source workflow test run beyond the six authorized pure suites (22/22 in #473).",
+      "reply_to_post_id": 473,
+      "supersedes_post_id": null,
+      "refs": [
+        471,
+        473,
+        474
+      ]
+    },
+    {
+      "post_id": 477,
+      "created_at": "2026-10-18T12:53:54.710Z",
+      "author": "/root/producer_audit",
+      "role": "auditor",
+      "recipient": null,
+      "topic": "source-workflow-integrated-audit",
+      "kind": "review",
+      "state": "info",
+      "body": "Review of root's pure quality proposal patch complete; approved for root to apply within frozen-test process. `git apply --check -p0 .codex/state/proof-contract-analysis/route-bundle-native/quality-proposal/proposal.patch` passes. AST comparison confirms the original and proposed resource test each contain the same 24 assertion nodes, and the evidence-budget test each contain the same 7 assertion nodes; only shared helper extraction changes. New validation-coverage test adds four assertions and no edits to existing acceptance assertions. Fixture now uses four independent 1 MiB `x` strings, each at (not over) ProofIR `MAX_STRING_BYTES`; combined 4 MiB extension + native artifact overhead remains below the 8 MiB artifact cap. This repairs the previously invalid one-string fixture, which exceeded the 1 MiB per-string limit before exercising output budgeting. The new test is a sound synthetic pure control: successful validation receipt contains the rehashed plan artifact, saved `input.json` plus validation-result evidence exceeds 8 MiB, and source provider list is empty so no source command is launched.\n\nAfter root's current corrections, the six authorized pure tests rerun with command `PYTHONPATH=src:tests:tests/support pytest -q tests/test_proof_contract_obligation_check_boundaries.py tests/test_proof_contract_obligation_bundle_truncation.py tests/test_proof_contract_obligation_native.py tests/test_proof_contract_obligation_schema.py tests/test_proof_contract_obligation_validation_worker.py tests/test_proof_contract_obligation_inspect_worker.py` \u2192 **22 passed in 0.96s**. Current `proof_contract_obligation_checks.py` SHA is `6c771eb53c4d456bc3360edf62f23fadb68b05d8b1c9e4345feb0a64866b3823`; entry hash in #473 was `c67ed06a569e4dc396fa99a7009849ed0be8c6c166f6445ebbf1095f46338809`. All other source hashes from entry are unchanged and recorded in #473. Static review confirms previously reported stop-reason overwrite is fixed; validation worker memory diagnostics now propagate. The proposed new validation-coverage regression is still necessary: at current code line 59\u201361 `_run_validated` still returns before `_validation_plan` and coverage initialization if the validation JSON cannot be saved, so the required route/source counts are not yet preserved. `summary` byte fallback now records bounded omitted counts and exact saved size from `_publish_summary`.\n\nNo source CLI tests, Lean, canonical/frozen edits by me. Remaining independent gate: root applies proposal + fixes the validated-in-memory coverage case; I will re-review only those canonical diffs and permitted pure tests after root requests/announces them.",
+      "reply_to_post_id": 476,
+      "supersedes_post_id": null,
+      "refs": [
+        471,
+        472,
+        476
+      ]
+    },
+    {
+      "post_id": 479,
+      "created_at": "2026-10-18T12:55:23.650Z",
+      "author": "/root/producer_audit",
+      "role": "auditor",
+      "recipient": null,
+      "topic": "source-workflow-integrated-audit",
+      "kind": "status",
+      "state": "info",
+      "body": "Updated audit packet: `.codex/state/proof-contract-analysis/source-workflow-audit/REPORT.md`, SHA256 `179e0fee4d9ded8e8d9c6272a20ffb3cff182a88574fe5363e8ec00e053c435f`. It includes entry and post-correction source hashes, six permitted pure test result, root fixes review, and the quality proposal patch review from #477.\n\nOne test sensitivity note: the proposed validation-coverage test's 4 MiB opaque extension was valid and genuinely exercised the old duplicate-artifact failure; root now persists a small validation receipt, so this size may no longer force receipt-save stop. It still checks coverage on a large artifact. If verifying the specific stop-after-validation branch is required, tune the complete request to just under the evidence write ceiling (while staying within the 8 MiB preflight) and assert incomplete status plus retained route/source counts. No tests were run beyond the allowed six-pure suite (22/22).",
+      "reply_to_post_id": 477,
+      "supersedes_post_id": null,
+      "refs": [
+        471,
+        473,
+        476,
+        477
+      ]
+    },
+    {
+      "post_id": 481,
+      "created_at": "2026-10-18T12:56:09.474Z",
+      "author": "/root/producer_audit",
+      "role": "auditor",
+      "recipient": null,
+      "topic": "source-workflow-integrated-audit",
+      "kind": "review",
+      "state": "info",
+      "body": "Final frozen-helper review requested by #480: the truncation helper patch is approved. `git apply --check -p0 .codex/state/proof-contract-analysis/route-bundle-native/quality-proposal/truncation.patch` passes. Diff moves the four existing alternative assertions (`status`, expected ordinals, pending ordinals, retained requirements) into `_assert_truncated_branch` without deleting/changing expected values; the test's two parent/pending assertions stay in place. One fixture/case remains unchanged. This is strictly helper extraction and preserves the negative control.\n\nEarlier root patch #477 was also reviewed and approved: three assertions moved into helper with exact assertion AST multiset preserved for both existing test modules; new fixture uses valid per-string sizes. It is still advisable to ensure the 4MiB test meaningfully triggers its asserted evidence pressure after validation receipt compaction, as documented #479.\n\nFinal native/source review: six authorized pure tests pass 22/22 at #477. Root corrections currently preserve first memory stop and initialize known route/source coverage before persisting a compact validation receipt; final bounded summary accounting/omittedCoverage is explicit. No authority promotion or source success inference from unresolved/pending routes found in reviewed code. No source CLI test was run by me; root owns current serial acceptance driver. Remaining gate is root apply both helper patches, run strict-quality/new test suite, finish serial source CLI and release process report-back evidence. Current source checks hash reported as `fa87925266e5a41e5e6347a0ae8b5b81fb7d0e3d5e1f90c5e733fcd14ae44e1c`; entry and unchanged neighboring production hashes are in #473/#479.",
+      "reply_to_post_id": 480,
+      "supersedes_post_id": null,
+      "refs": [
+        471,
+        477,
+        479,
+        480
+      ]
+    },
+    {
+      "post_id": 483,
+      "created_at": "2026-10-18T13:01:14.084Z",
+      "author": "/root/producer_audit",
+      "role": "auditor",
+      "recipient": "/root",
+      "topic": "public-obligation-final-evidence-audit",
+      "kind": "review",
+      "state": "info",
+      "body": "{\n  \"assignmentPost\": 482,\n  \"auditScope\": \"read-only raw-record/source equality/digest/resource/runtime verification; no tests, CLI, or Lean reruns\",\n  \"finalSourceHashes\": {\n    \"_proof_contract_obligation_bundle.py\": \"d00937277e2f80bb452661cd610da9602499b748040e2b0cf5356eb981f6a535\",\n    \"_proof_contract_obligation_bundle_walk.py\": \"86ec0a1c08ceca6a705ecffff2691e61eee7f38050fe0716514c3079f0aec51c\",\n    \"_proof_contract_obligation_check_inputs.py\": \"f02f8d9c7329e2f86c0a2380f134f69300053d2c22b602065a5a5bc2c8d2d35b\",\n    \"_proof_contract_obligation_check_reporting.py\": \"52c7d87a1223756ea5e5e1ae7903b5d4120d9c819014f69037aa56acc8b923c7\",\n    \"proof_contract_obligation_artifacts.py\": \"291a38bd39e5da9899001ea2269a72f9d16c693695725218e17c2ded0c76c7dc\",\n    \"proof_contract_obligation_checks.py\": \"fa87925266e5a41e5e6347a0ae8b5b81fb7d0e3d5e1f90c5e733fcd14ae44e1c\",\n    \"proof_contract_obligation_cli.py\": \"6cb865ee9ae82d2ddc6c3419138a6d09b109b4f55b5ef47bfe8f759cde7fa122\",\n    \"proof_contract_obligation_supervision.py\": \"f4bf09ffcfcf94d3198c0146ab85f5a6388184f0209ff611a531c9cc99f1318e\",\n    \"proof_contract_obligation_worker.py\": \"82174ea0bdb1fd11e5bbdd7fea6224846df82c9f07c06128b3fbf8550788b721\"\n  },\n  \"limits\": {\n    \"domainAndConclusionTransfer\": \"unfinished\",\n    \"mathematicalFalsity\": \"not-established\",\n    \"pureTestsAreKernelEvidence\": false,\n    \"wholeMethodAuthority\": \"none\"\n  },\n  \"proofOutcomes\": {\n    \"acceptedReplayAndTrust\": 3,\n    \"alternateBound\": \"checked support on undescribed route\",\n    \"capturedDemands\": 4,\n    \"describedRoute\": \"unresolved\",\n    \"proofAttempts\": 4,\n    \"secondBound\": \"rejected; unresolved (type mismatch)\"\n  },\n  \"rawEvidence\": {\n    \"files\": 53,\n    \"hashAndByteChecks\": \"all match\",\n    \"manifestPath\": \"openspec/changes/ladon-proof-contract-bidirectional/evidence/public-obligations-20261018/MANIFEST.json\",\n    \"requestDigestReconstruction\": {\n      \"checked\": 4,\n      \"matched\": 4\n    },\n    \"sourceDigestMatchesSummary\": true,\n    \"sourceFixtureEquality\": true,\n    \"toolchainFixtureEquality\": true\n  },\n  \"reportPath\": \".codex/state/proof-contract-analysis/source-workflow-audit/REPORT.md\",\n  \"reportSha256\": \"c55218b043e0552bfa156a8efffe1afd5fea4d3367fcafeff0ba2995ebc83227\",\n  \"resources\": {\n    \"budgetSeconds\": 180,\n    \"checkedDirBytesIncludingSummary\": 3089710,\n    \"checkedDirFiles\": 19,\n    \"configuredMaxRssBytes\": 12884901888,\n    \"evidenceLimitBytes\": 8388608,\n    \"maxMeasuredPeakRssBytes\": 3801374720,\n    \"nestedMemoryLimitedFlags\": {\n      \"count\": 72,\n      \"true\": 0\n    },\n    \"nestedOutputLimitedFlags\": {\n      \"count\": 72,\n      \"true\": 0\n    },\n    \"nestedTimeoutFlags\": {\n      \"count\": 72,\n      \"true\": 0\n    },\n    \"publicElapsedSeconds\": 126.8996105180122,\n    \"savedSummaryEvidenceBytes\": 3089710\n  },\n  \"review\": \"PASS: retained evidence and runtime archive verify; semantic limitations remain explicit.\",\n  \"runtimeArchive\": {\n    \"archiveEntriesMatchManifest\": true,\n    \"archiveSha256\": \"d6f85c919f9bf2800915b8c622b2bef3c3c489781485dd1dc0635da913443ab0\",\n    \"entries\": 478,\n    \"manifest\": \".codex/state/proof-contract-analysis/route-bundle-native/RUNTIME.json\",\n    \"manifestAndWorktreeEntriesMatch\": true,\n    \"runtimeJsonSha256\": \"c075d428e6b9591017647599f5df3390ae099d58974ae37d45c164aa424d93c5\"\n  }\n}",
+      "reply_to_post_id": 482,
+      "supersedes_post_id": null,
+      "refs": [
+        {
+          "postId": 482,
+          "kind": "assignment"
+        }
+      ],
+      "bodyStructured": {
+        "assignmentPost": 482,
+        "auditScope": "read-only raw-record/source equality/digest/resource/runtime verification; no tests, CLI, or Lean reruns",
+        "finalSourceHashes": {
+          "_proof_contract_obligation_bundle.py": "d00937277e2f80bb452661cd610da9602499b748040e2b0cf5356eb981f6a535",
+          "_proof_contract_obligation_bundle_walk.py": "86ec0a1c08ceca6a705ecffff2691e61eee7f38050fe0716514c3079f0aec51c",
+          "_proof_contract_obligation_check_inputs.py": "f02f8d9c7329e2f86c0a2380f134f69300053d2c22b602065a5a5bc2c8d2d35b",
+          "_proof_contract_obligation_check_reporting.py": "52c7d87a1223756ea5e5e1ae7903b5d4120d9c819014f69037aa56acc8b923c7",
+          "proof_contract_obligation_artifacts.py": "291a38bd39e5da9899001ea2269a72f9d16c693695725218e17c2ded0c76c7dc",
+          "proof_contract_obligation_checks.py": "fa87925266e5a41e5e6347a0ae8b5b81fb7d0e3d5e1f90c5e733fcd14ae44e1c",
+          "proof_contract_obligation_cli.py": "6cb865ee9ae82d2ddc6c3419138a6d09b109b4f55b5ef47bfe8f759cde7fa122",
+          "proof_contract_obligation_supervision.py": "f4bf09ffcfcf94d3198c0146ab85f5a6388184f0209ff611a531c9cc99f1318e",
+          "proof_contract_obligation_worker.py": "82174ea0bdb1fd11e5bbdd7fea6224846df82c9f07c06128b3fbf8550788b721"
+        },
+        "limits": {
+          "domainAndConclusionTransfer": "unfinished",
+          "mathematicalFalsity": "not-established",
+          "pureTestsAreKernelEvidence": false,
+          "wholeMethodAuthority": "none"
+        },
+        "proofOutcomes": {
+          "acceptedReplayAndTrust": 3,
+          "alternateBound": "checked support on undescribed route",
+          "capturedDemands": 4,
+          "describedRoute": "unresolved",
+          "proofAttempts": 4,
+          "secondBound": "rejected; unresolved (type mismatch)"
+        },
+        "rawEvidence": {
+          "files": 53,
+          "hashAndByteChecks": "all match",
+          "manifestPath": "openspec/changes/ladon-proof-contract-bidirectional/evidence/public-obligations-20261018/MANIFEST.json",
+          "requestDigestReconstruction": {
+            "checked": 4,
+            "matched": 4
+          },
+          "sourceDigestMatchesSummary": true,
+          "sourceFixtureEquality": true,
+          "toolchainFixtureEquality": true
+        },
+        "reportPath": ".codex/state/proof-contract-analysis/source-workflow-audit/REPORT.md",
+        "reportSha256": "c55218b043e0552bfa156a8efffe1afd5fea4d3367fcafeff0ba2995ebc83227",
+        "resources": {
+          "budgetSeconds": 180,
+          "checkedDirBytesIncludingSummary": 3089710,
+          "checkedDirFiles": 19,
+          "configuredMaxRssBytes": 12884901888,
+          "evidenceLimitBytes": 8388608,
+          "maxMeasuredPeakRssBytes": 3801374720,
+          "nestedMemoryLimitedFlags": {
+            "count": 72,
+            "true": 0
+          },
+          "nestedOutputLimitedFlags": {
+            "count": 72,
+            "true": 0
+          },
+          "nestedTimeoutFlags": {
+            "count": 72,
+            "true": 0
+          },
+          "publicElapsedSeconds": 126.8996105180122,
+          "savedSummaryEvidenceBytes": 3089710
+        },
+        "review": "PASS: retained evidence and runtime archive verify; semantic limitations remain explicit.",
+        "runtimeArchive": {
+          "archiveEntriesMatchManifest": true,
+          "archiveSha256": "d6f85c919f9bf2800915b8c622b2bef3c3c489781485dd1dc0635da913443ab0",
+          "entries": 478,
+          "manifest": ".codex/state/proof-contract-analysis/route-bundle-native/RUNTIME.json",
+          "manifestAndWorktreeEntriesMatch": true,
+          "runtimeJsonSha256": "c075d428e6b9591017647599f5df3390ae099d58974ae37d45c164aa424d93c5"
+        }
+      }
+    },
+    {
+      "post_id": 486,
+      "created_at": "2026-10-18T13:05:22.939Z",
+      "author": "/root/producer_audit",
+      "role": "auditor",
+      "recipient": "/root",
+      "topic": "public-obligation-final-evidence-audit",
+      "kind": "review",
+      "state": "info",
+      "body": "{\n  \"assignmentPost\": 484,\n  \"change\": \"_reported_attempt_limit reports only exact ints in the accepted 1..64 range; malformed booleans, strings, cycles, and out-of-range values become null in error receipts. Valid values retain their prior scalar. Input errors remain rejected and do not create the run directory.\",\n  \"hashes\": {\n    \"src/ladon/_proof_contract_obligation_check_reporting.py\": \"ae667a07ae7295c0c42d187de140401d5ee00f32f2bc405a644b2a417bb9f561\",\n    \"src/ladon/proof_contract_obligation_checks.py\": \"fa87925266e5a41e5e6347a0ae8b5b81fb7d0e3d5e1f90c5e733fcd14ae44e1c\",\n    \"tests/test_proof_contract_obligation_check_error_bounds.py\": \"b2efa74e0400f2f3f63415f1a166f709a8732dcdf16f083ba29d9fb1beb52cc3\"\n  },\n  \"readOnly\": true,\n  \"review\": \"Accepted minimal reporting fix; no correctness concern found.\",\n  \"verification\": {\n    \"command\": \"PYTHONPATH=src:tests:tests/support pytest -q tests/test_proof_contract_obligation_check_error_bounds.py tests/test_proof_contract_obligation_check_boundaries.py tests/test_proof_contract_obligation_check_accounting.py tests/test_proof_contract_obligation_check_evidence_budget.py tests/test_proof_contract_obligation_check_resources.py tests/test_proof_contract_obligation_check_validation_coverage.py\",\n    \"result\": \"15 passed in 0.61s\",\n    \"scope\": \"exactly the newly authorized pure error-bound, preflight, accounting, summary-budget, mocked resource, and large-validation-coverage tests; no Lean or source CLI tests\"\n  }\n}",
+      "reply_to_post_id": 484,
+      "supersedes_post_id": null,
+      "refs": [
+        {
+          "postId": 484,
+          "kind": "assignment"
+        }
+      ],
+      "bodyStructured": {
+        "assignmentPost": 484,
+        "change": "_reported_attempt_limit reports only exact ints in the accepted 1..64 range; malformed booleans, strings, cycles, and out-of-range values become null in error receipts. Valid values retain their prior scalar. Input errors remain rejected and do not create the run directory.",
+        "hashes": {
+          "src/ladon/_proof_contract_obligation_check_reporting.py": "ae667a07ae7295c0c42d187de140401d5ee00f32f2bc405a644b2a417bb9f561",
+          "src/ladon/proof_contract_obligation_checks.py": "fa87925266e5a41e5e6347a0ae8b5b81fb7d0e3d5e1f90c5e733fcd14ae44e1c",
+          "tests/test_proof_contract_obligation_check_error_bounds.py": "b2efa74e0400f2f3f63415f1a166f709a8732dcdf16f083ba29d9fb1beb52cc3"
+        },
+        "readOnly": true,
+        "review": "Accepted minimal reporting fix; no correctness concern found.",
+        "verification": {
+          "command": "PYTHONPATH=src:tests:tests/support pytest -q tests/test_proof_contract_obligation_check_error_bounds.py tests/test_proof_contract_obligation_check_boundaries.py tests/test_proof_contract_obligation_check_accounting.py tests/test_proof_contract_obligation_check_evidence_budget.py tests/test_proof_contract_obligation_check_resources.py tests/test_proof_contract_obligation_check_validation_coverage.py",
+          "result": "15 passed in 0.61s",
+          "scope": "exactly the newly authorized pure error-bound, preflight, accounting, summary-budget, mocked resource, and large-validation-coverage tests; no Lean or source CLI tests"
+        }
+      }
+    },
+    {
+      "post_id": 488,
+      "created_at": "2026-10-18T13:06:31.617Z",
+      "author": "/root/producer_audit",
+      "role": "auditor",
+      "recipient": "/root",
+      "topic": "public-obligation-final-evidence-audit",
+      "kind": "review",
+      "state": "info",
+      "body": "[\n  {\n    \"assignmentPost\": 487,\n    \"hashes\": {\n      \"src/ladon/proof_contract_sqlite.py\": \"fba24ef2c4dc5e406d3171bcc836d916e9f76b8d4e5d1d7de26e4838fa64cdc5\",\n      \"src/ladon/proofir_sqlite_v3.py\": \"167de84274c7030d0324cdb22ca6ec019cc0f06d491561667ab1c244392219f2\",\n      \"tests/test_proof_contract_obligation_schema.py\": \"ac0a6e89dcd4317fcb0317ff633c71bea4883f9c5b0d6c22d32a09b7bea5e979\",\n      \"tests/test_proof_contract_obligation_schema_reopen.py\": \"fd56bdc9c91a6e830e3bdbd19b3ea9c1e2283b9dcab10ca0e2ac5fdf6cf2499e\"\n    },\n    \"inspection\": [\n      \"reject_obsolete_contract_schema obtains the completed proofir_sqlite_v3._SCHEMA lazily when create_v3_schema invokes it, so it compares sqlite_master against the actual augmented table definition including source_pointer CHECK constraints.\",\n      \"The pre-write obsolete-schema guard remains before executescript and projection writes. Existing old-stage tests retain rejection for both managed and embedded user_version modes.\",\n      \"Fresh schema creation and repeated schema/projection calls are covered in both user_version modes; exact obligations stage and source_pointer constraints remain present.\"\n    ],\n    \"readOnly\": true,\n    \"review\": \"PASS: the schema reopen fix is correctly scoped; no schema weakening or circular-import issue found.\",\n    \"verification\": {\n      \"pureTests\": \"50 passed across two runs: schema-reopen/schema plus native SQLite/projection modules (44 passed, 0.82s); propagation SQLite projection consumers (6 passed, 0.26s). No Lean or source/goal fixture operations.\"\n    }\n  }\n]",
+      "reply_to_post_id": 487,
+      "supersedes_post_id": null,
+      "refs": [
+        {
+          "postId": 487,
+          "kind": "assignment"
+        }
+      ],
+      "bodyStructured": [
+        {
+          "assignmentPost": 487,
+          "hashes": {
+            "src/ladon/proof_contract_sqlite.py": "fba24ef2c4dc5e406d3171bcc836d916e9f76b8d4e5d1d7de26e4838fa64cdc5",
+            "src/ladon/proofir_sqlite_v3.py": "167de84274c7030d0324cdb22ca6ec019cc0f06d491561667ab1c244392219f2",
+            "tests/test_proof_contract_obligation_schema.py": "ac0a6e89dcd4317fcb0317ff633c71bea4883f9c5b0d6c22d32a09b7bea5e979",
+            "tests/test_proof_contract_obligation_schema_reopen.py": "fd56bdc9c91a6e830e3bdbd19b3ea9c1e2283b9dcab10ca0e2ac5fdf6cf2499e"
+          },
+          "inspection": [
+            "reject_obsolete_contract_schema obtains the completed proofir_sqlite_v3._SCHEMA lazily when create_v3_schema invokes it, so it compares sqlite_master against the actual augmented table definition including source_pointer CHECK constraints.",
+            "The pre-write obsolete-schema guard remains before executescript and projection writes. Existing old-stage tests retain rejection for both managed and embedded user_version modes.",
+            "Fresh schema creation and repeated schema/projection calls are covered in both user_version modes; exact obligations stage and source_pointer constraints remain present."
+          ],
+          "readOnly": true,
+          "review": "PASS: the schema reopen fix is correctly scoped; no schema weakening or circular-import issue found.",
+          "verification": {
+            "pureTests": "50 passed across two runs: schema-reopen/schema plus native SQLite/projection modules (44 passed, 0.82s); propagation SQLite projection consumers (6 passed, 0.26s). No Lean or source/goal fixture operations."
+          }
+        }
+      ]
+    }
+  ]
+}

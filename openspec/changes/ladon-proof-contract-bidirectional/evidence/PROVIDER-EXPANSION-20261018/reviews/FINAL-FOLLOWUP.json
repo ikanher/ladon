@@ -1,0 +1,18 @@
+{
+  "assignmentPost": 549,
+  "canonicalEdits": false,
+  "findings": [],
+  "leanOrExtractionOrSourceRun": false,
+  "limitations": "Actual provider source/CLI success and final root-owned acceptance gates were not rerun in this read-only audit.",
+  "reviewed": {
+    "cli": "proof_contract_cli._parser adds the provider parser, contract_main dispatches expand-provider to expand_provider, and provider CLI loads three bounded JSON files then calls the public API with the selected app/occurrence and bounded limits. Root Path is supported by _proof_contract_planned_source_inputs._planned_input_size. Invalid CLI values are caught and emitted as bounded JSON; _exit_status maps unavailable/incomplete/rejected or unavailable slice to exit 2.",
+    "initialDeadline": "_expand takes min(outer,saved) then _initial_deadline tightens against declared native deadlineUtc before dispatching native validation. It only uses untrusted native bounds to shorten work; after validation the request is reconstructed and the actual planner deadline is reapplied. Three pure tests cover expired outer, saved, and declared-native clocks with a worker-fail spy.",
+    "workerOutput": "_response caps the serialized provider response and returns a small completed worker envelope whose nested result has status/code output-limit when the full body exceeds 8 MiB. Public _resource_stop recursively detects that nested stop, so the API returns incomplete instead of rejecting or publishing observation. The public result bound reserves one byte and preserves memory-report guidance."
+  },
+  "status": "PASS_READ_ONLY",
+  "verification": {
+    "command": "PYTHONPATH=src:tests:tests/support pytest -q tests/test_proof_contract_provider_*.py",
+    "result": "39 passed in 2.58s",
+    "scope": "Pure provider tests including CLI help/invalid input, deadline preflight, output fallback, binding tamper controls, fake-runner supervision. No Lean, extraction, or source-run worker."
+  }
+}

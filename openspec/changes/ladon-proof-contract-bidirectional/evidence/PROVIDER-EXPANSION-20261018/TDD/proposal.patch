@@ -1,0 +1,34 @@
+--- tests/test_proof_contract_provider_expansion.py
++++ tests/test_proof_contract_provider_expansion.py
+@@ -89,12 +89,21 @@
+     request = builder(analysis, context, route, demand, requirement,
+                       time.monotonic() + 30, _limits())
+ 
++    _assert_request_identity(request, route, demand, requirement)
++    _assert_native_binding(request, route, demand, analysis)
++    _assert_source_availability(request)
++
++
++def _assert_request_identity(request, route, demand, requirement):
+     assert request["status"] == "not-dispatched"
+     assert request["schema"] == "ladon-provider-slice-request-v1"
+     assert request["routeId"] == route["routeId"]
+     assert request["obligation"] == demand["demandId"]
+     assert request["sourceRef"] == requirement["parentWitnessRef"]
+     assert request["contractRef"] == requirement["forwardContractRef"]
++
++
++def _assert_native_binding(request, route, demand, analysis):
+     binding = request["binding"]
+     assert binding["demand"] == demand
+     assert binding["demandDigest"]
+@@ -102,6 +111,9 @@
+     assert binding["desiredReadingIdentity"] == analysis["payload"]["request"]["desiredReadingIdentity"]
+     assert binding["desiredContractDigest"]
+     assert len(binding["incomingOccurrences"]) == len(demand["incomingOccurrences"])
++
++
++def _assert_source_availability(request):
+     selection = request.get("sourceSelection")
+     diagnostic = request.get("diagnostic")
+     assert (selection is not None and selection.get("availability") == "available") or (

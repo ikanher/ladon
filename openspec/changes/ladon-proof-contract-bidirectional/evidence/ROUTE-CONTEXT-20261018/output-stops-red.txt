@@ -1,0 +1,64 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_____ test_output_overflow_remains_a_resource_stop[prepare-route-context] ______
+
+operation = 'prepare-route-context'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78606dc3f110>
+
+    @pytest.mark.parametrize('operation', ['prepare-route-context', 'check-route-context-goal'])
+    def test_output_overflow_remains_a_resource_stop(operation, monkeypatch):
+        def overflow(_request):
+            raise ContextOutputLimit('raw goal evidence exceeds 8 MiB')
+    
+        monkeypatch.setattr(preparation, 'prepare_route_context', overflow)
+        monkeypatch.setattr(worker, '_check_goal', overflow)
+>       result = worker._compute({'version': 1, 'operation': operation, 'request': {}})
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_route_context_output_stops.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_route_context_worker.py:26: in _compute
+    return prepare_route_context(job['request'])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+_request = {}
+
+    def overflow(_request):
+>       raise ContextOutputLimit('raw goal evidence exceeds 8 MiB')
+E       ladon._proof_contract_context_goals.ContextOutputLimit: raw goal evidence exceeds 8 MiB
+
+tests/test_proof_contract_route_context_output_stops.py:13: ContextOutputLimit
+____ test_output_overflow_remains_a_resource_stop[check-route-context-goal] ____
+
+operation = 'check-route-context-goal'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78606dc3ee90>
+
+    @pytest.mark.parametrize('operation', ['prepare-route-context', 'check-route-context-goal'])
+    def test_output_overflow_remains_a_resource_stop(operation, monkeypatch):
+        def overflow(_request):
+            raise ContextOutputLimit('raw goal evidence exceeds 8 MiB')
+    
+        monkeypatch.setattr(preparation, 'prepare_route_context', overflow)
+        monkeypatch.setattr(worker, '_check_goal', overflow)
+>       result = worker._compute({'version': 1, 'operation': operation, 'request': {}})
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_route_context_output_stops.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_route_context_worker.py:28: in _compute
+    return _check_goal(job['request'])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+_request = {}
+
+    def overflow(_request):
+>       raise ContextOutputLimit('raw goal evidence exceeds 8 MiB')
+E       ladon._proof_contract_context_goals.ContextOutputLimit: raw goal evidence exceeds 8 MiB
+
+tests/test_proof_contract_route_context_output_stops.py:13: ContextOutputLimit
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_route_context_output_stops.py::test_output_overflow_remains_a_resource_stop[prepare-route-context]
+FAILED tests/test_proof_contract_route_context_output_stops.py::test_output_overflow_remains_a_resource_stop[check-route-context-goal]
+2 failed in 0.07s

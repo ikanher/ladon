@@ -1,0 +1,59 @@
+{
+  "assignmentPost": 600,
+  "contractPosts": [
+    587,
+    599
+  ],
+  "status": "FINDING",
+  "finding": {
+    "severity": "P2",
+    "title": "Oversized raw goal evidence is treated as an ordinary rejected term, so later goal stages continue",
+    "trigger": "A check result whose canonical raw evidence exceeds the per-file 8 MiB bound makes store_goal_evidence raise ValueError. Worker main converts that into a small status=rejected / exit-2 response. Parent _admit_check only stops recognized resource codes or an oversized returned envelope; this small rejection passes, _check_goal returns True with the goal unresolved, and _check continues to later supplied goals. This violates 599\u2019s explicit stop-later-stages behavior for raw evidence capacity exhaustion.",
+    "locations": [
+      {
+        "path": "src/ladon/_proof_contract_route_context_evidence.py",
+        "lines": [
+          22,
+          23
+        ]
+      },
+      {
+        "path": "src/ladon/proof_contract_route_context_worker.py",
+        "lines": [
+          53,
+          55,
+          78,
+          81
+        ]
+      },
+      {
+        "path": "src/ladon/proof_contract_route_context.py",
+        "lines": [
+          65,
+          69,
+          85,
+          96,
+          102,
+          109
+        ]
+      }
+    ],
+    "reproduction": "Pure API reproduction passed checked={status:rejected, diagnostic.code:worker-rejected, diagnostic.message:\"raw goal evidence exceeds 8 MiB\", result:null} to _admit_check; observed True, no output-limit diagnostic, and goal unresolved. Worker source establishes this exact rejection envelope for the storage ValueError. No Lean."
+  },
+  "reviewedSha256": {
+    "src/ladon/_proof_contract_route_context_evidence.py": "8caad8ecb6c2ee54db5ce452218c10acb2c6015f67b179c430438cca5677da33",
+    "src/ladon/proof_contract_route_context_worker.py": "d83eae6e29e2c40437cc37e72f6987523f4b1e26accb59eafed4c7087e8b8a42",
+    "src/ladon/proof_contract_route_context.py": "461294278bf601f227ab19ef13c264b90d274f681d56334751f71b43027ba8dd",
+    "tests/test_proof_contract_route_context_evidence.py": "b5f2448af34b53cca6e8863ee656a021945d41b9aed42e696dc83845139dafc6",
+    "tests/test_proof_contract_route_context_output.py": "2ab67428021c591cd459a716d517c53616b9c050b8a1dd3f4506f204dd8411af",
+    "docs/PROOF_CONTRACTS.md": "36ec889a1ce04806af0b0522471fd205d683d46f6e873db69282e4a615d2fb9a"
+  },
+  "verification": {
+    "pureTests": "pytest -q tests/test_proof_contract_route_context_evidence.py tests/test_proof_contract_route_context_output.py tests/test_proof_contract_route_context_stops.py => 8 passed in 0.26s",
+    "frozenTestRows": 98,
+    "frozenMismatches": 0,
+    "leanRun": false,
+    "canonicalEdits": false
+  },
+  "otherReview": "Storage path is fixed under .ladon/contract-obligations and content-bound; exclusive write/existing-byte equality, symlink checks, regular-file bounded read, digest/byte-count verification and exact-projection check were inspected. Route input/context and endpoint source/prose freshness guards remain before/after term checking. No separate issue found in those reviewed areas."
+}

@@ -1,0 +1,50 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+__________ test_term_stage_rejects_changed_original_source_and_quote ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-706/test_term_stage_rejects_change0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bdc5e7a12d0>
+
+    def test_term_stage_rejects_changed_original_source_and_quote(tmp_path, monkeypatch):
+        original = tmp_path / 'Original.lean'
+        quote = tmp_path / 'claim.txt'
+        original.write_text('import Lean\n')
+        quote.write_text('Original quoted reading.\n')
+        environment = 'sha256:' + 'a' * 64
+        binding = {'originalSource': {'path': original.name,
+            'sha256': hashlib.sha256(original.read_bytes()).hexdigest()},
+            'selection': {'module': 'Original'}, 'environment': environment,
+            'originalInterpretation': {'source': {'path': quote.name,
+                'sha256': hashlib.sha256(quote.read_bytes()).hexdigest()}}}
+        monkeypatch.setattr(worker, '_environment', lambda _root: environment, raising=False)
+>       worker._verify_original_inputs(tmp_path, binding)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: module 'ladon.proof_contract_context_worker' has no attribute '_verify_original_inputs'
+
+tests/test_proof_contract_context_freshness.py:21: AttributeError
+_____ test_term_stage_rejects_environment_drift_even_with_unchanged_files ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-706/test_term_stage_rejects_enviro0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7bdc5e888750>
+
+    def test_term_stage_rejects_environment_drift_even_with_unchanged_files(tmp_path, monkeypatch):
+        original = tmp_path / 'Original.lean'
+        quote = tmp_path / 'claim.txt'
+        original.write_text('import Lean\n')
+        quote.write_text('Original.\n')
+        binding = {'originalSource': {'path': original.name,
+            'sha256': hashlib.sha256(original.read_bytes()).hexdigest()},
+            'selection': {'module': 'Original'}, 'environment': 'sha256:' + 'a' * 64,
+            'originalInterpretation': {'source': {'path': quote.name,
+                'sha256': hashlib.sha256(quote.read_bytes()).hexdigest()}}}
+        monkeypatch.setattr(worker, '_environment', lambda _root: 'sha256:' + 'b' * 64, raising=False)
+        with pytest.raises(ValueError, match='environment'):
+>           worker._verify_original_inputs(tmp_path, binding)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           AttributeError: module 'ladon.proof_contract_context_worker' has no attribute '_verify_original_inputs'
+
+tests/test_proof_contract_context_freshness.py:43: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_context_freshness.py::test_term_stage_rejects_changed_original_source_and_quote
+FAILED tests/test_proof_contract_context_freshness.py::test_term_stage_rejects_environment_drift_even_with_unchanged_files
+2 failed in 0.05s

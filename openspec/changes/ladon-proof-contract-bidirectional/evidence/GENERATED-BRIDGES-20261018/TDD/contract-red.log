@@ -1,0 +1,374 @@
+FFFFFFFFFFF                                                              [100%]
+=================================== FAILURES ===================================
+_______ test_caller_cannot_replace_formula_or_assumptions[callerFormula] _______
+
+extra = 'callerFormula'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73316efd3c50>
+
+    @pytest.mark.parametrize('extra', ['callerFormula', 'proofContext'])
+    def test_caller_cannot_replace_formula_or_assumptions(extra, monkeypatch):
+>       _forbid_construction(monkeypatch)
+
+tests/test_proof_contract_bridge_contract.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:15: in _forbid_construction
+    monkeypatch.setattr(_api(), 'instantiate_planned_source_leaf_requirement',
+                        ^^^^^^
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_______ test_caller_cannot_replace_formula_or_assumptions[proofContext] ________
+
+extra = 'proofContext'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73316ef8a750>
+
+    @pytest.mark.parametrize('extra', ['callerFormula', 'proofContext'])
+    def test_caller_cannot_replace_formula_or_assumptions(extra, monkeypatch):
+>       _forbid_construction(monkeypatch)
+
+tests/test_proof_contract_bridge_contract.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:15: in _forbid_construction
+    monkeypatch.setattr(_api(), 'instantiate_planned_source_leaf_requirement',
+                        ^^^^^^
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+____________ test_bad_terms_reject_before_source_construction[None] ____________
+
+terms = None
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73316f2dd350>
+
+    @pytest.mark.parametrize('terms', [None, {'unknown': 'by trivial'},
+        {'domain': 3}, {'domain': 'x'*(8*1024**2+1)},
+        {'domain': 'a', 'object-map': 'b', 'conclusion': 'c', 'source-requirement': 'd', 'fifth': 'e'}])
+    def test_bad_terms_reject_before_source_construction(terms, monkeypatch):
+>       _forbid_construction(monkeypatch)
+
+tests/test_proof_contract_bridge_contract.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:15: in _forbid_construction
+    monkeypatch.setattr(_api(), 'instantiate_planned_source_leaf_requirement',
+                        ^^^^^^
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+___________ test_bad_terms_reject_before_source_construction[terms1] ___________
+
+terms = {'unknown': 'by trivial'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73316ef8d590>
+
+    @pytest.mark.parametrize('terms', [None, {'unknown': 'by trivial'},
+        {'domain': 3}, {'domain': 'x'*(8*1024**2+1)},
+        {'domain': 'a', 'object-map': 'b', 'conclusion': 'c', 'source-requirement': 'd', 'fifth': 'e'}])
+    def test_bad_terms_reject_before_source_construction(terms, monkeypatch):
+>       _forbid_construction(monkeypatch)
+
+tests/test_proof_contract_bridge_contract.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:15: in _forbid_construction
+    monkeypatch.setattr(_api(), 'instantiate_planned_source_leaf_requirement',
+                        ^^^^^^
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+___________ test_bad_terms_reject_before_source_construction[terms2] ___________
+
+terms = {'domain': 3}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73316f2bfb90>
+
+    @pytest.mark.parametrize('terms', [None, {'unknown': 'by trivial'},
+        {'domain': 3}, {'domain': 'x'*(8*1024**2+1)},
+        {'domain': 'a', 'object-map': 'b', 'conclusion': 'c', 'source-requirement': 'd', 'fifth': 'e'}])
+    def test_bad_terms_reject_before_source_construction(terms, monkeypatch):
+>       _forbid_construction(monkeypatch)
+
+tests/test_proof_contract_bridge_contract.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:15: in _forbid_construction
+    monkeypatch.setattr(_api(), 'instantiate_planned_source_leaf_requirement',
+                        ^^^^^^
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+___________ test_bad_terms_reject_before_source_construction[terms3] ___________
+
+terms = {'domain': 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73316ef8b710>
+
+    @pytest.mark.parametrize('terms', [None, {'unknown': 'by trivial'},
+        {'domain': 3}, {'domain': 'x'*(8*1024**2+1)},
+        {'domain': 'a', 'object-map': 'b', 'conclusion': 'c', 'source-requirement': 'd', 'fifth': 'e'}])
+    def test_bad_terms_reject_before_source_construction(terms, monkeypatch):
+>       _forbid_construction(monkeypatch)
+
+tests/test_proof_contract_bridge_contract.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:15: in _forbid_construction
+    monkeypatch.setattr(_api(), 'instantiate_planned_source_leaf_requirement',
+                        ^^^^^^
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+___________ test_bad_terms_reject_before_source_construction[terms4] ___________
+
+terms = {'conclusion': 'c', 'domain': 'a', 'fifth': 'e', 'object-map': 'b', ...}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73316efae950>
+
+    @pytest.mark.parametrize('terms', [None, {'unknown': 'by trivial'},
+        {'domain': 3}, {'domain': 'x'*(8*1024**2+1)},
+        {'domain': 'a', 'object-map': 'b', 'conclusion': 'c', 'source-requirement': 'd', 'fifth': 'e'}])
+    def test_bad_terms_reject_before_source_construction(terms, monkeypatch):
+>       _forbid_construction(monkeypatch)
+
+tests/test_proof_contract_bridge_contract.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:15: in _forbid_construction
+    monkeypatch.setattr(_api(), 'instantiate_planned_source_leaf_requirement',
+                        ^^^^^^
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+______________________ test_cycle_rejects_before_copying _______________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73316f2b1190>
+
+    def test_cycle_rejects_before_copying(monkeypatch):
+>       _forbid_construction(monkeypatch)
+
+tests/test_proof_contract_bridge_contract.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:15: in _forbid_construction
+    monkeypatch.setattr(_api(), 'instantiate_planned_source_leaf_requirement',
+                        ^^^^^^
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+____________ test_expired_source_is_incomplete_before_construction _____________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x73316efa0910>
+
+    def test_expired_source_is_incomplete_before_construction(monkeypatch):
+>       _forbid_construction(monkeypatch)
+
+tests/test_proof_contract_bridge_contract.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:15: in _forbid_construction
+    monkeypatch.setattr(_api(), 'instantiate_planned_source_leaf_requirement',
+                        ^^^^^^
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+______________ test_support_requires_structured_replay_and_trust _______________
+
+    def test_support_requires_structured_replay_and_trust():
+>       accepted = _api()._accepted_check
+                   ^^^^^^
+
+tests/test_proof_contract_bridge_contract.py:55: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_________________ test_support_requires_every_ordered_channel __________________
+
+    def test_support_requires_every_ordered_channel():
+        rows = [{'id': identity, 'status': 'checked-support', 'result': _accepted()} for identity in
+                ['source-requirement', 'domain', 'object-map', 'conclusion']]
+>       supported = _api()._bridge_supported
+                    ^^^^^^
+
+tests/test_proof_contract_bridge_contract.py:69: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_contract.py:11: in _api
+    return importlib.import_module('ladon.proof_contract_bridge')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge'
+import_ = <function _gcd_import at 0x73317014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_bridge_contract.py::test_caller_cannot_replace_formula_or_assumptions[callerFormula]
+FAILED tests/test_proof_contract_bridge_contract.py::test_caller_cannot_replace_formula_or_assumptions[proofContext]
+FAILED tests/test_proof_contract_bridge_contract.py::test_bad_terms_reject_before_source_construction[None]
+FAILED tests/test_proof_contract_bridge_contract.py::test_bad_terms_reject_before_source_construction[terms1]
+FAILED tests/test_proof_contract_bridge_contract.py::test_bad_terms_reject_before_source_construction[terms2]
+FAILED tests/test_proof_contract_bridge_contract.py::test_bad_terms_reject_before_source_construction[terms3]
+FAILED tests/test_proof_contract_bridge_contract.py::test_bad_terms_reject_before_source_construction[terms4]
+FAILED tests/test_proof_contract_bridge_contract.py::test_cycle_rejects_before_copying
+FAILED tests/test_proof_contract_bridge_contract.py::test_expired_source_is_incomplete_before_construction
+FAILED tests/test_proof_contract_bridge_contract.py::test_support_requires_structured_replay_and_trust
+FAILED tests/test_proof_contract_bridge_contract.py::test_support_requires_every_ordered_channel
+11 failed in 0.09s

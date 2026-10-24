@@ -1,0 +1,302 @@
+FFFFFFFFF                                                                [100%]
+=================================== FAILURES ===================================
+_________ test_bridge_resource_stop_is_bounded_once[timed_out-timeout] _________
+
+flag = 'timed_out', code = 'timeout'
+
+    @pytest.mark.parametrize('flag,code', [('timed_out', 'timeout'),
+                                           ('memory_limited', 'memory-limit'),
+                                           ('output_limited', 'output-limit')])
+    def test_bridge_resource_stop_is_bounded_once(flag, code):
+        calls = []
+    
+        def runner(command, **kwargs):
+            calls.append((command, kwargs))
+            return ProcessResult(tuple(command), -9, '', '', .01, **{flag: True})
+    
+>       result = _run('check-goal', {}, deadline_monotonic=monotonic()+5, runner=runner)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_bridge_worker.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_bridge_supervision').run_bridge_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge_supervision'
+import_ = <function _gcd_import at 0x73fc47efbd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+____ test_bridge_resource_stop_is_bounded_once[memory_limited-memory-limit] ____
+
+flag = 'memory_limited', code = 'memory-limit'
+
+    @pytest.mark.parametrize('flag,code', [('timed_out', 'timeout'),
+                                           ('memory_limited', 'memory-limit'),
+                                           ('output_limited', 'output-limit')])
+    def test_bridge_resource_stop_is_bounded_once(flag, code):
+        calls = []
+    
+        def runner(command, **kwargs):
+            calls.append((command, kwargs))
+            return ProcessResult(tuple(command), -9, '', '', .01, **{flag: True})
+    
+>       result = _run('check-goal', {}, deadline_monotonic=monotonic()+5, runner=runner)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_bridge_worker.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_bridge_supervision').run_bridge_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge_supervision'
+import_ = <function _gcd_import at 0x73fc47efbd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+____ test_bridge_resource_stop_is_bounded_once[output_limited-output-limit] ____
+
+flag = 'output_limited', code = 'output-limit'
+
+    @pytest.mark.parametrize('flag,code', [('timed_out', 'timeout'),
+                                           ('memory_limited', 'memory-limit'),
+                                           ('output_limited', 'output-limit')])
+    def test_bridge_resource_stop_is_bounded_once(flag, code):
+        calls = []
+    
+        def runner(command, **kwargs):
+            calls.append((command, kwargs))
+            return ProcessResult(tuple(command), -9, '', '', .01, **{flag: True})
+    
+>       result = _run('check-goal', {}, deadline_monotonic=monotonic()+5, runner=runner)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_bridge_worker.py:25: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_bridge_supervision').run_bridge_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge_supervision'
+import_ = <function _gcd_import at 0x73fc47efbd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+______________________ test_expired_bridge_starts_nothing ______________________
+
+    def test_expired_bridge_starts_nothing():
+>       result = _run('extract-provider', {}, deadline_monotonic=monotonic()-1,
+                      runner=lambda *a, **kw: pytest.fail('expired work launched'))
+
+tests/test_proof_contract_bridge_worker.py:39: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_bridge_supervision').run_bridge_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge_supervision'
+import_ = <function _gcd_import at 0x73fc47efbd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_____________ test_unknown_bridge_operation_rejected[check-parent] _____________
+
+operation = 'check-parent'
+
+    @pytest.mark.parametrize('operation', ['check-parent', None, '', 'plan-v2'])
+    def test_unknown_bridge_operation_rejected(operation):
+>       result = _run(operation, {}, deadline_monotonic=monotonic()+5,
+                      runner=lambda *a, **kw: pytest.fail('invalid work launched'))
+
+tests/test_proof_contract_bridge_worker.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_bridge_supervision').run_bridge_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge_supervision'
+import_ = <function _gcd_import at 0x73fc47efbd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_________________ test_unknown_bridge_operation_rejected[None] _________________
+
+operation = None
+
+    @pytest.mark.parametrize('operation', ['check-parent', None, '', 'plan-v2'])
+    def test_unknown_bridge_operation_rejected(operation):
+>       result = _run(operation, {}, deadline_monotonic=monotonic()+5,
+                      runner=lambda *a, **kw: pytest.fail('invalid work launched'))
+
+tests/test_proof_contract_bridge_worker.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_bridge_supervision').run_bridge_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge_supervision'
+import_ = <function _gcd_import at 0x73fc47efbd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+___________________ test_unknown_bridge_operation_rejected[] ___________________
+
+operation = ''
+
+    @pytest.mark.parametrize('operation', ['check-parent', None, '', 'plan-v2'])
+    def test_unknown_bridge_operation_rejected(operation):
+>       result = _run(operation, {}, deadline_monotonic=monotonic()+5,
+                      runner=lambda *a, **kw: pytest.fail('invalid work launched'))
+
+tests/test_proof_contract_bridge_worker.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_bridge_supervision').run_bridge_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge_supervision'
+import_ = <function _gcd_import at 0x73fc47efbd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_______________ test_unknown_bridge_operation_rejected[plan-v2] ________________
+
+operation = 'plan-v2'
+
+    @pytest.mark.parametrize('operation', ['check-parent', None, '', 'plan-v2'])
+    def test_unknown_bridge_operation_rejected(operation):
+>       result = _run(operation, {}, deadline_monotonic=monotonic()+5,
+                      runner=lambda *a, **kw: pytest.fail('invalid work launched'))
+
+tests/test_proof_contract_bridge_worker.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_bridge_supervision').run_bridge_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge_supervision'
+import_ = <function _gcd_import at 0x73fc47efbd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_________________ test_cycle_is_rejected_before_worker_launch __________________
+
+    def test_cycle_is_rejected_before_worker_launch():
+        payload = {}; payload['cycle'] = payload
+>       result = _run('check-goal', payload, deadline_monotonic=monotonic()+5,
+                      runner=lambda *a, **kw: pytest.fail('cyclic work launched'))
+
+tests/test_proof_contract_bridge_worker.py:54: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_bridge_worker.py:11: in _run
+    return importlib.import_module('ladon.proof_contract_bridge_supervision').run_bridge_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_bridge_supervision'
+import_ = <function _gcd_import at 0x73fc47efbd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_bridge_supervision'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_bridge_worker.py::test_bridge_resource_stop_is_bounded_once[timed_out-timeout]
+FAILED tests/test_proof_contract_bridge_worker.py::test_bridge_resource_stop_is_bounded_once[memory_limited-memory-limit]
+FAILED tests/test_proof_contract_bridge_worker.py::test_bridge_resource_stop_is_bounded_once[output_limited-output-limit]
+FAILED tests/test_proof_contract_bridge_worker.py::test_expired_bridge_starts_nothing
+FAILED tests/test_proof_contract_bridge_worker.py::test_unknown_bridge_operation_rejected[check-parent]
+FAILED tests/test_proof_contract_bridge_worker.py::test_unknown_bridge_operation_rejected[None]
+FAILED tests/test_proof_contract_bridge_worker.py::test_unknown_bridge_operation_rejected[]
+FAILED tests/test_proof_contract_bridge_worker.py::test_unknown_bridge_operation_rejected[plan-v2]
+FAILED tests/test_proof_contract_bridge_worker.py::test_cycle_is_rejected_before_worker_launch
+9 failed in 0.08s

@@ -1,0 +1,174 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+______ test_invalid_attempt_limit_never_escapes_into_error_report[string] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-678/test_invalid_attempt_limit_nev0')
+kind = 'string'
+
+    @pytest.mark.parametrize('kind', ['string', 'cycle', 'boolean'])
+    def test_invalid_attempt_limit_never_escapes_into_error_report(tmp_path, kind):
+        request = _request(tmp_path)
+        cycle = {}
+        cycle['self'] = cycle
+        request['maxCheckAttempts'] = {'string': 'private-canary' * 100000,
+                                     'cycle': cycle, 'boolean': True}[kind]
+        report = check_obligation_sources(request)
+        encoded = json.dumps(report, allow_nan=False)
+        assert report['status'] == 'rejected'
+>       assert report['resourceAccounting']['maxCheckAttempts'] is None
+E       AssertionError: assert 'private-canaryprivate-canaryprivate-canaryprivate-canaryprivate-canaryprivate-canaryprivate-canaryprivate-canarypriva...canaryprivate-canaryprivate-canaryprivate-canaryprivate-canaryprivate-canaryprivate-canaryprivate-canaryprivate-canary' is None
+
+tests/test_proof_contract_obligation_check_error_bounds.py:20: AssertionError
+______ test_invalid_attempt_limit_never_escapes_into_error_report[cycle] _______
+
+request = {'analysisArtifact': {}, 'context': {'artifacts': []}, 'deadlineMonotonic': 1960236.097387501, 'limits': {'max_output_bytes': 8388608, 'max_rss_bytes': 12884901888, 'timeout_seconds': 1}, ...}
+
+    def check_obligation_sources(request: dict[str, Any]) -> dict[str, Any]:
+        """Validate native inputs, preserve source evidence, and report local checks.
+    
+        This operation deliberately makes no whole-method or falsity claim. A
+        successful source check is support for one exact conditional leaf only.
+        """
+        started = time.monotonic()
+        state: dict[str, Any] = {"sourceChecks": [], "providerSliceRequests": [],
+                                 "files": [], "bytes": 0, "summaryReserve": 256 * 1024,
+                                 "outputOwned": False, "attempts": 0}
+        out = None
+        try:
+>           owned = _validate_and_own(request)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+src/ladon/proof_contract_obligation_checks.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/_proof_contract_obligation_check_inputs.py:22: in _validate_and_own
+    if _planned_input_size(request) > MAX_BYTES:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/_proof_contract_planned_source_inputs.py:39: in _planned_input_size
+    counter.visit(value)
+src/ladon/_proof_contract_planned_source_inputs.py:37: in visit
+    super().visit(item, depth)
+src/ladon/_contract_propagation_input_budget.py:34: in visit
+    self.collection(value, depth)
+src/ladon/_contract_propagation_input_budget.py:50: in collection
+    self.items(value, depth)
+src/ladon/_contract_propagation_input_budget.py:65: in items
+    self.visit(item, depth + 1)
+src/ladon/_proof_contract_planned_source_inputs.py:37: in visit
+    super().visit(item, depth)
+src/ladon/_contract_propagation_input_budget.py:34: in visit
+    self.collection(value, depth)
+src/ladon/_contract_propagation_input_budget.py:50: in collection
+    self.items(value, depth)
+src/ladon/_contract_propagation_input_budget.py:65: in items
+    self.visit(item, depth + 1)
+src/ladon/_proof_contract_planned_source_inputs.py:37: in visit
+    super().visit(item, depth)
+src/ladon/_contract_propagation_input_budget.py:34: in visit
+    self.collection(value, depth)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <ladon._proof_contract_planned_source_inputs._planned_input_size.<locals>._Counter object at 0x73b2b03de9d0>
+value = {'self': {'self': {'self': {'self': {'self': {'self': {...}}}}}}}
+depth = 2
+
+    def collection(self, value, depth):
+        identity = id(value)
+        if identity in self.active:
+>           raise ValueError("aggregate input contains a cycle")
+E           ValueError: aggregate input contains a cycle
+
+src/ladon/_contract_propagation_input_budget.py:46: ValueError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-678/test_invalid_attempt_limit_nev1')
+kind = 'cycle'
+
+    @pytest.mark.parametrize('kind', ['string', 'cycle', 'boolean'])
+    def test_invalid_attempt_limit_never_escapes_into_error_report(tmp_path, kind):
+        request = _request(tmp_path)
+        cycle = {}
+        cycle['self'] = cycle
+        request['maxCheckAttempts'] = {'string': 'private-canary' * 100000,
+                                     'cycle': cycle, 'boolean': True}[kind]
+>       report = check_obligation_sources(request)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_obligation_check_error_bounds.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_obligation_checks.py:57: in check_obligation_sources
+    return _finish(out, request if isinstance(request, dict) else {}, state, started)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/_proof_contract_obligation_check_reporting.py:30: in _finish
+    return _publish_summary(out, state, summary)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/_proof_contract_obligation_check_reporting.py:38: in _publish_summary
+    if _planned_input_size(summary) + 128 > remaining:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/_proof_contract_planned_source_inputs.py:39: in _planned_input_size
+    counter.visit(value)
+src/ladon/_proof_contract_planned_source_inputs.py:37: in visit
+    super().visit(item, depth)
+src/ladon/_contract_propagation_input_budget.py:34: in visit
+    self.collection(value, depth)
+src/ladon/_contract_propagation_input_budget.py:50: in collection
+    self.items(value, depth)
+src/ladon/_contract_propagation_input_budget.py:65: in items
+    self.visit(item, depth + 1)
+src/ladon/_proof_contract_planned_source_inputs.py:37: in visit
+    super().visit(item, depth)
+src/ladon/_contract_propagation_input_budget.py:34: in visit
+    self.collection(value, depth)
+src/ladon/_contract_propagation_input_budget.py:50: in collection
+    self.items(value, depth)
+src/ladon/_contract_propagation_input_budget.py:65: in items
+    self.visit(item, depth + 1)
+src/ladon/_proof_contract_planned_source_inputs.py:37: in visit
+    super().visit(item, depth)
+src/ladon/_contract_propagation_input_budget.py:34: in visit
+    self.collection(value, depth)
+src/ladon/_contract_propagation_input_budget.py:50: in collection
+    self.items(value, depth)
+src/ladon/_contract_propagation_input_budget.py:65: in items
+    self.visit(item, depth + 1)
+src/ladon/_proof_contract_planned_source_inputs.py:37: in visit
+    super().visit(item, depth)
+src/ladon/_contract_propagation_input_budget.py:34: in visit
+    self.collection(value, depth)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <ladon._proof_contract_planned_source_inputs._planned_input_size.<locals>._Counter object at 0x73b2afb7b9d0>
+value = {'self': {'self': {'self': {'self': {'self': {'self': {...}}}}}}}
+depth = 3
+
+    def collection(self, value, depth):
+        identity = id(value)
+        if identity in self.active:
+>           raise ValueError("aggregate input contains a cycle")
+E           ValueError: aggregate input contains a cycle
+
+src/ladon/_contract_propagation_input_budget.py:46: ValueError
+_____ test_invalid_attempt_limit_never_escapes_into_error_report[boolean] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-678/test_invalid_attempt_limit_nev2')
+kind = 'boolean'
+
+    @pytest.mark.parametrize('kind', ['string', 'cycle', 'boolean'])
+    def test_invalid_attempt_limit_never_escapes_into_error_report(tmp_path, kind):
+        request = _request(tmp_path)
+        cycle = {}
+        cycle['self'] = cycle
+        request['maxCheckAttempts'] = {'string': 'private-canary' * 100000,
+                                     'cycle': cycle, 'boolean': True}[kind]
+        report = check_obligation_sources(request)
+        encoded = json.dumps(report, allow_nan=False)
+        assert report['status'] == 'rejected'
+>       assert report['resourceAccounting']['maxCheckAttempts'] is None
+E       assert True is None
+
+tests/test_proof_contract_obligation_check_error_bounds.py:20: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_obligation_check_error_bounds.py::test_invalid_attempt_limit_never_escapes_into_error_report[string]
+FAILED tests/test_proof_contract_obligation_check_error_bounds.py::test_invalid_attempt_limit_never_escapes_into_error_report[cycle]
+FAILED tests/test_proof_contract_obligation_check_error_bounds.py::test_invalid_attempt_limit_never_escapes_into_error_report[boolean]
+3 failed in 0.11s

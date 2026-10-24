@@ -1,0 +1,20 @@
+{
+  "assignmentPost": 602,
+  "findingPost": 601,
+  "status": "NO_NEW_FINDING",
+  "verification": {
+    "pureCommand": "pytest -q tests/test_proof_contract_route_context_output_stops.py tests/test_proof_contract_route_context_evidence.py tests/test_proof_contract_route_context_output.py tests/test_proof_contract_route_context_stops.py",
+    "pureResult": "10 passed in 0.26s",
+    "frozenRows": 99,
+    "frozenMismatches": [],
+    "verifyTests": "verified before and after",
+    "leanRun": false,
+    "canonicalEdits": false
+  },
+  "reviewedSha256": {
+    "src/ladon/_proof_contract_route_context_evidence.py": "31efac1d74c392833dc9c8300896a26d84bdfcaaace96d158c19864bd98063c6",
+    "src/ladon/proof_contract_route_context_worker.py": "cf90f421eec129db5e1e7025759c823702bebce9b4f5c9959714544600b54103",
+    "tests/test_proof_contract_route_context_output_stops.py": "46366765bc3f1a12679e4c99d13343bc1010e06287a88b72d3894a8c9e1cf8fa"
+  },
+  "review": "The typed ContextOutputLimit is caught within worker _compute and emitted as incomplete/output-limit; parent recursive _resource_stop recognizes that code before admitting or advancing the goal. This closes finding #601. No further issues found in the bounded evidence/typed-overflow follow-up."
+}

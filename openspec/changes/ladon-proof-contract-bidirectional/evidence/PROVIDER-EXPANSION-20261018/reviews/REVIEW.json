@@ -1,0 +1,46 @@
+{
+  "assignmentPost": 542,
+  "canonicalEdits": false,
+  "findings": [
+    {
+      "evidence": "_validate_arguments bounds context.artifacts only by count (4096) and validates the analysis envelope separately at 8 MiB. It does not bound aggregate analysis/context/route/demand/requirement bytes before _validate_members and _source_selection scan/validate source owners. The final 8 MiB cap is only on the generated request after source-selection work. An oversized caller-supplied context and many source-map references can therefore drive repeated owner scans outside the stated aggregate 8 MiB profile when make_provider_slice_request is called directly; the ordinary workflow happens to pre-bound its outer input, but the public builder does not.",
+      "locations": [
+        "src/ladon/_proof_contract_provider_requests.py:31-46",
+        "src/ladon/_proof_contract_provider_requests.py:101-120",
+        "src/ladon/_proof_contract_provider_requests.py:188-206"
+      ],
+      "recommendation": "At builder entry, bound aggregate JSON bytes across all five input values before envelope/member/source-owner traversal (and reject cycles/deep inputs). Add a pure test that passes an over-budget context and proves owner selection is not entered.",
+      "severity": "P2 resource-boundary",
+      "title": "Standalone provider request builder has no aggregate input-byte guard"
+    },
+    {
+      "evidence": "_own_inputs checks application only as str and does not validate occurrence. _expand dispatches run_obligation_validation before _observe_provider invokes _validate_selection, which finally rejects malformed Lean names or invalid occurrence values. Thus malformed public requests can consume a bounded native-validation worker before rejection.",
+      "locations": [
+        "src/ladon/proof_contract_provider_expansion.py:50-64",
+        "src/ladon/proof_contract_provider_expansion.py:73-82",
+        "src/ladon/proof_contract_provider_expansion.py:135-142"
+      ],
+      "recommendation": "Validate application syntax and the bounded integer occurrence at input ownership before native validation; add runner/worker spy cases proving bad values cause zero dispatch.",
+      "severity": "P3 fail-fast resource efficiency",
+      "title": "Malformed application/occurrence are rejected only after native validation dispatch"
+    }
+  ],
+  "leanOrExtractionRun": false,
+  "positiveFindings": "Whole expansion revalidates the analysis in the worker, rebuilds the exact candidate request from the validated v2 route/demand, and compares candidate equality before observation. The provider worker re-reads/hash-checks source, revalidates contract/source-map attachments and anchors, then expands only the caller-selected application occurrence. Observation remains explicitly unresolved, with authority none and falsity not established. Outer and worker stages clamp to 30 seconds, 12 GiB and 8 MiB; nested stop checks short-circuit. Existing missing-provider integration creates only not-dispatched request artifacts and does not synthesize a provider slice.",
+  "role": "read-only independent audit",
+  "sourceFixtureRun": false,
+  "sourceHashes": {
+    "src/ladon/_proof_contract_provider_requests.py": "98dd1c4cc005ac83914d72827bd8c30e9ee9a334de53352fe74d0122bf4514bd",
+    "src/ladon/proof_contract_provider_expansion.py": "b3f4c7bc72d189383b03e079172d737f36cc0fe56d1a1e28a254f5d4887db7a2",
+    "src/ladon/proof_contract_provider_supervision.py": "04d908ecf92fe7c20d9b518930df1e1b59a2b35c2f5fdf45aff3080ff81e12aa",
+    "src/ladon/proof_contract_provider_worker.py": "2c0337085d59499a7e577acd326e97d57e2727d4aeea5f0d8cd283604fbd8b15",
+    "tests/test_proof_contract_provider_expansion.py": "9fc61af91057bc2c2dbc00a98b61b0d49cdcf7a71d632d2271bdd3ba79efd067",
+    "tests/test_proof_contract_provider_worker.py": "4a57e5bd499e80f60e19be772e26b90d2fc2edb1eea714f8d92e25657ad25325"
+  },
+  "status": "PASS_WITH_FINDINGS",
+  "verification": {
+    "command": "PYTHONPATH=src:tests:tests/support pytest -q tests/test_proof_contract_provider_expansion.py tests/test_proof_contract_provider_worker.py",
+    "result": "17 passed in 0.48s",
+    "scope": "Pure request, native-binding bookkeeping, fake-runner resource, and public missing-provider hook tests. No Lean, extraction, source-fixture worker, CLI, or canonical edits."
+  }
+}

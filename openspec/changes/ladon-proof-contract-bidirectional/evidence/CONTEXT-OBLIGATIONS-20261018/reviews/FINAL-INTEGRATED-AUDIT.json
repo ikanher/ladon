@@ -1,0 +1,43 @@
+{
+  "assignmentPost": 568,
+  "contractPost": 560,
+  "findings": [
+    {
+      "impact": "Output construction and hashing scale approximately with goal-count times binding-size. With up to 4096 prepared obligations, legal bounded input can cause multi-gigabyte transient object/string allocation, consume the 12-GiB process-tree budget or 30-second phase budget, and make a request incomplete before the intended output fallback is reached. The supervisor preserves the hard ceiling and no authority is promoted, but this is substantial avoidable resource amplification on accepted input.",
+      "locations": [
+        "src/ladon/_proof_contract_context_goals.py:26-28",
+        "src/ladon/proof_contract_context_worker.py:23-27"
+      ],
+      "recommendation": "Keep the owned binding once at plan level and attach a canonical binding digest/reference to each goal (with the plan identity committing both), or preflight the expanded representation with a bounded counter and reject before deep copies/serialization.",
+      "severity": "P2",
+      "title": "Avoid quadratic checkpoint-binding duplication before the output bound",
+      "trigger": "A valid near-8-MiB correspondence with many original premise occurrences. The binding includes the full interpretation/object map and an ordered copy of every premise/provider observation; `build_context_goals` deep-copies that binding into every generated obligation and hashes each expanded row. The worker then calls `json.dumps` on the entire expanded result before checking whether it exceeds 8 MiB."
+    }
+  ],
+  "limitations": "This is source-first audit only. Root owns real native plan/check replay, broader task 1.2 integration, and final gates. The scoped capability remains distinct from the norm-route bridge and does not close task 1.2.",
+  "reviewTarget": [
+    "src/ladon/proof_contract_context_bridge.py",
+    "src/ladon/_proof_contract_context_preparation.py",
+    "src/ladon/_proof_contract_context_goals.py",
+    "src/ladon/proof_contract_context_worker.py",
+    "src/ladon/proof_contract_context_cli.py",
+    "src/ladon/proof_contract_cli.py"
+  ],
+  "reviewed": {
+    "checkpoint": "Checking regenerates the complete plan and requires exact planId equality before term dispatch; unknown goal IDs reject. Accepted support requires replay/trust acceptance for every generated goal and no residuals.",
+    "dispatch": "Both new commands are parsed and dispatched through proof_contract_cli; terms and request files share an 8 MiB raw input cap.",
+    "freshSource": "Stored source digest, fresh scoped extraction sliceId, parent declaration observation/environment, strict prefix digest, and end-of-stage source reread are bound. The generated prefix is compiled with checks that the parent declaration and original module are absent.",
+    "nativeOwnership": "Validated native envelope batch; correspondence owner and exact interpretation owner are resolved by typed artifact ref and subject. The correspondence payload is regenerated from the native interpretation, stored actual slice, and object map; every semantic payload field except the normalized correspondenceId is compared. Interpretation/source-map association and exact source anchor are revalidated against repoRoot.",
+    "obligations": "Prepared obligations must all be open and duplicate IDs/domain injection are rejected. Original row order is preserved; premise/provider occurrence IDs are reattached from the actual selected slice. Domain membership witnesses are separate from representation typing and semantic conclusion. Residuals prevent checked-support.",
+    "resourceStops": "Preparation is supervised as one process-tree stage with bridge limits capped at 30 seconds, 12 GiB RSS and 8 MiB output under the supplied absolute deadline; per-goal check stages are supervised under the same deadline. Resource stop aliases are recursively recognized, and there is no retry path.",
+    "tests": "No tests or Lean/source workflows were run in this audit. Frozen boundary/checkpoint test file hashes were verified unchanged. Targeted Ruff check passed."
+  },
+  "status": "FINDING",
+  "verification": {
+    "frozenTestsUnchanged": true,
+    "leanOrExtractionRun": false,
+    "ruffCommand": ".venv/bin/ruff check --no-cache <six reviewed modules>",
+    "ruffResult": "All checks passed!",
+    "sourceOrCanonicalEdits": false
+  }
+}

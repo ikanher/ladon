@@ -1,0 +1,43 @@
+..F                                                                      [100%]
+=================================== FAILURES ===================================
+____________ test_expired_declared_clock_launches_no_worker[native] ____________
+
+clock = 'native'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x78f68bd3b490>
+
+    @pytest.mark.parametrize('clock',['outer','saved','native'])
+    def test_expired_declared_clock_launches_no_worker(clock,monkeypatch):
+        request = _request()
+        if clock=='outer':
+            request['deadlineMonotonic']=monotonic()-1
+        elif clock=='saved':
+            request['providerSliceRequest']['deadlineMonotonic']=monotonic()-1
+        else:
+            # Even an unvalidated expired declaration should stop without claiming
+            # validity or spending a worker. No identity is accepted by this path.
+            request['analysisArtifact']['payload']['request']['bounds']={
+                'deadlineUtc':'2000-01-01T00:00:00Z'}
+        monkeypatch.setattr(expansion,'run_obligation_validation',
+            lambda *args, **_kwargs: pytest.fail('expired native validation launched'))
+>       result=expansion.expand_obligation_provider(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_provider_deadline.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_provider_expansion.py:43: in expand_obligation_provider
+    _expand(result, owned)
+src/ladon/proof_contract_provider_expansion.py:89: in _expand
+    checked = run_obligation_validation(owned['analysisArtifact'], owned['context'],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ({'artifactId': 'sha256:559b0f2304494ea44329244251a55711f9876948280e34e9397848de802bfcf5', 'artifactKind': 'proofir.co...xpected': 5, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]})
+_kwargs = {'deadline_monotonic': 1972890.898385, 'limits': {'max_output_bytes': 8388608, 'max_rss_bytes': 12884901888, 'timeout_seconds': 30.0}}
+
+>   lambda *args, **_kwargs: pytest.fail('expired native validation launched'))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: expired native validation launched
+
+tests/test_proof_contract_provider_deadline.py:23: Failed
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_provider_deadline.py::test_expired_declared_clock_launches_no_worker[native]
+1 failed, 2 passed in 0.25s

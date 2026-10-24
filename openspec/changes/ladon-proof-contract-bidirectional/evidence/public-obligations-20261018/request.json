@@ -1,0 +1,545 @@
+{
+  "bounds": {},
+  "describedRouteStepRefs": [
+    {
+      "kind": "derivation-step",
+      "localId": "step:inner-compose"
+    },
+    {
+      "kind": "derivation-step",
+      "localId": "step:outer-compose"
+    },
+    {
+      "kind": "derivation-step",
+      "localId": "step:finish"
+    }
+  ],
+  "desiredContract": {
+    "assumptions": [],
+    "conclusionId": "estimate:ThreeSteps.N3:ThreeSteps.N0:ThreeSteps.H:conclusion",
+    "context": {
+      "domainId": "domain:type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "objectId": "operator:ThreeSteps.H",
+      "representationId": "representation:original",
+      "scaleId": "scale:ThreeSteps.N0"
+    },
+    "endpointId": "estimate:ThreeSteps.N3:ThreeSteps.N0:ThreeSteps.H",
+    "features": {
+      "constantDependencies": {
+        "allowedBinderIds": [],
+        "reason": null,
+        "state": "known"
+      },
+      "regularity": {
+        "offset": 0,
+        "reason": null,
+        "scaleId": "scale:ThreeSteps.N0",
+        "state": "known"
+      },
+      "witnessDependencies": []
+    },
+    "profileId": "norm-scale-v1",
+    "telescope": [
+      {
+        "binderId": "b0",
+        "quantifier": "forall",
+        "typeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c"
+      },
+      {
+        "binderId": "b1",
+        "quantifier": "forall",
+        "typeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c"
+      }
+    ]
+  },
+  "desiredReadingIdentity": {
+    "interpretationDigest": "sha256:3333333333333333333333333333333333333333333333333333333333333333",
+    "readingId": "reading:three-steps-described"
+  },
+  "endpointInterfaces": [
+    {
+      "conclusionId": "estimate:ThreeSteps.N1:ThreeSteps.N0:ThreeSteps.F1:conclusion",
+      "contractRef": {
+        "artifactRef": "sha256:480a9da5924852777549a53abc2d89f79b5124157e2b07c63774dad367977e2f",
+        "kind": "contract",
+        "localId": "formal:cb569fcc728b7fc8799e27aec95a940080b45a3fb745a819bb782b8a1f878978"
+      },
+      "domainId": "domain:type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "endpointId": "estimate:ThreeSteps.N1:ThreeSteps.N0:ThreeSteps.F1",
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:interface"
+        }
+      ],
+      "inputNormId": "norm:ThreeSteps.N0",
+      "inputScaleId": "scale:ThreeSteps.N0",
+      "inputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "interfaceId": "first",
+      "objectId": "operator:ThreeSteps.F1",
+      "operatorId": "operator:ThreeSteps.F1",
+      "outputNormId": "norm:ThreeSteps.N1",
+      "outputScaleId": "scale:ThreeSteps.N1",
+      "outputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "representationId": "representation:original"
+    },
+    {
+      "conclusionId": "estimate:ThreeSteps.N2:ThreeSteps.N1:ThreeSteps.F2:conclusion",
+      "contractRef": {
+        "artifactRef": "sha256:9e57537ce7a3b58d80ca1ddf7f61af0e0a2fba5765856e288ad0ed1807c5f42c",
+        "kind": "contract",
+        "localId": "formal:fcc40bbb4708699d0137b70b5082644ed0c450abfe14215214a907d2cfbeaa36"
+      },
+      "domainId": "domain:type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "endpointId": "estimate:ThreeSteps.N2:ThreeSteps.N1:ThreeSteps.F2",
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:interface"
+        }
+      ],
+      "inputNormId": "norm:ThreeSteps.N1",
+      "inputScaleId": "scale:ThreeSteps.N1",
+      "inputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "interfaceId": "second",
+      "objectId": "operator:ThreeSteps.F2",
+      "operatorId": "operator:ThreeSteps.F2",
+      "outputNormId": "norm:ThreeSteps.N2",
+      "outputScaleId": "scale:ThreeSteps.N2",
+      "outputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "representationId": "representation:original"
+    },
+    {
+      "conclusionId": "estimate:ThreeSteps.N3:ThreeSteps.N2:ThreeSteps.F3:conclusion",
+      "contractRef": {
+        "artifactRef": "sha256:09e7285bfe91eb12bee54885903bb86c93f0503ad4d19dd9b3358a39dbe6bca2",
+        "kind": "contract",
+        "localId": "formal:23b4370e022ff04ef34e6ce549edcee8ab768e0b0f1f03b10bf8d526771bd363"
+      },
+      "domainId": "domain:type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "endpointId": "estimate:ThreeSteps.N3:ThreeSteps.N2:ThreeSteps.F3",
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:interface"
+        }
+      ],
+      "inputNormId": "norm:ThreeSteps.N2",
+      "inputScaleId": "scale:ThreeSteps.N2",
+      "inputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "interfaceId": "third",
+      "objectId": "operator:ThreeSteps.F3",
+      "operatorId": "operator:ThreeSteps.F3",
+      "outputNormId": "norm:ThreeSteps.N3",
+      "outputScaleId": "scale:ThreeSteps.N3",
+      "outputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "representationId": "representation:original"
+    },
+    {
+      "conclusionId": "estimate:ThreeSteps.N2:ThreeSteps.N0:ThreeSteps.G:conclusion",
+      "domainId": "domain:type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "endpointId": "estimate:ThreeSteps.N2:ThreeSteps.N0:ThreeSteps.G",
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:interface"
+        }
+      ],
+      "inputNormId": "norm:ThreeSteps.N0",
+      "inputScaleId": "scale:ThreeSteps.N0",
+      "inputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "interfaceId": "inner",
+      "objectId": "operator:ThreeSteps.G",
+      "operatorId": "operator:ThreeSteps.G",
+      "outputNormId": "norm:ThreeSteps.N2",
+      "outputScaleId": "scale:ThreeSteps.N2",
+      "outputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "representationId": "representation:original"
+    },
+    {
+      "conclusionId": "estimate:ThreeSteps.N3:ThreeSteps.N0:ThreeSteps.H:conclusion",
+      "domainId": "domain:type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "endpointId": "estimate:ThreeSteps.N3:ThreeSteps.N0:ThreeSteps.H",
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:interface"
+        }
+      ],
+      "inputNormId": "norm:ThreeSteps.N0",
+      "inputScaleId": "scale:ThreeSteps.N0",
+      "inputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "interfaceId": "goal",
+      "objectId": "operator:ThreeSteps.H",
+      "operatorId": "operator:ThreeSteps.H",
+      "outputNormId": "norm:ThreeSteps.N3",
+      "outputScaleId": "scale:ThreeSteps.N3",
+      "outputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "representationId": "representation:original"
+    },
+    {
+      "conclusionId": "estimate:ThreeSteps.N3:ThreeSteps.N0:ThreeSteps.H:conclusion",
+      "contractRef": {
+        "artifactRef": "sha256:1545d8ae82162fa9eae53ad26f739d7dbb422a47e770b86b81f34c311d11d301",
+        "kind": "contract",
+        "localId": "formal:5a65d45a63d7fa0e96a2ee8964d8d0ab6d697bd21b6cf6c6f9459d5c0742a269"
+      },
+      "domainId": "domain:type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "endpointId": "estimate:ThreeSteps.N3:ThreeSteps.N0:ThreeSteps.H",
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:interface"
+        }
+      ],
+      "inputNormId": "norm:ThreeSteps.N0",
+      "inputScaleId": "scale:ThreeSteps.N0",
+      "inputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "interfaceId": "alternate",
+      "objectId": "operator:ThreeSteps.H",
+      "operatorId": "operator:ThreeSteps.H",
+      "outputNormId": "norm:ThreeSteps.N3",
+      "outputScaleId": "scale:ThreeSteps.N3",
+      "outputTypeId": "type:sha256:1d1e0da7eb14fdad0a536f63502e4be562364cf268c5da6177b45d81ebaaac7c",
+      "representationId": "representation:original"
+    }
+  ],
+  "goalRef": {
+    "kind": "statement",
+    "localId": "goal"
+  },
+  "perApplicationBackwardChoices": [
+    {
+      "choices": {
+        "lossSplits": [
+          [
+            0,
+            0
+          ]
+        ]
+      },
+      "stepRef": {
+        "kind": "derivation-step",
+        "localId": "step:inner-compose"
+      }
+    },
+    {
+      "choices": {
+        "lossSplits": [
+          [
+            0,
+            0
+          ]
+        ]
+      },
+      "stepRef": {
+        "kind": "derivation-step",
+        "localId": "step:outer-compose"
+      }
+    },
+    {
+      "choices": {},
+      "stepRef": {
+        "kind": "derivation-step",
+        "localId": "step:finish"
+      }
+    },
+    {
+      "choices": {},
+      "stepRef": {
+        "kind": "derivation-step",
+        "localId": "step:alternative"
+      }
+    }
+  ],
+  "routePriorities": [
+    {
+      "column": null,
+      "heuristicPriority": 0,
+      "line": null,
+      "rootStepRef": {
+        "kind": "derivation-step",
+        "localId": "step:inner-compose"
+      },
+      "sourceId": "fallback:step:inner-compose",
+      "sourceLocation": null
+    },
+    {
+      "column": null,
+      "heuristicPriority": 0,
+      "line": null,
+      "rootStepRef": {
+        "kind": "derivation-step",
+        "localId": "step:outer-compose"
+      },
+      "sourceId": "fallback:step:outer-compose",
+      "sourceLocation": null
+    },
+    {
+      "column": null,
+      "heuristicPriority": 0,
+      "line": null,
+      "rootStepRef": {
+        "kind": "derivation-step",
+        "localId": "step:finish"
+      },
+      "sourceId": "fallback:step:finish",
+      "sourceLocation": null
+    },
+    {
+      "column": null,
+      "heuristicPriority": 0,
+      "line": null,
+      "rootStepRef": {
+        "kind": "derivation-step",
+        "localId": "step:alternative"
+      },
+      "sourceId": "fallback:step:alternative",
+      "sourceLocation": null
+    }
+  ],
+  "ruleBindings": [
+    {
+      "arity": 2,
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:inner-compose"
+        }
+      ],
+      "outputInterfaceId": "inner",
+      "parameters": {
+        "compositeOperatorId": "operator:ThreeSteps.G"
+      },
+      "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+      "ruleId": "compose",
+      "ruleRef": {
+        "kind": "declaration",
+        "localId": "rule:inner-compose"
+      },
+      "stepRef": {
+        "kind": "derivation-step",
+        "localId": "step:inner-compose"
+      }
+    },
+    {
+      "arity": 2,
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:outer-compose"
+        }
+      ],
+      "outputInterfaceId": "goal",
+      "parameters": {
+        "compositeOperatorId": "operator:ThreeSteps.H"
+      },
+      "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+      "ruleId": "compose",
+      "ruleRef": {
+        "kind": "declaration",
+        "localId": "rule:outer-compose"
+      },
+      "stepRef": {
+        "kind": "derivation-step",
+        "localId": "step:outer-compose"
+      }
+    },
+    {
+      "arity": 1,
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:finish"
+        }
+      ],
+      "outputInterfaceId": "goal",
+      "parameters": {},
+      "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+      "ruleId": "identity",
+      "ruleRef": {
+        "kind": "declaration",
+        "localId": "rule:finish"
+      },
+      "stepRef": {
+        "kind": "derivation-step",
+        "localId": "step:finish"
+      }
+    },
+    {
+      "arity": 1,
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:alternative"
+        }
+      ],
+      "outputInterfaceId": "goal",
+      "parameters": {},
+      "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+      "ruleId": "identity",
+      "ruleRef": {
+        "kind": "declaration",
+        "localId": "rule:alternative"
+      },
+      "stepRef": {
+        "kind": "derivation-step",
+        "localId": "step:alternative"
+      }
+    }
+  ],
+  "scopeBindings": [
+    {
+      "binderMap": [
+        {
+          "fromBinderId": "b0",
+          "toBinderId": "b0"
+        },
+        {
+          "fromBinderId": "b1",
+          "toBinderId": "b1"
+        }
+      ],
+      "contractRef": {
+        "artifactRef": "sha256:480a9da5924852777549a53abc2d89f79b5124157e2b07c63774dad367977e2f",
+        "kind": "contract",
+        "localId": "formal:cb569fcc728b7fc8799e27aec95a940080b45a3fb745a819bb782b8a1f878978"
+      },
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:source"
+        }
+      ],
+      "localContextRef": {
+        "kind": "local-context",
+        "localId": "context:shared"
+      },
+      "objectMap": [
+        {
+          "fromObjectId": "operator:ThreeSteps.F1",
+          "toObjectId": "operator:ThreeSteps.F1"
+        }
+      ],
+      "statementRef": {
+        "kind": "statement",
+        "localId": "first"
+      },
+      "substitutionRefs": []
+    },
+    {
+      "binderMap": [
+        {
+          "fromBinderId": "b0",
+          "toBinderId": "b0"
+        },
+        {
+          "fromBinderId": "b1",
+          "toBinderId": "b1"
+        }
+      ],
+      "contractRef": {
+        "artifactRef": "sha256:9e57537ce7a3b58d80ca1ddf7f61af0e0a2fba5765856e288ad0ed1807c5f42c",
+        "kind": "contract",
+        "localId": "formal:fcc40bbb4708699d0137b70b5082644ed0c450abfe14215214a907d2cfbeaa36"
+      },
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:source"
+        }
+      ],
+      "localContextRef": {
+        "kind": "local-context",
+        "localId": "context:shared"
+      },
+      "objectMap": [
+        {
+          "fromObjectId": "operator:ThreeSteps.F2",
+          "toObjectId": "operator:ThreeSteps.F2"
+        }
+      ],
+      "statementRef": {
+        "kind": "statement",
+        "localId": "second"
+      },
+      "substitutionRefs": []
+    },
+    {
+      "binderMap": [
+        {
+          "fromBinderId": "b0",
+          "toBinderId": "b0"
+        },
+        {
+          "fromBinderId": "b1",
+          "toBinderId": "b1"
+        }
+      ],
+      "contractRef": {
+        "artifactRef": "sha256:09e7285bfe91eb12bee54885903bb86c93f0503ad4d19dd9b3358a39dbe6bca2",
+        "kind": "contract",
+        "localId": "formal:23b4370e022ff04ef34e6ce549edcee8ab768e0b0f1f03b10bf8d526771bd363"
+      },
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:source"
+        }
+      ],
+      "localContextRef": {
+        "kind": "local-context",
+        "localId": "context:shared"
+      },
+      "objectMap": [
+        {
+          "fromObjectId": "operator:ThreeSteps.F3",
+          "toObjectId": "operator:ThreeSteps.F3"
+        }
+      ],
+      "statementRef": {
+        "kind": "statement",
+        "localId": "third"
+      },
+      "substitutionRefs": []
+    },
+    {
+      "binderMap": [
+        {
+          "fromBinderId": "b0",
+          "toBinderId": "b0"
+        },
+        {
+          "fromBinderId": "b1",
+          "toBinderId": "b1"
+        }
+      ],
+      "contractRef": {
+        "artifactRef": "sha256:1545d8ae82162fa9eae53ad26f739d7dbb422a47e770b86b81f34c311d11d301",
+        "kind": "contract",
+        "localId": "formal:5a65d45a63d7fa0e96a2ee8964d8d0ab6d697bd21b6cf6c6f9459d5c0742a269"
+      },
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:source"
+        }
+      ],
+      "localContextRef": {
+        "kind": "local-context",
+        "localId": "context:shared"
+      },
+      "objectMap": [
+        {
+          "fromObjectId": "operator:ThreeSteps.H",
+          "toObjectId": "operator:ThreeSteps.H"
+        }
+      ],
+      "statementRef": {
+        "kind": "statement",
+        "localId": "alternate"
+      },
+      "substitutionRefs": []
+    }
+  ]
+}

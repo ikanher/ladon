@@ -1,0 +1,90 @@
+EEEF                                                                     [100%]
+==================================== ERRORS ====================================
+_ ERROR at setup of test_public_source_run_checks_all_four_demands_without_promoting_method _
+
+inputs = (PosixPath('/tmp/pytest-of-codex/pytest-654/whole-source-cli0'), PosixPath('/tmp/pytest-of-codex/pytest-654/whole-sour...le-source-cli0/context.json'), 'sources': PosixPath('/tmp/pytest-of-codex/pytest-654/whole-source-cli0/sources.json')})
+
+    @pytest.fixture(scope='module')
+    def checked(inputs):
+        base, root, _ = inputs
+        before = hashlib.sha256((root / 'ThreeSteps.lean').read_bytes()).hexdigest()
+        output = base / 'checked'
+        process = _invoke(inputs, output)
+>       assert process.returncode == 0, process.stdout + process.stderr
+E       AssertionError: usage: ladon investigation contract [-h]
+E                                             {obligations,produce,inspect,propagate,fidelity-record,expand}
+E                                             ...
+E         ladon investigation contract: error: argument operation: invalid choice: 'check-obligations' (choose from 'obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.entrypoint', 'investigation', 'cont...ce: 'check-obligations' (choose from 'obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')\n").returncode
+
+tests/test_proof_contract_obligation_source_cli.py:66: AssertionError
+_ ERROR at setup of test_saved_source_requests_reconstruct_exact_construction_digests _
+
+inputs = (PosixPath('/tmp/pytest-of-codex/pytest-654/whole-source-cli0'), PosixPath('/tmp/pytest-of-codex/pytest-654/whole-sour...le-source-cli0/context.json'), 'sources': PosixPath('/tmp/pytest-of-codex/pytest-654/whole-source-cli0/sources.json')})
+
+    @pytest.fixture(scope='module')
+    def checked(inputs):
+        base, root, _ = inputs
+        before = hashlib.sha256((root / 'ThreeSteps.lean').read_bytes()).hexdigest()
+        output = base / 'checked'
+        process = _invoke(inputs, output)
+>       assert process.returncode == 0, process.stdout + process.stderr
+E       AssertionError: usage: ladon investigation contract [-h]
+E                                             {obligations,produce,inspect,propagate,fidelity-record,expand}
+E                                             ...
+E         ladon investigation contract: error: argument operation: invalid choice: 'check-obligations' (choose from 'obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.entrypoint', 'investigation', 'cont...ce: 'check-obligations' (choose from 'obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')\n").returncode
+
+tests/test_proof_contract_obligation_source_cli.py:66: AssertionError
+_ ERROR at setup of test_existing_run_directory_is_preserved_without_another_check _
+
+inputs = (PosixPath('/tmp/pytest-of-codex/pytest-654/whole-source-cli0'), PosixPath('/tmp/pytest-of-codex/pytest-654/whole-sour...le-source-cli0/context.json'), 'sources': PosixPath('/tmp/pytest-of-codex/pytest-654/whole-source-cli0/sources.json')})
+
+    @pytest.fixture(scope='module')
+    def checked(inputs):
+        base, root, _ = inputs
+        before = hashlib.sha256((root / 'ThreeSteps.lean').read_bytes()).hexdigest()
+        output = base / 'checked'
+        process = _invoke(inputs, output)
+>       assert process.returncode == 0, process.stdout + process.stderr
+E       AssertionError: usage: ladon investigation contract [-h]
+E                                             {obligations,produce,inspect,propagate,fidelity-record,expand}
+E                                             ...
+E         ladon investigation contract: error: argument operation: invalid choice: 'check-obligations' (choose from 'obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.entrypoint', 'investigation', 'cont...ce: 'check-obligations' (choose from 'obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')\n").returncode
+
+tests/test_proof_contract_obligation_source_cli.py:66: AssertionError
+=================================== FAILURES ===================================
+_______ test_missing_providers_emit_requests_without_claiming_discharge ________
+
+inputs = (PosixPath('/tmp/pytest-of-codex/pytest-654/whole-source-cli0'), PosixPath('/tmp/pytest-of-codex/pytest-654/whole-sour...le-source-cli0/context.json'), 'sources': PosixPath('/tmp/pytest-of-codex/pytest-654/whole-source-cli0/sources.json')})
+
+    def test_missing_providers_emit_requests_without_claiming_discharge(inputs):
+        base, _, paths = inputs
+        sources = json.loads(paths['sources'].read_text())
+        sources['providers'] = []
+        path = base / 'missing-sources.json'
+        path.write_text(json.dumps(sources))
+        process = _invoke(inputs, base / 'missing', sources=path)
+>       assert process.returncode == 0, process.stdout + process.stderr
+E       AssertionError: usage: ladon investigation contract [-h]
+E                                             {obligations,produce,inspect,propagate,fidelity-record,expand}
+E                                             ...
+E         ladon investigation contract: error: argument operation: invalid choice: 'check-obligations' (choose from 'obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.entrypoint', 'investigation', 'cont...ce: 'check-obligations' (choose from 'obligations', 'produce', 'inspect', 'propagate', 'fidelity-record', 'expand')\n").returncode
+
+tests/test_proof_contract_obligation_source_cli.py:120: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_obligation_source_cli.py::test_missing_providers_emit_requests_without_claiming_discharge
+ERROR tests/test_proof_contract_obligation_source_cli.py::test_public_source_run_checks_all_four_demands_without_promoting_method
+ERROR tests/test_proof_contract_obligation_source_cli.py::test_saved_source_requests_reconstruct_exact_construction_digests
+ERROR tests/test_proof_contract_obligation_source_cli.py::test_existing_run_directory_is_preserved_without_another_check
+1 failed, 3 errors in 7.54s

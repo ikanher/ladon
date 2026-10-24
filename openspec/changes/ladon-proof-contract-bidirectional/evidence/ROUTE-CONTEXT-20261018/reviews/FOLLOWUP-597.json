@@ -1,0 +1,27 @@
+{
+  "assignmentPost": 597,
+  "priorFindingPost": 596,
+  "status": "NO_NEW_FINDING",
+  "scope": "Bounded read-only follow-up of the timeout fix and route-context stop/resource propagation; no Lean, no canonical source/test edits.",
+  "reviewed": {
+    "src/ladon/proof_contract_route_context_worker.py": "df246c4b322896ad18482693e46e8471a0038caae9a5d854451baaed5f795196",
+    "src/ladon/proof_contract_route_context.py": "461294278bf601f227ab19ef13c264b90d274f681d56334751f71b43027ba8dd",
+    "tests/test_proof_contract_route_context_stops.py": "a6ab31374a2df8c10e6cf637b8108ef049ebdb722883dd88a3f7d9ede739ad4b"
+  },
+  "verification": {
+    "frozenTestRows": 97,
+    "frozenMismatches": [],
+    "testCommand": "pytest -q tests/test_proof_contract_route_context_stops.py",
+    "testResult": "2 passed in 0.15s",
+    "frozenVerification": "ultra_code_bb.py verify-tests --db .codex/state/ultra-proof-contract.sqlite3 => verified",
+    "leanRun": false,
+    "sourceOrTestEdits": false
+  },
+  "observations": [
+    "Worker _compute translates cooperative TimeoutError from both route preparation and goal checking to status=incomplete, code=timeout.",
+    "Parent _prepare/_check invoke recursive _resource_stop before classifying worker results; _resource_stop recognizes timeout code/status at arbitrary nested depth, so later goal stages halt.",
+    "The stop path uses _fail and keeps demandDischarged=false; only memory-limit requests memoryReportBackRequired, preserving timeout guidance classification.",
+    "Worker main generic rejection remains for invalid worker inputs; operation-local TimeoutError is consumed by _compute."
+  ],
+  "limitations": "Pure mocked stop tests only. No positive runtime, Lean, or full integrated gate was run; root owns those checks."
+}

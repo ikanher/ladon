@@ -1,0 +1,14 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+__________ test_oversized_worker_result_is_an_incomplete_output_stop ___________
+
+    def test_oversized_worker_result_is_an_incomplete_output_stop():
+        worker=importlib.import_module('ladon.proof_contract_provider_worker')
+>       body=json.loads(worker._response({'large':'x'*(8*1024**2)}))
+                        ^^^^^^^^^^^^^^^^
+E       AttributeError: module 'ladon.proof_contract_provider_worker' has no attribute '_response'
+
+tests/test_proof_contract_provider_output.py:10: AttributeError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_provider_output.py::test_oversized_worker_result_is_an_incomplete_output_stop
+1 failed, 1 passed in 0.09s

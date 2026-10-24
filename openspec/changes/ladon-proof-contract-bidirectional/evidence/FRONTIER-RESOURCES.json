@@ -1,0 +1,55 @@
+{
+  "schema": "ladon-planner-root-resource-gates-v1",
+  "sourceHashes": {
+    "src/ladon/_proof_contract_obligation_planner_backward.py": "1d7a934ab786e2991fb9c3a79deae66d38c03ea6473f95800a2845beab2cda0a",
+    "src/ladon/_proof_contract_obligation_planner_comparisons.py": "cc16640f4f7f45e850fecc0a2669ccc3251d8575dc6debb60beb0ca1f0349c31",
+    "src/ladon/_proof_contract_obligation_planner_replay.py": "8c33dc90c39fee084b3a01371a17f371e5bce6c1e8cd63cb2fe196f8b154d0b2",
+    "src/ladon/_proof_contract_obligation_planner_result.py": "21253d3e03dfbe4228c6d3a7ea0157fd99eb9588d8e93726cc42a8fa274d28bb",
+    "src/ladon/_proof_contract_obligation_planner_routes.py": "32dded01a665713edbacaf49baa9e49db329a3470ef2e486b3ee30271169f0e6",
+    "src/ladon/_proof_contract_obligation_planner_validation.py": "92d7517d927efaf509f6749cf3b5f74f95bfbfd534e4563e7caeda5d72071bab",
+    "src/ladon/proof_contract_obligation_planner.py": "1685a47c92a187e8aeaebe3908ef65d275755c440c57ddcd8bbcaeba88bb957b"
+  },
+  "largeProbeSha256": "9fa77fc700fedf703575916d504f337de75e41fc3e0dbe7725cb255ef6f50f0f",
+  "cases": {
+    "large": {
+      "command": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/.codex/state/proof-contract-analysis/probe-planner-large-record.py",
+        "src/ladon"
+      ],
+      "limits": {
+        "seconds": 5,
+        "rssBytes": 134217728,
+        "outputBytes": 1048576
+      },
+      "returncode": 0,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "elapsedSeconds": 0.6440635269973427,
+      "peakRssBytes": 48091136,
+      "stdout": "{\"inputBytes\": 2271438, \"desiredBytes\": 2078574}\n{\"status\": \"partial\", \"elapsedSeconds\": 0.48408227204345167, \"outputBytes\": 6250138, \"routes\": 1, \"work\": {\"forwardSteps\": 60, \"plannerSteps\": 2, \"totalSteps\": 62, \"forwardCombinations\": 60, \"plannerCombinations\": 2, \"totalCombinations\": 62}}\n",
+      "stderr": ""
+    },
+    "depth22": {
+      "command": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-c",
+        "import json,sys,time\nsys.path.insert(0,'tests')\nfrom test_proof_contract_obligation_planner_work import _shared_case\nfrom support.proof_contract_obligation_planner import request_kwargs\nfrom ladon.proof_contract_obligation_planner import ContractObligationPlanRequest,plan_contract_obligations\nstarted=time.monotonic();result=plan_contract_obligations(ContractObligationPlanRequest(**request_kwargs(_shared_case(22))))\nprint(json.dumps({'elapsed':time.monotonic()-started,'routes':len(result['routeComparisons']),'work':result['coverage']['workBudget']}))\n"
+      ],
+      "limits": {
+        "seconds": 5,
+        "rssBytes": 536870912,
+        "outputBytes": 1048576
+      },
+      "returncode": 0,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "elapsedSeconds": 0.18654654105193913,
+      "peakRssBytes": 33996800,
+      "stdout": "{\"elapsed\": 0.07985013700090349, \"routes\": 1, \"work\": {\"forwardSteps\": 22, \"plannerSteps\": 22, \"totalSteps\": 44, \"forwardCombinations\": 22, \"plannerCombinations\": 22, \"totalCombinations\": 44}}\n",
+      "stderr": ""
+    }
+  }
+}

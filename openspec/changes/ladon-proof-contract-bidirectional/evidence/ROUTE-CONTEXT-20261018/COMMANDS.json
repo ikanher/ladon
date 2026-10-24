@@ -1,0 +1,56 @@
+{
+  "environment": {
+    "PYTHONPATH": "src:tests"
+  },
+  "source": [
+    ".venv/bin/python",
+    "openspec/changes/ladon-proof-contract-bidirectional/evidence/ROUTE-CONTEXT-20261018/run_acceptance.py",
+    "openspec/changes/ladon-proof-contract-bidirectional/evidence/ROUTE-CONTEXT-20261018",
+    ".codex/state/proof-contract-analysis/route-context/final-repo"
+  ],
+  "sourceExitCode": 0,
+  "sourceVerify": [
+    ".venv/bin/python",
+    "openspec/changes/ladon-proof-contract-bidirectional/evidence/ROUTE-CONTEXT-20261018/verify_source.py"
+  ],
+  "sourceVerifyExitCode": 0,
+  "regressionCommandArtifact": "integration-command.json",
+  "regressionStatusArtifact": "integration-status.json",
+  "strictQuality": "from pathlib import Path; from ladon.quality import strict_quality_issues; issues=strict_quality_issues([Path(\"src\"),Path(\"tests\"),Path(\"scripts\")]); raise SystemExit(bool(issues))",
+  "strictQualityExitCode": 0,
+  "lint": [
+    ".venv/bin/ruff",
+    "check",
+    "--no-cache",
+    "src",
+    "tests",
+    "scripts"
+  ],
+  "lintExitCode": 0,
+  "compile": [
+    ".venv/bin/python",
+    "-m",
+    "compileall",
+    "-q",
+    "src",
+    "tests",
+    "scripts"
+  ],
+  "compileExitCode": 0,
+  "frozen": [
+    ".venv/bin/python",
+    ".codex/skills/ultra-code/scripts/ultra_code_bb.py",
+    "verify-tests",
+    "--db",
+    ".codex/state/ultra-proof-contract.sqlite3"
+  ],
+  "frozenExitCode": 0,
+  "strictOpenSpec": [
+    "openspec validate ladon-proof-contract-bidirectional --strict",
+    "openspec validate ladon-proof-contract-analysis-umbrella --strict"
+  ],
+  "strictOpenSpecExitCodes": [
+    0,
+    0
+  ]
+}

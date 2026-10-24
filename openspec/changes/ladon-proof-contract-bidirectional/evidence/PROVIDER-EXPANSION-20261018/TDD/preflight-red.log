@@ -1,0 +1,234 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+_ test_bad_application_selection_never_launches_native_worker[application-bad; command] _
+
+field = 'application', value = 'bad; command'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x70275d24a6d0>
+
+    @pytest.mark.parametrize('field,value', [('application','bad; command'),
+        ('application',''), ('occurrence',{}), ('occurrence',True),
+        ('occurrence',-1), ('occurrence',4096)])
+    def test_bad_application_selection_never_launches_native_worker(field, value, monkeypatch):
+        request = _request(); request[field] = value
+        monkeypatch.setattr(expansion,'run_obligation_validation',
+            lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+>       result = expansion.expand_obligation_provider(request)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_provider_preflight.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_provider_expansion.py:43: in expand_obligation_provider
+    _expand(result, owned)
+src/ladon/proof_contract_provider_expansion.py:81: in _expand
+    checked = run_obligation_validation(owned['analysisArtifact'], owned['context'],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ({'artifactId': 'sha256:559b0f2304494ea44329244251a55711f9876948280e34e9397848de802bfcf5', 'artifactKind': 'proofir.co...xpected': 5, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]})
+_kwargs = {'deadline_monotonic': 1972694.653130331, 'limits': {'max_output_bytes': 8388608, 'max_rss_bytes': 12884901888, 'timeout_seconds': 30.0}}
+
+>   lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: invalid selection launched a worker
+
+tests/test_proof_contract_provider_preflight.py:26: Failed
+__ test_bad_application_selection_never_launches_native_worker[application-] ___
+
+field = 'application', value = ''
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x70275d12e3d0>
+
+    @pytest.mark.parametrize('field,value', [('application','bad; command'),
+        ('application',''), ('occurrence',{}), ('occurrence',True),
+        ('occurrence',-1), ('occurrence',4096)])
+    def test_bad_application_selection_never_launches_native_worker(field, value, monkeypatch):
+        request = _request(); request[field] = value
+        monkeypatch.setattr(expansion,'run_obligation_validation',
+            lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+>       result = expansion.expand_obligation_provider(request)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_provider_preflight.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_provider_expansion.py:43: in expand_obligation_provider
+    _expand(result, owned)
+src/ladon/proof_contract_provider_expansion.py:81: in _expand
+    checked = run_obligation_validation(owned['analysisArtifact'], owned['context'],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ({'artifactId': 'sha256:559b0f2304494ea44329244251a55711f9876948280e34e9397848de802bfcf5', 'artifactKind': 'proofir.co...xpected': 5, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]})
+_kwargs = {'deadline_monotonic': 1972694.714578192, 'limits': {'max_output_bytes': 8388608, 'max_rss_bytes': 12884901888, 'timeout_seconds': 30.0}}
+
+>   lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: invalid selection launched a worker
+
+tests/test_proof_contract_provider_preflight.py:26: Failed
+_ test_bad_application_selection_never_launches_native_worker[occurrence-value2] _
+
+field = 'occurrence', value = {}
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x70275d1d3210>
+
+    @pytest.mark.parametrize('field,value', [('application','bad; command'),
+        ('application',''), ('occurrence',{}), ('occurrence',True),
+        ('occurrence',-1), ('occurrence',4096)])
+    def test_bad_application_selection_never_launches_native_worker(field, value, monkeypatch):
+        request = _request(); request[field] = value
+        monkeypatch.setattr(expansion,'run_obligation_validation',
+            lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+>       result = expansion.expand_obligation_provider(request)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_provider_preflight.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_provider_expansion.py:43: in expand_obligation_provider
+    _expand(result, owned)
+src/ladon/proof_contract_provider_expansion.py:81: in _expand
+    checked = run_obligation_validation(owned['analysisArtifact'], owned['context'],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ({'artifactId': 'sha256:559b0f2304494ea44329244251a55711f9876948280e34e9397848de802bfcf5', 'artifactKind': 'proofir.co...xpected': 5, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]})
+_kwargs = {'deadline_monotonic': 1972694.76287587, 'limits': {'max_output_bytes': 8388608, 'max_rss_bytes': 12884901888, 'timeout_seconds': 30.0}}
+
+>   lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: invalid selection launched a worker
+
+tests/test_proof_contract_provider_preflight.py:26: Failed
+_ test_bad_application_selection_never_launches_native_worker[occurrence-True] _
+
+field = 'occurrence', value = True
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x70275dd2e590>
+
+    @pytest.mark.parametrize('field,value', [('application','bad; command'),
+        ('application',''), ('occurrence',{}), ('occurrence',True),
+        ('occurrence',-1), ('occurrence',4096)])
+    def test_bad_application_selection_never_launches_native_worker(field, value, monkeypatch):
+        request = _request(); request[field] = value
+        monkeypatch.setattr(expansion,'run_obligation_validation',
+            lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+>       result = expansion.expand_obligation_provider(request)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_provider_preflight.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_provider_expansion.py:43: in expand_obligation_provider
+    _expand(result, owned)
+src/ladon/proof_contract_provider_expansion.py:81: in _expand
+    checked = run_obligation_validation(owned['analysisArtifact'], owned['context'],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ({'artifactId': 'sha256:559b0f2304494ea44329244251a55711f9876948280e34e9397848de802bfcf5', 'artifactKind': 'proofir.co...xpected': 5, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]})
+_kwargs = {'deadline_monotonic': 1972694.811384436, 'limits': {'max_output_bytes': 8388608, 'max_rss_bytes': 12884901888, 'timeout_seconds': 30.0}}
+
+>   lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: invalid selection launched a worker
+
+tests/test_proof_contract_provider_preflight.py:26: Failed
+__ test_bad_application_selection_never_launches_native_worker[occurrence--1] __
+
+field = 'occurrence', value = -1
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x70275d18ff10>
+
+    @pytest.mark.parametrize('field,value', [('application','bad; command'),
+        ('application',''), ('occurrence',{}), ('occurrence',True),
+        ('occurrence',-1), ('occurrence',4096)])
+    def test_bad_application_selection_never_launches_native_worker(field, value, monkeypatch):
+        request = _request(); request[field] = value
+        monkeypatch.setattr(expansion,'run_obligation_validation',
+            lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+>       result = expansion.expand_obligation_provider(request)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_provider_preflight.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_provider_expansion.py:43: in expand_obligation_provider
+    _expand(result, owned)
+src/ladon/proof_contract_provider_expansion.py:81: in _expand
+    checked = run_obligation_validation(owned['analysisArtifact'], owned['context'],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ({'artifactId': 'sha256:559b0f2304494ea44329244251a55711f9876948280e34e9397848de802bfcf5', 'artifactKind': 'proofir.co...xpected': 5, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]})
+_kwargs = {'deadline_monotonic': 1972694.859538216, 'limits': {'max_output_bytes': 8388608, 'max_rss_bytes': 12884901888, 'timeout_seconds': 30.0}}
+
+>   lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: invalid selection launched a worker
+
+tests/test_proof_contract_provider_preflight.py:26: Failed
+_ test_bad_application_selection_never_launches_native_worker[occurrence-4096] _
+
+field = 'occurrence', value = 4096
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x70275d03cc50>
+
+    @pytest.mark.parametrize('field,value', [('application','bad; command'),
+        ('application',''), ('occurrence',{}), ('occurrence',True),
+        ('occurrence',-1), ('occurrence',4096)])
+    def test_bad_application_selection_never_launches_native_worker(field, value, monkeypatch):
+        request = _request(); request[field] = value
+        monkeypatch.setattr(expansion,'run_obligation_validation',
+            lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+>       result = expansion.expand_obligation_provider(request)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_provider_preflight.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_provider_expansion.py:43: in expand_obligation_provider
+    _expand(result, owned)
+src/ladon/proof_contract_provider_expansion.py:81: in _expand
+    checked = run_obligation_validation(owned['analysisArtifact'], owned['context'],
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ({'artifactId': 'sha256:559b0f2304494ea44329244251a55711f9876948280e34e9397848de802bfcf5', 'artifactKind': 'proofir.co...xpected': 5, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...}]})
+_kwargs = {'deadline_monotonic': 1972694.90726145, 'limits': {'max_output_bytes': 8388608, 'max_rss_bytes': 12884901888, 'timeout_seconds': 30.0}}
+
+>   lambda *args, **_kwargs: pytest.fail('invalid selection launched a worker'))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: invalid selection launched a worker
+
+tests/test_proof_contract_provider_preflight.py:26: Failed
+______ test_direct_builder_admits_aggregate_size_before_owner_validation _______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x70275d19ebd0>
+
+    def test_direct_builder_admits_aggregate_size_before_owner_validation(monkeypatch):
+        import ladon._proof_contract_provider_requests as builder
+        _, _, analysis, context, route, demand, requirement = _native()
+        context['oversized'] = 'x'*(8*1024**2)
+        monkeypatch.setattr(builder,'validate_envelope',
+            lambda *args, **_kwargs: pytest.fail('oversized builder reached owner validation'))
+        with pytest.raises(ValueError, match='8 MiB'):
+>           expansion.make_provider_slice_request(analysis,context,route,demand,requirement,
+                                                  monotonic()+30,_limits())
+
+tests/test_proof_contract_provider_preflight.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_provider_expansion.py:30: in make_provider_slice_request
+    return build(analysis, context, route, demand, requirement, deadline, limits)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/_proof_contract_provider_requests.py:190: in make_provider_slice_request
+    analysis, desired, reading = _validate_arguments(
+src/ladon/_proof_contract_provider_requests.py:44: in _validate_arguments
+    desired, reading = _analysis_inputs(analysis)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/_proof_contract_provider_requests.py:64: in _analysis_inputs
+    checked_analysis = validate_envelope(analysis, max_bytes=_MAX_INPUT_BYTES).to_dict()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+args = ({'artifactId': 'sha256:559b0f2304494ea44329244251a55711f9876948280e34e9397848de802bfcf5', 'artifactKind': 'proofir.co...expected': 1, ...}, 'environmentRef': 'sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', ...},)
+_kwargs = {'max_bytes': 8388608}
+
+>   lambda *args, **_kwargs: pytest.fail('oversized builder reached owner validation'))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: oversized builder reached owner validation
+
+tests/test_proof_contract_provider_preflight.py:38: Failed
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_provider_preflight.py::test_bad_application_selection_never_launches_native_worker[application-bad; command]
+FAILED tests/test_proof_contract_provider_preflight.py::test_bad_application_selection_never_launches_native_worker[application-]
+FAILED tests/test_proof_contract_provider_preflight.py::test_bad_application_selection_never_launches_native_worker[occurrence-value2]
+FAILED tests/test_proof_contract_provider_preflight.py::test_bad_application_selection_never_launches_native_worker[occurrence-True]
+FAILED tests/test_proof_contract_provider_preflight.py::test_bad_application_selection_never_launches_native_worker[occurrence--1]
+FAILED tests/test_proof_contract_provider_preflight.py::test_bad_application_selection_never_launches_native_worker[occurrence-4096]
+FAILED tests/test_proof_contract_provider_preflight.py::test_direct_builder_admits_aggregate_size_before_owner_validation
+7 failed in 0.42s

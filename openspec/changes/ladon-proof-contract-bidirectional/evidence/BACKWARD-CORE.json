@@ -1,0 +1,111 @@
+{
+  "schema": "ladon-backward-sufficient-core-acceptance-v1",
+  "task": "1.1",
+  "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+  "status": "accepted-core-only",
+  "publicApi": [
+    "BackwardTransformRequest",
+    "transform_backward_sufficient"
+  ],
+  "focusedTests": {
+    "passed": 43,
+    "seconds": 0.54,
+    "command": "PYTHONPATH=src .venv/bin/python -m pytest -q tests/test_proof_contract_backward*.py"
+  },
+  "crossDirectionOracle": {
+    "cases": 15,
+    "meaning": "Generated premise tuples reproduce exact desired records through unchanged forward transfer; implementation-consistency check, not independent source truth."
+  },
+  "leanControls": {
+    "file": "tests/fixtures/proof_contract_obligations/BackwardMath.lean",
+    "toolchain": "leanprover/lean4:v4.32.1",
+    "meaning": "Actual no-converse and sufficient-not-necessary counterexamples; named conclusions contain no axioms.",
+    "receipt": "BACKWARD-LEAN.json"
+  },
+  "independentCanonicalReviewPost": 262,
+  "independentFalsificationsPosts": [
+    250,
+    255
+  ],
+  "testHelperRefactor": {
+    "reviewPosts": [
+      266,
+      267
+    ],
+    "assertionsPreserved": 71,
+    "evidence": "BACKWARD-TEST-ASSERTIONS.json"
+  },
+  "quality": {
+    "ruffNoCache": "pass src tests scripts",
+    "strictQualityIssues": 0
+  },
+  "authority": "conditional-template",
+  "checkerAuthority": "none",
+  "mathematicalFalsity": "not-established",
+  "necessity": "not-claimed",
+  "nonclaims": [
+    "No native application ownership or source fidelity admission.",
+    "No graph-level localization yet.",
+    "No generated source context or actual bridge term binding.",
+    "No obligations CLI or child acceptance.",
+    "No paper-detection or beam-search improvement."
+  ],
+  "files": [
+    {
+      "path": "src/ladon/_proof_contract_obligations_result.py",
+      "sha256": "8f303c2032d534aba82c49c8520d029497bfd84a37d6a9af7799ea605670e907"
+    },
+    {
+      "path": "src/ladon/_proof_contract_obligations_rules.py",
+      "sha256": "e91f1386644ff3fa1d65025f5c9f80de43df4f012c1b82b472322bdeced2f3f1"
+    },
+    {
+      "path": "src/ladon/_proof_contract_obligations_validation.py",
+      "sha256": "923ac29100eb9b8db137c5b1c2ca548fa0a5be534b043200d1e14277cea3a07a"
+    },
+    {
+      "path": "src/ladon/proof_contract_obligations.py",
+      "sha256": "5743e36369d90d1a9360bf3b19fe632c7d39211d1ec2de511d9bab100067d24d"
+    },
+    {
+      "path": "tests/fixtures/proof_contract_obligations/BackwardMath.lean",
+      "sha256": "bb95191af854ddf8a75b4bc2f5ab9b82aee049ffd417c07f60ea3916d742cea0"
+    },
+    {
+      "path": "tests/fixtures/proof_contract_obligations/lean-toolchain",
+      "sha256": "8e3538e0ab5f81a3ee04927d8838c8c674e0e112838b4b3ce87ec218143276af"
+    },
+    {
+      "path": "tests/test_proof_contract_backward.py",
+      "sha256": "5c360d74c57ebcab2323a76ff7c982266490b76d0259cfefc7817f01b3c0812d"
+    },
+    {
+      "path": "tests/test_proof_contract_backward_boundaries.py",
+      "sha256": "3081a5aaf7b091cdc519097c0010f24f86bb5da4fb15624b0a812df36685793c"
+    },
+    {
+      "path": "tests/test_proof_contract_backward_falsifier.py",
+      "sha256": "37e77eb0dda466d7958d48b126bf97dff6e7f90a0d6d1ac24f15144cebc399ec"
+    },
+    {
+      "path": "tests/test_proof_contract_backward_math.py",
+      "sha256": "9851c73ef8886179502c60cd11fd511a3a4473102c10ebc6a6b17e7902d524ca"
+    },
+    {
+      "path": "tests/test_proof_contract_backward_oracle.py",
+      "sha256": "091f6d6229848a6317cff695fd49a809093b99992a2da2330d018a8118124276"
+    },
+    {
+      "path": "tests/test_proof_contract_backward_output_reason.py",
+      "sha256": "115dc36f88f7cf2dd9cc79211c9819e28ba8f1be5e8603c8e4225bb0aa066d96"
+    }
+  ],
+  "compatibilityTests": {
+    "passed": 658,
+    "seconds": 78.39,
+    "junit": "BACKWARD-INTEGRATION.xml",
+    "selection": "Exact previous615-test owners plus6newbackward files.",
+    "command": "BACKWARD-INTEGRATION-COMMAND.json"
+  },
+  "interruptedBroadSelection": "INTERRUPTED-SELECTION.json"
+}

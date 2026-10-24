@@ -1,0 +1,64 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___ test_cooperative_timeout_remains_a_resource_stop[prepare-route-context] ____
+
+operation = 'prepare-route-context'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7abe75d1df10>
+
+    @pytest.mark.parametrize('operation', ['prepare-route-context', 'check-route-context-goal'])
+    def test_cooperative_timeout_remains_a_resource_stop(operation, monkeypatch):
+        def expired(_request):
+            raise TimeoutError('shared absolute deadline expired')
+    
+        monkeypatch.setattr(preparation, 'prepare_route_context', expired)
+        monkeypatch.setattr(worker, '_check_goal', expired)
+>       result = worker._compute({'version': 1, 'operation': operation, 'request': {}})
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_route_context_stops.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_route_context_worker.py:26: in _compute
+    return prepare_route_context(job['request'])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+_request = {}
+
+    def expired(_request):
+>       raise TimeoutError('shared absolute deadline expired')
+E       TimeoutError: shared absolute deadline expired
+
+tests/test_proof_contract_route_context_stops.py:12: TimeoutError
+__ test_cooperative_timeout_remains_a_resource_stop[check-route-context-goal] __
+
+operation = 'check-route-context-goal'
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7abe75d1de10>
+
+    @pytest.mark.parametrize('operation', ['prepare-route-context', 'check-route-context-goal'])
+    def test_cooperative_timeout_remains_a_resource_stop(operation, monkeypatch):
+        def expired(_request):
+            raise TimeoutError('shared absolute deadline expired')
+    
+        monkeypatch.setattr(preparation, 'prepare_route_context', expired)
+        monkeypatch.setattr(worker, '_check_goal', expired)
+>       result = worker._compute({'version': 1, 'operation': operation, 'request': {}})
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_route_context_stops.py:16: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_route_context_worker.py:28: in _compute
+    return _check_goal(job['request'])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+_request = {}
+
+    def expired(_request):
+>       raise TimeoutError('shared absolute deadline expired')
+E       TimeoutError: shared absolute deadline expired
+
+tests/test_proof_contract_route_context_stops.py:12: TimeoutError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_route_context_stops.py::test_cooperative_timeout_remains_a_resource_stop[prepare-route-context]
+FAILED tests/test_proof_contract_route_context_stops.py::test_cooperative_timeout_remains_a_resource_stop[check-route-context-goal]
+2 failed in 0.08s
