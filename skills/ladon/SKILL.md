@@ -29,11 +29,14 @@ queries leave the latter unchecked. For a supported index, use the
 explicit `proof-search index update`; a `full-build-required` diagnostic means
 the existing generation cannot be safely updated. Inspect the returned reuse,
 source-change and size evidence before reporting an improvement.
-After upgrading to 0.2.3, run explicit update to recover signatures from the
-previous lexical extractor, including theorem-type `let` expressions. This
-one-time recovery re-extracts unchanged sources and preserves retained evidence.
-Unknown extractor identities require a new index path. Unsupported signatures
-are unavailable with an omission; type text is still lexical, not elaborated.
+After upgrading to 0.4.0, run explicit update to refresh recognized lexical
+extractors v3, v4 or v5 to v6, even when sources did not change. This recovers
+modifier-prefixed sections, matching compound scope ends, safe EOF-open scopes,
+theorem-type `let` expressions and same-line `where` signature boundaries.
+Retained evidence is preserved in history. Unknown extractor identities require
+a new index path. Candidate names remain lexical; generated declarations may be
+absent, and lexical type headers omit elaborated section variables and inferred
+instances. Check the pinned Lean type before constructing an application.
 
 When private indexes accumulate, run `proof-search index list`, then save a
 `proof-search index prune --select NAME --format json --output PREVIEW.json`
@@ -127,6 +130,22 @@ export a sanitized challenge, and ingest an independently obtained response.
 Preserve first responses; use a separate `reconcile` record for corrections.
 Neither attributed reviews nor stored native labels are fresh mathematical
 checks. Retain absent counterparts and unexamined spans in the review queue.
+
+For opt-in mathematical contract analysis, use the ordinary
+`investigation contract` commands and read [mathematical contracts](../../docs/PROOF_CONTRACTS.md).
+`produce` snapshots attributed inputs; `propagate` and `obligations` generate
+conditional results that still need checked support. `audit` preserves bounded
+stage evidence and its original deadline. The [refinement workflow](../../docs/CONTRACT_REFINEMENT.md)
+checks one supplied rational witness and a selected Nat/rational lift, retaining
+separate source-cited and proposed-repair branches. Saved refinement `inspect`
+and `report --refinement` evidence is historical and unverified, with no Lean
+replay or automatic review closure. A citation does not certify formula fidelity,
+and excluding one witness does not establish a universal claim.
+
+Process-tree RSS defaults to 12 GiB. On `Stop progress and report back to user:`,
+preserve the failure and report the configured cap, available measured peak and
+command. Stop dependent work; do not automatically increase memory or reset the
+original deadline.
 
 Freeze an interpreted local goal before checking it. A changed premise or goal
 is a separately reviewed repair. An accepted endpoint cannot clear an unexamined
