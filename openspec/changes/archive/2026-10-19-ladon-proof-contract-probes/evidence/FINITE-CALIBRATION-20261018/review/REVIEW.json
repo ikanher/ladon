@@ -1,0 +1,38 @@
+{
+  "schema": "probe-calibration-code-audit-v1",
+  "assignmentPost": 632,
+  "status": "FINDING",
+  "findings": [
+    {
+      "severity": "P2",
+      "file": "src/ladon/proof_contract_probe_calibration.py",
+      "line": 125,
+      "title": "Output-cap fallback is not itself bounded",
+      "detail": "`_bounded` detects that the complete result exceeds the configured `max_output_bytes`, then replaces it with `_base()` plus a diagnostic, but returns that fallback without checking its encoded size against `cap`. A valid request can set any positive output cap accepted by `_limits` (including a cap smaller than this fixed response); the returned response then still exceeds the caller's configured limit. The existing CLI publisher allows up to 32 MiB, so it does not enforce this stricter probe-result cap. This breaks the promised bounded-result behavior on output exhaustion (and may do so on error paths too).",
+      "trigger": "Call `run_probe_calibration` with otherwise valid inputs and a valid positive `limits.max_output_bytes` smaller than the compact `_base()` response. The final `_bounded` fallback is larger than that cap.",
+      "suggestedDirection": "Either reject configured output limits below a documented minimum that can hold every fallback response, or construct and verify a fallback whose serialized bytes are within the requested cap before returning/publishing it. Preserve a bounded way to signal output exhaustion."
+    }
+  ],
+  "reviewed": {
+    "sourceFiles": [
+      "src/ladon/proof_contract_probe_calibration.py",
+      "src/ladon/_proof_contract_probe_calibration_checks.py",
+      "src/ladon/_proof_contract_probe_calibration_inputs.py",
+      "src/ladon/proof_contract_probe_calibration_cli.py",
+      "src/ladon/proof_contract_cli.py",
+      "src/ladon/lean/ladon_probe_separator.lean"
+    ],
+    "tests": [
+      "tests/test_proof_contract_probe_calibration_boundary.py",
+      "tests/test_proof_contract_probe_calibration_controls.py"
+    ],
+    "findingsSummary": "The certificate-gated path requires all three actual supervised checked goals (generic full-family separator, incomplete-family counterexample, and exact query application); only their completion/replay/trust acceptance promotes to finite-class equivalence or distinction. Uncertified finite agreement remains scoped and cannot claim equivalence, including the unequal-object incomplete-family control. Exact strict Bool vectors, unique ordered Fin 5 family, full-family certificate, source-digest profile, fixed goals/application terms, closed request, cycle/aggregate preflight, safe rooted staging, source/environment rechecks, shared absolute deadline, hard-clamped worker limits and stop-before-later-goal flow are consistent with the reviewed contract. CLI routes are additive and exclusive output creation preserves existing results. No fake proof is accepted and no general/native/source-fidelity/B/C authority is claimed. The one result-cap fallback issue is actionable."
+  },
+  "checks": {
+    "frozenVerificationBefore": "104 rows; all matched",
+    "frozenVerificationAfter": "104 rows; all matched",
+    "testsOrLeanRun": false,
+    "productionOrFrozenEdits": false,
+    "actualFinalSourceReceiptsReviewed": false
+  }
+}

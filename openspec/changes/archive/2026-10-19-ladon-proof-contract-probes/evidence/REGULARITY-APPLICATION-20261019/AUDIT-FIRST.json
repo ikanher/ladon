@@ -1,0 +1,64 @@
+{
+  "assignmentPost": 689,
+  "auditor": "/root/application_probe_audit",
+  "codeFindings": [],
+  "findings": [
+    {
+      "action": "Correct the derived measurement/report metadata while preserving qualification-01/RESULT.json and its raw outputs.",
+      "evidence": [
+        "evidence/REGULARITY-APPLICATION-20261019/MEASUREMENTS.json",
+        "evidence/REGULARITY-APPLICATION-20261019/integration-command.json",
+        "evidence/REGULARITY-APPLICATION-20261019/integration.xml",
+        "evidence/REGULARITY-APPLICATION-20261019/focused.log"
+      ],
+      "finding": "Published MEASUREMENTS.json reports overlappingFocusedCases=17, but integration.xml has 16 probe cases and integration-command.json omits test_proof_contract_application_probe_inspect.py. The focused run has 17 cases, so 16 overlap and one (the inspect regression) is additional. uniqueOwnerRegressionCases=1071 is correct; the overlap count should be 16.",
+      "id": "measurement-focused-overlap-count",
+      "kind": "evidence-metadata",
+      "severity": "P2"
+    },
+    {
+      "action": "Record explicitly whether the separate frozen inspect regression satisfies this predeclared control; do not describe it as one of the 19 raw source-gate cases.",
+      "evidence": [
+        "evidence/REGULARITY-APPLICATION-20261019/run_qualification.py:129-138",
+        "evidence/REGULARITY-APPLICATION-20261019/RESULT.json",
+        "tests/test_proof_contract_application_probe_inspect.py:9-27",
+        "evidence/REGULARITY-APPLICATION-20261019/focused.log"
+      ],
+      "finding": "The 19-case qualification harness/result has unknown-template, wrong-owner, wrong-feature and wrong-context cases but no explicit rehashed/wrong-goal case, although CONTRACT.txt calls for wrong goal rejection in the final qualification. The separately frozen inspect regression does exercise a rehashed goal and passed in the focused run on the same frozen runtime, so this is a gate-reporting/scope gap rather than an observed implementation defect.",
+      "id": "wrong-goal-not-a-source-gate-case",
+      "kind": "acceptance-coverage",
+      "severity": "P2"
+    }
+  ],
+  "limitations": [
+    "No claim of source fidelity beyond attributed-unreviewed authored quotes, PDE correctness, all-five-family implementation, whole-method authority, detection benefit, or task completion.",
+    "No source, Lean, tests, proof worker, or resource-limit operations were run after the intentional final memory stop; audit activity was read-only artifact inspection/hash verification."
+  ],
+  "rawGate": {
+    "acceptedChecks": 5,
+    "actualCheckerAttempts": 6,
+    "budgetSeconds": 1800,
+    "checkedGoals": 5,
+    "elapsedSeconds": 281.2189133099746,
+    "limits": {
+      "maxOutputBytes": 8388608,
+      "maxRssBytes": 12884901888,
+      "timeoutSeconds": 30
+    },
+    "memoryLastNoRetry": true,
+    "result": "PASS for the 19 recorded cases",
+    "scope": "Authored source-bound regularity reading only; not natural-language fidelity, PDE, all-five-family acceptance, or whole-method authority."
+  },
+  "reviewScope": "Read-only source-first audit of qualification-01 raw gate, frozen runtime and published evidence candidate.",
+  "schema": "ladon-application-probe-audit-v1",
+  "verdict": "PARTIAL_PENDING_EVIDENCE_RECONCILIATION",
+  "verified": {
+    "historicalCustody": "Both historical bundle manifests hash to the reported values and all 87/57 bundle files match their manifests with zero mismatches.",
+    "nativePlans": "Replayed counterexample and matching-control native batches with validate_envelope_batch; both artifact IDs and generated goal digests validate, and plan/check artifact plus plan identity match.",
+    "proofEvidence": "All six evidence files match recorded byte counts and SHA-256; load_goal_evidence verified all six compact projections against immutable raw bytes. Four actual counterexample/control goals have completed/accepted replay/trust; failed-elaboration has one accepted formal-reading and an unresolved probe with rejected replay and no accepted trust; missing terms performs no checker attempts.",
+    "qualityAndSpecs": "Recorded quality and Ruff logs pass; child and parent OpenSpec validation logs pass. Task 1.1/1.2/2.1/2.2/2.3 and parent 2.2 remain open as required.",
+    "runtime": "RUNTIME.json SHA-256 f50deaaa2ca272234f2059bba2c9b13d703499043a65e0a543812559b5a66cfc matches the stated hash. All 516 runtime entries match both runtime.tar.gz and live files; archive copies in qualification and candidate bundle are byte-identical.",
+    "sourceBindings": "Both source quote paths and hashes match reading-0.txt/reading-1.txt for the counterexample and reading-2.txt/reading-1.txt for the control. Both sides bind the same Bridge.lean source hash, selected slice ID and environment; fresh slice is complete, local-context-free and premise-free. Generated prefix file hashes match strictPrefixDigest and contains the explicit AppProbe.use parent-absence guard.",
+    "tests": "Board verification reports all 112 frozen files verified. The prior 107 frozen entries are all present with unchanged hashes in the final 112-entry snapshot. The helper-only proposal preserves all 25 assert ASTs and 5 test function definitions (9 parameter-expanded pytest cases). Broad XML has 1070 passing cases; the focused 17 includes one new inspect case, yielding 1071 unique cases."
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "formal-reading": "Iff.rfl",
+  "probe": "by\n  constructor\n  \u00b7 exact WitnessProbe.weak ()\n  \u00b7 intro h\n    obtain \u27e8w, hw\u27e9 := h\n    have bad : Nat.succ w \u2264 w := by\n      simpa [WitnessProbe.P] using hw (Nat.succ w)\n    exact Nat.not_succ_le_self w bad"
+}

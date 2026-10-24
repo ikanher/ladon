@@ -1,0 +1,308 @@
+FFFF.....FFF.FF.F.                                                       [100%]
+=================================== FAILURES ===================================
+_ test_catalog_v2_supports_constant_choice_and_v1_remains_registered_unsupported _
+
+    def test_catalog_v2_supports_constant_choice_and_v1_remains_registered_unsupported():
+        from ladon._proof_contract_probe_templates import application_probe_profile
+        profile = application_probe_profile()
+>       assert profile["constant-uniformity"] == {"version": "constant-uniformity-v2", "implemented": True}
+E       AssertionError: assert {'implemented...niformity-v1'} == {'implemented...niformity-v2'}
+E         
+E         Differing items:
+E         {'version': 'constant-uniformity-v1'} != {'version': 'constant-uniformity-v2'}
+E         {'implemented': False} != {'implemented': True}
+E         Use -v to get more diff
+
+tests/test_proof_contract_constant_uniformity_v2.py:78: AssertionError
+______________ test_discrepancy_goals_retain_each_original_order _______________
+
+    def test_discrepancy_goals_retain_each_original_order():
+>       result = match()
+                 ^^^^^^^
+
+tests/test_proof_contract_constant_uniformity_v2.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_constant_uniformity_v2.py:69: in match
+    return template_result(left_record or record(left_rows, left_offset),
+src/ladon/_proof_contract_probe_templates.py:119: in template_result
+    selected = validate_template(template)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+template = {'direction': 'right-to-left', 'familyId': 'constant-uniformity', 'kind': 'counterexample', 'version': 'constant-uniformity-v2'}
+
+    def validate_template(template: Any) -> dict[str, str]:
+        if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
+            raise ValueError("template selectors must be a closed object")
+        family = template["familyId"]
+        if not all(isinstance(template[key], str) for key in template):
+            raise ValueError("template selectors must be strings")
+        if family not in FAMILIES or template["version"] != f"{family}-v1":
+>           raise ValueError("unknown template family or version")
+E           ValueError: unknown template family or version
+
+src/ladon/_proof_contract_probe_templates.py:32: ValueError
+________________ test_reverse_implication_retains_strong_order _________________
+
+    def test_reverse_implication_retains_strong_order():
+>       reverse = match(template={**TEMPLATE, "direction": "left-to-right", "kind": "implication"})
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_constant_uniformity_v2.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_constant_uniformity_v2.py:69: in match
+    return template_result(left_record or record(left_rows, left_offset),
+src/ladon/_proof_contract_probe_templates.py:119: in template_result
+    selected = validate_template(template)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+template = {'direction': 'left-to-right', 'familyId': 'constant-uniformity', 'kind': 'implication', 'version': 'constant-uniformity-v2'}
+
+    def validate_template(template: Any) -> dict[str, str]:
+        if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
+            raise ValueError("template selectors must be a closed object")
+        family = template["familyId"]
+        if not all(isinstance(template[key], str) for key in template):
+            raise ValueError("template selectors must be strings")
+        if family not in FAMILIES or template["version"] != f"{family}-v1":
+>           raise ValueError("unknown template family or version")
+E           ValueError: unknown template family or version
+
+src/ladon/_proof_contract_probe_templates.py:32: ValueError
+____________ test_matching_weak_control_preserves_both_existentials ____________
+
+    def test_matching_weak_control_preserves_both_existentials():
+>       result = match(WEAK, WEAK, template={**TEMPLATE, "kind": "implication"})
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_constant_uniformity_v2.py:104: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_constant_uniformity_v2.py:69: in match
+    return template_result(left_record or record(left_rows, left_offset),
+src/ladon/_proof_contract_probe_templates.py:119: in template_result
+    selected = validate_template(template)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+template = {'direction': 'right-to-left', 'familyId': 'constant-uniformity', 'kind': 'implication', 'version': 'constant-uniformity-v2'}
+
+    def validate_template(template: Any) -> dict[str, str]:
+        if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
+            raise ValueError("template selectors must be a closed object")
+        family = template["familyId"]
+        if not all(isinstance(template[key], str) for key in template):
+            raise ValueError("template selectors must be strings")
+        if family not in FAMILIES or template["version"] != f"{family}-v1":
+>           raise ValueError("unknown template family or version")
+E           ValueError: unknown template family or version
+
+src/ladon/_proof_contract_probe_templates.py:32: ValueError
+_____ test_unmodeled_formula_shapes_remain_unsupported[unsupported_symbol] _____
+
+mutation = <function unsupported_symbol at 0x7aabaf299bc0>
+
+    @pytest.mark.parametrize("mutation", [unsupported_symbol, unsupported_nonconstant, unsupported_extra_witness])
+    def test_unmodeled_formula_shapes_remain_unsupported(mutation):
+        left_record, right_record = record(STRONG), record(WEAK)
+        mutation(right_record, contract(WEAK))
+>       result = match(left_record=left_record, right_record=right_record)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_constant_uniformity_v2.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_constant_uniformity_v2.py:69: in match
+    return template_result(left_record or record(left_rows, left_offset),
+src/ladon/_proof_contract_probe_templates.py:119: in template_result
+    selected = validate_template(template)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+template = {'direction': 'right-to-left', 'familyId': 'constant-uniformity', 'kind': 'counterexample', 'version': 'constant-uniformity-v2'}
+
+    def validate_template(template: Any) -> dict[str, str]:
+        if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
+            raise ValueError("template selectors must be a closed object")
+        family = template["familyId"]
+        if not all(isinstance(template[key], str) for key in template):
+            raise ValueError("template selectors must be strings")
+        if family not in FAMILIES or template["version"] != f"{family}-v1":
+>           raise ValueError("unknown template family or version")
+E           ValueError: unknown template family or version
+
+src/ladon/_proof_contract_probe_templates.py:32: ValueError
+__ test_unmodeled_formula_shapes_remain_unsupported[unsupported_nonconstant] ___
+
+mutation = <function unsupported_nonconstant at 0x7aabaf299c60>
+
+    @pytest.mark.parametrize("mutation", [unsupported_symbol, unsupported_nonconstant, unsupported_extra_witness])
+    def test_unmodeled_formula_shapes_remain_unsupported(mutation):
+        left_record, right_record = record(STRONG), record(WEAK)
+        mutation(right_record, contract(WEAK))
+>       result = match(left_record=left_record, right_record=right_record)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_constant_uniformity_v2.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_constant_uniformity_v2.py:69: in match
+    return template_result(left_record or record(left_rows, left_offset),
+src/ladon/_proof_contract_probe_templates.py:119: in template_result
+    selected = validate_template(template)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+template = {'direction': 'right-to-left', 'familyId': 'constant-uniformity', 'kind': 'counterexample', 'version': 'constant-uniformity-v2'}
+
+    def validate_template(template: Any) -> dict[str, str]:
+        if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
+            raise ValueError("template selectors must be a closed object")
+        family = template["familyId"]
+        if not all(isinstance(template[key], str) for key in template):
+            raise ValueError("template selectors must be strings")
+        if family not in FAMILIES or template["version"] != f"{family}-v1":
+>           raise ValueError("unknown template family or version")
+E           ValueError: unknown template family or version
+
+src/ladon/_proof_contract_probe_templates.py:32: ValueError
+_ test_unmodeled_formula_shapes_remain_unsupported[unsupported_extra_witness] __
+
+mutation = <function unsupported_extra_witness at 0x7aabaf29a020>
+
+    @pytest.mark.parametrize("mutation", [unsupported_symbol, unsupported_nonconstant, unsupported_extra_witness])
+    def test_unmodeled_formula_shapes_remain_unsupported(mutation):
+        left_record, right_record = record(STRONG), record(WEAK)
+        mutation(right_record, contract(WEAK))
+>       result = match(left_record=left_record, right_record=right_record)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_constant_uniformity_v2.py:160: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_constant_uniformity_v2.py:69: in match
+    return template_result(left_record or record(left_rows, left_offset),
+src/ladon/_proof_contract_probe_templates.py:119: in template_result
+    selected = validate_template(template)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+template = {'direction': 'right-to-left', 'familyId': 'constant-uniformity', 'kind': 'counterexample', 'version': 'constant-uniformity-v2'}
+
+    def validate_template(template: Any) -> dict[str, str]:
+        if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
+            raise ValueError("template selectors must be a closed object")
+        family = template["familyId"]
+        if not all(isinstance(template[key], str) for key in template):
+            raise ValueError("template selectors must be strings")
+        if family not in FAMILIES or template["version"] != f"{family}-v1":
+>           raise ValueError("unknown template family or version")
+E           ValueError: unknown template family or version
+
+src/ladon/_proof_contract_probe_templates.py:32: ValueError
+_ test_actual_native_constant_pair_generates_open_goals_with_original_quantifiers _
+
+    def test_actual_native_constant_pair_generates_open_goals_with_original_quantifiers():
+        from ladon.proofir_v3 import validate_envelope_batch
+    
+        context, sides = inputs()
+>       artifact = build(context, *sides[:2])
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_constant_probe_native.py:40: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_constant_probe_native.py:33: in build
+    return application_probe_artifact(context, left, right, TEMPLATE, analysis_id='analysis:uniformity-test')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_probe_artifacts.py:14: in application_probe_artifact
+    validate_template(template)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+template = {'direction': 'right-to-left', 'familyId': 'constant-uniformity', 'kind': 'counterexample', 'version': 'constant-uniformity-v2'}
+
+    def validate_template(template: Any) -> dict[str, str]:
+        if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
+            raise ValueError("template selectors must be a closed object")
+        family = template["familyId"]
+        if not all(isinstance(template[key], str) for key in template):
+            raise ValueError("template selectors must be strings")
+        if family not in FAMILIES or template["version"] != f"{family}-v1":
+>           raise ValueError("unknown template family or version")
+E           ValueError: unknown template family or version
+
+src/ladon/_proof_contract_probe_templates.py:32: ValueError
+__ test_rehashing_both_goal_and_artifact_cannot_change_native_probe_semantics __
+
+    def test_rehashing_both_goal_and_artifact_cannot_change_native_probe_semantics():
+        from ladon.proofir_v3 import detached_content_id, validate_envelope_batch
+    
+        context, sides = inputs()
+>       artifact = build(context, *sides[:2])
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_constant_probe_native.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_constant_probe_native.py:33: in build
+    return application_probe_artifact(context, left, right, TEMPLATE, analysis_id='analysis:uniformity-test')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_probe_artifacts.py:14: in application_probe_artifact
+    validate_template(template)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+template = {'direction': 'right-to-left', 'familyId': 'constant-uniformity', 'kind': 'counterexample', 'version': 'constant-uniformity-v2'}
+
+    def validate_template(template: Any) -> dict[str, str]:
+        if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
+            raise ValueError("template selectors must be a closed object")
+        family = template["familyId"]
+        if not all(isinstance(template[key], str) for key in template):
+            raise ValueError("template selectors must be strings")
+        if family not in FAMILIES or template["version"] != f"{family}-v1":
+>           raise ValueError("unknown template family or version")
+E           ValueError: unknown template family or version
+
+src/ladon/_proof_contract_probe_templates.py:32: ValueError
+______ test_v2_native_plan_roundtrips_through_ordinary_inspect_and_sqlite ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-737/test_v2_native_plan_roundtrips0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7aabae623210>
+
+    def test_v2_native_plan_roundtrips_through_ordinary_inspect_and_sqlite(tmp_path, capsys):
+        from ladon.proof_contract_cli import contract_main
+        from ladon.proofir_sqlite_v3 import project_envelopes, validate_v3_database
+    
+        context, sides = inputs()
+>       artifact = build(context, *sides[:2])
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_constant_probe_native.py:86: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_constant_probe_native.py:33: in build
+    return application_probe_artifact(context, left, right, TEMPLATE, analysis_id='analysis:uniformity-test')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_probe_artifacts.py:14: in application_probe_artifact
+    validate_template(template)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+template = {'direction': 'right-to-left', 'familyId': 'constant-uniformity', 'kind': 'counterexample', 'version': 'constant-uniformity-v2'}
+
+    def validate_template(template: Any) -> dict[str, str]:
+        if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
+            raise ValueError("template selectors must be a closed object")
+        family = template["familyId"]
+        if not all(isinstance(template[key], str) for key in template):
+            raise ValueError("template selectors must be strings")
+        if family not in FAMILIES or template["version"] != f"{family}-v1":
+>           raise ValueError("unknown template family or version")
+E           ValueError: unknown template family or version
+
+src/ladon/_proof_contract_probe_templates.py:32: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_constant_uniformity_v2.py::test_catalog_v2_supports_constant_choice_and_v1_remains_registered_unsupported
+FAILED tests/test_proof_contract_constant_uniformity_v2.py::test_discrepancy_goals_retain_each_original_order
+FAILED tests/test_proof_contract_constant_uniformity_v2.py::test_reverse_implication_retains_strong_order
+FAILED tests/test_proof_contract_constant_uniformity_v2.py::test_matching_weak_control_preserves_both_existentials
+FAILED tests/test_proof_contract_constant_uniformity_v2.py::test_unmodeled_formula_shapes_remain_unsupported[unsupported_symbol]
+FAILED tests/test_proof_contract_constant_uniformity_v2.py::test_unmodeled_formula_shapes_remain_unsupported[unsupported_nonconstant]
+FAILED tests/test_proof_contract_constant_uniformity_v2.py::test_unmodeled_formula_shapes_remain_unsupported[unsupported_extra_witness]
+FAILED tests/test_proof_contract_constant_probe_native.py::test_actual_native_constant_pair_generates_open_goals_with_original_quantifiers
+FAILED tests/test_proof_contract_constant_probe_native.py::test_rehashing_both_goal_and_artifact_cannot_change_native_probe_semantics
+FAILED tests/test_proof_contract_constant_probe_native.py::test_v2_native_plan_roundtrips_through_ordinary_inspect_and_sqlite
+10 failed, 8 passed in 0.65s

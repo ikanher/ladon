@@ -1,0 +1,27 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+______ test_ordinary_inspect_replays_probe_plan_and_rejects_rehashed_goal ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-735/test_ordinary_inspect_replays_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x71fee72f1610>
+
+    def test_ordinary_inspect_replays_probe_plan_and_rejects_rehashed_goal(tmp_path, capsys):
+        builder, _, _, _ = api()
+        from ladon.proofir_v3 import detached_content_id
+    
+        data = fixture()
+        artifact = builder(data['context'], *data['sides'], TEMPLATE, analysis_id='analysis:inspect')
+        native, context = tmp_path / 'artifact.json', tmp_path / 'context.json'
+        native.write_text(json.dumps(artifact))
+        context.write_text(json.dumps(data['context']))
+        args = ['inspect', '--input', str(native), '--context', str(context)]
+>       assert contract_main(args) == 0
+E       AssertionError: assert 2 == 0
+E        +  where 2 = contract_main(['inspect', '--input', '/tmp/pytest-of-codex/pytest-735/test_ordinary_inspect_replays_0/artifact.json', '--context', '/tmp/pytest-of-codex/pytest-735/test_ordinary_inspect_replays_0/context.json'])
+
+tests/test_proof_contract_application_probe_inspect.py:19: AssertionError
+----------------------------- Captured stdout call -----------------------------
+{"bounds":{"deadlineMonotonic":2030908.993920323,"effectiveTimeoutSeconds":29.962128758896142,"max_output_bytes":8388608,"max_rss_bytes":12884901888,"timeout_seconds":30.0},"diagnostic":{"code":"worker-rejected","message":"native validation requires an obligations artifact"},"processReceipt":{"command":["/home/codex/projects/ladon/.venv/bin/python","-m","ladon.proof_contract_obligation_worker"],"configuredTimeoutSeconds":30.0,"elapsedSeconds":0.0600588780362159,"inputDigest":"sha256:02385327f63892cc901184b8e89db6cec876c42a22e23185b547053b1ce1fa2e","memoryLimited":false,"outputLimited":false,"peakRssBytes":9850880,"requestedMaxOutputBytes":8388608,"requestedMaxRssBytes":12884901888,"requestedTimeoutSeconds":29.962128758896142,"returnCode":2,"stderrDigest":"sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","stdoutDigest":"sha256:17d9ca0b5e30a615f5fad32af1a85e3b1f7e23b719d143edf058653364b50018","timedOut":false},"result":null,"schema":"ladon-supervised-obligation-planner-v1","status":"rejected","workerInputDigest":"sha256:02385327f63892cc901184b8e89db6cec876c42a22e23185b547053b1ce1fa2e"}
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_application_probe_inspect.py::test_ordinary_inspect_replays_probe_plan_and_rejects_rehashed_goal
+1 failed in 0.56s

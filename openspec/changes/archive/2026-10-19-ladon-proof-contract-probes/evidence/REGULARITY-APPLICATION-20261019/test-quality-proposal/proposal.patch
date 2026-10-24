@@ -1,0 +1,13 @@
+--- a/tests/test_proof_contract_application_probe_contract.py
++++ b/tests/test_proof_contract_application_probe_contract.py
+@@ -65,6 +65,10 @@
+     assert payload["contractRefs"] == [left["contractRef"], right["contractRef"]]
+     assert payload["correspondenceRefs"] == [left["correspondenceRef"], right["correspondenceRef"]]
+     assert payload["checkRunRefs"] == []
++    _assert_planned_goals(payload)
++
++
++def _assert_planned_goals(payload):
+     goals = payload["result"]["goals"]
+     assert [goal["goalId"] for goal in goals] == ["formal-reading", "probe"]
+     assert "↔" in goals[0]["goal"] and "∀" in goals[0]["goal"]

@@ -1,0 +1,41 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______ test_first_staging_in_git_repository_keeps_original_environment ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-726/test_first_staging_in_git_repo0')
+
+    def test_first_staging_in_git_repository_keeps_original_environment(tmp_path):
+        subprocess.run(['git', 'init', '--quiet', str(tmp_path)], check=True)
+        shutil.copyfile(Path('tests/fixtures/proof_contract_planned_source/lean-toolchain'), tmp_path / 'lean-toolchain')
+        owned = {'repoRoot': str(tmp_path), 'deadlineMonotonic': time.monotonic() + 30}
+>       adapter, environment = prepare_calibration(owned, probe_calibration_profile())
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_fresh_source.py:15: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/_proof_contract_probe_calibration_checks.py:42: in prepare_calibration
+    verify_calibration(owned, adapter, environment)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+owned = {'deadlineMonotonic': 1988700.034432469, 'repoRoot': '/tmp/pytest-of-codex/pytest-726/test_first_staging_in_git_repo0'}
+adapter = {'repoRoot': '/tmp/pytest-of-codex/pytest-726/test_first_staging_in_git_repo0', 'sourceDigest': 'sha256:b8ac64e52ccc0b...adon/contract-obligations/b8ac64e52ccc0b63be96086780df954616fc1b94041d3639a6e3a5837cf17eaf/calibration/Separator.lean'}
+environment = 'sha256:c24e1af088b2507ef23f5c6739c96827c9c5d93b5ad366f787a8a6254d946ef2'
+
+    def verify_calibration(owned, adapter, environment):
+        """Recheck the installed asset, staged bytes and installed toolchain identity."""
+        root = Path(owned['repoRoot'])
+        _check_stage_deadline(owned['deadlineMonotonic'])
+        target = root / adapter['sourcePath']
+        _safe_create_parent(root, target.parent)
+        if target.is_symlink() or source_digest(_read_regular(target, MAX_BYTES)) != adapter['sourceDigest']:
+            raise ValueError('staged calibration source changed')
+        if source_digest(separator_source()) != adapter['sourceDigest']:
+            raise ValueError('shipped calibration source changed')
+        if pinned_toolchain(root).context_identity != environment:
+>           raise ValueError('calibration execution environment changed')
+E           ValueError: calibration execution environment changed
+
+src/ladon/_proof_contract_probe_calibration_checks.py:57: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_probe_calibration_fresh_source.py::test_first_staging_in_git_repository_keeps_original_environment
+1 failed in 0.60s

@@ -1,0 +1,148 @@
+{
+  "schema": "ladon-independent-final-audit-v1",
+  "auditor": "/root/calibration_final_audit",
+  "status": "PARTIAL-CUSTODY-VERIFIED",
+  "scope": "Independent read-only source/CLI and partial qualification-custody review; no Lean, tests, builds, source/OpenSpec/frozen/participant edits.",
+  "codeReview": {
+    "files": [
+      "src/ladon/proof_contract_probe_calibration.py",
+      "src/ladon/_proof_contract_probe_calibration_checks.py",
+      "src/ladon/_proof_contract_probe_calibration_inputs.py",
+      "src/ladon/proof_contract_probe_calibration_cli.py",
+      "src/ladon/lean/ladon_probe_separator.lean",
+      "src/ladon/proof_contract_cli.py"
+    ],
+    "finding": "No source-level finding in reviewed finite-class API/CLI and evidence flow. Closed schema, strict five-Boolean objects, ordered unique coordinate family, exact descriptor binding, no caller-provided goals, and scoped result labels were confirmed by inspection. Ordinary CLI dispatch is additive. This is a bounded source review, not a fresh runtime qualification."
+  },
+  "positiveControl": {
+    "resultFile": "openspec/changes/ladon-proof-contract-probes/evidence/FINITE-CALIBRATION-20261018/qualification-v2/full-equal-result.json",
+    "processFile": "openspec/changes/ladon-proof-contract-probes/evidence/FINITE-CALIBRATION-20261018/qualification-v2/full-equal-process.json",
+    "status": "checked-object-equivalence",
+    "objectEquivalence": true,
+    "certificateVerified": true,
+    "scope": "Fin 5 → Bool under coordinate evaluation only",
+    "sourceFidelity": "not-assessed",
+    "wholeMethodAuthority": "none",
+    "sourceDigestMatchesServedLeanAsset": true,
+    "sourceDigest": "sha256:b8ac64e52ccc0b63be96086780df954616fc1b94041d3639a6e3a5837cf17eaf",
+    "threeGoalEvidence": [
+      {
+        "goalId": "separator",
+        "goalDigest": "sha256:e561672a3be832297ebe088a3dbd429bb9c4eadcbbf948754df4af14ede20c91",
+        "workerInputDigest": "sha256:883349d9fedaa4cd008d30cb6fa446f57ebd73d5757d05061b1c6f4371da46b2",
+        "processReturnCode": 0,
+        "rawPath": ".ladon/contract-obligations/9b4f85ff5340a0b1246d46d5f1727ec0e36baf525b2a22ff80c294a784e6f574/evidence/goal.json",
+        "rawSha256": "9b4f85ff5340a0b1246d46d5f1727ec0e36baf525b2a22ff80c294a784e6f574",
+        "expectedSha256": "9b4f85ff5340a0b1246d46d5f1727ec0e36baf525b2a22ff80c294a784e6f574",
+        "rawBytes": 1100843,
+        "goalStatus": "checked-support",
+        "completionStatus": "completed",
+        "replayStatus": "accepted",
+        "trustAccepted": true,
+        "observedAxioms": [
+          "Quot.sound",
+          "propext"
+        ]
+      },
+      {
+        "goalId": "incomplete-counterexample",
+        "goalDigest": "sha256:e9070760e86b1ef9cd3b8721f057a3ee1cf04b51029fafb60f5cb02c39aa533a",
+        "workerInputDigest": "sha256:33b1a5c61c7748ebba1182f7974424da5ee54d07f71c38c694f3f84389299b6b",
+        "processReturnCode": 0,
+        "rawPath": ".ladon/contract-obligations/40c56f9714a140aeeddeca0eb93de11f4e76a7f31d9700825d8f6eed5973ce3c/evidence/goal.json",
+        "rawSha256": "40c56f9714a140aeeddeca0eb93de11f4e76a7f31d9700825d8f6eed5973ce3c",
+        "expectedSha256": "40c56f9714a140aeeddeca0eb93de11f4e76a7f31d9700825d8f6eed5973ce3c",
+        "rawBytes": 1142277,
+        "goalStatus": "checked-support",
+        "completionStatus": "completed",
+        "replayStatus": "accepted",
+        "trustAccepted": true,
+        "observedAxioms": [
+          "propext"
+        ]
+      },
+      {
+        "goalId": "application",
+        "goalDigest": "sha256:16d215f69123ec24b197a6892a279ca0c9f17eb181ca57429110804981a2910d",
+        "workerInputDigest": "sha256:92e086483ddef5e2d857d99d8e7d439bc3980d8bdc91666c6cfaeb302b1830a7",
+        "processReturnCode": 0,
+        "rawPath": ".ladon/contract-obligations/87ae3b05a14197713dbea12152287d4c0c27897d4c17974d5c17ca1589387a0b/evidence/goal.json",
+        "rawSha256": "87ae3b05a14197713dbea12152287d4c0c27897d4c17974d5c17ca1589387a0b",
+        "expectedSha256": "87ae3b05a14197713dbea12152287d4c0c27897d4c17974d5c17ca1589387a0b",
+        "rawBytes": 1375559,
+        "goalStatus": "checked-support",
+        "completionStatus": "completed",
+        "replayStatus": "accepted",
+        "trustAccepted": true,
+        "observedAxioms": [
+          "Quot.sound",
+          "propext"
+        ]
+      }
+    ]
+  },
+  "custody": {
+    "runtimeManifestEntries": 505,
+    "liveMissing": [],
+    "liveMismatches": [],
+    "archive": "openspec/changes/ladon-proof-contract-probes/evidence/FINITE-CALIBRATION-20261018/qualification-v2/runtime.tar.gz",
+    "archiveBytes": 1090720,
+    "archiveVerificationFailures": [],
+    "frozenTestRows": 107,
+    "frozenManifestStatus": "verified",
+    "frozenMatched": 107,
+    "qualityStatus": "PASS"
+  },
+  "negativeControl": {
+    "processFile": "openspec/changes/ladon-proof-contract-probes/evidence/FINITE-CALIBRATION-20261018/qualification-v2/full-unequal-process.json",
+    "returnCode": -15,
+    "elapsedSeconds": 65.46836898312904,
+    "timedOut": true,
+    "noResultClaimed": true,
+    "scope": "No object distinction is established by this interrupted run; its retained partial raw captures are not accepted as proof."
+  },
+  "qualificationOutcome": {
+    "status": "INCOMPLETE-BUDGET-EXHAUSTED",
+    "budgetSeconds": 240,
+    "originalDeadlineMonotonic": 1988817.597143006,
+    "clockNotReset": true,
+    "firstAttempt": "Rejected before Lean on fresh staging source identity; source corrected and independently audited, one actual red regression now green.",
+    "qualifiedPositive": "qualification-v2/full-equal-result.json: all3 completion/replay/trust accepted",
+    "actualAcceptedPositiveGoals": 3,
+    "interruptedControl": "Full unequal-object query: outer source experiment deadline, retained process receipt and partial raw goals, no claimed distinction.",
+    "unattemptedControls": [
+      "incomplete-uncertified",
+      "full-uncertified",
+      "incomplete-certificate",
+      "wrong-objectClassId",
+      "wrong-sourceDigest",
+      "wrong-templateVersion",
+      "expired",
+      "memory-last"
+    ],
+    "retry": false,
+    "task13Complete": false,
+    "next": "Complete corrected-runtime regressions and audit partial custody; separate source qualification needs a new authorized predeclared execution envelope. No current source gate pass."
+  },
+  "correctedIntegration": {
+    "commandFile": ".codex/state/proof-contract-analysis/probe-calibration/integration-corrected-command.json",
+    "resultFile": ".codex/state/proof-contract-analysis/probe-calibration/integration-corrected-result.json",
+    "xmlFile": ".codex/state/proof-contract-analysis/probe-calibration/integration-corrected.xml",
+    "returnCode": 0,
+    "elapsedSeconds": 383.8618316219654,
+    "counts": {
+      "tests": 1054,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "qualityStatus": "PASS",
+    "scope": "1053 existing cases / 161 test-owner files plus fresh-staging regression; separate regression verification, not source-qualification retry."
+  },
+  "finalFinding": "Partial custody is corroborated, and the separate corrected-runtime regression passed (1054 tests, 0 failures/errors/skips; quality PASS). Source acceptance remains INCOMPLETE-BUDGET-EXHAUSTED: same original 240-second deadline, full-unequal query timed out, and eight controls were not attempted. Task 1.3 remains open; no source-gate PASS or acceptance decision is supported.",
+  "board": {
+    "readThroughPostId": 647,
+    "activeInterest": "topic:probe-calibration-final-audit",
+    "acknowledgedWakeId": 220
+  }
+}

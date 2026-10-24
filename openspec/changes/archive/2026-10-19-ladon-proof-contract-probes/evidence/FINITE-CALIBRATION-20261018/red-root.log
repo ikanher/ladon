@@ -1,0 +1,613 @@
+FFFFFFFFFFFFFFFFFFF                                                      [100%]
+=================================== FAILURES ===================================
+______ test_unverified_agreement_and_empty_family_never_claim_equivalence ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_unverified_agreement_and_0')
+
+    def test_unverified_agreement_and_empty_family_never_claim_equivalence(tmp_path):
+>       full = run_probe_calibration(request(tmp_path))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:49: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_____ test_full_family_unverified_disagreement_is_only_observed_difference _____
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_full_family_unverified_di0')
+
+    def test_full_family_unverified_disagreement_is_only_observed_difference(tmp_path):
+>       result = run_probe_calibration(request(tmp_path, right=VALUES_B))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+________ test_full_certificate_cannot_be_replayed_for_incomplete_family ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_full_certificate_cannot_b0')
+
+    def test_full_certificate_cannot_be_replayed_for_incomplete_family(tmp_path):
+>       certificate = probe_calibration_profile()
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:16: in probe_calibration_profile
+    return import_module('ladon.proof_contract_probe_calibration').probe_calibration_profile()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_______ test_family_indices_are_strict_unique_and_in_range[bad_family0] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_family_indices_are_strict0')
+bad_family = [True, 1]
+
+    @pytest.mark.parametrize("bad_family", [[True, 1], [0, 0], [0, 5], [0, -1], [0.0]])
+    def test_family_indices_are_strict_unique_and_in_range(tmp_path, bad_family):
+>       result = run_probe_calibration(request(tmp_path, family=bad_family))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_______ test_family_indices_are_strict_unique_and_in_range[bad_family1] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_family_indices_are_strict1')
+bad_family = [0, 0]
+
+    @pytest.mark.parametrize("bad_family", [[True, 1], [0, 0], [0, 5], [0, -1], [0.0]])
+    def test_family_indices_are_strict_unique_and_in_range(tmp_path, bad_family):
+>       result = run_probe_calibration(request(tmp_path, family=bad_family))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_______ test_family_indices_are_strict_unique_and_in_range[bad_family2] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_family_indices_are_strict2')
+bad_family = [0, 5]
+
+    @pytest.mark.parametrize("bad_family", [[True, 1], [0, 0], [0, 5], [0, -1], [0.0]])
+    def test_family_indices_are_strict_unique_and_in_range(tmp_path, bad_family):
+>       result = run_probe_calibration(request(tmp_path, family=bad_family))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_______ test_family_indices_are_strict_unique_and_in_range[bad_family3] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_family_indices_are_strict3')
+bad_family = [0, -1]
+
+    @pytest.mark.parametrize("bad_family", [[True, 1], [0, 0], [0, 5], [0, -1], [0.0]])
+    def test_family_indices_are_strict_unique_and_in_range(tmp_path, bad_family):
+>       result = run_probe_calibration(request(tmp_path, family=bad_family))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_______ test_family_indices_are_strict_unique_and_in_range[bad_family4] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_family_indices_are_strict4')
+bad_family = [0.0]
+
+    @pytest.mark.parametrize("bad_family", [[True, 1], [0, 0], [0, 5], [0, -1], [0.0]])
+    def test_family_indices_are_strict_unique_and_in_range(tmp_path, bad_family):
+>       result = run_probe_calibration(request(tmp_path, family=bad_family))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:72: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_____________ test_objects_are_exactly_five_booleans[bad_values0] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_objects_are_exactly_five_0')
+bad_values = [False, False, False, False, 0]
+
+    @pytest.mark.parametrize("bad_values", [[False, False, False, False, 0], [False] * 4, [False] * 6])
+    def test_objects_are_exactly_five_booleans(tmp_path, bad_values):
+>       result = run_probe_calibration(request(tmp_path, left=bad_values))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_____________ test_objects_are_exactly_five_booleans[bad_values1] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_objects_are_exactly_five_1')
+bad_values = [False, False, False, False]
+
+    @pytest.mark.parametrize("bad_values", [[False, False, False, False, 0], [False] * 4, [False] * 6])
+    def test_objects_are_exactly_five_booleans(tmp_path, bad_values):
+>       result = run_probe_calibration(request(tmp_path, left=bad_values))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_____________ test_objects_are_exactly_five_booleans[bad_values2] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_objects_are_exactly_five_2')
+bad_values = [False, False, False, False, False, False]
+
+    @pytest.mark.parametrize("bad_values", [[False, False, False, False, 0], [False] * 4, [False] * 6])
+    def test_objects_are_exactly_five_booleans(tmp_path, bad_values):
+>       result = run_probe_calibration(request(tmp_path, left=bad_values))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:78: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+__________ test_request_is_closed_to_caller_supplied_formula_or_proof __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_request_is_closed_to_call0')
+
+    def test_request_is_closed_to_caller_supplied_formula_or_proof(tmp_path):
+        req = request(tmp_path)
+        req["formula"] = "True"
+>       result = run_probe_calibration(req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_____________ test_mutated_registered_certificate_identity_rejects _____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_mutated_registered_certif0')
+
+    def test_mutated_registered_certificate_identity_rejects(tmp_path):
+>       registered = probe_calibration_profile()
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:16: in probe_calibration_profile
+    return import_module('ladon.proof_contract_probe_calibration').probe_calibration_profile()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+__________________ test_expired_or_nan_deadline_fails_closed ___________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_expired_or_nan_deadline_f0')
+
+    def test_expired_or_nan_deadline_fails_closed(tmp_path):
+        for deadline in (time.monotonic() - 1, math.nan):
+            req = request(tmp_path)
+            req["deadlineMonotonic"] = deadline
+>           result = run_probe_calibration(req)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:108: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+__________ test_oversized_aggregate_request_fails_closed_before_work ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_oversized_aggregate_reque0')
+
+    def test_oversized_aggregate_request_fails_closed_before_work(tmp_path):
+        req = request(tmp_path)
+        # repoRoot is an allowed string field; aggregate preflight must stop before
+        # attempting path validation or starting any worker.
+        req["repoRoot"] = "x" * (8 * 1024 * 1024 + 1)
+>       result = run_probe_calibration(req)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:117: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_______________________ test_cyclic_request_fails_closed _______________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_cyclic_request_fails_clos0')
+
+    def test_cyclic_request_fails_closed(tmp_path):
+        req = request(tmp_path)
+        req['left'] = [req]
+>       assert run_probe_calibration(req)['status'] == 'rejected'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+_______________ test_caller_cannot_supply_proof_authority[proof] _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_caller_cannot_supply_proo0')
+field = 'proof'
+
+    @pytest.mark.parametrize('field', ['proof', 'checkStatus', 'cachedReceipt'])
+    def test_caller_cannot_supply_proof_authority(tmp_path, field):
+        req = request(tmp_path)
+        req[field] = {'status': 'accepted'}
+>       assert run_probe_calibration(req)['status'] == 'rejected'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+____________ test_caller_cannot_supply_proof_authority[checkStatus] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_caller_cannot_supply_proo1')
+field = 'checkStatus'
+
+    @pytest.mark.parametrize('field', ['proof', 'checkStatus', 'cachedReceipt'])
+    def test_caller_cannot_supply_proof_authority(tmp_path, field):
+        req = request(tmp_path)
+        req[field] = {'status': 'accepted'}
+>       assert run_probe_calibration(req)['status'] == 'rejected'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+___________ test_caller_cannot_supply_proof_authority[cachedReceipt] ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-718/test_caller_cannot_supply_proo2')
+field = 'cachedReceipt'
+
+    @pytest.mark.parametrize('field', ['proof', 'checkStatus', 'cachedReceipt'])
+    def test_caller_cannot_supply_proof_authority(tmp_path, field):
+        req = request(tmp_path)
+        req[field] = {'status': 'accepted'}
+>       assert run_probe_calibration(req)['status'] == 'rejected'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_probe_calibration_boundary.py:131: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_proof_contract_probe_calibration_boundary.py:20: in run_probe_calibration
+    return import_module('ladon.proof_contract_probe_calibration').run_probe_calibration(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.proof_contract_probe_calibration'
+import_ = <function _gcd_import at 0x7b1e2014fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.proof_contract_probe_calibration'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_unverified_agreement_and_empty_family_never_claim_equivalence
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_full_family_unverified_disagreement_is_only_observed_difference
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_full_certificate_cannot_be_replayed_for_incomplete_family
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_family_indices_are_strict_unique_and_in_range[bad_family0]
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_family_indices_are_strict_unique_and_in_range[bad_family1]
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_family_indices_are_strict_unique_and_in_range[bad_family2]
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_family_indices_are_strict_unique_and_in_range[bad_family3]
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_family_indices_are_strict_unique_and_in_range[bad_family4]
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_objects_are_exactly_five_booleans[bad_values0]
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_objects_are_exactly_five_booleans[bad_values1]
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_objects_are_exactly_five_booleans[bad_values2]
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_request_is_closed_to_caller_supplied_formula_or_proof
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_mutated_registered_certificate_identity_rejects
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_expired_or_nan_deadline_fails_closed
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_oversized_aggregate_request_fails_closed_before_work
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_cyclic_request_fails_closed
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_caller_cannot_supply_proof_authority[proof]
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_caller_cannot_supply_proof_authority[checkStatus]
+FAILED tests/test_proof_contract_probe_calibration_boundary.py::test_caller_cannot_supply_proof_authority[cachedReceipt]
+19 failed in 0.13s

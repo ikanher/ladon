@@ -1,0 +1,12 @@
+--- a/tests/test_proof_contract_application_probe_cli.py
++++ b/tests/test_proof_contract_application_probe_cli_v2.py
+@@ -11,7 +11,8 @@
+     assert contract_main(['probe-profile', '--output', str(output)]) == 0
+     frozen = output.read_bytes()
+     assert json.loads(frozen)['regularity-boundary']['implemented'] is True
+-    assert json.loads(frozen)['witness-dependence']['implemented'] is False
++    witness = json.loads(frozen)['witness-dependence']
++    assert witness == {'version': 'witness-dependence-v2', 'implemented': True}
+     assert contract_main(['probe-profile', '--output', str(output)]) == 2
+     assert output.read_bytes() == frozen
+     capsys.readouterr()

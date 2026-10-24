@@ -1,0 +1,461 @@
+--- a/src/ladon/_proof_contract_probe_templates.py
++++ b/src/ladon/_proof_contract_probe_templates.py
+@@ -22,13 +22,22 @@
+ )
+ _SCOPE = "closed-nat-regularity-v1"
+ _MAX_INPUT = 8 * 1024 * 1024
++
++
++def _template_versions(family):
++    versions = {f"{family}-v1"}
++    if family == "constant-uniformity":
++        versions.add("constant-uniformity-v2")
++    return versions
++
++
+ def validate_template(template: Any) -> dict[str, str]:
+     if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
+         raise ValueError("template selectors must be a closed object")
+     family = template["familyId"]
+     if not all(isinstance(template[key], str) for key in template):
+         raise ValueError("template selectors must be strings")
+-    if family not in FAMILIES or template["version"] != f"{family}-v1":
++    if family not in FAMILIES or template["version"] not in _template_versions(family):
+         raise ValueError("unknown template family or version")
+     if template["direction"] not in {"left-to-right", "right-to-left"}:
+         raise ValueError("invalid template direction")
+@@ -38,8 +47,10 @@
+ 
+ 
+ def application_probe_profile() -> dict[str, dict[str, Any]]:
+-    return {family: {"version": f"{family}-v1", "implemented": family == FAMILIES[0]}
+-            for family in FAMILIES}
++    result = {family: {"version": f"{family}-v1", "implemented": family == FAMILIES[0]}
++              for family in FAMILIES}
++    result["constant-uniformity"] = {"version": "constant-uniformity-v2", "implemented": True}
++    return result
+ 
+ 
+ def _residual(code: str, message: str, feature: str) -> dict[str, str]:
+@@ -115,7 +126,19 @@
+ 
+ 
+ def template_result(left_record, right_record, left_contract, right_contract, shared_slice, template):
+-    """Match one closed regularity template and produce two open Lean goals."""
++    """Dispatch versioned templates without reinterpreting historical plans."""
++    selected = validate_template(template)
++    if selected["version"] == "constant-uniformity-v2":
++        from ._proof_contract_probe_uniformity import constant_uniformity_result
++
++        return constant_uniformity_result(left_record, right_record, left_contract,
++                                          right_contract, shared_slice, selected)
++    return _legacy_template_result(left_record, right_record, left_contract,
++                                   right_contract, shared_slice, selected)
++
++
++def _legacy_template_result(left_record, right_record, left_contract, right_contract, shared_slice, template):
++    """Preserve the original v1 result, including unsupported family plans."""
+     selected = validate_template(template)
+     inputs = (left_record, right_record, left_contract, right_contract, shared_slice)
+     input_size = _planned_input_size(inputs)
+--- /dev/null
++++ b/src/ladon/_proof_contract_probe_uniformity.py
+@@ -0,0 +1,152 @@
++"""Pure planning for closed, quantified Nat constant-uniformity probes."""
++from __future__ import annotations
++
++import hashlib
++
++from ladon._proof_contract_planned_source_inputs import _planned_input_size
++from ladon.correspondence_interpretation import lower_formula
++
++from ._proof_contract_probe_uniformity_ast import parse_uniformity_ast
++from ._proof_contract_probe_uniformity_contracts import (
++    uniformity_pair_residual,
++    validate_uniformity_contract,
++)
++
++_MAX_BYTES = 8 * 1024 * 1024
++_SCOPE = "closed-nat-constant-uniformity-v2"
++
++
++def _goal(goal_id, kind, formula):
++    digest = hashlib.sha256(formula.encode("utf-8")).hexdigest()
++    return {"goalId": goal_id, "kind": kind, "goal": formula,
++            "goalDigest": "sha256:" + digest, "status": "open"}
++
++
++def _result(template, status, goals=None, residuals=None):
++    return {"schema": "ladon-application-probe-plan-v1", "status": status,
++            "template": template, "scope": _SCOPE, "goals": goals or [],
++            "residuals": residuals or [], "checkerAuthority": "none",
++            "wholeMethodAuthority": "none", "sourceFidelity": "attributed-unreviewed",
++            "mathematicalFalsity": "not-established"}
++
++
++def _residual(code, message, feature):
++    return {"code": code, "message": message, "feature": feature}
++
++
++def _validate_template(template):
++    keys = {"familyId", "version", "direction", "kind"}
++    if not isinstance(template, dict) or set(template) != keys:
++        raise ValueError("template selectors must be a closed object")
++    if any(not isinstance(value, str) for value in template.values()):
++        raise ValueError("template selectors must be strings")
++    if template["familyId"] != "constant-uniformity":
++        raise ValueError("constant uniformity requires its registered family selector")
++    if template["version"] not in {"constant-uniformity-v1", "constant-uniformity-v2"}:
++        raise ValueError("unknown constant-uniformity template version")
++    if template["direction"] not in {"left-to-right", "right-to-left"}:
++        raise ValueError("invalid probe direction")
++    if template["kind"] not in {"implication", "counterexample"}:
++        raise ValueError("invalid probe kind")
++    return {key: template[key] for key in ("familyId", "version", "direction", "kind")}
++
++
++def _size_preflight(inputs):
++    size = _planned_input_size(inputs)
++    if size > _MAX_BYTES:
++        raise ValueError("constant-uniformity input exceeds 8 MiB")
++    if size * 4 > _MAX_BYTES:
++        return _residual("expanded-goal-bound", "Conservative lowered-goal size exceeds 8 MiB.", "goal-size")
++    return None
++
++
++def _record_budget(record):
++    symbols = record.get("symbols") if isinstance(record, dict) else None
++    if not isinstance(symbols, dict):
++        return False
++    widest = max((_planned_input_size(row) for row in symbols.values()), default=1)
++    formula_size = _planned_input_size(record.get("formula"))
++    return formula_size * (widest + 32) <= _MAX_BYTES
++
++
++def _closed_application(shared_slice):
++    if not isinstance(shared_slice, dict) or shared_slice.get("localContext") != []:
++        return None
++    if shared_slice.get("complete") is not True or shared_slice.get("status") != "extracted":
++        return None
++    nodes = shared_slice.get("nodes")
++    if not isinstance(nodes, list) or len(nodes) != 1:
++        return None
++    row = nodes[0]
++    if not isinstance(row, dict) or row.get("kind") != "application" or row.get("premises") != []:
++        return None
++    return row
++
++
++def _slice_type(shared_slice):
++    row = _closed_application(shared_slice)
++    if row is None:
++        return None
++    value = row.get("closedType")
++    return value if isinstance(value, str) and value and len(value.encode("utf-8")) <= _MAX_BYTES else None
++
++
++def _unsupported(template, message, feature):
++    return _result(template, "unsupported", residuals=[_residual("unsupported-constant-uniformity", message, feature)])
++
++
++def _lower_pair(left_record, right_record, left_ast, right_ast):
++    try:
++        left = lower_formula(left_ast["formula"], left_record["symbols"])
++        right = lower_formula(right_ast["formula"], right_record["symbols"])
++    except (TypeError, ValueError, KeyError, RecursionError) as error:
++        return None, _residual("unsupported-lowering", str(error)[:240], "formula")
++    return (left, right), None
++
++
++def _goals(template, readings, actual):
++    left, right = readings
++    p, q = (left, right) if template["direction"] == "left-to-right" else (right, left)
++    formal = f"({right}) ↔ ({actual})"
++    probe = f"({p}) → ({q})" if template["kind"] == "implication" else f"({p}) ∧ ¬({q})"
++    return [_goal("formal-reading", "formal-reading", formal), _goal("probe", "probe", probe)]
++
++
++def constant_uniformity_result(left_record, right_record, left_contract, right_contract,
++                               shared_slice, template):
++    """Plan two open obligations while preserving both original quantifier orders."""
++    bound = _size_preflight((left_record, right_record, left_contract, right_contract, shared_slice, template))
++    selected = _validate_template(template)
++    if bound:
++        return _result(selected, "unsupported", residuals=[bound])
++    if selected["version"] == "constant-uniformity-v1":
++        return _result(selected, "unsupported", residuals=[_residual(
++            "legacy-template", "The historical v1 family remains unsupported.", "constant-uniformity")])
++    if not _record_budget(left_record) or not _record_budget(right_record):
++        return _result(selected, "unsupported", residuals=[_residual(
++            "expanded-goal-bound", "A formula and symbol map exceed the expansion budget.", "goal-size")])
++    return _plan_supported(left_record, right_record, left_contract, right_contract, shared_slice, selected)
++
++
++def _plan_supported(left_record, right_record, left_contract, right_contract, shared_slice, template):
++    left_ast, right_ast = parse_uniformity_ast(left_record), parse_uniformity_ast(right_record)
++    if left_ast is None or right_ast is None:
++        return _unsupported(template, "The ASTs do not match the exact quantified Nat constant profile.", "formula")
++    left_valid, left_state = validate_uniformity_contract(left_contract, left_ast)
++    right_valid, right_state = validate_uniformity_contract(right_contract, right_ast)
++    if left_state or right_state:
++        return _result(template, "unsupported", residuals=[left_state or right_state])
++    residual = uniformity_pair_residual(left_valid, right_valid, left_ast, right_ast)
++    if residual:
++        return _result(template, "unsupported", residuals=[residual])
++    actual = _slice_type(shared_slice)
++    if actual is None:
++        return _result(template, "unsupported", residuals=[_residual(
++            "nonclosed-shared-context", "The selected slice is not one closed premise-free application.", "shared-slice")])
++    readings, error = _lower_pair(left_record, right_record, left_ast, right_ast)
++    if error:
++        return _result(template, "unsupported", residuals=[error])
++    result = _result(template, "planned", goals=_goals(template, readings, actual))
++    if _planned_input_size(result) > _MAX_BYTES:
++        raise ValueError("expanded constant-uniformity plan exceeds 8 MiB")
++    return result
+--- /dev/null
++++ b/src/ladon/_proof_contract_probe_uniformity_ast.py
+@@ -0,0 +1,140 @@
++"""Exact AST roles for quantified Nat constant-uniformity probes."""
++from __future__ import annotations
++
++import re
++
++
++def _node(value, tag, keys):
++    return isinstance(value, dict) and set(value) == keys and value.get("tag") == tag
++
++
++def _valid_binder(binder):
++    return (isinstance(binder, dict) and set(binder) == {"id", "name", "domain"}
++            and binder.get("domain") == "Nat" and isinstance(binder.get("id"), str)
++            and bool(binder["id"]) and isinstance(binder.get("name"), str))
++
++
++def _binder_rows(formula):
++    rows, node = [], formula
++    while isinstance(node, dict) and node.get("tag") in {"forall", "exists"}:
++        if not _node(node, node["tag"], {"tag", "binder", "body"}):
++            return None
++        binder = node["binder"]
++        if not _valid_binder(binder):
++            return None
++        rows.append((binder["id"], node["tag"]))
++        node = node["body"]
++    return (rows, node) if len(rows) == 3 else None
++
++
++def _roles(rows):
++    ids, quantifiers = [r[0] for r in rows], [r[1] for r in rows]
++    if len(set(ids)) != 3:
++        return None
++    if quantifiers == ["exists", "forall", "forall"]:
++        return {"c": ids[0], "s": ids[1], "x": ids[2]}, "strong"
++    if quantifiers == ["forall", "exists", "forall"]:
++        return {"s": ids[0], "c": ids[1], "x": ids[2]}, "weak"
++    return None
++
++
++def _var(value, identity):
++    return _node(value, "var", {"tag", "id"}) and value["id"] == identity
++
++
++def _app(value, arity):
++    return (_node(value, "app", {"tag", "symbol", "args"}) and isinstance(value["symbol"], str)
++            and isinstance(value["args"], list) and len(value["args"]) == arity)
++
++
++def _left_roles(body, roles):
++    left = body["left"]
++    if not _app(left, 2) or not _var(left["args"][0], roles["s"]):
++        return None
++    function = left["args"][1]
++    if not _app(function, 1) or not _var(function["args"][0], roles["x"]):
++        return None
++    return left["symbol"], function["symbol"]
++
++
++def _right_roles(body, roles):
++    right = body["right"]
++    if not _app(right, 2) or not _coefficient(right["args"][0], roles["c"]):
++        return None
++    application = right["args"][1]
++    if not _app(application, 2) or not _var(application["args"][1], roles["x"]):
++        return None
++    addition = application["args"][0]
++    if not _app(addition, 2) or not _var(addition["args"][0], roles["s"]):
++        return None
++    literal = addition["args"][1]
++    if not _node(literal, "const", {"tag", "name"}):
++        return None
++    if not isinstance(literal["name"], str) or not re.fullmatch(r"[0-9]{1,20}", literal["name"]):
++        return None
++    ids = (application["symbol"], right["symbol"], addition["symbol"])
++    return ids, literal["name"]
++
++
++def _coefficient(value, constant_id):
++    if not _node(value, "var", {"tag", "id"}):
++        return False
++    if value["id"] != constant_id:
++        raise ValueError("coefficient variable conflicts with the existential constant anchor")
++    return True
++
++
++def _symbol_rows(symbol_ids, symbols):
++    if len(set(symbol_ids)) != 5 or any(identity not in symbols for identity in symbol_ids):
++        return None
++    expected = ("Nat → Nat → Nat", "Nat → Nat", "Nat → Nat → Nat",
++                "Nat → Nat → Nat", "Nat → Nat → Nat")
++    rows = [symbols[identity] for identity in symbol_ids]
++    if any(not isinstance(row, dict) or row.get("leanType") != signature
++           for row, signature in zip(rows, expected)):
++        return None
++    return rows
++
++
++def _typed_symbols(symbol_ids, symbols):
++    rows = _symbol_rows(symbol_ids, symbols)
++    if rows is None or rows[3].get("leanName") != "Nat.mul" or rows[4].get("leanName") != "Nat.add":
++        return False
++    return all(isinstance(row.get("leanName"), str) and row["leanName"]
++               and len(row["leanName"]) <= 200 for row in rows)
++
++
++def _body_roles(body, roles, symbols):
++    if not _node(body, "le", {"tag", "left", "right"}):
++        return None
++    left_ids = _left_roles(body, roles)
++    right_data = _right_roles(body, roles)
++    if left_ids is None or right_data is None:
++        return None
++    ids, literal = left_ids + right_data[0], right_data[1]
++    if not _typed_symbols(ids, symbols):
++        return None
++    return {"offset": int(literal), "roles": roles, "body": body,
++            "symbolIds": ids, "symbols": symbols}
++
++
++def parse_uniformity_ast(record):
++    """Return role data for the exact supported quantified body, else None."""
++    if not isinstance(record, dict) or not isinstance(record.get("formula"), dict):
++        return None
++    symbols = record.get("symbols")
++    if not isinstance(symbols, dict):
++        return None
++    nested = _binder_rows(record["formula"])
++    if nested is None:
++        return None
++    rows, body = nested
++    role_result = _roles(rows)
++    if role_result is None:
++        return None
++    roles, kind = role_result
++    parsed = _body_roles(body, roles, symbols)
++    if parsed is None:
++        return None
++    parsed.update({"formula": record["formula"], "rows": rows, "kind": kind})
++    return parsed
+--- /dev/null
++++ b/src/ladon/_proof_contract_probe_uniformity_contracts.py
+@@ -0,0 +1,100 @@
++"""Check recognized AST roles against validated authored contract metadata."""
++from __future__ import annotations
++
++from ladon.proof_contracts import validate_contract
++
++
++def _unsupported(message, feature):
++    return {"code": "unsupported-constant-uniformity", "message": message, "feature": feature}
++
++
++def _expected_permissions(parsed):
++    return [] if parsed["kind"] == "strong" else [parsed["roles"]["s"]]
++
++
++def _known_or_unsupported(contract, parsed):
++    features = contract["features"]
++    regularity = features["regularity"]
++    constant = features["constantDependencies"]
++    witnesses = features["witnessDependencies"]
++    if regularity["state"] != "known" or constant["state"] != "known":
++        return _unsupported("Regularity and constant dependencies must be known.", "features")
++    if any(row["state"] != "known" for row in witnesses):
++        return _unsupported("Every existential witness dependency must be known.", "witnessDependencies")
++    return None
++
++
++def _verify_telescope(contract, parsed):
++    expected_telescope = [{"binderId": identity, "typeId": "Nat", "quantifier": quantifier}
++                          for identity, quantifier in parsed["rows"]]
++    if contract["telescope"] != expected_telescope:
++        raise ValueError("contract telescope conflicts with the recognized original AST order")
++
++
++def _verify_permissions(contract, parsed):
++    roles = parsed["roles"]
++    constant = contract["features"]["constantDependencies"]
++    witnesses = contract["features"]["witnessDependencies"]
++    if constant.get("binderId") != roles["c"]:
++        raise ValueError("constant dependency anchor conflicts with the AST coefficient binder")
++    if len(witnesses) != 1 or witnesses[0]["binderId"] != roles["c"]:
++        raise ValueError("witness dependency rows conflict with the AST existential binder")
++    permissions = _expected_permissions(parsed)
++    if constant["allowedBinderIds"] != permissions:
++        raise ValueError("constant permissions conflict with the AST quantifier order")
++    if witnesses[0]["allowedBinderIds"] != permissions:
++        raise ValueError("witness permissions conflict with the AST quantifier order")
++
++
++def _verify_regularity(contract, parsed):
++    regularity = contract["features"]["regularity"]
++    if regularity["offset"] != parsed["offset"]:
++        raise ValueError("regularity offset conflicts with its designated AST literal")
++
++
++def _verify_recognized(contract, parsed):
++    if contract["assumptions"]:
++        raise ValueError("constant-uniformity profile does not allow assumptions")
++    _verify_telescope(contract, parsed)
++    unsupported = _known_or_unsupported(contract, parsed)
++    if unsupported:
++        return unsupported
++    _verify_permissions(contract, parsed)
++    _verify_regularity(contract, parsed)
++    return None
++
++
++def validate_uniformity_contract(raw_contract, parsed):
++    """Validate native contract structure, then reject known AST/summary conflicts."""
++    contract = validate_contract(raw_contract)
++    return contract, _verify_recognized(contract, parsed)
++
++
++def _feature_without_permissions(feature):
++    return {key: value for key, value in feature.items() if key != "allowedBinderIds"}
++
++
++def _same_nonorder_metadata(left, right):
++    for key in ("profileId", "endpointId", "context", "assumptions", "conclusionId"):
++        if left[key] != right[key]:
++            return False
++    lf, rf = left["features"], right["features"]
++    if lf["regularity"] != rf["regularity"]:
++        return False
++    if _feature_without_permissions(lf["constantDependencies"]) != _feature_without_permissions(rf["constantDependencies"]):
++        return False
++    lw, rw = lf["witnessDependencies"], rf["witnessDependencies"]
++    return len(lw) == len(rw) == 1 and _feature_without_permissions(lw[0]) == _feature_without_permissions(rw[0])
++
++
++def uniformity_pair_residual(left, right, left_ast, right_ast):
++    if not _same_nonorder_metadata(left, right):
++        return _unsupported("Contract endpoint, context, assumptions, conclusion, or regularity differs.", "contract")
++    if left_ast["roles"] != right_ast["roles"] or left_ast["offset"] != right_ast["offset"]:
++        return _unsupported("The readings do not share binder roles and the same regularity literal.", "regularity")
++    if left_ast["symbolIds"] != right_ast["symbolIds"]:
++        return _unsupported("The readings use different typed body symbols.", "symbols")
++    for identity in left_ast["symbolIds"]:
++        if left_ast["symbols"][identity] != right_ast["symbols"][identity]:
++            return _unsupported("The readings use different typed body symbol mappings.", "symbols")
++    return None

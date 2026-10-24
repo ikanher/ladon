@@ -1,0 +1,17 @@
+{
+  "schema": "probe-calibration-staging-fix-audit-v1",
+  "assignmentPost": 640,
+  "status": "PASS_CODE_FIX_WITH_FINAL_CUSTODY_PENDING",
+  "findingCount": 0,
+  "verified": {
+    "change": "The staged calibration module now uses the deterministic `Probe.lean` filename under the digest-owned calibration directory. Existing source-material enumeration excludes the Probe stem, preventing the worker's own staged fixture from changing the toolchain source-tree identity.",
+    "sourceBinding": "The exclusion does not remove the independent source-binding check: prepare_calibration verifies the shipped source digest before staging, then verify_calibration checks the staged file digest, shipped asset digest, and equality of current toolchain context identity to the pre-staging environment. The proof loop repeats this check before and after every goal.",
+    "regressionTest": "Inspected tests/test_proof_contract_probe_calibration_fresh_source.py: it creates a fresh Git-initialized root, supplies the pinned lean-toolchain, stages through the actual preparation helper, calls verification after staging, and asserts the excluded Probe.lean suffix. This directly covers the first-use source-enumeration failure reported in #640.",
+    "scope": "Code/test review only; no Lean or tests run. Root's actual proof-control receipts and raw custody have not yet been reviewed and remain pending as directed."
+  },
+  "checks": {
+    "frozenVerification": "107 rows; verified; zero mismatches",
+    "canonicalOrFrozenEdits": false,
+    "actualSourceReceiptReview": false
+  }
+}

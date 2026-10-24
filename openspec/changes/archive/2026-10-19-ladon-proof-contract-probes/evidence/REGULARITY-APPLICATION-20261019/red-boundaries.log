@@ -1,0 +1,126 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_____ test_cycles_depth_and_unbounded_term_maps_are_rejected_before_worker _____
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7544d5724650>
+
+    def test_cycles_depth_and_unbounded_term_maps_are_rejected_before_worker(monkeypatch):
+        _, _, planner, checker = api()
+        import ladon.proof_contract_probes as probes
+    
+        def forbidden(*args):
+            raise AssertionError('invalid inputs must not start a worker')
+    
+        monkeypatch.setattr(probes, '_stage', forbidden)
+        cyclic = request()
+        cyclic['context']['cycle'] = cyclic
+>       assert planner(cyclic)['status'] == 'rejected'
+               ^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_application_probe_boundaries.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_probes.py:34: in plan_application_probe
+    return _run(request)
+           ^^^^^^^^^^^^^
+src/ladon/proof_contract_probes.py:45: in _run
+    owned = probe_inputs(request, plan_id, terms, checking=checking)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request = {'context': {'artifacts': [{'artifactId': 'sha256:8fa517e43415c45ec66516682ed8306a7b5b44ad6bd1397dfd96f600535f8fd9', '...ce', 'localId': 'correspondence:51fe5bf20ba5ae22361b638a039c67d38e6e252e3c7eb7374a592f40cb3913d9'}}, 'limits': {}, ...}
+plan_id = None, terms = None
+
+    def probe_inputs(request, plan_id=None, terms=None, *, checking=False):
+>       from ._proof_contract_probe_templates import validate_template
+E       ModuleNotFoundError: No module named 'ladon._proof_contract_probe_templates'
+
+src/ladon/_proof_contract_probe_inputs.py:13: ModuleNotFoundError
+_______ test_tiny_output_capacity_stops_before_work_without_publication ________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7544d48a0190>
+
+    def test_tiny_output_capacity_stops_before_work_without_publication(monkeypatch):
+        _, _, planner, _ = api()
+        import ladon.proof_contract_probes as probes
+    
+        def forbidden(*args):
+            raise AssertionError('exhausted output must not start a worker')
+    
+        monkeypatch.setattr(probes, '_stage', forbidden)
+        inputs = request()
+        inputs['limits'] = {'max_output_bytes': 1}
+        with pytest.raises(probes.ApplicationProbeOutputLimit):
+>           planner(inputs)
+
+tests/test_proof_contract_application_probe_boundaries.py:48: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_probes.py:34: in plan_application_probe
+    return _run(request)
+           ^^^^^^^^^^^^^
+src/ladon/proof_contract_probes.py:45: in _run
+    owned = probe_inputs(request, plan_id, terms, checking=checking)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+request = {'context': {'artifacts': [{'artifactId': 'sha256:8fa517e43415c45ec66516682ed8306a7b5b44ad6bd1397dfd96f600535f8fd9', '...espondence:51fe5bf20ba5ae22361b638a039c67d38e6e252e3c7eb7374a592f40cb3913d9'}}, 'limits': {'max_output_bytes': 1}, ...}
+plan_id = None, terms = None
+
+    def probe_inputs(request, plan_id=None, terms=None, *, checking=False):
+>       from ._proof_contract_probe_templates import validate_template
+E       ModuleNotFoundError: No module named 'ladon._proof_contract_probe_templates'
+
+src/ladon/_proof_contract_probe_inputs.py:13: ModuleNotFoundError
+_______ test_native_probe_cannot_smuggle_checked_authority_or_other_goal _______
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7544d4bc88d0>
+
+    def test_native_probe_cannot_smuggle_checked_authority_or_other_goal(monkeypatch):
+        builder, _, _, _ = api()
+        from ladon.proofir_v3 import detached_content_id, validate_envelope_batch
+    
+        data = fixture()
+>       artifact = builder(data['context'], *data['sides'], TEMPLATE, analysis_id='analysis:authority')
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_contract_application_probe_boundaries.py:56: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+context = {'artifacts': [{'artifactId': 'sha256:8fa517e43415c45ec66516682ed8306a7b5b44ad6bd1397dfd96f600535f8fd9', 'artifactKind...ted': 3, ...}, 'environmentRef': 'sha256:9d9818f4b51de7eb4dbdbe99f965d4416b8266b2e2f1e7ecae1bcd4951e55094', ...}, ...]}
+left = {'contractRef': {'artifactRef': 'sha256:f6cf9292809d4dbbe067dee120e71e60d38861ba4494b23155a40fded378e903', 'kind': 'co...kind': 'correspondence', 'localId': 'correspondence:51fe5bf20ba5ae22361b638a039c67d38e6e252e3c7eb7374a592f40cb3913d9'}}
+right = {'contractRef': {'artifactRef': 'sha256:8ea1139141ef865c90d0e55dd8ca8810604f4270bd8a71ca4391ef50db58ed6a', 'kind': 'co...kind': 'correspondence', 'localId': 'correspondence:5d58725b52048cd1ea2a204ce322e07cadb76e14f98ba203aa010194e483e08b'}}
+template = {'direction': 'right-to-left', 'familyId': 'regularity-boundary', 'kind': 'counterexample', 'version': 'regularity-boundary-v1'}
+
+    def application_probe_artifact(context, left, right, template, *, analysis_id):
+        """Generate open goals; this artifact conveys no checked support."""
+>       from ._proof_contract_probe_templates import validate_template
+E       ModuleNotFoundError: No module named 'ladon._proof_contract_probe_templates'
+
+src/ladon/proof_contract_probe_artifacts.py:9: ModuleNotFoundError
+______ test_native_plan_direction_keeps_both_original_quantified_readings ______
+
+    def test_native_plan_direction_keeps_both_original_quantified_readings():
+        builder, _, _, _ = api()
+        data = fixture()
+>       forward = builder(data['context'], *data['sides'],
+            {**TEMPLATE, 'direction': 'left-to-right', 'kind': 'implication'}, analysis_id='analysis:forward')
+
+tests/test_proof_contract_application_probe_boundaries.py:70: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+context = {'artifacts': [{'artifactId': 'sha256:8fa517e43415c45ec66516682ed8306a7b5b44ad6bd1397dfd96f600535f8fd9', 'artifactKind...ted': 3, ...}, 'environmentRef': 'sha256:9d9818f4b51de7eb4dbdbe99f965d4416b8266b2e2f1e7ecae1bcd4951e55094', ...}, ...]}
+left = {'contractRef': {'artifactRef': 'sha256:f6cf9292809d4dbbe067dee120e71e60d38861ba4494b23155a40fded378e903', 'kind': 'co...kind': 'correspondence', 'localId': 'correspondence:51fe5bf20ba5ae22361b638a039c67d38e6e252e3c7eb7374a592f40cb3913d9'}}
+right = {'contractRef': {'artifactRef': 'sha256:8ea1139141ef865c90d0e55dd8ca8810604f4270bd8a71ca4391ef50db58ed6a', 'kind': 'co...kind': 'correspondence', 'localId': 'correspondence:5d58725b52048cd1ea2a204ce322e07cadb76e14f98ba203aa010194e483e08b'}}
+template = {'direction': 'left-to-right', 'familyId': 'regularity-boundary', 'kind': 'implication', 'version': 'regularity-boundary-v1'}
+
+    def application_probe_artifact(context, left, right, template, *, analysis_id):
+        """Generate open goals; this artifact conveys no checked support."""
+>       from ._proof_contract_probe_templates import validate_template
+E       ModuleNotFoundError: No module named 'ladon._proof_contract_probe_templates'
+
+src/ladon/proof_contract_probe_artifacts.py:9: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_application_probe_boundaries.py::test_cycles_depth_and_unbounded_term_maps_are_rejected_before_worker
+FAILED tests/test_proof_contract_application_probe_boundaries.py::test_tiny_output_capacity_stops_before_work_without_publication
+FAILED tests/test_proof_contract_application_probe_boundaries.py::test_native_probe_cannot_smuggle_checked_authority_or_other_goal
+FAILED tests/test_proof_contract_application_probe_boundaries.py::test_native_plan_direction_keeps_both_original_quantified_readings
+4 failed in 0.11s

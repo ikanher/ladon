@@ -1,0 +1,357 @@
+--- a/src/ladon/_proof_contract_probe_pair.py
++++ b/src/ladon/_proof_contract_probe_pair.py
+@@ -104,8 +104,13 @@
+ 
+ 
+ def unsupported_result(template, code, message):
++    scope = (
++        'closed-nat-witness-dependence-v2'
++        if template.get('version') == 'witness-dependence-v2'
++        else 'closed-nat-regularity-v1'
++    )
+     return {'schema': 'ladon-application-probe-plan-v1', 'status': 'unsupported',
+-        'template': template, 'scope': 'closed-nat-regularity-v1', 'goals': [],
++        'template': template, 'scope': scope, 'goals': [],
+         'residuals': [{'code': code, 'message': message, 'feature': template['familyId']}],
+         'checkerAuthority': 'none', 'wholeMethodAuthority': 'none',
+         'sourceFidelity': 'attributed-unreviewed', 'mathematicalFalsity': 'not-established'}
+--- a/src/ladon/_proof_contract_probe_templates.py
++++ b/src/ladon/_proof_contract_probe_templates.py
+@@ -28,6 +28,8 @@
+     versions = {f"{family}-v1"}
+     if family == "constant-uniformity":
+         versions.add("constant-uniformity-v2")
++    if family == "witness-dependence":
++        versions.add("witness-dependence-v2")
+     return versions
+ 
+ 
+@@ -50,6 +52,7 @@
+     result = {family: {"version": f"{family}-v1", "implemented": family == FAMILIES[0]}
+               for family in FAMILIES}
+     result["constant-uniformity"] = {"version": "constant-uniformity-v2", "implemented": True}
++    result["witness-dependence"] = {"version": "witness-dependence-v2", "implemented": True}
+     return result
+ 
+ 
+@@ -133,6 +136,11 @@
+ 
+         return constant_uniformity_result(left_record, right_record, left_contract,
+                                           right_contract, shared_slice, selected)
++    if selected["version"] == "witness-dependence-v2":
++        from ._proof_contract_probe_witness import witness_dependence_result
++
++        return witness_dependence_result(left_record, right_record, left_contract,
++                                         right_contract, shared_slice, selected)
+     return _legacy_template_result(left_record, right_record, left_contract,
+                                    right_contract, shared_slice, selected)
+ 
+--- a/src/ladon/_proof_contract_probe_witness.py
++++ b/src/ladon/_proof_contract_probe_witness.py
+@@ -0,0 +1,117 @@
++"""Bounded source-bound obligations for witness-dependence-v2."""
++from __future__ import annotations
++
++import hashlib
++
++from ladon._proof_contract_planned_source_inputs import _planned_input_size
++from ladon.correspondence_interpretation import lower_formula
++
++from ._proof_contract_probe_templates import _residual, _shared_type
++from ._proof_contract_probe_witness_ast import parse_witness_ast
++from ._proof_contract_probe_witness_contracts import validate_witness_pair
++
++_MAX_BYTES = 8 * 1024 * 1024
++_SCOPE = "closed-nat-witness-dependence-v2"
++
++
++def _result_v2(template, status, goals=None, residuals=None):
++    return {
++        "schema": "ladon-application-probe-plan-v1",
++        "status": status,
++        "template": template,
++        "scope": _SCOPE,
++        "goals": goals or [],
++        "residuals": residuals or [],
++        "checkerAuthority": "none",
++        "wholeMethodAuthority": "none",
++        "sourceFidelity": "attributed-unreviewed",
++        "mathematicalFalsity": "not-established",
++    }
++
++
++def _goal_v2(goal_id, kind, formula):
++    digest = hashlib.sha256(formula.encode("utf-8")).hexdigest()
++    return {
++        "goalId": goal_id,
++        "kind": kind,
++        "goal": formula,
++        "goalDigest": "sha256:" + digest,
++        "status": "open",
++    }
++
++
++def _unsupported(template, message, feature):
++    return _result_v2(template, "unsupported", residuals=[
++        _residual("unsupported-witness-dependence", message, feature)
++    ])
++
++
++def _within_input_bounds(inputs, template):
++    size = _planned_input_size(inputs)
++    if size > _MAX_BYTES:
++        raise ValueError("witness-dependence inputs exceed the 8 MiB bound")
++    if size * 4 > _MAX_BYTES:
++        return _result_v2(template, "unsupported", residuals=[_residual(
++            "expanded-goal-bound", "Conservative lowered-goal size exceeds 8 MiB.", "goal-size")])
++    return None
++
++
++def _matched_pair(left_record, right_record, left_contract, right_contract, template):
++    left_ast = parse_witness_ast(left_record)
++    right_ast = parse_witness_ast(right_record)
++    if left_ast is None or right_ast is None:
++        return None, _unsupported(template,
++            "The ASTs do not match the exact two-binder Nat P(w,x) profile.", "formula")
++    _pair, error = validate_witness_pair(
++        left_contract, right_contract, left_ast, right_ast
++    )
++    if error:
++        return None, _result_v2(template, "unsupported", residuals=[error])
++    return (left_ast, right_ast), None
++
++
++def _lower_pair(left_record, right_record, template):
++    try:
++        return (lower_formula(left_record["formula"], left_record["symbols"]),
++                lower_formula(right_record["formula"], right_record["symbols"])), None
++    except (TypeError, ValueError, KeyError, RecursionError) as cause:
++        return None, _unsupported(template, str(cause)[:240], "formula")
++
++
++def _planned_goals(formulas, actual, template):
++    left, right = formulas
++    p, q = (left, right) if template["direction"] == "left-to-right" else (right, left)
++    formal = f"({right}) ↔ ({actual})"
++    if template["kind"] == "implication":
++        probe = f"({p}) → ({q})"
++    else:
++        probe = f"({p}) ∧ ¬({q})"
++    result = _result_v2(template, "planned", goals=[
++        _goal_v2("formal-reading", "formal-reading", formal),
++        _goal_v2("probe", "probe", probe),
++    ])
++    if _planned_input_size(result) > _MAX_BYTES:
++        raise ValueError("expanded witness-dependence plan exceeds 8 MiB")
++    return result
++
++
++def witness_dependence_result(
++    left_record, right_record, left_contract, right_contract, shared_slice, template
++):
++    """Plan original-order formal-reading and directional witness obligations."""
++    inputs = (left_record, right_record, left_contract, right_contract, shared_slice, template)
++    bounded = _within_input_bounds(inputs, template)
++    if bounded:
++        return bounded
++    _parsed, mismatch = _matched_pair(
++        left_record, right_record, left_contract, right_contract, template
++    )
++    if mismatch:
++        return mismatch
++    actual, error = _shared_type(shared_slice)
++    if error:
++        return _result_v2(template, "unsupported", residuals=[error])
++    formulas, mismatch = _lower_pair(left_record, right_record, template)
++    if mismatch:
++        return mismatch
++    return _planned_goals(formulas, actual, template)
+--- a/src/ladon/_proof_contract_probe_witness_ast.py
++++ b/src/ladon/_proof_contract_probe_witness_ast.py
+@@ -0,0 +1,93 @@
++"""Exact two-binder AST roles for witness-dependence-v2."""
++from __future__ import annotations
++
++
++def _node(value, tag, keys):
++    return isinstance(value, dict) and set(value) == keys and value.get("tag") == tag
++
++
++def _binder_row(node):
++    if not isinstance(node, dict) or node.get("tag") not in {"exists", "forall"}:
++        return None
++    if set(node) != {"tag", "binder", "body"}:
++        return None
++    binder = node["binder"]
++    if not isinstance(binder, dict) or set(binder) != {"id", "name", "domain"}:
++        return None
++    if binder.get("domain") != "Nat" or not isinstance(binder.get("id"), str):
++        return None
++    if not binder["id"] or not isinstance(binder.get("name"), str):
++        return None
++    return (binder["id"], node["tag"]), node["body"]
++
++
++def _valid_binder_order(rows):
++    identities = [row[0] for row in rows]
++    quantifiers = [row[1] for row in rows]
++    orders = (["exists", "forall"], ["forall", "exists"])
++    return len(set(identities)) == 2 and quantifiers in orders
++
++
++def _binder_rows(formula):
++    rows, node = [], formula
++    for _ in range(2):
++        parsed = _binder_row(node)
++        if parsed is None:
++            return None
++        row, node = parsed
++        rows.append(row)
++    if not _valid_binder_order(rows):
++        return None
++    return rows, node
++
++
++def _predicate_symbol(body, witness, parameter):
++    if not _node(body, "app", {"tag", "symbol", "args"}):
++        return None
++    symbol_id = body["symbol"]
++    if not isinstance(symbol_id, str) or not symbol_id:
++        return None
++    args = body["args"]
++    if not isinstance(args, list) or len(args) != 2:
++        return None
++    roles = ((args[0], witness), (args[1], parameter))
++    if any(not _node(arg, "var", {"tag", "id"}) or arg["id"] != identity
++           for arg, identity in roles):
++        return None
++    return symbol_id
++
++
++def _typed_symbol(symbols, symbol_id):
++    if not isinstance(symbols, dict):
++        return None
++    symbol = symbols.get(symbol_id)
++    if not isinstance(symbol, dict) or symbol.get("leanType") != "Nat → Nat → Prop":
++        return None
++    if not isinstance(symbol.get("leanName"), str) or not symbol["leanName"]:
++        return None
++    return symbol
++
++
++def parse_witness_ast(record):
++    """Recognize only P(w,x) under one of the two exact Nat quantifier orders."""
++    if not isinstance(record, dict):
++        return None
++    nested = _binder_rows(record.get("formula"))
++    if nested is None:
++        return None
++    rows, body = nested
++    witness = next(identity for identity, kind in rows if kind == "exists")
++    parameter = next(identity for identity, kind in rows if kind == "forall")
++    symbol_id = _predicate_symbol(body, witness, parameter)
++    symbol = _typed_symbol(record.get("symbols"), symbol_id)
++    if symbol is None:
++        return None
++    return {
++        "rows": rows,
++        "witnessId": witness,
++        "parameterId": parameter,
++        "symbolId": symbol_id,
++        "symbol": symbol,
++        "formula": record["formula"],
++        "kind": "strong" if rows[0][1] == "exists" else "weak",
++    }
+--- a/src/ladon/_proof_contract_probe_witness_contracts.py
++++ b/src/ladon/_proof_contract_probe_witness_contracts.py
+@@ -0,0 +1,90 @@
++"""Validate witness AST roles against each side's attributed contract."""
++from __future__ import annotations
++
++from ladon.proof_contracts import validate_contract
++
++
++def _unsupported(message, feature):
++    return {"code": "unsupported-witness-dependence", "message": message, "feature": feature}
++
++
++def _validate_telescope(contract, parsed):
++    expected = [
++        {"binderId": identity, "typeId": "Nat", "quantifier": quantifier}
++        for identity, quantifier in parsed["rows"]
++    ]
++    if contract["telescope"] != expected:
++        raise ValueError("contract telescope conflicts with the recognized original AST order")
++    return contract["features"]
++
++
++def _validate_regularity(regularity):
++    if (regularity["state"] != "unknown" or regularity["offset"] is not None
++            or not isinstance(regularity["reason"], str)):
++        return _unsupported("Regularity must remain unknown in the witness profile.", "regularity")
++    return None
++
++
++def _validate_constants(constants):
++    if ("binderId" in constants or constants["state"] != "unknown"
++            or constants["allowedBinderIds"] is not None):
++        return _unsupported(
++            "Constant dependencies must be unanchored and unknown in the witness profile.",
++            "constantDependencies",
++        )
++    return None
++
++
++def _validate_witness(rows, parsed):
++    if len(rows) != 1 or rows[0]["binderId"] != parsed["witnessId"]:
++        raise ValueError("witness dependency row conflicts with the recognized existential binder")
++    witness = rows[0]
++    if witness["state"] != "known":
++        return _unsupported("Witness permissions must be known for this profile.", "witnessDependencies")
++    expected = [parsed["parameterId"]] if parsed["kind"] == "weak" else []
++    if witness["allowedBinderIds"] != expected:
++        raise ValueError("witness permissions conflict with the original AST quantifier order")
++    return None
++
++
++def _validate_side(raw_contract, parsed):
++    contract = validate_contract(raw_contract)
++    features = _validate_telescope(contract, parsed)
++    errors = (
++        _validate_regularity(features["regularity"]),
++        _validate_constants(features["constantDependencies"]),
++        _validate_witness(features["witnessDependencies"], parsed),
++    )
++    return contract, next((error for error in errors if error is not None), None)
++
++
++def _same_nonorder_metadata(left, right):
++    for key in ("profileId", "endpointId", "context", "assumptions", "conclusionId"):
++        if left[key] != right[key]:
++            return False
++    lf, rf = left["features"], right["features"]
++    if lf["regularity"] != rf["regularity"]:
++        return False
++    if lf["constantDependencies"] != rf["constantDependencies"]:
++        return False
++    lw, rw = lf["witnessDependencies"][0], rf["witnessDependencies"][0]
++    return {**lw, "allowedBinderIds": None} == {**rw, "allowedBinderIds": None}
++
++
++def validate_witness_pair(left_raw, right_raw, left_ast, right_ast):
++    """Return a residual outside the exact profile; reject recognized conflicts."""
++    left, left_error = _validate_side(left_raw, left_ast)
++    right, right_error = _validate_side(right_raw, right_ast)
++    if left_error or right_error:
++        return None, left_error or right_error
++    if not _same_nonorder_metadata(left, right):
++        return None, _unsupported(
++            "Contract endpoints, context, assumptions, or non-witness features differ.",
++            "contract",
++        )
++    if (left_ast["witnessId"] != right_ast["witnessId"]
++            or left_ast["parameterId"] != right_ast["parameterId"]):
++        return None, _unsupported("The readings do not share witness and parameter identities.", "formula")
++    if left_ast["symbolId"] != right_ast["symbolId"] or left_ast["symbol"] != right_ast["symbol"]:
++        return None, _unsupported("The readings do not use the same typed predicate symbol mapping.", "symbols")
++    return (left, right), None

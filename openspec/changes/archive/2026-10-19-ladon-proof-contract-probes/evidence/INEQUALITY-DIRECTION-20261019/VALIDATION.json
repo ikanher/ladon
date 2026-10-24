@@ -1,0 +1,42 @@
+{
+  "compileall": "PASS (inequality probe modules)",
+  "focusedTests": {
+    "command": "PYTHONPATH=src .venv/bin/pytest -q tests/test_proof_contract_inequality_direction_contract_v2.py tests/test_proof_contract_inequality_direction_scope_v2.py tests/test_proof_contract_inequality_direction_context_v2.py tests/test_proof_contract_application_probe_contract.py tests/test_proof_contract_application_probe_boundaries.py tests/test_proof_contract_application_probe_cli_v2.py",
+    "failed": 0,
+    "passed": 34
+  },
+  "frozenTests": {
+    "command": "python .codex/skills/ultra-code/scripts/ultra_code_bb.py verify-tests --db .codex/state/ultra-proof-contract.sqlite3",
+    "records": 128,
+    "status": "verified"
+  },
+  "fullRegression": "not rerun",
+  "independentAudit": {
+    "post": 799,
+    "resolutionPost": 800,
+    "verdict": "finding fixed; no further actionable issues"
+  },
+  "openspecStrict": {
+    "child": "PASS",
+    "umbrella": "PASS"
+  },
+  "repositoryWideStrictQuality": {
+    "issue": "Existing C-grade radon complexity in src/ladon/_proof_contract_probe_domain_contracts.py:31 (CC 14); outside this inequality-direction change.",
+    "status": "ISSUE"
+  },
+  "ruff": "PASS",
+  "scopedStrictQuality": "PASS",
+  "sourceQualification": {
+    "acceptedLeanGoals": 4,
+    "command": "PYTHONPATH=src .venv/bin/python openspec/changes/ladon-proof-contract-probes/evidence/INEQUALITY-DIRECTION-20261019/qualify-final.py source-attempt-05",
+    "deadlineSeconds": 1800,
+    "elapsedSeconds": 169.11140287597664,
+    "limits": {
+      "maxOutputBytes": 8388608,
+      "maxRssBytes": 12884901888,
+      "timeoutSeconds": 30
+    },
+    "result": "source-attempt-04/RESULT.json"
+  },
+  "status": "PASS"
+}

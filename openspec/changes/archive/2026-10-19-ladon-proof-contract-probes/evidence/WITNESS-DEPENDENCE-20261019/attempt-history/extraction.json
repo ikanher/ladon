@@ -1,0 +1,109 @@
+{
+  "bounds": {
+    "deadlineMonotonic": 2037478.026676635,
+    "effectiveTimeoutSeconds": 30.0,
+    "max_output_bytes": 8388608,
+    "max_rss_bytes": 12884901888,
+    "timeout_seconds": 30.0
+  },
+  "diagnostic": {
+    "code": "completed",
+    "message": "Bounded planner work completed."
+  },
+  "processReceipt": {
+    "command": [
+      "/home/codex/projects/ladon/.venv/bin/python",
+      "-m",
+      "ladon.proof_contract_bridge_worker"
+    ],
+    "configuredTimeoutSeconds": 30.0,
+    "elapsedSeconds": 2.2049558740109205,
+    "inputDigest": "sha256:c77912b7b381a485ff6d541e4d5032f036a264cde673c0e02bc2883a2f1e2153",
+    "memoryLimited": false,
+    "outputLimited": false,
+    "peakRssBytes": 1671876608,
+    "requestedMaxOutputBytes": 8388608,
+    "requestedMaxRssBytes": 12884901888,
+    "requestedTimeoutSeconds": 30.0,
+    "returnCode": 0,
+    "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdoutDigest": "sha256:3d7309eec17d2d62edbf8e36d6f529e315760e7600d5b679abfdea43331ff29d",
+    "timedOut": false
+  },
+  "result": {
+    "complete": false,
+    "environment": "sha256:1cf64f91592609fa01d809bda6267ef5b0b28b90b68feaaf55f942840bf3e83d",
+    "frontiers": [
+      {
+        "phase": "/tmp/ladon-proof-slice-i_qvy2m3/LadonSlice.lean",
+        "reason": "bounded-process-failed"
+      }
+    ],
+    "helper": {
+      "profile": "scoped-identity-transport-v2",
+      "sha256": "35278c470a2f8c8759601d3ddffd26fdf1c9a71d5dfeacf13d293fb1d2ff96af"
+    },
+    "limits": {
+      "depth": 64,
+      "nodes": 8192,
+      "outputBytes": 8388608,
+      "rssBytes": 12884901888,
+      "secondsPerProcess": 60
+    },
+    "nodes": [],
+    "processReceipts": [
+      {
+        "command": [
+          "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+          "-o",
+          "/tmp/ladon-proof-slice-i_qvy2m3/Bridge.olean",
+          "Bridge.lean"
+        ],
+        "elapsed_seconds": 0.4731718208640814,
+        "memory_limited": false,
+        "output_limited": false,
+        "peak_rss_bytes": 1565851648,
+        "returncode": 0,
+        "stderrBytes": 0,
+        "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutBytes": 0,
+        "stdoutDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "timed_out": false
+      },
+      {
+        "command": [
+          "/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean",
+          "/tmp/ladon-proof-slice-i_qvy2m3/LadonSlice.lean"
+        ],
+        "elapsed_seconds": 1.3568802608642727,
+        "memory_limited": false,
+        "output_limited": false,
+        "peak_rss_bytes": 1643405312,
+        "returncode": 1,
+        "stderr": "",
+        "stderrBytes": 0,
+        "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdout": "/tmp/ladon-proof-slice-i_qvy2m3/LadonSlice.lean:373:0: error: no exact application head WitnessProbe.weak in WitnessProbe.use\n",
+        "stdoutBytes": 126,
+        "stdoutDigest": "sha256:ce329af243992afa27661d3518629b0cecf0571a13ed142e21c6b600c2b04add",
+        "timed_out": false
+      }
+    ],
+    "schema": "ladon-proof-slice-v1",
+    "selection": {
+      "application": "WitnessProbe.weak",
+      "declaration": "WitnessProbe.use",
+      "module": "Bridge",
+      "occurrence": 0,
+      "sourceFile": "Bridge.lean"
+    },
+    "source": {
+      "path": "Bridge.lean",
+      "sha256": "61a82a7ad9377bf84a488b553fbff8a5a7e4d711ba3b30efc0a61813d26ba8ea"
+    },
+    "status": "unavailable"
+  },
+  "schema": "ladon-supervised-obligation-planner-v1",
+  "status": "completed",
+  "workerInputDigest": "sha256:c77912b7b381a485ff6d541e4d5032f036a264cde673c0e02bc2883a2f1e2153"
+}

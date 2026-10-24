@@ -1,0 +1,31 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+___ test_api_raises_typed_capacity_stop_when_even_error_envelope_cannot_fit ____
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_api_raises_typed_capacity0')
+
+    def test_api_raises_typed_capacity_stop_when_even_error_envelope_cannot_fit(tmp_path):
+>       with pytest.raises(ValueError, match='output capacity'):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_proof_contract_probe_calibration_capacity.py:20: Failed
+_______ test_cli_has_empty_stdout_and_no_publication_if_error_cannot_fit _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-722/test_cli_has_empty_stdout_and_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7f5b06d584d0>
+
+    def test_cli_has_empty_stdout_and_no_publication_if_error_cannot_fit(tmp_path, capsys):
+        input_path, output_path = tmp_path / 'input.json', tmp_path / 'result.json'
+        input_path.write_text(json.dumps(tiny_request(tmp_path)))
+        assert contract_main(['probe-calibration', '--input', str(input_path), '--output', str(output_path)]) == 2
+        captured = capsys.readouterr()
+        assert captured.out == ''
+>       assert 'output capacity' in captured.err
+E       AssertionError: assert 'output capacity' in ''
+E        +  where '' = CaptureResult(out='', err='').err
+
+tests/test_proof_contract_probe_calibration_capacity.py:31: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_probe_calibration_capacity.py::test_api_raises_typed_capacity_stop_when_even_error_envelope_cannot_fit
+FAILED tests/test_proof_contract_probe_calibration_capacity.py::test_cli_has_empty_stdout_and_no_publication_if_error_cannot_fit
+2 failed in 0.08s

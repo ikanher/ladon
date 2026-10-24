@@ -1,0 +1,4 @@
+{
+  "formal-reading": "Iff.rfl",
+  "probe": "by\n  constructor\n  · exact UniformProbe.weak ()\n  · intro h\n    obtain ⟨c, hc⟩ := h\n    have bad : c + 1 ≤ c := by\n      simpa [UniformProbe.M, UniformProbe.N, UniformProbe.F] using hc (c + 1) 0\n    exact Nat.not_succ_le_self c bad"
+}

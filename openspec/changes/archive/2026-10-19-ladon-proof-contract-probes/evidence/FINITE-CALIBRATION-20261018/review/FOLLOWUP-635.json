@@ -1,0 +1,20 @@
+{
+  "schema": "probe-calibration-code-audit-followup-v1",
+  "assignmentPost": 635,
+  "priorReview": ".codex/state/proof-contract-analysis/probe-calibration/review/REVIEW.json",
+  "priorFinding": "P2 output-cap fallback exceeded caller max_output_bytes",
+  "disposition": "RESOLVED",
+  "verifiedDelta": {
+    "code": "_bounded now verifies the compact fallback against cap and raises ProbeCalibrationOutputLimit carrying the stop code and memory-report flag when no JSON response can fit. The exception is raised outside run_probe_calibration's input/worker exception conversions, so it cannot be converted back into an oversized result. The CLI catches it before the generic ValueError branch, prints the bounded-capacity failure and preserved diagnostic to stderr, returns 2, and does not call the publisher.",
+    "tests": "Inspected the new capacity tests. They cover the API typed capacity stop and the CLI behavior with empty stdout and no output file when even an error envelope cannot fit. Root-reported 30/30 tests were not rerun by this read-only reviewer.",
+    "documentation": "Reviewed docs/PROOF_CONTRACTS.md:695-700. It documents the API typed output-capacity exception, CLI exit 2/stderr/empty stdout/no file behavior, and retained stopcode/memory-report flag and instruction.",
+    "limits": "The caller's output cap is now respected by either returning a checked-in-cap fallback or raising the typed stop. Memory stops retain their code, memory-report flag, and original guidance through the exception.",
+    "scope": "Only the finite calibration output-capacity path was reviewed. Actual final proof/source receipts remain unreviewed."
+  },
+  "checks": {
+    "leanOrTestsRunByReviewer": false,
+    "canonicalOrFrozenFilesEdited": false,
+    "frozenVerification": "105 rows; verified; zero mismatches"
+  },
+  "reviewedDocument": "docs/PROOF_CONTRACTS.md"
+}

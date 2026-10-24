@@ -1,0 +1,25 @@
+{
+  "command": "PYTHONPATH=src:tests .venv/bin/pytest -q",
+  "elapsedSeconds": 1799.96,
+  "failed": 2,
+  "failureDetails": [
+    {
+      "cause": "The frozen assertion expected witness-dependence implemented=false; this became stale when v2 was registered. Preserved original test and superseded it with the v2 catalog expectation; replacement plus witness suite passed 20/20.",
+      "resolution": "Superseded original moved outside tests/; replacement changes only the capability expectation to witness-dependence-v2 implemented while preserving the output immutability assertions.",
+      "test": "tests/test_proof_contract_application_probe_cli.py::test_catalog_publication_is_immutable"
+    },
+    {
+      "cause": "The frozen assertion expected legacy process_tree_rss limit-exceeded wording; the requested stop-and-report wording is present in current output.",
+      "resolution": "Original is preserved and superseded; replacement asserts the exact stop-and-report memory guidance and passed its three-case parameterized test in the final focused run.",
+      "test": "tests/test_installed_cli_contract.py::test_installed_resource_limits_fail_without_partial_publication[--max-rss-mib-1-process_tree_rss limit exceeded]"
+    }
+  ],
+  "limitation": "The full suite was not rerun after the helper-only complexity refactor and test supersession; focused tests, final-source Lean qualification, full static-quality scan, Ruff and compileall passed afterward.",
+  "passed": 1796,
+  "postRunFocusedVerification": {
+    "fullSuiteRerun": false,
+    "passed": 23,
+    "status": "passed"
+  },
+  "status": "incomplete-interrupted-at-30-minute-budget"
+}

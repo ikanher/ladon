@@ -1,0 +1,19 @@
+........F.........                                                       [100%]
+=================================== FAILURES ===================================
+___________ test_recognized_metadata_conflicts_reject[change_anchor] ___________
+
+mutation = <function change_anchor at 0x79be3e65a520>
+
+    @pytest.mark.parametrize("mutation", [change_witness_binder, change_telescope, change_permission,
+                                          change_offset, change_anchor])
+    def test_recognized_metadata_conflicts_reject(mutation):
+        left_record, right_record = record(STRONG), record(WEAK)
+        left_contract, right_contract = contract(STRONG), contract(WEAK)
+        mutation(right_record, right_contract)
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_proof_contract_constant_uniformity_v2.py:137: Failed
+=========================== short test summary info ============================
+FAILED tests/test_proof_contract_constant_uniformity_v2.py::test_recognized_metadata_conflicts_reject[change_anchor]
+1 failed, 17 passed in 2.87s

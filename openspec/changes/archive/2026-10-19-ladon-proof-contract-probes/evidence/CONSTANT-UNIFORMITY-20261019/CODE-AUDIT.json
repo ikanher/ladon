@@ -1,0 +1,33 @@
+{
+  "schema": "ladon-constant-uniformity-v2-code-audit-v1",
+  "assignmentPost": 710,
+  "contractPost": 697,
+  "auditor": "/root/application_probe_audit",
+  "reviewScope": "Read-only source-first code review of the v2 selector, bounded matcher, exact AST role parser, contract metadata checks, and new pure/native tests. No tests, source checkers, Lean, builds, or mutations were run.",
+  "verdict": "NO_CODE_FINDINGS_FINAL_QUALIFICATION_PENDING",
+  "codeFindings": [],
+  "verified": {
+    "astAndTelescope": "The parser recognizes exactly exists-c/forall-s/forall-x and forall-s/exists-c/forall-x using binder identities rather than display names. It retains the full original formulas for lowering and builds formal-reading from the right-hand source reading iff the actual closed type; probe goals preserve each side's quantifier order.",
+    "typedBody": "The matcher requires the fixed Nat le/application structure, coefficient variable anchored to c, x and s in their designated positions, five distinct symbols with the declared signatures, and Nat.mul/Nat.add identities. A conflicting variable coefficient anchor raises ValueError; unmodeled/nonconstant shapes remain unsupported.",
+    "metadata": "Each source contract is structurally validated, then its telescope, constant binder anchor, single witness binder, allowed dependencies, regularity literal, assumptions and pair metadata are checked against recognized AST roles. Constant and witness permissions must mirror each other and match the AST order.",
+    "bounds": "Aggregate raw input sizing precedes contract validation/deep copy and lowering; per-record symbol expansion is conservatively bounded before lowering; the serialized result is checked against the 8 MiB cap.",
+    "nativePath": "Native generation validates bounded context and side references, validates the source envelope batch, resolves exact native owners and environments, regenerates correspondence/source-map associations, requires identical full slice and empty object map, then dispatches to the v2 matcher. Existing generic check/replay paths are not changed by this feature.",
+    "versioning": "Only constant-uniformity-v2 opts into the new matcher. Registered constant-uniformity-v1 remains an unsupported plan and the separate legacy path remains for other v1 families. New plans carry closed-nat-constant-uniformity-v2 and no checker/whole-method authority.",
+    "tests": "Reviewed new pure tests for strong/weak ordering, weak/weak control, reversed direction, metadata mutations, unsupported shapes, catalog/version rejection; reviewed native tests for source-bound plan, goal/artifact rehash rejection, wrong permission summary, inspect/SQLite roundtrip and v1 replay.",
+    "frozenTests": "Board frozen-test verifier passed: every frozen test/fixture path matched its recorded SHA-256, including 115 frozen paths and the new constant-context fixture."
+  },
+  "limitations": [
+    "This is code review only. It does not accept the final source-bound runtime qualification, four required constant-family checked goals, raw evidence custody, complete regression, or task completion.",
+    "The workspace contains broad ongoing changes; this audit was limited to the contract-designated constant-uniformity files and generic paths they call."
+  ],
+  "evidence": [
+    "src/ladon/_proof_contract_probe_templates.py",
+    "src/ladon/_proof_contract_probe_uniformity.py",
+    "src/ladon/_proof_contract_probe_uniformity_ast.py",
+    "src/ladon/_proof_contract_probe_uniformity_contracts.py",
+    "src/ladon/proof_contract_probe_artifacts.py",
+    "src/ladon/_proof_contract_probe_pair.py",
+    "tests/test_proof_contract_constant_uniformity_v2.py",
+    "tests/test_proof_contract_constant_probe_native.py"
+  ]
+}

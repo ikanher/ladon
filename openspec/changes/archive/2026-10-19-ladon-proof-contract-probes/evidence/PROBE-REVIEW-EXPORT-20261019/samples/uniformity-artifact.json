@@ -1,0 +1,114 @@
+{
+  "artifactId": "sha256:d38d47001157c07bc218e4a5c58e6a9526927714ea34614b83d07c234d74c2c5",
+  "artifactKind": "proofir.contract-analysis",
+  "coverage": {
+    "bounds": {},
+    "decoded": 1,
+    "discovered": 1,
+    "expected": 1,
+    "omitted": [],
+    "population": {
+      "kind": "artifact-subjects",
+      "selector": {}
+    },
+    "projected": 1,
+    "queryMatched": 1,
+    "status": "complete",
+    "universeKnown": true,
+    "valid": 1
+  },
+  "environmentRef": "sha256:25df55aa12fda368e69da5be7cce7d90d10689cbec3cc275bade0c05bd10d745",
+  "extensions": {},
+  "limitations": [
+    {
+      "id": "source-contract-binding-unchecked",
+      "message": "Source attribution does not establish faithful interpretation."
+    },
+    {
+      "id": "planned-probes-only",
+      "message": "Open goals confer no checked authority."
+    }
+  ],
+  "payload": {
+    "analysisId": "analysis:application-probe",
+    "checkRunRefs": [],
+    "contractRefs": [
+      {
+        "artifactRef": "sha256:9149ca5441b1b2513bd93136bc4478d0beb1227633c7ab74d155b85c67a10238",
+        "kind": "contract",
+        "localId": "contract:uniform-reading-0"
+      },
+      {
+        "artifactRef": "sha256:9a0f1b1f7e1f2c5f7864f4ed5d17e06ce0a892ccaa8841506ad03f8acffc23b1",
+        "kind": "contract",
+        "localId": "contract:uniform-reading-1"
+      }
+    ],
+    "correspondenceRefs": [
+      {
+        "artifactRef": "sha256:42dddf853aae366528355b93c7850684f3694f59a8f9c0bb86257ce3e4c1097e",
+        "kind": "correspondence",
+        "localId": "correspondence:e28be31a1ead022dcafc08f2a1f06a8498da18b4bf745dff9d26133bd7fd8697"
+      },
+      {
+        "artifactRef": "sha256:e452bf7c208663756b83840857697095c49e684a0a2003d0a7d8a0a13dbe3608",
+        "kind": "correspondence",
+        "localId": "correspondence:8f3193594d42b984d1ab5c99bd93bec48538da52e4f1789b63764d8d65adb6f8"
+      }
+    ],
+    "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+    "residuals": [],
+    "result": {
+      "checkerAuthority": "none",
+      "goals": [
+        {
+          "goal": "((∀ (v0 : Nat), (∃ (v1 : Nat), (∀ (v2 : Nat), (((_root_.UniformProbe.M : Nat → Nat → Nat) v0 ((_root_.UniformProbe.F : Nat → Nat) v2)) ≤ ((_root_.Nat.mul : Nat → Nat → Nat) v1 ((_root_.UniformProbe.N : Nat → Nat → Nat) ((_root_.Nat.add : Nat → Nat → Nat) v0 0) v2))))))) ↔ (∀ (s : Nat),\n  @Exists.{1} Nat fun (c : Nat) =>\n    ∀ (x : Nat),\n      @LE.le.{0} Nat instLENat (UniformProbe.M s (UniformProbe.F x))\n        (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat) c\n          (UniformProbe.N\n            (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) s\n              (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n            x)))",
+          "goalDigest": "sha256:76a78654dad53139e7942542afedfb5e0883502bad53546f7833b43e624d43f0",
+          "goalId": "formal-reading",
+          "kind": "formal-reading",
+          "status": "open"
+        },
+        {
+          "goal": "((∀ (v0 : Nat), (∃ (v1 : Nat), (∀ (v2 : Nat), (((_root_.UniformProbe.M : Nat → Nat → Nat) v0 ((_root_.UniformProbe.F : Nat → Nat) v2)) ≤ ((_root_.Nat.mul : Nat → Nat → Nat) v1 ((_root_.UniformProbe.N : Nat → Nat → Nat) ((_root_.Nat.add : Nat → Nat → Nat) v0 0) v2))))))) ∧ ¬((∃ (v0 : Nat), (∀ (v1 : Nat), (∀ (v2 : Nat), (((_root_.UniformProbe.M : Nat → Nat → Nat) v1 ((_root_.UniformProbe.F : Nat → Nat) v2)) ≤ ((_root_.Nat.mul : Nat → Nat → Nat) v0 ((_root_.UniformProbe.N : Nat → Nat → Nat) ((_root_.Nat.add : Nat → Nat → Nat) v1 0) v2)))))))",
+          "goalDigest": "sha256:4b16f47d5a898e1d169f2cf3a00ea8c398065549936011e8b675640dd3bd7406",
+          "goalId": "probe",
+          "kind": "probe",
+          "status": "open"
+        }
+      ],
+      "mathematicalFalsity": "not-established",
+      "residuals": [],
+      "schema": "ladon-application-probe-plan-v1",
+      "scope": "closed-nat-constant-uniformity-v2",
+      "sourceFidelity": "attributed-unreviewed",
+      "status": "planned",
+      "template": {
+        "direction": "right-to-left",
+        "familyId": "constant-uniformity",
+        "kind": "counterexample",
+        "version": "constant-uniformity-v2"
+      },
+      "wholeMethodAuthority": "none"
+    },
+    "stage": "probes",
+    "template": {
+      "direction": "right-to-left",
+      "familyId": "constant-uniformity",
+      "kind": "counterexample",
+      "version": "constant-uniformity-v2"
+    }
+  },
+  "producer": {
+    "buildDigest": "sha256:2c3496f33fb2a83515e6f3704d5bec6bf9ac6cf01ecae02afd8bdb63b2150a5e",
+    "implementation": "unspecified",
+    "name": "ladon-application-probes",
+    "version": "1"
+  },
+  "proofirVersion": "3.0",
+  "subjectRefs": [
+    {
+      "kind": "contract-analysis",
+      "localId": "analysis:application-probe"
+    }
+  ]
+}

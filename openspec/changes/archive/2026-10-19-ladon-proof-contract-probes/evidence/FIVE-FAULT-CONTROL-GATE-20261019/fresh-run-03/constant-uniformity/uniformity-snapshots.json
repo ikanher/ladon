@@ -1,0 +1,1737 @@
+[
+  {
+    "alternativeId": "uniform-reading-0",
+    "artifacts": [
+      {
+        "artifactId": "sha256:d8a145c7833c0e3c2361bbdb2b2813dbf2b0112bad8be5842882e157874d0776",
+        "artifactKind": "proofir.source-map",
+        "coverage": {
+          "bounds": {
+            "maxSubjects": 1000
+          },
+          "decoded": 1,
+          "discovered": 1,
+          "expected": 1,
+          "omitted": [],
+          "population": {
+            "kind": "artifact-subjects",
+            "selector": {}
+          },
+          "projected": 1,
+          "queryMatched": 1,
+          "status": "complete",
+          "universeKnown": true,
+          "valid": 1
+        },
+        "environmentRef": "sha256:1a7698cb25535de30ebbb682f94247ab2483024da0fda036bf0a85ff38819b51",
+        "extensions": {},
+        "limitations": [
+          {
+            "id": "authored-source-map",
+            "message": "The quoted span and digest were revalidated at production time; this anchor does not review interpretation fidelity."
+          }
+        ],
+        "payload": {
+          "anchors": [
+            {
+              "contentDigest": "sha256:1efcca3840755640808bfdad38bc53052dc23ae198bd161447b28faf0397c63a",
+              "declName": "uniform-reading-0",
+              "end": {
+                "byte": 87,
+                "column": 88,
+                "line": 1
+              },
+              "matchMethod": "path-range",
+              "module": "prose-source",
+              "sourcePath": "reading-0.txt",
+              "start": {
+                "byte": 0,
+                "column": 1,
+                "line": 1
+              },
+              "subjectRef": {
+                "kind": "interpretation",
+                "localId": "uniform-reading-0"
+              }
+            }
+          ],
+          "policy": {
+            "digest": "sha256:0cbdec942de81f953594d0fb7a662cead59db155668e686b6048621b2f9b848d",
+            "version": "m1-explicit-path-range-v1"
+          },
+          "sourceMapId": "source-map:uniform-reading-0"
+        },
+        "producer": {
+          "buildDigest": "sha256:72747181cc11d108a4fcd13eaab23d2192e5ba535c2cd20ca18d2069dbceaf3d",
+          "implementation": "python",
+          "name": "ladon-correspondence",
+          "version": "typed-operators-v2"
+        },
+        "proofirVersion": "3.0",
+        "subjectRefs": [
+          {
+            "kind": "source-map",
+            "localId": "source-map:uniform-reading-0"
+          },
+          {
+            "kind": "interpretation",
+            "localId": "uniform-reading-0"
+          }
+        ]
+      },
+      {
+        "artifactId": "sha256:e2a5d69a09e8ffba0a0c0ade7894d49dd4aaceafb7658133c7cd2391a5bd6270",
+        "artifactKind": "proofir.interpretation",
+        "coverage": {
+          "bounds": {
+            "maxSubjects": 1000
+          },
+          "decoded": 1,
+          "discovered": 1,
+          "expected": 1,
+          "omitted": [],
+          "population": {
+            "kind": "artifact-subjects",
+            "selector": {}
+          },
+          "projected": 1,
+          "queryMatched": 1,
+          "status": "complete",
+          "universeKnown": true,
+          "valid": 1
+        },
+        "environmentRef": "sha256:1a7698cb25535de30ebbb682f94247ab2483024da0fda036bf0a85ff38819b51",
+        "extensions": {},
+        "limitations": [
+          {
+            "id": "attributed-interpretation",
+            "message": "Structured interpretation is attributed; no prose-fidelity review or proof authority is implied."
+          }
+        ],
+        "payload": {
+          "fidelity": "attributed-unreviewed",
+          "interpretationId": "uniform-reading-0",
+          "loweredFormula": "(∃ (v0 : Nat), (∀ (v1 : Nat), (∀ (v2 : Nat), (((_root_.UniformProbe.M : Nat → Nat → Nat) v1 ((_root_.UniformProbe.F : Nat → Nat) v2)) ≤ ((_root_.Nat.mul : Nat → Nat → Nat) v0 ((_root_.UniformProbe.N : Nat → Nat → Nat) ((_root_.Nat.add : Nat → Nat → Nat) v1 0) v2))))))",
+          "loweringProfile": "typed-operators-v2",
+          "record": {
+            "formula": {
+              "binder": {
+                "domain": "Nat",
+                "id": "c",
+                "name": "c"
+              },
+              "body": {
+                "binder": {
+                  "domain": "Nat",
+                  "id": "s",
+                  "name": "s"
+                },
+                "body": {
+                  "binder": {
+                    "domain": "Nat",
+                    "id": "x",
+                    "name": "x"
+                  },
+                  "body": {
+                    "left": {
+                      "args": [
+                        {
+                          "id": "s",
+                          "tag": "var"
+                        },
+                        {
+                          "args": [
+                            {
+                              "id": "x",
+                              "tag": "var"
+                            }
+                          ],
+                          "symbol": "F",
+                          "tag": "app"
+                        }
+                      ],
+                      "symbol": "M",
+                      "tag": "app"
+                    },
+                    "right": {
+                      "args": [
+                        {
+                          "id": "c",
+                          "tag": "var"
+                        },
+                        {
+                          "args": [
+                            {
+                              "args": [
+                                {
+                                  "id": "s",
+                                  "tag": "var"
+                                },
+                                {
+                                  "name": "0",
+                                  "tag": "const"
+                                }
+                              ],
+                              "symbol": "add",
+                              "tag": "app"
+                            },
+                            {
+                              "id": "x",
+                              "tag": "var"
+                            }
+                          ],
+                          "symbol": "N",
+                          "tag": "app"
+                        }
+                      ],
+                      "symbol": "mul",
+                      "tag": "app"
+                    },
+                    "tag": "le"
+                  },
+                  "tag": "forall"
+                },
+                "tag": "forall"
+              },
+              "tag": "exists"
+            },
+            "id": "uniform-reading-0",
+            "source": {
+              "endLine": 1,
+              "path": "reading-0.txt",
+              "quote": "There is a natural c such that for every natural s and x, M s (F x) <= c * N (s + 0) x.",
+              "sha256": "1efcca3840755640808bfdad38bc53052dc23ae198bd161447b28faf0397c63a",
+              "startLine": 1
+            },
+            "symbols": {
+              "F": {
+                "leanName": "UniformProbe.F",
+                "leanType": "Nat → Nat"
+              },
+              "M": {
+                "leanName": "UniformProbe.M",
+                "leanType": "Nat → Nat → Nat"
+              },
+              "N": {
+                "leanName": "UniformProbe.N",
+                "leanType": "Nat → Nat → Nat"
+              },
+              "add": {
+                "leanName": "Nat.add",
+                "leanType": "Nat → Nat → Nat"
+              },
+              "mul": {
+                "leanName": "Nat.mul",
+                "leanType": "Nat → Nat → Nat"
+              }
+            }
+          },
+          "sourceRef": {
+            "artifactRef": "sha256:d8a145c7833c0e3c2361bbdb2b2813dbf2b0112bad8be5842882e157874d0776",
+            "kind": "source-map",
+            "localId": "source-map:uniform-reading-0"
+          }
+        },
+        "producer": {
+          "buildDigest": "sha256:72747181cc11d108a4fcd13eaab23d2192e5ba535c2cd20ca18d2069dbceaf3d",
+          "implementation": "python",
+          "name": "ladon-correspondence",
+          "version": "typed-operators-v2"
+        },
+        "proofirVersion": "3.0",
+        "subjectRefs": [
+          {
+            "kind": "interpretation",
+            "localId": "uniform-reading-0"
+          }
+        ]
+      },
+      {
+        "artifactId": "sha256:8a51a53a6ee1e2161fe780901989be8a5dd6e490e8ee52589a09b075423cbac4",
+        "artifactKind": "proofir.contract",
+        "coverage": {
+          "bounds": {},
+          "decoded": 3,
+          "discovered": 3,
+          "expected": 3,
+          "omitted": [],
+          "population": {
+            "kind": "artifact-subjects",
+            "selector": {}
+          },
+          "projected": 3,
+          "queryMatched": 3,
+          "status": "complete",
+          "universeKnown": true,
+          "valid": 3
+        },
+        "environmentRef": "sha256:1a7698cb25535de30ebbb682f94247ab2483024da0fda036bf0a85ff38819b51",
+        "extensions": {},
+        "limitations": [
+          {
+            "id": "source-contract-binding-unchecked",
+            "message": "Source-bound contract features remain an attributed interpretation."
+          }
+        ],
+        "payload": {
+          "assumptionRefs": [],
+          "checkRunRefs": [],
+          "conclusionRef": {
+            "kind": "statement",
+            "localId": "estimate:UniformProbe.bound"
+          },
+          "contractId": "contract:uniform-reading-0",
+          "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+          "provenance": {
+            "checkerAuthority": "none",
+            "completeness": "complete",
+            "fidelity": "attributed-unreviewed",
+            "mathematicalFalsity": "not-established",
+            "mode": "authored"
+          },
+          "record": {
+            "assumptions": [],
+            "conclusionId": "estimate:UniformProbe.bound",
+            "context": {
+              "domainId": "domain:Nat",
+              "objectId": "operator:UniformProbe.F",
+              "representationId": "representation:original",
+              "scaleId": "scale:UniformProbe.N"
+            },
+            "endpointId": "estimate:UniformProbe.F",
+            "features": {
+              "constantDependencies": {
+                "allowedBinderIds": [],
+                "binderId": "c",
+                "reason": null,
+                "state": "known"
+              },
+              "regularity": {
+                "offset": 0,
+                "reason": null,
+                "scaleId": "scale:UniformProbe.N",
+                "state": "known"
+              },
+              "witnessDependencies": [
+                {
+                  "allowedBinderIds": [],
+                  "binderId": "c",
+                  "reason": null,
+                  "state": "known"
+                }
+              ]
+            },
+            "profileId": "norm-scale-v1",
+            "telescope": [
+              {
+                "binderId": "c",
+                "quantifier": "exists",
+                "typeId": "Nat"
+              },
+              {
+                "binderId": "s",
+                "quantifier": "forall",
+                "typeId": "Nat"
+              },
+              {
+                "binderId": "x",
+                "quantifier": "forall",
+                "typeId": "Nat"
+              }
+            ]
+          },
+          "residuals": [],
+          "sourceMapRefs": [
+            {
+              "artifactRef": "sha256:d8a145c7833c0e3c2361bbdb2b2813dbf2b0112bad8be5842882e157874d0776",
+              "kind": "source-map",
+              "localId": "source-map:uniform-reading-0"
+            }
+          ],
+          "statementRef": {
+            "kind": "statement",
+            "localId": "statement:contract:uniform-reading-0"
+          }
+        },
+        "producer": {
+          "buildDigest": "sha256:927d0657670e8e2675a68fb50b0c08134e4cc4aba384ec6933bc22caa5d416c0",
+          "implementation": "unspecified",
+          "name": "ladon-contract-source",
+          "version": "1"
+        },
+        "proofirVersion": "3.0",
+        "subjectRefs": [
+          {
+            "kind": "contract",
+            "localId": "contract:uniform-reading-0"
+          },
+          {
+            "kind": "statement",
+            "localId": "estimate:UniformProbe.bound"
+          },
+          {
+            "kind": "statement",
+            "localId": "statement:contract:uniform-reading-0"
+          }
+        ]
+      }
+    ],
+    "author": "caller",
+    "channel": "prose",
+    "contract": {
+      "assumptions": [],
+      "conclusionId": "estimate:UniformProbe.bound",
+      "context": {
+        "domainId": "domain:Nat",
+        "objectId": "operator:UniformProbe.F",
+        "representationId": "representation:original",
+        "scaleId": "scale:UniformProbe.N"
+      },
+      "endpointId": "estimate:UniformProbe.F",
+      "features": {
+        "constantDependencies": {
+          "allowedBinderIds": [],
+          "binderId": "c",
+          "reason": null,
+          "state": "known"
+        },
+        "regularity": {
+          "offset": 0,
+          "reason": null,
+          "scaleId": "scale:UniformProbe.N",
+          "state": "known"
+        },
+        "witnessDependencies": [
+          {
+            "allowedBinderIds": [],
+            "binderId": "c",
+            "reason": null,
+            "state": "known"
+          }
+        ]
+      },
+      "profileId": "norm-scale-v1",
+      "telescope": [
+        {
+          "binderId": "c",
+          "quantifier": "exists",
+          "typeId": "Nat"
+        },
+        {
+          "binderId": "s",
+          "quantifier": "forall",
+          "typeId": "Nat"
+        },
+        {
+          "binderId": "x",
+          "quantifier": "forall",
+          "typeId": "Nat"
+        }
+      ]
+    },
+    "coverage": {
+      "proofBody": "not-extracted",
+      "providers": "not-extracted",
+      "statementFeatures": "authored"
+    },
+    "featureOrigins": {
+      "constantDependencies": [
+        "/formula"
+      ],
+      "regularity": [
+        "/formula/body/body/body/right/args/1/args/0/args/1"
+      ],
+      "witnessDependencies": [
+        "/formula"
+      ]
+    },
+    "fidelity": "attributed-unreviewed",
+    "interpretation": {
+      "formula": {
+        "binder": {
+          "domain": "Nat",
+          "id": "c",
+          "name": "c"
+        },
+        "body": {
+          "binder": {
+            "domain": "Nat",
+            "id": "s",
+            "name": "s"
+          },
+          "body": {
+            "binder": {
+              "domain": "Nat",
+              "id": "x",
+              "name": "x"
+            },
+            "body": {
+              "left": {
+                "args": [
+                  {
+                    "id": "s",
+                    "tag": "var"
+                  },
+                  {
+                    "args": [
+                      {
+                        "id": "x",
+                        "tag": "var"
+                      }
+                    ],
+                    "symbol": "F",
+                    "tag": "app"
+                  }
+                ],
+                "symbol": "M",
+                "tag": "app"
+              },
+              "right": {
+                "args": [
+                  {
+                    "id": "c",
+                    "tag": "var"
+                  },
+                  {
+                    "args": [
+                      {
+                        "args": [
+                          {
+                            "id": "s",
+                            "tag": "var"
+                          },
+                          {
+                            "name": "0",
+                            "tag": "const"
+                          }
+                        ],
+                        "symbol": "add",
+                        "tag": "app"
+                      },
+                      {
+                        "id": "x",
+                        "tag": "var"
+                      }
+                    ],
+                    "symbol": "N",
+                    "tag": "app"
+                  }
+                ],
+                "symbol": "mul",
+                "tag": "app"
+              },
+              "tag": "le"
+            },
+            "tag": "forall"
+          },
+          "tag": "forall"
+        },
+        "tag": "exists"
+      },
+      "id": "uniform-reading-0",
+      "source": {
+        "endLine": 1,
+        "path": "reading-0.txt",
+        "quote": "There is a natural c such that for every natural s and x, M s (F x) <= c * N (s + 0) x.",
+        "sha256": "1efcca3840755640808bfdad38bc53052dc23ae198bd161447b28faf0397c63a",
+        "startLine": 1
+      },
+      "symbols": {
+        "F": {
+          "leanName": "UniformProbe.F",
+          "leanType": "Nat → Nat"
+        },
+        "M": {
+          "leanName": "UniformProbe.M",
+          "leanType": "Nat → Nat → Nat"
+        },
+        "N": {
+          "leanName": "UniformProbe.N",
+          "leanType": "Nat → Nat → Nat"
+        },
+        "add": {
+          "leanName": "Nat.add",
+          "leanType": "Nat → Nat → Nat"
+        },
+        "mul": {
+          "leanName": "Nat.mul",
+          "leanType": "Nat → Nat → Nat"
+        }
+      }
+    },
+    "phase": "pre-match",
+    "residuals": [],
+    "schema": "ladon-contract-production-v1",
+    "snapshotId": "sha256:63a5e4a093793d993e3754e8188eaec3e0617a952d52cf539c635785f8db511c",
+    "source": {
+      "endLine": 1,
+      "path": "reading-0.txt",
+      "quote": "There is a natural c such that for every natural s and x, M s (F x) <= c * N (s + 0) x.",
+      "sha256": "1efcca3840755640808bfdad38bc53052dc23ae198bd161447b28faf0397c63a",
+      "startLine": 1
+    },
+    "status": "authored"
+  },
+  {
+    "alternativeId": "uniform-reading-1",
+    "artifacts": [
+      {
+        "artifactId": "sha256:35886da0ef370243fe84836ac33b1f2ee819a907e335e96c1cb6bcb7f826e5c3",
+        "artifactKind": "proofir.source-map",
+        "coverage": {
+          "bounds": {
+            "maxSubjects": 1000
+          },
+          "decoded": 1,
+          "discovered": 1,
+          "expected": 1,
+          "omitted": [],
+          "population": {
+            "kind": "artifact-subjects",
+            "selector": {}
+          },
+          "projected": 1,
+          "queryMatched": 1,
+          "status": "complete",
+          "universeKnown": true,
+          "valid": 1
+        },
+        "environmentRef": "sha256:1a7698cb25535de30ebbb682f94247ab2483024da0fda036bf0a85ff38819b51",
+        "extensions": {},
+        "limitations": [
+          {
+            "id": "authored-source-map",
+            "message": "The quoted span and digest were revalidated at production time; this anchor does not review interpretation fidelity."
+          }
+        ],
+        "payload": {
+          "anchors": [
+            {
+              "contentDigest": "sha256:3575079b940fc72538198cb1ac33b72653c8cbcc554a7a716a280925f6bc9f92",
+              "declName": "uniform-reading-1",
+              "end": {
+                "byte": 101,
+                "column": 102,
+                "line": 1
+              },
+              "matchMethod": "path-range",
+              "module": "prose-source",
+              "sourcePath": "reading-1.txt",
+              "start": {
+                "byte": 0,
+                "column": 1,
+                "line": 1
+              },
+              "subjectRef": {
+                "kind": "interpretation",
+                "localId": "uniform-reading-1"
+              }
+            }
+          ],
+          "policy": {
+            "digest": "sha256:0cbdec942de81f953594d0fb7a662cead59db155668e686b6048621b2f9b848d",
+            "version": "m1-explicit-path-range-v1"
+          },
+          "sourceMapId": "source-map:uniform-reading-1"
+        },
+        "producer": {
+          "buildDigest": "sha256:72747181cc11d108a4fcd13eaab23d2192e5ba535c2cd20ca18d2069dbceaf3d",
+          "implementation": "python",
+          "name": "ladon-correspondence",
+          "version": "typed-operators-v2"
+        },
+        "proofirVersion": "3.0",
+        "subjectRefs": [
+          {
+            "kind": "source-map",
+            "localId": "source-map:uniform-reading-1"
+          },
+          {
+            "kind": "interpretation",
+            "localId": "uniform-reading-1"
+          }
+        ]
+      },
+      {
+        "artifactId": "sha256:f8df2c6c9f22892cb7cc08e324c8f9954bde28a63430893738a778499c7d6ac4",
+        "artifactKind": "proofir.interpretation",
+        "coverage": {
+          "bounds": {
+            "maxSubjects": 1000
+          },
+          "decoded": 1,
+          "discovered": 1,
+          "expected": 1,
+          "omitted": [],
+          "population": {
+            "kind": "artifact-subjects",
+            "selector": {}
+          },
+          "projected": 1,
+          "queryMatched": 1,
+          "status": "complete",
+          "universeKnown": true,
+          "valid": 1
+        },
+        "environmentRef": "sha256:1a7698cb25535de30ebbb682f94247ab2483024da0fda036bf0a85ff38819b51",
+        "extensions": {},
+        "limitations": [
+          {
+            "id": "attributed-interpretation",
+            "message": "Structured interpretation is attributed; no prose-fidelity review or proof authority is implied."
+          }
+        ],
+        "payload": {
+          "fidelity": "attributed-unreviewed",
+          "interpretationId": "uniform-reading-1",
+          "loweredFormula": "(∀ (v0 : Nat), (∃ (v1 : Nat), (∀ (v2 : Nat), (((_root_.UniformProbe.M : Nat → Nat → Nat) v0 ((_root_.UniformProbe.F : Nat → Nat) v2)) ≤ ((_root_.Nat.mul : Nat → Nat → Nat) v1 ((_root_.UniformProbe.N : Nat → Nat → Nat) ((_root_.Nat.add : Nat → Nat → Nat) v0 0) v2))))))",
+          "loweringProfile": "typed-operators-v2",
+          "record": {
+            "formula": {
+              "binder": {
+                "domain": "Nat",
+                "id": "s",
+                "name": "s"
+              },
+              "body": {
+                "binder": {
+                  "domain": "Nat",
+                  "id": "c",
+                  "name": "c"
+                },
+                "body": {
+                  "binder": {
+                    "domain": "Nat",
+                    "id": "x",
+                    "name": "x"
+                  },
+                  "body": {
+                    "left": {
+                      "args": [
+                        {
+                          "id": "s",
+                          "tag": "var"
+                        },
+                        {
+                          "args": [
+                            {
+                              "id": "x",
+                              "tag": "var"
+                            }
+                          ],
+                          "symbol": "F",
+                          "tag": "app"
+                        }
+                      ],
+                      "symbol": "M",
+                      "tag": "app"
+                    },
+                    "right": {
+                      "args": [
+                        {
+                          "id": "c",
+                          "tag": "var"
+                        },
+                        {
+                          "args": [
+                            {
+                              "args": [
+                                {
+                                  "id": "s",
+                                  "tag": "var"
+                                },
+                                {
+                                  "name": "0",
+                                  "tag": "const"
+                                }
+                              ],
+                              "symbol": "add",
+                              "tag": "app"
+                            },
+                            {
+                              "id": "x",
+                              "tag": "var"
+                            }
+                          ],
+                          "symbol": "N",
+                          "tag": "app"
+                        }
+                      ],
+                      "symbol": "mul",
+                      "tag": "app"
+                    },
+                    "tag": "le"
+                  },
+                  "tag": "forall"
+                },
+                "tag": "exists"
+              },
+              "tag": "forall"
+            },
+            "id": "uniform-reading-1",
+            "source": {
+              "endLine": 1,
+              "path": "reading-1.txt",
+              "quote": "For every natural s there is a natural c such that for every natural x, M s (F x) <= c * N (s + 0) x.",
+              "sha256": "3575079b940fc72538198cb1ac33b72653c8cbcc554a7a716a280925f6bc9f92",
+              "startLine": 1
+            },
+            "symbols": {
+              "F": {
+                "leanName": "UniformProbe.F",
+                "leanType": "Nat → Nat"
+              },
+              "M": {
+                "leanName": "UniformProbe.M",
+                "leanType": "Nat → Nat → Nat"
+              },
+              "N": {
+                "leanName": "UniformProbe.N",
+                "leanType": "Nat → Nat → Nat"
+              },
+              "add": {
+                "leanName": "Nat.add",
+                "leanType": "Nat → Nat → Nat"
+              },
+              "mul": {
+                "leanName": "Nat.mul",
+                "leanType": "Nat → Nat → Nat"
+              }
+            }
+          },
+          "sourceRef": {
+            "artifactRef": "sha256:35886da0ef370243fe84836ac33b1f2ee819a907e335e96c1cb6bcb7f826e5c3",
+            "kind": "source-map",
+            "localId": "source-map:uniform-reading-1"
+          }
+        },
+        "producer": {
+          "buildDigest": "sha256:72747181cc11d108a4fcd13eaab23d2192e5ba535c2cd20ca18d2069dbceaf3d",
+          "implementation": "python",
+          "name": "ladon-correspondence",
+          "version": "typed-operators-v2"
+        },
+        "proofirVersion": "3.0",
+        "subjectRefs": [
+          {
+            "kind": "interpretation",
+            "localId": "uniform-reading-1"
+          }
+        ]
+      },
+      {
+        "artifactId": "sha256:3dfb5a24c47327f371bc400d14e6f042ab2339ebd07f8d4e1da75f5ddcad2aed",
+        "artifactKind": "proofir.contract",
+        "coverage": {
+          "bounds": {},
+          "decoded": 3,
+          "discovered": 3,
+          "expected": 3,
+          "omitted": [],
+          "population": {
+            "kind": "artifact-subjects",
+            "selector": {}
+          },
+          "projected": 3,
+          "queryMatched": 3,
+          "status": "complete",
+          "universeKnown": true,
+          "valid": 3
+        },
+        "environmentRef": "sha256:1a7698cb25535de30ebbb682f94247ab2483024da0fda036bf0a85ff38819b51",
+        "extensions": {},
+        "limitations": [
+          {
+            "id": "source-contract-binding-unchecked",
+            "message": "Source-bound contract features remain an attributed interpretation."
+          }
+        ],
+        "payload": {
+          "assumptionRefs": [],
+          "checkRunRefs": [],
+          "conclusionRef": {
+            "kind": "statement",
+            "localId": "estimate:UniformProbe.bound"
+          },
+          "contractId": "contract:uniform-reading-1",
+          "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+          "provenance": {
+            "checkerAuthority": "none",
+            "completeness": "complete",
+            "fidelity": "attributed-unreviewed",
+            "mathematicalFalsity": "not-established",
+            "mode": "authored"
+          },
+          "record": {
+            "assumptions": [],
+            "conclusionId": "estimate:UniformProbe.bound",
+            "context": {
+              "domainId": "domain:Nat",
+              "objectId": "operator:UniformProbe.F",
+              "representationId": "representation:original",
+              "scaleId": "scale:UniformProbe.N"
+            },
+            "endpointId": "estimate:UniformProbe.F",
+            "features": {
+              "constantDependencies": {
+                "allowedBinderIds": [
+                  "s"
+                ],
+                "binderId": "c",
+                "reason": null,
+                "state": "known"
+              },
+              "regularity": {
+                "offset": 0,
+                "reason": null,
+                "scaleId": "scale:UniformProbe.N",
+                "state": "known"
+              },
+              "witnessDependencies": [
+                {
+                  "allowedBinderIds": [
+                    "s"
+                  ],
+                  "binderId": "c",
+                  "reason": null,
+                  "state": "known"
+                }
+              ]
+            },
+            "profileId": "norm-scale-v1",
+            "telescope": [
+              {
+                "binderId": "s",
+                "quantifier": "forall",
+                "typeId": "Nat"
+              },
+              {
+                "binderId": "c",
+                "quantifier": "exists",
+                "typeId": "Nat"
+              },
+              {
+                "binderId": "x",
+                "quantifier": "forall",
+                "typeId": "Nat"
+              }
+            ]
+          },
+          "residuals": [],
+          "sourceMapRefs": [
+            {
+              "artifactRef": "sha256:35886da0ef370243fe84836ac33b1f2ee819a907e335e96c1cb6bcb7f826e5c3",
+              "kind": "source-map",
+              "localId": "source-map:uniform-reading-1"
+            }
+          ],
+          "statementRef": {
+            "kind": "statement",
+            "localId": "statement:contract:uniform-reading-1"
+          }
+        },
+        "producer": {
+          "buildDigest": "sha256:927d0657670e8e2675a68fb50b0c08134e4cc4aba384ec6933bc22caa5d416c0",
+          "implementation": "unspecified",
+          "name": "ladon-contract-source",
+          "version": "1"
+        },
+        "proofirVersion": "3.0",
+        "subjectRefs": [
+          {
+            "kind": "contract",
+            "localId": "contract:uniform-reading-1"
+          },
+          {
+            "kind": "statement",
+            "localId": "estimate:UniformProbe.bound"
+          },
+          {
+            "kind": "statement",
+            "localId": "statement:contract:uniform-reading-1"
+          }
+        ]
+      }
+    ],
+    "author": "caller",
+    "channel": "prose",
+    "contract": {
+      "assumptions": [],
+      "conclusionId": "estimate:UniformProbe.bound",
+      "context": {
+        "domainId": "domain:Nat",
+        "objectId": "operator:UniformProbe.F",
+        "representationId": "representation:original",
+        "scaleId": "scale:UniformProbe.N"
+      },
+      "endpointId": "estimate:UniformProbe.F",
+      "features": {
+        "constantDependencies": {
+          "allowedBinderIds": [
+            "s"
+          ],
+          "binderId": "c",
+          "reason": null,
+          "state": "known"
+        },
+        "regularity": {
+          "offset": 0,
+          "reason": null,
+          "scaleId": "scale:UniformProbe.N",
+          "state": "known"
+        },
+        "witnessDependencies": [
+          {
+            "allowedBinderIds": [
+              "s"
+            ],
+            "binderId": "c",
+            "reason": null,
+            "state": "known"
+          }
+        ]
+      },
+      "profileId": "norm-scale-v1",
+      "telescope": [
+        {
+          "binderId": "s",
+          "quantifier": "forall",
+          "typeId": "Nat"
+        },
+        {
+          "binderId": "c",
+          "quantifier": "exists",
+          "typeId": "Nat"
+        },
+        {
+          "binderId": "x",
+          "quantifier": "forall",
+          "typeId": "Nat"
+        }
+      ]
+    },
+    "coverage": {
+      "proofBody": "not-extracted",
+      "providers": "not-extracted",
+      "statementFeatures": "authored"
+    },
+    "featureOrigins": {
+      "constantDependencies": [
+        "/formula"
+      ],
+      "regularity": [
+        "/formula/body/body/body/right/args/1/args/0/args/1"
+      ],
+      "witnessDependencies": [
+        "/formula"
+      ]
+    },
+    "fidelity": "attributed-unreviewed",
+    "interpretation": {
+      "formula": {
+        "binder": {
+          "domain": "Nat",
+          "id": "s",
+          "name": "s"
+        },
+        "body": {
+          "binder": {
+            "domain": "Nat",
+            "id": "c",
+            "name": "c"
+          },
+          "body": {
+            "binder": {
+              "domain": "Nat",
+              "id": "x",
+              "name": "x"
+            },
+            "body": {
+              "left": {
+                "args": [
+                  {
+                    "id": "s",
+                    "tag": "var"
+                  },
+                  {
+                    "args": [
+                      {
+                        "id": "x",
+                        "tag": "var"
+                      }
+                    ],
+                    "symbol": "F",
+                    "tag": "app"
+                  }
+                ],
+                "symbol": "M",
+                "tag": "app"
+              },
+              "right": {
+                "args": [
+                  {
+                    "id": "c",
+                    "tag": "var"
+                  },
+                  {
+                    "args": [
+                      {
+                        "args": [
+                          {
+                            "id": "s",
+                            "tag": "var"
+                          },
+                          {
+                            "name": "0",
+                            "tag": "const"
+                          }
+                        ],
+                        "symbol": "add",
+                        "tag": "app"
+                      },
+                      {
+                        "id": "x",
+                        "tag": "var"
+                      }
+                    ],
+                    "symbol": "N",
+                    "tag": "app"
+                  }
+                ],
+                "symbol": "mul",
+                "tag": "app"
+              },
+              "tag": "le"
+            },
+            "tag": "forall"
+          },
+          "tag": "exists"
+        },
+        "tag": "forall"
+      },
+      "id": "uniform-reading-1",
+      "source": {
+        "endLine": 1,
+        "path": "reading-1.txt",
+        "quote": "For every natural s there is a natural c such that for every natural x, M s (F x) <= c * N (s + 0) x.",
+        "sha256": "3575079b940fc72538198cb1ac33b72653c8cbcc554a7a716a280925f6bc9f92",
+        "startLine": 1
+      },
+      "symbols": {
+        "F": {
+          "leanName": "UniformProbe.F",
+          "leanType": "Nat → Nat"
+        },
+        "M": {
+          "leanName": "UniformProbe.M",
+          "leanType": "Nat → Nat → Nat"
+        },
+        "N": {
+          "leanName": "UniformProbe.N",
+          "leanType": "Nat → Nat → Nat"
+        },
+        "add": {
+          "leanName": "Nat.add",
+          "leanType": "Nat → Nat → Nat"
+        },
+        "mul": {
+          "leanName": "Nat.mul",
+          "leanType": "Nat → Nat → Nat"
+        }
+      }
+    },
+    "phase": "pre-match",
+    "residuals": [],
+    "schema": "ladon-contract-production-v1",
+    "snapshotId": "sha256:eed6034fb2ef9c3457ea788e30f336f3a5fd2bbf95ed53d8c8d66d1199e9ec78",
+    "source": {
+      "endLine": 1,
+      "path": "reading-1.txt",
+      "quote": "For every natural s there is a natural c such that for every natural x, M s (F x) <= c * N (s + 0) x.",
+      "sha256": "3575079b940fc72538198cb1ac33b72653c8cbcc554a7a716a280925f6bc9f92",
+      "startLine": 1
+    },
+    "status": "authored"
+  },
+  {
+    "alternativeId": "uniform-reading-2",
+    "artifacts": [
+      {
+        "artifactId": "sha256:9410624e10ba83cf6997e3bb955e42e07fbd0a6fa6a9cb84d652fee70bdedd05",
+        "artifactKind": "proofir.source-map",
+        "coverage": {
+          "bounds": {
+            "maxSubjects": 1000
+          },
+          "decoded": 1,
+          "discovered": 1,
+          "expected": 1,
+          "omitted": [],
+          "population": {
+            "kind": "artifact-subjects",
+            "selector": {}
+          },
+          "projected": 1,
+          "queryMatched": 1,
+          "status": "complete",
+          "universeKnown": true,
+          "valid": 1
+        },
+        "environmentRef": "sha256:1a7698cb25535de30ebbb682f94247ab2483024da0fda036bf0a85ff38819b51",
+        "extensions": {},
+        "limitations": [
+          {
+            "id": "authored-source-map",
+            "message": "The quoted span and digest were revalidated at production time; this anchor does not review interpretation fidelity."
+          }
+        ],
+        "payload": {
+          "anchors": [
+            {
+              "contentDigest": "sha256:3575079b940fc72538198cb1ac33b72653c8cbcc554a7a716a280925f6bc9f92",
+              "declName": "uniform-reading-2",
+              "end": {
+                "byte": 101,
+                "column": 102,
+                "line": 1
+              },
+              "matchMethod": "path-range",
+              "module": "prose-source",
+              "sourcePath": "reading-2.txt",
+              "start": {
+                "byte": 0,
+                "column": 1,
+                "line": 1
+              },
+              "subjectRef": {
+                "kind": "interpretation",
+                "localId": "uniform-reading-2"
+              }
+            }
+          ],
+          "policy": {
+            "digest": "sha256:0cbdec942de81f953594d0fb7a662cead59db155668e686b6048621b2f9b848d",
+            "version": "m1-explicit-path-range-v1"
+          },
+          "sourceMapId": "source-map:uniform-reading-2"
+        },
+        "producer": {
+          "buildDigest": "sha256:72747181cc11d108a4fcd13eaab23d2192e5ba535c2cd20ca18d2069dbceaf3d",
+          "implementation": "python",
+          "name": "ladon-correspondence",
+          "version": "typed-operators-v2"
+        },
+        "proofirVersion": "3.0",
+        "subjectRefs": [
+          {
+            "kind": "source-map",
+            "localId": "source-map:uniform-reading-2"
+          },
+          {
+            "kind": "interpretation",
+            "localId": "uniform-reading-2"
+          }
+        ]
+      },
+      {
+        "artifactId": "sha256:bfd61731788830d03c5cb8f3f0fae39ddada6a7c454a709903597745031e9a59",
+        "artifactKind": "proofir.interpretation",
+        "coverage": {
+          "bounds": {
+            "maxSubjects": 1000
+          },
+          "decoded": 1,
+          "discovered": 1,
+          "expected": 1,
+          "omitted": [],
+          "population": {
+            "kind": "artifact-subjects",
+            "selector": {}
+          },
+          "projected": 1,
+          "queryMatched": 1,
+          "status": "complete",
+          "universeKnown": true,
+          "valid": 1
+        },
+        "environmentRef": "sha256:1a7698cb25535de30ebbb682f94247ab2483024da0fda036bf0a85ff38819b51",
+        "extensions": {},
+        "limitations": [
+          {
+            "id": "attributed-interpretation",
+            "message": "Structured interpretation is attributed; no prose-fidelity review or proof authority is implied."
+          }
+        ],
+        "payload": {
+          "fidelity": "attributed-unreviewed",
+          "interpretationId": "uniform-reading-2",
+          "loweredFormula": "(∀ (v0 : Nat), (∃ (v1 : Nat), (∀ (v2 : Nat), (((_root_.UniformProbe.M : Nat → Nat → Nat) v0 ((_root_.UniformProbe.F : Nat → Nat) v2)) ≤ ((_root_.Nat.mul : Nat → Nat → Nat) v1 ((_root_.UniformProbe.N : Nat → Nat → Nat) ((_root_.Nat.add : Nat → Nat → Nat) v0 0) v2))))))",
+          "loweringProfile": "typed-operators-v2",
+          "record": {
+            "formula": {
+              "binder": {
+                "domain": "Nat",
+                "id": "s",
+                "name": "s"
+              },
+              "body": {
+                "binder": {
+                  "domain": "Nat",
+                  "id": "c",
+                  "name": "c"
+                },
+                "body": {
+                  "binder": {
+                    "domain": "Nat",
+                    "id": "x",
+                    "name": "x"
+                  },
+                  "body": {
+                    "left": {
+                      "args": [
+                        {
+                          "id": "s",
+                          "tag": "var"
+                        },
+                        {
+                          "args": [
+                            {
+                              "id": "x",
+                              "tag": "var"
+                            }
+                          ],
+                          "symbol": "F",
+                          "tag": "app"
+                        }
+                      ],
+                      "symbol": "M",
+                      "tag": "app"
+                    },
+                    "right": {
+                      "args": [
+                        {
+                          "id": "c",
+                          "tag": "var"
+                        },
+                        {
+                          "args": [
+                            {
+                              "args": [
+                                {
+                                  "id": "s",
+                                  "tag": "var"
+                                },
+                                {
+                                  "name": "0",
+                                  "tag": "const"
+                                }
+                              ],
+                              "symbol": "add",
+                              "tag": "app"
+                            },
+                            {
+                              "id": "x",
+                              "tag": "var"
+                            }
+                          ],
+                          "symbol": "N",
+                          "tag": "app"
+                        }
+                      ],
+                      "symbol": "mul",
+                      "tag": "app"
+                    },
+                    "tag": "le"
+                  },
+                  "tag": "forall"
+                },
+                "tag": "exists"
+              },
+              "tag": "forall"
+            },
+            "id": "uniform-reading-2",
+            "source": {
+              "endLine": 1,
+              "path": "reading-2.txt",
+              "quote": "For every natural s there is a natural c such that for every natural x, M s (F x) <= c * N (s + 0) x.",
+              "sha256": "3575079b940fc72538198cb1ac33b72653c8cbcc554a7a716a280925f6bc9f92",
+              "startLine": 1
+            },
+            "symbols": {
+              "F": {
+                "leanName": "UniformProbe.F",
+                "leanType": "Nat → Nat"
+              },
+              "M": {
+                "leanName": "UniformProbe.M",
+                "leanType": "Nat → Nat → Nat"
+              },
+              "N": {
+                "leanName": "UniformProbe.N",
+                "leanType": "Nat → Nat → Nat"
+              },
+              "add": {
+                "leanName": "Nat.add",
+                "leanType": "Nat → Nat → Nat"
+              },
+              "mul": {
+                "leanName": "Nat.mul",
+                "leanType": "Nat → Nat → Nat"
+              }
+            }
+          },
+          "sourceRef": {
+            "artifactRef": "sha256:9410624e10ba83cf6997e3bb955e42e07fbd0a6fa6a9cb84d652fee70bdedd05",
+            "kind": "source-map",
+            "localId": "source-map:uniform-reading-2"
+          }
+        },
+        "producer": {
+          "buildDigest": "sha256:72747181cc11d108a4fcd13eaab23d2192e5ba535c2cd20ca18d2069dbceaf3d",
+          "implementation": "python",
+          "name": "ladon-correspondence",
+          "version": "typed-operators-v2"
+        },
+        "proofirVersion": "3.0",
+        "subjectRefs": [
+          {
+            "kind": "interpretation",
+            "localId": "uniform-reading-2"
+          }
+        ]
+      },
+      {
+        "artifactId": "sha256:b5529eed35532ca52c004ed0973ed26a1b20017de6f26862f14671574d705ac0",
+        "artifactKind": "proofir.contract",
+        "coverage": {
+          "bounds": {},
+          "decoded": 3,
+          "discovered": 3,
+          "expected": 3,
+          "omitted": [],
+          "population": {
+            "kind": "artifact-subjects",
+            "selector": {}
+          },
+          "projected": 3,
+          "queryMatched": 3,
+          "status": "complete",
+          "universeKnown": true,
+          "valid": 3
+        },
+        "environmentRef": "sha256:1a7698cb25535de30ebbb682f94247ab2483024da0fda036bf0a85ff38819b51",
+        "extensions": {},
+        "limitations": [
+          {
+            "id": "source-contract-binding-unchecked",
+            "message": "Source-bound contract features remain an attributed interpretation."
+          }
+        ],
+        "payload": {
+          "assumptionRefs": [],
+          "checkRunRefs": [],
+          "conclusionRef": {
+            "kind": "statement",
+            "localId": "estimate:UniformProbe.bound"
+          },
+          "contractId": "contract:uniform-reading-2",
+          "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+          "provenance": {
+            "checkerAuthority": "none",
+            "completeness": "complete",
+            "fidelity": "attributed-unreviewed",
+            "mathematicalFalsity": "not-established",
+            "mode": "authored"
+          },
+          "record": {
+            "assumptions": [],
+            "conclusionId": "estimate:UniformProbe.bound",
+            "context": {
+              "domainId": "domain:Nat",
+              "objectId": "operator:UniformProbe.F",
+              "representationId": "representation:original",
+              "scaleId": "scale:UniformProbe.N"
+            },
+            "endpointId": "estimate:UniformProbe.F",
+            "features": {
+              "constantDependencies": {
+                "allowedBinderIds": [
+                  "s"
+                ],
+                "binderId": "c",
+                "reason": null,
+                "state": "known"
+              },
+              "regularity": {
+                "offset": 0,
+                "reason": null,
+                "scaleId": "scale:UniformProbe.N",
+                "state": "known"
+              },
+              "witnessDependencies": [
+                {
+                  "allowedBinderIds": [
+                    "s"
+                  ],
+                  "binderId": "c",
+                  "reason": null,
+                  "state": "known"
+                }
+              ]
+            },
+            "profileId": "norm-scale-v1",
+            "telescope": [
+              {
+                "binderId": "s",
+                "quantifier": "forall",
+                "typeId": "Nat"
+              },
+              {
+                "binderId": "c",
+                "quantifier": "exists",
+                "typeId": "Nat"
+              },
+              {
+                "binderId": "x",
+                "quantifier": "forall",
+                "typeId": "Nat"
+              }
+            ]
+          },
+          "residuals": [],
+          "sourceMapRefs": [
+            {
+              "artifactRef": "sha256:9410624e10ba83cf6997e3bb955e42e07fbd0a6fa6a9cb84d652fee70bdedd05",
+              "kind": "source-map",
+              "localId": "source-map:uniform-reading-2"
+            }
+          ],
+          "statementRef": {
+            "kind": "statement",
+            "localId": "statement:contract:uniform-reading-2"
+          }
+        },
+        "producer": {
+          "buildDigest": "sha256:927d0657670e8e2675a68fb50b0c08134e4cc4aba384ec6933bc22caa5d416c0",
+          "implementation": "unspecified",
+          "name": "ladon-contract-source",
+          "version": "1"
+        },
+        "proofirVersion": "3.0",
+        "subjectRefs": [
+          {
+            "kind": "contract",
+            "localId": "contract:uniform-reading-2"
+          },
+          {
+            "kind": "statement",
+            "localId": "estimate:UniformProbe.bound"
+          },
+          {
+            "kind": "statement",
+            "localId": "statement:contract:uniform-reading-2"
+          }
+        ]
+      }
+    ],
+    "author": "caller",
+    "channel": "prose",
+    "contract": {
+      "assumptions": [],
+      "conclusionId": "estimate:UniformProbe.bound",
+      "context": {
+        "domainId": "domain:Nat",
+        "objectId": "operator:UniformProbe.F",
+        "representationId": "representation:original",
+        "scaleId": "scale:UniformProbe.N"
+      },
+      "endpointId": "estimate:UniformProbe.F",
+      "features": {
+        "constantDependencies": {
+          "allowedBinderIds": [
+            "s"
+          ],
+          "binderId": "c",
+          "reason": null,
+          "state": "known"
+        },
+        "regularity": {
+          "offset": 0,
+          "reason": null,
+          "scaleId": "scale:UniformProbe.N",
+          "state": "known"
+        },
+        "witnessDependencies": [
+          {
+            "allowedBinderIds": [
+              "s"
+            ],
+            "binderId": "c",
+            "reason": null,
+            "state": "known"
+          }
+        ]
+      },
+      "profileId": "norm-scale-v1",
+      "telescope": [
+        {
+          "binderId": "s",
+          "quantifier": "forall",
+          "typeId": "Nat"
+        },
+        {
+          "binderId": "c",
+          "quantifier": "exists",
+          "typeId": "Nat"
+        },
+        {
+          "binderId": "x",
+          "quantifier": "forall",
+          "typeId": "Nat"
+        }
+      ]
+    },
+    "coverage": {
+      "proofBody": "not-extracted",
+      "providers": "not-extracted",
+      "statementFeatures": "authored"
+    },
+    "featureOrigins": {
+      "constantDependencies": [
+        "/formula"
+      ],
+      "regularity": [
+        "/formula/body/body/body/right/args/1/args/0/args/1"
+      ],
+      "witnessDependencies": [
+        "/formula"
+      ]
+    },
+    "fidelity": "attributed-unreviewed",
+    "interpretation": {
+      "formula": {
+        "binder": {
+          "domain": "Nat",
+          "id": "s",
+          "name": "s"
+        },
+        "body": {
+          "binder": {
+            "domain": "Nat",
+            "id": "c",
+            "name": "c"
+          },
+          "body": {
+            "binder": {
+              "domain": "Nat",
+              "id": "x",
+              "name": "x"
+            },
+            "body": {
+              "left": {
+                "args": [
+                  {
+                    "id": "s",
+                    "tag": "var"
+                  },
+                  {
+                    "args": [
+                      {
+                        "id": "x",
+                        "tag": "var"
+                      }
+                    ],
+                    "symbol": "F",
+                    "tag": "app"
+                  }
+                ],
+                "symbol": "M",
+                "tag": "app"
+              },
+              "right": {
+                "args": [
+                  {
+                    "id": "c",
+                    "tag": "var"
+                  },
+                  {
+                    "args": [
+                      {
+                        "args": [
+                          {
+                            "id": "s",
+                            "tag": "var"
+                          },
+                          {
+                            "name": "0",
+                            "tag": "const"
+                          }
+                        ],
+                        "symbol": "add",
+                        "tag": "app"
+                      },
+                      {
+                        "id": "x",
+                        "tag": "var"
+                      }
+                    ],
+                    "symbol": "N",
+                    "tag": "app"
+                  }
+                ],
+                "symbol": "mul",
+                "tag": "app"
+              },
+              "tag": "le"
+            },
+            "tag": "forall"
+          },
+          "tag": "exists"
+        },
+        "tag": "forall"
+      },
+      "id": "uniform-reading-2",
+      "source": {
+        "endLine": 1,
+        "path": "reading-2.txt",
+        "quote": "For every natural s there is a natural c such that for every natural x, M s (F x) <= c * N (s + 0) x.",
+        "sha256": "3575079b940fc72538198cb1ac33b72653c8cbcc554a7a716a280925f6bc9f92",
+        "startLine": 1
+      },
+      "symbols": {
+        "F": {
+          "leanName": "UniformProbe.F",
+          "leanType": "Nat → Nat"
+        },
+        "M": {
+          "leanName": "UniformProbe.M",
+          "leanType": "Nat → Nat → Nat"
+        },
+        "N": {
+          "leanName": "UniformProbe.N",
+          "leanType": "Nat → Nat → Nat"
+        },
+        "add": {
+          "leanName": "Nat.add",
+          "leanType": "Nat → Nat → Nat"
+        },
+        "mul": {
+          "leanName": "Nat.mul",
+          "leanType": "Nat → Nat → Nat"
+        }
+      }
+    },
+    "phase": "pre-match",
+    "residuals": [],
+    "schema": "ladon-contract-production-v1",
+    "snapshotId": "sha256:825c953f0047710dee8a97b367201764e7625c18b66e4062797d3975dd2d78ec",
+    "source": {
+      "endLine": 1,
+      "path": "reading-2.txt",
+      "quote": "For every natural s there is a natural c such that for every natural x, M s (F x) <= c * N (s + 0) x.",
+      "sha256": "3575079b940fc72538198cb1ac33b72653c8cbcc554a7a716a280925f6bc9f92",
+      "startLine": 1
+    },
+    "status": "authored"
+  }
+]

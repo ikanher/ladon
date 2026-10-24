@@ -1,0 +1,19 @@
+{
+  "sourceAcceptance": [
+    "PYTHONPATH=src:tests",
+    ".venv/bin/python",
+    ".codex/state/proof-contract-analysis/probe-calibration/run_acceptance.py",
+    "openspec/changes/ladon-proof-contract-probes/evidence/FINITE-CALIBRATION-20261018"
+  ],
+  "quality": [
+    "PYTHONPATH=src:tests .venv/bin/python calling strict_quality_issues([Path(src),Path(tests),Path(scripts)])",
+    ".venv/bin/ruff check --no-cache src tests scripts",
+    "PYTHONPATH=src:tests .venv/bin/python -m compileall -q src tests scripts",
+    "python .codex/skills/ultra-code/scripts/ultra_code_bb.py verify-tests --db .codex/state/ultra-proof-contract.sqlite3"
+  ],
+  "openSpec": [
+    "openspec validate ladon-proof-contract-probes --strict",
+    "openspec validate ladon-proof-contract-analysis-umbrella --strict"
+  ],
+  "testVector": "integration-command.json"
+}

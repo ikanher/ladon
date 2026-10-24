@@ -1,0 +1,44 @@
+{
+  "schema": "ladon-constant-uniformity-v2-raw-audit-v1",
+  "assignmentPost": 715,
+  "contractPost": 697,
+  "auditor": "/root/application_probe_audit",
+  "reviewScope": "Read-only raw qualification review of CONSTANT-UNIFORMITY-20261019, including source-bound requests/results, checker evidence and projections, native replay, runtime/test custody, and historical bundle manifests.",
+  "verdict": "PASS_FOR_CONSTRUCTED_TWO_FAMILY_QUALIFICATION",
+  "codeAudit": {
+    "post": 712,
+    "path": ".codex/state/proof-contract-analysis/constant-probes/audit/CODE-AUDIT.json",
+    "sha256": "86521b5f8af1f2f09814346c898c37cb0048b0a3bebf899c989b134050fe7e47",
+    "findingCount": 0
+  },
+  "rawGate": {
+    "status": "PASS",
+    "scope": "Constructed source-bound regularity-v1 and constant-uniformity-v2 families only; not NL fidelity, PDE correctness, all-five-family acceptance, detection benefit, or whole-method authority.",
+    "budgetSeconds": 1800,
+    "elapsedSeconds": 454.02484370488673,
+    "outcomes": 27,
+    "apiOutcomes": 26,
+    "pureNativeValidationOutcomes": 1,
+    "checkerAttempts": 10,
+    "acceptedChecks": 9,
+    "unresolvedNegativeChecks": 1,
+    "requiredPositiveChecks": 8,
+    "memoryLastNoRetry": true
+  },
+  "findings": [],
+  "verified": {
+    "outcomes": "Every one of the 27 RESULT.json case records has a corresponding saved request and result. Saved result status matches its recorded outcome. The pure-native rehashed-goal check is separately classified and is not counted as an API outcome.",
+    "checkerEvidence": "Loaded all 10 raw goal evidence blobs from the published regularity-repo/uniformity-repo copies via load_goal_evidence. All evidence byte counts and SHA-256 references match; all compact projections agree with the raw blobs. Eight required counterexample/control goals across the two families are accepted. The failed-term negative has an accepted formal-reading goal and one rejected/unresolved probe; the missing-terms case has no proof evidence. Accepted checks satisfy supported status, completed execution, accepted replay, and accepted trust. Planned native artifacts remain open with checkRunRefs empty.",
+    "nativePlansAndGoals": "Revalidated regularity and constant-uniformity plan artifacts with validate_envelope_batch. Recomputed the formal goal from each right-hand lowered source formula and the selected actual closed type; it matches the stored IFF goal. The v2 discrepancy goal retains forall-exists-forall order; control and counterexample plans carry the expected template versions and open-goal authority limits. Rehashed-goal request recomputes the mutated goal digest and detached artifact ID; ordinary batch validation rejects it with 'probe plan differs from exact source-bound input recomputation'. Mutation elapsed 451.270 seconds, before the final memory stop at 454.019 seconds.",
+    "sourceBindings": "For both families, the three original quote files match their recorded source SHA-256 values and exact quoted bytes. Distinct readings are bound to distinct native contract/correspondence/source-map owners; within each pair, correspondence inputs carry the same selected full slice ID, empty objectMap, and environment. Selected applications are AppProbe.weak and UniformProbe.weak with complete extracted slices, empty local contexts, and no premises. Generated prefix digests match stored strictPrefixDigest values and prefixes explicitly reject the selected parent declaration if imported. Formal source attribution and quote matching are verified; semantic fidelity remains attributed-unreviewed.",
+    "clockAndResources": "All 27 case timestamps are within the single declared 1800-second window. The 10 actual checker receipts requested 30-second, 12-GiB RSS, and 8-MiB output caps; none reports timeout, memory stop, or output stop. Changed-clock and changed-limits cases reject. Expired deadline is incomplete. The final 1-MiB memory case is last, reports memory-limit/incomplete and requires stop/report; no proof work, worker retry, or cap increase follows in the qualification log.",
+    "runtime": "RUNTIME.json SHA-256 c3c9a7e8c6ed14838a41f582e1fd9c466b35255f8cf2b5fca594fa2cf0c06d7e covers 519 entries. Every live file and every archive member matches its manifest path, byte count, and hash; zero mismatches.",
+    "regressionAndFrozenCustody": "integration.xml contains 1089 cases across 168 owner files with zero failure, error, or skip; integration result exits 0. MEASUREMENTS.json correctly treats focused 35 cases as contained in the 1089 total. quality.json reports no issues. Frozen-before, frozen-final-before-source, and frozen-after each report 115/115 matching paths; the three snapshots have identical hashes. The earlier regularity evidence manifest lists 111 files and all hashes match; the earlier 87-file and 57-file calibration manifests also match every entry.",
+    "versionAndNegativeControls": "The legacy constant-uniformity-v1 result remains unsupported; the other three registered v1 families are unsupported. Unknown template, wrong owner, wrong permission metadata, wrong telescope, wrong context, native symbol tamper, quote drift, formal drift, and rehashed goal all reject as recorded. Constant plans and checks plus missing/failed-term negatives use the ordinary CLI with recorded success exit 0 for successful operations and exit 2 for unresolved negatives."
+  },
+  "limitations": [
+    "This audit verifies constructed, authored source-bound examples and the retained execution/evidence chain. The quotes are not a reviewed natural-language specification, and no PDE, manuscript fidelity, manuscript-error detection, held-out C, all-five-family, whole-method, or task-completion claim follows.",
+    "The final qualification's memory-limited stop is deliberate. No proof-related work was performed afterward; this audit used only filesystem reads, hashes, evidence projection loading, and pure native envelope validation."
+  ],
+  "evidenceBundle": "openspec/changes/ladon-proof-contract-probes/evidence/CONSTANT-UNIFORMITY-20261019"
+}

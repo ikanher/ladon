@@ -1,0 +1,1103 @@
+--- /dev/null
++++ b/src/ladon/_proof_contract_probe_inputs.py
+@@ -0,0 +1,49 @@
++"""Closed, aggregate-bounded public application-probe inputs."""
++import copy
++import math
++
++from ._proof_contract_planned_source_inputs import _planned_input_size
++from ._proof_contract_probe_pair import MAX_BYTES, probe_context, probe_side
++from .proof_contract_bridge_supervision import bridge_limits
++from .proof_contract_context_bridge import _DIGEST
++from .proof_contract_payloads import closed
++
++
++def probe_inputs(request, plan_id=None, terms=None, *, checking=False):
++    from ._proof_contract_probe_templates import validate_template
++
++    if _planned_input_size([request, plan_id, terms]) > MAX_BYTES:
++        raise ValueError('aggregate application probe input exceeds 8 MiB')
++    closed(request, {'repoRoot', 'context', 'left', 'right', 'template',
++                     'deadlineMonotonic', 'limits'}, 'application probe request')
++    if not isinstance(request['repoRoot'], str) or not request['repoRoot']:
++        raise ValueError('probe requires a source repository path')
++    deadline = request['deadlineMonotonic']
++    if type(deadline) not in (int, float) or not math.isfinite(deadline):
++        raise ValueError('application probe deadline must be finite')
++    probe_context(request['context'])
++    probe_side(request['left'])
++    probe_side(request['right'])
++    validate_template(request['template'])
++    if checking:
++        _check_terms(plan_id, terms)
++    supplied = request['limits']
++    defaults = {'timeout_seconds': 30, 'max_output_bytes': MAX_BYTES,
++                'max_rss_bytes': 12 * 1024**3}
++    if not isinstance(supplied, dict) or not set(supplied) <= set(defaults):
++        raise ValueError('invalid application probe limits')
++    limits = bridge_limits({**defaults, **supplied})
++    limits['max_output_bytes'] = min(MAX_BYTES, limits['max_output_bytes'])
++    owned = copy.deepcopy(request)
++    owned['limits'] = limits
++    return owned
++
++
++def _check_terms(plan_id, terms):
++    if not isinstance(plan_id, str) or not _DIGEST.fullmatch(plan_id):
++        raise ValueError('application check requires an exact saved SHA-256 plan ID')
++    if not isinstance(terms, dict) or not set(terms) <= {'formal-reading', 'probe'}:
++        raise ValueError('terms may only name generated application-probe goals')
++    for term in terms.values():
++        if not isinstance(term, str) or not term.strip() or len(term.encode()) > 1024**2:
++            raise ValueError('probe terms must be nonempty bounded strings')
+--- /dev/null
++++ b/src/ladon/_proof_contract_probe_native.py
+@@ -0,0 +1,63 @@
++"""Planning-only native application probes, replayed from exact typed owners."""
++from ._proof_contract_probe_pair import derive_probe_result, probe_reference
++from .proof_contract_payloads import _refs, closed, identifier, residuals
++from .proof_contract_rules import PROFILE_DIGEST
++
++
++def validate_probe_payload(p, value, subjects, env):
++    from ._proof_contract_probe_templates import validate_template
++
++    closed(p, {'analysisId', 'profileDigest', 'stage', 'contractRefs', 'correspondenceRefs',
++               'template', 'result', 'checkRunRefs', 'residuals'}, 'probe analysis payload')
++    identifier(p['analysisId'], 'analysis ID')
++    if ('contract-analysis', p['analysisId']) not in subjects:
++        raise ValueError('probe analysis must own its exact typed subject')
++    if p['profileDigest'] != PROFILE_DIGEST or p['stage'] != 'probes':
++        raise ValueError('unsupported probe profile or stage')
++    _probe_refs(p, value, subjects, env)
++    validate_template(p['template'])
++    if p['checkRunRefs'] != []:
++        raise ValueError('planned probes cannot carry checker authority')
++    residuals(p['residuals'])
++    if not isinstance(p['result'], dict) or p['result'].get('checkerAuthority') != 'none':
++        raise ValueError('planned probes require explicitly absent checker authority')
++    _probe_result_shape(p['result'])
++    if 'source-contract-binding-unchecked' not in {r['id'] for r in value['limitations']}:
++        raise ValueError('probe plan must retain its interpretation fidelity limitation')
++
++
++def _probe_refs(p, value, subjects, env):
++    for field, kind in (('contractRefs', 'contract'), ('correspondenceRefs', 'correspondence')):
++        _refs(p, field, kind, value, subjects, env, minimum=2)
++        if len(p[field]) != 2:
++            raise ValueError('probes require exactly two ' + kind + ' references')
++        for ref in p[field]:
++            probe_reference(ref, kind)
++
++
++def _probe_result_shape(result):
++    from .proof_contract_payloads import rows
++
++    closed(result, {'schema', 'status', 'template', 'scope', 'goals', 'residuals',
++                   'checkerAuthority', 'wholeMethodAuthority', 'sourceFidelity',
++                   'mathematicalFalsity'}, 'planned probe result')
++    if (result['schema'] != 'ladon-application-probe-plan-v1'
++            or result['status'] not in {'planned', 'unsupported'}
++            or result['wholeMethodAuthority'] != 'none'
++            or result['sourceFidelity'] != 'attributed-unreviewed'
++            or result['mathematicalFalsity'] != 'not-established'):
++        raise ValueError('invalid planned probe result authority or schema')
++    rows(result['goals'], 'probe goals')
++    for goal in result['goals']:
++        closed(goal, {'goalId', 'kind', 'goal', 'goalDigest', 'status'}, 'planned probe goal')
++        if goal['status'] != 'open':
++            raise ValueError('native probe plan goals must remain open')
++    residuals(result['residuals'])
++
++
++def recompute_probe_inputs(artifacts, p):
++    sides = [{'contractRef': c, 'correspondenceRef': r}
++             for c, r in zip(p['contractRefs'], p['correspondenceRefs'], strict=True)]
++    expected = derive_probe_result(artifacts, *sides, p['template'])
++    if p['result'] != expected or p['residuals'] != expected['residuals']:
++        raise ValueError('probe plan differs from exact source-bound input recomputation')
+--- /dev/null
++++ b/src/ladon/_proof_contract_probe_pair.py
+@@ -0,0 +1,111 @@
++"""Resolve the exact native owners of two application readings."""
++from __future__ import annotations
++
++from ._proof_contract_context_preparation import _owner
++from ._proof_contract_planned_source_inputs import _planned_input_size
++from .proof_contract_payloads import closed, identifier
++
++MAX_BYTES = 8 * 1024**2
++
++
++def probe_reference(reference, kind):
++    closed(reference, {'artifactRef', 'kind', 'localId'}, 'probe reference')
++    from .proof_contract_context_bridge import _DIGEST
++
++    if (reference['kind'] != kind or not isinstance(reference['artifactRef'], str)
++            or not _DIGEST.fullmatch(reference['artifactRef'])):
++        raise ValueError('probe requires an exact external ' + kind + ' reference')
++    identifier(reference['localId'], 'probe reference local ID')
++
++
++def probe_side(side):
++    closed(side, {'contractRef', 'correspondenceRef'}, 'probe side')
++    probe_reference(side['contractRef'], 'contract')
++    probe_reference(side['correspondenceRef'], 'correspondence')
++
++
++def probe_context(context):
++    closed(context, {'artifacts'}, 'probe context')
++    if not isinstance(context['artifacts'], list) or not 1 <= len(context['artifacts']) <= 4096:
++        raise ValueError('probe context requires a bounded nonempty native batch')
++    if _planned_input_size(context) > MAX_BYTES:
++        raise ValueError('probe context exceeds 8 MiB')
++    for artifact in context['artifacts']:
++        _lowering_budget(artifact)
++
++
++def _lowering_budget(artifact):
++    """Preflight symbol expansion before the generic native lowering validator."""
++    if not isinstance(artifact, dict) or artifact.get('artifactKind') != 'proofir.interpretation':
++        return
++    payload = artifact.get('payload')
++    if not isinstance(payload, dict) or not isinstance(payload.get('record'), dict):
++        raise TypeError('probe interpretation requires a native record')
++    record = payload['record']
++    symbols = record.get('symbols', {})
++    if not isinstance(symbols, dict):
++        raise TypeError('interpretation symbols must be an object')
++    widest = max((_planned_input_size(v) for v in symbols.values()), default=1)
++    size = _planned_input_size(record.get('formula'))
++    if size * (widest + 32) > MAX_BYTES:
++        raise ValueError('probe interpretation expansion exceeds the bounded profile')
++
++
++def resolve_pair(artifacts, left, right):
++    """Inputs have already passed aggregate and native batch validation."""
++    probe_side(left)
++    probe_side(right)
++    values = list(artifacts.values()) if isinstance(artifacts, dict) else artifacts
++    pair = [_resolve_side(values, side) for side in (left, right)]
++    environments = {a['environmentRef'] for side in pair for a in side.values()}
++    if len(environments) != 1:
++        raise ValueError('application probes cannot cross native environments')
++    return pair
++
++
++def _resolve_side(artifacts, side):
++    contract = _owner(artifacts, side['contractRef'], 'proofir.contract')
++    correspondence = _owner(artifacts, side['correspondenceRef'], 'proofir.correspondence')
++    p = correspondence['payload']
++    reading = _owner(artifacts, p['interpretationRef'], 'proofir.interpretation')
++    if contract['payload']['sourceMapRefs'] != [reading['payload']['sourceRef']]:
++        raise ValueError('contract must bind exactly its own interpretation source map')
++    _owner(artifacts, reading['payload']['sourceRef'], 'proofir.source-map')
++    _regenerate(reading, correspondence)
++    return {'contract': contract, 'correspondence': correspondence, 'reading': reading}
++
++
++def _regenerate(reading, correspondence):
++    from .correspondence_check import prepare_correspondence
++    from .proofir_correspondence import correspondence_artifacts
++
++    p = correspondence['payload']
++    plan = prepare_correspondence(reading['payload']['record'], p['slice'], p['objectMap'])
++    plan['interpretationRef'] = p['interpretationRef']
++    expected = correspondence_artifacts(plan)['payload']
++    for key in expected:
++        if key != 'correspondenceId' and expected[key] != p[key]:
++            raise ValueError('probe correspondence differs from regenerated original: ' + key)
++
++
++def derive_probe_result(artifacts, left, right, template):
++    from ._proof_contract_probe_templates import template_result
++
++    a, b = resolve_pair(artifacts, left, right)
++    ca, cb = a['correspondence']['payload'], b['correspondence']['payload']
++    if ca['slice'] != cb['slice'] or ca['objectMap'] != cb['objectMap']:
++        return unsupported_result(template, 'different-application-context',
++                                  'The readings require identical full native application contexts.')
++    if ca['objectMap'] != {}:
++        return unsupported_result(template, 'unsupported-object-map',
++                                  'The first closed probe profile requires an empty object map.')
++    return template_result(a['reading']['payload']['record'], b['reading']['payload']['record'],
++        a['contract']['payload']['record'], b['contract']['payload']['record'], ca['slice'], template)
++
++
++def unsupported_result(template, code, message):
++    return {'schema': 'ladon-application-probe-plan-v1', 'status': 'unsupported',
++        'template': template, 'scope': 'closed-nat-regularity-v1', 'goals': [],
++        'residuals': [{'code': code, 'message': message, 'feature': template['familyId']}],
++        'checkerAuthority': 'none', 'wholeMethodAuthority': 'none',
++        'sourceFidelity': 'attributed-unreviewed', 'mathematicalFalsity': 'not-established'}
+--- /dev/null
++++ b/src/ladon/_proof_contract_probe_regularity_ast.py
+@@ -0,0 +1,112 @@
++"""Exact AST role and offset matching for the closed regularity profile."""
++from __future__ import annotations
++
++from typing import Any
++
++
++def _walk(node: Any):
++    if isinstance(node, dict):
++        yield node
++        for value in node.values():
++            yield from _walk(value)
++    elif isinstance(node, list):
++        for value in node:
++            yield from _walk(value)
++
++def _is_node(value, tag, keys):
++    return isinstance(value, dict) and set(value) == keys and value.get("tag") == tag
++
++def _is_var(value, identity):
++    return _is_node(value, "var", {"tag", "id"}) and value.get("id") == identity
++
++def _is_const(value, name):
++    return _is_node(value, "const", {"tag", "name"}) and value.get("name") == name
++
++def _formula_parts(formula, s_id, x_id):
++    if not _is_node(formula, "forall", {"tag", "binder", "body"}):
++        return None
++    if formula["binder"].get("id") != s_id or formula["binder"].get("domain") != "Nat":
++        return None
++    second = formula["body"]
++    if not _is_node(second, "forall", {"tag", "binder", "body"}):
++        return None
++    if second["binder"].get("id") != x_id or second["binder"].get("domain") != "Nat":
++        return None
++    body = second["body"]
++    if not _is_node(body, "le", {"tag", "left", "right"}):
++        return None
++    return body["left"], body["right"]
++
++def _left_symbols(left, s_id, x_id):
++    if not _is_node(left, "app", {"tag", "symbol", "args"}) or len(left["args"]) != 2:
++        return None
++    fun = left["args"][1]
++    if not _is_var(left["args"][0], s_id) or not _is_node(fun, "app", {"tag", "symbol", "args"}):
++        return None
++    if len(fun["args"]) != 1 or not _is_var(fun["args"][0], x_id):
++        return None
++    return left["symbol"], fun["symbol"]
++
++def _right_n_args(constant, n_app, x_id):
++    if not (_is_node(constant, "const", {"tag", "name"})
++            and _is_node(n_app, "app", {"tag", "symbol", "args"})):
++        return None
++    if not (len(n_app["args"]) == 2 and _is_var(n_app["args"][1], x_id)):
++        return None
++    add_app = n_app["args"][0]
++    return _right_add_args(constant, n_app, add_app, x_id)
++
++def _right_add_args(constant, n_app, add_app, x_id):
++    if not (_is_node(add_app, "app", {"tag", "symbol", "args"}) and len(add_app["args"]) == 2):
++        return None
++    return constant, n_app, add_app
++
++def _right_symbols(right, offset, s_id, x_id):
++    if not (_is_node(right, "app", {"tag", "symbol", "args"}) and len(right["args"]) == 2):
++        return None
++    constant, n_app = right["args"]
++    parsed = _right_n_args(constant, n_app, x_id)
++    if parsed is None:
++        return None
++    constant, n_app, add_app = parsed
++    if not (_is_var(add_app["args"][0], s_id) and _is_const(add_app["args"][1], str(offset))):
++        return None
++    return constant["name"], right["symbol"], n_app["symbol"], add_app["symbol"]
++
++def _typed_rows(symbols, names):
++    if any(name not in symbols for name in names):
++        return None
++    return [symbols[name] for name in names]
++
++def _typed_roles(symbols, left_roles, right_roles):
++    if left_roles is None or right_roles is None:
++        return False
++    constant, mul_id, n_id, add_id = right_roles
++    names = (*left_roles, n_id, mul_id, add_id, constant)
++    if len(set(names)) != 6:
++        return False
++    rows = _typed_rows(symbols, names)
++    if rows is None:
++        return False
++    signatures = ["Nat → Nat → Nat", "Nat → Nat", "Nat → Nat → Nat",
++                  "Nat → Nat → Nat", "Nat → Nat → Nat"]
++    types_match = all(row.get("leanType") == sig for row, sig in zip(rows[:-1], signatures))
++    arithmetic_match = rows[3].get("leanName") == "Nat.mul" and rows[4].get("leanName") == "Nat.add"
++    return types_match and arithmetic_match and rows[-1].get("leanType") == "Nat"
++
++def _formula_shape(formula, symbols, offset, s_id, x_id):
++    parts = _formula_parts(formula, s_id, x_id)
++    return parts is not None and _typed_roles(
++        symbols, _left_symbols(parts[0], s_id, x_id), _right_symbols(parts[1], offset, s_id, x_id))
++
++def _normalize_offset(formula: dict[str, Any], offset: int) -> dict[str, Any]:
++    body = formula["body"]["body"]
++    n_application = body["right"]["args"][1]
++    add_application = n_application["args"][0]
++    literal = add_application["args"][1]
++    if literal.get("tag") != "const" or literal.get("name") != str(offset):
++        raise ValueError("regularity offset does not match the designated AST literal")
++    return {**formula, "body": {**formula["body"], "body": {
++        **body, "right": {**body["right"], "args": [body["right"]["args"][0], {
++            **n_application, "args": [{**add_application, "args": [
++                add_application["args"][0], {**literal, "name": "0"}]}, n_application["args"][1]]}]}}}}
+--- /dev/null
++++ b/src/ladon/_proof_contract_probe_regularity_match.py
+@@ -0,0 +1,89 @@
++"""Match attributed contract features against the original typed formula."""
++from ._proof_contract_probe_regularity_ast import _formula_shape, _walk
++
++_EXPECTED = {"profileId": "norm-scale-v1"}
++
++
++def _contract_features(contract):
++    features = contract.get("features", {})
++    regularity = features.get("regularity", {})
++    if set(features) != {"regularity", "constantDependencies", "witnessDependencies"}:
++        return None
++    if regularity.get("state") != "known" or type(regularity.get("offset")) is not int or regularity["offset"] < 0:
++        return None
++    if regularity.get("reason") is not None:
++        return None
++    constants = features.get("constantDependencies", {})
++    if constants.get("state") != "known" or constants.get("allowedBinderIds") != []:
++        return None
++    if constants.get("reason") is not None or features.get("witnessDependencies") != []:
++        return None
++    return regularity["offset"]
++
++def _contract_offset(contract):
++    if not isinstance(contract, dict) or any(contract.get(k) != v for k, v in _EXPECTED.items()):
++        return None
++    if contract.get("assumptions") != []:
++        return None
++    return _contract_features(contract)
++
++def _telescope_rows(telescope):
++    if not isinstance(telescope, list) or len(telescope) != 2:
++        return None
++    if any(not isinstance(row, dict) for row in telescope):
++        return None
++    if any(row.get("typeId") != "Nat" or row.get("quantifier") != "forall" for row in telescope):
++        return None
++    return telescope
++
++def _valid_telescope(contract):
++    telescope = _telescope_rows(contract.get("telescope"))
++    if telescope is None:
++        return None
++    binder_ids = [row.get("binderId") for row in telescope]
++    if any(not isinstance(identity, str) or not identity for identity in binder_ids):
++        return None
++    return binder_ids if binder_ids[0] != binder_ids[1] else None
++
++def _bounded_symbols(symbols):
++    return isinstance(symbols, dict) and all(
++        isinstance(row, dict) and isinstance(row.get("leanName"), str)
++        and row["leanName"] and len(row["leanName"]) <= 200 for row in symbols.values())
++
++def _formula_binders(formula):
++    return [node.get("binder", {}) for node in _walk(formula) if node.get("tag") in {"forall", "exists"}]
++
++def _record_matches(record, contract, offset):
++    if not isinstance(record, dict):
++        return False
++    formula = record.get("formula")
++    symbols = record.get("symbols")
++    if not isinstance(formula, dict) or not _bounded_symbols(symbols):
++        return False
++    binder_ids = _valid_telescope(contract)
++    if binder_ids is None:
++        return False
++    binders = _formula_binders(formula)
++    return (len(binders) == 2 and all(b.get("domain") == "Nat" for b in binders)
++            and [b.get("id") for b in binders] == binder_ids
++            and _formula_shape(formula, symbols, offset, *binder_ids))
++
++def _summary_offset_mismatch(record, contract):
++    offset = _contract_offset(contract)
++    if offset is None or not isinstance(record, dict):
++        return False
++    formula, symbols = record.get("formula"), record.get("symbols")
++    binder_ids = _valid_telescope(contract)
++    if not isinstance(formula, dict) or not _bounded_symbols(symbols) or binder_ids is None:
++        return False
++    try:
++        literal = formula["body"]["body"]["right"]["args"][1]["args"][0]["args"][1]
++        actual_offset = int(literal.get("name"))
++    except (KeyError, IndexError, TypeError, ValueError):
++        return False
++    return (type(literal.get("name")) is str and literal.get("name") == str(actual_offset)
++            and actual_offset != offset and _formula_shape(formula, symbols, actual_offset, *binder_ids))
++
++def _regularity_shape(record, contract):
++    offset = _contract_offset(contract)
++    return offset is not None and _record_matches(record, contract, offset)
+--- /dev/null
++++ b/src/ladon/_proof_contract_probe_reporting.py
+@@ -0,0 +1,47 @@
++"""Bounded application-probe response and stop reporting."""
++from ._proof_contract_probe_pair import MAX_BYTES
++from ._proof_contract_source_obligations_inputs import bounded_json_size
++
++
++class ApplicationProbeOutputLimit(ValueError):
++    """No result envelope fits: publish neither JSON nor an output file."""
++
++    def __init__(self, diagnostic):
++        self.code = diagnostic['code']
++        self.memory_report_back_required = self.code == 'memory-limit'
++        super().__init__('Insufficient output capacity; no result published. ' + diagnostic['message'])
++
++
++def base_result():
++    return {'schema': 'ladon-application-probe-v1', 'status': 'incomplete',
++        'planId': None, 'goals': [], 'residuals': [], 'diagnostic': None,
++        'sourceFidelity': 'attributed-unreviewed', 'checkerAuthority': 'none',
++        'wholeMethodAuthority': 'none', 'mathematicalFalsity': 'not-established',
++        'memoryReportBackRequired': False}
++
++
++def fail(result, status, code, message):
++    result.update(status=status, checkerAuthority='none',
++        diagnostic={'code': code, 'message': str(message)[:1000]},
++        memoryReportBackRequired=code == 'memory-limit')
++
++
++def require_capacity(result, cap):
++    from ._proof_contract_context_goals import ContextOutputLimit
++
++    if bounded_json_size(result, min(cap, MAX_BYTES)) + 1 > min(cap, MAX_BYTES):
++        raise ContextOutputLimit('Application probe response capacity exhausted; later work stopped.')
++
++
++def bounded_result(result, cap):
++    limit = min(cap, MAX_BYTES)
++    if bounded_json_size(result, limit) + 1 <= limit:
++        return result
++    small = base_result()
++    if result['memoryReportBackRequired']:
++        fail(small, 'incomplete', 'memory-limit', result['diagnostic']['message'])
++    else:
++        fail(small, 'incomplete', 'output-limit', 'Application probe response exceeds output capacity.')
++    if bounded_json_size(small, limit) + 1 > limit:
++        raise ApplicationProbeOutputLimit(small['diagnostic'])
++    return small
+--- /dev/null
++++ b/src/ladon/_proof_contract_probe_templates.py
+@@ -0,0 +1,148 @@
++"""Pure, bounded template matching for source-bound application probes.
++
++Templates plan obligations; separate actual checkers establish local support.
++"""
++from __future__ import annotations
++
++import hashlib
++from typing import Any
++
++from ladon._proof_contract_planned_source_inputs import _planned_input_size
++from ladon.correspondence_interpretation import lower_formula
++
++from ._proof_contract_probe_regularity_ast import _normalize_offset
++from ._proof_contract_probe_regularity_match import _regularity_shape, _summary_offset_mismatch
++
++FAMILIES = (
++    "regularity-boundary",
++    "constant-uniformity",
++    "witness-dependence",
++    "restricted-domain",
++    "inequality-direction",
++)
++_SCOPE = "closed-nat-regularity-v1"
++_MAX_INPUT = 8 * 1024 * 1024
++def validate_template(template: Any) -> dict[str, str]:
++    if not isinstance(template, dict) or set(template) != {"familyId", "version", "direction", "kind"}:
++        raise ValueError("template selectors must be a closed object")
++    family = template["familyId"]
++    if not all(isinstance(template[key], str) for key in template):
++        raise ValueError("template selectors must be strings")
++    if family not in FAMILIES or template["version"] != f"{family}-v1":
++        raise ValueError("unknown template family or version")
++    if template["direction"] not in {"left-to-right", "right-to-left"}:
++        raise ValueError("invalid template direction")
++    if template["kind"] not in {"implication", "counterexample"}:
++        raise ValueError("invalid template kind")
++    return {key: template[key] for key in ("familyId", "version", "direction", "kind")}
++
++
++def application_probe_profile() -> dict[str, dict[str, Any]]:
++    return {family: {"version": f"{family}-v1", "implemented": family == FAMILIES[0]}
++            for family in FAMILIES}
++
++
++def _residual(code: str, message: str, feature: str) -> dict[str, str]:
++    return {"code": code, "message": message, "feature": feature}
++
++
++def _result(template: dict[str, str], status: str, goals=None, residuals=None):
++    return {"schema": "ladon-application-probe-plan-v1", "status": status,
++            "template": template, "scope": _SCOPE, "goals": goals or [],
++            "residuals": residuals or [], "checkerAuthority": "none",
++            "wholeMethodAuthority": "none", "sourceFidelity": "attributed-unreviewed",
++            "mathematicalFalsity": "not-established"}
++
++
++def _goal(goal_id: str, kind: str, goal: str) -> dict[str, str]:
++    return {"goalId": goal_id, "kind": kind, "goal": goal,
++            "goalDigest": "sha256:" + hashlib.sha256(goal.encode("utf-8")).hexdigest(), "status": "open"}
++
++
++def _pair_inputs(left_record, right_record, left_contract, right_contract):
++    if (_summary_offset_mismatch(left_record, left_contract)
++            or _summary_offset_mismatch(right_record, right_contract)):
++        raise ValueError("regularity AST literal disagrees with its contract feature offset")
++    if not _regularity_shape(left_record, left_contract) or not _regularity_shape(right_record, right_contract):
++        return _residual("unsupported-regularity-shape", "Interpretations or contract features exceed the closed profile.", "regularity"), None
++    left = left_record["formula"]
++    right = right_record["formula"]
++    left_offset = left_contract["features"]["regularity"]["offset"]
++    right_offset = right_contract["features"]["regularity"]["offset"]
++    if _normalize_offset(left, left_offset) != _normalize_offset(right, right_offset):
++        return _residual("regularity-feature-mismatch", "Formula structures differ beyond the declared offset.", "regularity"), None
++    expected = {**right_contract, "features": {**right_contract["features"], "regularity": {
++        **right_contract["features"]["regularity"], "offset": left_offset}}}
++    if left_contract != expected:
++        return _residual("contract-feature-mismatch", "Contract fields differ beyond the regularity offset.", "contract"), None
++    return None, (left, right, left_offset, right_offset)
++
++
++def _valid_closed_slice(shared_slice):
++    if (not isinstance(shared_slice, dict) or shared_slice.get("localContext") != []
++            or shared_slice.get("complete") is not True or shared_slice.get("status") != "extracted"):
++        return False
++    nodes = shared_slice.get("nodes")
++    if not isinstance(nodes, list) or len(nodes) != 1:
++        return False
++    row = nodes[0]
++    return isinstance(row, dict) and row.get("kind") == "application" and row.get("premises") == []
++
++
++def _shared_type(shared_slice):
++    if not _valid_closed_slice(shared_slice):
++        return None, _residual("nonclosed-shared-context", "The selected application context is not closed, complete, and premise-free.", "shared-context")
++    row = shared_slice["nodes"][0]
++    actual = row.get("closedType")
++    if not isinstance(actual, str) or not actual or len(actual) > _MAX_INPUT:
++        return None, _residual("missing-closed-type", "The selected application has no bounded closed type.", "shared-slice")
++    return actual, None
++
++
++def _lower_readings(left_record, right_record, formulas, offsets):
++    left_formula, right_formula = formulas
++    left_offset, right_offset = offsets
++    try:
++        left = lower_formula(left_formula, left_record["symbols"])
++        right = lower_formula(right_formula, right_record["symbols"])
++        normalized_left = lower_formula(_normalize_offset(left_formula, left_offset), left_record["symbols"])
++        normalized_right = lower_formula(_normalize_offset(right_formula, right_offset), right_record["symbols"])
++    except (TypeError, ValueError, KeyError, RecursionError) as error:
++        return None, _residual("unsupported-lowering", str(error)[:240], "formula")
++    if normalized_left != normalized_right or any(op not in left + right for op in ("Nat.add", "Nat.mul")):
++        return None, _residual("unsupported-lowered-formula", "Lowered readings do not match the typed regularity shape.", "formula")
++    return (left, right), None
++
++
++def template_result(left_record, right_record, left_contract, right_contract, shared_slice, template):
++    """Match one closed regularity template and produce two open Lean goals."""
++    selected = validate_template(template)
++    inputs = (left_record, right_record, left_contract, right_contract, shared_slice)
++    input_size = _planned_input_size(inputs)
++    if input_size > _MAX_INPUT:
++        raise ValueError("template inputs exceed the 8 MiB bound")
++    if input_size * 4 > _MAX_INPUT:
++        return _result(selected, "unsupported", residuals=[_residual(
++            "expanded-goal-bound", "The conservative lowered-goal size bound exceeds 8 MiB.", "goal-size")])
++    if selected["familyId"] != FAMILIES[0]:
++        return _result(selected, "unsupported", residuals=[_residual(
++            "unsupported-template-family", "This registered family has no implemented matcher.", selected["familyId"])])
++    error, pair = _pair_inputs(left_record, right_record, left_contract, right_contract)
++    if error:
++        return _result(selected, "unsupported", residuals=[error])
++    formulas, offsets = pair[:2], pair[2:]
++    actual, error = _shared_type(shared_slice)
++    if error:
++        return _result(selected, "unsupported", residuals=[error])
++    readings, error = _lower_readings(left_record, right_record, formulas, offsets)
++    if error:
++        return _result(selected, "unsupported", residuals=[error])
++    left, right = readings
++    p, q = (left, right) if selected["direction"] == "left-to-right" else (right, left)
++    reading = f"({right}) ↔ ({actual})"
++    probe = f"({p}) → ({q})" if selected["kind"] == "implication" else f"({p}) ∧ ¬({q})"
++    result = _result(selected, "planned", [_goal("formal-reading", "formal-reading", reading),
++                                            _goal("probe", "probe", probe)])
++    if _planned_input_size(result) > _MAX_INPUT:
++        raise ValueError("expanded probe plan exceeds the 8 MiB output bound")
++    return result
+--- a/src/ladon/proof_contract_cli.py
++++ b/src/ladon/proof_contract_cli.py
+@@ -15,6 +15,7 @@
+     from ladon.proof_contract_context_cli import add_context_bridge_parsers
+     from ladon.proof_contract_obligation_cli import add_obligations_parser, add_source_checks_parser
+     from ladon.proof_contract_probe_calibration_cli import add_probe_calibration_parsers
++    from ladon.proof_contract_probe_cli import add_application_probe_parsers
+     from ladon.proof_contract_provider_cli import add_provider_expansion_parser
+     from ladon.proof_contract_route_context_cli import add_route_context_parsers
+ 
+@@ -26,6 +27,7 @@
+     add_context_bridge_parsers(sub)
+     add_route_context_parsers(sub)
+     add_probe_calibration_parsers(sub)
++    add_application_probe_parsers(sub)
+     produce = sub.add_parser("produce", help="Snapshot an attributed source contract")
+     produce.add_argument("--channel", choices=("prose", "formal"), required=True)
+     produce.add_argument("--root", type=Path, required=True)
+@@ -67,6 +69,8 @@
+     from ladon.proof_contract_obligation_cli import check_obligations, obligations
+     from ladon.proof_contract_probe_calibration import ProbeCalibrationOutputLimit
+     from ladon.proof_contract_probe_calibration_cli import probe_calibration
++    from ladon.proof_contract_probe_cli import application_probe
++    from ladon.proof_contract_probes import ApplicationProbeOutputLimit
+     from ladon.proof_contract_provider_cli import expand_provider
+     from ladon.proof_contract_route_context_cli import route_context_bridge
+ 
+@@ -80,10 +84,12 @@
+                   "route-context-obligations": route_context_bridge,
+                   "probe-calibration-profile": probe_calibration,
+                   "probe-calibration": probe_calibration,
++                  "probe-profile": application_probe,
++                  "probe": application_probe, "check-probe": application_probe,
+                   "check-route-context-bridge": route_context_bridge}[args.operation](args)
+         publish(result, args.output)
+         return _exit_status(result)
+-    except ProbeCalibrationOutputLimit as error:
++    except (ProbeCalibrationOutputLimit, ApplicationProbeOutputLimit) as error:
+         print(str(error), file=sys.stderr)
+         return 2
+     except (ValueError, TypeError, OSError, KeyError, IndexError) as error:
+@@ -139,6 +145,10 @@
+     artifacts = context["artifacts"]
+     if not isinstance(artifacts, list) or len(artifacts) > 4096:
+         raise ValueError("context.artifacts requires a bounded native artifact list")
++    if artifact.get("payload", {}).get("stage") == "probes":
++        from ladon.proof_contract_probe_cli import inspect_application_probe
++
++        return inspect_application_probe(artifact, context)
+     if artifact.get("payload", {}).get("stage") == "obligations":
+         return _inspect_obligations(artifact, context)
+     validate_envelope_batch([*artifacts, artifact])
+@@ -188,6 +198,9 @@
+ 
+ 
+ def _exit_status(result):
++    if (result.get("schema") == "ladon-application-probe-v1"
++            and result.get("status") in {"unsupported", "unresolved"}):
++        return 2
+     if result.get("status") in {"unavailable", "incomplete", "rejected"}:
+         return 2
+     if result.get("slice", {}).get("status") == "unavailable":
+--- a/src/ladon/proof_contract_payloads.py
++++ b/src/ladon/proof_contract_payloads.py
+@@ -82,6 +82,10 @@
+ 
+ 
+ def validate_analysis_payload(p, value, subjects, env):
++    if isinstance(p, dict) and p.get("stage") == "probes":
++        from ladon._proof_contract_probe_native import validate_probe_payload
++
++        return validate_probe_payload(p, value, subjects, env)
+     if isinstance(p, dict) and p.get("stage") == "obligations":
+         from ladon._proof_contract_obligation_native import validate_obligation_payload
+ 
+@@ -245,6 +249,10 @@
+     if artifact["artifactKind"] != "proofir.contract-analysis":
+         return
+     p = artifact["payload"]
++    if p.get("stage") == "probes":
++        from ladon._proof_contract_probe_native import recompute_probe_inputs
++
++        return recompute_probe_inputs(artifacts, p)
+     if p.get("stage") == "obligations":
+         from ladon._proof_contract_obligation_native import recompute_obligation_inputs
+ 
+--- /dev/null
++++ b/src/ladon/proof_contract_probe_artifacts.py
+@@ -0,0 +1,32 @@
++"""Native plans for local source-bound implication and counterexample probes."""
++from ._proof_contract_probe_pair import derive_probe_result, probe_context, probe_side
++from .proof_contract_rules import PROFILE_DIGEST
++from .proofir_v3 import make_envelope, validate_envelope_batch
++
++
++def application_probe_artifact(context, left, right, template, *, analysis_id):
++    """Generate open goals; this artifact conveys no checked support."""
++    from ._proof_contract_probe_templates import validate_template
++
++    probe_context(context)
++    probe_side(left)
++    probe_side(right)
++    validate_template(template)
++    artifacts = context['artifacts']
++    validate_envelope_batch(artifacts)
++    result = derive_probe_result(artifacts, left, right, template)
++    index = {a['artifactId']: a for a in artifacts}
++    payload = {'analysisId': analysis_id, 'profileDigest': PROFILE_DIGEST, 'stage': 'probes',
++        'contractRefs': [left['contractRef'], right['contractRef']],
++        'correspondenceRefs': [left['correspondenceRef'], right['correspondenceRef']],
++        'template': template, 'result': result, 'checkRunRefs': [], 'residuals': result['residuals']}
++    artifact = make_envelope(artifact_kind='proofir.contract-analysis',
++        producer={'name': 'ladon-application-probes', 'version': '1'},
++        environment_ref=index[left['contractRef']['artifactRef']]['environmentRef'],
++        subject_refs=[{'kind': 'contract-analysis', 'localId': analysis_id}],
++        coverage={'status': 'complete', 'observed': 1}, payload=payload,
++        limitations=[{'id': 'source-contract-binding-unchecked',
++            'message': 'Source attribution does not establish faithful interpretation.'},
++            {'id': 'planned-probes-only', 'message': 'Open goals confer no checked authority.'}]).to_dict()
++    validate_envelope_batch([*artifacts, artifact])
++    return artifact
+--- /dev/null
++++ b/src/ladon/proof_contract_probe_cli.py
+@@ -0,0 +1,49 @@
++"""Ordinary additive CLI for source-bound application probes."""
++from pathlib import Path
++
++from .proof_contract_io import load_bounded_plans
++
++
++def add_application_probe_parsers(subparsers):
++    profile = subparsers.add_parser('probe-profile', help='Describe supported application-probe families')
++    profile.add_argument('--output', type=Path)
++    for operation in ('probe', 'check-probe'):
++        parser = subparsers.add_parser(operation, help='Plan or check source-bound application probes')
++        parser.add_argument('--input', type=Path, required=True)
++        parser.add_argument('--output', type=Path)
++        if operation == 'check-probe':
++            parser.add_argument('--plan-id', required=True)
++            parser.add_argument('--terms', type=Path, required=True)
++
++
++def application_probe(args):
++    from .proof_contract_probes import (
++        application_probe_profile,
++        check_application_probe,
++        plan_application_probe,
++    )
++
++    if args.operation == 'probe-profile':
++        return application_probe_profile()
++    paths = [args.input] if args.operation == 'probe' else [args.input, args.terms]
++    inputs = load_bounded_plans(paths, max_bytes=8 * 1024**2)
++    if args.operation == 'probe':
++        return plan_application_probe(inputs[0])
++    return check_application_probe(inputs[0], args.plan_id, inputs[1])
++
++
++def inspect_application_probe(artifact, context):
++    """Pure semantic replay in a bounded worker; no source freshness claim."""
++    import time
++
++    from ._proof_contract_planned_source_inputs import _planned_input_size
++    from .proof_contract_probes import _stage
++
++    request = {'artifact': artifact, 'context': context}
++    if _planned_input_size(request) > 8 * 1024**2:
++        raise ValueError('probe inspection input exceeds 8 MiB')
++    owned = {'deadlineMonotonic': time.monotonic() + 30,
++        'limits': {'timeout_seconds': 30, 'max_output_bytes': 8 * 1024**2,
++                   'max_rss_bytes': 12 * 1024**3}}
++    checked = _stage('inspect-probe', request, owned)
++    return checked['result'] if checked['status'] == 'completed' else checked
+--- /dev/null
++++ b/src/ladon/proof_contract_probe_worker.py
+@@ -0,0 +1,127 @@
++"""Supervised preparation and source-fresh checking of application probe goals."""
++from pathlib import Path
++
++from ._proof_contract_context_preparation import _digest, _native_plan, prepare_context
++from ._proof_contract_probe_pair import resolve_pair
++from .proof_contract_context_worker import _verify_original_inputs
++from .proof_contract_payloads import closed
++
++
++def _compute(job):
++    closed(job, {'version', 'operation', 'request'}, 'application probe worker job')
++    if job['version'] != 1:
++        raise ValueError('unknown application probe job version')
++    if job['operation'] == 'prepare-probe':
++        return _prepare(job['request'])
++    if job['operation'] == 'check-probe-goal':
++        return _check_goal(job['request'])
++    if job['operation'] == 'inspect-probe':
++        return _inspect(job['request'])
++    raise ValueError('unknown application probe operation')
++
++
++def _inspect(request):
++    from ._proof_contract_probe_pair import probe_context
++    from .proofir_v3 import validate_envelope_batch
++
++    closed(request, {'artifact', 'context'}, 'probe inspection request')
++    probe_context(request['context'])
++    artifact = request['artifact']
++    if (not isinstance(artifact, dict) or artifact.get('artifactKind') != 'proofir.contract-analysis'
++            or artifact.get('payload', {}).get('stage') != 'probes'):
++        raise ValueError('probe inspection requires a native probes-stage artifact')
++    validate_envelope_batch([*request['context']['artifacts'], artifact])
++    return artifact
++
++
++def _prepare(request):
++    from ._proof_contract_probe_inputs import probe_inputs
++    from .proof_contract_probe_artifacts import application_probe_artifact
++
++    owned = probe_inputs(request)
++    artifact = application_probe_artifact(owned['context'], owned['left'], owned['right'],
++        owned['template'], analysis_id='analysis:application-probe')
++    planned = artifact['payload']['result']
++    if planned['status'] != 'planned':
++        return {'status': 'unsupported', 'artifact': artifact, 'residuals': planned['residuals']}
++    root = Path(owned['repoRoot']).resolve(strict=True)
++    pair = resolve_pair(owned['context']['artifacts'], owned['left'], owned['right'])
++    if pair[0]['correspondence']['payload']['objectMap'] != {}:
++        raise ValueError('closed application probe profile requires an empty object map')
++    for side in ('left', 'right'):
++        _native_plan(_context_request(owned, side), root)
++    prepared = prepare_context(_context_request(owned, 'left'))
++    if prepared['status'] != 'prepared':
++        return prepared
++    return _prepared_result(owned, artifact, prepared, pair)
++
++
++def _context_request(owned, side):
++    return {key: owned[key] for key in ('repoRoot', 'context', 'deadlineMonotonic', 'limits')} | {
++        'correspondenceRef': owned[side]['correspondenceRef']}
++
++
++def _prepared_result(owned, artifact, prepared, pair):
++    right = pair[1]['reading']
++    right_binding = {**prepared['binding'],
++        'correspondenceRef': owned['right']['correspondenceRef'],
++        'interpretationRef': pair[1]['correspondence']['payload']['interpretationRef'],
++        'interpretationSourceRef': right['payload']['sourceRef'],
++        'originalInterpretation': right['payload']['record']}
++    binding = {'left': prepared['binding'], 'right': right_binding}
++    _verify_pair(Path(owned['repoRoot']).resolve(strict=True), binding)
++    identity = _digest({'artifactId': artifact['artifactId'], 'binding': binding,
++        'adapter': prepared['adapter'], 'deadlineMonotonic': owned['deadlineMonotonic'],
++        'limits': owned['limits']})
++    symbols = {f'{i}.{key}': value for i, p in enumerate(pair)
++               for key, value in p['reading']['payload']['record']['symbols'].items()}
++    return {'status': 'prepared', 'planId': identity, 'artifact': artifact,
++        'goals': artifact['payload']['result']['goals'], 'binding': binding,
++        'adapter': prepared['adapter'], 'symbols': symbols,
++        'construction': prepared['construction'], 'residuals': artifact['payload']['residuals']}
++
++
++def _check_goal(request):
++    from .correspondence_check import _check_goal as check
++    from .proof_contract_bridge_worker import _verified_source
++    from .proof_slice import pinned_toolchain
++
++    closed(request, {'repoRoot', 'sourcePath', 'sourceDigest', 'goal', 'term',
++                     'symbols', 'binding'}, 'application probe goal stage')
++    root = Path(request['repoRoot']).resolve(strict=True)
++    _verify_pair(root, request['binding'])
++    source = _verified_source(root, request)
++    result = check(request['goal'], request['term'], root, source,
++                   request['symbols'], pinned_toolchain(root))
++    _verify_pair(root, request['binding'])
++    if _verified_source(root, request) != source:
++        raise ValueError('application probe strict prefix changed during checking')
++    return result
++
++
++def _verify_pair(root, binding):
++    for side in ('left', 'right'):
++        _verify_original_inputs(root, binding[side])
++
++
++def main():
++    import json
++    import sys
++
++    from .proof_contract_context_worker import MAX_BYTES, _response
++    from .proof_contract_io import _decode
++
++    try:
++        raw = sys.stdin.buffer.read(MAX_BYTES + 1)
++        if len(raw) > MAX_BYTES:
++            raise ValueError('application probe worker input exceeds 8 MiB')
++        sys.stdout.write(_response(_compute(_decode(raw))))
++        return 0
++    except (ValueError, TypeError, KeyError, IndexError, OSError, OverflowError, RecursionError) as error:
++        sys.stdout.write(json.dumps({'status': 'rejected', 'result': None,
++                                    'diagnostic': str(error)[:500]}))
++        return 2
++
++
++if __name__ == '__main__':
++    raise SystemExit(main())
+--- /dev/null
++++ b/src/ladon/proof_contract_probes.py
+@@ -0,0 +1,146 @@
++"""Local source-bound application probes with independent Lean replay and trust."""
++from __future__ import annotations
++
++import copy
++import time
++
++from ._proof_contract_context_goals import ContextOutputLimit
++from ._proof_contract_probe_inputs import probe_inputs
++from ._proof_contract_probe_pair import MAX_BYTES
++from ._proof_contract_probe_reporting import (
++    ApplicationProbeOutputLimit,
++    base_result,
++    bounded_result,
++    fail,
++    require_capacity,
++)
++from ._proof_contract_route_context_evidence import store_goal_evidence
++from .proof_contract_bridge import _accepted_check, _resource_stop
++from .proof_contract_obligation_supervision import _execute_job
++
++__all__ = [
++    'ApplicationProbeOutputLimit',
++    'application_probe_profile',
++    'check_application_probe',
++    'plan_application_probe',
++]
++
++
++def application_probe_profile():
++    """Catalog registered templates; only the first family has a source consumer."""
++    from ._proof_contract_probe_templates import application_probe_profile as profile
++
++    return profile()
++
++
++def plan_application_probe(request):
++    """Plan exact original propositions without accepting caller-authored goals."""
++    return _run(request)
++
++
++def check_application_probe(request, plan_id, terms):
++    """Regenerate a saved subject, then check separately attributed proof terms."""
++    return _run(request, plan_id, terms, checking=True)
++
++
++def _run(request, plan_id=None, terms=None, checking=False):
++    started, result, cap = time.monotonic(), base_result(), MAX_BYTES
++    try:
++        owned = probe_inputs(request, plan_id, terms, checking=checking)
++        cap = owned['limits']['max_output_bytes']
++        require_capacity(result, cap)
++        _prepare(result, owned, cap)
++        if checking and result['status'] == 'planned':
++            _check(result, owned, plan_id, terms, cap)
++    except ContextOutputLimit as error:
++        fail(result, 'incomplete', 'output-limit', str(error))
++    except (ValueError, TypeError, KeyError, IndexError, OSError, OverflowError, RecursionError) as error:
++        fail(result, 'rejected', 'invalid-application-probe', str(error))
++    result['elapsedSeconds'] = time.monotonic() - started
++    return bounded_result(result, cap)
++
++
++def _stage(operation, request, owned):
++    job = {'version': 1, 'operation': operation, 'request': request}
++    state = {'receipt': None, 'inputDigest': None, 'bounds': None}
++    bounds = {**owned['limits'], 'deadlineMonotonic': owned['deadlineMonotonic']}
++    return _execute_job(job, bounds, state, None, worker_module='ladon.proof_contract_probe_worker')
++
++
++def _stop(result, checked, owned):
++    stopped = _resource_stop(checked, owned['limits'])
++    if stopped:
++        fail(result, 'incomplete', stopped['code'], stopped['message'])
++    return stopped is not None
++
++
++def _prepare(result, owned, cap):
++    checked = _stage('prepare-probe', owned, owned)
++    result['preparation'] = {k: v for k, v in checked.items() if k != 'result'}
++    if _stop(result, checked, owned):
++        result['partialPreparation'] = checked.get('result')
++        return
++    if checked['status'] != 'completed':
++        fail(result, 'rejected', 'probe-preparation-rejected', checked['diagnostic'])
++        return
++    prepared = checked['result']
++    status = prepared.get('status')
++    if status == 'unsupported':
++        result.update(status='unsupported', artifact=prepared['artifact'], residuals=prepared['residuals'])
++    elif status == 'prepared':
++        result.update({k: v for k, v in prepared.items() if k != 'status'})
++        result.update(status='planned', goals=copy.deepcopy(prepared['goals']))
++    else:
++        result['partialPreparation'] = prepared
++        fail(result, 'incomplete', 'probe-preparation-incomplete', 'A complete source context is required.')
++    require_capacity(result, cap)
++
++
++def _check(result, owned, plan_id, terms, cap):
++    if result['planId'] != plan_id:
++        raise ValueError('saved probe differs from regenerated source, context, clock or limits')
++    for goal in result['goals']:
++        goal['status'] = 'unresolved'
++    for goal in result['goals']:
++        if goal['goalId'] in terms and not _check_one(result, owned, goal, terms[goal['goalId']], cap):
++            return
++    if all(g['status'] == 'checked-support' for g in result['goals']):
++        kind = owned['template']['kind']
++        result.update(status='checked-local-nonimplication' if kind == 'counterexample'
++                      else 'checked-local-implication', checkerAuthority='checked-local-goals')
++    else:
++        fail(result, 'unresolved', 'unresolved-proof', 'Both exact goals require completion, replay and trust.')
++
++
++def _check_one(result, owned, goal, term, cap):
++    require_capacity(result, cap)
++    checked = _stage('check-probe-goal', {**result['adapter'], 'goal': goal['goal'],
++        'term': term, 'symbols': result['symbols'], 'binding': result['binding']}, owned)
++    goal.update(term=term, supervision={k: v for k, v in checked.items() if k != 'result'})
++    stopped = _resource_stop(checked, owned['limits'])
++    raw = checked.get('result')
++    if stopped:
++        fail(result, 'incomplete', stopped['code'], stopped['message'])
++        _save_stopped_raw(result, owned, goal, raw, checked, cap)
++        return False
++    # Enforce the caller's aggregate response capacity before persisting any
++    # proof evidence or copying the full worker result into another structure.
++    require_capacity([result, checked], cap)
++    if isinstance(raw, dict):
++        goal['result'] = store_goal_evidence(owned['repoRoot'], raw)
++    require_capacity(result, cap)
++    if checked['status'] == 'completed' and _accepted_check(raw):
++        goal['status'] = 'checked-support'
++    return True
++
++
++def _save_stopped_raw(result, owned, goal, raw, checked, cap):
++    if not isinstance(raw, dict):
++        return
++    try:
++        require_capacity([result, checked], cap)
++        goal['result'] = store_goal_evidence(owned['repoRoot'], raw)
++    except ContextOutputLimit:
++        # Preserve the resource stop and its actual cap even when raw evidence
++        # cannot fit the publication envelope. No proof work may follow it.
++        return
+--- a/src/ladon/proof_contract_sqlite.py
++++ b/src/ladon/proof_contract_sqlite.py
+@@ -41,7 +41,7 @@
+ CREATE TABLE IF NOT EXISTS proofir_v3_contract_analyses (
+     owner_artifact_id TEXT PRIMARY KEY, analysis_id TEXT NOT NULL,
+     profile_digest TEXT NOT NULL CHECK(profile_digest GLOB 'sha256:*'),
+-    stage TEXT NOT NULL CHECK(stage IN ('comparison','propagation','obligations')),
++    stage TEXT NOT NULL CHECK(stage IN ('comparison','propagation','obligations','probes')),
+     result_json TEXT NOT NULL CHECK(json_valid(result_json)), source_pointer TEXT NOT NULL,
+     FOREIGN KEY(owner_artifact_id) REFERENCES proofir_v3_artifacts(content_artifact_id)
+         ON DELETE CASCADE

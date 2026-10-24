@@ -1,0 +1,18 @@
+{
+  "compileall": 0,
+  "focused_pytest": {
+    "command": "PYTHONPATH=src:tests .venv/bin/pytest -q tests/test_proof_contract_application_probe_cli_v2.py tests/test_proof_contract_witness_dependence_contract.py tests/test_installed_cli_contract_v2.py::test_installed_resource_limits_fail_without_partial_publication",
+    "elapsedSeconds": 6.32,
+    "exitStatus": 0,
+    "passed": 23
+  },
+  "ruff": 0,
+  "staticCommands": {
+    "compileall": ".venv/bin/python -m compileall -q src tests scripts",
+    "quality": "PYTHONPATH=src:tests .venv/bin/python - <<PY; from pathlib import Path; from ladon.quality import strict_quality_issues; issues=strict_quality_issues([Path(\"src\"),Path(\"tests\"),Path(\"scripts\")]); assert not issues; PY",
+    "ruff": ".venv/bin/ruff check src tests scripts"
+  },
+  "strict_quality_issues": 0,
+  "suiteNote": "The strict-quality issue scan, Ruff, and compileall ran repository-wide after final runtime edits. The full pytest gate was bounded separately and is recorded in FULL-REGRESSION.json.",
+  "test_freeze": "verified (120 records; no hash mismatches)"
+}

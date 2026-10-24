@@ -1,0 +1,59 @@
+{
+  "assignmentPost": 689,
+  "auditor": "/root/application_probe_audit",
+  "codeFindings": [],
+  "findings": [
+    {
+      "id": "wrong-goal-source-harness-ordering",
+      "kind": "acceptance-coverage",
+      "severity": "informational",
+      "finding": "The 19 recorded source-gate API outcomes do not include a wrong-goal mutation, so the raw harness count remains exactly 19 and this control must not be attributed to those outcomes. The concern that semantic guard coverage was absent is resolved: frozen native/inspect regression coverage passed, and REHASHED-GOAL-REPLAY.json independently mutates the actual qualified plan, recomputes both goal digest and artifact ID, then invokes the ordinary native batch validator, which rejects it by exact source-bound input recomputation. This supplemental validation occurred at 623.518 seconds within the same 1800-second deadline, after the final memory-stop case, with no checker, Lean, source worker, retry, or cap change. This establishes semantic rejection coverage while retaining a clear harness-ordering limitation.",
+      "evidence": [
+        "evidence/REGULARITY-APPLICATION-20261019/CONTRACT.txt",
+        "evidence/REGULARITY-APPLICATION-20261019/MEASUREMENTS.json",
+        "evidence/REGULARITY-APPLICATION-20261019/REHASHED-GOAL-REPLAY.json",
+        "evidence/REGULARITY-APPLICATION-20261019/focused.log"
+      ]
+    }
+  ],
+  "limitations": [
+    "No claim of source fidelity beyond attributed-unreviewed authored quotes, PDE correctness, all-five-family implementation, whole-method authority, detection benefit, or task completion.",
+    "No source, Lean, tests, proof worker, or resource-limit operations were run after the intentional final memory stop; audit activity was read-only artifact inspection/hash verification.",
+    "Wrong-goal rejection was not an API outcome inside the 19-case source qualification harness; it was exercised separately by frozen native/inspect coverage and the supplemental pure native replay after the memory stop, within the original deadline. This is a harness-ordering/reporting limitation, not missing semantic guard evidence."
+  ],
+  "rawGate": {
+    "acceptedChecks": 5,
+    "actualCheckerAttempts": 6,
+    "budgetSeconds": 1800,
+    "checkedGoals": 5,
+    "elapsedSeconds": 281.2189133099746,
+    "limits": {
+      "maxOutputBytes": 8388608,
+      "maxRssBytes": 12884901888,
+      "timeoutSeconds": 30
+    },
+    "memoryLastNoRetry": true,
+    "result": "PASS for the 19 recorded cases",
+    "scope": "Authored source-bound regularity reading only; not natural-language fidelity, PDE, all-five-family acceptance, or whole-method authority."
+  },
+  "reviewScope": "Read-only source-first audit of qualification-01 raw gate, frozen runtime and published evidence candidate.",
+  "schema": "ladon-application-probe-audit-v1",
+  "verdict": "PASS_WITH_REPORTED_HARNESS_ORDERING_LIMITATION",
+  "verified": {
+    "historicalCustody": "Both historical bundle manifests hash to the reported values and all 87/57 bundle files match their manifests with zero mismatches.",
+    "nativePlans": "Replayed counterexample and matching-control native batches with validate_envelope_batch; both artifact IDs and generated goal digests validate, and plan/check artifact plus plan identity match.",
+    "proofEvidence": "All six evidence files match recorded byte counts and SHA-256; load_goal_evidence verified all six compact projections against immutable raw bytes. Four actual counterexample/control goals have completed/accepted replay/trust; failed-elaboration has one accepted formal-reading and an unresolved probe with rejected replay and no accepted trust; missing terms performs no checker attempts.",
+    "qualityAndSpecs": "Recorded quality and Ruff logs pass; child and parent OpenSpec validation logs pass. Task 1.1/1.2/2.1/2.2/2.3 and parent 2.2 remain open as required.",
+    "runtime": "RUNTIME.json SHA-256 f50deaaa2ca272234f2059bba2c9b13d703499043a65e0a543812559b5a66cfc matches the stated hash. All 516 runtime entries match both runtime.tar.gz and live files; archive copies in qualification and candidate bundle are byte-identical.",
+    "sourceBindings": "Both source quote paths and hashes match reading-0.txt/reading-1.txt for the counterexample and reading-2.txt/reading-1.txt for the control. Both sides bind the same Bridge.lean source hash, selected slice ID and environment; fresh slice is complete, local-context-free and premise-free. Generated prefix file hashes match strictPrefixDigest and contains the explicit AppProbe.use parent-absence guard.",
+    "tests": "Board verification reports all 112 frozen files verified. The prior 107 frozen entries are all present with unchanged hashes in the final 112-entry snapshot. The helper-only proposal preserves all 25 assert ASTs and 5 test function definitions (9 parameter-expanded pytest cases). Broad XML has 1070 passing cases; the focused 17 includes one new inspect case, yielding 1071 unique cases.",
+    "measurements": "Corrected measurement metadata reports 16 focused overlaps and 1071 unique regression cases; the original measurement file is preserved as MEASUREMENTS-FIRST.json.",
+    "rehashGuard": "REHASHED-GOAL-REPLAY.json records rejection of the mutated actual qualified plan after both goal digest and artifact ID were recomputed; exact source-bound input recomputation rejected it at 623.518s within the original 1800s deadline. This is supplemental pure native replay, distinct from 19 API outcomes and after memory stop."
+  },
+  "reconciliation": {
+    "measurementOverlap": "Resolved. Corrected MEASUREMENTS.json reports 16 overlapping cases; MEASUREMENTS-FIRST.json preserves the prior metadata. Broad 1070 plus focused 17 yields 1071 unique regression cases.",
+    "wrongGoalGuard": "Resolved as semantic coverage by the supplemental native replay plus existing frozen inspect regression; not counted among the 19 source-gate API outcomes.",
+    "rawGateCount": 19,
+    "noPostMemoryProofWork": "Confirmed by supplemental artifact classification: native in-process semantic validation only; no checker/Lean/source worker/retry/cap change."
+  }
+}
