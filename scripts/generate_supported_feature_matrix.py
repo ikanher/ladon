@@ -18,7 +18,7 @@ FEATURES: tuple[dict[str, Any], ...] = (
         "profile": "secondary",
         "summary": "Installed analysis, architecture policy, and bounded report output.",
         "tests": (
-            "tests/test_installed_cli_contract.py::test_installed_analyzer_process_contract",
+            "tests/test_installed_cli_contract_v2.py::test_installed_analyzer_process_contract",
             "tests/test_architecture_policy.py::test_architecture_policy_flags_direct_peer_imports_from_globs",
         ),
     },

@@ -17,6 +17,7 @@ from ladon.proof_search_semantic_cli import (
 )
 from ladon.proof_search_type import TypeSearchRequest, query_type_shortlist
 from ladon.proof_search_type_cli import type_text_freshness
+from ladon.resource_limits import DEFAULT_MAX_RSS_MIB
 from ladon.semantic_candidate_batch_worker import check_semantic_candidates
 from ladon.verified_discovery import (
     DiscoveryRequest,
@@ -64,7 +65,7 @@ def register_discover_parser(
     discover.add_argument("--freshness", choices=("stored", "verify"), default="stored")
     discover.add_argument("--timeout-seconds", type=float, default=120.0)
     discover.add_argument("--max-output-mib", type=positive_integer, default=8)
-    discover.add_argument("--max-rss-mib", type=positive_integer, default=32768)
+    discover.add_argument("--max-rss-mib", type=positive_integer, default=DEFAULT_MAX_RSS_MIB)
     discover.add_argument("--toolchain-mode", choices=("ambient", "explicit"), default="ambient")
     discover.add_argument("--lake-path", type=Path)
     discover.add_argument("--lean-path", type=Path)
@@ -189,6 +190,9 @@ def _batch_results(
     batch = check_semantic_candidates(request_to_semantic(request, toolchain), names)
     rows = {str(row["candidate"]): dict(row) for row in batch.rows}
     diagnostic = batch.diagnostic or {"code": "batch-failed"}
+    if not batch.terminal and batch.diagnostic:
+        for row in rows.values():
+            row["diagnostic"] = {**diagnostic, "candidateDiagnostic": row.get("diagnostic")}
     return {
         name: rows.get(name, {"status": "unassessed", "diagnostic": diagnostic}) for name in names
     }

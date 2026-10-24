@@ -332,7 +332,8 @@ pub fn validation_diagnostics(value: &Value) -> Vec<Diagnostic> {
 }
 
 fn unsupported_correspondence_kind(kind: &Value) -> bool {
-    matches!(kind.as_str(), Some("proofir.interpretation" | "proofir.correspondence"))
+    matches!(kind.as_str(), Some("proofir.interpretation" | "proofir.correspondence"
+        | "proofir.contract" | "proofir.contract-analysis"))
 }
 
 impl std::fmt::Display for ProofIrError {

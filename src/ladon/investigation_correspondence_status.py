@@ -33,6 +33,15 @@ def _review_summary(subject, responses):
             "methodReview": _method_review(reviews)}
 
 
+def _statement_review(reviews):
+    labels = {row["classification"] for row in reviews}
+    if not labels or "unresolved" in labels:
+        return "unresolved-attributed"
+    if len(labels) > 1:
+        return "conflicted"
+    return next(iter(labels))
+
+
 def _obligation_work(subject, obligation):
     if obligation["status"] == "supported":
         return None
@@ -70,9 +79,11 @@ def _recorded_link_work(entry):
 
 def _bundle_status(entry, responses):
     review = _review_summary(entry["subject"], responses)
+    reviews = [row for row in responses if row["subject"] == entry["subject"]]
     formal, work = _formal_work(entry)
     row = {"subject": entry["subject"], "kind": entry["kind"],
-           "formalCorrespondence": formal, **review}
+           "formalCorrespondence": formal, "statementReview": _statement_review(reviews),
+           **review}
     if review["mathematicalReview"] != "complete-attributed":
         work.append({"kind": "independent-step-review", "subject": entry["subject"]})
     elif review["methodReview"] == "unresolved-attributed":
@@ -103,6 +114,8 @@ def _final_status(result, entries, bundles, queue):
 
 
 def assess_structured(plan, root, entries, responses, *, now=None):
+    from ladon.investigation_findings import coverage_summary, native_findings
+
     base = {key: copy.deepcopy(plan[key]) for key in
             ("version", "startedAt", "budgetSeconds", "scope", "units", "claims")}
     base["version"] = 1
@@ -112,7 +125,7 @@ def assess_structured(plan, root, entries, responses, *, now=None):
         bundle, work = _bundle_status(entry, responses)
         bundles.append(bundle)
         priority.extend(work)
-    if not entries:
+    if not entries and not plan.get("observations"):
         priority.append({"kind": "author-structured-interpretation", "reason": "no counterpart recorded"})
     queue, blocked = separate_blocked_work(plan, priority + result["next"])
     result["blocked"] = result["blocked"] + blocked
@@ -121,6 +134,8 @@ def assess_structured(plan, root, entries, responses, *, now=None):
                   mathematicalReview="complete-attributed" if math_complete else "incomplete-review",
                   formalCorrespondence=formal_status,
                   mayFinalize=status != "continue", next=queue)
+    result["findings"].extend(native_findings(plan, entries, responses))
+    result["coverage"] = coverage_summary(plan)
     result["status"] = status
     result["counts"].update(structuredSubjects=len(entries), firstResponses=len(plan["responses"]),
                             reconciliations=len(plan["reconciliations"]), actionable=len(queue))
@@ -128,7 +143,23 @@ def assess_structured(plan, root, entries, responses, *, now=None):
     result["nonclaims"] = ["No Lean check was replayed by status or response ingestion.",
                            "Stored formal labels and reviewer labels do not verify truth or identity.",
                            "Review completion covers the authored inventory and subjects only."]
+    if "observations" in plan:
+        _add_observations(result, plan, root)
     return result
+
+
+def _add_observations(result, plan, root):
+    from ladon.investigation_observations import add_observation_status
+
+    add_observation_status(result, plan, root)
+    if not plan["observations"]:
+        return
+    result["formalCorrespondence"] = "incomplete-no-counterpart"
+    if result["next"] or result["blocked"]:
+        result["mathematicalReview"] = "incomplete-review"
+    elif not result["counts"]["pendingUnits"]:
+        result.update(status="recorded-work-complete", mayFinalize=True,
+                      mathematicalReview="complete-attributed")
 
 
 def _workflow_status(result, queue, finalized):

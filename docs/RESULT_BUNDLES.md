@@ -121,7 +121,7 @@ limit to **10,000**, including the index. `--max-bytes N` and `--max-members N`
 set finite positive ceilings for export, verify and bundled inspect/guide.
 Existing 16 MiB metadata, canonical evidence and collection limits still apply.
 JSON/text summaries remain bounded by 32 KiB; full details are in the index.
-These transport limits are independent of the 32 GiB Lean process memory cap.
+These transport limits are independent of the 12 GiB Lean process memory cap.
 
 Predecessor-role manifests must belong to the exact `previousRevision` chain.
 Missing predecessor revisions remain explicit. After extraction, historical

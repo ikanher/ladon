@@ -64,27 +64,34 @@ private def protocolVersion := "ladon-theorem-capsule-stream-v1"
 private def nonclaim :=
   "Lean environment dependency evidence for capsule replay; Ladon does not independently prove theorem truth, global minimality, offline availability, or system hermeticity."
 
+private structure ConstantCollector where
+  visited : ExprSet := {}
+  names : Std.HashSet Name := {}
+  deriving Inhabited
+
+-- Proof expressions are shared DAGs. Visit each expression once, while keeping
+-- the same constant and child coverage as the recursive tree traversal.
 private partial def collectConstants (expression : Expr)
-    (seen : Std.HashSet Name := {}) : Std.HashSet Name :=
-  let seen :=
+    (state : ConstantCollector := {}) : ConstantCollector :=
+  if state.visited.contains expression then state
+  else
+    let state := { state with visited := state.visited.insert expression }
     match expression with
-    | .const name _ => seen.insert name
-    | _ => seen
-  match expression with
-  | .forallE _ domain body _ =>
-      collectConstants body (collectConstants domain seen)
-  | .lam _ domain body _ =>
-      collectConstants body (collectConstants domain seen)
-  | .letE _ type value body _ =>
-      collectConstants body (collectConstants value (collectConstants type seen))
-  | .app function argument =>
-      collectConstants argument (collectConstants function seen)
-  | .mdata _ body => collectConstants body seen
-  | .proj _ _ body => collectConstants body seen
-  | _ => seen
+    | .const name _ => { state with names := state.names.insert name }
+    | .forallE _ domain body _ =>
+        collectConstants body (collectConstants domain state)
+    | .lam _ domain body _ =>
+        collectConstants body (collectConstants domain state)
+    | .letE _ type value body _ =>
+        collectConstants body (collectConstants value (collectConstants type state))
+    | .app function argument =>
+        collectConstants argument (collectConstants function state)
+    | .mdata _ body => collectConstants body state
+    | .proj _ _ body => collectConstants body state
+    | _ => state
 
 private def sortedConstantNames (expression : Expr) : Array Name :=
-  (collectConstants expression).toArray.qsort Name.quickLt
+  (collectConstants expression).names.toArray.qsort Name.quickLt
 
 private def declarationKind : ConstantInfo → String
   | .axiomInfo _ => "axiom"

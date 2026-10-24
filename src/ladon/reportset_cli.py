@@ -56,6 +56,7 @@ from ladon.inspection_query import (
 from ladon.inspection_render import render_inspection_text
 from ladon.lean_runtime import DEFAULT_LEAN_BATCH_TIMEOUT_SECONDS
 from ladon.progress import RunLimits
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, DEFAULT_MAX_RSS_MIB
 from ladon.runset_bundle_reader import bundle_report_set
 from ladon.scope import SUPPORTED_SCOPE_KINDS, ScopePlanningError
 from ladon.scope_runtime import resolve_analysis_scope
@@ -270,7 +271,7 @@ def add_preview_parser(subparsers: Any) -> None:
     parser.add_argument("--source-pattern-policy")
     parser.add_argument("--generated-family-policy")
     parser.add_argument("--overall-timeout", type=positive_number_argument)
-    parser.add_argument("--max-rss-mib", type=positive_integer_argument)
+    parser.add_argument("--max-rss-mib", type=positive_integer_argument, default=DEFAULT_MAX_RSS_MIB)
     parser.add_argument("--max-report-bytes", type=positive_integer_argument)
     parser.add_argument("--cache-dir")
     parser.add_argument("--no-cache", action="store_true")
@@ -559,7 +560,7 @@ def preview_resources(args: argparse.Namespace) -> dict[str, Any]:
         rss_bytes=(
             args.max_rss_mib * 1024 * 1024
             if args.max_rss_mib is not None
-            else None
+            else DEFAULT_MAX_RSS_BYTES
         ),
         report_bytes=args.max_report_bytes,
     )

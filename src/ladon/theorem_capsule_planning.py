@@ -12,6 +12,7 @@ from typing import Any
 
 from ladon.ir import LeanTextDeclaration
 from ladon.process_supervisor import ProcessCancelled, run_bounded_target_process
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
 from ladon.target_build import (
     TargetPreflightError,
@@ -71,7 +72,7 @@ def plan_theorem_capsule(
     *,
     helper_path: Path = DEFAULT_CAPSULE_HELPER,
     timeout_seconds: float = 120.0,
-    max_rss_bytes: int | None = None,
+    max_rss_bytes: int | None = DEFAULT_MAX_RSS_BYTES,
     cancel_event: threading.Event | None = None,
 ) -> TheoremPlan:
     """Plan one exact theorem capsule without writing in the target repository."""
@@ -189,7 +190,7 @@ def _run_exact_helper(
         )
     if process.memory_limited:
         raise CapsuleOperationalError(
-            "Lean theorem helper exceeded the finite process-tree RSS limit"
+            memory_limit_message(max_rss_bytes, process.peak_rss_bytes)
         )
     if not process.succeeded:
         outcome = "timed out" if process.timed_out else "failed"

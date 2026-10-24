@@ -20,6 +20,7 @@ from ladon.evidence_receipt import build_evidence_receipt
 from ladon.lean_toolchain import LeanToolchainError, verify_toolchain_identities
 from ladon.process_supervisor import run_bounded_target_process
 from ladon.proofir_v3 import canonical_bytes, validate_envelope_batch
+from ladon.resource_limits import memory_limit_message
 from ladon.semantic_candidate_limits import (
     MAX_SEMANTIC_BATCH_BYTES,
     MAX_SEMANTIC_BATCH_CANDIDATES,
@@ -163,9 +164,13 @@ def _interpret_batch_process(
             process.stdout, request, request_id, candidates
         )
     except (TypeError, ValueError) as error:
+        diagnostic = str(error)
+        if process.memory_limited:
+            guidance = memory_limit_message(request.max_rss_bytes, process.peak_rss_bytes)
+            diagnostic = f"{guidance} Existing protocol diagnostic: {diagnostic}"
         return SemanticCandidateBatchCheck(
             "invalid-worker-output",
-            diagnostic={"code": "invalid-batch-worker-output", "message": str(error)},
+            diagnostic={"code": "invalid-batch-worker-output", "message": diagnostic},
             elapsed_seconds=process.elapsed_seconds,
             peak_rss_bytes=process.peak_rss_bytes,
         )
@@ -178,9 +183,13 @@ def _interpret_batch_process(
             authoritative=terminal and process.succeeded,
         )
     except (OSError, TypeError, ValueError) as error:
+        diagnostic = str(error)
+        if process.memory_limited:
+            guidance = memory_limit_message(request.max_rss_bytes, process.peak_rss_bytes)
+            diagnostic = f"{guidance} Existing evidence diagnostic: {diagnostic}"
         return SemanticCandidateBatchCheck(
             "invalid-worker-output",
-            diagnostic={"code": "invalid-batch-evidence", "message": str(error)},
+            diagnostic={"code": "invalid-batch-evidence", "message": diagnostic},
             elapsed_seconds=process.elapsed_seconds,
             peak_rss_bytes=process.peak_rss_bytes,
         )
@@ -188,7 +197,7 @@ def _interpret_batch_process(
     return SemanticCandidateBatchCheck(
         status,
         tuple(rows),
-        diagnostic=_batch_diagnostic(status, invalid_rows, payload, process),
+        diagnostic=_batch_diagnostic(status, invalid_rows, payload, process, request.max_rss_bytes),
         elapsed_seconds=process.elapsed_seconds,
         peak_rss_bytes=process.peak_rss_bytes,
         terminal=terminal and process.succeeded,
@@ -203,20 +212,28 @@ def _batch_status(rows, invalid_rows, terminal: bool, succeeded: bool) -> str:
     return "partial" if rows else "failed"
 
 
-def _batch_diagnostic(status, invalid_rows, payload, process):
+def _batch_diagnostic(status, invalid_rows, payload, process, max_rss_bytes):
     if status == "available":
         return None
     if invalid_rows:
-        return {
+        diagnostic = {
             "code": "invalid-batch-evidence",
             "message": "one or more candidate rows failed canonical evidence validation",
             "failedCandidates": [item["candidate"] for item in invalid_rows],
             "candidateFailures": [dict(item) for item in invalid_rows],
         }
-    if payload.get("protocolDiagnostic"):
-        return {**_process_diagnostic(process), "code": "malformed-batch-prefix",
-                "message": payload["protocolDiagnostic"]}
-    return _process_diagnostic(process)
+    elif payload.get("protocolDiagnostic"):
+        diagnostic = _process_diagnostic(process, max_rss_bytes)
+        diagnostic["code"] = "malformed-batch-prefix"
+        diagnostic["message"] = payload["protocolDiagnostic"]
+    else:
+        diagnostic = _process_diagnostic(process, max_rss_bytes)
+    if process.memory_limited:
+        guidance = memory_limit_message(max_rss_bytes, process.peak_rss_bytes)
+        existing = diagnostic.get("message", "")
+        if not existing.startswith("Stop progress and report back to user:"):
+            diagnostic["message"] = guidance + (f" Existing diagnostic: {existing}" if existing else "")
+    return diagnostic
 
 
 def _validate_batch_candidates(candidates: Sequence[str]) -> None:
@@ -716,7 +733,7 @@ def _prefix_receipt(
     )
 
 
-def _process_diagnostic(process: Any) -> dict[str, str]:
+def _process_diagnostic(process: Any, max_rss_bytes: int) -> dict[str, str]:
     if process.timed_out:
         code = "batch-timeout"
     elif process.output_limited:
@@ -727,7 +744,10 @@ def _process_diagnostic(process: Any) -> dict[str, str]:
         code = "batch-worker-failed"
     else:
         code = "batch-terminal-summary-missing"
-    return {"code": code, "message": (process.stderr or "").strip() or code}
+    message = (process.stderr or "").strip() or code
+    if process.memory_limited:
+        message = memory_limit_message(max_rss_bytes, process.peak_rss_bytes)
+    return {"code": code, "message": message}
 
 
 def _partial_process_outcome(process: Any) -> str:

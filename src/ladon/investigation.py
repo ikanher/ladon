@@ -203,6 +203,9 @@ def assess(plan, root: Path, *, now=None):
     claims, ordered = _assessed_claims(plan, reader, scope, by_id)
     blocked, reviewed = _claim_queue(ordered, pending)
     pending, reviewed, findings = _derivation_priority(plan, reader, pending, reviewed, claims)
+    from ladon.investigation_findings import coverage_summary, legacy_findings
+
+    findings = legacy_findings(plan, findings)
     status = _work_status(elapsed, budget, pending, blocked)
     result = {
         "schema": f"ladon-investigation-status-v{plan['version']}",
@@ -226,15 +229,20 @@ def assess(plan, root: Path, *, now=None):
             "No Lean, network, model service or automatic semantic comparison was run.",
             "Inventory, interpretations, judgments, blockers and start time are authored.",
         ],
+        "findings": findings,
+        "coverage": coverage_summary(plan),
     }
 
     if plan["version"] == 2:
         result["authority"] = "source binding, authored reviews and exact scalar witness replay"
-        result["findings"] = findings
         result["nonclaims"].append(
             "Rational witnesses check authored scalar interpretations only; "
             "reviewer labels do not establish independent identities."
         )
+    if "observations" in plan:
+        from ladon.investigation_observations import add_observation_status
+
+        add_observation_status(result, plan, root)
     return result
 
 

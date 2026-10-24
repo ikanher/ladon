@@ -22,6 +22,7 @@ from ladon.lean_toolchain import (
     verify_toolchain_identities,
 )
 from ladon.process_supervisor import run_bounded_target_process
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
 from ladon.semantic_candidate_limits import validate_semantic_bounds
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
 from ladon.source_association_io import _AssociationError, _digest, _read_regular
@@ -52,7 +53,7 @@ class SourceGoalCompletionRequest:
     toolchain: LeanToolchainContext
     timeout_seconds: float = 60.0
     max_output_bytes: int = 8 * 1024**2
-    max_rss_bytes: int = 32 * 1024**3
+    max_rss_bytes: int = DEFAULT_MAX_RSS_BYTES
     require_isolation: bool = False
 
     def __post_init__(self) -> None:
@@ -123,7 +124,7 @@ def _complete(request, captured_request, capture, runner, result) -> None:
         body = _helper_request(capture, snapshot, request.term)
         payload = ("LADON_COMPLETION_REQUEST " + json.dumps(body, sort_keys=True) + "\n").encode()
         process = _run(request, execution, runner, ["--run", str(helper)], payload, result)
-        _require_process(process, "application")
+        _require_process(process, "application", request.max_rss_bytes)
         _verify_source_files(source_path, snapshot, source)
         _verify_bytes(helper, helper_digest, MAX_HELPER_BYTES, "completion-helper")
         verify_toolchain_identities(request.toolchain)
@@ -170,14 +171,22 @@ def _run(request, execution, runner, arguments, payload, result):
     return process
 
 
-def _require_process(process, phase):
+def _require_process(process, phase, max_rss_bytes):
     if not process.succeeded:
         status = _process_status(process)
         if phase == "application" and status == "process-failed":
             observed, code, message = _unsupported_diagnostic(process.stderr)
             if observed != "process-failed":
                 raise _AssociationError("unavailable", code, message)
-        detail = json.dumps({"stdout": _diagnostic_text(process.stdout), "stderr": _diagnostic_text(process.stderr)})
+        if process.memory_limited:
+            detail = memory_limit_message(max_rss_bytes, process.peak_rss_bytes)
+        else:
+            detail = json.dumps(
+                {
+                    "stdout": _diagnostic_text(process.stdout),
+                    "stderr": _diagnostic_text(process.stderr),
+                }
+            )
         raise _AssociationError(status, phase + "-" + status, detail)
 
 
@@ -220,7 +229,7 @@ def _replay(request, runner, result, execution, directory, frame, body):
     _verify_bytes(context_path, context_digest, request.max_output_bytes, "replay-context")
     result["replay"]["status"] = "process-succeeded" if process.succeeded else _process_status(process)
     _verify_bytes(path, _digest(source), len(source), "replay-source")
-    _require_process(process, "replay")
+    _require_process(process, "replay", request.max_rss_bytes)
     observed = decode_replay(process.stdout)
     validate_replay(observed, expected)
     if observed["coverage"] != "complete":

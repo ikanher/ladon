@@ -57,4 +57,11 @@ For each finding, retain its source location, exact interpreted assertion, propo
 
 Report examined source spans, unmapped claims, unresolved applications and unexamined material. If no issue was found, state that result for the examined scope. Save the first report before receiving a reference answer and put later reassessment in a new record.
 
+Report discovered correspondence discrepancies even when no mathematically false
+assertion was established. A different valid proof or a weaker sufficient theorem
+does not settle fidelity of the selected original statement and argument. Use
+[source-bound observation capture and reports](INVESTIGATION_FINDINGS.md) to keep
+those observations, first/corrected reviews and missing bridges in the structured
+output, including observations that never acquire native counterparts.
+
 This procedure is usable with ordinary files and installed tool help. It does not certify source-inventory completeness or automate mathematical correspondence. Testing whether it improves detection requires fresh evaluation contexts whose accessible inputs exclude reference answers and prior analyses.

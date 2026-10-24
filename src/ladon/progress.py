@@ -13,6 +13,8 @@ from pathlib import Path
 from time import monotonic
 from typing import Any, TextIO
 
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
+
 PROGRESS_SCHEMA_VERSION = 1
 PROGRESS_MODES = frozenset({"auto", "plain", "json", "off"})
 DEFAULT_PROGRESS_INTERVAL_SECONDS = 5.0
@@ -34,9 +36,10 @@ class ResourceLimitExceeded(RuntimeError):
         self.phase = phase
         self.observed = observed
         self.limit = limit
-        super().__init__(
-            f"{kind} limit exceeded during {phase}: observed {observed}, limit {limit}"
-        )
+        message = f"{kind} limit exceeded during {phase}: observed {observed}, limit {limit}"
+        if kind == "process_tree_rss":
+            message = memory_limit_message(int(limit), int(observed))
+        super().__init__(message)
 
 
 @dataclass(frozen=True)
@@ -44,7 +47,7 @@ class RunLimits:
     """Finite caller-selected limits for one complete analysis."""
 
     wall_seconds: float | None = None
-    rss_bytes: int | None = None
+    rss_bytes: int | None = DEFAULT_MAX_RSS_BYTES
     report_bytes: int | None = None
 
     def __post_init__(self) -> None:

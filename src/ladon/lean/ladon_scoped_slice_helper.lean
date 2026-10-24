@@ -17,7 +17,7 @@ private structure ScopedOccurrence where
   deriving Inhabited
 
 private partial def scopedOccurrences (root : Expr) (needle : Name)
-    (maxNodes := 4096) (maxDepth := 64) : MetaM (Array ScopedOccurrence) := do
+    (maxNodes := 8192) (maxDepth := 64) : MetaM (Array ScopedOccurrence) := do
   let visited ← IO.mkRef 0
   let rec walk (e : Expr) (depth : Nat) (path : Array Nat)
       (isLeading : Bool) (nestedIds : Array String) : MetaM (Array ScopedOccurrence) := do

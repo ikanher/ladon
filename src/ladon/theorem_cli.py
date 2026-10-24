@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from ladon.cli_execution import EXIT_INVOCATION, EXIT_OPERATIONAL, EXIT_SUCCESS
+from ladon.resource_limits import DEFAULT_MAX_RSS_MIB
 from ladon.theorem_capsule_models import (
     CapsuleContentError,
     CapsuleInvocationError,
@@ -186,7 +187,8 @@ def _add_timeout(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--max-rss-mib",
         type=_positive_integer,
-        help="Optional supported process-tree resident-memory limit in MiB.",
+        default=DEFAULT_MAX_RSS_MIB,
+        help="Supported process-tree resident-memory limit in MiB (default: 12288).",
     )
 
 
@@ -316,6 +318,7 @@ def _extract_command(args: argparse.Namespace) -> int:
         )
         result["status"] = receipt["status"]
         result["receiptIdentity"] = receipt["receiptIdentity"]
+        result["stages"] = receipt.get("stages", [])
     _write_command_result(result, args.format)
     return (
         EXIT_SUCCESS
@@ -334,6 +337,9 @@ def _write_command_result(payload: Mapping[str, Any], output_format: str) -> Non
     for key in ("planIdentity", "capsuleIdentity", "receiptIdentity", "output"):
         if payload.get(key):
             lines.append(f"{key}: {payload[key]}")
+    for stage in payload.get("stages", []):
+        if stage.get("diagnostic"):
+            lines.append(str(stage["diagnostic"]))
     sys.stdout.write("\n".join(lines) + "\n")
 
 
@@ -378,14 +384,13 @@ def _render_plan(plan: TheoremPlan) -> str:
 
 
 def _render_receipt(receipt: Mapping[str, Any]) -> str:
-    return "\n".join(
-        (
-            f"Theorem capsule replay: {receipt.get('status')}",
-            f"Receipt identity: {receipt.get('receiptIdentity', '')}",
-            f"Capsule identity: {receipt.get('capsuleIdentity', '')}",
-            "",
-        )
-    )
+    lines = [
+        f"Theorem capsule replay: {receipt.get('status')}",
+        f"Receipt identity: {receipt.get('receiptIdentity', '')}",
+        f"Capsule identity: {receipt.get('capsuleIdentity', '')}",
+    ]
+    lines.extend(str(row["diagnostic"]) for row in receipt.get("stages", []) if row.get("diagnostic"))
+    return "\n".join(lines) + "\n"
 
 
 def _positive_timeout(value: str) -> float:
@@ -410,7 +415,7 @@ def _positive_integer(value: str) -> int:
 
 def _max_rss_bytes(args: argparse.Namespace) -> int | None:
     value = getattr(args, "max_rss_mib", None)
-    return value * 1024 * 1024 if value is not None else None
+    return value * 1024 * 1024 if value is not None else DEFAULT_MAX_RSS_MIB * 1024 * 1024
 
 
 __all__ = ["build_theorem_parser", "theorem_main"]

@@ -40,6 +40,13 @@ def _terminal_reason(status, stop):
     return None
 
 
+def _has_contract_observations(plan, root):
+    from ladon.investigation_observations import validated_observations
+
+    return any(entry["record"].get("schema") == "ladon-investigation-observation-v2"
+               for entry in validated_observations(plan, root))
+
+
 def progress_receipt(plan, root: Path, *, finalize=False, stop_record=None, now=None):
     """Reassess exact source bytes and clock; never accept a prior receipt as authority."""
     current = now or datetime.now(UTC)
@@ -53,7 +60,9 @@ def progress_receipt(plan, root: Path, *, finalize=False, stop_record=None, now=
         # genuine stop instruction, without resetting or exhausting the clock.
         status["mayFinalize"] = False
         return status, False
-    result = {**status, "schema": "ladon-investigation-progress-v1",
+    has_contract = _has_contract_observations(plan, root)
+    result = {**status, "schema": ("ladon-investigation-progress-v3" if has_contract
+                                   else "ladon-investigation-progress-v2"),
               "operation": "finalize" if finalize else "checkpoint",
               "terminal": bool(finalize), "terminalReason": reason,
               "planId": digest(plan), "scopeId": digest(plan["scope"]),
@@ -67,18 +76,49 @@ def progress_receipt(plan, root: Path, *, finalize=False, stop_record=None, now=
 
 def validate_progress_receipt(receipt, plan, root: Path):
     """Validate binding and fresh source, preserving the original recorded clock."""
-    if not isinstance(receipt, dict) or receipt.get("schema") != "ladon-investigation-progress-v1":
+    _validate_receipt_binding(receipt, plan)
+    now = datetime.fromisoformat(receipt["recordedAt"])
+    rebuilt, saved = progress_receipt(plan, root, finalize=receipt["terminal"],
+                                     stop_record=receipt["stopRecord"], now=now)
+    if receipt["schema"] == "ladon-investigation-progress-v1":
+        rebuilt = historical_status_projection(rebuilt, plan)
+        rebuilt["schema"] = "ladon-investigation-progress-v1"
+        rebuilt["receiptId"] = digest({key: value for key, value in rebuilt.items()
+                                       if key != "receiptId"})
+    if not saved or rebuilt != receipt:
+        raise ValueError("progress receipt no longer matches exact source and plan")
+    return copy.deepcopy(receipt)
+
+
+def _validate_receipt_binding(receipt, plan):
+    if not isinstance(receipt, dict) or receipt.get("schema") not in {
+            "ladon-investigation-progress-v1", "ladon-investigation-progress-v2",
+            "ladon-investigation-progress-v3"}:
         raise ValueError("unsupported progress receipt")
     if receipt.get("planId") != digest(plan) or receipt.get("scopeId") != digest(plan["scope"]):
         raise ValueError("stale progress receipt plan or scope")
     if receipt.get("receiptId") != digest({k: v for k, v in receipt.items() if k != "receiptId"}):
         raise ValueError("altered progress receipt")
-    now = datetime.fromisoformat(receipt["recordedAt"])
-    rebuilt, saved = progress_receipt(plan, root, finalize=receipt["terminal"],
-                                     stop_record=receipt["stopRecord"], now=now)
-    if not saved or rebuilt != receipt:
-        raise ValueError("progress receipt no longer matches exact source and plan")
-    return copy.deepcopy(receipt)
+
+
+def historical_status_projection(status, plan):
+    """Strip additive findings fields to rebuild a frozen progress-v1 receipt."""
+    result = copy.deepcopy(status)
+    if plan.get("observations"):
+        raise ValueError("legacy receipts cannot include new observation records")
+    result.pop("coverage", None)
+    for key in ("observations", "pendingObservations"):
+        result.get("counts", {}).pop(key, None)
+    if plan["version"] == 1:
+        result.pop("findings", None)
+    elif "findings" in result:
+        result["findings"] = [row for row in result["findings"] if row.get("kind") not in {
+            "legacy-claim-review", "native-correspondence-review", "observation"}]
+        if not result["findings"] and plan["version"] != 2:
+            result.pop("findings", None)
+    for bundle in result.get("bundles", []):
+        bundle.pop("statementReview", None)
+    return result
 
 
 def _label_finalization(result, finalize, reason):

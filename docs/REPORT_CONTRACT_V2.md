@@ -89,9 +89,15 @@ that introduces an unordered collection must define its sort key in that
 capability's schema.
 
 `metadata.generated_at_utc` is nullable and is never synthesized. If the caller
-provides a timestamp it is preserved verbatim. `elapsed_seconds` is useful
-runtime telemetry but volatile; normalized-byte determinism tests replace it
-with zero before comparison. No other field is normalized away.
+provides a timestamp it is preserved verbatim. Normalized-byte determinism
+comparisons replace registered volatile telemetry with zero: phase
+`elapsed_seconds`, nested `helperElapsedSeconds`, and
+`run_resources.observed.observedWallSeconds` and nonnegative integer
+`run_resources.observed.peakRssBytes`. Raw serialization retains all measurements.
+Missing RSS measurements (`null`), resource limits, counts, statuses and
+same-named fields outside the registered resource path remain distinguishable.
+This normalization does not change the benchmark's separate memory or time
+budget checks.
 
 ## Version policy and reader dispatch
 

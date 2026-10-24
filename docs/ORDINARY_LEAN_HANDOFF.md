@@ -28,7 +28,7 @@ ladon proof-search goal complete \
   --repo-root /path/to/lean-project --capture-file /path/to/captured-goal.json \
   --term 'candidate argument premise' \
   --lean-path /absolute/pinned/bin/lean --lake-path /absolute/pinned/bin/lake \
-  --max-rss-mib 32768 --format json --output /path/to/completion.json
+  --max-rss-mib 12288 --format json --output /path/to/completion.json
 ```
 
 The goal capture must be genuine and current; this is not a runnable application

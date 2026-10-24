@@ -169,7 +169,7 @@ ladon proof-search check source \
   --subject-artifact sha256:CHECK_ARTIFACT_DIGEST \
   --setup .lake/build/ir/Project/Module.setup.json \
   --lake-path /path/to/pinned/bin/lake --lean-path /path/to/pinned/bin/lean \
-  --max-rss-mib 32768 --format json --output source-capture.json
+  --max-rss-mib 12288 --format json --output source-capture.json
 ```
 
 `--setup` is optional. The supported profile uses whole-module Lean output,
@@ -193,7 +193,7 @@ separate status. Auxiliary import files are observed before and after the
 run; historical environments currently bind primary `.olean` files only.
 The operation does not authenticate supplied artifacts or isolate a hostile
 filesystem. Resources report the configured limits, compiler elapsed time,
-and sampled process-tree peak RSS. The 32 GiB cap is an execution allowance,
+and sampled process-tree peak RSS. The 12 GiB cap is an execution allowance,
 not a performance target.
 
 Primary compiled inputs share a 16 GiB aggregate allowance with candidate
@@ -318,7 +318,7 @@ The companion accepts at most 1,000 entries and 16 MiB. Each selected store read
 retains up to 10,000 trust rows, frontier nodes and omission rows per collection;
 truncation is explicit with exact drilldown references. Aggregate acquisition is
 limited to 100,000 rows and 32 MiB across all selections, and individual stored
-text fields to 64 KiB. These are read bounds, independent of the existing 32 GiB
+text fields to 64 KiB. These are read bounds, independent of the existing 12 GiB
 Lean execution limit. Display pagination never turns bounded or missing trust
 coverage into a complete assumption inventory.
 

@@ -57,7 +57,7 @@ def test_bounded_process_failure_never_returns_capture(capture_request, flag, st
     assert result["capture"] is None
     assert result["resourceAccounting"]["peakRssBytes"] == 1024
     assert len(calls) == 1
-    assert calls[0][1]["max_rss_bytes"] == 32 * 1024**3
+    assert calls[0][1]["max_rss_bytes"] == 12 * 1024**3
 
 
 @pytest.mark.parametrize("text", ["{}", "not a frame", "LADON_GOAL_FRAME {}"])

@@ -17,6 +17,7 @@ from ladon._proof_slice_runtime import (
 )
 from ladon._source_goal_helpers import helper_source
 from ladon.lean_toolchain import resolve_toolchain_context, verify_toolchain_identities
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
 from ladon.source_association_io import _read_regular, _source_path
 
@@ -85,9 +86,9 @@ def extract_proof_slice(repo_root, source_file, module, declaration, application
         },
         "limits": {
             "secondsPerProcess": 60,
-            "rssBytes": 32 * 1024**3,
+            "rssBytes": DEFAULT_MAX_RSS_BYTES,
             "outputBytes": 8 * 1024**2,
-            "nodes": 4096,
+            "nodes": 8192,
             "depth": 64,
         },
     }

@@ -9,7 +9,7 @@ open Lean Elab Command Meta
 -- LADON_EXPR_GRAPH
 
 private def boundedOccurrences (root : Expr) (needle : Name)
-    (maxNodes := 4096) (maxDepth := 64) : MetaM (Array Expr) := do
+    (maxNodes := 8192) (maxDepth := 64) : MetaM (Array Expr) := do
   let mut todo : Array (Expr × Nat) := #[(root, 0)]
   let mut visited := 0
   let mut found := #[]

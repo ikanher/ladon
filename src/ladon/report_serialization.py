@@ -215,10 +215,21 @@ def _zero_named_runtime_fields(raw: Any) -> None:
         return
     if "helperElapsedSeconds" in raw:
         raw["helperElapsedSeconds"] = 0.0
-    resources = raw.get("run_resources")
-    if isinstance(resources, dict):
-        observed = resources.get("observed")
-        if isinstance(observed, dict) and "observedWallSeconds" in observed:
-            observed["observedWallSeconds"] = 0.0
+    _normalize_resource_observations(raw.get("run_resources"))
     for value in raw.values():
         _zero_named_runtime_fields(value)
+
+
+def _normalize_resource_observations(resources: Any) -> None:
+    """Normalize only measured values at the registered observation path."""
+
+    if not isinstance(resources, dict):
+        return
+    observed = resources.get("observed")
+    if not isinstance(observed, dict):
+        return
+    if "observedWallSeconds" in observed:
+        observed["observedWallSeconds"] = 0.0
+    peak_rss = observed.get("peakRssBytes")
+    if type(peak_rss) is int and peak_rss >= 0:
+        observed["peakRssBytes"] = 0

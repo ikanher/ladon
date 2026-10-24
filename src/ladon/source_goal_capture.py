@@ -25,6 +25,7 @@ from ladon._source_goal_protocol import (
 from ladon.execution_posture import require_target_execution_policy
 from ladon.lean_toolchain import LeanToolchainContext, verify_toolchain_identities
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
 from ladon.semantic_candidate_limits import validate_semantic_bounds
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
 from ladon.source_association_io import (
@@ -55,7 +56,7 @@ class SourceGoalCaptureRequest:
     expected_source_digest: str | None = None
     timeout_seconds: float = 60.0
     max_output_bytes: int = 8 * 1024**2
-    max_rss_bytes: int = 32 * 1024**3
+    max_rss_bytes: int = DEFAULT_MAX_RSS_BYTES
     require_isolation: bool = False
 
     def __post_init__(self) -> None:
@@ -149,13 +150,13 @@ def _capture_snapshot(
     }
     first, process = _observe(request, execution, helper, body, source, runner, receipts)
     if not process.succeeded:
-        return _process_failure(process, started, receipts)
+        return _process_failure(process, started, receipts, request.max_rss_bytes)
     _verify_source_files(source_path, snapshot, source)
     selection = _select_goal(first, request.goal_ordinal)
     files, environment, inventory = capture_inventory(request.toolchain, first)
     second, process = _observe(request, execution, helper, body, source, runner, receipts)
     if not process.succeeded:
-        return _process_failure(process, started, receipts)
+        return _process_failure(process, started, receipts, request.max_rss_bytes)
     _verify_bound_observation(first, second)
     _verify_source_files(source_path, snapshot, source)
     verify_inventory(files, environment, inventory)
@@ -269,11 +270,14 @@ def _accounting(started: float, receipts: list[dict[str, Any]]) -> dict[str, Any
     }
 
 
-def _process_failure(process: ProcessResult, started: float, receipts):
+def _process_failure(process: ProcessResult, started: float, receipts,
+                     max_rss_bytes: int = DEFAULT_MAX_RSS_BYTES):
     status = _process_status(process)
     code, message = status, "Lean helper process failed within its declared bounds"
     if status == "process-failed":
         status, code, message = _unsupported_diagnostic(process.stderr)
+    if process.memory_limited:
+        message = memory_limit_message(max_rss_bytes, process.peak_rss_bytes)
     result = _result(status, code, message, started, receipts)
     if receipts:
         result["diagnostic"]["outputSize"] = {

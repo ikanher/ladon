@@ -4,6 +4,19 @@ Ladon's installed commands are ordinary command-line tools. The same public
 options and process behavior apply whether a person, shell script, editor, or
 model invokes them. There is no caller-specific analysis mode.
 
+## Finding commands
+
+`ladon -h` (or `ladon --help`) shows a compact guide to common workflows,
+including index freshness, proposition-text search, candidate checking, source
+goals, and compiled lineage. It does not load the analyzer or inspect a project.
+
+`ladon -h --verbose` lists the full command tree, including less common commands,
+and the analyzer's options. `ladon --verbose --help` is equivalent. The catalog
+is generated from the command parsers; it does not execute their operations.
+Use `ladon COMMAND --help` for exact subcommand arguments, for example
+`ladon proof-search discover --help`. `--verbose` is a standalone root-help
+modifier, not an analysis or subcommand verbosity setting.
+
 ## Analyzer command
 
 Default analysis does not execute Lake, Lean, or target initializers. It writes
@@ -79,6 +92,50 @@ options were removed because they labeled lexical output without producing
 semantic populations. Lean-backed evidence is available only through explicit
 operations whose results name the checker and exact subject.
 
+## Countermodel refinement
+
+`ladon investigation contract refine --input REQUEST.json --root REPO` runs a
+fresh bounded lift check, preserving the original rational counterexample and
+separate source-cited and proposed-repair branches. Inspect saved evidence with
+`contract inspect --input RESULT.json --root REPO`, and include it in an ordinary
+`investigation report` with repeatable `--refinement RESULT.json` supplements.
+Inspection and reports label saved Lean evidence as historical and unverified;
+they do not replay the proof or resolve source-fidelity review. See the
+[request schema and reproducible CLI example](CONTRACT_REFINEMENT.md).
+
+## Source-bound application probes
+
+`probe --input REQUEST.json` regenerates a bounded source-bound plan. Check its
+generated goals with `check-probe --input REQUEST.json --plan-id PLAN_ID
+--terms TERMS.json`. An optional `--reuse-result PRIOR.json` reuses exact accepted
+receipts from a prior Ladon result after fresh bounded preparation. Use only
+unmodified Ladon output and evidence from the same trusted repository. The
+content hashes detect later changes and the receipt binding detects goal/term
+mismatches; they do not authenticate a malicious writer with access to the
+repository's `.ladon` store. Do not use this option with cache data from an
+untrusted workspace.
+
+Export independent-review input from the native plan and every saved check run:
+
+```bash
+ladon investigation contract review-probe --input REQUEST.json \
+  --artifact PLAN.json --attempt FIRST-RESULT.json --attempt LATER-RESULT.json \
+  --output REVIEWER-INPUT.json
+```
+
+Attempts remain in supplied order, including duplicates, failures, unsupported
+probes and stops. The packet includes original source readings and anchors,
+exact goals, execution observations and available raw checker receipts. It omits
+Ladon's proposed semantic verdict and authority labels. The caller must provide
+all attempts; Ladon has no persistent cross-run attempt ledger. Export is capped
+at 64 attempts and 32 MiB. This packet is for review, not a fresh proof check or
+source-fidelity certification.
+
+An attempt is reported as having completed checks only when every generated goal
+has an exact matching row, completed execution receipt, and loaded supported raw
+receipt whose replay/trust state and term digest match. Partial rows, missing
+receipts, and inconsistent evidence remain visible as partial or unverified.
+
 For a compatible existing index, `index update` explicitly refreshes changed
 lexical modules while reusing extraction from unchanged modules:
 
@@ -108,8 +165,10 @@ Verified status compares the indexed generation with current supported inputs.
 `--no-verify-sources`. `sourceChanges` counts added, changed and removed modules,
 with a bounded path sample. Use `--changed` for a larger listing, or
 `--details` for the full text inventory. A status of `stale-configuration` can also mean the lexical extractor changed.
-Version 0.2.3 accepts the preceding extractor through an explicit `index update`,
-re-extracting all modules once even when sources are unchanged. Unknown helper
+Version 0.4.0 accepts lexical extractors v3, v4 and v5 through an explicit
+`index update` to v6, re-extracting all modules once even when sources are
+unchanged. This recovers supported scope names and signature boundaries while
+preserving retained evidence. Unknown helper
 identities or changed toolchain/configuration/layout require a build to a new
 path, even when the top-level index status is `available`.
 Name search reports exact identifier matches separately from lexical
@@ -416,7 +475,7 @@ ladon proof-search check candidate \
   --module Project.Module \
   --goal 'Exact Goal' \
   --candidate Project.Module.declaration \
-  --timeout-seconds 120 --max-output-mib 8 --max-rss-mib 32768 \
+  --timeout-seconds 120 --max-output-mib 8 --max-rss-mib 12288 \
   --format json
 ```
 
@@ -424,11 +483,19 @@ Application checks now expose observed residual contexts and the selected
 declaration's full parameter inventory; see [Application observations](APPLICATION_OBSERVATIONS.md)
 for protocol versions, compact omissions and historical evidence limits.
 
-Candidate checking, discovery, and explicit source association default to a
-32 GiB process-tree RSS cap (`--max-rss-mib 32768`). Reports retain measured
+Analysis, theorem planning/replay, candidate checking, discovery, source-goal
+capture/completion, and explicit source association default to a
+12 GiB process-tree RSS cap (`--max-rss-mib 12288`). Reports retain measured
 `peakRssBytes` and configured limits; a run below the cap can still warrant
 performance investigation. Compare peak memory and elapsed time with the same
 operation and input baseline when assessing regressions.
+
+Memory-limit diagnostics begin `Stop progress and report back to user:` and
+state the configured limit and sampled peak when available. Agents should
+report the failure and ask before retrying with a higher `--max-rss-mib` value.
+Fixed-limit proof-slice and correspondence operations use the same 12 GiB cap
+and report-back guidance, but do not expose that override flag. A memory-limit
+failure does not establish that a proof or candidate is incorrect.
 
 Candidate checking and source association allow up to 16 GiB of primary
 compiled inputs in aggregate, with a 512 MiB per-file ceiling. These are

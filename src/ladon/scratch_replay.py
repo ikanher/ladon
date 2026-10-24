@@ -10,6 +10,7 @@ from pathlib import Path
 
 from ladon.lean_toolchain import LeanToolchainContext, verify_toolchain_identities
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
 
 
@@ -61,7 +62,7 @@ def replay_scratch(
     local_context: Sequence[Mapping[str, str]] = (),
     introduced_context: Sequence[Mapping[str, str]] = (),
     max_output_bytes: int = 8 * 1024 * 1024,
-    max_rss_bytes: int = 4 * 1024 * 1024 * 1024,
+    max_rss_bytes: int = DEFAULT_MAX_RSS_BYTES,
     runner: Callable[..., ProcessResult] = run_bounded_target_process,
 ) -> ScratchReplayResult:
     source = build_scratch_source(module, goal, candidate, local_context, introduced_context)
@@ -101,7 +102,7 @@ def replay_scratch(
         source,
         source_digest,
         output_digest,
-        (process.stderr or process.stdout).strip() or "scratch replay failed",
+        memory_limit_message(max_rss_bytes or DEFAULT_MAX_RSS_BYTES, process.peak_rss_bytes) if process.memory_limited else ((process.stderr or process.stdout).strip() or "scratch replay failed"),
     )
 
 

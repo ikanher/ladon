@@ -45,6 +45,15 @@ locale values are preserved, an unrecognized localized nonrepository diagnostic
 fails closed. Git diagnostics are not echoed by this boundary. The selected mode
 records the policy, not a claim that every enumeration used Git.
 
+Source fingerprints describe current working-tree contents. Git also lists
+tracked paths already deleted from the working tree; those absent entries,
+including entries under removed directories, contribute no file bytes. Staging
+the same deletion does not change the fingerprint. Deleting or restoring source
+files invalidates a previously captured context. An existing dangling symlink,
+a symlinked ancestor, a permission error, or a file disappearing after path
+observation still fails the source check. Required toolchain pins and requested
+source files remain subject to their consumers' existence checks.
+
 ## Identity and limits
 
 Version 2 context identity hashes final environment values, resolved library roots,

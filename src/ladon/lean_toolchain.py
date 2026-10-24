@@ -342,8 +342,17 @@ def _validate_source_relative_path(relative: str) -> str:
 
 def _safe_source_path(root: Path, relative: str) -> _SourceMaterialPath | None:
     path = root / relative
-    _reject_source_symlink_ancestors(root, path, relative)
-    if path.is_symlink():
+    if not _reject_source_symlink_ancestors(root, path, relative):
+        return None
+    try:
+        metadata = path.lstat()
+    except FileNotFoundError:
+        # Git enumerates tracked paths from the index as well as the working
+        # tree. An entry absent before observation is not current-tree material.
+        return None
+    except OSError as exc:
+        raise LeanToolchainError(f"cannot read source identity path: {relative}") from exc
+    if stat.S_ISLNK(metadata.st_mode):
         return _safe_source_symlink(root, path, relative)
     try:
         resolved = path.resolve(strict=True)
@@ -360,20 +369,24 @@ def _safe_source_path(root: Path, relative: str) -> _SourceMaterialPath | None:
     return _SourceMaterialPath(resolved)
 
 
-def _reject_source_symlink_ancestors(root: Path, path: Path, relative: str) -> None:
-    """Reject resolution through a mutable, unframed directory link."""
+def _reject_source_symlink_ancestors(root: Path, path: Path, relative: str) -> bool:
+    """Reject unsafe ancestors; return false if a parent is already absent."""
 
     current = root
     for part in path.relative_to(root).parts[:-1]:
         current /= part
         try:
             metadata = current.lstat()
+        except FileNotFoundError:
+            # A missing parent makes every enumerated descendant absent too.
+            return False
         except OSError as exc:
             raise LeanToolchainError(f"cannot read source identity path: {relative}") from exc
         if stat.S_ISLNK(metadata.st_mode):
             raise LeanToolchainError(f"source identity path has a symlink ancestor: {relative}")
         if not stat.S_ISDIR(metadata.st_mode):
             raise LeanToolchainError(f"cannot read source identity path: {relative}")
+    return True
 
 
 def _safe_source_symlink(root: Path, path: Path, relative: str) -> _SourceMaterialPath:

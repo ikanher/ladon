@@ -104,6 +104,9 @@ def test_schema_has_every_normalized_family_and_declared_index() -> None:
         "proofir_v3_interpretations", "proofir_v3_correspondences",
         "proofir_v3_correspondence_obligations", "proofir_v3_correspondence_residuals",
         "proofir_v3_correspondence_checks",
+        "proofir_v3_contracts", "proofir_v3_contract_sources",
+        "proofir_v3_contract_analyses", "proofir_v3_contract_analysis_inputs",
+        "proofir_v3_contract_analysis_derivations",
     }
     assert EXPECTED_TABLES <= schema_objects(connection, "table")
     assert REQUIRED_INDEXES <= schema_objects(connection, "index")

@@ -13,6 +13,7 @@ def implementation_digest():
         "correspondence_implementation.py", "correspondence_interpretation.py",
         "proofir_correspondence.py", "proofir_correspondence_payloads.py",
         "correspondence_preparation.py", "correspondence_execution_accounting.py",
+        "_proof_contract_goal_scratch.py",
         "correspondence_import_cache.py", "correspondence_archive.py", "correspondence_transport.py",
         "investigation_correspondence_inputs.py",
         "correspondence_maps.py", "proof_slice.py", "proof_slice_validation.py",

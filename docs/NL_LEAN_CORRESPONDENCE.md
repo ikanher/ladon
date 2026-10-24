@@ -147,10 +147,10 @@ cross-language parity claim for them.
 
 ## Bounds and provenance
 
-Each compiler/helper process has a 60-second deadline, 32-GiB RSS cap, and
-8-MiB output cap, with process-group cleanup. Traversal permits 4096 visited
+Each compiler/helper process has a 60-second deadline, 12-GiB RSS cap, and
+8-MiB output cap, with process-group cleanup. Traversal permits 8192 visited
 nodes and depth 64; each serialized expression is limited to 1 MiB. Formal
-source is limited to 8 MiB. Interpretation lowering shares the 4096-node,
+source is limited to 8 MiB. Interpretation lowering retains its separate 4096-node,
 64-depth, 1-MiB text bounds. A check accepts at most sixteen supplied terms,
 with one term per obligation, and replays at most sixteen supplied and automatic
 terms in total. Remaining obligations receive explicit attempt-limit residuals.
@@ -324,7 +324,7 @@ directory does not hide the original project's compiled dependencies.
 Run the current source checkout, avoiding any pip-installed Ladon:
 
 ```sh
-cd /home/codex/projects/ladon
+cd /path/to/ladon
 uv run --locked pytest -q tests/test_correspondence_typed_lowering.py \
   tests/test_correspondence_identity_transport.py \
   tests/test_proof_slice_namespace_overlay.py
@@ -346,7 +346,7 @@ For repeated links in the admitted public-source fragment, opt into request-loca
 preparation using the same ordinary checking command:
 
 ```sh
-cd /home/codex/projects/ladon
+cd /path/to/ladon
 uv run --locked python -m ladon.entrypoint investigation check \
   --plan prepared.json --terms terms.json --repo /absolute/formalization \
   --root /absolute/source-root --preparation request --output checked.json
@@ -394,3 +394,11 @@ load was not controlled, so full performance qualification remains open pending
 a clean repeat. See the [full measurements and command](../openspec/changes/ladon-correspondence-field-hardening-umbrella/evidence/paired-benchmark-02/REPORT.md).
 Ordinary checking remains the default; the command above opts into request reuse.
 These measurements establish no improvement in detecting mathematical errors.
+
+For authored correspondence observations without a successful extracted slice,
+use the [observation capture and reporting path](INVESTIGATION_FINDINGS.md).
+Version-three plans accept optional immutable `observations`; review completion,
+source fidelity, formal support and mathematical falsity remain separate.
+Status retains reviewed native classifications and corrected first-response
+history. Supplementary reporting exposes conflicting reviews and pending branch
+work without resetting the clock or replaying stored checks.

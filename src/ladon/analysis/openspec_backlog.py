@@ -104,7 +104,8 @@ def packet_findings(
     findings: list[dict[str, Any]] = []
     if hygiene_row["drift_kind"]:
         findings.append(make_finding("openspec_status_drift", change_id, hygiene_row["drift_kind"]))
-    if hygiene_row["inferred_status"] == "completed" and not has_delta_spec(change_dir):
+    if (hygiene_row["inferred_status"] == "completed"
+            and not has_delta_spec(change_dir) and not specs_explicitly_skipped(change_dir)):
         findings.append(
             make_finding(
                 "invalid_completed_packet",
@@ -196,6 +197,30 @@ def has_delta_spec(change_dir: Path) -> bool:
         DELTA_HEADER_RE.search(path.read_text(encoding="utf-8"))
         for path in specs_dir.glob("*/spec.md")
     )
+
+
+def specs_explicitly_skipped(change_dir: Path) -> bool:
+    """Recognize the exemption in plain, flat scalar OpenSpec metadata only."""
+    metadata = change_dir / ".openspec.yaml"
+    if not metadata.is_file():
+        return False
+    values = _plain_metadata_values(metadata.read_text(encoding="utf-8"))
+    return values is not None and values.get("skip_specs") == "true"
+
+
+def _plain_metadata_values(content: str) -> dict[str, str] | None:
+    """Decline complex YAML and duplicate keys instead of guessing their meaning."""
+    values = {}
+    for line in content.splitlines():
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        match = re.fullmatch(
+            r"([A-Za-z_][A-Za-z0-9_-]*)[ \t]*:[ \t]+"
+            r"([A-Za-z0-9_.:/-]+)(?:[ \t]+#.*)?[ \t]*", line)
+        if match is None or match[1] in values:
+            return None
+        values[match[1]] = match[2]
+    return values
 
 
 def reconciliation_ledger_findings(

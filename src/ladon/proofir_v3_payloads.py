@@ -129,8 +129,28 @@ def validate_kind_payload(value: Mapping[str, Any]) -> None:
         "proofir.governance-observation": _validate_governance,
         "proofir.interpretation": _validate_interpretation,
         "proofir.correspondence": _validate_correspondence,
+        "proofir.contract": _validate_contract,
+        "proofir.contract-analysis": _validate_contract_analysis,
     }[kind]
     validator(p, value, subjects, env)
+
+
+def _validate_contract(p, value, subjects, env):
+    from ladon.proof_contract_payloads import validate_contract_payload
+
+    try:
+        validate_contract_payload(p, value, subjects, env)
+    except (ValueError, TypeError, KeyError) as error:
+        _invalid_field(value, "/payload", str(error))
+
+
+def _validate_contract_analysis(p, value, subjects, env):
+    from ladon.proof_contract_payloads import validate_analysis_payload
+
+    try:
+        validate_analysis_payload(p, value, subjects, env)
+    except (ValueError, TypeError, KeyError) as error:
+        _invalid_field(value, "/payload", str(error))
 
 
 def _validate_interpretation(p, value, subjects, env):

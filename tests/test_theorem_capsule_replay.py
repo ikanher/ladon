@@ -46,8 +46,9 @@ def test_replay_verifies_after_original_checkout_is_renamed(
     renamed = repository.with_name("repository-unavailable")
     repository.rename(renamed)
 
-    receipt = replay_theorem_capsule(capsule)
-    repeated = replay_theorem_capsule(capsule)
+    # Explicitly disable sampling for the deterministic receipt comparison.
+    receipt = replay_theorem_capsule(capsule, max_rss_bytes=None)
+    repeated = replay_theorem_capsule(capsule, max_rss_bytes=None)
 
     assert receipt["status"] == "verified"
     assert repeated["receiptIdentity"] == receipt["receiptIdentity"]

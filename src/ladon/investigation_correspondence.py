@@ -16,7 +16,8 @@ RESPONSE_KEYS = {"reviewer", "subject", "challengeDigest", "classification", "me
 
 
 def _bounded(plan):
-    closed(plan, PLAN_KEYS | ({"workBlockers"} if "workBlockers" in plan else set()),
+    optional = {key for key in ("workBlockers", "observations") if key in plan}
+    closed(plan, PLAN_KEYS | optional,
            "version-three investigation")
     if type(plan["version"]) is not int or plan["version"] != 3:
         raise ValueError("unsupported structured investigation version")
@@ -118,6 +119,8 @@ def _apply_reconciliations(stored_rows, firsts, packets):
         if (stored["responseId"] != digest(response) or response["subject"] != first["subject"]
                 or response["challengeDigest"] != first["challengeDigest"]):
             raise ValueError("altered response identity or reconciliation binding")
+        if response["reviewer"] != first["reviewer"]:
+            raise ValueError("reconciliation reviewer attribution changed")
         validate_response(response, packets[response["subject"]])
         corrected.add(stored["firstResponseId"])
         effective[stored["firstResponseId"]] = stored

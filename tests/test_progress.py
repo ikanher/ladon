@@ -144,7 +144,7 @@ def test_active_wall_watchdog_sets_cancellation_and_preserves_crossing() -> None
 def test_watchdog_without_runtime_limits_is_a_single_noop_context() -> None:
     entered: list[str] = []
 
-    with RunBudget(RunLimits()).watch("discover", threading.Event()):
+    with RunBudget(RunLimits(rss_bytes=None)).watch("discover", threading.Event()):
         entered.append("discover")
 
     assert entered == ["discover"]

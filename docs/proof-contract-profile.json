@@ -1,0 +1,21 @@
+{
+  "authority": "conditional structural analysis; exact applications require checks",
+  "constantCoherence": "known constant and anchored witness permission sets agree",
+  "constantScope": "explicit existential binderId, or a separate implicit constant after telescope",
+  "estimate": "forall s x, M s (f x) <= c * N (s + loss) x",
+  "nesting": "forall i j x, i <= j -> N i x <= N j x",
+  "permission": "valuation agreement on allowed binders preserves witness",
+  "profileId": "norm-scale-v1",
+  "rules": {
+    "combine-estimates": "ContractMath.combine_estimates",
+    "combine-requirements": "ContractMath.max_requirement_and",
+    "compose": "ContractMath.Compose",
+    "dominance": "ContractMath.route_dominance_sound",
+    "identity": "id",
+    "pair-permissions": "ContractMath.permission_pair_union",
+    "sum-permissions": "ContractMath.permission_sum_union",
+    "weaken-loss": "ContractMath.lower_offset_implies_higher_offset",
+    "weaken-permission": "ContractMath.permission_monotone"
+  },
+  "scalars": "nonnegative naturals"
+}

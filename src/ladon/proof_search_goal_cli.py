@@ -13,6 +13,7 @@ from ladon.compiler_goal_query import parse_compiler_goal_query
 from ladon.lean_toolchain import LeanToolchainError, resolve_toolchain_context
 from ladon.proof_search_index import ProofSearchIndexError
 from ladon.proof_search_semantic_cli import enforce_semantic_execution_policy
+from ladon.resource_limits import DEFAULT_MAX_RSS_MIB
 from ladon.semantic_candidate_limits import validate_semantic_bounds
 from ladon.source_association_io import _MODULE, _AssociationError, _read_regular, _source_path
 from ladon.source_goal_capture import SourceGoalCaptureRequest, capture_source_goal
@@ -55,7 +56,7 @@ def _base(parser, add_repository_options, add_output_options):
     add_output_options(parser)
     parser.add_argument("--timeout-seconds", type=float, default=60.0)
     parser.add_argument("--max-output-mib", type=int, default=8)
-    parser.add_argument("--max-rss-mib", type=int, default=32768)
+    parser.add_argument("--max-rss-mib", type=int, default=DEFAULT_MAX_RSS_MIB)
     parser.add_argument("--require-isolation", action="store_true")
 
 

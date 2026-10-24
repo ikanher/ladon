@@ -21,6 +21,7 @@ from typing import Any
 from ladon.evidence_receipt import build_evidence_receipt
 from ladon.execution_posture import require_target_execution_policy
 from ladon.proofir_v3 import validate_envelope_batch
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES
 from ladon.scratch_replay import replay_scratch
 from ladon.semantic_candidate_limits import (
     MAX_DISCOVERY_BATCH_SIZE,
@@ -60,7 +61,7 @@ class DiscoveryRequest:
     batch_size: int = 8
     timeout_seconds: float = 120.0
     max_output_bytes: int = 8 * 1024 * 1024
-    max_rss_bytes: int = 32 * 1024 * 1024 * 1024
+    max_rss_bytes: int = DEFAULT_MAX_RSS_BYTES
     scope: str = "repository"
     roots: tuple[str, ...] = ()
     freshness: str = "stored"

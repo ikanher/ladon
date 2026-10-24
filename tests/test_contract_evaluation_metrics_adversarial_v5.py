@@ -1,0 +1,297 @@
+"""Scratch-only regression tests for the root review of the frozen contract."""
+from __future__ import annotations
+
+import os
+
+import pytest
+from test_contract_evaluation_metrics_v2 import _registration, _report, canonical, sha
+
+from ladon._contract_evaluation_core import _opaque_identifier, _safe_file
+from ladon.contract_evaluation_metrics import (
+    aggregate_case_metrics,
+    aggregate_evaluation,
+    freeze_first_report,
+    validate_registration,
+)
+
+
+def _rehash(reg):
+    body = dict(reg)
+    body.pop("registrationIdentity", None)
+    reg["registrationIdentity"] = sha(canonical(body))
+
+
+def test_terminal_status_set_excludes_derived_abstention(tmp_path):
+    reg = _registration(tmp_path)
+    report = _report(reg)
+    report["cases"][0]["status"] = "abstained"
+    with pytest.raises(ValueError, match="status"):
+        freeze_first_report(canonical(report), reg, tmp_path, tmp_path / "receipt")
+
+
+def test_first_report_preserves_frozen_case_order(tmp_path):
+    reg = _registration(tmp_path)
+    report = _report(reg)
+    report["cases"][0], report["cases"][1] = report["cases"][1], report["cases"][0]
+    with pytest.raises(ValueError, match="order"):
+        freeze_first_report(canonical(report), reg, tmp_path, tmp_path / "receipt")
+
+
+def test_case_control_requires_supported_assertions():
+    out = aggregate_case_metrics(
+        [{"caseId": "v", "track": "A", "status": "complete", "observedClass": "valid",
+          "findingIds": ["claim"], "checkerAttempts": 0, "failedProbes": 0,
+          "extractionErrors": 0, "unsupportedSelections": 0, "elapsedSeconds": 0,
+          "peakRssBytes": None}],
+        {"v": {"caseJudgment": "supported", "findings": {"claim": "unresolved"}}},
+        {"v": {"expectedClass": "valid"}},
+    )
+    assert out["tracks"]["A"]["justifiedControls"] == 0
+    assert out["tracks"]["A"]["abstentions"] == 1
+
+
+def test_unknown_truth_is_not_a_discrepancy_false_accusation():
+    out = aggregate_case_metrics(
+        [{"caseId": "u", "track": "A", "status": "complete", "observedClass": "mismatch",
+          "findingIds": [], "checkerAttempts": 0, "failedProbes": 0,
+          "extractionErrors": 0, "unsupportedSelections": 0, "elapsedSeconds": 0,
+          "peakRssBytes": None}], {}, {"u": {"expectedClass": "unknown"}},
+    )
+    assert out["tracks"]["A"]["falseAccusations"] == 0
+
+
+def test_registration_rejects_hardlink_alias_across_case_and_runtime(tmp_path):
+    reg = _registration(tmp_path)
+    source = tmp_path / reg["cases"][0]["files"][0]["path"]
+    alias = tmp_path / "runtime" / "aliased.bin"
+    os.link(source, alias)
+    reg["runtimes"]["baseline"]["files"][0]["path"] = "runtime/aliased.bin"
+    reg["runtimes"]["baseline"]["files"][0]["sha256"] = sha(source.read_bytes())
+    _rehash(reg)
+    with pytest.raises(ValueError, match="alias"):
+        validate_registration(reg, tmp_path)
+
+
+def test_safe_open_rejects_symlink_component(tmp_path):
+    (tmp_path / "real").mkdir()
+    (tmp_path / "real" / "f").write_bytes(b"data")
+    (tmp_path / "link").symlink_to(tmp_path / "real", target_is_directory=True)
+    with pytest.raises(ValueError, match="safely open|symlink"):
+        _safe_file(tmp_path, "link/f")
+
+
+def test_key_parse_is_strict_and_key_classes_are_track_bound(tmp_path, monkeypatch):
+    reg = _registration(tmp_path)
+    report_bytes = canonical(_report(reg))
+    digest = sha(report_bytes)
+    receipt = {"schema": "ladon-contract-evaluation-first-report-receipt-v1",
+               "registrationIdentity": reg["registrationIdentity"], "registrationId": reg["registrationId"],
+               "runId": reg["runId"], "arm": "baseline",
+               "runtimeIdentity": sha(canonical(reg["runtimes"]["baseline"])),
+               "firstReportSha256": digest, "caseCount": 36}
+    adjudication = {"schema": "ladon-contract-evaluation-adjudication-v1",
+                    "registrationIdentity": reg["registrationIdentity"], "firstReportSha256": digest,
+                    "cases": [{"caseId": row["caseId"], "caseJudgment": "unresolved", "findings": []}
+                              for row in _report(reg)["cases"]]}
+    key = {"schema": "ladon-contract-evaluation-key-v1", "registrationIdentity": reg["registrationIdentity"],
+           "cases": [{"caseId": c["caseId"], "expectedClass": "mismatch" if c["track"] == "A" else "matching"} for c in reg["cases"]]}
+    key["cases"][0]["expectedClass"] = "discrepancy"  # invalid for A
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(ValueError, match="expectedClass"):
+        aggregate_evaluation(reg, report_bytes, receipt, adjudication, lambda: key)
+
+    with pytest.raises(ValueError, match="duplicate JSON key"):
+        aggregate_evaluation(reg, report_bytes, receipt, adjudication,
+                             lambda: b'{"schema":"x","schema":"y"}')
+
+
+def test_aggregate_fails_closed_when_cwd_does_not_contain_artifacts(tmp_path, monkeypatch):
+    reg = _registration(tmp_path)
+    report_bytes = canonical(_report(reg))
+    digest = sha(report_bytes)
+    receipt = {"schema": "ladon-contract-evaluation-first-report-receipt-v1",
+               "registrationIdentity": reg["registrationIdentity"], "registrationId": reg["registrationId"],
+               "runId": reg["runId"], "arm": "baseline",
+               "runtimeIdentity": sha(canonical(reg["runtimes"]["baseline"])),
+               "firstReportSha256": digest, "caseCount": 36}
+    adjudication = {"schema": "ladon-contract-evaluation-adjudication-v1",
+                    "registrationIdentity": reg["registrationIdentity"], "firstReportSha256": digest,
+                    "cases": [{"caseId": row["caseId"], "caseJudgment": "unresolved", "findings": []}
+                              for row in _report(reg)["cases"]]}
+    monkeypatch.chdir(tmp_path.parent)
+    called = []
+    with pytest.raises(ValueError, match="artifact missing|cannot safely open"):
+        aggregate_evaluation(reg, report_bytes, receipt, adjudication, lambda: called.append(True))
+    assert called == []
+
+
+def _mini_row(**updates):
+    row = {"caseId": "a", "track": "A", "status": "complete", "observedClass": None,
+           "findingIds": [], "checkerAttempts": 0, "failedProbes": 0,
+           "extractionErrors": 0, "unsupportedSelections": 0,
+           "elapsedSeconds": 0.0, "peakRssBytes": None}
+    row.update(updates)
+    return row
+
+
+@pytest.mark.parametrize("row", [
+    _mini_row(status="abstained"),
+    _mini_row(checkerAttempts=-1),
+    _mini_row(checkerAttempts=1.5),
+    _mini_row(elapsedSeconds=float("nan")),
+    _mini_row(peakRssBytes=-1),
+    _mini_row(peakRssBytes="100"),
+    _mini_row(observedClass=[]),
+    _mini_row(extraVerdict="mismatch"),
+])
+def test_pure_aggregator_rejects_malformed_rows(row):
+    with pytest.raises(ValueError):
+        aggregate_case_metrics([row], {}, {"a": {"expectedClass": "mismatch"}})
+
+
+def test_pure_aggregator_rejects_mismatched_key_and_adjudication_ids():
+    with pytest.raises(ValueError, match="key case IDs"):
+        aggregate_case_metrics([_mini_row()], {}, {"other": {"expectedClass": "mismatch"}})
+    with pytest.raises(ValueError, match="adjudication case IDs"):
+        aggregate_case_metrics([_mini_row()], {"other": {"caseJudgment": "supported", "findings": {}}},
+                               {"a": {"expectedClass": "mismatch"}})
+    with pytest.raises(ValueError, match="finding IDs"):
+        aggregate_case_metrics([_mini_row(findingIds=["x"])],
+                               {"a": {"caseJudgment": "supported", "findings": {"y": "supported"}}},
+                               {"a": {"expectedClass": "mismatch"}})
+
+
+def test_refuted_case_adjudication_on_asserted_discrepancy_is_case_fp():
+    row = _mini_row(observedClass="mismatch", findingIds=["x"])
+    out = aggregate_case_metrics([row],
+        {"a": {"caseJudgment": "refuted", "findings": {"x": "supported"}}},
+        {"a": {"expectedClass": "mismatch"}})
+    case = out["cases"][0]
+    assert case["falseAccusation"] is True
+    assert out["tracks"]["A"]["falseAccusations"] == 1
+    assert out["tracks"]["A"]["truePositives"] == 0
+
+
+def _production_score_artifacts(tmp_path):
+    reg = _registration(tmp_path)
+    report = _report(reg)
+    report["cases"][0]["observedClass"] = "mismatch"
+    report["cases"][0]["findingIds"] = ["claim-opaque"]
+    report_bytes = canonical(report)
+    digest = sha(report_bytes)
+    return reg, report, report_bytes, digest
+
+
+def _production_score_receipt(reg, digest):
+    return {
+        "schema": "ladon-contract-evaluation-first-report-receipt-v1",
+        "registrationIdentity": reg["registrationIdentity"],
+        "registrationId": reg["registrationId"],
+        "runId": reg["runId"],
+        "arm": "baseline",
+        "runtimeIdentity": sha(canonical(reg["runtimes"]["baseline"])),
+        "firstReportSha256": digest,
+        "caseCount": 36,
+    }
+
+
+def _production_score_adjudication(report, reg, digest):
+    return {
+        "schema": "ladon-contract-evaluation-adjudication-v1",
+        "registrationIdentity": reg["registrationIdentity"],
+        "firstReportSha256": digest,
+        "cases": [
+            {
+                "caseId": row["caseId"],
+                "caseJudgment": "supported" if index == 0 else "unresolved",
+                "findings": ([{"findingId": "claim-opaque", "judgment": "supported"}]
+                             if index == 0 else []),
+            }
+            for index, row in enumerate(report["cases"])
+        ],
+    }
+
+
+def _production_score_key(reg):
+    return {
+        "schema": "ladon-contract-evaluation-key-v1",
+        "registrationIdentity": reg["registrationIdentity"],
+        "cases": [
+            {"caseId": case["caseId"],
+             "expectedClass": "mismatch" if case["track"] == "A" else "matching"}
+            for case in reg["cases"]
+        ],
+    }
+
+
+def test_production_score_preserves_case_details_and_all_identity_bindings(tmp_path, monkeypatch):
+    reg, report, report_bytes, digest = _production_score_artifacts(tmp_path)
+    receipt = _production_score_receipt(reg, digest)
+    adjudication = _production_score_adjudication(report, reg, digest)
+    monkeypatch.chdir(tmp_path)
+    out = aggregate_evaluation(reg, report_bytes, receipt, adjudication,
+                               lambda: _production_score_key(reg))
+    assert out["registrationIdentity"] == reg["registrationIdentity"]
+    assert out["firstReportSha256"] == digest
+    assert out["adjudicationSha256"] == sha(canonical(adjudication))
+    assert out["arm"] == "baseline" and out["runtimeIdentity"] == receipt["runtimeIdentity"]
+    assert len(out["cases"]) == 36 and out["cases"][0]["findingJudgments"] == {"claim-opaque": "supported"}
+    assert out["cases"][0]["truePositive"] is True
+    assert out["tracks"]["A"]["coverage"] == 1 / 24
+    assert out["tracks"]["A"]["timeToFirstSupportedFinding"] == report["cases"][0]["elapsedSeconds"]
+    assert out["tracks"]["A"]["unresolvedAdjudications"] > 0
+
+
+@pytest.mark.parametrize("rel", [".", "", "a//b", "a/./b", "a/b/", "a\\b", "C:/a", "../a"])
+def test_safe_file_rejects_noncanonical_relative_path_spellings(tmp_path, rel):
+    with pytest.raises(ValueError, match="path"):
+        _safe_file(tmp_path, rel)
+
+
+def test_python_mapping_key_is_normalized_before_class_membership(tmp_path, monkeypatch):
+    reg = _registration(tmp_path)
+    report_bytes = canonical(_report(reg))
+    digest = sha(report_bytes)
+    receipt = {"schema": "ladon-contract-evaluation-first-report-receipt-v1",
+               "registrationIdentity": reg["registrationIdentity"], "registrationId": reg["registrationId"],
+               "runId": reg["runId"], "arm": "baseline",
+               "runtimeIdentity": sha(canonical(reg["runtimes"]["baseline"])),
+               "firstReportSha256": digest, "caseCount": 36}
+    adjudication = {"schema": "ladon-contract-evaluation-adjudication-v1",
+                    "registrationIdentity": reg["registrationIdentity"], "firstReportSha256": digest,
+                    "cases": [{"caseId": row["caseId"], "caseJudgment": "unresolved", "findings": []}
+                              for row in _report(reg)["cases"]]}
+    key = {"schema": "ladon-contract-evaluation-key-v1", "registrationIdentity": reg["registrationIdentity"],
+           "cases": [{"caseId": c["caseId"], "expectedClass": "mismatch" if c["track"] == "A" else "matching"} for c in reg["cases"]]}
+    key["cases"][0]["expectedClass"] = ["mismatch"]
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(ValueError, match="expectedClass"):
+        aggregate_evaluation(reg, report_bytes, receipt, adjudication, lambda: key)
+
+    key["cases"][0]["expectedClass"] = {"not": "json-native"}
+    with pytest.raises(ValueError, match="non-JSON|expectedClass"):
+        aggregate_evaluation(reg, report_bytes, receipt, adjudication, lambda: key)
+
+
+@pytest.mark.parametrize("value", ["A-mismatch01", "claimvalidcontrol", "case-discrepancy7"])
+def test_opaque_identifiers_reject_concatenated_answer_labels(value):
+    with pytest.raises(ValueError, match="answer label"):
+        _opaque_identifier(value, r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}", "identifier")
+
+
+def test_opaque_identifier_accepts_unlabelled_identifier():
+    assert _opaque_identifier("case-q7m2", r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}", "identifier") == "case-q7m2"
+
+
+def test_registration_rejects_non_string_file_role(tmp_path):
+    reg = _registration(tmp_path)
+    reg["cases"][0]["files"][0]["role"] = []
+    identity_body = {key: value for key, value in reg.items() if key != "registrationIdentity"}
+    reg["registrationIdentity"] = sha(canonical(identity_body))
+    with pytest.raises(ValueError, match="file role"):
+        validate_registration(reg, tmp_path)
+
+
+def test_pure_aggregator_rejects_non_string_track():
+    with pytest.raises(ValueError, match="track or status"):
+        aggregate_case_metrics([_mini_row(track=[])], {}, {"a": {"expectedClass": "mismatch"}})

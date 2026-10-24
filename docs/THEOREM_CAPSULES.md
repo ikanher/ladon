@@ -79,8 +79,10 @@ The helper protocol is independent of the dependency limit used by human-facing
 declaration reports. It emits an explicit completion record with a node count and
 checksum. Helper output is file-backed and capped; exceeding that finite limit
 fails planning instead of publishing a partial complete plan.
-`--max-rss-mib` optionally adds a supported process-tree resident-memory ceiling
-to planning and replay.
+Planning and replay default to a 12 GiB process-tree resident-memory ceiling
+(`--max-rss-mib 12288`). Use `--max-rss-mib` to override it explicitly.
+Memory-limit failures tell agents to stop progress and report the configured
+limit and observed peak to the user before retrying with a higher limit.
 
 ## Capsule layout and verification
 

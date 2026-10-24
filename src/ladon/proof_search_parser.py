@@ -18,6 +18,7 @@ from ladon.proof_search_semantic_cli import (
     add_semantic_registry_options,
     add_target_execution_options,
 )
+from ladon.resource_limits import DEFAULT_MAX_RSS_MIB
 
 
 class ProofSearchArgumentParser(argparse.ArgumentParser):
@@ -240,7 +241,7 @@ def build_proof_search_parser(*, evidence_kinds: Sequence[str]) -> argparse.Argu
     candidate.add_argument("--candidate", required=True)
     candidate.add_argument("--timeout-seconds", type=float, default=120.0)
     candidate.add_argument("--max-output-mib", type=_positive_integer, default=8)
-    candidate.add_argument("--max-rss-mib", type=_positive_integer, default=32768)
+    candidate.add_argument("--max-rss-mib", type=_positive_integer, default=DEFAULT_MAX_RSS_MIB)
     candidate.add_argument(
         "--toolchain-mode",
         choices=("ambient", "explicit"),
@@ -269,7 +270,7 @@ def build_proof_search_parser(*, evidence_kinds: Sequence[str]) -> argparse.Argu
     source.add_argument("--setup", dest="setup_path", type=Path)
     source.add_argument("--timeout-seconds", type=float, default=120.0)
     source.add_argument("--max-output-mib", type=_positive_integer, default=8)
-    source.add_argument("--max-rss-mib", type=_positive_integer, default=32768)
+    source.add_argument("--max-rss-mib", type=_positive_integer, default=DEFAULT_MAX_RSS_MIB)
     source.add_argument(
         "--toolchain-mode",
         choices=("explicit",),

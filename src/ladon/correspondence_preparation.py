@@ -13,6 +13,7 @@ from ladon._source_goal_helpers import helper_source
 from ladon.correspondence_execution_accounting import stage
 from ladon.lean_toolchain import verify_toolchain_identities
 from ladon.process_supervisor import run_bounded_target_process
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
 from ladon.source_association_inventory import _compiled_roots, _resolve_one_compiled_module
 from ladon.source_association_io import (
@@ -103,7 +104,15 @@ def _snapshot_typed_helper():
 
 class SourcePreparationFailure(ValueError):
     def __init__(self, process):
-        super().__init__('request source preparation failed; no correspondence obligation was attempted')
+        if process.memory_limited:
+            message = memory_limit_message(
+                DEFAULT_MAX_RSS_BYTES,
+                process.peak_rss_bytes,
+                supports_override=False,
+            )
+        else:
+            message = 'request source preparation failed; no correspondence obligation was attempted'
+        super().__init__(message)
         self.process = process
         self.plan_id = None
         self.unattempted = []
@@ -175,7 +184,7 @@ class PreparedSourceContext:
             return run_bounded_target_process(
             [*execution.command, '-R', str(self.compiled_root), '-o', str(self.olean),
              str(self.source_path)], cwd=self.root, env=execution.environment,
-            timeout_seconds=60, max_output_bytes=8*1024**2, max_rss_bytes=32*1024**3)
+            timeout_seconds=60, max_output_bytes=8*1024**2, max_rss_bytes=DEFAULT_MAX_RSS_BYTES)
         finally:
             # Preserve incremental ownership even if a later output is malformed.
             for path in self.outputs:

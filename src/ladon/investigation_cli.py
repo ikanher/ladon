@@ -10,6 +10,10 @@ from ladon.investigation import assess, initialize, load_plan
 
 
 def investigation_main(argv=None):
+    if argv and argv[0] == "contract":
+        from ladon.proof_contract_cli import contract_main
+
+        return contract_main(argv[1:])
     if argv and argv[0] in {"interpret", "align", "check", "inspect"}:
         from ladon.correspondence_cli import correspondence_main
 
@@ -25,6 +29,10 @@ def investigation_main(argv=None):
 def _investigation_parser():
     parser = argparse.ArgumentParser(prog="ladon investigation")
     sub = parser.add_subparsers(dest="command", required=True)
+    from ladon.investigation_observation_cli import add_observation_parsers
+
+    add_observation_parsers(sub)
+    sub.add_parser("contract", help="Produce and inspect source-bound mathematical contracts")
     for name in ("interpret", "align", "check", "inspect"):
         sub.add_parser(name, help="Structured correspondence authoring and evidence inspection")
     init = sub.add_parser("init", help="Create a new source-bound plan without overwriting")
@@ -95,21 +103,16 @@ def _initialize_plan(args):
 
 def _run_investigation(args):
     from ladon.investigation_correspondence_cli import load_investigation, structured_transition
+    from ladon.investigation_observation_cli import observation_command
+
+    observed = observation_command(args)
+    if observed is not None:
+        return observed
 
     if args.command == "init":
         return _initialize_plan(args)
     if args.command in {"checkpoint", "finalize"}:
-        from ladon.correspondence_cli import publish
-        from ladon.investigation_finalization import progress_receipt
-
-        stop = getattr(args, "stop_record", None)
-        result, saved = progress_receipt(load_investigation(args.plan), args.root,
-                                        finalize=args.command == "finalize",
-                                        stop_record=load_plan(stop) if stop else None)
-        if saved:
-            publish(result, args.output)
-        print(json.dumps(result, ensure_ascii=False, sort_keys=True))
-        return 0 if saved else 2
+        return _progress_transition(args)
     if args.command in {"attach", "ingest", "reconcile"}:
         return structured_transition(args)
     if args.command == "challenge" and load_investigation(args.plan).get("version") == 3:
@@ -117,6 +120,21 @@ def _run_investigation(args):
     if args.command in ("challenge", "witness"):
         return _legacy_challenge(args)
     return _investigation_status(args)
+
+
+def _progress_transition(args):
+    from ladon.correspondence_cli import publish
+    from ladon.investigation_correspondence_cli import load_investigation
+    from ladon.investigation_finalization import progress_receipt
+
+    stop = getattr(args, "stop_record", None)
+    result, saved = progress_receipt(load_investigation(args.plan), args.root,
+                                    finalize=args.command == "finalize",
+                                    stop_record=load_plan(stop) if stop else None)
+    if saved:
+        publish(result, args.output)
+    print(json.dumps(result, ensure_ascii=False, sort_keys=True))
+    return 0 if saved else 2
 
 
 def _legacy_challenge(args):

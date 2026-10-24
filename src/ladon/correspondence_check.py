@@ -9,9 +9,10 @@ from __future__ import annotations
 import copy
 import json
 import re
-import tempfile
+from contextlib import contextmanager
 from pathlib import Path
 
+from ladon._proof_contract_goal_scratch import cleanup_worker_goal, worker_workspace, write_goal
 from ladon.correspondence_execution_accounting import execution_accounting, stage
 from ladon.correspondence_implementation import implementation_digest
 from ladon.correspondence_interpretation import (
@@ -26,6 +27,7 @@ from ladon.correspondence_interpretation import (
 from ladon.correspondence_maps import map_references, mapped_expression, validate_object_map
 from ladon.process_supervisor import run_bounded_target_process
 from ladon.proof_slice import digest, extract_proof_slice, pinned_toolchain, slice_identity
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
 from ladon.scoped_slice import profile_is_scoped
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
 from ladon.source_goal_capture import SourceGoalCaptureRequest, capture_source_goal
@@ -301,10 +303,32 @@ def _generated_prelude(prepared, source, symbols, goal):
     return prefix.decode() + declarations + f"\n#ladon_typed_subject ({goal})\n"
 
 
-def _write_goal_source(path, text):
-    if len(text.encode()) > 8 * 1024**2:
-        raise ValueError("generated module exceeds source byte bound")
-    path.write_text(text)
+def _write_goal_source(path, text, owner):
+    write_goal(path, text, owner)
+
+
+def _typecheck_failure(typed):
+    from dataclasses import asdict
+
+    result = {"status": "unresolved", "typecheck": asdict(typed)}
+    if typed.memory_limited:
+        result["diagnostic"] = {
+            "code": "memory-limit",
+            "message": memory_limit_message(
+                DEFAULT_MAX_RSS_BYTES, typed.peak_rss_bytes, supports_override=False,
+            ),
+        }
+    return result
+
+
+def _fixed_memory_guidance(result):
+    if result["status"] == "memory-limit":
+        result["diagnostic"]["message"] = memory_limit_message(
+            DEFAULT_MAX_RSS_BYTES,
+            result.get("resourceAccounting", {}).get("peakRssBytes"),
+            supports_override=False,
+        )
+    return result
 
 
 def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None):
@@ -313,14 +337,14 @@ def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None):
     _verify_prepared_inputs(prepared, root, source, toolchain)
     state = root / ".ladon/correspondence"
     state.mkdir(parents=True, exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="goal-", dir=state) as temporary:
-        path = Path(temporary) / "LadonCorrespondence.lean"
+    with _goal_temporary_directory(state) as (temporary, owner):
+        path = temporary / "LadonCorrespondence.lean"
         prelude = _generated_prelude(prepared, source, symbols, goal)
         # Observe the original copied-source proposition even during reuse.
         # Imported modules do not export every local elaboration extension.
         typing_prelude = (_generated_prelude(None, source, symbols, goal)
                           if prepared is not None else prelude)
-        _write_goal_source(path, typing_prelude)
+        _write_goal_source(path, typing_prelude, owner)
         execution = prepare_direct_lean_execution(
             root, None, toolchain, require_compiled_module=False
         )
@@ -331,20 +355,18 @@ def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None):
                 env=execution.environment,
                 timeout_seconds=60,
                 max_output_bytes=8 * 1024**2,
-                max_rss_bytes=32 * 1024**3,
+                max_rss_bytes=DEFAULT_MAX_RSS_BYTES,
             )
         if not typed.succeeded:
-            from dataclasses import asdict
-
-            return {"status": "unresolved", "typecheck": asdict(typed)}
+            return _typecheck_failure(typed)
         typed_subject = _actual_typed_subject(typed)
         text = prelude + f"\nexample : {goal} := by\n  skip\n"
-        _write_goal_source(path, text)
+        _write_goal_source(path, text, owner)
         # The generated file is deliberately part of this pinned source context.
         # Resolve after writing it, then keep it unchanged through independent replay.
         toolchain = pinned_toolchain(root)
         with stage("capture"):
-            capture = capture_source_goal(
+            capture = _fixed_memory_guidance(capture_source_goal(
                 SourceGoalCaptureRequest(
                     root,
                     str(path.relative_to(root)),
@@ -353,7 +375,7 @@ def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None):
                     4,
                     toolchain,
                 )
-            )
+            ))
         if capture["status"] != "captured":
             from dataclasses import asdict
 
@@ -383,9 +405,9 @@ def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None):
                 },
             }
         with stage("completion-replay-trust"):
-            completion = complete_source_goal(
+            completion = _fixed_memory_guidance(complete_source_goal(
                 SourceGoalCompletionRequest(root, capture["capture"], term, toolchain)
-            )
+            ))
         if prepared is not None:
             prepared.verify()
         return {
@@ -396,6 +418,16 @@ def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None):
             "typedSubject": typed_subject,
             "typecheck": __import__("dataclasses").asdict(typed),
         }
+
+
+@contextmanager
+def _goal_temporary_directory(state):
+    """Use a supervisor-owned lease when present; retain local cleanup otherwise."""
+    with worker_workspace(state) as (path, owner):
+        try:
+            yield (path, owner)
+        finally:
+            cleanup_worker_goal(owner)
 
 
 def _validate_current_plan(plan, native_artifacts):

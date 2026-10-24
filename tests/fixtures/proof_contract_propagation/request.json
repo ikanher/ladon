@@ -1,0 +1,115 @@
+{
+  "goalRef": {
+    "kind": "statement",
+    "localId": "statement:goal"
+  },
+  "ruleBindings": [
+    {
+      "stepRef": {
+        "kind": "derivation-step",
+        "localId": "step:one"
+      },
+      "ruleRef": {
+        "kind": "declaration",
+        "localId": "rule:one"
+      },
+      "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+      "ruleId": "identity",
+      "arity": 1,
+      "outputInterfaceId": "out",
+      "parameters": {},
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:one"
+        }
+      ]
+    }
+  ],
+  "endpointInterfaces": [
+    {
+      "interfaceId": "in",
+      "endpointId": "estimate:f",
+      "operatorId": "operator:f",
+      "objectId": "operator:f",
+      "domainId": "domain:X",
+      "representationId": "representation:original",
+      "inputTypeId": "type:X",
+      "outputTypeId": "type:Y",
+      "inputScaleId": "scale:N",
+      "outputScaleId": "scale:M",
+      "inputNormId": "norm:N",
+      "outputNormId": "norm:M",
+      "conclusionId": "estimate:bound",
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:interface"
+        }
+      ],
+      "contractRef": {
+        "artifactRef": "sha256:63d1c39029af7234428a51ba5eb816f34c684e7c93e3c4fc3d0c3ab4b9b2388a",
+        "kind": "contract",
+        "localId": "a"
+      }
+    },
+    {
+      "interfaceId": "out",
+      "endpointId": "estimate:f",
+      "operatorId": "operator:f",
+      "objectId": "operator:f",
+      "domainId": "domain:X",
+      "representationId": "representation:original",
+      "inputTypeId": "type:X",
+      "outputTypeId": "type:Y",
+      "inputScaleId": "scale:N",
+      "outputScaleId": "scale:M",
+      "inputNormId": "norm:N",
+      "outputNormId": "norm:M",
+      "conclusionId": "estimate:bound",
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:interface"
+        }
+      ]
+    }
+  ],
+  "scopeBindings": [
+    {
+      "contractRef": {
+        "artifactRef": "sha256:63d1c39029af7234428a51ba5eb816f34c684e7c93e3c4fc3d0c3ab4b9b2388a",
+        "kind": "contract",
+        "localId": "a"
+      },
+      "statementRef": {
+        "kind": "statement",
+        "localId": "statement:a"
+      },
+      "localContextRef": {
+        "kind": "local-context",
+        "localId": "context:shared"
+      },
+      "objectMap": [
+        {
+          "fromObjectId": "operator:f",
+          "toObjectId": "operator:f"
+        }
+      ],
+      "binderMap": [
+        {
+          "fromBinderId": "u",
+          "toBinderId": "u"
+        }
+      ],
+      "substitutionRefs": [],
+      "evidenceRefs": [
+        {
+          "kind": "check-run",
+          "localId": "check:source"
+        }
+      ]
+    }
+  ],
+  "bounds": {}
+}

@@ -51,6 +51,15 @@ A reviewed claim additionally contains:
 
 Statement judgments are `aligned`, `mismatch`, or `unresolved`; method judgments are `same`, `different`, or `unresolved`. They answer separate questions. Missing support remains unresolved or blocked; do not invent a counterpart to make the gate pass. A blocker needs nonempty `kind`, `evidence`, `nextAction` and `unblockCondition`. One blocked claim does not stop actionable work elsewhere.
 
+Status includes source-bound `findings` and `coverage`. Completed mismatch and
+different-method judgments remain visible after their recorded work is resolved.
+`mathematicalFalsity: not-established` is separate from correspondence judgments.
+Version-two arithmetic findings retain their existing authority alongside these
+attributed findings. Surveyed units, reviewed claims and reviewed observations
+are counted separately; `wholePaperCertified` is false.
+Use [source observations and findings](INVESTIGATION_FINDINGS.md) to capture a
+candidate before extraction succeeds, review it, and report supplementary plans.
+
 After each batch, use `next` and work on the returned queue. Pending source inventory comes first, then local obligations in source order. `--limit` bounds the displayed next batch (1–100); `nextOmitted` reports hidden queue entries. The full queue is reconstructed from the preserved plan. Read relevant formal definitions and proof bodies, and check the implication needed at the actual application. Reserve enough budget for comparisons across the inventory before deep proof engineering.
 
 Before ending the investigation, run:
@@ -68,7 +77,7 @@ The portable example at `scripts/demo_investigation.py` exercises a quantitative
 For this development checkout, invoke the current source from the Ladon directory:
 
 ```sh
-cd /home/codex/projects/ladon
+cd /path/to/ladon
 uv run --locked python -m ladon.entrypoint investigation checkpoint \
   --plan /absolute/path/plan.json --root /absolute/path/source-root \
   --output /absolute/path/new-checkpoint.json
@@ -117,7 +126,7 @@ interpretation and attaches it after a refused finalization. Run it with a new
 output directory; it leaves the investigation open and saves its actual CLI log:
 
 ```sh
-cd /home/codex/projects/ladon
+cd /path/to/ladon
 uv run --locked python scripts/demo_investigation_finalization.py \
   --output /tmp/ladon-continuation-new
 uv run --locked pytest -q tests/test_investigation_continuation_driver.py

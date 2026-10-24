@@ -1,0 +1,20 @@
+# Tasks
+
+Current state: the Mathlib feasibility gate passed for the existing matrix-factorization workspace. Lean core alone could not normalize the required Rat comparisons; Mathlib `norm_num` handled the defined operation matrix, while Lean's totalized `1 / 0` differs from Python's reject-on-zero rule. The route therefore prevalidates and rejects zero division, and reports unsupported when the exact workspace lacks Mathlib. [Feasibility evidence](evidence/lean-rat-feasibility.md). The plan, bounded replay route and ProofIR check-run receipts are implemented; cache-based acceptance remains disabled because public cache objects have no authenticated provenance.
+
+## 1. Regenerate exact rational Lean goals
+
+- [x] 1.1 Verify Mathlib `Rat` normalization and operation agreement for signed values, all comparisons, arithmetic, powers, absolute value, and nonzero division; record the core-Lean limitation and zero-division policy. [Evidence](evidence/lean-rat-feasibility.md).
+- [x] 1.2 Implement a bounded encoder from the validated rational AST and exact assignment into closed Lean `Rat` propositions; verify every supported node and reject unsupported or zero-division inputs before goal generation. `tests/test_rational_lean_encoder_v2.py` passes (16 tests); the generated 15-obligation matrix compiled in the exact Mathlib workspace with `norm_num` (see [encoder evidence](evidence/rational-lean-encoder.md)).
+- [x] 1.3 Add differential tests comparing Python predicate outcomes with Lean `norm_num` for premise-false, conclusion-false, strict/equality boundary, negative, power, absolute-value, nonzero-division and zero-division cases; verify missing Mathlib returns unsupported. The frozen v8 plan suite compiles a 13-obligation matrix, checks the exact Python/Lean Boolean vector, rejects nested-identity-recomputed obligation tampering, and checks deadline stops; see [rational branch plan evidence](evidence/rational-branch-plan.md).
+
+## 2. Bind branch semantics into ProofIR plans and receipts
+
+- [x] 2.1 Add a closed, separately versioned rational-branch request and generated artifact path; verify it regenerates goals from the branch/base goal/assignment and rejects caller-written Lean goals while leaving existing paired probes unchanged. The API emits a native `proofir.contract-analysis` artifact with its own rational profile digest and `rational-branch` stage. Native validation independently regenerates obligations from the derived goal and assignment; the frozen suite and SQLite projection smoke check pass (see [rational branch plan evidence](evidence/rational-branch-plan.md)).
+- [x] 2.2 Bind branch and source-span identity, base/derived goal, assignment, generated goal, checker and workspace identities into plan IDs and checked receipts. Verify semantic changes invalidate plans, and structurally matching but unauthenticated cache data cannot bypass fresh Lean replay. Cache acceleration remains disabled until cache provenance can be authenticated.
+- [x] 2.3 Preserve bounded worker limits, deadline outcomes and resource-stop behavior; verify no stopped, unsupported or rejected attempt can publish checked support. The checking worker caps each goal at 120 seconds and 12 GiB, subject to tighter request/shared limits.
+
+## 3. Deliver the audited route
+
+- [x] 3.1 Document the explicit rational-branch API and its exact finite-assignment scope; verify the documented request/result fields against the frozen generated-result schema tests. There is no CLI command for this route yet (see [API guide](../../../docs/RATIONAL_BRANCH_PROBES.md)).
+- [x] 3.2 Run focused rational, ProofIR, application-probe, receipt/cache and resource regressions plus scoped quality, compile and strict OpenSpec checks; record independent audit evidence and remaining source-fidelity/lifting limitations. See [receipt and replay evidence](evidence/rational-branch-receipts.md); a plan ID alone does not bind in-place `.olean` replacement, while every checked receipt binds the exact stable inventory used by its replay.

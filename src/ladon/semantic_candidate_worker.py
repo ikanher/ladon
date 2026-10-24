@@ -40,6 +40,7 @@ from ladon.proofir_v3 import (
     validate_envelope,
     validate_envelope_batch,
 )
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
 from ladon.semantic_application_context import validate_application_observation
 from ladon.semantic_candidate_limits import (
     MAX_COMPILED_ENVIRONMENT_BYTES,
@@ -97,7 +98,7 @@ class SemanticCandidateRequest:
     candidate: str
     timeout_seconds: float = 120.0
     max_output_bytes: int = 8 * 1024 * 1024
-    max_rss_bytes: int = 32 * 1024 * 1024 * 1024
+    max_rss_bytes: int = DEFAULT_MAX_RSS_BYTES
     toolchain: LeanToolchainContext | None = None
     local_context: tuple[Mapping[str, str], ...] = ()
     execution_context_ref: str | None = None
@@ -602,7 +603,11 @@ def _failed_check(
         code, status = "checker-memory-limit", "memory-limited"
     else:
         code, status = "checker-failed", "failed-checker"
-    detail = _process_failure_detail(process)
+    detail = (
+        memory_limit_message(request.max_rss_bytes, process.peak_rss_bytes)
+        if process.memory_limited
+        else _process_failure_detail(process)
+    )
     return SemanticCandidateCheck(
         status,
         diagnostic={"code": code, "message": detail or code},

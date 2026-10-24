@@ -16,6 +16,7 @@ from ladon.proofir_v3 import (
     canonical_bytes,
     validate_envelope_batch,
 )
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
 from ladon.semantic_candidate_limits import validate_semantic_bounds
 from ladon.source_association_environment import (
     _repo_root,
@@ -60,7 +61,7 @@ class SourceAssociationRequest:
     setup_path: str | None = None
     timeout_seconds: float = 120
     max_output_bytes: int = 8 * 1024 * 1024
-    max_rss_bytes: int = 32 * 1024 * 1024 * 1024
+    max_rss_bytes: int = DEFAULT_MAX_RSS_BYTES
 
     def __post_init__(self) -> None:
         _validate_limits(self)
@@ -119,7 +120,7 @@ def capture_source_association(
             resource,
         )
         resource.update(_resource_result(process))
-        _require_successful_process(process)
+        _require_successful_process(process, request.max_rss_bytes)
         compiled_after = _verify_unchanged_inputs(
             request, root, source_path, source_digest, setup_digest,
             compiled_files, compiled_before, environment,
@@ -211,13 +212,13 @@ def _validate_limits(request: SourceAssociationRequest) -> None:
         raise _AssociationError("failed", "invalid-identity", "module and candidate must be qualified Lean names")
 
 
-def _require_successful_process(process: ProcessResult) -> None:
+def _require_successful_process(process: ProcessResult, max_rss_bytes: int) -> None:
     bounded_status = _bounded_status(process)
     if bounded_status:
         raise _AssociationError(
             bounded_status,
             "bounded-process",
-            "Lean source compilation reached a configured process bound",
+            memory_limit_message(max_rss_bytes, process.peak_rss_bytes) if process.memory_limited else "Lean source compilation reached a configured process bound",
         )
     if not process.succeeded:
         raise _AssociationError("failed", "lean-compile-failed", "Lean source compilation failed")

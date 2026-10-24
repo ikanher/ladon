@@ -72,6 +72,7 @@ from ladon.report_v3 import (
     write_report_v3_file,
 )
 from ladon.reportset_cli import REPORTSET_COMMANDS, reportset_main
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, DEFAULT_MAX_RSS_MIB
 from ladon.scope import SUPPORTED_SCOPE_KINDS, ScopePlanningError
 from ladon.target_build import (
     DEFAULT_BUILD_TIMEOUT_SECONDS,
@@ -206,7 +207,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--max-rss-mib",
         type=positive_integer,
-        help="Optional supported process-tree resident-memory limit in MiB.",
+        default=DEFAULT_MAX_RSS_MIB,
+        help="Supported process-tree resident-memory limit in MiB (default: 12288).",
     )
     parser.add_argument(
         "--max-report-bytes",
@@ -486,7 +488,7 @@ def run_context(args: argparse.Namespace, repo_root: Path) -> RunContext:
 
     limits = RunLimits(
         wall_seconds=args.overall_timeout,
-        rss_bytes=args.max_rss_mib * 1024 * 1024 if args.max_rss_mib else None,
+        rss_bytes=args.max_rss_mib * 1024 * 1024 if args.max_rss_mib else DEFAULT_MAX_RSS_BYTES,
         report_bytes=args.max_report_bytes,
     )
     return RunContext(

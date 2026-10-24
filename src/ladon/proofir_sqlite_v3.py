@@ -17,6 +17,22 @@ from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any
 
+from ladon.proof_contract_sqlite import (
+    DELETE_ORDER as CONTRACT_DELETE_ORDER,
+)
+from ladon.proof_contract_sqlite import (
+    INDEXES as CONTRACT_INDEXES,
+)
+from ladon.proof_contract_sqlite import (
+    SCHEMA as CONTRACT_SCHEMA,
+)
+from ladon.proof_contract_sqlite import (
+    TABLES as CONTRACT_TABLES,
+)
+from ladon.proof_contract_sqlite import (
+    project_analysis,
+    project_contract,
+)
 from ladon.proofir_v3 import (
     _validate_external_references,
     canonical_bytes,
@@ -31,7 +47,7 @@ from ladon.sqlite_publication import (
     release_publication_lock,
 )
 
-V3_SCHEMA_VERSION = 9
+V3_SCHEMA_VERSION = 12
 MAX_EXTENSION_BYTES = 64 * 1024
 DEFAULT_MAX_DATABASE_BYTES = 512 * 1024 * 1024
 
@@ -252,7 +268,8 @@ CREATE TABLE IF NOT EXISTS proofir_v3_artifacts (
         'proofir.claim','proofir.derivation','proofir.plan','proofir.attempt-log',
         'proofir.environment','proofir.check-run','proofir.source-map',
         'proofir.attachment-set','proofir.governance-observation',
-        'proofir.interpretation','proofir.correspondence')),
+        'proofir.interpretation','proofir.correspondence',
+        'proofir.contract','proofir.contract-analysis')),
     proofir_version TEXT NOT NULL CHECK(proofir_version='3.0'),
     environment_ref TEXT NOT NULL,
     canonical_json TEXT NOT NULL CHECK(json_valid(canonical_json)),
@@ -741,6 +758,10 @@ CREATE INDEX IF NOT EXISTS idx_v3_correspondence_interpretation ON proofir_v3_co
 CREATE INDEX IF NOT EXISTS idx_v3_correspondence_check ON proofir_v3_correspondence_checks(check_owner,check_kind,check_local_id);
 """
 
+REQUIRED_TABLES = REQUIRED_TABLES | CONTRACT_TABLES
+REQUIRED_INDEXES = REQUIRED_INDEXES | CONTRACT_INDEXES
+_SCHEMA += CONTRACT_SCHEMA
+
 # Every semantic row pointer is an RFC 6901 JSON Pointer.  SQLite cannot decode
 # escape sequences, but it can reject missing roots, dangling ``~``, and every
 # escape other than ``~0``/``~1`` before a row reaches the projection.
@@ -753,7 +774,7 @@ _SCHEMA = _SCHEMA.replace(
 )
 
 
-_DELETE_ORDER = (
+_DELETE_ORDER = CONTRACT_DELETE_ORDER + (
     "proofir_v3_correspondence_checks",
     "proofir_v3_correspondence_residuals",
     "proofir_v3_correspondence_obligations",
@@ -835,6 +856,9 @@ def create_v3_schema(
     """Create native-v3 tables, optionally owning database-wide version metadata."""
 
     _reject_obsolete_artifact_schema(connection, manage_user_version=manage_user_version)
+    from ladon.proof_contract_sqlite import reject_obsolete_contract_schema
+
+    reject_obsolete_contract_schema(connection)
     connection.execute("PRAGMA foreign_keys = ON")
     existing = connection.execute(
         "SELECT sql FROM sqlite_master WHERE type='table' AND name='proofir_v3_subjects'"
@@ -1337,6 +1361,8 @@ _FAMILY_PROJECTORS = {
     "proofir.governance-observation": _project_observation,
     "proofir.interpretation": _project_interpretation,
     "proofir.correspondence": _project_correspondence,
+    "proofir.contract": project_contract,
+    "proofir.contract-analysis": project_analysis,
 }
 
 

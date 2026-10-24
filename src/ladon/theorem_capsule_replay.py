@@ -15,6 +15,7 @@ from pathlib import Path, PurePosixPath
 from typing import Any
 
 from ladon.process_supervisor import ProcessResult, run_bounded_target_process
+from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
 from ladon.theorem_capsule_models import (
     NONCLAIMS,
     CapsuleContentError,
@@ -55,7 +56,7 @@ def replay_theorem_capsule(
     capsule: Path,
     *,
     timeout_seconds: float = 120.0,
-    max_rss_bytes: int | None = None,
+    max_rss_bytes: int | None = DEFAULT_MAX_RSS_BYTES,
     network: str = "deny",
 ) -> dict[str, Any]:
     """Replay a capsule and return a receipt for success or classified failure."""
@@ -372,7 +373,7 @@ def _run_stage(
     return {
         "status": status,
         "result": result,
-        "row": _process_stage_row(stage, display_command, result, cwd),
+        "row": _process_stage_row(stage, display_command, result, cwd, max_rss_bytes),
     }
 
 
@@ -449,6 +450,7 @@ def _run_replay_helper(
         ("lake", "env", "lean", "--run", "<ladon-helper>", "<target>"),
         result,
         replay_root,
+        max_rss_bytes,
     )
     failure = _process_failure_status(result)
     if failure is not None:
@@ -471,10 +473,11 @@ def _process_stage_row(
     command: tuple[str, ...],
     result: ProcessResult,
     replay_root: Path,
+    max_rss_bytes: int | None,
 ) -> dict[str, Any]:
     stdout = _sanitize_output(result.stdout, replay_root)
     stderr = _sanitize_output(result.stderr, replay_root)
-    return {
+    row = {
         "stage": stage,
         "command": list(command),
         "returncode": result.returncode,
@@ -487,6 +490,9 @@ def _process_stage_row(
         "stdoutExcerpt": stdout[:1000],
         "stderrExcerpt": stderr[:1000],
     }
+    if result.memory_limited:
+        row["diagnostic"] = memory_limit_message(max_rss_bytes, result.peak_rss_bytes)
+    return row
 
 
 def _sanitize_output(value: str, replay_root: Path) -> str:

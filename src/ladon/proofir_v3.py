@@ -63,6 +63,8 @@ SUPPORTED_ARTIFACT_KINDS = frozenset(
         "proofir.governance-observation",
         "proofir.interpretation",
         "proofir.correspondence",
+        "proofir.contract",
+        "proofir.contract-analysis",
     }
 )
 LEGACY_ARTIFACT_KINDS = frozenset(
@@ -1093,6 +1095,9 @@ def _expected_external_kind(pointer: str) -> str | None:
         "attachmentSetRef": "attachment-set",
         "interpretationRef": "interpretation",
         "checkRunRefs": "check-run",
+        "contractRefs": "contract",
+        "planRef": "contract-analysis",
+        "derivationGoalRef": "statement",
     }
     if pointer == "/payload/sourceRef":
         return "source-map"
@@ -1111,6 +1116,10 @@ def _validate_external_references(
 
     for pointer, reference in _external_references(artifact["payload"], "/payload"):
         _validate_one_external_reference(owner_id, artifact, artifacts, pointer, reference)
+
+    from ladon.proof_contract_payloads import validate_analysis_inputs
+
+    validate_analysis_inputs(artifact, artifacts)
 
     inputs = artifact.get("payload", {}).get("inputs")
     if artifact.get("artifactKind") == "proofir.check-run" and isinstance(inputs, Mapping):

@@ -52,7 +52,8 @@ def assert_diagnostic(
 
 def test_native_kind_registry_is_closed_and_all_payloads_validate() -> None:
     assert SUPPORTED_ARTIFACT_KINDS == EXPECTED_KINDS | {
-        "proofir.interpretation", "proofir.correspondence"
+        "proofir.interpretation", "proofir.correspondence",
+        "proofir.contract", "proofir.contract-analysis",
     }
     artifacts = native_artifacts()
     assert artifacts.keys() == EXPECTED_KINDS
