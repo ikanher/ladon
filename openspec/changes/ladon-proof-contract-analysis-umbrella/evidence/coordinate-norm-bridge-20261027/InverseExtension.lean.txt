@@ -1,0 +1,20 @@
+
+namespace LadonCoordinateNorm
+open NavierStokes.TorusInverse
+
+-- The input multiplier is chosen before the function and its bound.
+theorem coordinate_inverse_five (d : Direction) (n : ℕ) :
+    ∃ K : ℝ, 0 ≤ K ∧ ∀ (F : Plane → ℂ) (C : ℝ),
+      ContDiff ℝ ∞ F → NavierStokes.SmoothFourierData.UnitPeriodic F →
+      0 ≤ C → CoordinateBound F (n + 5) C →
+      CoordinateBound (LadonSourcePair.planeInverse d F) n (K * C) := by
+  obtain ⟨K, hK, h⟩ := LadonSourcePair.plane_inverse_five d n
+  refine ⟨K * 2^(n+5), mul_nonneg hK (by positivity), ?_⟩
+  intro F C hf hp hC hb
+  have hi := coordinate_to_frechet hC hb
+  have ho := h F (2^(n+5)*C) hf hp (by positivity) hi
+  have hc := frechet_to_coordinate ho
+  simpa only [mul_assoc] using hc
+
+#print axioms coordinate_inverse_five
+end LadonCoordinateNorm

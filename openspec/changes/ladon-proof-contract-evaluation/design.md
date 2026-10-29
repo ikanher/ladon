@@ -4,6 +4,12 @@
 
 See proposal.md. Historical audits mixed extraction limits, source interpretation, local checks and final reporting. Known-answer development replay remains useful regression evidence but cannot measure discovery. Existing benchmark and investigation workflows provide identity, clock and first-report preservation.
 
+As of 2026-10-24, further runtime expansion is frozen under
+[product scope](../../../docs/PRODUCT_SCOPE.md). The user-requested preparation
+of one short local correspondence exercise uses existing tools and does not
+admit a held-out C case, freeze an enhanced comparison arm or satisfy a promotion
+gate. The protocol below remains unchanged for any future measured evaluation.
+
 ## Goals / Non-Goals
 
 **Goals:** isolate which stage improves, test valid controls and qualify any discovery claim. **Non-Goals:** call planted cases real-paper discovery, retrofit old runs into a new baseline, or change the frozen retest-7 runtime identity.

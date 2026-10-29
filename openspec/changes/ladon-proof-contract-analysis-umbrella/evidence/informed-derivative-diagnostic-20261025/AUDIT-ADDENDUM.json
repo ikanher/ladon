@@ -1,0 +1,35 @@
+{
+  "schema": "informed-derivative-diagnostic-addendum-v1",
+  "scope": "Bounded additive read-only review; AUDIT.json remains unchanged.",
+  "findings": {
+    "faithful_control": {
+      "evidence": "control-trust-command.json records returncode 0 for Lean checking CheckControl.lean. Its output reports the control and selected declaration with the same permitted axioms: propext, Classical.choice, Quot.sound.",
+      "permissible_inference": "The authored five-loss control is accepted by the named Lean invocation as a faithful application of the selected declaration under the recorded source/import environment, with no additional axiom difference reported by #print axioms.",
+      "limits": "This does not refresh application-loss-4.json or application-loss-5.json receipts, establish source freshness beyond the recorded compilation, encode conventional C^m norms, or prove/refute equation (8.19). The printed standard axioms are explicit trust information; no inference of axiom-free proof is warranted."
+    },
+    "source_slice": {
+      "evidence": "scoped-slice-command.json records successful compilation of NavierStokes/SmoothFamilyTorusInverse.lean (returncode 0), then failure of the generated LadonSlice.lean at line 373 with 'expression node count exceeds 8192'. scoped-slice.json is unavailable/incomplete and contains no extracted nodes.",
+      "classification": "The failure is in bounded traversal, not serialization. In ladon_scoped_slice_helper.lean, scopedOccurrences.walk increments visited and throws once n >= maxNodes (default 8192), while recursively visiting the Expr application function and every argument, binder types/bodies, and let types/values/bodies. The failure occurs before jsonExpr is called; serialization has separate 1 MiB guards. The current observation is that the selected declaration's expression is too large for this traversal budget, so no scoped occurrence/identity transport was produced.",
+      "limits": "The separate successful source compilation supports the named module under that invocation's environment, not a retained full import-closure certificate. Traversal failure is not evidence that the theorem or application is false, nor that serialization is the obstacle."
+    },
+    "candidate_profile": {
+      "observed_binder_count": 14,
+      "basis": "The frozen normalized declaration telescope has 14 leading forall binders (P, two instances, d, f, hf, hp, w, p, Y, C, hzero, hfirst, hsecond). The residual-context/application records likewise enumerate binder/local positions 0 through 13.",
+      "profile_limits": "proof_contract_recognition.py admits at most 8 binders in _validate_initial_telescope; each binder domain must have head Nat. The recognizer further requires a builtin Nat inequality/order, Nat-indexed estimate scale/input, recognized Nat arithmetic and a narrow supported telescope/constant pattern. This candidate instead has non-Nat domains and a Real/Complex norm inequality, so it is outside the recognized profile for multiple independent reasons. A contract producer's unsupported result here says nothing about the mathematical truth of the declaration."
+    }
+  },
+  "provenance": {
+    "reviewer_ran_lean_or_lake": false,
+    "reviewer_changed_runtime_or_sources": false,
+    "reviewer_used_network": false,
+    "basis": "Read-only inspection of the listed source/evidence and SHA-256 hashing. Command outcomes are reported from frozen receipts, not rerun."
+  },
+  "sourceHashesSha256": {
+    "src/ladon/lean/ladon_scoped_slice_helper.lean": "049297f196f3f1be77ea622d7e75a073780aee73cf46825c92891771421e4a73",
+    "src/ladon/proof_contract_recognition.py": "9677cce39fc959ab5596678ffaf3d82b79bf9e0f8aab0ae470aaab92a41912a8",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/CheckControl.lean": "5b5b53473b275e0b6228917cba80e7d1f97e9cca15851ff2dc5c6773cd053da3",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/control-trust-command.json": "b40cd6a8233a55efd9101ed7f67434cb545f26def0d4fe3298a7d9db64d1d773",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/scoped-slice.json": "8e75591b9ba056436421063aaae9a2fe5971ec63ffcb42d74bf54a86aad2d5a1",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/scoped-slice-command.json": "eae9b3ecf2cb10dd0747273d13893fc6b570c713b30740b3b509964e7aef7a46"
+  }
+}

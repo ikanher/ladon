@@ -62,6 +62,12 @@ passed in isolation and under a read-only source snapshot. The subsequent full
 snapshot run was stopped when work was reprioritized. A complete passing strict
 gate on the final 0.4.0 tree is therefore unestablished.
 
+The [2026-10-24 follow-up](../openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/development-snapshot-0.4.0/verification-reuse.json)
+reuses these receipts after confirming that package, test, helper, Rust, skill
+and CI inputs still match the qualified release candidate. The user declined
+a redundant full-suite rerun; none was launched. The outstanding full gate
+remains open.
+
 Contract evaluation and general exposition-error detection remain open gates.
 Lexical navigation does not include every compiler-generated declaration, and
 source headers may omit elaborated section context. Authored interpretations,

@@ -1,0 +1,54 @@
+{
+  "schema": "local-human-reviewed-premise-map-v1",
+  "nativeArtifact": false,
+  "interpretationAuthority": "root source reading reconciled with independent board review 1523 in post 1524",
+  "conditionalContext": "All 14 original local declarations remain quantified by each exported closure, including the bounds. A completed closure does not prove its antecedents.",
+  "paperSource": "../ladon-proof-correspondence-audit-umbrella/evidence/r70/sources/navier/pages-95-96.txt, Lemma 8.6 / equation 8.19",
+  "formalSource": "NavierStokes/SmoothFamilyTorusInverse.lean:1059 and SmoothFourierData.lean:368 in frozen original formalization",
+  "providers": [
+    {
+      "occurrence": 1,
+      "provider": "slice_smooth hf p",
+      "formalPremise": "Smoothness of the fixed parameter slice",
+      "assumptionUsed": "joint smoothness hf",
+      "proseTransfer": "A smooth torus function needs an explicit periodic-lift/family interpretation; this replay is conditional on hf."
+    },
+    {
+      "occurrence": 2,
+      "provider": "hp p",
+      "formalPremise": "Unit periodicity of the fixed parameter slice",
+      "assumptionUsed": "family periodicity hp",
+      "proseTransfer": "Torus periodicity is the intended source, but the torus-to-lift mapping is not certified here."
+    },
+    {
+      "occurrence": 5,
+      "provider": "hzero",
+      "formalPremise": "Pointwise source norm at most C on the unit square",
+      "assumptionUsed": "the same supplied hzero",
+      "proseTransfer": "Requires a checked relation between the paper norm and this order-zero bound."
+    },
+    {
+      "occurrence": 6,
+      "provider": "hfirst via Nat.add_assoc equality transport",
+      "formalPremise": "Pure x derivative of order (w.length + 1) + 4 bounded by C on the unit square",
+      "assumptionUsed": "supplied hfirst at w.length + 5",
+      "proseTransfer": "No uniform transfer from the paper fourth-extra-order norm to this fifth-extra-order premise is established."
+    },
+    {
+      "occurrence": 7,
+      "provider": "hsecond via Nat.add_assoc equality transport",
+      "formalPremise": "xJet after coordinate swap at order (w.length + 1) + 4 bounded by C on the unit square",
+      "assumptionUsed": "supplied hsecond at w.length + 5",
+      "proseTransfer": "Same unresolved uniform transfer for the other coordinate."
+    }
+  ],
+  "separateOpenObligations": [
+    "Identify the paper C^m norm, its domain and derivative convention with the Lean derivative words and pure coordinate jets.",
+    "Match temporal direction/operator normalization, full-norm aggregation and function-independent constants.",
+    "Keep the equation, zero-mean normalization and uniqueness separate from the estimate; inverse_solves explicitly requires ZeroMean.",
+    "Establish a sharper formal route if claiming the paper four-loss endpoint; failure of this five-loss route is not falsity of the endpoint."
+  ],
+  "evaluationClass": "answer-informed development",
+  "nativeCorrespondenceCertification": false,
+  "newMathematicalFaultEstablished": false
+}

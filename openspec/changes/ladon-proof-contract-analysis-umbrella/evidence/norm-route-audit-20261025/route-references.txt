@@ -1,0 +1,40 @@
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:491:  have hs := SmoothFourierData.summable_weight_inv_four.mul_left C
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:692:    coeffSeminorm l (coefficient f p) ≤
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:694:  apply SmoothFourierData.coefficient_seminorm_bound (slice_smooth hf p) (hp p) l
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:738:      have hb : coeffSeminorm 0 (fun k => m k * coefficient f p k) ≤
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:739:          B * coeffSeminorm l (coefficient f p) := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:747:        simpa only [coeffSeminorm, pow_zero, one_mul, tsum_mul_left] using hh
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:749:        _ ≤ coeffSeminorm 0 (fun k => m k * coefficient f p k) :=
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:751:        _ ≤ B * coeffSeminorm l (coefficient f p) := hb
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:1059:theorem norm_derivativeWord_inverse_le (d : Direction) {f : Source P}
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:1068:      ParametricTorusInverse.mixedLossConstant w.length * C := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:1069:  have hbound := SmoothFourierData.coefficient_seminorm_bound (slice_smooth hf p) (hp p)
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:1074:        coeffSeminorm (w.length + 1) (coefficient f p) :=
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:1080:    _ = _ := by simp only [ParametricTorusInverse.mixedLossConstant, Nat.add_assoc]; ring
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:1095:      ParametricTorusInverse.mixedLossConstant w.length * C := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:1097:    (mul_nonneg (ParametricTorusInverse.mixedLossConstant_nonneg w.length) hC)
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFamilyTorusInverse.lean:1135:  exact (norm_derivativeWord_inverse_le d (parameterJetApply_smooth hf q v)
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFourierData.lean:343:theorem summable_weight_inv_four : Summable (fun k : Frequency => (weight k ^ 4)⁻¹) := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFourierData.lean:357:    (summable_weight_inv_four.mul_left C)
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFourierData.lean:367:`TorusInverse`. The lattice constant is finite by `summable_weight_inv_four`. -/
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFourierData.lean:368:theorem coefficient_seminorm_bound {f : Plane → ℂ} (hf : ContDiff ℝ ∞ f)
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFourierData.lean:375:    coeffSeminorm p (coefficient f) ≤
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFourierData.lean:386:    (summable_weight_inv_four.mul_left (3 ^ (p + 4) * C))
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/SmoothFourierData.lean:387:  simpa only [coeffSeminorm, tsum_mul_left] using h
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/TorusInverse.lean:424:def coeffSeminorm (p : ℕ) (a : Frequency → ℂ) : ℝ :=
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/TorusInverse.lean:429:    coeffSeminorm p (inverseCoeff d a) ≤ (6 * ‖omega⁻¹‖) * coeffSeminorm (p + 1) a := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/TorusInverse.lean:432:  simpa only [coeffSeminorm, tsum_mul_left] using h
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/TorusInverse.lean:435:    ‖series a x‖ ≤ coeffSeminorm 0 a := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/TorusInverse.lean:436:  simpa only [series, coeffSeminorm, pow_zero, one_mul, norm_mul, norm_mode, mul_one] using
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/TorusInverse.lean:441:    ‖directionalInverse d a x‖ ≤ (6 * ‖omega⁻¹‖) * coeffSeminorm 1 a := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/TorusInverse.lean:506:      ((6 * ‖omega⁻¹‖) * ‖omega‖ ^ w.length) * coeffSeminorm (w.length + 1) a := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/TorusInverse.lean:525:  simpa only [coeffSeminorm, pow_zero, one_mul, tsum_mul_left] using hs
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/ParametricTorusInverse.lean:425:    SmoothFourierData.summable_weight_inv_four.mul_left C
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/ParametricTorusInverse.lean:643:noncomputable def mixedLossConstant (r : ℕ) : ℝ :=
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/ParametricTorusInverse.lean:647:theorem mixedLossConstant_nonneg (r : ℕ) : 0 ≤ mixedLossConstant r := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/ParametricTorusInverse.lean:648:  unfold mixedLossConstant
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/ParametricTorusInverse.lean:664:    ‖mixedJet q w (inverse d f) (p, Y)‖ ≤ mixedLossConstant w.length * C := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/ParametricTorusInverse.lean:668:  have hbound := SmoothFourierData.coefficient_seminorm_bound hq hpq (w.length + 1)
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/ParametricTorusInverse.lean:673:        coeffSeminorm (w.length + 1) (coefficient (parameterJet q f) p) :=
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/ParametricTorusInverse.lean:678:    _ = mixedLossConstant w.length * C := by
+.codex/state/navier-stokes-informed-diagnostic/formalization/NavierStokes/ParametricTorusInverse.lean:679:      simp only [mixedLossConstant, Nat.add_assoc]

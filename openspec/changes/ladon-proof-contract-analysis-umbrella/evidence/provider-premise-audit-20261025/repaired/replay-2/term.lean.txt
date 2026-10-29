@@ -1,0 +1,97 @@
+fun {P : Type} => fun [inst : NormedAddCommGroup.{0} P] =>
+  fun
+    [inst_1 : @NormedSpace.{0, 0} Real P Real.normedField (@NormedAddCommGroup.toSeminormedAddCommGroup.{0} P inst)] =>
+  fun (d : NavierStokes.TorusInverse.Direction) => fun {f : NavierStokes.SmoothFamilyTorusInverse.Source P} =>
+  fun
+    (hf :
+      @ContDiff.{0, 0, 0} Real (@DenselyNormedField.toNontriviallyNormedField.{0} Real Real.denselyNormedField)
+        (NavierStokes.SmoothFamilyTorusInverse.Point P)
+        (@Prod.normedAddCommGroup.{0, 0} P NavierStokes.TorusInverse.Plane inst
+          (@Prod.normedAddCommGroup.{0, 0} Real Real Real.normedAddCommGroup Real.normedAddCommGroup))
+        (@Prod.normedSpace.{0, 0, 0} Real P NavierStokes.TorusInverse.Plane
+          (@NontriviallyNormedField.toNormedField.{0} Real
+            (@DenselyNormedField.toNontriviallyNormedField.{0} Real Real.denselyNormedField))
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{0} P inst)
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{0} NavierStokes.TorusInverse.Plane
+            (@Prod.normedAddCommGroup.{0, 0} Real Real Real.normedAddCommGroup Real.normedAddCommGroup))
+          inst_1
+          (@Prod.normedSpace.{0, 0, 0} Real Real Real
+            (@NontriviallyNormedField.toNormedField.{0} Real
+              (@DenselyNormedField.toNontriviallyNormedField.{0} Real Real.denselyNormedField))
+            (@NormedAddCommGroup.toSeminormedAddCommGroup.{0} Real Real.normedAddCommGroup)
+            (@NormedAddCommGroup.toSeminormedAddCommGroup.{0} Real Real.normedAddCommGroup)
+            (@InnerProductSpace.toNormedSpace.{0, 0} Real Real Real.instRCLike
+              (@NormedAddCommGroup.toSeminormedAddCommGroup.{0} Real Real.normedAddCommGroup)
+              (@RCLike.toInnerProductSpaceReal.{0} Real Real.instRCLike))
+            (@InnerProductSpace.toNormedSpace.{0, 0} Real Real Real.instRCLike
+              (@NormedAddCommGroup.toSeminormedAddCommGroup.{0} Real Real.normedAddCommGroup)
+              (@RCLike.toInnerProductSpaceReal.{0} Real Real.instRCLike))))
+        Complex Complex.instNormedAddCommGroup
+        (@InnerProductSpace.toNormedSpace.{0, 0} Real Complex Real.instRCLike
+          (@NormedAddCommGroup.toSeminormedAddCommGroup.{0} Complex Complex.instNormedAddCommGroup)
+          instInnerProductSpaceRealComplex)
+        (@WithTop.some.{0} ENat (@Top.top.{0} ENat instTopENat)) f) =>
+  fun (hp : @NavierStokes.SmoothFamilyTorusInverse.Periodic P f) => fun (w : List.{0} Bool) => fun (p : P) =>
+  fun (Y : NavierStokes.TorusInverse.Plane) => fun {C : Real} =>
+  fun
+    (hzero :
+      ∀ (x : Real),
+        @Membership.mem.{0, 0} Real (Set.{0} Real) (@Set.instMembership.{0} Real)
+            (@Set.Icc.{0} Real Real.instPreorder
+              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+              (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)))
+            x →
+          ∀ (y : Real),
+            @Membership.mem.{0, 0} Real (Set.{0} Real) (@Set.instMembership.{0} Real)
+                (@Set.Icc.{0} Real Real.instPreorder
+                  (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                  (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)))
+                y →
+              @LE.le.{0} Real Real.instLE
+                (@Norm.norm.{0} Complex Complex.instNorm
+                  (f (@Prod.mk.{0, 0} P NavierStokes.TorusInverse.Plane p (@Prod.mk.{0, 0} Real Real x y))))
+                C) =>
+  fun
+    (hfirst :
+      ∀ (x : Real),
+        @Membership.mem.{0, 0} Real (Set.{0} Real) (@Set.instMembership.{0} Real)
+            (@Set.Icc.{0} Real Real.instPreorder
+              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+              (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)))
+            x →
+          ∀ (y : Real),
+            @Membership.mem.{0, 0} Real (Set.{0} Real) (@Set.instMembership.{0} Real)
+                (@Set.Icc.{0} Real Real.instPreorder
+                  (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                  (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)))
+                y →
+              @LE.le.{0} Real Real.instLE
+                (@Norm.norm.{0} Complex Complex.instNorm
+                  (NavierStokes.SmoothFourierData.xJet
+                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@List.length.{0} Bool w)
+                      (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5))))
+                    (@NavierStokes.SmoothFamilyTorusInverse.slice P f p) (@Prod.mk.{0, 0} Real Real x y)))
+                C) =>
+  fun
+    (hsecond :
+      ∀ (x : Real),
+        @Membership.mem.{0, 0} Real (Set.{0} Real) (@Set.instMembership.{0} Real)
+            (@Set.Icc.{0} Real Real.instPreorder
+              (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+              (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)))
+            x →
+          ∀ (y : Real),
+            @Membership.mem.{0, 0} Real (Set.{0} Real) (@Set.instMembership.{0} Real)
+                (@Set.Icc.{0} Real Real.instPreorder
+                  (@OfNat.ofNat.{0} Real (nat_lit 0) (@Zero.toOfNat0.{0} Real Real.instZero))
+                  (@OfNat.ofNat.{0} Real (nat_lit 1) (@One.toOfNat1.{0} Real Real.instOne)))
+                y →
+              @LE.le.{0} Real Real.instLE
+                (@Norm.norm.{0} Complex Complex.instNorm
+                  (NavierStokes.SmoothFourierData.xJet
+                    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) (@List.length.{0} Bool w)
+                      (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5))))
+                    (NavierStokes.SmoothFourierData.swapFunction (@NavierStokes.SmoothFamilyTorusInverse.slice P f p))
+                    (@Prod.mk.{0, 0} Real Real x y)))
+                C) =>
+  hp p

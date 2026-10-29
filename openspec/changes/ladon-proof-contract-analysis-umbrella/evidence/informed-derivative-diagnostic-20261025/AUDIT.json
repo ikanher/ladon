@@ -1,0 +1,67 @@
+{
+  "schema": "informed-derivative-diagnostic-audit-v1",
+  "verdict": "The evidence supports a bounded source/API coverage gap: the inspected declaration requires m+5 pure coordinate input derivative bounds, while the cited prose claims a uniform C^m-from-C^(m+4) estimate. The four-order application leaves precisely the two m+5 coordinate bounds as residual premises; the five-order control applies without residuals. Neither result establishes or refutes the original norm estimate.",
+  "scope": {
+    "mode": "Read-only informed independent audit of the frozen evidence and named source passage; no new theorem discovery.",
+    "reviewed": [
+      "REVIEW-ASSIGNMENT.json and all listed baseline inputs",
+      "PUBLISHED_COMPARISON.md",
+      "pages-95-96.txt",
+      "SmoothFamilyTorusInverse.lean",
+      "SmoothFourierData.lean",
+      "TorusInverse.lean"
+    ],
+    "not_reviewed": [
+      "Full Navier-Stokes proof, full import closure, or all alternative declarations/proof paths",
+      "A Lean formalization of conventional C^m norms or an adapter from them to the authored probes",
+      "Independent regeneration of Ladon receipts"
+    ]
+  },
+  "observations": {
+    "application_loss_4": {
+      "status": "applicable-with-residuals",
+      "check": "The exact-candidate elaboration accepted the application shape; residualPremises contains the bounds for xJet (w.length+5) of the slice and its coordinate-swapped function. The raw authored goal instead assumes w.length+4 in those two premises.",
+      "meaning": "The theorem application cannot discharge the four-order probe from its supplied premises. This is a missing premise bridge in this application, not a failed theorem proof and not a counterexample."
+    },
+    "application_loss_5": {
+      "status": "accepted",
+      "check": "The exact-candidate elaboration accepted the control statement and candidate application with no residual premises; hypotheses are recorded as discharged by local assumptions.",
+      "meaning": "This confirms the declaration's application shape when the two actual m+5 coordinate bounds are supplied. It preserves the declaration's output inequality and constant, but adds those stronger premises to the probed goal. It is not the original C^m-to-C^(m+4) statement and does not prove a C^m norm encoding."
+    },
+    "statement_bridge": "The source passage describes an estimate in conventional C_y norms, with uniform constant. To establish that claim from the formal declaration requires (i) encoding the conventional C^r norm, including all mixed coordinate derivatives through order r, (ii) deriving the declaration's pointwise pure-coordinate m+5 bounds from the proposed C^(m+4) bound or proving an alternate four-loss coefficient estimate, (iii) identifying derivative words with the required multi-indices, and (iv) passing from per-word constants to a finite uniform maximum for all orders through m. In particular smoothness alone does not bound an (m+5)-seminorm uniformly by an (m+4)-norm. The first missing bridge is the extra derivative: no permitted hypothesis yields the m+5 bounds from C^(m+4)."
+  },
+  "high_frequency_family": {
+    "family": "F_n(x,y)=(2*pi*n)^(-4) exp(2*pi*i*n*x), n>=1",
+    "assessment": "Valid explanatory family on the two-torus: derivatives involving y vanish, and the magnitude of the kth pure x derivative is (2*pi*n)^(k-4). Thus the maximum through order 4 is 1, while the fifth pure x derivative has magnitude 2*pi*n and is unbounded in n.",
+    "scope": "It witnesses failure of a direct uniform implication from the same C^4 bound to a C^5 bound. It does not test or refute the inverse estimate, its zero-mean use, or a different four-loss proof. It was checked by elementary calculation only; no fresh Lean verification was performed."
+  },
+  "overclaims_and_limits": [
+    "Do not interpret residuals in application-loss-4.json as refutation or counterexample.",
+    "Do not interpret application-loss-5.json as verification of the prose theorem; the fifth-order premises are additional and the norm adapter is absent.",
+    "The evidence is an ambient application receipt: sourceFreshness is unknown, and the receipt itself limits authority to the observed Lean elaborator check. It does not certify fresh source/import-closure compilation or unqualified theorem truth.",
+    "CONTRACT.json identifies the exercise as answer-informed, not blind discovery or held-out evaluation."
+  ],
+  "provenance": {
+    "builds_run_by_auditor": false,
+    "runtime_edits": false,
+    "network_or_web": false,
+    "tool_use": "Read-only file inspection and SHA-256 hashing; no Lean or Lake invocation.",
+    "formalization_commit_reported_by_frozen_contract": "f9e8bc5b38b6e212696e8a30e3e91517af887bbd",
+    "runtime_head_reported_by_frozen_contract": "e6479e465d652029502bc19b6a03e90b359bf5b5"
+  },
+  "sourceHashesSha256": {
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/REVIEW-ASSIGNMENT.json": "a33c2108f9a16e5472657e79a3f4ae3d5652fd41d3ecbc9c23ff2714b44c202b",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/CONTRACT.json": "a90711f07da6ffd9b5413cd74baef4e446b79a8752467f591c2caf35a40d9c88",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/APPLICATION-PROBES.json": "c8bc36bdb68cacf51507d8ebb1ee37a2f9d42bfa7ce9d34998845d44429ac5fc",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/goal-loss-4.txt": "e124e907930d04b2841d917c38b94041802f343bfdce5d2be7817e44ccccbd6e",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/goal-loss-5.txt": "108bbc4a086669c30d5f00da4999de1cb4f7d39e3df317f316510919321ec3b7",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/formal-production.json": "a2f6f74d1b8863a7f1c9dc96995b7dc6a3887c83d42f66f079a5a5ade25a2dd3",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/application-loss-4.json": "a95501a3083fb555c995e668d3e623ea8f4de77dc052a44bbc355b0b4f20a96f",
+    "openspec/changes/ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/application-loss-5.json": "46eb02cdf954eed2a6a2cffcacd5cbaac8a20dd193e9076fdda1f94b515915ef",
+    "openspec/changes/ladon-proof-correspondence-audit-umbrella/evidence/r70/PUBLISHED_COMPARISON.md": "368addd354745c6fcf3e6da62aa2de6f56b60dece07308e50704cc14e7e1436b",
+    "openspec/changes/ladon-proof-correspondence-audit-umbrella/evidence/r70/sources/navier/pages-95-96.txt": "06c6f53efae976434009ba37786d7e79ef583f0058aba5c990576be656a9fa00",
+    "openspec/changes/ladon-proof-correspondence-audit-umbrella/evidence/r70/sources/navier/SmoothFamilyTorusInverse.lean": "165c097077dc3687fd1d6f93c356059e5254be17c799950873f54d91a71e90c8",
+    "openspec/changes/ladon-proof-correspondence-audit-umbrella/evidence/r70/sources/navier/SmoothFourierData.lean": "980b746ca551345d88351dd961d30b69876c68c84f0c758445593025d9dbc642",
+    "openspec/changes/ladon-proof-correspondence-audit-umbrella/evidence/r70/sources/navier/TorusInverse.lean": "891440bdb5501c67b63d2758c2dfb98c46f250aca38ce0b33498e1eacc768aeb"
+  }
+}

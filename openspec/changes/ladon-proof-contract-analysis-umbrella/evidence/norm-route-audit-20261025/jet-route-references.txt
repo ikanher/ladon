@@ -1,0 +1,21 @@
+652:def JetBound (f : Source P) (S : Set P) (n : ℕ) (C : ℝ) : Prop :=
+656:theorem JetBound.mono_order {f : Source P} {S : Set P} {n m : ℕ} {C : ℝ}
+657:    (h : JetBound f S n C) (hm : m ≤ n) : JetBound f S m C :=
+661:theorem JetBound.fixedPartial {f : Source P} (hf : ContDiff ℝ ∞ f)
+662:    {S : Set P} {n : ℕ} {C : ℝ} (h : JetBound f S (n + 1) C) (v : Point P) :
+663:    JetBound (fixedPartial v f) S n (‖v‖ * C) := by
+689:theorem coefficient_moment_bound {f : Source P} (hf : ContDiff ℝ ∞ f) (hp : Periodic f)
+690:    {S : Set P} (l : ℕ) {C : ℝ} (h : JetBound f S (l + 4) C)
+726:theorem norm_jet_applyMultiplier_le (n l : ℕ) {m : Frequency → ℂ}
+729:    {S : Set P} {C : ℝ} (hC : 0 ≤ C) (h : JetBound f S (n + l + 4) C)
+754:            (coefficient_moment_bound hf hp l (by simpa only [zero_add] using h) p hps) hB
+788:      have hbshift : JetBound f S (n + (l + 1) + 4) C := by
+847:theorem applyMultiplier_finiteJets (n l : ℕ) :
+851:        JetBound f S (n + l + 4) C → JetBound (applyMultiplier m f) S n (K * B * C) := by
+856:  apply (norm_jet_applyMultiplier_le j l hB hm hf hp hC
+865:theorem inverse_finiteJets (d : Direction) (n : ℕ) :
+868:      JetBound f S (n + 5) C → JetBound (inverse d f) S n (K * C) := by
+869:  obtain ⟨K, hK, hb⟩ := applyMultiplier_finiteJets (P := P) n 1
+1020:theorem nonbarPart_finiteJets (n : ℕ) :
+1023:      JetBound f S (n + 4) C → JetBound (nonbarPart f) S n (K * C) := by
+1024:  obtain ⟨K, hK, hb⟩ := applyMultiplier_finiteJets (P := P) n 0

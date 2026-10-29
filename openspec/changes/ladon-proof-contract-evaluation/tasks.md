@@ -1,6 +1,24 @@
 # Tasks
 
-Current evidence: the [matched current/no-beam comparison](evidence/current-no-beam-20261018/REPORT.md) freezes 447 runtime files and reuses exact legacy harnesses, inputs and budgets. Both arms close 4/4 portable positives, falsely close 0/4 controls and preserve the same two real matrix application classifications. All 192 finite-graph outputs agree exactly. The [independent review](evidence/current-no-beam-20261018/INDEPENDENT-REVIEW.json) verified identities, counts and limits; one unrandomized timing observation establishes no speedup. These known development/calibration cases do not complete tracks A/B/C or exercise the new contract-analysis path. The earlier [portable](evidence/search-baseline-20261018/REPORT.md) and [matrix](evidence/matrix-baseline-20261018/REPORT.md) first reports remain unchanged. No beam implementation exists; held-out C remains zero admitted. Current strict qualification is recorded in [strict-qualification-20261023](evidence/strict-qualification-20261023/REPORT.md): static checks pass, but 43 repeated rational-plan tests fail closed because the configured sibling Lean workspace is missing a tracked source file. Do not freeze this enhanced runtime until the workspace/test fixture is repaired and requalified. See [design.md](design.md) and [the capability contract](specs/ladon-contract-evaluation/spec.md); preserve the original protocol and promotion gates.
+Current evidence (2026-10-25): the [matched current/no-beam comparison](evidence/current-no-beam-20261018/REPORT.md) freezes 447 runtime files and reuses exact legacy harnesses, inputs and budgets. Both arms close 4/4 portable positives, falsely close 0/4 controls and preserve the same two real matrix application classifications. All 192 finite-graph outputs agree exactly. The [independent review](evidence/current-no-beam-20261018/INDEPENDENT-REVIEW.json) verified identities, counts and limits; one unrandomized timing observation establishes no speedup. These known development/calibration cases do not complete tracks A/B/C or exercise the new contract-analysis path. The earlier [portable](evidence/search-baseline-20261018/REPORT.md) and [matrix](evidence/matrix-baseline-20261018/REPORT.md) first reports remain unchanged. No beam implementation exists; held-out C remains zero admitted.
+
+Qualification status is owned by the [parent's current record](../ladon-proof-contract-analysis-umbrella/tasks.md)
+and [0.4.0 release notes](../../../docs/RELEASE_0_4_0.md#verification-and-limits).
+The earlier 43-failure diagnosis in [strict-qualification-20261023](evidence/strict-qualification-20261023/REPORT.md)
+is historical: the deleted-source bug was fixed and the original rational-plan
+tests passed. The later full run had two live sibling source-drift failures;
+both passed separately, while a full source-snapshot run was interrupted.
+Existing installed and affected-contract passes are reused for their actual
+scope; the user declined a redundant full rerun. No final-tree full pass or
+enhanced evaluation-arm freeze is established.
+
+The current product scope freezes further runtime expansion. The completed short
+correspondence exercise and subsequent
+[informed diagnostic](../ladon-proof-contract-analysis-umbrella/evidence/informed-derivative-diagnostic-20261025/REPORT.md)
+are separate uses of existing tools, not A/B/C case admissions or a promotion
+decision. Their current outcome is recorded by the parent. See [design.md](design.md) and
+[the capability contract](specs/ladon-contract-evaluation/spec.md); preserve
+the original protocol and promotion gates.
 
 ## 1. Freeze a comparison before implementation
 

@@ -1,0 +1,41 @@
+{
+  "schema": "informed-application-summary-v1",
+  "applications": {
+    "5": {
+      "status": "accepted",
+      "analysisCompleteness": "complete",
+      "authoritySelection": "ambient-selected-application-check",
+      "failureStage": null,
+      "residualPremises": [],
+      "resourceAccounting": {
+        "checkerElapsedSeconds": 3.028336,
+        "elapsedSeconds": 3.028336,
+        "peakRssBytes": 5328601088,
+        "scope": "checker-process"
+      },
+      "dischargedHypotheses": 5
+    },
+    "4": {
+      "status": "applicable-with-residuals",
+      "analysisCompleteness": "partial",
+      "authoritySelection": "ambient-selected-application-check",
+      "failureStage": null,
+      "residualPremises": [
+        {
+          "typeDisplay": "\u2200 x \u2208 Set.Icc 0 1,\n  \u2200 y \u2208 Set.Icc 0 1,\n    \u2016NavierStokes.SmoothFourierData.xJet (w.length + 5) (NavierStokes.SmoothFamilyTorusInverse.slice f p) (x, y)\u2016 \u2264 C"
+        },
+        {
+          "typeDisplay": "\u2200 x \u2208 Set.Icc 0 1,\n  \u2200 y \u2208 Set.Icc 0 1,\n    \u2016NavierStokes.SmoothFourierData.xJet (w.length + 5)\n          (NavierStokes.SmoothFourierData.swapFunction (NavierStokes.SmoothFamilyTorusInverse.slice f p)) (x, y)\u2016 \u2264\n      C"
+        }
+      ],
+      "resourceAccounting": {
+        "checkerElapsedSeconds": 3.041728,
+        "elapsedSeconds": 3.041728,
+        "peakRssBytes": 5326622720,
+        "scope": "checker-process"
+      },
+      "dischargedHypotheses": 3
+    }
+  },
+  "note": "The five-derivative control is accepted with no residuals; the four-derivative probe is applicable-with-residuals with two pending premises. Neither outcome proves the full prose norm statement or its negation."
+}

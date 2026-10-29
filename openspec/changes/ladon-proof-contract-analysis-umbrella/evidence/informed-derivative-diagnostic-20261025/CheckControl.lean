@@ -1,0 +1,11 @@
+import NavierStokes.SmoothFamilyTorusInverse
+
+namespace InformedLossDiagnostic
+
+theorem faithfulFiveLossControl : open scoped ContDiff in ∀ {P : Type} [NormedAddCommGroup P] [NormedSpace ℝ P] (d : NavierStokes.TorusInverse.Direction) {f : NavierStokes.SmoothFamilyTorusInverse.Source P} (hf : ContDiff ℝ ∞ f) (hp : NavierStokes.SmoothFamilyTorusInverse.Periodic f) (w : List Bool) (p : P) (Y : NavierStokes.TorusInverse.Plane) {C : ℝ}, (∀ x ∈ Set.Icc (0 : ℝ) 1, ∀ y ∈ Set.Icc (0 : ℝ) 1, ‖f (p, (x, y))‖ ≤ C) → (∀ x ∈ Set.Icc (0 : ℝ) 1, ∀ y ∈ Set.Icc (0 : ℝ) 1, ‖NavierStokes.SmoothFourierData.xJet (w.length + 5) (NavierStokes.SmoothFamilyTorusInverse.slice f p) (x, y)‖ ≤ C) → (∀ x ∈ Set.Icc (0 : ℝ) 1, ∀ y ∈ Set.Icc (0 : ℝ) 1, ‖NavierStokes.SmoothFourierData.xJet (w.length + 5) (NavierStokes.SmoothFourierData.swapFunction (NavierStokes.SmoothFamilyTorusInverse.slice f p)) (x, y)‖ ≤ C) → ‖NavierStokes.TorusInverse.derivativeWord w (NavierStokes.SmoothFamilyTorusInverse.slice (NavierStokes.SmoothFamilyTorusInverse.inverse d f) p) Y‖ ≤ NavierStokes.ParametricTorusInverse.mixedLossConstant w.length * C := by
+  exact @NavierStokes.SmoothFamilyTorusInverse.norm_derivativeWord_inverse_le
+
+#print axioms faithfulFiveLossControl
+#print axioms NavierStokes.SmoothFamilyTorusInverse.norm_derivativeWord_inverse_le
+
+end InformedLossDiagnostic

@@ -16,6 +16,15 @@ Quux sources inspected for this plan are recorded in sources.md. Its propagation
 
 ### Development direction after the big-picture review
 
+Current investment follows [product scope](../../../docs/PRODUCT_SCOPE.md):
+general runtime expansion is frozen. On 2026-10-25 the user authorized the
+bounded [Real-bound contracts child](../ladon-real-bound-contracts/design.md),
+with an explicit requirement for generality across use cases. This is the
+current narrow exception; the original evaluation gates remain unchanged. The sequence below retains this umbrella's
+acceptance dependencies, rather than directing another development cycle.
+The user-requested short correspondence exercise uses existing tools and is
+diagnostic work, not a promoted full-paper trial or held-out evaluation.
+
 Continue the existing implementation and acceptance gates without promising a particular paper diagnosis. First qualify the integrated consumers (task 3.1), then prioritize the independently sourced statement-pair connection (2.1) before expanding the analysis domain. Record the precise limiting feature if that connection remains unsupported; a failed bounded route does not establish general impossibility. Continue the planned refinement child (2.3), then complete repository qualification (3.2) against the resulting implementation.
 
 Evaluate supplied-contract analysis, source production and unfamiliar-source discovery in the existing child protocol's order and under its frozen promotion rules. The preserved no-beam comparison checks legacy behavior and does not exercise the new contract-analysis path. Beam search or another broad paper run needs evidence from the relevant evaluation gates; neither substitutes for source-fidelity review. A later known-target regression must remain separate from unfamiliar-source benefit.

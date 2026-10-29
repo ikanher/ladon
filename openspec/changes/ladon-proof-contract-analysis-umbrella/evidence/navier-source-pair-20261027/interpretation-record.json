@@ -1,0 +1,202 @@
+{
+  "id": "reading:navier-8.19-full-frechet-convention",
+  "source": {
+    "path": ".codex/state/navier-pair-integration/prose-input/pages-95-96.txt",
+    "sha256": "06c6f53efae976434009ba37786d7e79ef583f0058aba5c990576be656a9fa00",
+    "startLine": 38,
+    "endLine": 45,
+    "quote": "Lemma 8.6. Let N = vt \u00b7 \u2202y on T2 , with vt as in (6.2), and let F be a smooth function of zero Haar\nmean. Then N \u03c6 = F has a unique smooth zero-mean solution \u03c6 = N \u22121 F. This solution is given by\nthe following Fourier series and satisfies the displayed norm bound for every integer m \u2265 0:\n                                        F\u02c6\ufe01(k ) 2\u03c0ik\u00b7y\n                 N \u22121 F =      \u2211       2\u03c0ivt \u00b7 k\n                                                 e     ,     \u2225 N \u22121 F \u2225Cym \u2264 Cm \u2225 F \u2225Cym+4 .        (8.19)\n                            k \u2208Z2 \\{0}\n"
+  },
+  "formula": {
+    "tag": "forall",
+    "binder": {
+      "id": "n",
+      "name": "n",
+      "domain": "Nat"
+    },
+    "body": {
+      "tag": "exists",
+      "binder": {
+        "id": "K",
+        "name": "K",
+        "domain": "Real"
+      },
+      "body": {
+        "tag": "and",
+        "items": [
+          {
+            "tag": "le",
+            "left": {
+              "tag": "const",
+              "name": "0"
+            },
+            "right": {
+              "tag": "var",
+              "id": "K"
+            }
+          },
+          {
+            "tag": "forall",
+            "binder": {
+              "id": "F",
+              "name": "F",
+              "domain": "LadonSourcePair.PlaneFunction"
+            },
+            "body": {
+              "tag": "forall",
+              "binder": {
+                "id": "C",
+                "name": "C",
+                "domain": "Real"
+              },
+              "body": {
+                "tag": "implies",
+                "premise": {
+                  "tag": "app",
+                  "symbol": "smooth",
+                  "args": [
+                    {
+                      "tag": "var",
+                      "id": "F"
+                    }
+                  ]
+                },
+                "conclusion": {
+                  "tag": "implies",
+                  "premise": {
+                    "tag": "app",
+                    "symbol": "periodic",
+                    "args": [
+                      {
+                        "tag": "var",
+                        "id": "F"
+                      }
+                    ]
+                  },
+                  "conclusion": {
+                    "tag": "implies",
+                    "premise": {
+                      "tag": "app",
+                      "symbol": "meanZero",
+                      "args": [
+                        {
+                          "tag": "var",
+                          "id": "F"
+                        }
+                      ]
+                    },
+                    "conclusion": {
+                      "tag": "implies",
+                      "premise": {
+                        "tag": "le",
+                        "left": {
+                          "tag": "const",
+                          "name": "0"
+                        },
+                        "right": {
+                          "tag": "var",
+                          "id": "C"
+                        }
+                      },
+                      "conclusion": {
+                        "tag": "implies",
+                        "premise": {
+                          "tag": "app",
+                          "symbol": "bound",
+                          "args": [
+                            {
+                              "tag": "var",
+                              "id": "F"
+                            },
+                            {
+                              "tag": "app",
+                              "symbol": "shift",
+                              "args": [
+                                {
+                                  "tag": "var",
+                                  "id": "n"
+                                }
+                              ]
+                            },
+                            {
+                              "tag": "var",
+                              "id": "C"
+                            }
+                          ]
+                        },
+                        "conclusion": {
+                          "tag": "app",
+                          "symbol": "bound",
+                          "args": [
+                            {
+                              "tag": "app",
+                              "symbol": "inverse",
+                              "args": [
+                                {
+                                  "tag": "var",
+                                  "id": "F"
+                                }
+                              ]
+                            },
+                            {
+                              "tag": "var",
+                              "id": "n"
+                            },
+                            {
+                              "tag": "app",
+                              "symbol": "multiply",
+                              "args": [
+                                {
+                                  "tag": "var",
+                                  "id": "K"
+                                },
+                                {
+                                  "tag": "var",
+                                  "id": "C"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "symbols": {
+    "bound": {
+      "leanName": "LadonSourcePair.TorusJetBound",
+      "leanType": "LadonSourcePair.PlaneFunction \u2192 Nat \u2192 Real \u2192 Prop"
+    },
+    "inverse": {
+      "leanName": "LadonSourcePair.TemporalInverse",
+      "leanType": "LadonSourcePair.PlaneFunction \u2192 LadonSourcePair.PlaneFunction"
+    },
+    "shift": {
+      "leanName": "LadonSourcePair.shiftFour",
+      "leanType": "Nat \u2192 Nat"
+    },
+    "multiply": {
+      "leanName": "LadonSourcePair.realProduct",
+      "leanType": "Real \u2192 Real \u2192 Real"
+    },
+    "smooth": {
+      "leanName": "LadonSourcePair.Smooth",
+      "leanType": "LadonSourcePair.PlaneFunction \u2192 Prop"
+    },
+    "periodic": {
+      "leanName": "LadonSourcePair.IsPeriodic",
+      "leanType": "LadonSourcePair.PlaneFunction \u2192 Prop"
+    },
+    "meanZero": {
+      "leanName": "LadonSourcePair.MeanZero",
+      "leanType": "LadonSourcePair.PlaneFunction \u2192 Prop"
+    }
+  }
+}
