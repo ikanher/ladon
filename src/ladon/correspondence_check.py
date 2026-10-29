@@ -331,7 +331,7 @@ def _fixed_memory_guidance(result):
     return result
 
 
-def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None):
+def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None, workspace_parent=None):
     # Copy the original source, rather than import a possibly stale target olean.
     # Its direct compiled imports are fingerprinted by capture/completion.
     _verify_prepared_inputs(prepared, root, source, toolchain)
@@ -374,7 +374,7 @@ def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None):
                     len(text.splitlines()),
                     4,
                     toolchain,
-                )
+                ), workspace_parent=workspace_parent
             ))
         if capture["status"] != "captured":
             from dataclasses import asdict
@@ -406,7 +406,8 @@ def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None):
             }
         with stage("completion-replay-trust"):
             completion = _fixed_memory_guidance(complete_source_goal(
-                SourceGoalCompletionRequest(root, capture["capture"], term, toolchain)
+                SourceGoalCompletionRequest(root, capture["capture"], term, toolchain),
+                workspace_parent=workspace_parent
             ))
         if prepared is not None:
             prepared.verify()
@@ -458,6 +459,7 @@ def _rebuild_original_plan(plan, repo_root, source_root, native_artifacts):
         selection["application"],
         selection["occurrence"],
         scoped=profile_is_scoped(plan["slice"]),
+        max_nodes=plan["slice"]["limits"]["nodes"],
     )
     if fresh.get("sliceId") != plan["slice"]["sliceId"]:
         raise ValueError("stale source, context, toolchain, or selected application")
@@ -602,6 +604,7 @@ def _verify_inputs_unchanged(root, selection, source, fresh, plan, source_root):
         selection["application"],
         selection["occurrence"],
         scoped=profile_is_scoped(fresh),
+        max_nodes=fresh["limits"]["nodes"],
     )
     if final.get("sliceId") != fresh["sliceId"]:
         raise ValueError("environment changed during correspondence checking")

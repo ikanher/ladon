@@ -1,0 +1,328 @@
+FFFFFFFFFFFF                                                             [100%]
+=================================== FAILURES ===================================
+_______________ test_api_rejects_invalid_budget_before_setup[0] ________________
+
+value = 0
+
+    @pytest.mark.parametrize("value", [0, -1, True, 1.5, "12", 1_048_577])
+    def test_api_rejects_invalid_budget_before_setup(value):
+        with pytest.raises(ValueError, match="node budget"):
+>           extract_proof_slice(
+                Path("/nonexistent-ladon-budget-test"), "Proof.lean", "Proof",
+                "Correspondence.term", "bridge", max_nodes=value,
+            )
+E           TypeError: extract_proof_slice() got an unexpected keyword argument 'max_nodes'
+
+tests/test_proof_slice_node_budget.py:19: TypeError
+_______________ test_api_rejects_invalid_budget_before_setup[-1] _______________
+
+value = -1
+
+    @pytest.mark.parametrize("value", [0, -1, True, 1.5, "12", 1_048_577])
+    def test_api_rejects_invalid_budget_before_setup(value):
+        with pytest.raises(ValueError, match="node budget"):
+>           extract_proof_slice(
+                Path("/nonexistent-ladon-budget-test"), "Proof.lean", "Proof",
+                "Correspondence.term", "bridge", max_nodes=value,
+            )
+E           TypeError: extract_proof_slice() got an unexpected keyword argument 'max_nodes'
+
+tests/test_proof_slice_node_budget.py:19: TypeError
+______________ test_api_rejects_invalid_budget_before_setup[True] ______________
+
+value = True
+
+    @pytest.mark.parametrize("value", [0, -1, True, 1.5, "12", 1_048_577])
+    def test_api_rejects_invalid_budget_before_setup(value):
+        with pytest.raises(ValueError, match="node budget"):
+>           extract_proof_slice(
+                Path("/nonexistent-ladon-budget-test"), "Proof.lean", "Proof",
+                "Correspondence.term", "bridge", max_nodes=value,
+            )
+E           TypeError: extract_proof_slice() got an unexpected keyword argument 'max_nodes'
+
+tests/test_proof_slice_node_budget.py:19: TypeError
+______________ test_api_rejects_invalid_budget_before_setup[1.5] _______________
+
+value = 1.5
+
+    @pytest.mark.parametrize("value", [0, -1, True, 1.5, "12", 1_048_577])
+    def test_api_rejects_invalid_budget_before_setup(value):
+        with pytest.raises(ValueError, match="node budget"):
+>           extract_proof_slice(
+                Path("/nonexistent-ladon-budget-test"), "Proof.lean", "Proof",
+                "Correspondence.term", "bridge", max_nodes=value,
+            )
+E           TypeError: extract_proof_slice() got an unexpected keyword argument 'max_nodes'
+
+tests/test_proof_slice_node_budget.py:19: TypeError
+_______________ test_api_rejects_invalid_budget_before_setup[12] _______________
+
+value = '12'
+
+    @pytest.mark.parametrize("value", [0, -1, True, 1.5, "12", 1_048_577])
+    def test_api_rejects_invalid_budget_before_setup(value):
+        with pytest.raises(ValueError, match="node budget"):
+>           extract_proof_slice(
+                Path("/nonexistent-ladon-budget-test"), "Proof.lean", "Proof",
+                "Correspondence.term", "bridge", max_nodes=value,
+            )
+E           TypeError: extract_proof_slice() got an unexpected keyword argument 'max_nodes'
+
+tests/test_proof_slice_node_budget.py:19: TypeError
+____________ test_api_rejects_invalid_budget_before_setup[1048577] _____________
+
+value = 1048577
+
+    @pytest.mark.parametrize("value", [0, -1, True, 1.5, "12", 1_048_577])
+    def test_api_rejects_invalid_budget_before_setup(value):
+        with pytest.raises(ValueError, match="node budget"):
+>           extract_proof_slice(
+                Path("/nonexistent-ladon-budget-test"), "Proof.lean", "Proof",
+                "Correspondence.term", "bridge", max_nodes=value,
+            )
+E           TypeError: extract_proof_slice() got an unexpected keyword argument 'max_nodes'
+
+tests/test_proof_slice_node_budget.py:19: TypeError
+______________________ test_cli_rejects_invalid_budget[0] ______________________
+
+value = '0', capsys = <_pytest.capture.CaptureFixture object at 0x7389139faad0>
+
+    @pytest.mark.parametrize("value", ["0", "-1", "1048577"])
+    def test_cli_rejects_invalid_budget(value, capsys):
+>       status = proof_slice_main([
+            "--repo", str(FIXTURE), "--source", "Proof.lean", "--module", "Proof",
+            "--declaration", "Correspondence.term", "--application", "bridge",
+            "--max-nodes", value,
+        ])
+
+tests/test_proof_slice_node_budget.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/correspondence_cli.py:54: in proof_slice_main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1877: in parse_args
+    self.error(msg % ' '.join(argv))
+../../miniconda3/lib/python3.11/argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon proof-search proof slice', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = 'ladon proof-search proof slice: error: unrecognized arguments: --max-nodes 0\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.11/argparse.py:2627: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: ladon proof-search proof slice [-h] --repo REPO --source SOURCE
+                                      --module MODULE --declaration
+                                      DECLARATION --application APPLICATION
+                                      [--occurrence OCCURRENCE] [--scoped]
+                                      [--output OUTPUT]
+ladon proof-search proof slice: error: unrecognized arguments: --max-nodes 0
+_____________________ test_cli_rejects_invalid_budget[-1] ______________________
+
+value = '-1', capsys = <_pytest.capture.CaptureFixture object at 0x7389141533d0>
+
+    @pytest.mark.parametrize("value", ["0", "-1", "1048577"])
+    def test_cli_rejects_invalid_budget(value, capsys):
+>       status = proof_slice_main([
+            "--repo", str(FIXTURE), "--source", "Proof.lean", "--module", "Proof",
+            "--declaration", "Correspondence.term", "--application", "bridge",
+            "--max-nodes", value,
+        ])
+
+tests/test_proof_slice_node_budget.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/correspondence_cli.py:54: in proof_slice_main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1877: in parse_args
+    self.error(msg % ' '.join(argv))
+../../miniconda3/lib/python3.11/argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon proof-search proof slice', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = 'ladon proof-search proof slice: error: unrecognized arguments: --max-nodes -1\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.11/argparse.py:2627: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: ladon proof-search proof slice [-h] --repo REPO --source SOURCE
+                                      --module MODULE --declaration
+                                      DECLARATION --application APPLICATION
+                                      [--occurrence OCCURRENCE] [--scoped]
+                                      [--output OUTPUT]
+ladon proof-search proof slice: error: unrecognized arguments: --max-nodes -1
+___________________ test_cli_rejects_invalid_budget[1048577] ___________________
+
+value = '1048577'
+capsys = <_pytest.capture.CaptureFixture object at 0x7389139fbb50>
+
+    @pytest.mark.parametrize("value", ["0", "-1", "1048577"])
+    def test_cli_rejects_invalid_budget(value, capsys):
+>       status = proof_slice_main([
+            "--repo", str(FIXTURE), "--source", "Proof.lean", "--module", "Proof",
+            "--declaration", "Correspondence.term", "--application", "bridge",
+            "--max-nodes", value,
+        ])
+
+tests/test_proof_slice_node_budget.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/correspondence_cli.py:54: in proof_slice_main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1877: in parse_args
+    self.error(msg % ' '.join(argv))
+../../miniconda3/lib/python3.11/argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon proof-search proof slice', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = 'ladon proof-search proof slice: error: unrecognized arguments: --max-nodes 1048577\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.11/argparse.py:2627: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: ladon proof-search proof slice [-h] --repo REPO --source SOURCE
+                                      --module MODULE --declaration
+                                      DECLARATION --application APPLICATION
+                                      [--occurrence OCCURRENCE] [--scoped]
+                                      [--output OUTPUT]
+ladon proof-search proof slice: error: unrecognized arguments: --max-nodes 1048577
+______ test_cli_low_budget_fails_and_explicit_high_budget_extracts[False] ______
+
+scoped = False
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-45/test_cli_low_budget_fails_and_0')
+
+    @pytest.mark.parametrize("scoped", [False, True])
+    def test_cli_low_budget_fails_and_explicit_high_budget_extracts(scoped, tmp_path):
+        args = [
+            "--repo", str(FIXTURE), "--source", "Proof.lean", "--module", "Proof",
+            "--declaration", "Correspondence.term", "--application", "bridge",
+        ] + (["--scoped"] if scoped else [])
+        for budget, status in [(1, 2), (131_072, 0)]:
+            output = tmp_path / f"slice-{budget}.json"
+>           assert proof_slice_main(args + ["--max-nodes", str(budget),
+                                           "--output", str(output)]) == status
+
+tests/test_proof_slice_node_budget.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/correspondence_cli.py:54: in proof_slice_main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1877: in parse_args
+    self.error(msg % ' '.join(argv))
+../../miniconda3/lib/python3.11/argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon proof-search proof slice', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = 'ladon proof-search proof slice: error: unrecognized arguments: --max-nodes 1\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.11/argparse.py:2627: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: ladon proof-search proof slice [-h] --repo REPO --source SOURCE
+                                      --module MODULE --declaration
+                                      DECLARATION --application APPLICATION
+                                      [--occurrence OCCURRENCE] [--scoped]
+                                      [--output OUTPUT]
+ladon proof-search proof slice: error: unrecognized arguments: --max-nodes 1
+______ test_cli_low_budget_fails_and_explicit_high_budget_extracts[True] _______
+
+scoped = True
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-45/test_cli_low_budget_fails_and_1')
+
+    @pytest.mark.parametrize("scoped", [False, True])
+    def test_cli_low_budget_fails_and_explicit_high_budget_extracts(scoped, tmp_path):
+        args = [
+            "--repo", str(FIXTURE), "--source", "Proof.lean", "--module", "Proof",
+            "--declaration", "Correspondence.term", "--application", "bridge",
+        ] + (["--scoped"] if scoped else [])
+        for budget, status in [(1, 2), (131_072, 0)]:
+            output = tmp_path / f"slice-{budget}.json"
+>           assert proof_slice_main(args + ["--max-nodes", str(budget),
+                                           "--output", str(output)]) == status
+
+tests/test_proof_slice_node_budget.py:44: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/correspondence_cli.py:54: in proof_slice_main
+    args = parser.parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1877: in parse_args
+    self.error(msg % ' '.join(argv))
+../../miniconda3/lib/python3.11/argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon proof-search proof slice', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = 'ladon proof-search proof slice: error: unrecognized arguments: --max-nodes 1\n'
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.11/argparse.py:2627: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: ladon proof-search proof slice [-h] --repo REPO --source SOURCE
+                                      --module MODULE --declaration
+                                      DECLARATION --application APPLICATION
+                                      [--occurrence OCCURRENCE] [--scoped]
+                                      [--output OUTPUT]
+ladon proof-search proof slice: error: unrecognized arguments: --max-nodes 1
+__________________ test_correspondence_replays_custom_budget ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7389140ed910>
+
+    def test_correspondence_replays_custom_budget(monkeypatch):
+        from ladon import correspondence_check as check
+    
+>       actual = extract_proof_slice(
+            FIXTURE, "Proof.lean", "Proof", "Correspondence.term", "bridge",
+            max_nodes=37_000, scoped=True,
+        )
+E       TypeError: extract_proof_slice() got an unexpected keyword argument 'max_nodes'
+
+tests/test_proof_slice_node_budget.py:66: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_proof_slice_node_budget.py::test_api_rejects_invalid_budget_before_setup[0]
+FAILED tests/test_proof_slice_node_budget.py::test_api_rejects_invalid_budget_before_setup[-1]
+FAILED tests/test_proof_slice_node_budget.py::test_api_rejects_invalid_budget_before_setup[True]
+FAILED tests/test_proof_slice_node_budget.py::test_api_rejects_invalid_budget_before_setup[1.5]
+FAILED tests/test_proof_slice_node_budget.py::test_api_rejects_invalid_budget_before_setup[12]
+FAILED tests/test_proof_slice_node_budget.py::test_api_rejects_invalid_budget_before_setup[1048577]
+FAILED tests/test_proof_slice_node_budget.py::test_cli_rejects_invalid_budget[0]
+FAILED tests/test_proof_slice_node_budget.py::test_cli_rejects_invalid_budget[-1]
+FAILED tests/test_proof_slice_node_budget.py::test_cli_rejects_invalid_budget[1048577]
+FAILED tests/test_proof_slice_node_budget.py::test_cli_low_budget_fails_and_explicit_high_budget_extracts[False]
+FAILED tests/test_proof_slice_node_budget.py::test_cli_low_budget_fails_and_explicit_high_budget_extracts[True]
+FAILED tests/test_proof_slice_node_budget.py::test_correspondence_replays_custom_budget
+12 failed in 0.25s

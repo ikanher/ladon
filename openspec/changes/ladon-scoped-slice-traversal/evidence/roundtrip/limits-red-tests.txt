@@ -1,0 +1,32 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_ test_closed_text_limit_precedes_reelaboration[ladon_proof_slice_helper.lean] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-52/test_closed_text_limit_precede0')
+helper = 'ladon_proof_slice_helper.lean'
+
+    @pytest.mark.parametrize("helper", ["ladon_proof_slice_helper.lean", "ladon_scoped_slice_helper.lean"])
+    def test_closed_text_limit_precedes_reelaboration(tmp_path, helper):
+        prefix = helper_source(LEAN / helper).decode().split('elab "#ladon_proof_slice ', 1)[0]
+        source = tmp_path / "Oversized.lean"
+        source.write_text(prefix + """
+    run_meta do
+      let name := Name.mkSimple (String.ofList (List.replicate 1048576 'x'))
+      let target := mkForall name BinderInfo.default (mkConst ``Nat) (mkConst ``True)
+      let proof := mkLambda name BinderInfo.default (mkConst ``Nat) (mkConst ``True.intro)
+      let _ ← checkedRoundtrip target proof
+    """)
+        toolchain = pinned_toolchain(ROOT)
+        result = run_bounded_target_process(
+            [str(toolchain.lean_path), str(source)], cwd=ROOT,
+            env=dict(toolchain.environment), timeout_seconds=60,
+            max_output_bytes=1024**2, max_rss_bytes=DEFAULT_MAX_RSS_BYTES,
+        )
+>       assert not result.succeeded
+E       AssertionError: assert not True
+E        +  where True = ProcessResult(command=('/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean', '/tmp/pytest-of-codex/pyte...sed_seconds=0.8773610789794475, timed_out=False, output_limited=False, memory_limited=False, peak_rss_bytes=1681768448).succeeded
+
+tests/test_proof_slice_roundtrip_limits.py:33: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_proof_slice_roundtrip_limits.py::test_closed_text_limit_precedes_reelaboration[ladon_proof_slice_helper.lean]
+1 failed, 1 passed in 2.41s

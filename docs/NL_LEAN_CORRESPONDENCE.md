@@ -148,8 +148,12 @@ cross-language parity claim for them.
 ## Bounds and provenance
 
 Each compiler/helper process has a 60-second deadline, 12-GiB RSS cap, and
-8-MiB output cap, with process-group cleanup. Traversal permits 8192 visited
-nodes and depth 64; each serialized expression is limited to 1 MiB. Formal
+8-MiB output cap, with process-group cleanup. Traversal defaults to 131,072 visited
+nodes. Use `proof-search proof slice --max-nodes N` (1–1,048,576) to choose an
+allowance for either profile; the Python API accepts `max_nodes=N`. The recorded
+allowance is part of slice identity and is retained on correspondence replay.
+This option does not increase other resource limits. Depth remains 64; each
+serialized expression is limited to 1 MiB. Formal
 source is limited to 8 MiB. Interpretation lowering retains its separate 4096-node,
 64-depth, 1-MiB text bounds. A check accepts at most sixteen supplied terms,
 with one term per obligation, and replays at most sixteen supplied and automatic
@@ -306,6 +310,13 @@ Scoped extraction now uses `scoped-identity-transport-v2`. The Lean helper
 reconstructs an ordered fresh context by fvar identity, substitutes dependent
 types and local let values, and checks the closed application/proof roundtrip.
 Original observed source locals and provider identities remain in the slice.
+Closed proof exports retain instance binder names needed by later dependent
+types. The exported text must still re-elaborate in an empty context and agree
+with the observed proof; printing failures remain extraction failures.
+Source-goal completion uses the same instance-preserving printer before its
+independent replay. It retains Lean's configured recursion limit; the slice's
+64-level telescope limit does not constrain completion. A completed provider
+closure still assumes its quantified premises and does not establish them from prose.
 A map can use exact observed IDs:
 
 ```json

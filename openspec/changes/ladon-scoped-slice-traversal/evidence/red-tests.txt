@@ -1,0 +1,32 @@
+F...                                                                     [100%]
+=================================== FAILURES ===================================
+_______________ test_scoped_traversal_contract[shared_negative] ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-43/test_scoped_traversal_contract0')
+name = 'shared_negative'
+body = '\n  let mut tail := mkNatLit 0\n  for _ in [:13] do tail := mkApp2 (mkConst ``Nat.add) tail tail\n  let target := mkA...il) ``Nat.succ\n  unless rows.size == 1 && rows[0]!.scopePath == #[1] do\n    throwError "lost or duplicated target"\n'
+error = None
+
+    @pytest.mark.parametrize(("name", "body", "error"), CASES, ids=[row[0] for row in CASES])
+    def test_scoped_traversal_contract(tmp_path, name, body, error):
+        prefix = HELPER.read_text().split("private def resolveName", 1)[0]
+        source = tmp_path / f"{name}.lean"
+        source.write_text(prefix + "\nrun_meta do\n" + body)
+        toolchain = pinned_toolchain(ROOT)
+        result = run_bounded_target_process(
+            [str(toolchain.lean_path), str(source)], cwd=ROOT,
+            env=dict(toolchain.environment), timeout_seconds=60,
+            max_output_bytes=1024**2, max_rss_bytes=DEFAULT_MAX_RSS_BYTES,
+        )
+        output = result.stdout + result.stderr
+        if error is None:
+>           assert result.succeeded, output
+E           AssertionError: /tmp/pytest-of-codex/pytest-43/test_scoped_traversal_contract0/shared_negative.lean:63:0: error: expression node count exceeds 8192
+E             
+E           assert False
+E            +  where False = ProcessResult(command=('/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean', '/tmp/pytest-of-codex/pyte...sed_seconds=0.5825561019883025, timed_out=False, output_limited=False, memory_limited=False, peak_rss_bytes=1610027008).succeeded
+
+tests/test_scoped_slice_traversal.py:76: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_scoped_slice_traversal.py::test_scoped_traversal_contract[shared_negative]
+1 failed, 3 passed in 3.36s

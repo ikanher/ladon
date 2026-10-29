@@ -94,7 +94,7 @@ def _validate_digest(digest: str | None) -> None:
 
 def capture_source_goal(
     request: SourceGoalCaptureRequest, *, runner: ProcessRunner = run_bounded_target_process,
-    helper_path: Path | None = None,
+    helper_path: Path | None = None, workspace_parent: Path | None = None,
 ) -> dict[str, Any]:
     """Observe one selected goal after validating source and imported-file stability."""
     started = monotonic()
@@ -109,7 +109,7 @@ def capture_source_goal(
         execution = prepare_direct_lean_execution(
             root, None, request.toolchain, require_compiled_module=False,
         )
-        with tempfile.TemporaryDirectory(prefix="ladon-source-goal-") as temporary:
+        with tempfile.TemporaryDirectory(prefix="ladon-source-goal-", dir=workspace_parent) as temporary:
             snapshot = Path(temporary) / source_path.name
             snapshot.write_bytes(source)
             staged, helper_digest = stage_helper(helper, Path(temporary))

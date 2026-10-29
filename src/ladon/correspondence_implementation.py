@@ -16,10 +16,11 @@ def implementation_digest():
         "_proof_contract_goal_scratch.py",
         "correspondence_import_cache.py", "correspondence_archive.py", "correspondence_transport.py",
         "investigation_correspondence_inputs.py",
-        "correspondence_maps.py", "proof_slice.py", "proof_slice_validation.py",
+        "correspondence_maps.py", "proof_slice.py", "proof_slice_validation.py", "proof_slice_limits.py",
         "scoped_slice.py", "slice_application_validation.py", "_proof_slice_runtime.py",
         "_expr_graph_protocol.py", "process_supervisor.py", "semantic_lean_execution.py",
         "lean/ladon_proof_slice_helper.lean", "lean/ladon_scoped_slice_helper.lean",
+        "lean/ladon_roundtrip_print.lean",
         "lean/ladon_expr_graph.lean", "lean/ladon_typed_subject_helper.lean",
     }
     for pattern in ("*source_goal*.py", "*process_supervisor*.py", "*source_association*.py",

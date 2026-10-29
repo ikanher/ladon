@@ -1,0 +1,52 @@
+FF..                                                                     [100%]
+=================================== FAILURES ===================================
+_____ test_unused_instances_in_dependent_context_roundtrip[selected-False] _____
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-49/test_unused_instances_in_depen0')
+scoped = False, declaration = 'selected'
+
+    @pytest.mark.parametrize("scoped", [False, True])
+    @pytest.mark.parametrize("declaration", ["selected", "used"])
+    def test_unused_instances_in_dependent_context_roundtrip(tmp_path, scoped, declaration):
+        repo = tmp_path / "repo"
+        shutil.copytree(FIXTURE, repo, ignore=shutil.ignore_patterns(".ladon", "*.olean"))
+        source = repo / "InstanceRoundtrip.lean"
+        source.write_text(SOURCE)
+        result = extract_proof_slice(
+            repo, source.name, "InstanceRoundtrip", f"InstanceRoundtrip.{declaration}",
+            "InstanceRoundtrip.bridge", scoped=scoped,
+        )
+>       assert result["complete"], "\n".join(r.get("stdout", "") for r in result["processReceipts"])
+E       AssertionError: 
+E         /tmp/ladon-proof-slice-ttvk0bmk/LadonSlice.lean:6:9: error(lean.unknownIdentifier): Unknown identifier `inst`
+E         
+E       assert False
+
+tests/test_proof_slice_instance_roundtrip.py:39: AssertionError
+_____ test_unused_instances_in_dependent_context_roundtrip[selected-True] ______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-49/test_unused_instances_in_depen1')
+scoped = True, declaration = 'selected'
+
+    @pytest.mark.parametrize("scoped", [False, True])
+    @pytest.mark.parametrize("declaration", ["selected", "used"])
+    def test_unused_instances_in_dependent_context_roundtrip(tmp_path, scoped, declaration):
+        repo = tmp_path / "repo"
+        shutil.copytree(FIXTURE, repo, ignore=shutil.ignore_patterns(".ladon", "*.olean"))
+        source = repo / "InstanceRoundtrip.lean"
+        source.write_text(SOURCE)
+        result = extract_proof_slice(
+            repo, source.name, "InstanceRoundtrip", f"InstanceRoundtrip.{declaration}",
+            "InstanceRoundtrip.bridge", scoped=scoped,
+        )
+>       assert result["complete"], "\n".join(r.get("stdout", "") for r in result["processReceipts"])
+E       AssertionError: 
+E         /tmp/ladon-proof-slice-_63fbc2d/LadonSlice.lean:6:9: error(lean.unknownIdentifier): Unknown identifier `inst`
+E         
+E       assert False
+
+tests/test_proof_slice_instance_roundtrip.py:39: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_proof_slice_instance_roundtrip.py::test_unused_instances_in_dependent_context_roundtrip[selected-False]
+FAILED tests/test_proof_slice_instance_roundtrip.py::test_unused_instances_in_dependent_context_roundtrip[selected-True]
+2 failed, 2 passed in 17.06s

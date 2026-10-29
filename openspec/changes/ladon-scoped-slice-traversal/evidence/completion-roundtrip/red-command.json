@@ -1,0 +1,24 @@
+{
+  "schema": "local-bounded-command-v1",
+  "startedAtUtc": "2026-10-25T09:46:08.436977+00:00",
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/test_source_goal_completion_instance_roundtrip.py",
+    "--tb=short"
+  ],
+  "cwd": "/home/codex/projects/ladon",
+  "timeoutSeconds": 180,
+  "maxRssBytes": 12884901888,
+  "maxOutputBytes": 8388608,
+  "returncode": 1,
+  "stdout": "F.                                                                       [100%]\n=================================== FAILURES ===================================\n___________ test_completion_roundtrips_dependent_instance_binders[h] ___________\ntests/test_source_goal_completion_instance_roundtrip.py:22: in test_completion_roundtrips_dependent_instance_binders\n    _assert_completed(result, capture)\ntests/test_source_goal_completion_lean.py:58: in _assert_completed\n    assert result[\"status\"] == \"completed\", result\nE   AssertionError: {'application': {'goalId': '_uniq.199', 'goalTypeStructural': 'ladon-expr-dag-v1:{\"nodes\":[[\"sort\",\"Lean.Level.succ (L...stic': {'code': 'typecheck-or-closure', 'message': 'Unknown identifier `c`'}, 'operation': 'complete-source-goal', ...}\nE   assert 'rejected' == 'completed'\nE     \nE     - completed\nE     + rejected\n=========================== short test summary info ============================\nFAILED tests/test_source_goal_completion_instance_roundtrip.py::test_completion_roundtrips_dependent_instance_binders[h]\n1 failed, 1 passed in 17.63s\n",
+  "stderr": "",
+  "elapsed_seconds": 17.815758131997427,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 2133024768
+}

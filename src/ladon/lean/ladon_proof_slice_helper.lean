@@ -7,6 +7,7 @@ open Lean Elab Command Meta
    imported theorem value.  Root owns compilation and runtime qualification. -/
 
 -- LADON_EXPR_GRAPH
+-- LADON_ROUNDTRIP_PRINT
 
 private def boundedOccurrences (root : Expr) (needle : Name)
     (maxNodes := 8192) (maxDepth := 64) : MetaM (Array Expr) := do
@@ -55,7 +56,9 @@ private def checkedRoundtrip (target proof : Expr) : MetaM (String × String) :=
       withOptions (fun o => o.setBool `pp.all true |>.setBool `pp.explicit true
         |>.setBool `pp.fullNames true |>.setBool `pp.notation false) do
         let targetText := (← ppExpr target).pretty
-        let proofText := (← ppExpr proof).pretty
+        let proofText ← roundtripProofText proof
+        if targetText.utf8ByteSize > 1048576 || proofText.utf8ByteSize > 1048576 then
+          throwError "serialized closed expression exceeds 1 MiB"
         let targetStx ← match Parser.runParserCategory (← getEnv) `term targetText with
           | .ok stx => pure stx
           | .error msg => throwError "closed target parse failed: {msg}"
@@ -77,7 +80,7 @@ private def checkedRoundtrip (target proof : Expr) : MetaM (String × String) :=
           throwError "closed proof round-trip changed its expression"
         pure (targetText, proofText)
 
-elab "#ladon_proof_slice " decl:ident app:ident : command => do
+elab "#ladon_proof_slice " decl:ident app:ident maxNodes:num : command => do
   liftTermElabM do
     let declName ← resolveName decl.getId
     let appName ← resolveName app.getId
@@ -110,7 +113,7 @@ elab "#ladon_proof_slice " decl:ident app:ident : command => do
           ("isProp", toJson (← isProp d.type)),
           ("binderInfo", toJson (repr d.binderInfo).pretty),
           ("type", ← jsonExpr d.type), ("letValue", valueJson)]
-      let occurrences ← boundedOccurrences body appName
+      let occurrences ← boundedOccurrences body appName maxNodes.getNat
       if occurrences.isEmpty then throwError "no exact application head {appName} in {declName}"
       let mut rows := #[]
       for occurrence in [:occurrences.size] do

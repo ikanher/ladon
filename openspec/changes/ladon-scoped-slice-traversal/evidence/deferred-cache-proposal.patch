@@ -1,0 +1,27 @@
+--- src/ladon/lean/ladon_scoped_slice_helper.lean	2026-10-19 12:43:46.705641604 +0300
++++ .codex/state/scoped-traversal/scoped-green/ladon_scoped_slice_helper.lean	2026-10-25 10:40:58.644812783 +0200
+@@ -19,12 +19,15 @@
+ private partial def scopedOccurrences (root : Expr) (needle : Name)
+     (maxNodes := 8192) (maxDepth := 64) : MetaM (Array ScopedOccurrence) := do
+   let visited ← IO.mkRef 0
++  let knownEmpty ← IO.mkRef ({} : Std.HashSet (ExprStructEq × Nat))
+   let rec walk (e : Expr) (depth : Nat) (path : Array Nat)
+       (isLeading : Bool) (nestedIds : Array String) : MetaM (Array ScopedOccurrence) := do
+     if depth > maxDepth then throwError "expression depth exceeds {maxDepth}"
+     let n ← visited.get
+     if n >= maxNodes then throwError "expression node count exceeds {maxNodes}"
+     visited.set (n + 1)
++    let cacheKey := (ExprStructEq.mk e, depth)
++    if (← knownEmpty.get).contains cacheKey then return #[]
+     let mut found := #[]
+     if let .const name _ := e.getAppFn then
+       if name == needle && e.isApp then
+@@ -56,6 +59,8 @@
+     | .mdata _ body => found := found ++ (← walk body (depth + 1) (path.push 0) isLeading nestedIds)
+     | .proj _ _ body => found := found ++ (← walk body (depth + 1) (path.push 0) false nestedIds)
+     | .bvar _ | .fvar _ | .mvar _ | .sort _ | .const _ _ | .lit _ => pure ()
++    if found.isEmpty then
++      knownEmpty.modify (·.insert cacheKey)
+     return found
+   walk root 0 #[] true #[]
+ 

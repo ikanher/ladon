@@ -7,6 +7,7 @@ open Lean Elab Command Meta
    imported theorem value.  Root owns compilation and runtime qualification. -/
 
 -- LADON_EXPR_GRAPH
+-- LADON_ROUNDTRIP_PRINT
 
 private structure ScopedOccurrence where
   expr : Expr
@@ -82,7 +83,7 @@ private def checkedRoundtrip (target proof : Expr) : MetaM (String × String) :=
       withOptions (fun o => o.setBool `pp.all true |>.setBool `pp.explicit true
         |>.setBool `pp.fullNames true |>.setBool `pp.notation false) do
         let targetText := (← ppExpr target).pretty
-        let proofText := (← ppExpr proof).pretty
+        let proofText ← roundtripProofText proof
         if targetText.utf8ByteSize > 1048576 || proofText.utf8ByteSize > 1048576 then
           throwError "serialized closed expression exceeds 1 MiB"
         let targetStx ← match Parser.runParserCategory (← getEnv) `term targetText with
@@ -161,7 +162,7 @@ private partial def identityTransport (selected : Expr) : MetaM Json := do
         ("closedProof", toJson closedProofText)]
   rebuild 0 #[] #[] #[]
 
-elab "#ladon_proof_slice " decl:ident app:ident : command => do
+elab "#ladon_proof_slice " decl:ident app:ident maxNodes:num : command => do
   liftTermElabM do
     let declName ← resolveName decl.getId
     let appName ← resolveName app.getId
@@ -182,7 +183,7 @@ elab "#ladon_proof_slice " decl:ident app:ident : command => do
           ("type", ← jsonExpr d.type),
           ("isImplementationDetail", toJson d.isImplementationDetail)]
     let range? ← findDeclarationRanges? declName
-    let occurrences ← scopedOccurrences value appName
+    let occurrences ← scopedOccurrences value appName maxNodes.getNat
     let (locals, resultRows) ← lambdaLetTelescope value fun proofLocals _ => do
       let localRows ← proofLocals.mapM fun fvar => do
         let d ← fvar.fvarId!.getDecl

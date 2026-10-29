@@ -67,6 +67,7 @@ class SourceGoalCompletionRequest:
 
 def complete_source_goal(
     request: SourceGoalCompletionRequest, *, runner: ProcessRunner = run_bounded_target_process,
+    workspace_parent: Path | None = None,
 ) -> dict[str, Any]:
     started = monotonic()
     result = _initial_result(request)
@@ -75,10 +76,10 @@ def complete_source_goal(
         capture = own_capture(request.capture)
         result["captureId"] = capture["captureId"]
         captured_request = _capture_request(request, capture)
-        fresh = capture_source_goal(captured_request, runner=runner)
+        fresh = capture_source_goal(captured_request, runner=runner, workspace_parent=workspace_parent)
         receipts.extend(fresh["processReceipts"])
         _require_fresh_capture(fresh, capture)
-        _complete(request, captured_request, capture, runner, result)
+        _complete(request, captured_request, capture, runner, result, workspace_parent=workspace_parent)
     except _AssociationError as error:
         result["status"] = error.status
         result["diagnostic"] = {"code": error.code, "message": str(error)[:500]}
@@ -110,13 +111,13 @@ def _require_fresh_capture(fresh, capture) -> None:
         raise _AssociationError("stale", "capture-observation-changed", "fresh goal/context/environment differs from the supplied capture")
 
 
-def _complete(request, captured_request, capture, runner, result) -> None:
+def _complete(request, captured_request, capture, runner, result, *, workspace_parent=None) -> None:
     from ladon._source_goal_completion_protocol import decode_completion, validate_completion
 
     root, source_path, source = _prepare_source(captured_request)
     helper = Path(str(resources.files("ladon").joinpath("lean", "ladon_source_goal_completion_helper.lean")))
     execution = prepare_direct_lean_execution(root, None, request.toolchain, require_compiled_module=False)
-    with tempfile.TemporaryDirectory(prefix="ladon-source-completion-") as directory:
+    with tempfile.TemporaryDirectory(prefix="ladon-source-completion-", dir=workspace_parent) as directory:
         original_helper = helper
         helper, helper_digest = stage_helper(original_helper, Path(directory))
         snapshot = Path(directory) / source_path.name

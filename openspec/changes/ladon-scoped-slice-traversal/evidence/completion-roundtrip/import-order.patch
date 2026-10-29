@@ -1,0 +1,29 @@
+--- tests/test_source_goal_completion_long_telescope.py
++++ tests/test_source_goal_completion_long_telescope.py
+@@ -1,8 +1,9 @@
+ """Completion must not inherit the separate slice traversal depth allowance."""
+ 
+-from ladon.source_goal_completion import complete_source_goal
+ from test_source_goal_completion_lean import _assert_completed, _capture, _request
+ 
++from ladon.source_goal_completion import complete_source_goal
++
+ 
+ def test_completion_preserves_long_telescope_support(tmp_path):
+     binders = " ".join(f"(n{i} : Nat)" for i in range(70))
+
+--- tests/test_source_goal_completion_instance_roundtrip.py
++++ tests/test_source_goal_completion_instance_roundtrip.py
+@@ -1,9 +1,9 @@
+ """Completion must preserve instance names needed by later binder types."""
+ 
+ import pytest
++from test_source_goal_completion_lean import _assert_completed, _capture, _request
+ 
+ from ladon.source_goal_completion import complete_source_goal
+-from test_source_goal_completion_lean import _assert_completed, _capture, _request
+ 
+ SOURCE = """class Carrier (α : Type) where
+   value : α
+
+Would fix 2 errors.

@@ -3,6 +3,7 @@ import Lean.Server.InfoUtils
 open Lean Elab Meta
 
 -- LADON_EXPR_GRAPH
+-- LADON_ROUNDTRIP_PRINT
 
 structure LocalRow where
   localId : String
@@ -120,6 +121,15 @@ def closeChecked (goal : MVarId) (target term : Expr) : MetaM (Expr × Expr × A
   let supportIds := support.map fun expr => expr.fvarId!.name.toString
   pure (closedTarget, closedProof, supportIds)
 
+/-- Retain universe parameters from the target and every original local type/value. -/
+def originalLevelNames (target : Expr) : MetaM (List Name) := do
+  let mut levels := collectLevelParams {} target
+  for decl in ← getLCtx do
+    levels := collectLevelParams levels decl.type
+    if let some value := decl.value? then
+      levels := collectLevelParams levels value
+  return levels.params.toList
+
 /-- The closed expressions must survive controlled explicit printing and reparsing
     with no locals, instances, namespace or open declarations in scope. -/
 def emptyContextRoundtrip (target proof : Expr) : MetaM (String × String) := do
@@ -129,7 +139,7 @@ def emptyContextRoundtrip (target proof : Expr) : MetaM (String × String) := do
       withOptions (fun o => o.setBool `pp.all true |>.setBool `pp.explicit true
         |>.setBool `pp.fullNames true |>.setBool `pp.notation false) do
         let targetText := (← ppExpr target).pretty
-        let proofText := (← ppExpr proof).pretty
+        let proofText ← roundtripProofText proof (← MonadRecDepth.getMaxRecDepth)
         let targetStx ← match Parser.runParserCategory (← getEnv) `term targetText with
           | .ok stx => pure stx
           | .error msg => throwError "closed target parse failed: {msg}"
@@ -137,15 +147,16 @@ def emptyContextRoundtrip (target proof : Expr) : MetaM (String × String) := do
           | .ok stx => pure stx
           | .error msg => throwError "closed proof parse failed: {msg}"
         let sort ← inferType target
+        let levelNames := (collectLevelParams (collectLevelParams {} target) proof).params.toList
         let (targetAgain, _) ← Lean.Elab.Term.TermElabM.run
           (Lean.Elab.Term.elabTermEnsuringType targetStx (some sort) (catchExPostpone := false))
-          { errToSorry := false, mayPostpone := false }
+          { errToSorry := false, mayPostpone := false } { levelNames }
         let targetAgain ← instantiateMVars targetAgain
         if targetAgain.hasExprMVar || targetAgain.hasLevelMVar || !(← isDefEq targetAgain target) then
           throwError "closed target round-trip changed its expression"
         let (proofAgain, _) ← Lean.Elab.Term.TermElabM.run
           (Lean.Elab.Term.elabTermEnsuringType proofStx (some targetAgain) (catchExPostpone := false))
-          { errToSorry := false, mayPostpone := false }
+          { errToSorry := false, mayPostpone := false } { levelNames }
         let proofAgain ← instantiateMVars proofAgain
         if proofAgain.hasExprMVar || proofAgain.hasLevelMVar || !(← isDefEq proofAgain proof) then
           throwError "closed proof round-trip changed its expression"
@@ -289,10 +300,11 @@ unsafe def main (_args : List String) : IO UInt32 := do
           | .ok termSyntax =>
             try
               let target ← goal.withContext do instantiateMVars (← goal.getType)
+              let levelNames ← goal.withContext (originalLevelNames target)
               let (term, termState) ← goal.withContext do
                 Lean.Elab.Term.TermElabM.run
                   (Lean.Elab.Term.elabTermEnsuringType termSyntax (some target) (catchExPostpone := false))
-                  { errToSorry := false, mayPostpone := false }
+                  { errToSorry := false, mayPostpone := false } { levelNames }
               let (_, termState) ← goal.withContext do
                 Lean.Elab.Term.TermElabM.run
                   Lean.Elab.Term.synthesizeSyntheticMVarsNoPostponing
