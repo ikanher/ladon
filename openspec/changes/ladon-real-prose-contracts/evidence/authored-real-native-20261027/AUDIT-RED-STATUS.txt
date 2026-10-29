@@ -1,0 +1,26 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_unknown_stopped_status_is_not_valid_history _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-204/test_unknown_stopped_status_is0')
+
+    def test_unknown_stopped_status_is_not_valid_history(tmp_path):
+        from ladon.real_prose_inputs import observation_identity
+    
+        snapshot = {
+            'schema': 'ladon-real-prose-production-v1', 'status': 'unavailable', 'channel': 'prose',
+            'authority': 'none', 'fidelity': 'attributed-unreviewed', 'admission': 'unresolved',
+            'request': {'interpretation': reading(tmp_path), 'context': context(),
+                        'alternativeId': 'unknown:status', 'author': 'test'},
+            'check': {'schema': 'ladon-supervised-obligation-planner-v1', 'status': 'bogus',
+                      'result': None, 'diagnostic': None, 'processReceipt': None,
+                      'workerInputDigest': None, 'bounds': None},
+        }
+        snapshot['snapshotId'] = observation_identity(snapshot)
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_real_prose_native_boundaries.py:170: Failed
+=========================== short test summary info ============================
+FAILED tests/test_real_prose_native_boundaries.py::test_unknown_stopped_status_is_not_valid_history
+1 failed, 11 deselected in 0.09s

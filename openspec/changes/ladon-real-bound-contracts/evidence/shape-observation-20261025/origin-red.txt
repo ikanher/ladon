@@ -1,0 +1,27 @@
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+___ test_constant_after_input_premise_has_exact_input_origin_and_permissions ___
+
+    def test_constant_after_input_premise_has_exact_input_origin_and_permissions():
+        expression = after_premise()
+        shape = observe(expression)["candidate"]
+>       source = at_pointer(expression, shape["input"]["originPath"])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_real_bound_shape_origins.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = {'forallE': {'binderInfo': 'explicit', 'body': {'forallE': {'binderInfo': 'explicit', 'body': {'forallE': {'binderInfo....}}}, 'name': 'f', 'type': {'const': 'Function', 'levels': []}}}, 'name': 'n', 'type': {'const': 'Nat', 'levels': []}}}
+path = '/normalizedTypeExpr/forallE/body/forallE/body/forallE/body/forallE/body/forallE/body/forallE/body/app/1/lam/forallE/type'
+
+    def at_pointer(expression, path):
+        value = {"normalizedTypeExpr": expression}
+        for part in path.lstrip("/").split("/"):
+>           value = value[int(part)] if isinstance(value, list) else value[part]
+                                                                     ^^^^^^^^^^^
+E           KeyError: 'forallE'
+
+tests/test_real_bound_shape_origins.py:24: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_shape_origins.py::test_constant_after_input_premise_has_exact_input_origin_and_permissions
+1 failed, 2 passed in 0.08s

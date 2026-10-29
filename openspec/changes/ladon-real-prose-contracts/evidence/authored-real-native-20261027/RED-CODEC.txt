@@ -1,0 +1,218 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+______ test_deep_timing_history_roundtrips_inside_existing_native_limits _______
+
+    def test_deep_timing_history_roundtrips_inside_existing_native_limits():
+        value = {'elapsed': 1.25, 'unicode': 'λ'}
+        for _ in range(100):
+            value = {'body': value}
+>       encoded = codec().encode_history(value)
+                  ^^^^^^^
+
+tests/test_real_prose_native_codec.py:19: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_real_prose_native_codec.py:12: in codec
+    return importlib.import_module('ladon.real_prose_native_codec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.real_prose_native_codec'
+import_ = <function _gcd_import at 0x79def7877d80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.real_prose_native_codec'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+______ test_closed_transport_rejects_changed_or_ambiguous_history[digest] ______
+
+change = 'digest'
+
+    @pytest.mark.parametrize('change', ['digest', 'truncated', 'extra', 'oversized', 'duplicate'])
+    def test_closed_transport_rejects_changed_or_ambiguous_history(change):
+>       encoded = codec().encode_history({'value': 'x' * 100_000})
+                  ^^^^^^^
+
+tests/test_real_prose_native_codec.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_real_prose_native_codec.py:12: in codec
+    return importlib.import_module('ladon.real_prose_native_codec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.real_prose_native_codec'
+import_ = <function _gcd_import at 0x79def7877d80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.real_prose_native_codec'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+____ test_closed_transport_rejects_changed_or_ambiguous_history[truncated] _____
+
+change = 'truncated'
+
+    @pytest.mark.parametrize('change', ['digest', 'truncated', 'extra', 'oversized', 'duplicate'])
+    def test_closed_transport_rejects_changed_or_ambiguous_history(change):
+>       encoded = codec().encode_history({'value': 'x' * 100_000})
+                  ^^^^^^^
+
+tests/test_real_prose_native_codec.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_real_prose_native_codec.py:12: in codec
+    return importlib.import_module('ladon.real_prose_native_codec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.real_prose_native_codec'
+import_ = <function _gcd_import at 0x79def7877d80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.real_prose_native_codec'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+______ test_closed_transport_rejects_changed_or_ambiguous_history[extra] _______
+
+change = 'extra'
+
+    @pytest.mark.parametrize('change', ['digest', 'truncated', 'extra', 'oversized', 'duplicate'])
+    def test_closed_transport_rejects_changed_or_ambiguous_history(change):
+>       encoded = codec().encode_history({'value': 'x' * 100_000})
+                  ^^^^^^^
+
+tests/test_real_prose_native_codec.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_real_prose_native_codec.py:12: in codec
+    return importlib.import_module('ladon.real_prose_native_codec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.real_prose_native_codec'
+import_ = <function _gcd_import at 0x79def7877d80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.real_prose_native_codec'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+____ test_closed_transport_rejects_changed_or_ambiguous_history[oversized] _____
+
+change = 'oversized'
+
+    @pytest.mark.parametrize('change', ['digest', 'truncated', 'extra', 'oversized', 'duplicate'])
+    def test_closed_transport_rejects_changed_or_ambiguous_history(change):
+>       encoded = codec().encode_history({'value': 'x' * 100_000})
+                  ^^^^^^^
+
+tests/test_real_prose_native_codec.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_real_prose_native_codec.py:12: in codec
+    return importlib.import_module('ladon.real_prose_native_codec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.real_prose_native_codec'
+import_ = <function _gcd_import at 0x79def7877d80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.real_prose_native_codec'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+____ test_closed_transport_rejects_changed_or_ambiguous_history[duplicate] _____
+
+change = 'duplicate'
+
+    @pytest.mark.parametrize('change', ['digest', 'truncated', 'extra', 'oversized', 'duplicate'])
+    def test_closed_transport_rejects_changed_or_ambiguous_history(change):
+>       encoded = codec().encode_history({'value': 'x' * 100_000})
+                  ^^^^^^^
+
+tests/test_real_prose_native_codec.py:27: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_real_prose_native_codec.py:12: in codec
+    return importlib.import_module('ladon.real_prose_native_codec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.real_prose_native_codec'
+import_ = <function _gcd_import at 0x79def7877d80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.real_prose_native_codec'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+__________________ test_codec_has_one_canonical_serialization __________________
+
+    def test_codec_has_one_canonical_serialization():
+>       encoded = codec().encode_history({'a': 1})
+                  ^^^^^^^
+
+tests/test_real_prose_native_codec.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_real_prose_native_codec.py:12: in codec
+    return importlib.import_module('ladon.real_prose_native_codec')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.real_prose_native_codec'
+import_ = <function _gcd_import at 0x79def7877d80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.real_prose_native_codec'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_real_prose_native_codec.py::test_deep_timing_history_roundtrips_inside_existing_native_limits
+FAILED tests/test_real_prose_native_codec.py::test_closed_transport_rejects_changed_or_ambiguous_history[digest]
+FAILED tests/test_real_prose_native_codec.py::test_closed_transport_rejects_changed_or_ambiguous_history[truncated]
+FAILED tests/test_real_prose_native_codec.py::test_closed_transport_rejects_changed_or_ambiguous_history[extra]
+FAILED tests/test_real_prose_native_codec.py::test_closed_transport_rejects_changed_or_ambiguous_history[oversized]
+FAILED tests/test_real_prose_native_codec.py::test_closed_transport_rejects_changed_or_ambiguous_history[duplicate]
+FAILED tests/test_real_prose_native_codec.py::test_codec_has_one_canonical_serialization
+7 failed in 0.08s

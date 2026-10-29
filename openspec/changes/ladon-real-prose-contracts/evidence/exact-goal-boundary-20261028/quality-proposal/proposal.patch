@@ -1,0 +1,63 @@
+--- tests/test_real_prose_exact_goal.py
++++ tests/test_real_prose_exact_goal.py
+@@ -88,25 +88,25 @@
+     assert result.succeeded, result.stdout + result.stderr
+ 
+ 
+-@pytest.mark.parametrize('mutation', [
+-    'module', 'formal-expression', 'authored-expression', 'formal-range', 'authored-range',
+-    'formal-kind', 'authored-kind', 'duplicate', 'premise-expression', 'premise-range',
+-    'unknown-key', 'too-many-premises', 'imported-formal',
+-])
+-def test_owner_substitution_fails_closed(project, mutation):
+-    value = copy.deepcopy(request())
+-    if mutation == 'module':
++def _owner_row(value, mutation):
++    return value['premises'][0] if mutation.startswith('premise') else value[mutation.split('-')[0]]
++
++
++def _mutate_owner(value, mutation):
++    row = _owner_row(value, mutation)
++    if mutation.endswith('-expression'):
++        row['expression'] = const('True' if mutation.startswith('authored') else 'False')
++    elif mutation.endswith('-range'):
++        row['range']['endColumn'] += 1
++    else:
++        row['kind'] = 'proposition-value' if mutation.startswith('formal') else 'theorem-type'
++
++
++def _mutate_request(value, mutation):
++    if mutation.endswith(('-expression', '-range', '-kind')):
++        _mutate_owner(value, mutation)
++    elif mutation == 'module':
+         value['module'] = 'Other'
+-    elif mutation.endswith('-expression'):
+-        row = value['premises'][0] if mutation.startswith('premise') else value[mutation.split('-')[0]]
+-        row['expression'] = const('False' if mutation.startswith('formal') else 'True')
+-        if mutation == 'premise-expression':
+-            row['expression'] = const('False')
+-    elif mutation.endswith('-range'):
+-        row = value['premises'][0] if mutation.startswith('premise') else value[mutation.split('-')[0]]
+-        row['range']['endColumn'] += 1
+-    elif mutation.endswith('-kind'):
+-        value[mutation.split('-')[0]]['kind'] = 'proposition-value' if mutation.startswith('formal') else 'theorem-type'
+     elif mutation == 'duplicate':
+         value['premises'].append(copy.deepcopy(value['premises'][0]))
+     elif mutation == 'unknown-key':
+@@ -116,6 +116,16 @@
+     else:
+         value['formal']['name'] = 'True.intro'
+         value['formal']['expression'] = const('True')
++
++
++@pytest.mark.parametrize('mutation', [
++    'module', 'formal-expression', 'authored-expression', 'formal-range', 'authored-range',
++    'formal-kind', 'authored-kind', 'duplicate', 'premise-expression', 'premise-range',
++    'unknown-key', 'too-many-premises', 'imported-formal',
++])
++def test_owner_substitution_fails_closed(project, mutation):
++    value = copy.deepcopy(request())
++    _mutate_request(value, mutation)
+     (project / 'Case.lean').write_text(source(value))
+     result = run(project, 'Case.lean')
+     assert not result.succeeded, mutation

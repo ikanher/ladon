@@ -65,6 +65,10 @@ def resolve_pair(artifacts, left, right):
 
 def _resolve_side(artifacts, side):
     contract = _owner(artifacts, side['contractRef'], 'proofir.contract')
+    from .proof_contract_rules import PROFILE_DIGEST
+
+    if contract['payload']['profileDigest'] != PROFILE_DIGEST:
+        raise ValueError('application probes do not support this contract profile')
     correspondence = _owner(artifacts, side['correspondenceRef'], 'proofir.correspondence')
     p = correspondence['payload']
     reading = _owner(artifacts, p['interpretationRef'], 'proofir.interpretation')

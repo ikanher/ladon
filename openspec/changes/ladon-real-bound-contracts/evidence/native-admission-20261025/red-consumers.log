@@ -1,0 +1,20 @@
+F..                                                                      [100%]
+=================================== FAILURES ===================================
+___________ test_proofir_inspection_exposes_historical_real_profile ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-96/test_proofir_inspection_expose0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7b4abc75e450>
+
+    def test_proofir_inspection_exposes_historical_real_profile(tmp_path, capsys):
+        artifact = tmp_path / "contract.json"
+        artifact.write_text(json.dumps(recorded()[-1]))
+        assert proofir_v3_main(["inspect", str(artifact)]) == 0
+        result = json.loads(capsys.readouterr().out)
+>       assert result["contract"]["profileId"] == "real-bound-v1"
+               ^^^^^^^^^^^^^^^^^^
+E       KeyError: 'contract'
+
+tests/test_real_bound_native_consumers.py:16: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_native_consumers.py::test_proofir_inspection_exposes_historical_real_profile
+1 failed, 2 passed in 0.35s

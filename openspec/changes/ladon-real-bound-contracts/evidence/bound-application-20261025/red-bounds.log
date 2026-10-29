@@ -1,0 +1,1602 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+______________ test_candidate_must_match_the_supplied_expression _______________
+
+    def test_candidate_must_match_the_supplied_expression():
+        value = observation()
+        value["candidate"]["loss"] = 123
+>       with pytest.raises(ValueError, match="candidate|shape"):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_real_bound_binding_bounds.py:21: Failed
+_________ test_deep_expression_rejects_before_recursive_goal_encoding __________
+
+    def test_deep_expression_rejects_before_recursive_goal_encoding():
+        value = observation()
+        expr = deepcopy(value["statementSnapshot"]["observation"]["normalizedTypeExpr"])
+        for _ in range(200):
+            expr = {"app": [expr, {"nat": 0}]}
+        value["statementSnapshot"]["observation"]["normalizedTypeExpr"] = expr
+        with pytest.raises(ValueError, match="candidate|shape|depth"):
+>           plan_bound_prefix(value, {"declaration": "Example.sample", "arguments": []})
+
+tests/test_real_bound_binding_bounds.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/real_bound_binding.py:65: in plan_bound_prefix
+    result["planId"] = snapshot_identity(result)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:97: in snapshot_identity
+    value = _snapshot_json(value)
+            ^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in _snapshot_json
+    return [_snapshot_json(child, depth + 1) for child in value]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:113: in <listcomp>
+    return [_snapshot_json(child, depth + 1) for child in value]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in _snapshot_json
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_contract_source.py:111: in <dictcomp>
+    return {key: _snapshot_json(child, depth + 1) for key, child in value.items()}
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = [{'app': [{'app': [{'app': [...]}, {'nat': 0}]}, {'nat': 0}]}, {'nat': 0}]
+depth = 257
+
+    def _snapshot_json(value, depth=0):
+        if depth > 256:
+>           raise ValueError("contract snapshot exceeds nesting bound")
+E           ValueError: contract snapshot exceeds nesting bound
+
+src/ladon/proof_contract_source.py:107: ValueError
+
+During handling of the above exception, another exception occurred:
+
+    def test_deep_expression_rejects_before_recursive_goal_encoding():
+        value = observation()
+        expr = deepcopy(value["statementSnapshot"]["observation"]["normalizedTypeExpr"])
+        for _ in range(200):
+            expr = {"app": [expr, {"nat": 0}]}
+        value["statementSnapshot"]["observation"]["normalizedTypeExpr"] = expr
+>       with pytest.raises(ValueError, match="candidate|shape|depth"):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'candidate|shape|depth'
+E         Actual message: 'contract snapshot exceeds nesting bound'
+
+tests/test_real_bound_binding_bounds.py:31: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_binding_bounds.py::test_candidate_must_match_the_supplied_expression
+FAILED tests/test_real_bound_binding_bounds.py::test_deep_expression_rejects_before_recursive_goal_encoding
+2 failed in 0.35s

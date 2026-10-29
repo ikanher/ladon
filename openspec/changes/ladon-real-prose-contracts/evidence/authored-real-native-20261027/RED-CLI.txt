@@ -1,0 +1,58 @@
+FF.                                                                      [100%]
+=================================== FAILURES ===================================
+___________ test_public_authoring_report_replay_and_output_collision ___________
+
+project = PosixPath('/tmp/pytest-of-codex/pytest-201/test_public_authoring_report_r0')
+
+    def test_public_authoring_report_replay_and_output_collision(project):
+        output = project / 'authored.json'
+        args = inputs(project, set_indexed=True)
+        run = invoke('produce-real-prose-bound', *args, '--output', output)
+>       assert run.returncode == 0, run.stdout + run.stderr
+E       AssertionError: usage: ladon investigation contract [-h]
+E                                             {plan-prefix-admission,check-prefix-laws,plan-bound-prefix,check-bound-prefix,plan-derivative-prefix,check-derivative-prefix,plan-real-bound,admit-real-bound,inspect-real-bound,report-real-bound,replay-real-bound,compare-real-bounds,propagate-real-bound-identity,compare-real-bounds-proofir,inspect-real-comparison,replay-real-comparison,check-real-bound-prefix,check-real-bound-prefix-proofir,inspect-real-prefix,replay-real-prefix,check-real-bound-coefficient,check-real-bound-coefficient-proofir,inspect-real-coefficient,replay-real-coefficient,compose-real-bounds,compose-real-bounds-proofir,inspect-real-transfer,replay-real-transfer,propagate-real-bounds-proofir,inspect-real-chain,replay-real-chain,audit,obligations,check-obligations,expand-provider,context-obligations,check-context-bridge,route-context-obligations,check-route-context-bridge,probe-calibration-profile,probe-calibration,probe-profile,probe,check-probe,review-probe,observe-prose-bound,replay-prose-bound,recognize-prose-bound,produce,observe-bound,inspect,refine,propagate,fidelity-record,expand}
+E                                             ...
+E         ladon investigation contract: error: argument operation: invalid choice: 'produce-real-prose-bound' (choose from 'plan-prefix-admission', 'check-prefix-laws', 'plan-bound-prefix', 'check-bound-prefix', 'plan-derivative-prefix', 'check-derivative-prefix', 'plan-real-bound', 'admit-real-bound', 'inspect-real-bound', 'report-real-bound', 'replay-real-bound', 'compare-real-bounds', 'propagate-real-bound-identity', 'compare-real-bounds-proofir', 'inspect-real-comparison', 'replay-real-comparison', 'check-real-bound-prefix', 'check-real-bound-prefix-proofir', 'inspect-real-prefix', 'replay-real-prefix', 'check-real-bound-coefficient', 'check-real-bound-coefficient-proofir', 'inspect-real-coefficient', 'replay-real-coefficient', 'compose-real-bounds', 'compose-real-bounds-proofir', 'inspect-real-transfer', 'replay-real-transfer', 'propagate-real-bounds-proofir', 'inspect-real-chain', 'replay-real-chain', 'audit', 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'observe-prose-bound', 'replay-prose-bound', 'recognize-prose-bound', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/codex/projects/ladon/.venv/bin/python', '-m', 'ladon.entrypoint', 'investigation', 'cont...'recognize-prose-bound', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')\n").returncode
+
+tests/test_real_prose_native_cli.py:28: AssertionError
+_______________ test_unresolved_alias_creates_no_native_contract _______________
+
+project = PosixPath('/tmp/pytest-of-codex/pytest-201/test_unresolved_alias_creates_0')
+
+    def test_unresolved_alias_creates_no_native_contract(project):
+        output = project / 'unresolved.json'
+        run = invoke('produce-real-prose-bound', *inputs(project, product='wrongProduct'), '--output', output)
+        assert run.returncode == 2
+>       saved = json.loads(output.read_text())
+                           ^^^^^^^^^^^^^^^^^^
+
+tests/test_real_prose_native_cli.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.11/pathlib.py:1058: in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors) as f:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/pytest-of-codex/pytest-201/test_unresolved_alias_creates_0/unresolved.json')
+mode = 'r', buffering = -1, encoding = 'locale', errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-codex/pytest-201/test_unresolved_alias_creates_0/unresolved.json'
+
+../../miniconda3/lib/python3.11/pathlib.py:1044: FileNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_real_prose_native_cli.py::test_public_authoring_report_replay_and_output_collision
+FAILED tests/test_real_prose_native_cli.py::test_unresolved_alias_creates_no_native_contract
+2 failed, 1 passed in 0.33s

@@ -1,0 +1,26 @@
+F
+=================================== FAILURES ===================================
+_____________ test_large_owner_has_a_separate_rendered_byte_limit ______________
+
+project = PosixPath('/tmp/pytest-of-codex/pytest-212/exact-goal0')
+
+    def test_large_owner_has_a_separate_rendered_byte_limit(project):
+        value = request()
+        declarations = list(DECLARATIONS)
+        literal = 'x' * (4 * 1024**2)
+        declarations[1] = f'def Reading : Prop := "{literal}" = "{literal}"'
+        value['authored']['range']['endColumn'] = len(declarations[1])
+        text = source(value).replace('\n'.join(DECLARATIONS), '\n'.join(declarations))
+        (project / 'Case.lean').write_text(text)
+        result = run(project, 'Case.lean')
+        assert not result.succeeded
+>       assert 'exact goal expression exceeds 8 MiB' in result.stdout + result.stderr
+E       AssertionError: assert 'exact goal expression exceeds 8 MiB' in ('Case.lean:2:14: warning: Variable name `n` is not explicitly referenced.\n\nThe binding can be removed (if unused) or...error: Tactic `introN` failed: There are no additional binders or `let` bindings in the goal to introduce\n\n⊢ sorry\n' + '')
+E        +  where 'Case.lean:2:14: warning: Variable name `n` is not explicitly referenced.\n\nThe binding can be removed (if unused) or...error: Tactic `introN` failed: There are no additional binders or `let` bindings in the goal to introduce\n\n⊢ sorry\n' = ProcessResult(command=('/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean', 'Case.lean'), returncode=1...sed_seconds=0.6570317019941285, timed_out=False, output_limited=False, memory_limited=False, peak_rss_bytes=1644044288).stdout
+E        +  and   '' = ProcessResult(command=('/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean', 'Case.lean'), returncode=1...sed_seconds=0.6570317019941285, timed_out=False, output_limited=False, memory_limited=False, peak_rss_bytes=1644044288).stderr
+
+tests/test_real_prose_exact_goal_output.py:19: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_real_prose_exact_goal_output.py::test_large_owner_has_a_separate_rendered_byte_limit
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 2.02s

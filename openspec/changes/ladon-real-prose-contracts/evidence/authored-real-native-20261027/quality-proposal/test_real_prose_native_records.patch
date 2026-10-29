@@ -1,0 +1,30 @@
+--- tests/test_real_prose_native_records.py
++++ tests/test_real_prose_native_records.py
+@@ -36,6 +36,14 @@
+     return snapshot['check']['result']['artifacts']
+ 
+ 
++def _assert_record(record):
++    assert record['profileId'] == 'real-bound-prose-v1'
++    assert record['scope'] == {'kind': 'global'} and record['loss'] == 5
++    assert record['alternativeId'] == 'reading:a' and record['author'] == 'tester'
++    assert record['admission'] == 'unresolved'
++    assert record['guards']['boundNonnegativeBinderIds']
++
++
+ def test_fresh_production_has_exact_attributed_record_and_historical_native_authority(captured):
+     root, snapshot = captured
+     assert snapshot['status'] == 'authored' and snapshot['admission'] == 'unresolved'
+@@ -43,11 +51,7 @@
+     validate_envelope_batch(native)
+     contract = native[-1]
+     record = contract['payload']['record']
+-    assert record['profileId'] == 'real-bound-prose-v1'
+-    assert record['scope'] == {'kind': 'global'} and record['loss'] == 5
+-    assert record['alternativeId'] == 'reading:a' and record['author'] == 'tester'
+-    assert record['admission'] == 'unresolved'
+-    assert record['guards']['boundNonnegativeBinderIds']
++    _assert_record(record)
+     assert contract['payload']['checkRunRefs'] == []
+     inspected = api().inspect_real_prose_bound(snapshot, root)
+     assert inspected['authority'] == 'none' and inspected['freshCheck'] is False

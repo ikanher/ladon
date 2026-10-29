@@ -1,0 +1,207 @@
+{
+  "schema": "ladon-real-prose-recognition-v1",
+  "channel": "prose",
+  "profileId": "real-bound-prose-shape-v2",
+  "status": "unavailable",
+  "authority": "syntax-only",
+  "fidelity": "attributed-unreviewed",
+  "admission": "unresolved",
+  "contract": null,
+  "request": {
+    "interpretation": {
+      "id": "reading:bound",
+      "source": {
+        "path": "claim.txt",
+        "startLine": 1,
+        "endLine": 1,
+        "quote": "An authored indexed estimate; interpretation and Real meaning remain unreviewed.",
+        "sha256": "97de51fbacdd18e17b10d02079dfbf5d615ad8c5b66cb93bf4a94feb4eaee4e6"
+      },
+      "formula": {
+        "tag": "forall",
+        "binder": {
+          "id": "n",
+          "name": "n",
+          "domain": "Nat"
+        },
+        "body": {
+          "tag": "exists",
+          "binder": {
+            "id": "K",
+            "name": "K",
+            "domain": "Real"
+          },
+          "body": {
+            "tag": "and",
+            "items": [
+              {
+                "tag": "le",
+                "left": {
+                  "tag": "const",
+                  "name": "0"
+                },
+                "right": {
+                  "tag": "var",
+                  "id": "K"
+                }
+              },
+              {
+                "tag": "forall",
+                "binder": {
+                  "id": "f",
+                  "name": "f",
+                  "domain": "Fn"
+                },
+                "body": {
+                  "tag": "forall",
+                  "binder": {
+                    "id": "C",
+                    "name": "C",
+                    "domain": "Real"
+                  },
+                  "body": {
+                    "tag": "implies",
+                    "premise": {
+                      "tag": "le",
+                      "left": {
+                        "tag": "const",
+                        "name": "0"
+                      },
+                      "right": {
+                        "tag": "var",
+                        "id": "C"
+                      }
+                    },
+                    "conclusion": {
+                      "tag": "implies",
+                      "premise": {
+                        "tag": "app",
+                        "symbol": "J",
+                        "args": [
+                          {
+                            "tag": "var",
+                            "id": "f"
+                          },
+                          {
+                            "tag": "app",
+                            "symbol": "shift",
+                            "args": [
+                              {
+                                "tag": "var",
+                                "id": "n"
+                              }
+                            ]
+                          },
+                          {
+                            "tag": "var",
+                            "id": "C"
+                          }
+                        ]
+                      },
+                      "conclusion": {
+                        "tag": "app",
+                        "symbol": "J",
+                        "args": [
+                          {
+                            "tag": "app",
+                            "symbol": "A",
+                            "args": [
+                              {
+                                "tag": "var",
+                                "id": "f"
+                              }
+                            ]
+                          },
+                          {
+                            "tag": "var",
+                            "id": "n"
+                          },
+                          {
+                            "tag": "app",
+                            "symbol": "product",
+                            "args": [
+                              {
+                                "tag": "var",
+                                "id": "K"
+                              },
+                              {
+                                "tag": "var",
+                                "id": "C"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "symbols": {
+        "J": {
+          "leanName": "BoundGlobal",
+          "leanType": "Fn \u2192 Nat \u2192 Real \u2192 Prop"
+        },
+        "A": {
+          "leanName": "Transform",
+          "leanType": "Fn \u2192 Fn"
+        },
+        "shift": {
+          "leanName": "bump",
+          "leanType": "Nat \u2192 Nat"
+        },
+        "product": {
+          "leanName": "product",
+          "leanType": "Real \u2192 Real \u2192 Real"
+        }
+      }
+    },
+    "context": {
+      "schema": "ladon-prose-bound-context-v1",
+      "file": "Context.lean",
+      "module": "Context",
+      "scope": "file-end"
+    }
+  },
+  "check": {
+    "schema": "ladon-supervised-obligation-planner-v1",
+    "status": "rejected",
+    "result": null,
+    "diagnostic": {
+      "code": "worker-rejected",
+      "message": "alias canonical order must be the exact builtin Nat shift"
+    },
+    "processReceipt": {
+      "command": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.real_prose_recognition_worker"
+      ],
+      "returnCode": 2,
+      "elapsedSeconds": 13.018533863010816,
+      "timedOut": false,
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 3762380800,
+      "inputDigest": "sha256:4cb20b809e37ee79e113d4943106f384c85eb1111392912579b0d129eb98538b",
+      "requestedMaxRssBytes": 12884901888,
+      "requestedMaxOutputBytes": 8388608,
+      "requestedTimeoutSeconds": 59.98355026799254,
+      "configuredTimeoutSeconds": 60,
+      "stdoutDigest": "sha256:958925f4208c3ba980b67cd45e62be5a168cb09f12331981a8bfdc3c581fd356",
+      "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "workerInputDigest": "sha256:4cb20b809e37ee79e113d4943106f384c85eb1111392912579b0d129eb98538b",
+    "bounds": {
+      "timeout_seconds": 60,
+      "deadlineMonotonic": 365195.126704377,
+      "max_output_bytes": 8388608,
+      "max_rss_bytes": 12884901888,
+      "effectiveTimeoutSeconds": 59.98355026799254
+    }
+  },
+  "snapshotId": "sha256:ebf2a1daf1e6ba32ef89557e2f9fbc170fa716936bdb546ece8a157a4dc6ae8d"
+}

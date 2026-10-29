@@ -1,0 +1,69 @@
+Repository root: /home/codex/projects/ladon
+OpenSpec change: ladon-real-prose-contracts
+Final implementation identity: sha256:60d9c92cd2ba792641f9cc3557528863a170aa42626d32c45778e8f57dffa636
+
+Generic fresh baseline production:
+- formal: admitted; 80.75 s; 4.23 GiB peak; no stop.
+- authored set input: authored; 18.18 s; 3.49 GiB peak; no stop.
+- set bootstrap connection: connected; 162.56 s; 4.30 GiB peak; no stop.
+The original saved test records were preserved separately; their source root was
+missing and authored observer identity was stale. Fresh records were generated
+from source-identical inputs before matrix execution.
+
+Frozen generic matrix groups (each bounded at 600 s / 12 GiB RSS / 8 MiB output):
+- run_matrix.py global-replay: exit 0, 354.05 s, 4.34 GiB; 2/2 cases complete.
+- run_matrix_extended.py typed-negative: exit 0, 317.17 s, 4.33 GiB; 2/2 complete.
+- run_matrix.py conditional-constant: exit 0, 333.19 s, 4.34 GiB; conditional and uniform controls complete.
+- run_matrix_extended.py conditional-constant: exit 0, 474.89 s, 4.35 GiB; 3/3 complete, including reverse direction; repeated controls match.
+All completed without timeout, memory, or output stops. Seven unique statuses:
+3 connected, 4 unresolved, 0 unavailable.
+
+Final-revision target-override falsifier:
+- exit 0, unresolved, captured type True; 150.43 s outer time, 4.31 GiB peak.
+- no timeout, memory, or output stop; no false promotion (0/1 control).
+
+Informed controls:
+- five-order current v3 run: connected; controller 496.7401 s / 6,365,511,680 bytes; worker 427.9435 s / 6,277,255,168 bytes. No stops. Snapshot implementation identity matches current; history validates with local compressor functions patched to raise.
+- four-order current run: unresolved; controller 420.4894 s / 6,361,731,072 bytes; worker 357.2559 s / 6,279,766,016 bytes. No timeout, memory, or output stop.
+
+Affected compatibility suite:
+PYTHONPATH=src .venv/bin/python -m pytest -q \
+  tests/test_bounded_json_compressed_transport.py \
+  tests/test_bounded_json_transport.py \
+  tests/test_bounded_json_transport_boundaries.py \
+  tests/test_real_prose_connection_compressed_wire_v2.py \
+  tests/test_real_prose_connection_compressed_history_v3.py \
+  tests/test_real_prose_connection_compressed_history_v3_boundaries.py \
+  tests/test_real_prose_connection_history.py \
+  tests/test_real_prose_connection_live.py \
+  tests/test_real_prose_connection_scratch.py \
+  tests/test_real_prose_connection_cli.py \
+  tests/test_real_prose_connection_commitment_history.py \
+  tests/test_real_prose_connection_commitment.py \
+  tests/test_real_prose_connection_environment.py \
+  tests/test_real_prose_connection_inputs.py \
+  tests/test_real_prose_connection_resources.py \
+  tests/test_real_prose_connection_witness.py \
+  tests/test_real_prose_exact_goal.py \
+  tests/test_real_prose_exact_goal_boundaries.py \
+  tests/test_source_goal_completion_instance_roundtrip.py \
+  tests/test_source_goal_completion_long_telescope.py \
+  tests/test_source_goal_completion_universe_terms.py \
+  tests/test_source_goal_completion_universes.py
+Exit 0: 154 passed, 30 skipped in 163.07 seconds.
+
+Targeted quality:
+- ruff check on 4 production + 4 transport test modules: exit 0.
+- strict_quality_issues on the same 8 files: exit 0, no issues.
+- openspec validate ladon-real-prose-contracts --strict: exit 0.
+- system quick_validate for skills/ladon and ../codex-skills/ladon: exit 0.
+
+Source preservation:
+- source manifests before/after: exact match for generic 3-file source copy,
+  informed formalization 2,680-file inventory, prose source 4-file inventory;
+  toolchain context and 11 compiled-library roots match.
+- implementation identity unchanged from baseline; no source mutation.
+
+Repository-wide strict suite was not rerun on final v3. Earlier pre-v3 results,
+including all three unrelated failures and complexity findings, are preserved in
+evidence/compressed-connection-transport-20261028/VERIFICATION.txt.

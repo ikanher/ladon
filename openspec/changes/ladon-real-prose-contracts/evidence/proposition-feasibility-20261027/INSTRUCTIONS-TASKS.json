@@ -1,0 +1,37 @@
+{
+  "changeName": "ladon-real-prose-contracts",
+  "artifactId": "tasks",
+  "schemaName": "spec-driven",
+  "changeDir": "/home/codex/projects/ladon/openspec/changes/ladon-real-prose-contracts",
+  "planningHome": {
+    "kind": "repo",
+    "root": "/home/codex/projects/ladon",
+    "changesDir": "/home/codex/projects/ladon/openspec/changes",
+    "defaultSchema": "spec-driven"
+  },
+  "outputPath": "tasks.md",
+  "resolvedOutputPath": "/home/codex/projects/ladon/openspec/changes/ladon-real-prose-contracts/tasks.md",
+  "existingOutputPaths": [],
+  "description": "Implementation checklist with trackable tasks",
+  "instruction": "Create the task list that breaks down the implementation work.\n\nBefore writing tasks, check design.md for Open Questions. If any of them\nwould change what gets built, resolve them with the user first - do not\nbake an unstated assumption into the task list.\n\n**IMPORTANT: Follow the template below for tracked tasks.** The apply phase parses\ncheckbox format to track progress. A box holding only `x` counts as done,\nupper or lower case and with any spacing, so `- [ x]` is done too. Every\nother marker, including `- [~]`, `- [-]` and an empty `- []`, reads as\nunfinished. A line with no checkbox is not tracked at all.\n\nGuidelines:\n- Group tasks under ## numbered headings that name a demonstrable outcome.\n  Put necessary helpers under the outcome that consumes them. A helper's\n  completion does not establish the parent outcome. Umbrella tasks link to\n  child changes, owning requirements, and child acceptance evidence instead\n  of copying their requirements, task lists, or results. Close a parent task\n  from that evidence only when its own acceptance conditions are satisfied;\n  keep acceptance checks not covered by that evidence open.\n- Each tracked task MUST be a checkbox: `- [ ] X.Y Task description`\n- Tasks should be small enough to complete in one session\n- Order tasks by dependency (what must be done first?)\n  Test consequential uncertain prerequisites before expanding dependent\n  work. Dependencies proposed during research may be revised with evidence.\n- Track implementation and verification work that can be completed before\n  archive. If the requested workflow includes archive or work that requires\n  this change to be archived, preserve those steps as plain bullets in an\n  optional `## Workflow follow-up` section at the end of tasks.md. These\n  bullets are reference information outside tracked task progress.\n- Each task MUST state how to verify completion (a test, command,\n  observable behavior, or delivered artifact). Put the verification in\n  that task's checkbox description. Use a separate verification task only\n  when it checks broader integration or system behavior that spans\n  multiple implementation tasks.\n- Each task group MUST land the tests and documentation its own work\n  calls for. Do NOT collect testing or documentation into a final group -\n  when a late group first exercises work from an early one, the failures\n  cascade back through every group in between and force rework. A group\n  whose work calls for neither, such as scaffolding or dependency setup,\n  carries neither. A final group is for integration checks only, not for\n  the tests and docs an earlier group owed.\n- Distinguish focused iteration checks, outcome-level integration checks,\n  and release checks when relevant. Preserve all required checks; do not\n  prescribe full release qualification after every small edit. Reuse\n  results only while their relevant inputs, environment, and timing match.\n- Keep the checklist as the authoritative progress record. Reference\n  requirements, design decisions, and detailed results at their owning\n  locations. For a long-running change, keep one short current-state note\n  in an existing artifact and link to it from status and resume summaries.\n  Include the current result, evidence links, unresolved blocker, and next\n  action. Replace obsolete live state instead of appending chronology. If\n  an inherited run-state file is large, place the note at the top and retain\n  the rest as historical evidence, not another live progress record.\n\nExample:\n```\n# Tasks\n\n## 1. Export a user's data as CSV\n\n- [ ] 1.1 Implement CSV formatting and verify quoting and delimiter cases\n- [ ] 1.2 Wire the export command and verify an exported fixture contains all expected rows\n- [ ] 1.3 Document the command and verify the documented example runs\n\n## 2. Export only the selected rows\n\n- [ ] 2.1 Apply active filters and verify included and excluded rows through the command\n- [ ] 2.2 Document filtering and verify the filtered example\n```\n\nWhen applicable, append workflow follow-up as plain bullets, for example:\n```\n## Workflow follow-up\n\n- Archive the change after the project's review requirements are satisfied.\n- Verify the archived result.\n```\n\nReference specs for what needs to be built, design for how to build it.\n",
+  "template": "# Tasks\n\n## 1. <!-- Demonstrable outcome -->\n\n- [ ] 1.1 <!-- Work toward the outcome and how to verify it -->\n- [ ] 1.2 <!-- Work toward the outcome and how to verify it -->\n\n## 2. <!-- Demonstrable outcome -->\n\n- [ ] 2.1 <!-- Work toward the outcome and how to verify it -->\n- [ ] 2.2 <!-- Work toward the outcome and how to verify it -->\n",
+  "dependencies": [
+    {
+      "id": "specs",
+      "done": true,
+      "path": "specs/**/*.md",
+      "description": "Detailed specifications for the change"
+    },
+    {
+      "id": "design",
+      "done": true,
+      "path": "design.md",
+      "description": "Technical design document with implementation details"
+    }
+  ],
+  "unlocks": [],
+  "root": {
+    "path": "/home/codex/projects/ladon",
+    "source": "nearest"
+  }
+}

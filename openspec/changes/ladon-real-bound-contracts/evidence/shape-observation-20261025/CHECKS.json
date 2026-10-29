@@ -1,0 +1,34 @@
+{
+  "focused": {
+    "command": "PYTHONPATH=src .venv/bin/pytest -q tests/test_real_bound_shape.py tests/test_real_bound_shape_origins.py tests/test_real_bound_observation.py tests/test_proof_contracts.py tests/test_proof_contract_formal_snapshot.py tests/test_proof_contract_formal_cli.py tests/test_proof_contract_cli.py tests/test_proof_contract_producer_bounds.py",
+    "passed": 63,
+    "exitCode": 0
+  },
+  "native": {
+    "command": "PYTHONPATH=src .venv/bin/pytest -q tests/test_proof_contract_native.py tests/test_proof_contract_native_audit.py tests/test_proof_contract_propagation_native.py tests/test_real_bound_shape_origins.py",
+    "passed": 23,
+    "exitCode": 0,
+    "repeatedCases": 3
+  },
+  "distinctCasesPassed": 83,
+  "quality": {
+    "ruff": "passed for all new runtime/test modules and modified CLI",
+    "strict": "ladon.quality.strict_quality_issues(exact same paths): no issues",
+    "fullSuiteRun": false
+  },
+  "openspec": [
+    "ladon-real-bound-contracts --strict: passed",
+    "ladon-proof-contract-analysis-umbrella --strict: passed"
+  ],
+  "whitespace": "git diff --check: passed",
+  "semanticConsumerRejections": {
+    "validate_contract": "ValueError",
+    "compare_contracts": "ValueError",
+    "propagation read_contracts": "ValueError"
+  },
+  "review": {
+    "sourceReviewPost": 1562,
+    "rootAcceptancePost": 1563,
+    "workerRanTests": false
+  }
+}

@@ -1,0 +1,23 @@
+F
+=================================== FAILURES ===================================
+_ test_actual_alias_equalities_recognize_both_scopes_without_admission[False] __
+
+project = PosixPath('/tmp/pytest-of-codex/pytest-196/test_actual_alias_equalities_r0')
+set_indexed = False
+
+    @pytest.mark.parametrize('set_indexed', [False, True])
+    def test_actual_alias_equalities_recognize_both_scopes_without_admission(project, set_indexed):
+        result = api().recognize_prose_bound(project, reading(project, set_indexed=set_indexed), context(),
+                                            timeout_seconds=60)
+>       assert result['status'] == 'recognized', result
+E       AssertionError: {'admission': 'unresolved', 'authority': 'syntax-only', 'channel': 'prose', 'check': {'bounds': {'deadlineMonotonic': ...putDigest': 'sha256:4e74dc14e4070da049d6b6fa89614c067acbcdbae700c388e71d5cf2a85107e0', ...}, 'result': None, ...}, ...}
+E       assert 'unavailable' == 'recognized'
+E         
+E         - recognized
+E         + unavailable
+
+tests/test_real_prose_recognition.py:73: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_real_prose_recognition.py::test_actual_alias_equalities_recognize_both_scopes_without_admission[False]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 13.26s

@@ -1,0 +1,314 @@
+FFFFFFFF                                                                 [100%]
+=================================== FAILURES ===================================
+_______ test_native_plan_requires_two_distinct_checks_without_admitting ________
+
+native_binding = {'admission': 'unresolved', 'bindingSourceDigest': 'sha256:2ab82e491413cb3197b6a3f853e5af5b7c867ddca8b88bafa8c3bdff49e...ier': 'full continuous multilinear map on P*Y with codomain Z', 'profileId': 'joint-real-frechet-prefix-v1', ...}, ...}
+
+    def test_native_plan_requires_two_distinct_checks_without_admitting(native_binding):
+>       result = native_plan(native_binding)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_real_bound_native_plan.py:26: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+binding = {'admission': 'unresolved', 'bindingSourceDigest': 'sha256:2ab82e491413cb3197b6a3f853e5af5b7c867ddca8b88bafa8c3bdff49e...ier': 'full continuous multilinear map on P*Y with codomain Z', 'profileId': 'joint-real-frechet-prefix-v1', ...}, ...}
+
+    def native_plan(binding):
+>       from ladon.real_bound_native_plan import plan_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_plan'
+
+tests/test_real_bound_native_plan.py:20: ModuleNotFoundError
+_____ test_unchecked_native_claims_reject_before_worker[admission-checked] _____
+
+native_binding = {'admission': 'unresolved', 'bindingSourceDigest': 'sha256:2ab82e491413cb3197b6a3f853e5af5b7c867ddca8b88bafa8c3bdff49e...ier': 'full continuous multilinear map on P*Y with codomain Z', 'profileId': 'joint-real-frechet-prefix-v1', ...}, ...}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-92/test_unchecked_native_claims_r0')
+field = 'admission', value = 'checked'
+
+    @pytest.mark.parametrize("field,value", [("admission", "checked"), ("contract", {}),
+                                            ("scalarSourceDigest", "sha256:" + "0" * 64)])
+    def test_unchecked_native_claims_reject_before_worker(native_binding, tmp_path, field, value):
+>       from ladon.real_bound_native_check import check_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_check'
+
+tests/test_real_bound_native_plan.py:38: ModuleNotFoundError
+______ test_unchecked_native_claims_reject_before_worker[contract-value1] ______
+
+native_binding = {'admission': 'unresolved', 'bindingSourceDigest': 'sha256:2ab82e491413cb3197b6a3f853e5af5b7c867ddca8b88bafa8c3bdff49e...ier': 'full continuous multilinear map on P*Y with codomain Z', 'profileId': 'joint-real-frechet-prefix-v1', ...}, ...}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-92/test_unchecked_native_claims_r1')
+field = 'contract', value = {}
+
+    @pytest.mark.parametrize("field,value", [("admission", "checked"), ("contract", {}),
+                                            ("scalarSourceDigest", "sha256:" + "0" * 64)])
+    def test_unchecked_native_claims_reject_before_worker(native_binding, tmp_path, field, value):
+>       from ladon.real_bound_native_check import check_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_check'
+
+tests/test_real_bound_native_plan.py:38: ModuleNotFoundError
+_ test_unchecked_native_claims_reject_before_worker[scalarSourceDigest-sha256:0000000000000000000000000000000000000000000000000000000000000000] _
+
+native_binding = {'admission': 'unresolved', 'bindingSourceDigest': 'sha256:2ab82e491413cb3197b6a3f853e5af5b7c867ddca8b88bafa8c3bdff49e...ier': 'full continuous multilinear map on P*Y with codomain Z', 'profileId': 'joint-real-frechet-prefix-v1', ...}, ...}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-92/test_unchecked_native_claims_r2')
+field = 'scalarSourceDigest'
+value = 'sha256:0000000000000000000000000000000000000000000000000000000000000000'
+
+    @pytest.mark.parametrize("field,value", [("admission", "checked"), ("contract", {}),
+                                            ("scalarSourceDigest", "sha256:" + "0" * 64)])
+    def test_unchecked_native_claims_reject_before_worker(native_binding, tmp_path, field, value):
+>       from ladon.real_bound_native_check import check_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_check'
+
+tests/test_real_bound_native_plan.py:38: ModuleNotFoundError
+__________ test_predicate_only_evidence_cannot_admit_native_contract ___________
+
+native_binding = {'admission': 'unresolved', 'bindingSourceDigest': 'sha256:2ab82e491413cb3197b6a3f853e5af5b7c867ddca8b88bafa8c3bdff49e...ier': 'full continuous multilinear map on P*Y with codomain Z', 'profileId': 'joint-real-frechet-prefix-v1', ...}, ...}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-92/test_predicate_only_evidence_c0')
+
+    def test_predicate_only_evidence_cannot_admit_native_contract(native_binding, tmp_path):
+>       from ladon.real_bound_native_check import check_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_check'
+
+tests/test_real_bound_native_plan.py:48: ModuleNotFoundError
+____________ test_rehashed_source_shape_cannot_become_a_native_fact ____________
+
+native_binding = {'admission': 'unresolved', 'bindingSourceDigest': 'sha256:2ab82e491413cb3197b6a3f853e5af5b7c867ddca8b88bafa8c3bdff49e...ier': 'full continuous multilinear map on P*Y with codomain Z', 'profileId': 'joint-real-frechet-prefix-v1', ...}, ...}
+
+    def test_rehashed_source_shape_cannot_become_a_native_fact(native_binding):
+        changed = deepcopy(native_binding)
+        changed["observation"]["candidate"]["loss"] = 99
+        with pytest.raises(ValueError, match="shape|candidate|plan"):
+>           native_plan(changed)
+
+tests/test_real_bound_native_plan.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+binding = {'admission': 'unresolved', 'bindingSourceDigest': 'sha256:2ab82e491413cb3197b6a3f853e5af5b7c867ddca8b88bafa8c3bdff49e...ier': 'full continuous multilinear map on P*Y with codomain Z', 'profileId': 'joint-real-frechet-prefix-v1', ...}, ...}
+
+    def native_plan(binding):
+>       from ladon.real_bound_native_plan import plan_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_plan'
+
+tests/test_real_bound_native_plan.py:20: ModuleNotFoundError
+______________________ test_native_plan_cli_rejects_claim ______________________
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+args = ['plan-real-bound', '--input', '/tmp/pytest-of-codex/pytest-92/test_native_plan_cli_rejects_c0/input.json', '--root', '/tmp/pytest-of-codex/pytest-92/test_native_plan_cli_rejects_c0']
+namespace = Namespace(operation=None)
+
+    def parse_known_args(self, args=None, namespace=None):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+>               namespace, args = self._parse_known_args(args, namespace)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../miniconda3/lib/python3.11/argparse.py:1907: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.11/argparse.py:2110: in _parse_known_args
+    positionals_end_index = consume_positionals(start_index)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:2087: in consume_positionals
+    take_action(action, args)
+../../miniconda3/lib/python3.11/argparse.py:1967: in take_action
+    argument_values = self._get_values(action, argument_strings)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:2516: in _get_values
+    self._check_value(action, value[0])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+action = _SubParsersAction(option_strings=[], dest='operation', nargs='A...', const=None, default=None, type=None, choices={'pl...ss=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)}, required=True, help=None, metavar=None)
+value = 'plan-real-bound'
+
+    def _check_value(self, action, value):
+        # converted value must be one of the choices (if specified)
+        if action.choices is not None and value not in action.choices:
+            args = {'value': value,
+                    'choices': ', '.join(map(repr, action.choices))}
+            msg = _('invalid choice: %(value)r (choose from %(choices)s)')
+>           raise ArgumentError(action, msg % args)
+E           argparse.ArgumentError: argument operation: invalid choice: 'plan-real-bound' (choose from 'plan-prefix-admission', 'check-prefix-laws', 'plan-bound-prefix', 'check-bound-prefix', 'plan-derivative-prefix', 'check-derivative-prefix', 'audit', 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')
+
+../../miniconda3/lib/python3.11/argparse.py:2563: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-92/test_native_plan_cli_rejects_c0')
+capsys = <_pytest.capture.CaptureFixture object at 0x770c80da4290>
+
+    def test_native_plan_cli_rejects_claim(tmp_path, capsys):
+        source = tmp_path / "input.json"
+        source.write_text('{"derivativeAdmission":"checked"}')
+>       status = contract_main(["plan-real-bound", "--input", str(source), "--root", str(tmp_path)])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_real_bound_native_cli.py:11: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_cli.py:93: in contract_main
+    args = _parser().parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1874: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1909: in parse_known_args
+    self.error(str(err))
+../../miniconda3/lib/python3.11/argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = "ladon investigation contract: error: argument operation: invalid choice: 'plan-real-bound' (choose from 'plan-prefix-...k-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')\n"
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.11/argparse.py:2627: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: ladon investigation contract [-h]
+                                    {plan-prefix-admission,check-prefix-laws,plan-bound-prefix,check-bound-prefix,plan-derivative-prefix,check-derivative-prefix,audit,obligations,check-obligations,expand-provider,context-obligations,check-context-bridge,route-context-obligations,check-route-context-bridge,probe-calibration-profile,probe-calibration,probe-profile,probe,check-probe,review-probe,produce,observe-bound,inspect,refine,propagate,fidelity-record,expand}
+                                    ...
+ladon investigation contract: error: argument operation: invalid choice: 'plan-real-bound' (choose from 'plan-prefix-admission', 'check-prefix-laws', 'plan-bound-prefix', 'check-bound-prefix', 'plan-derivative-prefix', 'check-derivative-prefix', 'audit', 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')
+_________________ test_native_production_rejects_saved_receipt _________________
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+args = ['admit-real-bound', '--input', '/tmp/pytest-of-codex/pytest-92/test_native_production_rejects0/input.json', '--proofs', '/tmp/pytest-of-codex/pytest-92/test_native_production_rejects0/terms.json', '--root', ...]
+namespace = Namespace(operation=None)
+
+    def parse_known_args(self, args=None, namespace=None):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+>               namespace, args = self._parse_known_args(args, namespace)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../miniconda3/lib/python3.11/argparse.py:1907: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.11/argparse.py:2110: in _parse_known_args
+    positionals_end_index = consume_positionals(start_index)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:2087: in consume_positionals
+    take_action(action, args)
+../../miniconda3/lib/python3.11/argparse.py:1967: in take_action
+    argument_values = self._get_values(action, argument_strings)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:2516: in _get_values
+    self._check_value(action, value[0])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+action = _SubParsersAction(option_strings=[], dest='operation', nargs='A...', const=None, default=None, type=None, choices={'pl...ss=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)}, required=True, help=None, metavar=None)
+value = 'admit-real-bound'
+
+    def _check_value(self, action, value):
+        # converted value must be one of the choices (if specified)
+        if action.choices is not None and value not in action.choices:
+            args = {'value': value,
+                    'choices': ', '.join(map(repr, action.choices))}
+            msg = _('invalid choice: %(value)r (choose from %(choices)s)')
+>           raise ArgumentError(action, msg % args)
+E           argparse.ArgumentError: argument operation: invalid choice: 'admit-real-bound' (choose from 'plan-prefix-admission', 'check-prefix-laws', 'plan-bound-prefix', 'check-bound-prefix', 'plan-derivative-prefix', 'check-derivative-prefix', 'audit', 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')
+
+../../miniconda3/lib/python3.11/argparse.py:2563: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-92/test_native_production_rejects0')
+capsys = <_pytest.capture.CaptureFixture object at 0x770c80d26290>
+
+    def test_native_production_rejects_saved_receipt(tmp_path, capsys):
+        source = tmp_path / "input.json"
+        terms = tmp_path / "terms.json"
+        source.write_text('{"status":"admitted","authority":"fresh-lean-check"}')
+        terms.write_text('{"predicate-admission":"by trivial","scalar-semantics":"by trivial"}')
+>       status = contract_main(["admit-real-bound", "--input", str(source), "--proofs", str(terms),
+                                "--root", str(tmp_path)])
+
+tests/test_real_bound_native_cli.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_cli.py:93: in contract_main
+    args = _parser().parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1874: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1909: in parse_known_args
+    self.error(str(err))
+../../miniconda3/lib/python3.11/argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = "ladon investigation contract: error: argument operation: invalid choice: 'admit-real-bound' (choose from 'plan-prefix...k-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')\n"
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.11/argparse.py:2627: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: ladon investigation contract [-h]
+                                    {plan-prefix-admission,check-prefix-laws,plan-bound-prefix,check-bound-prefix,plan-derivative-prefix,check-derivative-prefix,audit,obligations,check-obligations,expand-provider,context-obligations,check-context-bridge,route-context-obligations,check-route-context-bridge,probe-calibration-profile,probe-calibration,probe-profile,probe,check-probe,review-probe,produce,observe-bound,inspect,refine,propagate,fidelity-record,expand}
+                                    ...
+ladon investigation contract: error: argument operation: invalid choice: 'admit-real-bound' (choose from 'plan-prefix-admission', 'check-prefix-laws', 'plan-bound-prefix', 'check-bound-prefix', 'plan-derivative-prefix', 'check-derivative-prefix', 'audit', 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_native_plan.py::test_native_plan_requires_two_distinct_checks_without_admitting
+FAILED tests/test_real_bound_native_plan.py::test_unchecked_native_claims_reject_before_worker[admission-checked]
+FAILED tests/test_real_bound_native_plan.py::test_unchecked_native_claims_reject_before_worker[contract-value1]
+FAILED tests/test_real_bound_native_plan.py::test_unchecked_native_claims_reject_before_worker[scalarSourceDigest-sha256:0000000000000000000000000000000000000000000000000000000000000000]
+FAILED tests/test_real_bound_native_plan.py::test_predicate_only_evidence_cannot_admit_native_contract
+FAILED tests/test_real_bound_native_plan.py::test_rehashed_source_shape_cannot_become_a_native_fact
+FAILED tests/test_real_bound_native_cli.py::test_native_plan_cli_rejects_claim
+FAILED tests/test_real_bound_native_cli.py::test_native_production_rejects_saved_receipt
+8 failed in 1.69s

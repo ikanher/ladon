@@ -1,0 +1,116 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+_______ test_actual_named_fake_preserves_shape_but_never_admits_meaning ________
+
+snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+
+    def test_actual_named_fake_preserves_shape_but_never_admits_meaning(snapshot):
+>       from ladon.real_bound_observation import observe_bound_snapshot, verify_bound_observation
+E       ModuleNotFoundError: No module named 'ladon.real_bound_observation'
+
+tests/test_real_bound_observation.py:24: ModuleNotFoundError
+_____________ test_rehashed_tampering_is_rejected_by_replay[loss] ______________
+
+snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+mutation = 'loss'
+
+    @pytest.mark.parametrize("mutation", ["loss", "admission", "extra", "implementation"])
+    def test_rehashed_tampering_is_rejected_by_replay(snapshot, mutation):
+        from ladon.proof_contract_source import snapshot_identity
+>       from ladon.real_bound_observation import observe_bound_snapshot, verify_bound_observation
+E       ModuleNotFoundError: No module named 'ladon.real_bound_observation'
+
+tests/test_real_bound_observation.py:40: ModuleNotFoundError
+___________ test_rehashed_tampering_is_rejected_by_replay[admission] ___________
+
+snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+mutation = 'admission'
+
+    @pytest.mark.parametrize("mutation", ["loss", "admission", "extra", "implementation"])
+    def test_rehashed_tampering_is_rejected_by_replay(snapshot, mutation):
+        from ladon.proof_contract_source import snapshot_identity
+>       from ladon.real_bound_observation import observe_bound_snapshot, verify_bound_observation
+E       ModuleNotFoundError: No module named 'ladon.real_bound_observation'
+
+tests/test_real_bound_observation.py:40: ModuleNotFoundError
+_____________ test_rehashed_tampering_is_rejected_by_replay[extra] _____________
+
+snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+mutation = 'extra'
+
+    @pytest.mark.parametrize("mutation", ["loss", "admission", "extra", "implementation"])
+    def test_rehashed_tampering_is_rejected_by_replay(snapshot, mutation):
+        from ladon.proof_contract_source import snapshot_identity
+>       from ladon.real_bound_observation import observe_bound_snapshot, verify_bound_observation
+E       ModuleNotFoundError: No module named 'ladon.real_bound_observation'
+
+tests/test_real_bound_observation.py:40: ModuleNotFoundError
+________ test_rehashed_tampering_is_rejected_by_replay[implementation] _________
+
+snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+mutation = 'implementation'
+
+    @pytest.mark.parametrize("mutation", ["loss", "admission", "extra", "implementation"])
+    def test_rehashed_tampering_is_rejected_by_replay(snapshot, mutation):
+        from ladon.proof_contract_source import snapshot_identity
+>       from ladon.real_bound_observation import observe_bound_snapshot, verify_bound_observation
+E       ModuleNotFoundError: No module named 'ladon.real_bound_observation'
+
+tests/test_real_bound_observation.py:40: ModuleNotFoundError
+_________ test_cli_observe_inspect_and_collision_keep_unresolved_exit __________
+
+snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-63/test_cli_observe_inspect_and_c0')
+
+    def test_cli_observe_inspect_and_collision_keep_unresolved_exit(snapshot, tmp_path):
+        source = tmp_path / "formal.json"
+        output = tmp_path / "bound.json"
+        source.write_text(json.dumps(snapshot))
+        original = source.read_bytes()
+        result = invoke("observe-bound", "--input", source, "--root", ROOT, "--output", output)
+        assert result.returncode == 2, result.stdout + result.stderr
+>       saved = output.read_bytes()
+                ^^^^^^^^^^^^^^^^^^^
+
+tests/test_real_bound_observation.py:63: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.11/pathlib.py:1050: in read_bytes
+    with self.open(mode='rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = PosixPath('/tmp/pytest-of-codex/pytest-63/test_cli_observe_inspect_and_c0/bound.json')
+mode = 'rb', buffering = -1, encoding = None, errors = None, newline = None
+
+    def open(self, mode='r', buffering=-1, encoding=None,
+             errors=None, newline=None):
+        """
+        Open the file pointed by this path and return a file object, as
+        the built-in open() function does.
+        """
+        if "b" not in mode:
+            encoding = io.text_encoding(encoding)
+>       return io.open(self, mode, buffering, encoding, errors, newline)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: [Errno 2] No such file or directory: '/tmp/pytest-of-codex/pytest-63/test_cli_observe_inspect_and_c0/bound.json'
+
+../../miniconda3/lib/python3.11/pathlib.py:1044: FileNotFoundError
+_______________ test_nested_snapshot_source_identity_is_checked ________________
+
+snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+
+    def test_nested_snapshot_source_identity_is_checked(snapshot):
+        from ladon.proof_contract_source import snapshot_identity
+>       from ladon.real_bound_observation import observe_bound_snapshot, verify_bound_observation
+E       ModuleNotFoundError: No module named 'ladon.real_bound_observation'
+
+tests/test_real_bound_observation.py:76: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_observation.py::test_actual_named_fake_preserves_shape_but_never_admits_meaning
+FAILED tests/test_real_bound_observation.py::test_rehashed_tampering_is_rejected_by_replay[loss]
+FAILED tests/test_real_bound_observation.py::test_rehashed_tampering_is_rejected_by_replay[admission]
+FAILED tests/test_real_bound_observation.py::test_rehashed_tampering_is_rejected_by_replay[extra]
+FAILED tests/test_real_bound_observation.py::test_rehashed_tampering_is_rejected_by_replay[implementation]
+FAILED tests/test_real_bound_observation.py::test_cli_observe_inspect_and_collision_keep_unresolved_exit
+FAILED tests/test_real_bound_observation.py::test_nested_snapshot_source_identity_is_checked
+7 failed in 1.39s

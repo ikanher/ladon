@@ -1,0 +1,957 @@
+{
+  "schema": "ladon-contract-production-v1",
+  "channel": "formal",
+  "status": "unsupported",
+  "contract": null,
+  "featureOrigins": {
+    "regularity": [],
+    "constantDependencies": [],
+    "witnessDependencies": []
+  },
+  "residuals": [
+    {
+      "code": "unsupported-domain",
+      "message": "dependent or unsupported binder domain is outside the admitted Nat profile",
+      "feature": "telescope.b1.type"
+    }
+  ],
+  "source": {
+    "path": "ScalarExamples.lean",
+    "sha256": "dae3de17a044bc336897ef5a67daa916bed4387ccef490f4e7170882fdb24869"
+  },
+  "selection": {
+    "module": "ScalarExamples",
+    "declaration": "ScalarExamples.ordinary"
+  },
+  "environment": "sha256:bf0070c6933e1d9ca2e71b0a9555f5e6dd041e4a9c85ecc72121178f32879ab4",
+  "helper": {
+    "sha256": "c4f5b31403ab9056ef21cd8132645fe9e7895e993673e92819935d2cbe0dd645",
+    "profile": "ladon-formal-contract-observation-v2"
+  },
+  "processReceipts": [
+    {
+      "command": [
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.34.0-rc2/bin/lean",
+        "--run",
+        "/tmp/ladon-formal-contract-hw0ow7l4/helper.lean",
+        "ScalarExamples",
+        "ScalarExamples.lean",
+        "/tmp/ladon-formal-contract-hw0ow7l4/target.lean",
+        "ScalarExamples.ordinary",
+        "/tmp/ladon-formal-contract-hw0ow7l4/statement.json"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 2.321671765996143,
+      "timed_out": false,
+      "output_limited": false,
+      "memory_limited": false,
+      "peak_rss_bytes": 4513632256,
+      "stdoutBytes": 0,
+      "stdoutDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrBytes": 0,
+      "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "phase": "lean-statement-observation",
+      "requestedTimeoutSeconds": 60,
+      "requestedMaxRssBytes": 12884901888,
+      "requestedMaxOutputBytes": 8388608,
+      "helperResultDigest": "sha256:c8cc115b9c011b8b78d57b51465c52d24f8f43be6cedbb0ed30325b0a5ebb18e",
+      "helperResultBytes": 5379
+    }
+  ],
+  "observation": {
+    "declarationRange": {
+      "endColumn": 41,
+      "endLine": 16,
+      "selectionEndColumn": 16,
+      "selectionEndLine": 11,
+      "selectionStartColumn": 8,
+      "selectionStartLine": 11,
+      "startColumn": 0,
+      "startLine": 11
+    },
+    "file": "ScalarExamples.lean",
+    "helperVersion": "ladon-formal-contract-helper-v2",
+    "leanVersion": "4.34.0-rc2",
+    "module": "ScalarExamples",
+    "normalizedTypeExpr": {
+      "forallE": {
+        "binderInfo": "explicit",
+        "body": {
+          "app": [
+            {
+              "app": [
+                {
+                  "const": "Exists",
+                  "levels": [
+                    "1"
+                  ]
+                },
+                {
+                  "const": "Real",
+                  "levels": []
+                }
+              ]
+            },
+            {
+              "lam": {
+                "binderInfo": "explicit",
+                "body": {
+                  "app": [
+                    {
+                      "app": [
+                        {
+                          "const": "And",
+                          "levels": []
+                        },
+                        {
+                          "app": [
+                            {
+                              "app": [
+                                {
+                                  "app": [
+                                    {
+                                      "app": [
+                                        {
+                                          "const": "LE.le",
+                                          "levels": [
+                                            "0"
+                                          ]
+                                        },
+                                        {
+                                          "const": "Real",
+                                          "levels": []
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "const": "Real.instLE",
+                                      "levels": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "app": [
+                                    {
+                                      "app": [
+                                        {
+                                          "app": [
+                                            {
+                                              "const": "OfNat.ofNat",
+                                              "levels": [
+                                                "0"
+                                              ]
+                                            },
+                                            {
+                                              "const": "Real",
+                                              "levels": []
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "nat": 0
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "app": [
+                                        {
+                                          "app": [
+                                            {
+                                              "const": "Zero.toOfNat0",
+                                              "levels": [
+                                                "0"
+                                              ]
+                                            },
+                                            {
+                                              "const": "Real",
+                                              "levels": []
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "const": "Real.instZero",
+                                          "levels": []
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "bvar": 0
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "forallE": {
+                        "binderInfo": "explicit",
+                        "body": {
+                          "forallE": {
+                            "binderInfo": "explicit",
+                            "body": {
+                              "forallE": {
+                                "binderInfo": "explicit",
+                                "body": {
+                                  "forallE": {
+                                    "binderInfo": "explicit",
+                                    "body": {
+                                      "forallE": {
+                                        "binderInfo": "explicit",
+                                        "body": {
+                                          "app": [
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "app": [
+                                                        {
+                                                          "const": "ScalarExamples.envelope",
+                                                          "levels": []
+                                                        },
+                                                        {
+                                                          "app": [
+                                                            {
+                                                              "const": "ScalarExamples.transport",
+                                                              "levels": []
+                                                            },
+                                                            {
+                                                              "bvar": 4
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "bvar": 3
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "bvar": 6
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "app": [
+                                                        {
+                                                          "app": [
+                                                            {
+                                                              "app": [
+                                                                {
+                                                                  "app": [
+                                                                    {
+                                                                      "const": "HMul.hMul",
+                                                                      "levels": [
+                                                                        "0",
+                                                                        "0",
+                                                                        "0"
+                                                                      ]
+                                                                    },
+                                                                    {
+                                                                      "const": "Real",
+                                                                      "levels": []
+                                                                    }
+                                                                  ]
+                                                                },
+                                                                {
+                                                                  "const": "Real",
+                                                                  "levels": []
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "const": "Real",
+                                                              "levels": []
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "app": [
+                                                            {
+                                                              "app": [
+                                                                {
+                                                                  "const": "instHMul",
+                                                                  "levels": [
+                                                                    "0"
+                                                                  ]
+                                                                },
+                                                                {
+                                                                  "const": "Real",
+                                                                  "levels": []
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "const": "Real.instMul",
+                                                              "levels": []
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "bvar": 5
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "bvar": 2
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        "name": "a._@._internal._hyg.0",
+                                        "type": {
+                                          "app": [
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "app": [
+                                                        {
+                                                          "const": "ScalarExamples.envelope",
+                                                          "levels": []
+                                                        },
+                                                        {
+                                                          "bvar": 3
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "bvar": 2
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "bvar": 5
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "bvar": 1
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    },
+                                    "name": "a._@._internal._hyg.0",
+                                    "type": {
+                                      "app": [
+                                        {
+                                          "app": [
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "const": "LE.le",
+                                                      "levels": [
+                                                        "0"
+                                                      ]
+                                                    },
+                                                    {
+                                                      "const": "Real",
+                                                      "levels": []
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "const": "Real.instLE",
+                                                  "levels": []
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "app": [
+                                                        {
+                                                          "const": "OfNat.ofNat",
+                                                          "levels": [
+                                                            "0"
+                                                          ]
+                                                        },
+                                                        {
+                                                          "const": "Real",
+                                                          "levels": []
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "nat": 0
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "app": [
+                                                        {
+                                                          "const": "Zero.toOfNat0",
+                                                          "levels": [
+                                                            "0"
+                                                          ]
+                                                        },
+                                                        {
+                                                          "const": "Real",
+                                                          "levels": []
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "const": "Real.instZero",
+                                                      "levels": []
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "bvar": 0
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "name": "C",
+                                "type": {
+                                  "const": "Real",
+                                  "levels": []
+                                }
+                              }
+                            },
+                            "name": "S",
+                            "type": {
+                              "app": [
+                                {
+                                  "const": "Set",
+                                  "levels": [
+                                    "0"
+                                  ]
+                                },
+                                {
+                                  "const": "Real",
+                                  "levels": []
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "name": "f",
+                        "type": {
+                          "forallE": {
+                            "binderInfo": "explicit",
+                            "body": {
+                              "const": "Real",
+                              "levels": []
+                            },
+                            "name": "a._@._internal._hyg.0",
+                            "type": {
+                              "app": [
+                                {
+                                  "app": [
+                                    {
+                                      "const": "Prod",
+                                      "levels": [
+                                        "0",
+                                        "0"
+                                      ]
+                                    },
+                                    {
+                                      "const": "Real",
+                                      "levels": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "const": "Real",
+                                  "levels": []
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "name": "K",
+                "type": {
+                  "const": "Real",
+                  "levels": []
+                }
+              }
+            }
+          ]
+        },
+        "name": "n",
+        "type": {
+          "const": "Nat",
+          "levels": []
+        }
+      }
+    },
+    "normalizedTypeFingerprint": "4025689606",
+    "protocolVersion": "ladon-formal-contract-observation-v2",
+    "sourceModuleOwned": true,
+    "status": "observed",
+    "target": "ScalarExamples.ordinary",
+    "typeExpr": {
+      "forallE": {
+        "binderInfo": "explicit",
+        "body": {
+          "app": [
+            {
+              "app": [
+                {
+                  "const": "Exists",
+                  "levels": [
+                    "1"
+                  ]
+                },
+                {
+                  "const": "Real",
+                  "levels": []
+                }
+              ]
+            },
+            {
+              "lam": {
+                "binderInfo": "explicit",
+                "body": {
+                  "app": [
+                    {
+                      "app": [
+                        {
+                          "const": "And",
+                          "levels": []
+                        },
+                        {
+                          "app": [
+                            {
+                              "app": [
+                                {
+                                  "app": [
+                                    {
+                                      "app": [
+                                        {
+                                          "const": "LE.le",
+                                          "levels": [
+                                            "0"
+                                          ]
+                                        },
+                                        {
+                                          "const": "Real",
+                                          "levels": []
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "const": "Real.instLE",
+                                      "levels": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "app": [
+                                    {
+                                      "app": [
+                                        {
+                                          "app": [
+                                            {
+                                              "const": "OfNat.ofNat",
+                                              "levels": [
+                                                "0"
+                                              ]
+                                            },
+                                            {
+                                              "const": "Real",
+                                              "levels": []
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "nat": 0
+                                        }
+                                      ]
+                                    },
+                                    {
+                                      "app": [
+                                        {
+                                          "app": [
+                                            {
+                                              "const": "Zero.toOfNat0",
+                                              "levels": [
+                                                "0"
+                                              ]
+                                            },
+                                            {
+                                              "const": "Real",
+                                              "levels": []
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "const": "Real.instZero",
+                                          "levels": []
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "bvar": 0
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "forallE": {
+                        "binderInfo": "explicit",
+                        "body": {
+                          "forallE": {
+                            "binderInfo": "explicit",
+                            "body": {
+                              "forallE": {
+                                "binderInfo": "explicit",
+                                "body": {
+                                  "forallE": {
+                                    "binderInfo": "explicit",
+                                    "body": {
+                                      "forallE": {
+                                        "binderInfo": "explicit",
+                                        "body": {
+                                          "app": [
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "app": [
+                                                        {
+                                                          "const": "ScalarExamples.envelope",
+                                                          "levels": []
+                                                        },
+                                                        {
+                                                          "app": [
+                                                            {
+                                                              "const": "ScalarExamples.transport",
+                                                              "levels": []
+                                                            },
+                                                            {
+                                                              "bvar": 4
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "bvar": 3
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "bvar": 6
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "app": [
+                                                        {
+                                                          "app": [
+                                                            {
+                                                              "app": [
+                                                                {
+                                                                  "app": [
+                                                                    {
+                                                                      "const": "HMul.hMul",
+                                                                      "levels": [
+                                                                        "0",
+                                                                        "0",
+                                                                        "0"
+                                                                      ]
+                                                                    },
+                                                                    {
+                                                                      "const": "Real",
+                                                                      "levels": []
+                                                                    }
+                                                                  ]
+                                                                },
+                                                                {
+                                                                  "const": "Real",
+                                                                  "levels": []
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "const": "Real",
+                                                              "levels": []
+                                                            }
+                                                          ]
+                                                        },
+                                                        {
+                                                          "app": [
+                                                            {
+                                                              "app": [
+                                                                {
+                                                                  "const": "instHMul",
+                                                                  "levels": [
+                                                                    "0"
+                                                                  ]
+                                                                },
+                                                                {
+                                                                  "const": "Real",
+                                                                  "levels": []
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "const": "Real.instMul",
+                                                              "levels": []
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "bvar": 5
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "bvar": 2
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        "name": "a._@._internal._hyg.0",
+                                        "type": {
+                                          "app": [
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "app": [
+                                                        {
+                                                          "const": "ScalarExamples.envelope",
+                                                          "levels": []
+                                                        },
+                                                        {
+                                                          "bvar": 3
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "bvar": 2
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "bvar": 5
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "bvar": 1
+                                            }
+                                          ]
+                                        }
+                                      }
+                                    },
+                                    "name": "a._@._internal._hyg.0",
+                                    "type": {
+                                      "app": [
+                                        {
+                                          "app": [
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "const": "LE.le",
+                                                      "levels": [
+                                                        "0"
+                                                      ]
+                                                    },
+                                                    {
+                                                      "const": "Real",
+                                                      "levels": []
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "const": "Real.instLE",
+                                                  "levels": []
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "app": [
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "app": [
+                                                        {
+                                                          "const": "OfNat.ofNat",
+                                                          "levels": [
+                                                            "0"
+                                                          ]
+                                                        },
+                                                        {
+                                                          "const": "Real",
+                                                          "levels": []
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "nat": 0
+                                                    }
+                                                  ]
+                                                },
+                                                {
+                                                  "app": [
+                                                    {
+                                                      "app": [
+                                                        {
+                                                          "const": "Zero.toOfNat0",
+                                                          "levels": [
+                                                            "0"
+                                                          ]
+                                                        },
+                                                        {
+                                                          "const": "Real",
+                                                          "levels": []
+                                                        }
+                                                      ]
+                                                    },
+                                                    {
+                                                      "const": "Real.instZero",
+                                                      "levels": []
+                                                    }
+                                                  ]
+                                                }
+                                              ]
+                                            }
+                                          ]
+                                        },
+                                        {
+                                          "bvar": 0
+                                        }
+                                      ]
+                                    }
+                                  }
+                                },
+                                "name": "C",
+                                "type": {
+                                  "const": "Real",
+                                  "levels": []
+                                }
+                              }
+                            },
+                            "name": "S",
+                            "type": {
+                              "app": [
+                                {
+                                  "const": "Set",
+                                  "levels": [
+                                    "0"
+                                  ]
+                                },
+                                {
+                                  "const": "Real",
+                                  "levels": []
+                                }
+                              ]
+                            }
+                          }
+                        },
+                        "name": "f",
+                        "type": {
+                          "forallE": {
+                            "binderInfo": "explicit",
+                            "body": {
+                              "const": "Real",
+                              "levels": []
+                            },
+                            "name": "a._@._internal._hyg.0",
+                            "type": {
+                              "app": [
+                                {
+                                  "app": [
+                                    {
+                                      "const": "Prod",
+                                      "levels": [
+                                        "0",
+                                        "0"
+                                      ]
+                                    },
+                                    {
+                                      "const": "Real",
+                                      "levels": []
+                                    }
+                                  ]
+                                },
+                                {
+                                  "const": "Real",
+                                  "levels": []
+                                }
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "name": "K",
+                "type": {
+                  "const": "Real",
+                  "levels": []
+                }
+              }
+            }
+          ]
+        },
+        "name": "n",
+        "type": {
+          "const": "Nat",
+          "levels": []
+        }
+      }
+    },
+    "typeFingerprint": "4025689606",
+    "version": "1"
+  },
+  "coverage": {
+    "statementFeatures": "unsupported",
+    "providers": "not-extracted",
+    "proofBody": "not-extracted"
+  },
+  "fidelity": "attributed-unreviewed",
+  "profileDigest": "sha256:c2126052cf6cd97f64ca6ae59c2801f3b84a24c8203132b5202b0b3aa6badb0e",
+  "artifacts": [],
+  "snapshotId": "sha256:c5db23a2e74ec9afea7cefb1456dde7ae3c5d4cfd43c0772397298e6e906d25a"
+}

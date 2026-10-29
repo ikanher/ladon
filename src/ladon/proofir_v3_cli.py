@@ -152,6 +152,7 @@ def _operation_result(
     if operation == "canonicalize":
         return source
     return {
+        **_contract_summary(source),
         "schema": "ladon-proofir-inspect-result-v1",
         "operation": "inspect",
         "proofirVersion": source["proofirVersion"],
@@ -160,6 +161,26 @@ def _operation_result(
         "subjects": source["subjectRefs"],
         "coverage": source["coverage"],
     }
+
+
+def _contract_summary(source):
+    from ladon.real_prose_native_record import PROFILE_DIGEST as AUTHORED_REAL
+
+    if source['artifactKind'] == 'proofir.contract' and source['payload']['profileDigest'] == AUTHORED_REAL:
+        record = source['payload']['record']
+        return {'contract': {'profileId': record['profileId'], 'loss': record['loss'],
+                             'scope': record['scope'], 'alternativeId': record['alternativeId'],
+                             'author': record['author'], 'admission': 'unresolved', 'authority': 'none',
+                             'fidelity': 'attributed-unreviewed', 'evidenceAuthentication': 'not-established'}}
+    from ladon.real_bound_native_profile import PROFILE_DIGEST
+
+    if (source["artifactKind"] != "proofir.contract"
+            or source["payload"]["profileDigest"] != PROFILE_DIGEST):
+        return {}
+    record = source["payload"]["record"]
+    return {"contract": {"profileId": record["profileId"], "loss": record["loss"],
+                         "admission": record["admission"]["state"], "authority": "none",
+                         "paperNormBridge": "unresolved"}}
 
 
 def _publish_result(path: Path | None, payload: bytes) -> None:

@@ -1,0 +1,15 @@
+formal unsupported observed
+result checked-binding 0 45.129080813989276
+actual supported
+goal ∀ {bound0 : Type u} {bound1 : Type v} {bound2 : Type w} [bound3 : NormedAddCommGroup.{u} bound0]
+  [bound4 :
+    @NormedSpace.{0, u} Real bound0 Real.normedField (@NormedAddCommGroup.toSeminormedAddCommGroup.{u} bound0 bound3)]
+  [bound5 : NormedAddCommGroup.{v} bound1]
+  [bound6 :
+    @NormedSpace.{0, v} Real bound1 Real.normedField (@NormedAddCommGroup.toSeminormedAddCommGroup.{v} bound1 bound5)]
+  [bound7 : NormedAddCommGroup.{w} bound2]
+  [bound8 :
+    @NormedSpace.{0, w} Real bound2 Real.normedField (@NormedAddCommGroup.toSeminormedAddCommGroup.{w} bound2 bound7)],
+  @Ladon.RealBound.Admission.{max (max u v) w, u, v} (Prod.{u, v} bound0 bound1 → bound2) bound0 bound1
+    (@CloudBounds.envelope.{u, v, w} bound0 bound1 bound2 bound3 bound4 bound5 bound6 bound7 bound8)
+    (@Ladon.RealBound.jointDerivativeMeasure.{u, v, w} bound0 bound1 bound2 bound3 bound4 bound5 bound6 bound7 bound8)

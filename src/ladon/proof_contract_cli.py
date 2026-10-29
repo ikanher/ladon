@@ -18,9 +18,15 @@ def _parser():
     from ladon.proof_contract_probe_cli import add_application_probe_parsers
     from ladon.proof_contract_provider_cli import add_provider_expansion_parser
     from ladon.proof_contract_route_context_cli import add_route_context_parsers
+    from ladon.real_bound_admission_cli import add_prefix_admission_parsers
+    from ladon.real_bound_binding_cli import add_bound_prefix_parsers
+    from ladon.real_bound_native_cli import add_real_bound_parsers
 
     parser = argparse.ArgumentParser(prog="ladon investigation contract")
     sub = parser.add_subparsers(dest="operation", required=True)
+    add_prefix_admission_parsers(sub)
+    add_bound_prefix_parsers(sub)
+    add_real_bound_parsers(sub)
     audit = sub.add_parser("audit", help="Run a bounded resumable contract audit")
     audit.add_argument("--input", type=Path, required=True, help="Closed audit plan JSON")
     audit.add_argument("--output-dir", type=Path, required=True, help="New immutable run directory")
@@ -33,6 +39,9 @@ def _parser():
     add_route_context_parsers(sub)
     add_probe_calibration_parsers(sub)
     add_application_probe_parsers(sub)
+    from ladon.real_prose_cli import add_parsers as add_prose_parsers
+
+    add_prose_parsers(sub)
     produce = sub.add_parser("produce", help="Snapshot an attributed source contract")
     produce.add_argument("--channel", choices=("prose", "formal"), required=True)
     produce.add_argument("--root", type=Path, required=True)
@@ -44,6 +53,8 @@ def _parser():
     produce.add_argument("--timeout-seconds", type=float, default=60)
     produce.add_argument("--max-rss-mib", type=int, default=DEFAULT_MAX_RSS_MIB)
     produce.add_argument("--output", type=Path)
+    observe_bound = sub.add_parser("observe-bound", help="Observe typed bound syntax; admission remains unresolved")
+    _input_arguments(observe_bound)
     inspect = sub.add_parser("inspect", help="Inspect a snapshot and verify its source binding")
     _input_arguments(inspect, source_root=False)
     inspect.add_argument("--context", type=Path, help="Native artifact batch for exact replay")
@@ -81,6 +92,11 @@ def contract_main(argv):
     from ladon.proof_contract_probes import ApplicationProbeOutputLimit
     from ladon.proof_contract_provider_cli import expand_provider
     from ladon.proof_contract_route_context_cli import route_context_bridge
+    from ladon.real_bound_admission_cli import prefix_admission_command
+    from ladon.real_bound_binding_cli import bound_prefix_command
+    from ladon.real_bound_native_cli import OPERATIONS, real_bound_command
+    from ladon.real_prose_cli import OPERATIONS as PROSE_OPERATIONS
+    from ladon.real_prose_cli import command as prose_command
 
     args = _parser().parse_args(argv)
     try:
@@ -93,7 +109,15 @@ def contract_main(argv):
             return 0 if report["status"] == "completed" else 2
         from ladon.proof_contract_refinement_cli import refine_command
 
-        result = {"produce": _produce, "inspect": _inspect, "refine": refine_command,
+        result = {**dict.fromkeys(PROSE_OPERATIONS, prose_command),
+                  **dict.fromkeys(OPERATIONS, real_bound_command), "produce": _produce, "observe-bound": _observe_bound,
+                  "plan-prefix-admission": prefix_admission_command,
+                  "check-prefix-laws": prefix_admission_command,
+                  "plan-bound-prefix": bound_prefix_command,
+                  "check-bound-prefix": bound_prefix_command,
+                  "plan-derivative-prefix": bound_prefix_command,
+                  "check-derivative-prefix": bound_prefix_command,
+                  "inspect": _inspect, "refine": refine_command,
                   "expand": _expand,
                   "fidelity-record": _fidelity_record, "propagate": _propagate,
                   "obligations": obligations, "check-obligations": check_obligations,
@@ -145,8 +169,23 @@ def _inspect(args):
         context = None
     else:
         snapshot, context = load_bounded_plans([args.input, args.context], max_bytes=32 * 1024**2)
+    from ladon.real_prose_cli import inspect_snapshot
+
+    prose_result = inspect_snapshot(snapshot, context, args.root)
+    if prose_result is not None:
+        return prose_result
+    real_result = _inspect_real(snapshot, context, args.root)
+    if real_result is not None:
+        return real_result
     if snapshot.get("artifactKind") == "proofir.contract-analysis":
         return _inspect_native(snapshot, context)
+    if snapshot.get("schema") == "ladon-real-bound-observation-v1":
+        from ladon.real_bound_observation import verify_bound_observation
+
+        if context is not None:
+            raise ValueError("bound observation inspection does not accept --context")
+        _require(args, ("root",))
+        return verify_bound_observation(snapshot, args.root)
     if snapshot.get("schema") == "ladon-proof-contract-refinement-workflow-v1":
         if context is not None:
             raise ValueError("refinement inspection does not accept --context")
@@ -160,6 +199,33 @@ def _inspect(args):
 
         return verify_formal_snapshot(snapshot, args.root)
     return verify_prose_snapshot(snapshot, args.root)
+
+
+def _inspect_real(snapshot, context, root):
+    from importlib import import_module
+
+    routes = {
+        "ladon-real-bound-transfer-bundle-v1": ("transfer_bundle", "inspect_transfer_bundle", "transfer bundle"),
+        "ladon-real-bound-chain-bundle-v1": ("chain_bundle", "inspect_chain_bundle", "chain bundle"),
+        "ladon-real-bound-prefix-bundle-v1": ("prefix_bundle", "inspect_prefix_bundle", "prefix bundle"),
+        "ladon-real-bound-coefficient-bundle-v1": ("coefficient_bundle", "inspect_coefficient_bundle", "coefficient bundle"),
+        "ladon-real-bound-comparison-bundle-v1": ("analysis_bundle", "inspect_comparison_bundle", "comparison bundle"),
+        "ladon-real-bound-production-v1": ("production", "inspect_real_bound", "production"),
+    }
+    route = routes.get(snapshot.get("schema"))
+    if route is None:
+        return None
+    module, function, label = route
+    if context is not None:
+        raise ValueError(f"Real {label} inspection does not accept --context")
+    return getattr(import_module("ladon.real_bound_native_" + module), function)(snapshot, root)
+
+
+def _observe_bound(args):
+    from ladon.real_bound_observation import observe_bound_snapshot
+
+    snapshot, = load_bounded_plans([args.input], max_bytes=32 * 1024**2)
+    return observe_bound_snapshot(snapshot, args.root)
 
 
 def _inspect_native(artifact, context):
@@ -225,6 +291,31 @@ def _fidelity_record(args):
 
 
 def _exit_status(result):
+    from ladon.real_prose_cli import exit_status as prose_exit_status
+
+    prose_status = prose_exit_status(result)
+    if prose_status is not None:
+        return prose_status
+    from ladon.real_bound_admission_cli import prefix_admission_exit_status
+    from ladon.real_bound_binding_cli import bound_prefix_exit_status
+    from ladon.real_bound_native_cli import real_bound_exit_status
+
+    native_status = real_bound_exit_status(result)
+    if native_status is not None:
+        return native_status
+
+    prefix_status = bound_prefix_exit_status(result)
+    if prefix_status is not None:
+        return prefix_status
+    prefix_status = prefix_admission_exit_status(result)
+    if prefix_status is not None:
+        return prefix_status
+    return _snapshot_exit_status(result)
+
+
+def _snapshot_exit_status(result):
+    if result.get("schema") == "ladon-real-bound-observation-v1":
+        return 2  # A shape observation always leaves mathematical admission unresolved.
     if result.get("schema") == "ladon-proof-contract-refinement-workflow-v1":
         return 0 if result.get("status") == "completed" else 2
     if (result.get("schema") == "ladon-application-probe-v1"

@@ -1,0 +1,220 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+______________ test_new_plan_command_rejects_injected_acceptance _______________
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+args = ['plan-prefix-admission', '--root', '/tmp/pytest-of-codex/pytest-70/test_new_plan_command_rejects_0', '--input', '/tmp/pytest-of-codex/pytest-70/test_new_plan_command_rejects_0/request.json']
+namespace = Namespace(operation=None)
+
+    def parse_known_args(self, args=None, namespace=None):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+>               namespace, args = self._parse_known_args(args, namespace)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../miniconda3/lib/python3.11/argparse.py:1907: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.11/argparse.py:2110: in _parse_known_args
+    positionals_end_index = consume_positionals(start_index)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:2087: in consume_positionals
+    take_action(action, args)
+../../miniconda3/lib/python3.11/argparse.py:1967: in take_action
+    argument_values = self._get_values(action, argument_strings)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:2516: in _get_values
+    self._check_value(action, value[0])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+action = _SubParsersAction(option_strings=[], dest='operation', nargs='A...', const=None, default=None, type=None, choices={'au...ss=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)}, required=True, help=None, metavar=None)
+value = 'plan-prefix-admission'
+
+    def _check_value(self, action, value):
+        # converted value must be one of the choices (if specified)
+        if action.choices is not None and value not in action.choices:
+            args = {'value': value,
+                    'choices': ', '.join(map(repr, action.choices))}
+            msg = _('invalid choice: %(value)r (choose from %(choices)s)')
+>           raise ArgumentError(action, msg % args)
+E           argparse.ArgumentError: argument operation: invalid choice: 'plan-prefix-admission' (choose from 'audit', 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')
+
+../../miniconda3/lib/python3.11/argparse.py:2563: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-70/test_new_plan_command_rejects_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x77611f3c9d50>
+
+    def test_new_plan_command_rejects_injected_acceptance(tmp_path, capsys):
+        path = tmp_path / "request.json"
+        path.write_text(json.dumps({"admitted": True}))
+>       status = contract_main(["plan-prefix-admission", "--root", str(tmp_path), "--input", str(path)])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_real_bound_admission_cli.py:11: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_cli.py:87: in contract_main
+    args = _parser().parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1874: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1909: in parse_known_args
+    self.error(str(err))
+../../miniconda3/lib/python3.11/argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = "ladon investigation contract: error: argument operation: invalid choice: 'plan-prefix-admission' (choose from 'audit'...k-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')\n"
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.11/argparse.py:2627: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: ladon investigation contract [-h]
+                                    {audit,obligations,check-obligations,expand-provider,context-obligations,check-context-bridge,route-context-obligations,check-route-context-bridge,probe-calibration-profile,probe-calibration,probe-profile,probe,check-probe,review-probe,produce,observe-bound,inspect,refine,propagate,fidelity-record,expand}
+                                    ...
+ladon investigation contract: error: argument operation: invalid choice: 'plan-prefix-admission' (choose from 'audit', 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')
+__________ test_new_check_command_rejects_foreign_plan_without_worker __________
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+args = ['check-prefix-laws', '--root', '/tmp/pytest-of-codex/pytest-70/test_new_check_command_rejects0', '--input', '/tmp/pytest-of-codex/pytest-70/test_new_check_command_rejects0/plan.json', '--terms', ...]
+namespace = Namespace(operation=None)
+
+    def parse_known_args(self, args=None, namespace=None):
+        if args is None:
+            # args default to the system args
+            args = _sys.argv[1:]
+        else:
+            # make sure that args are mutable
+            args = list(args)
+    
+        # default Namespace built from parser defaults
+        if namespace is None:
+            namespace = Namespace()
+    
+        # add any action defaults that aren't present
+        for action in self._actions:
+            if action.dest is not SUPPRESS:
+                if not hasattr(namespace, action.dest):
+                    if action.default is not SUPPRESS:
+                        setattr(namespace, action.dest, action.default)
+    
+        # add any parser defaults that aren't present
+        for dest in self._defaults:
+            if not hasattr(namespace, dest):
+                setattr(namespace, dest, self._defaults[dest])
+    
+        # parse the arguments and exit if there are any errors
+        if self.exit_on_error:
+            try:
+>               namespace, args = self._parse_known_args(args, namespace)
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+../../miniconda3/lib/python3.11/argparse.py:1907: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+../../miniconda3/lib/python3.11/argparse.py:2110: in _parse_known_args
+    positionals_end_index = consume_positionals(start_index)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:2087: in consume_positionals
+    take_action(action, args)
+../../miniconda3/lib/python3.11/argparse.py:1967: in take_action
+    argument_values = self._get_values(action, argument_strings)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:2516: in _get_values
+    self._check_value(action, value[0])
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+action = _SubParsersAction(option_strings=[], dest='operation', nargs='A...', const=None, default=None, type=None, choices={'au...ss=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)}, required=True, help=None, metavar=None)
+value = 'check-prefix-laws'
+
+    def _check_value(self, action, value):
+        # converted value must be one of the choices (if specified)
+        if action.choices is not None and value not in action.choices:
+            args = {'value': value,
+                    'choices': ', '.join(map(repr, action.choices))}
+            msg = _('invalid choice: %(value)r (choose from %(choices)s)')
+>           raise ArgumentError(action, msg % args)
+E           argparse.ArgumentError: argument operation: invalid choice: 'check-prefix-laws' (choose from 'audit', 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')
+
+../../miniconda3/lib/python3.11/argparse.py:2563: ArgumentError
+
+During handling of the above exception, another exception occurred:
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-70/test_new_check_command_rejects0')
+capsys = <_pytest.capture.CaptureFixture object at 0x77611f2bbf50>
+
+    def test_new_check_command_rejects_foreign_plan_without_worker(tmp_path, capsys):
+        path = tmp_path / "plan.json"
+        terms = tmp_path / "terms.json"
+        path.write_text(json.dumps({"admission": "checked"}))
+        terms.write_text("{}")
+>       status = contract_main(["check-prefix-laws", "--root", str(tmp_path),
+                                "--input", str(path), "--terms", str(terms)])
+
+tests/test_real_bound_admission_cli.py:21: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_cli.py:87: in contract_main
+    args = _parser().parse_args(argv)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1874: in parse_args
+    args, argv = self.parse_known_args(args, namespace)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/argparse.py:1909: in parse_known_args
+    self.error(str(err))
+../../miniconda3/lib/python3.11/argparse.py:2640: in error
+    self.exit(2, _('%(prog)s: error: %(message)s\n') % args)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = ArgumentParser(prog='ladon investigation contract', usage=None, description=None, formatter_class=<class 'argparse.HelpFormatter'>, conflict_handler='error', add_help=True)
+status = 2
+message = "ladon investigation contract: error: argument operation: invalid choice: 'check-prefix-laws' (choose from 'audit', 'o...k-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')\n"
+
+    def exit(self, status=0, message=None):
+        if message:
+            self._print_message(message, _sys.stderr)
+>       _sys.exit(status)
+E       SystemExit: 2
+
+../../miniconda3/lib/python3.11/argparse.py:2627: SystemExit
+----------------------------- Captured stderr call -----------------------------
+usage: ladon investigation contract [-h]
+                                    {audit,obligations,check-obligations,expand-provider,context-obligations,check-context-bridge,route-context-obligations,check-route-context-bridge,probe-calibration-profile,probe-calibration,probe-profile,probe,check-probe,review-probe,produce,observe-bound,inspect,refine,propagate,fidelity-record,expand}
+                                    ...
+ladon investigation contract: error: argument operation: invalid choice: 'check-prefix-laws' (choose from 'audit', 'obligations', 'check-obligations', 'expand-provider', 'context-obligations', 'check-context-bridge', 'route-context-obligations', 'check-route-context-bridge', 'probe-calibration-profile', 'probe-calibration', 'probe-profile', 'probe', 'check-probe', 'review-probe', 'produce', 'observe-bound', 'inspect', 'refine', 'propagate', 'fidelity-record', 'expand')
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_admission_cli.py::test_new_plan_command_rejects_injected_acceptance
+FAILED tests/test_real_bound_admission_cli.py::test_new_check_command_rejects_foreign_plan_without_worker
+2 failed in 0.26s

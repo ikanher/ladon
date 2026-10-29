@@ -1,0 +1,97 @@
+                                    FINITE TIME BLOWUP FOR NAVIER–STOKES                                 95
+
+Corollary 8.5. Under the hypotheses of Proposition 8.4, define the covariance targets
+                                       (︁                 )︁
+                           Hθ = −T2 ⟨ Eθ ⟩Y − σθ ε∂ Z Jθ ,
+                                       (︁                           )︁                              (8.18)
+                           Hz = −T1 ⟨ Ez ⟩Y − σz ε∂ Z (Jz + cρ P )
+They are independent of the auxiliary variable, compactly supported in the active shell, and satisfy
+                            ( Dr + 2/R) Hθ = −⟨ Eθ ⟩Y + σθ ε∂ Z Jθ ,
+                            ( Dr + 1/R) Hz = −⟨ Ez ⟩Y + σz ε∂ Z (Jz + cρ P ).
+The radial primitives act at fixed ( Z, T ). Thus Hθ and Hz vanish whenever their respective integrands
+in (8.18) vanish for every R; the construction does not enlarge support in the axial variable Z.
+Proof. The integrated identities and the normalization of the two bumps give
+                                   ∫︂
+                                      R2 ⟨ Eθ ⟩Y − σθ ε∂ Z Jθ dR = 0,
+                                        (︁                   )︁
+                               ∫︂     (︁                             )︁
+                                     R ⟨ Ez ⟩Y − σz ε∂ Z (Jz + cρ P ) dR = 0.
+Both sources are independent of the auxiliary variable. Their cutoff remainders vanish by
+Lemma 8.2, which gives the two identities and the support assertions.                  □
+   These radial divergence identities retain the factors ε∂ Z Jθ and ε∂ Z (Jz + cρ P ) in the
+remaining bump terms. We can therefore correct the three defects at fixed ( Z, T ) without
+losing the displayed factors of ε∂ Z .
+8.5. Inverting the auxiliary-time derivative on zero-mean functions. Corollary 8.5 reduces
+the auxiliary-averaged correction to the three integral defects and a compactly supported
+stress. The complementary part ( Eθ◦ , Ez◦ ) of the mean residual has zero auxiliary average
+at every slow point, by (3.9). In this subsection we construct its correction through the
+fast time derivative, whose Fourier multiplier is invertible on nonzero torus frequencies
+(Equation (6.7)). The axial velocity increment is then realized through its azimuthal potential
+in (8.14) to preserve incompressibility.
+   Recall from Equations (6.4) and (6.6) that Nabs = vt · ∂Y acts in the original auxiliary
+coordinate. On a common torus y = Yi0 , the normalized fast time derivative is ci0 Ni0 ,
+where Ni0 = vt · ∂y and ci0 = Tgi0 Q1+h . Here the normalized physical time derivative splits
+as t∗ = −ε∂ T + ci0 Ni0 . The slow term −ε∂ T differentiates the coefficient’s explicit time
+dependence while holding y fixed. The fast term ci0 Ni0 differentiates its auxiliary oscillations
+along the physical phase map. We invert the fast term here and retain the slow term in the
+residual.
+Lemma 8.6. Let N = vt · ∂y on T2 , with vt as in (6.2), and let F be a smooth function of zero Haar
+mean. Then N φ = F has a unique smooth zero-mean solution φ = N −1 F. This solution is given by
+the following Fourier series and satisfies the displayed norm bound for every integer m ≥ 0:
+                                        Fˆ︁(k ) 2πik·y
+                 N −1 F =      ∑       2πivt · k
+                                                 e     ,     ∥ N −1 F ∥Cym ≤ Cm ∥ F ∥Cym+4 .        (8.19)
+                            k ∈Z2 \{0}
+
+For a pair Eθ , Ez ∈ Mα of normalized angularly invariant residual coefficients, use this inverse in the
+                                                                            −1     ◦         ◦
+original auxiliary coordinate Y to define the physical tangential update − Nabs ( Eθ,phys , Ez,phys ). Here
+96                                                     OPENAI
+
+residuals and velocities have the normalizations in (8.11). This physical definition ensures agreement
+on chart overlaps. Its chart representatives are
+                    ∆v = −ci−0 1 Ni−0 1 Eθ◦ ,     γd = −ci−0 1 Ni−0 1 Ez◦ ,    ci−0 1 ≤ CS∗ .           (8.20)
+   Both desired increments ∆v, γd lie in Mα and have zero auxiliary mean at each slow and radial
+point. The realization of γd by (8.14) gives the actual velocity increment
+                           (∆β, ∆v, ∆γ) = −ε∂ Z T1 γd , ∆v, γd − A1 γd ,
+                                            (︁                             )︁
+                                                                                          (8.21)
+                           (∆β, ∆v, ∆γ) ∈ Mα+1 × Mα × Mα .
+This field is divergence-free and its addition preserves both integral constraints in (8.2). If a = −A1 γd
+denotes the cutoff remainder in the axial increment, then its fast-time cancellation equations are
+                          ci0 Ni0 ∆v = − Eθ◦ ,         ci0 Ni0 ∆γ = − Ez◦ + ci0 Ni0 a.                  (8.22)
+The angular cancellation is exact, and ci0 Ni0 a is flat at every fixed coefficient derivative order.
+Proof. The divisor bound (6.7) gives |vt · k |−1 ≤ C (1 + |k |). Four more derivatives of F than
+the requested output leave a summable (1 + |k|)−3 bound on the Fourier series in two
+dimensions. This proves (8.19), smoothness, and uniqueness after fixing the zero Fourier
+coefficient. The multiplier commutes with every slow coefficient derivative and preserves
+reality. It acts at fixed ( R, Z, T ), so it preserves slow and radial support and their smooth
+zero extensions, although it need not preserve auxiliary-torus support.
+  Let Pi F (Y ) = F ( Jgi Y ). A mode k on the i-torus has frequency ( Jgi )T k in the original
+auxiliary coordinate Y. Since Jg vt = Tg vt ,
+                                                           −1
+                               Nabs Pi = Tgi Pi Ni ,      Nabs Pi = Tg−i Pi Ni−1 .                      (8.23)
+The finite covering preserves Haar average, as follows also from its injective map of frequency
+lattices. Applying (8.19) in the common frequency coordinate k gives the same fixed
+derivative loss in every chart.
+                                              −1 ◦
+   In physical variables the update is − Nabs    Ephys . Its chart velocity value has factor
+Q A−(2A+1/2) Tg−i0 = Q−1−h Tg−i0 = ci−0 1 , which proves (8.20). This factor is bounded by CS∗ by
+the choice of covering level and its bounded difference from a band level. For each output
+derivative, four additional derivatives in the torus variables suffice, so the class estimates at
+every fixed derivative order retain their ε exponent. Applying the slow-time term −ε∂ T to
+these increments gives an additional factor of ε.
+   The desired increments have zero auxiliary mean at each radial point. Hence both desired
+integral constraints hold, and the azimuthal-potential realization preserves them exactly. The
+bounds for ∆β and ∆γ in (8.21) follow from Proposition 8.3(ii). The fast derivative commutes
+with I , J , and Ic : the shifts are translations and χm is torus independent. Applying it
+to ∆γ = γd + a proves (8.22). Its last term is flat in every fixed coefficient derivative by
+(8.8). Full slow differentiation need not commute with Ic ; those derivatives are estimated by
+Lemma 8.2 instead.                                                                             □
+8.6. Five-dimensional correction of the moment constraints. We have constructed inverses
+for pressure (Proposition 8.3), the auxiliary-averaged tangential residual (Corollary 8.5), and
+the part with zero auxiliary average (Lemma 8.6). The remaining quantities are the three
+integral defects P , Jθ , Jz in Equations (8.12) and (8.15). In this subsection we will correct
+their linear changes by a velocity increment that also preserves the two constraints (8.2).
+Three azimuthal coefficients and two axial coefficients will solve the five equations (8.25).
+

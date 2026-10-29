@@ -129,7 +129,9 @@ def project_analysis(connection, artifact):
             (owner, index, *_reference(ref, owner), f"/payload/contractRefs/{index}"),
         )
 
-    if p["stage"] in {"propagation", "obligations"}:
+    from ladon.real_bound_native_chain_artifacts import is_chain
+
+    if p["stage"] in {"propagation", "obligations"} and not is_chain(p):
         connection.execute(
             "INSERT INTO proofir_v3_contract_analysis_derivations VALUES(?,?,?,?,?)",
             (owner, *_reference(p["derivationGoalRef"], owner), "/payload/derivationGoalRef"),

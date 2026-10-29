@@ -1,0 +1,38 @@
+F
+=================================== FAILURES ===================================
+___ test_exact_global_and_set_skeletons_need_normalization[J-A-True-global] ____
+
+global_scope = True, kind = 'global', predicate = 'J', operator = 'A'
+
+    @pytest.mark.parametrize('global_scope,kind', [(True, 'global'), (False, 'set-indexed')])
+    @pytest.mark.parametrize('predicate,operator', [('J', 'A'), ('Unrelated.Bound', 'Other.Transform')])
+    def test_exact_global_and_set_skeletons_need_normalization(global_scope, kind, predicate, operator):
+>       result = reader().recognize_shape(estimate(global_scope=global_scope,
+                 ^^^^^^^^
+                                                  predicate=predicate, operator=operator))
+
+tests/test_real_prose_shape_v2.py:51: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_real_prose_shape_v2.py:11: in reader
+    return importlib.import_module('ladon.real_prose_shape')
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1204: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1176: in _find_and_load
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+name = 'ladon.real_prose_shape'
+import_ = <function _gcd_import at 0x7214d674fd80>
+
+>   ???
+E   ModuleNotFoundError: No module named 'ladon.real_prose_shape'
+
+<frozen importlib._bootstrap>:1140: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_real_prose_shape_v2.py::test_exact_global_and_set_skeletons_need_normalization[J-A-True-global]
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 0.07s

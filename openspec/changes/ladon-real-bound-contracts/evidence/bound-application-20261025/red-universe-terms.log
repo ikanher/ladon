@@ -1,0 +1,30 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+_______________ test_submitted_term_can_name_original_universes ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-83/test_submitted_term_can_name_o0')
+
+    def test_submitted_term_can_name_original_universes(tmp_path):
+        _source, context, capture = _capture(tmp_path, SOURCE, 3, 4)
+        term = "fun (α : Type u) (β : Type v) (a : α) (_b : β) => a"
+        result = complete_source_goal(_request(tmp_path, context, capture, term))
+>       _assert_completed(result, capture)
+
+tests/test_source_goal_completion_universe_terms.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+result = {'application': {'goalId': '_uniq.16', 'goalTypeStructural': 'ladon-expr-dag-v1:{"nodes":[["sort","Lean.Level.succ (Le...: {'code': 'typecheck-or-closure', 'message': 'unknown universe level ``u`'}, 'operation': 'complete-source-goal', ...}
+capture = {'captureId': 'sha256:50b9d53f2f63a7eaca792c378238e5508c914d219514cdf52e34fa7999c36249', 'environment': {'bindingBasis...ource-goal-helper-v1', 'observation': {'useAfter': True}, 'protocolVersion': 'ladon-lean-source-goal-v1/capture'}, ...}
+
+    def _assert_completed(result, capture):
+>       assert result["status"] == "completed", result
+E       AssertionError: {'application': {'goalId': '_uniq.16', 'goalTypeStructural': 'ladon-expr-dag-v1:{"nodes":[["sort","Lean.Level.succ (Le...: {'code': 'typecheck-or-closure', 'message': 'unknown universe level ``u`'}, 'operation': 'complete-source-goal', ...}
+E       assert 'rejected' == 'completed'
+E         
+E         - completed
+E         + rejected
+
+tests/test_source_goal_completion_lean.py:58: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_source_goal_completion_universe_terms.py::test_submitted_term_can_name_original_universes
+1 failed in 8.55s

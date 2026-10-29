@@ -1,0 +1,250 @@
+FFFFFFFFFFF                                                              [100%]
+=================================== FAILURES ===================================
+______ test_binding_plan_retains_exact_observation_and_remains_unadmitted ______
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+
+    def test_binding_plan_retains_exact_observation_and_remains_unadmitted(bound_snapshot):
+        observation = observed(bound_snapshot)
+>       result = plan(observation)
+                 ^^^^^^^^^^^^^^^^^
+
+tests/test_real_bound_binding_plan.py:30: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observation = {'admission': 'unresolved', 'authority': 'syntax-only', 'candidate': {'constant': {'binderId': 'b1', 'permittedBinderI.../app/1/forallE/body/forallE/body/forallE/body/forallE/body/forallE/type', ...}, 'loss': 7, ...}, 'contract': None, ...}
+measure = None
+
+    def plan(observation, measure=None):
+>       from ladon.real_bound_binding import plan_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding'
+
+tests/test_real_bound_binding_plan.py:23: ModuleNotFoundError
+________ test_unchecked_measure_terms_and_claims_are_rejected[measure0] ________
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+measure = {'arguments': [], 'declaration': 'x) --'}
+
+    @pytest.mark.parametrize("measure", [
+        {"declaration": "x) --", "arguments": []},
+        {"declaration": "Other.sample", "arguments": ["b999"]},
+        {"declaration": "Other.sample", "arguments": [True]},
+        {"declaration": "Other.sample", "arguments": [], "admitted": True},
+        {"declaration": "Other.sample", "arguments": "b0"},
+    ])
+    def test_unchecked_measure_terms_and_claims_are_rejected(bound_snapshot, measure):
+        with pytest.raises(ValueError):
+>           plan(observed(bound_snapshot), measure)
+
+tests/test_real_bound_binding_plan.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observation = {'admission': 'unresolved', 'authority': 'syntax-only', 'candidate': {'constant': {'binderId': 'b1', 'permittedBinderI.../app/1/forallE/body/forallE/body/forallE/body/forallE/body/forallE/type', ...}, 'loss': 7, ...}, 'contract': None, ...}
+measure = {'arguments': [], 'declaration': 'x) --'}
+
+    def plan(observation, measure=None):
+>       from ladon.real_bound_binding import plan_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding'
+
+tests/test_real_bound_binding_plan.py:23: ModuleNotFoundError
+________ test_unchecked_measure_terms_and_claims_are_rejected[measure1] ________
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+measure = {'arguments': ['b999'], 'declaration': 'Other.sample'}
+
+    @pytest.mark.parametrize("measure", [
+        {"declaration": "x) --", "arguments": []},
+        {"declaration": "Other.sample", "arguments": ["b999"]},
+        {"declaration": "Other.sample", "arguments": [True]},
+        {"declaration": "Other.sample", "arguments": [], "admitted": True},
+        {"declaration": "Other.sample", "arguments": "b0"},
+    ])
+    def test_unchecked_measure_terms_and_claims_are_rejected(bound_snapshot, measure):
+        with pytest.raises(ValueError):
+>           plan(observed(bound_snapshot), measure)
+
+tests/test_real_bound_binding_plan.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observation = {'admission': 'unresolved', 'authority': 'syntax-only', 'candidate': {'constant': {'binderId': 'b1', 'permittedBinderI.../app/1/forallE/body/forallE/body/forallE/body/forallE/body/forallE/type', ...}, 'loss': 7, ...}, 'contract': None, ...}
+measure = {'arguments': ['b999'], 'declaration': 'Other.sample'}
+
+    def plan(observation, measure=None):
+>       from ladon.real_bound_binding import plan_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding'
+
+tests/test_real_bound_binding_plan.py:23: ModuleNotFoundError
+________ test_unchecked_measure_terms_and_claims_are_rejected[measure2] ________
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+measure = {'arguments': [True], 'declaration': 'Other.sample'}
+
+    @pytest.mark.parametrize("measure", [
+        {"declaration": "x) --", "arguments": []},
+        {"declaration": "Other.sample", "arguments": ["b999"]},
+        {"declaration": "Other.sample", "arguments": [True]},
+        {"declaration": "Other.sample", "arguments": [], "admitted": True},
+        {"declaration": "Other.sample", "arguments": "b0"},
+    ])
+    def test_unchecked_measure_terms_and_claims_are_rejected(bound_snapshot, measure):
+        with pytest.raises(ValueError):
+>           plan(observed(bound_snapshot), measure)
+
+tests/test_real_bound_binding_plan.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observation = {'admission': 'unresolved', 'authority': 'syntax-only', 'candidate': {'constant': {'binderId': 'b1', 'permittedBinderI.../app/1/forallE/body/forallE/body/forallE/body/forallE/body/forallE/type', ...}, 'loss': 7, ...}, 'contract': None, ...}
+measure = {'arguments': [True], 'declaration': 'Other.sample'}
+
+    def plan(observation, measure=None):
+>       from ladon.real_bound_binding import plan_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding'
+
+tests/test_real_bound_binding_plan.py:23: ModuleNotFoundError
+________ test_unchecked_measure_terms_and_claims_are_rejected[measure3] ________
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+measure = {'admitted': True, 'arguments': [], 'declaration': 'Other.sample'}
+
+    @pytest.mark.parametrize("measure", [
+        {"declaration": "x) --", "arguments": []},
+        {"declaration": "Other.sample", "arguments": ["b999"]},
+        {"declaration": "Other.sample", "arguments": [True]},
+        {"declaration": "Other.sample", "arguments": [], "admitted": True},
+        {"declaration": "Other.sample", "arguments": "b0"},
+    ])
+    def test_unchecked_measure_terms_and_claims_are_rejected(bound_snapshot, measure):
+        with pytest.raises(ValueError):
+>           plan(observed(bound_snapshot), measure)
+
+tests/test_real_bound_binding_plan.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observation = {'admission': 'unresolved', 'authority': 'syntax-only', 'candidate': {'constant': {'binderId': 'b1', 'permittedBinderI.../app/1/forallE/body/forallE/body/forallE/body/forallE/body/forallE/type', ...}, 'loss': 7, ...}, 'contract': None, ...}
+measure = {'admitted': True, 'arguments': [], 'declaration': 'Other.sample'}
+
+    def plan(observation, measure=None):
+>       from ladon.real_bound_binding import plan_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding'
+
+tests/test_real_bound_binding_plan.py:23: ModuleNotFoundError
+________ test_unchecked_measure_terms_and_claims_are_rejected[measure4] ________
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+measure = {'arguments': 'b0', 'declaration': 'Other.sample'}
+
+    @pytest.mark.parametrize("measure", [
+        {"declaration": "x) --", "arguments": []},
+        {"declaration": "Other.sample", "arguments": ["b999"]},
+        {"declaration": "Other.sample", "arguments": [True]},
+        {"declaration": "Other.sample", "arguments": [], "admitted": True},
+        {"declaration": "Other.sample", "arguments": "b0"},
+    ])
+    def test_unchecked_measure_terms_and_claims_are_rejected(bound_snapshot, measure):
+        with pytest.raises(ValueError):
+>           plan(observed(bound_snapshot), measure)
+
+tests/test_real_bound_binding_plan.py:53: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observation = {'admission': 'unresolved', 'authority': 'syntax-only', 'candidate': {'constant': {'binderId': 'b1', 'permittedBinderI.../app/1/forallE/body/forallE/body/forallE/body/forallE/body/forallE/type', ...}, 'loss': 7, ...}, 'contract': None, ...}
+measure = {'arguments': 'b0', 'declaration': 'Other.sample'}
+
+    def plan(observation, measure=None):
+>       from ladon.real_bound_binding import plan_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding'
+
+tests/test_real_bound_binding_plan.py:23: ModuleNotFoundError
+________________ test_unsupported_observation_cannot_plan_laws _________________
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+
+    def test_unsupported_observation_cannot_plan_laws(bound_snapshot):
+        observation = observed(bound_snapshot)
+        observation.update(status="unsupported", candidate=None)
+        with pytest.raises(ValueError, match="observed|candidate"):
+>           plan(observation)
+
+tests/test_real_bound_binding_plan.py:60: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observation = {'admission': 'unresolved', 'authority': 'syntax-only', 'candidate': None, 'contract': None, ...}
+measure = None
+
+    def plan(observation, measure=None):
+>       from ladon.real_bound_binding import plan_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding'
+
+tests/test_real_bound_binding_plan.py:23: ModuleNotFoundError
+______________ test_exact_measure_application_is_part_of_identity ______________
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+
+    def test_exact_measure_application_is_part_of_identity(bound_snapshot):
+        observation = observed(bound_snapshot)
+>       first = plan(observation)
+                ^^^^^^^^^^^^^^^^^
+
+tests/test_real_bound_binding_plan.py:65: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+observation = {'admission': 'unresolved', 'authority': 'syntax-only', 'candidate': {'constant': {'binderId': 'b1', 'permittedBinderI.../app/1/forallE/body/forallE/body/forallE/body/forallE/body/forallE/type', ...}, 'loss': 7, ...}, 'contract': None, ...}
+measure = None
+
+    def plan(observation, measure=None):
+>       from ladon.real_bound_binding import plan_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding'
+
+tests/test_real_bound_binding_plan.py:23: ModuleNotFoundError
+_________ test_rehashed_claim_cannot_launch_checker[admission-checked] _________
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-75/test_rehashed_claim_cannot_lau0')
+field = 'admission', value = 'checked'
+
+    @pytest.mark.parametrize("field,value", [("admission", "checked"), ("contract", {}),
+                                            ("status", "checked-binding")])
+    def test_rehashed_claim_cannot_launch_checker(bound_snapshot, tmp_path, field, value):
+>       from ladon.real_bound_binding_check import check_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding_check'
+
+tests/test_real_bound_binding_plan.py:73: ModuleNotFoundError
+__________ test_rehashed_claim_cannot_launch_checker[contract-value1] __________
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-75/test_rehashed_claim_cannot_lau1')
+field = 'contract', value = {}
+
+    @pytest.mark.parametrize("field,value", [("admission", "checked"), ("contract", {}),
+                                            ("status", "checked-binding")])
+    def test_rehashed_claim_cannot_launch_checker(bound_snapshot, tmp_path, field, value):
+>       from ladon.real_bound_binding_check import check_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding_check'
+
+tests/test_real_bound_binding_plan.py:73: ModuleNotFoundError
+______ test_rehashed_claim_cannot_launch_checker[status-checked-binding] _______
+
+bound_snapshot = {'artifacts': [], 'channel': 'formal', 'contract': None, 'coverage': {'proofBody': 'not-extracted', 'providers': 'not-extracted', 'statementFeatures': 'unsupported'}, ...}
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-75/test_rehashed_claim_cannot_lau2')
+field = 'status', value = 'checked-binding'
+
+    @pytest.mark.parametrize("field,value", [("admission", "checked"), ("contract", {}),
+                                            ("status", "checked-binding")])
+    def test_rehashed_claim_cannot_launch_checker(bound_snapshot, tmp_path, field, value):
+>       from ladon.real_bound_binding_check import check_bound_prefix
+E       ModuleNotFoundError: No module named 'ladon.real_bound_binding_check'
+
+tests/test_real_bound_binding_plan.py:73: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_binding_plan.py::test_binding_plan_retains_exact_observation_and_remains_unadmitted
+FAILED tests/test_real_bound_binding_plan.py::test_unchecked_measure_terms_and_claims_are_rejected[measure0]
+FAILED tests/test_real_bound_binding_plan.py::test_unchecked_measure_terms_and_claims_are_rejected[measure1]
+FAILED tests/test_real_bound_binding_plan.py::test_unchecked_measure_terms_and_claims_are_rejected[measure2]
+FAILED tests/test_real_bound_binding_plan.py::test_unchecked_measure_terms_and_claims_are_rejected[measure3]
+FAILED tests/test_real_bound_binding_plan.py::test_unchecked_measure_terms_and_claims_are_rejected[measure4]
+FAILED tests/test_real_bound_binding_plan.py::test_unsupported_observation_cannot_plan_laws
+FAILED tests/test_real_bound_binding_plan.py::test_exact_measure_application_is_part_of_identity
+FAILED tests/test_real_bound_binding_plan.py::test_rehashed_claim_cannot_launch_checker[admission-checked]
+FAILED tests/test_real_bound_binding_plan.py::test_rehashed_claim_cannot_launch_checker[contract-value1]
+FAILED tests/test_real_bound_binding_plan.py::test_rehashed_claim_cannot_launch_checker[status-checked-binding]
+11 failed in 3.50s

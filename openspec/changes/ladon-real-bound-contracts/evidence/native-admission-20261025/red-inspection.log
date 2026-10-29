@@ -1,0 +1,99 @@
+FFFFFFFFF                                                                [100%]
+=================================== FAILURES ===================================
+_________ test_saved_success_inspects_as_historical_without_authority __________
+
+    def test_saved_success_inspects_as_historical_without_authority():
+>       from ladon.real_bound_native_production import inspect_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_production'
+
+tests/test_real_bound_native_inspection.py:22: ModuleNotFoundError
+______________ test_saved_receipt_does_not_gain_current_identity _______________
+
+    def test_saved_receipt_does_not_gain_current_identity():
+>       from ladon.real_bound_native_production import inspect_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_production'
+
+tests/test_real_bound_native_inspection.py:32: ModuleNotFoundError
+_____ test_rehashed_saved_mutations_fail_deterministic_inspection[source] ______
+
+target = 'source'
+
+    @pytest.mark.parametrize("target", ["source", "record", "receipt", "term"])
+    def test_rehashed_saved_mutations_fail_deterministic_inspection(target):
+>       from ladon.real_bound_native_production import inspect_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_production'
+
+tests/test_real_bound_native_inspection.py:41: ModuleNotFoundError
+_____ test_rehashed_saved_mutations_fail_deterministic_inspection[record] ______
+
+target = 'record'
+
+    @pytest.mark.parametrize("target", ["source", "record", "receipt", "term"])
+    def test_rehashed_saved_mutations_fail_deterministic_inspection(target):
+>       from ladon.real_bound_native_production import inspect_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_production'
+
+tests/test_real_bound_native_inspection.py:41: ModuleNotFoundError
+_____ test_rehashed_saved_mutations_fail_deterministic_inspection[receipt] _____
+
+target = 'receipt'
+
+    @pytest.mark.parametrize("target", ["source", "record", "receipt", "term"])
+    def test_rehashed_saved_mutations_fail_deterministic_inspection(target):
+>       from ladon.real_bound_native_production import inspect_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_production'
+
+tests/test_real_bound_native_inspection.py:41: ModuleNotFoundError
+______ test_rehashed_saved_mutations_fail_deterministic_inspection[term] _______
+
+target = 'term'
+
+    @pytest.mark.parametrize("target", ["source", "record", "receipt", "term"])
+    def test_rehashed_saved_mutations_fail_deterministic_inspection(target):
+>       from ladon.real_bound_native_production import inspect_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_production'
+
+tests/test_real_bound_native_inspection.py:41: ModuleNotFoundError
+___________ test_closed_saved_shape_rejects_claimed_extra_authority ____________
+
+    def test_closed_saved_shape_rejects_claimed_extra_authority():
+>       from ladon.real_bound_native_production import inspect_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_production'
+
+tests/test_real_bound_native_inspection.py:58: ModuleNotFoundError
+_______ test_offline_inspection_and_report_cli_preserve_historical_state _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-93/test_offline_inspection_and_re0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7e15d7c7b450>
+
+    def test_offline_inspection_and_report_cli_preserve_historical_state(tmp_path, capsys):
+        source = tmp_path / "recorded.json"
+>       source.write_text(json.dumps(saved()))
+                                     ^^^^^^^
+
+tests/test_real_bound_native_inspection.py:69: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    def saved():
+>       from ladon.real_bound_native_production import recorded_production
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_production'
+
+tests/test_real_bound_native_inspection.py:14: ModuleNotFoundError
+_____________ test_missing_recorded_goal_receipts_fail_inspection ______________
+
+    def test_missing_recorded_goal_receipts_fail_inspection():
+>       from ladon.real_bound_native_production import inspect_real_bound
+E       ModuleNotFoundError: No module named 'ladon.real_bound_native_production'
+
+tests/test_real_bound_native_inspection.py:79: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_native_inspection.py::test_saved_success_inspects_as_historical_without_authority
+FAILED tests/test_real_bound_native_inspection.py::test_saved_receipt_does_not_gain_current_identity
+FAILED tests/test_real_bound_native_inspection.py::test_rehashed_saved_mutations_fail_deterministic_inspection[source]
+FAILED tests/test_real_bound_native_inspection.py::test_rehashed_saved_mutations_fail_deterministic_inspection[record]
+FAILED tests/test_real_bound_native_inspection.py::test_rehashed_saved_mutations_fail_deterministic_inspection[receipt]
+FAILED tests/test_real_bound_native_inspection.py::test_rehashed_saved_mutations_fail_deterministic_inspection[term]
+FAILED tests/test_real_bound_native_inspection.py::test_closed_saved_shape_rejects_claimed_extra_authority
+FAILED tests/test_real_bound_native_inspection.py::test_offline_inspection_and_report_cli_preserve_historical_state
+FAILED tests/test_real_bound_native_inspection.py::test_missing_recorded_goal_receipts_fail_inspection
+9 failed in 0.09s

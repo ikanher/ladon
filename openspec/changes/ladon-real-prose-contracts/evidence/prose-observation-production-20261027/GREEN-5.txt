@@ -1,0 +1,22 @@
+.............F.....                                                      [100%]
+=================================== FAILURES ===================================
+___________ test_actual_deep_type_stops_bounded_expression_rendering ___________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-186/test_actual_deep_type_stops_bo0')
+inputs = ({'formula': {'binder': {'domain': 'Nat → Nat → Nat → Nat → Nat → Nat → Nat → Nat → Nat → Nat → Nat → Nat → Nat → Nat ...ls': {}}, {'file': 'Context.lean', 'module': 'Context', 'schema': 'ladon-prose-bound-context-v1', 'scope': 'file-end'})
+
+    def test_actual_deep_type_stops_bounded_expression_rendering(tmp_path, inputs):
+        reading, context = inputs
+        reading['formula']['binder']['domain'] = ' → '.join(['Nat'] * 160)
+        result = observe(tmp_path, (reading, context))
+        assert result['status'] == 'unavailable'
+>       assert result['check']['result']['observation']['status'] == 'render-limit'
+E       AssertionError: assert 'elaboration-failed' == 'render-limit'
+E         
+E         - render-limit
+E         + elaboration-failed
+
+tests/test_real_prose_observation_boundaries.py:29: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_real_prose_observation_boundaries.py::test_actual_deep_type_stops_bounded_expression_rendering
+1 failed, 18 passed in 105.06s (0:01:45)

@@ -1,0 +1,24 @@
+--- tests/test_real_prose_native_cli.py
++++ tests/test_real_prose_native_cli.py
+@@ -21,6 +21,11 @@
+             '--author', 'test-author', '--timeout-seconds', '60']
+ 
+ 
++def _assert_historical_report(report):
++    assert report['admission'] == 'unresolved' and report['authority'] == 'none'
++    assert report['freshCheck'] is False
++
++
+ def test_public_authoring_report_replay_and_output_collision(project):
+     output = project / 'authored.json'
+     args = inputs(project, set_indexed=True)
+@@ -34,8 +39,7 @@
+         inspected = invoke(operation, '--input', output, '--root', project)
+         assert inspected.returncode == 0, inspected.stdout + inspected.stderr
+         report = json.loads(inspected.stdout)
+-        assert report['admission'] == 'unresolved' and report['authority'] == 'none'
+-        assert report['freshCheck'] is False
++        _assert_historical_report(report)
+     replay = invoke('replay-real-prose-bound', '--root', project, '--input', output,
+                     '--timeout-seconds', '60', '--output', project / 'replayed.json')
+     assert replay.returncode == 0, replay.stdout + replay.stderr

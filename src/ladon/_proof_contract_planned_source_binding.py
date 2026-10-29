@@ -21,6 +21,10 @@ def _exact_provider_contract(selected, plan_request, provider):
         raise ValueError("selected route leaf is not a source contract")
     request_contract = _unique_contract_artifact(plan_request.contract_artifacts, ref)
     contract = _unique_contract_artifact(provider["artifacts"], ref)
+    from .proof_contract_rules import PROFILE_DIGEST
+
+    if contract['payload']['profileDigest'] != PROFILE_DIGEST:
+        raise ValueError('planned source providers do not support this contract profile')
     _compare_provider_contract(contract, request_contract, provider)
     payload = contract["payload"]
     if (ref.get("artifactRef") != contract.get("artifactId")

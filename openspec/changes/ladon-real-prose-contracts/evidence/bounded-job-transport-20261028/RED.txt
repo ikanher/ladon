@@ -1,0 +1,24 @@
+F
+=================================== FAILURES ===================================
+_ test_lossless_roundtrip_preserves_types_unicode_large_integers_and_negative_zero _
+
+    def test_lossless_roundtrip_preserves_types_unicode_large_integers_and_negative_zero():
+        value = {'x': [None, True, False, 1, 1.0, -0.0, 2**80, 'λ雪', {'a': []}],
+                 'nested-json': '{"opaque": true}'}
+>       encoded = api.pack_json(value)
+                  ^^^^^^^^^^^^^^^^^^^^
+
+tests/test_bounded_json_transport.py:32: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'nested-json': '{"opaque": true}', 'x': [None, True, False, 1, 1.0, -0.0, ...]}
+
+    def pack_json(value, *, limits=TransportLimits()):
+>       raise ValueError('bounded JSON transport not implemented')
+E       ValueError: bounded JSON transport not implemented
+
+src/ladon/bounded_json_transport.py:18: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_bounded_json_transport.py::test_lossless_roundtrip_preserves_types_unicode_large_integers_and_negative_zero
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 0.07s

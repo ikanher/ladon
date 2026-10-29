@@ -1,0 +1,108 @@
+{
+  "changeName": "ladon-real-prose-contracts",
+  "schemaName": "spec-driven",
+  "planningHome": {
+    "kind": "repo",
+    "root": "/home/codex/projects/ladon",
+    "changesDir": "/home/codex/projects/ladon/openspec/changes",
+    "defaultSchema": "spec-driven"
+  },
+  "changeRoot": "/home/codex/projects/ladon/openspec/changes/ladon-real-prose-contracts",
+  "artifactPaths": {
+    "proposal": {
+      "outputPath": "proposal.md",
+      "resolvedOutputPath": "/home/codex/projects/ladon/openspec/changes/ladon-real-prose-contracts/proposal.md",
+      "existingOutputPaths": [
+        "/home/codex/projects/ladon/openspec/changes/ladon-real-prose-contracts/proposal.md"
+      ]
+    },
+    "specs": {
+      "outputPath": "specs/**/*.md",
+      "resolvedOutputPath": "/home/codex/projects/ladon/openspec/changes/ladon-real-prose-contracts/specs/**/*.md",
+      "existingOutputPaths": []
+    },
+    "design": {
+      "outputPath": "design.md",
+      "resolvedOutputPath": "/home/codex/projects/ladon/openspec/changes/ladon-real-prose-contracts/design.md",
+      "existingOutputPaths": []
+    },
+    "tasks": {
+      "outputPath": "tasks.md",
+      "resolvedOutputPath": "/home/codex/projects/ladon/openspec/changes/ladon-real-prose-contracts/tasks.md",
+      "existingOutputPaths": []
+    }
+  },
+  "isPlanningComplete": false,
+  "isComplete": false,
+  "applyRequires": [
+    "tasks"
+  ],
+  "nextSteps": [
+    "Run openspec instructions specs --change \"ladon-real-prose-contracts\" --json before writing that artifact."
+  ],
+  "actionContext": {
+    "mode": "repo-local",
+    "sourceOfTruth": "repo",
+    "planningArtifacts": [
+      "proposal",
+      "specs",
+      "design",
+      "tasks"
+    ],
+    "linkedContext": [],
+    "allowedEditRoots": [
+      "/home/codex/projects/ladon"
+    ],
+    "requiresAffectedAreaSelection": false,
+    "constraints": [
+      "Repo-local change artifacts and implementation edits are scoped to this project."
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "proposal",
+      "outputPath": "proposal.md",
+      "status": "done",
+      "requires": []
+    },
+    {
+      "id": "specs",
+      "outputPath": "specs/**/*.md",
+      "status": "ready",
+      "requires": [
+        "proposal"
+      ]
+    },
+    {
+      "id": "design",
+      "outputPath": "design.md",
+      "status": "ready",
+      "requires": [
+        "proposal"
+      ]
+    },
+    {
+      "id": "tasks",
+      "outputPath": "tasks.md",
+      "status": "blocked",
+      "requires": [
+        "specs",
+        "design"
+      ],
+      "missingDeps": [
+        "specs",
+        "design"
+      ]
+    }
+  ],
+  "taskTrackingConfigured": true,
+  "taskProgress": {
+    "total": 0,
+    "complete": 0,
+    "remaining": 0
+  },
+  "root": {
+    "path": "/home/codex/projects/ladon",
+    "source": "nearest"
+  }
+}

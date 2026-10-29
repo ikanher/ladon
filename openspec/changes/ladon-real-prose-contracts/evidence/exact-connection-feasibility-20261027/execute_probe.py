@@ -1,0 +1,17 @@
+import json,sys
+from pathlib import Path
+from ladon.correspondence_check import _check_goal
+from ladon.proof_slice import pinned_toolchain
+from ladon.real_bound_admission_worker import _accepted
+b=Path('.codex/state/real-prose-connection').resolve();root=b/'probe-project'
+case=sys.argv[1];p=json.loads((b/('probe-'+case+'.json')).read_text())
+source=(root/'Context.lean').read_bytes()
+term=p['term']
+if len(sys.argv)>3 and sys.argv[3]=='witness':
+ name='LadonProbeConnectionWitness_'+case
+ source+=f'\n theorem _root_.{name} : ({p["goal"]}) := ({term})\n'.encode()
+ term=name
+result=_check_goal(p['goal'],term,root,source,{},pinned_toolchain(root))
+out=b/('probe-'+case+'-'+sys.argv[2]+'-result.json');assert not out.exists()
+out.write_text(json.dumps(result,indent=2)+'\n')
+print({'case':case,'accepted':_accepted(result),'status':result.get('status'),'diagnostic':result.get('diagnostic')})

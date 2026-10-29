@@ -1,0 +1,44 @@
+{
+  "schema": "ladon-prefix-admission-plan-v1",
+  "status": "planned",
+  "request": {
+    "source": {
+      "path": "PrefixExamples.lean",
+      "sha256": "787487767780dc0d347c5ae0fe015185af84dfcc026ada59b6f9b858f3d1fd42"
+    },
+    "environmentRef": "sha256:490f4fddb222b6b4c8ab82251eba05fb791dd98faa71ddcc583b8f8dd3d5fa89",
+    "predicate": "SequenceBounds.envelope",
+    "measure": "SequenceBounds.sample",
+    "objectType": "SequenceBounds.Object",
+    "parameterType": "Nat",
+    "pointType": "Unit"
+  },
+  "admission": "unresolved",
+  "contract": null,
+  "requiredImport": "LadonRealBound",
+  "familySourceDigest": "sha256:90fd0b87cd50d92c34377c40447ab132e76bdacfb044d01604d118f7c5222656",
+  "goals": [
+    {
+      "id": "predicate-equivalence",
+      "proposition": "_root_.Ladon.RealBound.Equivalent (F := _root_.SequenceBounds.Object) (P := _root_.Nat) (Y := _root_.Unit) (_root_.SequenceBounds.envelope) (_root_.SequenceBounds.sample)",
+      "goalDigest": "sha256:56a061af0be821d13420d3334b15458896ed4ea9420066a5da85424479f5d72b"
+    },
+    {
+      "id": "order-prefix",
+      "proposition": "_root_.Ladon.RealBound.OrderPrefix (F := _root_.SequenceBounds.Object) (P := _root_.Nat) (_root_.SequenceBounds.envelope)",
+      "goalDigest": "sha256:69cdba93f1d805233c438125d43d678e720d894da2350c965f64afb674cd1720"
+    },
+    {
+      "id": "bound-monotonicity",
+      "proposition": "_root_.Ladon.RealBound.BoundMonotone (F := _root_.SequenceBounds.Object) (P := _root_.Nat) (_root_.SequenceBounds.envelope)",
+      "goalDigest": "sha256:283ccc0a66e994ae532cea0dfa2aafb867ea0f39b7f1d2bcdf5182dde079b696"
+    }
+  ],
+  "limitations": [
+    "plan-is-not-checked-admission",
+    "source-application-binding-unchecked",
+    "no-composition-rule",
+    "no-derivative-or-paper-norm-interpretation"
+  ],
+  "planId": "sha256:fed1eba5cd8a44e7086e05411f8e9f00bd75a4a55e2889f7340a48c12c0c0bfa"
+}

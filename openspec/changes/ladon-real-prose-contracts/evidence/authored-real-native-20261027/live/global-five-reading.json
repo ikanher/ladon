@@ -1,0 +1,151 @@
+{
+  "id": "reading:bound",
+  "source": {
+    "path": "claim.txt",
+    "startLine": 1,
+    "endLine": 1,
+    "quote": "An authored indexed estimate; interpretation and Real meaning remain unreviewed.",
+    "sha256": "97de51fbacdd18e17b10d02079dfbf5d615ad8c5b66cb93bf4a94feb4eaee4e6"
+  },
+  "formula": {
+    "tag": "forall",
+    "binder": {
+      "id": "n",
+      "name": "n",
+      "domain": "Nat"
+    },
+    "body": {
+      "tag": "exists",
+      "binder": {
+        "id": "K",
+        "name": "K",
+        "domain": "Real"
+      },
+      "body": {
+        "tag": "and",
+        "items": [
+          {
+            "tag": "le",
+            "left": {
+              "tag": "const",
+              "name": "0"
+            },
+            "right": {
+              "tag": "var",
+              "id": "K"
+            }
+          },
+          {
+            "tag": "forall",
+            "binder": {
+              "id": "f",
+              "name": "f",
+              "domain": "Fn"
+            },
+            "body": {
+              "tag": "forall",
+              "binder": {
+                "id": "C",
+                "name": "C",
+                "domain": "Real"
+              },
+              "body": {
+                "tag": "implies",
+                "premise": {
+                  "tag": "le",
+                  "left": {
+                    "tag": "const",
+                    "name": "0"
+                  },
+                  "right": {
+                    "tag": "var",
+                    "id": "C"
+                  }
+                },
+                "conclusion": {
+                  "tag": "implies",
+                  "premise": {
+                    "tag": "app",
+                    "symbol": "J",
+                    "args": [
+                      {
+                        "tag": "var",
+                        "id": "f"
+                      },
+                      {
+                        "tag": "app",
+                        "symbol": "shift",
+                        "args": [
+                          {
+                            "tag": "var",
+                            "id": "n"
+                          }
+                        ]
+                      },
+                      {
+                        "tag": "var",
+                        "id": "C"
+                      }
+                    ]
+                  },
+                  "conclusion": {
+                    "tag": "app",
+                    "symbol": "J",
+                    "args": [
+                      {
+                        "tag": "app",
+                        "symbol": "A",
+                        "args": [
+                          {
+                            "tag": "var",
+                            "id": "f"
+                          }
+                        ]
+                      },
+                      {
+                        "tag": "var",
+                        "id": "n"
+                      },
+                      {
+                        "tag": "app",
+                        "symbol": "product",
+                        "args": [
+                          {
+                            "tag": "var",
+                            "id": "K"
+                          },
+                          {
+                            "tag": "var",
+                            "id": "C"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "symbols": {
+    "J": {
+      "leanName": "BoundGlobal",
+      "leanType": "Fn \u2192 Nat \u2192 Real \u2192 Prop"
+    },
+    "A": {
+      "leanName": "Transform",
+      "leanType": "Fn \u2192 Fn"
+    },
+    "shift": {
+      "leanName": "bump",
+      "leanType": "Nat \u2192 Nat"
+    },
+    "product": {
+      "leanName": "product",
+      "leanType": "Real \u2192 Real \u2192 Real"
+    }
+  }
+}

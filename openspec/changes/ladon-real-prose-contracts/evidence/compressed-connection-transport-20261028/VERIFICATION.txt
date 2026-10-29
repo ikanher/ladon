@@ -1,0 +1,129 @@
+Repository root: /home/codex/projects/ladon
+Baseline HEAD: e6479e465d652029502bc19b6a03e90b359bf5b5
+
+Final focused suite command:
+PYTHONPATH=src .venv/bin/python -m pytest -q \
+  tests/test_bounded_json_compressed_transport.py \
+  tests/test_bounded_json_transport.py \
+  tests/test_bounded_json_transport_boundaries.py \
+  tests/test_real_prose_connection_compressed_wire_v2.py \
+  tests/test_real_prose_connection_compressed_history_v3.py \
+  tests/test_real_prose_connection_history.py \
+  tests/test_real_prose_connection_live.py \
+  tests/test_real_prose_connection_scratch.py \
+  tests/test_real_prose_connection_cli.py \
+  tests/test_real_prose_connection_commitment_history.py
+Exit 0: 80 passed, 30 skipped in 12.97s.
+
+The 3 frozen transport suites contribute 17 passing cases: malformed,
+incomplete, trailing and concatenated streams; decompression bounds; digest
+tampering; ASCII text-captured subprocess output; retained-wire compressed
+history checks without recompression; and v1 byte compatibility.
+
+Lint:
+.venv/bin/ruff check \
+  src/ladon/bounded_json_transport.py \
+  src/ladon/real_prose_connection.py \
+  src/ladon/real_prose_connection_worker.py \
+  src/ladon/real_prose_connection_history.py \
+  tests/test_bounded_json_compressed_transport.py \
+  tests/test_real_prose_connection_compressed_wire_v2.py \
+  tests/test_real_prose_connection_compressed_history_v3.py
+Exit 0: All checks passed.
+
+`strict_quality_issues` returned no issues for those 4 production and 3 test
+files (Radon, Vulture, Ruff and compile checks). A repository-wide strict run on
+the pre-v3 history revision completed in 74m17s: 5,516 passed, 86 skipped,
+3 failed. The failures were:
+
+- `tests/test_proof_contract_audit_nested_ownership.py::test_outer_stage_timeout_recovers_a_delegated_goal_without_deleting_its_bytes`
+- `tests/test_proof_contract_worker_scratch.py::test_timeout_after_real_goal_write_cleans_only_the_owned_goal_tree`
+- `tests/test_python_quality.py::test_project_strict_quality_has_no_radon_or_vulture_issues`
+
+The two worker-scratch fixtures failed before their capture marker because the
+test shim's `_block_at_capture()` rejected the `workspace_parent` keyword. The
+project-wide quality assertion found these ten findings, none in files in this
+transport frontier:
+
+radon-cc src/ladon/real_bound_native_analysis.py:41 propagate_real_bound_identity C(14)
+radon-cc src/ladon/real_bound_native_analysis.py:132 _check_fresh_relation C(20)
+radon-cc src/ladon/real_bound_native_analysis.py:174 _fresh C(14)
+radon-cc src/ladon/real_bound_native_relation_worker.py:62 _compute C(16)
+radon-cc tests/test_real_bound_comparison_live.py:42 test_live_cli_comparison_history_sqlite_and_explicit_replay C(12)
+radon-cc tests/test_real_bound_comparison_persistence.py:34 test_genuine_recorded_relation_roundtrips_through_native_batch_and_sqlite C(14)
+radon-cc tests/test_real_bound_native_analysis.py:63 test_same_exact_context_resolves_only_with_a_checked_relation C(15)
+radon-cc tests/test_real_bound_prefix_live.py:49 test_live_public_prefix_rule_across_two_families C(17)
+radon-cc tests/test_real_bound_relation_macro.py:175 test_supervised_relation_worker_checks_current_source_bound_plans C(13)
+radon-cc tests/test_real_bound_relation_macro.py:232 test_live_public_comparison_replays_both_native_productions D(25)
+
+Final current-revision v3 informed run:
+PYTHONPATH=src .venv/bin/python \
+  .codex/state/real-prose-connection-consumer/v3-final/run_informed.py five
+Exit 0: connected; controller 487.5748 seconds, peak 6,354,116,608 bytes;
+connection worker 423.4783 seconds, peak 6,268,612,608 bytes; no timeout,
+memory limit or output limit. Compressed worker stdout was 1,538,375 bytes in
+six retained chunks; the snapshot JSON was 16,544,364 bytes. The saved snapshot
+passed validate_snapshot after bounded_json_transport.pack_compressed_json was
+replaced with a function that raises, proving history validation did not invoke
+the local compressor. The snapshot implementation digest matches the current
+shipped Python/Lean source inventory. The earlier v2-informed four-order control
+remains unresolved with its canonical v1 output under the same caps.
+
+Skill validation:
+python /home/codex/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/ladon
+python /home/codex/.codex/skills/.system/skill-creator/scripts/quick_validate.py ../codex-skills/ladon
+Exit 0 for both: Skill is valid!
+
+OpenSpec:
+openspec validate ladon-real-prose-contracts --strict
+Exit 0: Change is valid.
+
+Frozen-test board verification:
+ULTRA_CODE_SWARM_BOARD=$PWD/.codex/state/ultra-proof-contract.sqlite3 \
+  .venv/bin/python .codex/skills/ultra-code/scripts/ultra_code_bb.py \
+  verify-tests --db $PWD/.codex/state/ultra-proof-contract.sqlite3
+The verifier's only current unrelated mismatch is the existing frozen manifest
+entry for `tests/test_rational_lean_encoder_v2.py` (expected 5f68196d..., actual
+HEAD/worktree a5274b63...). All four active transport test hashes match, including
+the separately frozen v3 boundary test. The pre-execution test draft is explicitly
+superseded and preserved.
+
+
+Final boundary hardening on the bounded v3 history revision:
+
+Regression test (frozen before implementation):
+PYTHONPATH=src .venv/bin/python -m pytest -q \
+  tests/test_real_prose_connection_compressed_history_v3_boundaries.py
+Exit 0: 3 passed. It rejects aggregate chunk bytes above the recorded wire cap
+before joining, rejects empty chunks, and rejects retained completed stdout on
+incomplete v3 checks.
+
+Focused suite including that regression test:
+PYTHONPATH=src .venv/bin/python -m pytest -q \
+  tests/test_bounded_json_compressed_transport.py \
+  tests/test_bounded_json_transport.py \
+  tests/test_bounded_json_transport_boundaries.py \
+  tests/test_real_prose_connection_compressed_wire_v2.py \
+  tests/test_real_prose_connection_compressed_history_v3.py \
+  tests/test_real_prose_connection_compressed_history_v3_boundaries.py \
+  tests/test_real_prose_connection_history.py \
+  tests/test_real_prose_connection_live.py \
+  tests/test_real_prose_connection_scratch.py \
+  tests/test_real_prose_connection_cli.py \
+  tests/test_real_prose_connection_commitment_history.py
+Exit 0: 83 passed, 30 skipped in 13.25s.
+
+Final informed bounded-v3 run (new directory, no prior outputs overwritten):
+PYTHONPATH=src .venv/bin/python \
+  .codex/state/real-prose-connection-consumer/v3-final-boundaries/run_informed.py five
+Exit 0: connected; controller 496.7401 seconds, peak 6,365,511,680 bytes;
+connection worker 427.9435 seconds, peak 6,277,255,168 bytes; no timeout, RSS or
+output stop. The snapshot is 16,544,897 bytes and retains 1,538,395 wire bytes
+in six ASCII chunks (each <=262,144 bytes). The implementation digest equals
+current implementation_identity(). validate_snapshot succeeded with both
+real_prose_connection_history.pack_json_with_compression_fallback and
+bounded_json_transport.pack_compressed_json patched to raise.
+
+The repository-wide strict suite results above predate the final v3-boundary
+revision; it was not rerun. The scoped static and focused gates below apply to
+the final revision.

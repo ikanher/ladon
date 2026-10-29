@@ -54,6 +54,22 @@ def _refs(p, field, kind, value, subjects, env, *, minimum=0):
 
 
 def validate_contract_payload(p, value, subjects, env):
+    from ladon.real_prose_native_record import PROFILE_DIGEST as AUTHORED_REAL
+
+    if p.get("profileDigest") == AUTHORED_REAL:
+        from ladon.real_prose_native_payload import validate_payload
+
+        return validate_payload(p, value, subjects, env)
+    from ladon.real_bound_native_profile import PROFILE_DIGEST as REAL_PROFILE
+
+    if p.get("profileDigest") == REAL_PROFILE:
+        from ladon.real_bound_native_payload import validate_payload
+
+        return validate_payload(p, value, subjects, env)
+    return _validate_nat_contract_payload(p, value, subjects, env)
+
+
+def _validate_nat_contract_payload(p, value, subjects, env):
     from ladon.proof_contracts import validate_contract
 
     closed(p, {"contractId", "profileDigest", "record", "statementRef", "assumptionRefs",
@@ -238,6 +254,19 @@ def _comparison_result(result):
 
 def validate_analysis_inputs(artifact, artifacts):
     """Recompute the summary from exact batch-owned inputs, never from labels."""
+    if artifact["artifactKind"] == "proofir.contract":
+        from ladon.real_prose_native_record import PROFILE_DIGEST as AUTHORED_REAL
+
+        if artifact["payload"]["profileDigest"] == AUTHORED_REAL:
+            from ladon.real_prose_native_payload import validate_owners
+
+            return validate_owners(artifact, artifacts)
+        from ladon.real_bound_native_profile import PROFILE_DIGEST as REAL_PROFILE
+
+        if artifact["payload"]["profileDigest"] == REAL_PROFILE:
+            from ladon.real_bound_native_payload import validate_owners
+
+            return validate_owners(artifact, artifacts)
     if artifact["artifactKind"] != "proofir.contract-analysis":
         return
     return _recompute_analysis_stage(artifacts, artifact["payload"])

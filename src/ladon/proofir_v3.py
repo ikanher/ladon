@@ -1095,6 +1095,7 @@ def _expected_external_kind(pointer: str) -> str | None:
         "attachmentSetRef": "attachment-set",
         "interpretationRef": "interpretation",
         "checkRunRefs": "check-run",
+        "edgeAnalysisRefs": "contract-analysis",
         "contractRefs": "contract",
         "planRef": "contract-analysis",
         "derivationGoalRef": "statement",

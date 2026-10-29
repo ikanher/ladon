@@ -1,5 +1,26 @@
 # Mathematical contracts
 
+[Typed prose observation](REAL_PROSE_OBSERVATION.md) captures an authored
+proposition in a pinned Lean context through `observe-prose-bound`. Successful
+elaboration preserves unresolved admission and does not establish its truth.
+[Attributed native Real readings](REAL_PROSE_NATIVE.md) preserve recognized
+features and their complete typed history through native persistence and reports,
+with unresolved admission and explicitly historical authority.
+
+[Typed Real-bound contracts](REAL_BOUND_CONTRACTS.md) retain separate syntax
+observations, fresh predicate/scalar admission and historical native evidence.
+Restricted same-source Real predicate comparisons and per-edge identity
+propagation and checked input-prefix weakening are available through separate
+operations. Native equivalence and directional-prefix persistence and explicit
+replay retain historical-only saved authority. Native ordered sequences of
+checked identity/prefix edges support explicit replay. A separate pointwise
+coefficient check weakens only the output scalar under explicit ordering/sign
+guards; its native variant preserves the actual conditional proof goal.
+Source-shaped conditional composition checks exact middle applications and
+retains both transfer steps as explicit assumptions. Both rules support native
+history and fresh replay; neither infers a uniform existential witness, proves
+source theorem bodies, or supplies an input-predicate chain edge.
+
 The bounded rational branch route is documented in [Rational branch Lean plans](RATIONAL_BRANCH_PROBES.md).
 It generates and checks finite-assignment obligations with completion, independent
 replay and trust checks. Native receipt validation preserves their exact bindings

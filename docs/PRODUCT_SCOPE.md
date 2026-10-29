@@ -1,5 +1,10 @@
 # Ladon product scope
 
+The user authorized the bounded [Real-bound contracts extension](../openspec/changes/ladon-real-bound-contracts/tasks.md)
+on 2026-10-25, explicitly requiring generality across developments. This is a
+narrow exception to the runtime freeze below; its observation, admission and
+evaluation gates remain separate.
+
 Ladon's governing objective is to help AI-assisted mathematics become
 understandable, checkable, attributable and reusable by the mathematical community.
 An explanation a reader can question and correct matters more than whether an

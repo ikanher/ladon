@@ -1,0 +1,57 @@
+{
+  "ruff": {
+    "command": [
+      ".venv/bin/ruff",
+      "check",
+      "tests/test_real_bound_rules_lean.py"
+    ],
+    "returncode": 0,
+    "stdout": "All checks passed!\n",
+    "stderr": "",
+    "elapsed_seconds": 0.05891460899147205,
+    "timed_out": false,
+    "output_limited": false,
+    "memory_limited": false,
+    "peak_rss_bytes": 0
+  },
+  "openspec": {
+    "command": [
+      "openspec",
+      "validate",
+      "ladon-real-bound-contracts",
+      "--strict"
+    ],
+    "returncode": 0,
+    "stdout": "Change 'ladon-real-bound-contracts' is valid\n",
+    "stderr": "",
+    "elapsed_seconds": 0.2356602720101364,
+    "timed_out": false,
+    "output_limited": false,
+    "memory_limited": false,
+    "peak_rss_bytes": 92602368
+  },
+  "diff": {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "returncode": 0,
+    "stdout": "",
+    "stderr": "",
+    "elapsed_seconds": 0.059171325992792845,
+    "timed_out": false,
+    "output_limited": false,
+    "memory_limited": false,
+    "peak_rss_bytes": 0
+  },
+  "strictQuality": {
+    "issues": []
+  },
+  "pytest": {
+    "command": "LADON_MATHLIB_TEST_ROOT=$PWD/.codex/state/real-bound-admission/consumer-project PYTHONPATH=src .venv/bin/pytest -q tests/test_real_bound_rules_lean.py",
+    "returncode": 0,
+    "stdout": "..                                                                       [100%]\n2 passed in 3.98s\n",
+    "sourceIdentityVerified": true
+  }
+}

@@ -1,0 +1,241 @@
+FFFFFFFFFFF                                                              [100%]
+=================================== FAILURES ===================================
+__________ test_plan_keeps_three_exact_closed_goals_and_no_admission ___________
+
+    def test_plan_keeps_three_exact_closed_goals_and_no_admission():
+>       result = plan()
+                 ^^^^^^
+
+tests/test_real_bound_admission_plan.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = None
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+_________ test_unrelated_names_change_the_exact_goal_and_plan_identity _________
+
+    def test_unrelated_names_change_the_exact_goal_and_plan_identity():
+>       first = plan()
+                ^^^^^^
+
+tests/test_real_bound_admission_plan.py:34: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = None
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+_ test_unchecked_terms_and_malformed_identities_cannot_enter_goals[predicate-x) \u2228 True --] _
+
+field = 'predicate', value = 'x) ∨ True --'
+
+    @pytest.mark.parametrize("field,value", [("predicate", "x) ∨ True --"),
+                                            ("measure", "by trivial"), ("pointType", "Unit\naxiom bad : False"),
+                                            ("environmentRef", "unknown")])
+    def test_unchecked_terms_and_malformed_identities_cannot_enter_goals(field, value):
+        changed = request()
+        changed[field] = value
+        with pytest.raises(ValueError):
+>           plan(changed)
+
+tests/test_real_bound_admission_plan.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'environmentRef': 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'measure': 'SequenceBounds.sample', 'objectType': 'SequenceBounds.Object', 'parameterType': 'Nat', ...}
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+_ test_unchecked_terms_and_malformed_identities_cannot_enter_goals[measure-by trivial] _
+
+field = 'measure', value = 'by trivial'
+
+    @pytest.mark.parametrize("field,value", [("predicate", "x) ∨ True --"),
+                                            ("measure", "by trivial"), ("pointType", "Unit\naxiom bad : False"),
+                                            ("environmentRef", "unknown")])
+    def test_unchecked_terms_and_malformed_identities_cannot_enter_goals(field, value):
+        changed = request()
+        changed[field] = value
+        with pytest.raises(ValueError):
+>           plan(changed)
+
+tests/test_real_bound_admission_plan.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'environmentRef': 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'measure': 'by trivial', 'objectType': 'SequenceBounds.Object', 'parameterType': 'Nat', ...}
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+_ test_unchecked_terms_and_malformed_identities_cannot_enter_goals[pointType-Unit\naxiom bad : False] _
+
+field = 'pointType', value = 'Unit\naxiom bad : False'
+
+    @pytest.mark.parametrize("field,value", [("predicate", "x) ∨ True --"),
+                                            ("measure", "by trivial"), ("pointType", "Unit\naxiom bad : False"),
+                                            ("environmentRef", "unknown")])
+    def test_unchecked_terms_and_malformed_identities_cannot_enter_goals(field, value):
+        changed = request()
+        changed[field] = value
+        with pytest.raises(ValueError):
+>           plan(changed)
+
+tests/test_real_bound_admission_plan.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'environmentRef': 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'measure': 'SequenceBounds.sample', 'objectType': 'SequenceBounds.Object', 'parameterType': 'Nat', ...}
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+_ test_unchecked_terms_and_malformed_identities_cannot_enter_goals[environmentRef-unknown] _
+
+field = 'environmentRef', value = 'unknown'
+
+    @pytest.mark.parametrize("field,value", [("predicate", "x) ∨ True --"),
+                                            ("measure", "by trivial"), ("pointType", "Unit\naxiom bad : False"),
+                                            ("environmentRef", "unknown")])
+    def test_unchecked_terms_and_malformed_identities_cannot_enter_goals(field, value):
+        changed = request()
+        changed[field] = value
+        with pytest.raises(ValueError):
+>           plan(changed)
+
+tests/test_real_bound_admission_plan.py:50: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'environmentRef': 'unknown', 'measure': 'SequenceBounds.sample', 'objectType': 'SequenceBounds.Object', 'parameterType': 'Nat', ...}
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+_ test_caller_cannot_supply_acceptance_or_replace_the_expected_goal[admitted] __
+
+field = 'admitted'
+
+    @pytest.mark.parametrize("field", ["admitted", "lawsChecked", "goal", "proofReceipt"])
+    def test_caller_cannot_supply_acceptance_or_replace_the_expected_goal(field):
+        changed = request()
+        changed[field] = True
+        with pytest.raises(ValueError):
+>           plan(changed)
+
+tests/test_real_bound_admission_plan.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'admitted': True, 'environmentRef': 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'measure': 'SequenceBounds.sample', 'objectType': 'SequenceBounds.Object', ...}
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+_ test_caller_cannot_supply_acceptance_or_replace_the_expected_goal[lawsChecked] _
+
+field = 'lawsChecked'
+
+    @pytest.mark.parametrize("field", ["admitted", "lawsChecked", "goal", "proofReceipt"])
+    def test_caller_cannot_supply_acceptance_or_replace_the_expected_goal(field):
+        changed = request()
+        changed[field] = True
+        with pytest.raises(ValueError):
+>           plan(changed)
+
+tests/test_real_bound_admission_plan.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'environmentRef': 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'lawsChecked': True, 'measure': 'SequenceBounds.sample', 'objectType': 'SequenceBounds.Object', ...}
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+___ test_caller_cannot_supply_acceptance_or_replace_the_expected_goal[goal] ____
+
+field = 'goal'
+
+    @pytest.mark.parametrize("field", ["admitted", "lawsChecked", "goal", "proofReceipt"])
+    def test_caller_cannot_supply_acceptance_or_replace_the_expected_goal(field):
+        changed = request()
+        changed[field] = True
+        with pytest.raises(ValueError):
+>           plan(changed)
+
+tests/test_real_bound_admission_plan.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'environmentRef': 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'goal': True, 'measure': 'SequenceBounds.sample', 'objectType': 'SequenceBounds.Object', ...}
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+_ test_caller_cannot_supply_acceptance_or_replace_the_expected_goal[proofReceipt] _
+
+field = 'proofReceipt'
+
+    @pytest.mark.parametrize("field", ["admitted", "lawsChecked", "goal", "proofReceipt"])
+    def test_caller_cannot_supply_acceptance_or_replace_the_expected_goal(field):
+        changed = request()
+        changed[field] = True
+        with pytest.raises(ValueError):
+>           plan(changed)
+
+tests/test_real_bound_admission_plan.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'environmentRef': 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'measure': 'SequenceBounds.sample', 'objectType': 'SequenceBounds.Object', 'parameterType': 'Nat', ...}
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+_______ test_plan_is_detached_and_source_identity_changes_invalidate_it ________
+
+    def test_plan_is_detached_and_source_identity_changes_invalidate_it():
+        original = request()
+        frozen = deepcopy(original)
+>       result = plan(original)
+                 ^^^^^^^^^^^^^^
+
+tests/test_real_bound_admission_plan.py:64: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = {'environmentRef': 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'measure': 'SequenceBounds.sample', 'objectType': 'SequenceBounds.Object', 'parameterType': 'Nat', ...}
+
+    def plan(value=None):
+>       from ladon.real_bound_admission import plan_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission'
+
+tests/test_real_bound_admission_plan.py:16: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_admission_plan.py::test_plan_keeps_three_exact_closed_goals_and_no_admission
+FAILED tests/test_real_bound_admission_plan.py::test_unrelated_names_change_the_exact_goal_and_plan_identity
+FAILED tests/test_real_bound_admission_plan.py::test_unchecked_terms_and_malformed_identities_cannot_enter_goals[predicate-x) \u2228 True --]
+FAILED tests/test_real_bound_admission_plan.py::test_unchecked_terms_and_malformed_identities_cannot_enter_goals[measure-by trivial]
+FAILED tests/test_real_bound_admission_plan.py::test_unchecked_terms_and_malformed_identities_cannot_enter_goals[pointType-Unit\naxiom bad : False]
+FAILED tests/test_real_bound_admission_plan.py::test_unchecked_terms_and_malformed_identities_cannot_enter_goals[environmentRef-unknown]
+FAILED tests/test_real_bound_admission_plan.py::test_caller_cannot_supply_acceptance_or_replace_the_expected_goal[admitted]
+FAILED tests/test_real_bound_admission_plan.py::test_caller_cannot_supply_acceptance_or_replace_the_expected_goal[lawsChecked]
+FAILED tests/test_real_bound_admission_plan.py::test_caller_cannot_supply_acceptance_or_replace_the_expected_goal[goal]
+FAILED tests/test_real_bound_admission_plan.py::test_caller_cannot_supply_acceptance_or_replace_the_expected_goal[proofReceipt]
+FAILED tests/test_real_bound_admission_plan.py::test_plan_is_detached_and_source_identity_changes_invalidate_it
+11 failed in 0.08s

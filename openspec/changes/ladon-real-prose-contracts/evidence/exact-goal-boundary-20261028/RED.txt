@@ -1,0 +1,21 @@
+E
+==================================== ERRORS ====================================
+_ ERROR at setup of test_exact_goal_retains_formal_type_authored_value_and_ordered_premises _
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x7f4166917c50>, _basetemp=PosixPath('/tmp/pytest-of-codex/pytest-208'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope='module')
+    def project(tmp_path_factory):
+        root = tmp_path_factory.mktemp('exact-goal')
+        (root / 'lean-toolchain').write_bytes(FIXTURE.read_bytes())
+>       assert HELPER.is_file(), 'missing exact source-owner constructor'
+E       AssertionError: missing exact source-owner constructor
+E       assert False
+E        +  where False = is_file()
+E        +    where is_file = PosixPath('/home/codex/projects/ladon/src/ladon/lean/LadonProseExactGoal.lean').is_file
+
+tests/test_real_prose_exact_goal.py:55: AssertionError
+=========================== short test summary info ============================
+ERROR tests/test_real_prose_exact_goal.py::test_exact_goal_retains_formal_type_authored_value_and_ordered_premises
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 error in 0.08s

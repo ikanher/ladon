@@ -1,0 +1,32 @@
+..........F
+=================================== FAILURES ===================================
+______________ test_memory_stop_is_explicit_and_prevents_progress ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-182/test_memory_stop_is_explicit_a0')
+inputs = ({'formula': {'binder': {'domain': 'Nat', 'id': 'n', 'name': 'n'}, 'body': {'left': {'id': 'n', 'tag': 'var'}, 'right'...ls': {}}, {'file': 'Context.lean', 'module': 'Context', 'schema': 'ladon-prose-bound-context-v1', 'scope': 'file-end'})
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x709a675d5e90>
+
+    def test_memory_stop_is_explicit_and_prevents_progress(tmp_path, inputs, monkeypatch):
+        from ladon.process_supervisor import ProcessResult
+    
+        calls = []
+    
+        def limited(*args, **kwargs):
+            calls.append((args, kwargs))
+            return ProcessResult((), -1, '', '', 0.01, memory_limited=True,
+                                 peak_rss_bytes=1024 * 1024)
+    
+        monkeypatch.setattr('ladon.proof_contract_obligation_supervision._run', limited)
+        result = observe(tmp_path, inputs)
+        assert result['status'] == 'unavailable'
+>       assert result['check']['diagnostic']['code'] == 'memory-limit'
+E       AssertionError: assert 'invalid-worker-request' == 'memory-limit'
+E         
+E         - memory-limit
+E         + invalid-worker-request
+
+tests/test_real_prose_observation_acceptance.py:120: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_real_prose_observation_acceptance.py::test_memory_stop_is_explicit_and_prevents_progress
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 10 passed in 19.45s

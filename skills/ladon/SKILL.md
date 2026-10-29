@@ -123,6 +123,10 @@ Use the current Ladon checkout explicitly (`PYTHONPATH="$PWD/src" uv run --proje
 not an independently installed pip copy. Author the source-bound interpretation
 once, extract the actual application (`proof-search proof slice --scoped` for
 nested local providers), then `interpret`, `align`, `check`, and `inspect`.
+Slice traversal defaults to 131,072 nodes; `--max-nodes N` accepts 1–1,048,576
+without changing time, memory, depth or output limits. Replay retains the
+recorded allowance. Node exhaustion is incomplete extraction, not evidence of
+a mathematical error; keep later extraction failures distinct from that limit.
 Conditional replay, provider closures, original prose premise supply, parent
 support, interpretation fidelity and described method are separate outcomes.
 `init --correspondence` opts into investigation v3. Attach the native bundle,
@@ -141,6 +145,78 @@ separate source-cited and proposed-repair branches. Saved refinement `inspect`
 and `report --refinement` evidence is historical and unverified, with no Lean
 replay or automatic review closure. A citation does not certify formula fidelity,
 and excluding one witness does not establish a universal claim.
+
+For typed Real-bound estimates, read [typed bound adapters](../../docs/REAL_BOUND_CONTRACTS.md).
+Use observe-bound on the full formal snapshot; its exit 2 and unresolved admission
+are expected. Use plan-bound-prefix/check-bound-prefix for a supplied measure,
+or plan-derivative-prefix/check-derivative-prefix for the fixed full joint real
+Frechet derivative measure. A checked-binding establishes the selected predicate
+laws. Use plan-real-bound/admit-real-bound on that plan for fresh predicate and
+canonical Real scalar checks. inspect-real-bound/report-real-bound always show
+historical evidence; replay-real-bound executes both checks again with current
+identities. The source theorem proof and prose norm bridge remain separate.
+For attributed Real prose estimates, read [authored Real readings](../../docs/REAL_PROSE_NATIVE.md)
+and its observation/recognition guides. `produce-real-prose-bound` creates an
+authored reading with unresolved admission, preserving alternatives, all guards,
+full typed scope and exact source ownership. `connect-real-prose-bound` accepts
+that reading, an admitted formal input, both source roots and an explicit proof
+request; its implication retains the formal theorem and ordered local premises
+as assumptions. New v2 connections require independent owner-target commitment,
+kernel checking and replay; v1 history lacks target-owner binding. Reporting is
+historical and authority-free. Fresh replay requires both original input records;
+do not replace them with newer equivalent records or grant NL fidelity, source
+theorem proof, mathematical falsity or discovery credit from a conditional check.
+Connection transport preserves canonical v1 bytes when they fit and uses a
+separately versioned bounded ASCII/zlib envelope only when needed. Keep the
+existing 8 MiB wire, 32 MiB expanded, graph/string and native artifact limits;
+decompression is bounded before DAG validation. An unavailable aggregate result
+is an operational stop; retain inputs and the failed cap, report it, and stop
+dependent checks without truncation or raised limits. Saved compressed-output
+digest checks in connection v3 use the exact retained bounded stdout chunks, so
+they do not rely on recompression by the local zlib version. Legacy v1/v2
+history keeps its original schema and validation behavior. For qualification,
+count authored observations, formal admissions, connected/unresolved results and
+false-promotion controls separately; distinguish unique cases from repeated
+runner checks. The final-v3 Task 3.1 matrix is bounded to seven generic cases
+(3 connected, 4 unresolved, 0 unavailable), the informed five-/four-order pair
+(connected/unresolved), and one rejected target-override control. See the
+[final matrix report](../../openspec/changes/ladon-real-prose-contracts/evidence/final-revision-matrices-20261028/REPORT.md).
+These results do not establish whole-paper correctness, parent propagation or
+unfamiliar-source discovery.
+When reporting evaluation results, count shape observations, adapter bindings
+and native admissions separately. Reuse the qualification linked in the typed
+bound guide only with matching runtime/input identities; informed-source success
+does not establish unfamiliar-source detection, and resource stops are incomplete.
+Use compare-real-bounds for same-source definitional predicate equivalence, or
+compare-real-bounds-proofir to persist its exact native evidence.
+inspect-real-comparison (also ordinary inspect) stays historical-only;
+replay-real-comparison reruns both admissions and the relation.
+propagate-real-bound-identity checks each adjacent edge but has no native
+propagation artifact. Use check-real-bound-prefix --stronger/--weaker for an
+individually checked higher-to-lower input-prefix implication in otherwise exact
+contexts. This rechecks the admission proof and order inequality; it establishes
+only the input-predicate implication. Add `-proofir` to that command to persist
+its native evidence. `inspect-real-prefix` (or ordinary inspect) stays historical;
+`replay-real-prefix --input ... --root ...` freshly rechecks both admissions and
+the directional proof under one shared deadline. Saved success cannot replace
+a failed fresh check. Use `propagate-real-bounds-proofir` with ordered
+`--production` paths and one `--rule identity-v1|order-prefix-v1` per adjacent pair
+to persist individually checked edges. `inspect-real-chain` stays historical;
+`replay-real-chain` rechecks each position and edge under one shared deadline.
+An unresolved edge cannot become a complete chain. This is not a separately
+checked endpoint theorem or transfer composition. Use
+`check-real-bound-coefficient --input admitted.json --root ...` for a pointwise
+output-bound implication under `K ≤ L` and `0 ≤ C`. It retains original `K` in
+predicate/object parameters; it neither infers coefficient uniformity nor
+proves the source estimate. Use `check-real-bound-coefficient-proofir` for native
+storage, `inspect-real-coefficient` for history and `replay-real-coefficient`
+for fresh checking. `compose-real-bounds[-proofir] --left ... --right ...`
+checks conditional composition from compatible source applications. Both
+transfer steps remain assumed; report `transferPremises:assumed` explicitly.
+Use `inspect-real-transfer`/`replay-real-transfer` for saved evidence. These
+conditional goals are not identity/prefix chain edges or new admitted estimates.
+Old Nat consumers remain unsupported. Preserve the complete telescope,
+instances, quantified domains, scalar guards and actual numerical loss.
 
 Process-tree RSS defaults to 12 GiB. On `Stop progress and report back to user:`,
 preserve the failure and report the configured cap, available measured peak and

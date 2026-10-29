@@ -1,0 +1,290 @@
+FFFFFFFFFFFF                                                             [100%]
+=================================== FAILURES ===================================
+______ test_mutated_plan_is_rejected_before_execution[admission-checked] _______
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_mutated_plan_is_rejected_0')
+field = 'admission', value = 'checked'
+
+    @pytest.mark.parametrize("field,value", [("admission", "checked"), ("status", "admitted"),
+                                            ("familySourceDigest", "sha256:" + "0" * 64)])
+    def test_mutated_plan_is_rejected_before_execution(tmp_path, field, value):
+        supplied = deepcopy(plan())
+        supplied[field] = value
+        with pytest.raises(ValueError, match="plan|stale"):
+>           check(tmp_path, supplied)
+
+tests/test_real_bound_admission_check.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_mutated_plan_is_rejected_0')
+supplied = {'admission': 'checked', 'contract': None, 'familySourceDigest': 'sha256:90fd0b87cd50d92c34377c40447ab132e76bdacfb044d...RealBound.BoundMonotone (F := _root_.SequenceBounds.Object) (P := _root_.Nat) (_root_.SequenceBounds.envelope)'}], ...}
+terms = None, options = {}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+_______ test_mutated_plan_is_rejected_before_execution[status-admitted] ________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_mutated_plan_is_rejected_1')
+field = 'status', value = 'admitted'
+
+    @pytest.mark.parametrize("field,value", [("admission", "checked"), ("status", "admitted"),
+                                            ("familySourceDigest", "sha256:" + "0" * 64)])
+    def test_mutated_plan_is_rejected_before_execution(tmp_path, field, value):
+        supplied = deepcopy(plan())
+        supplied[field] = value
+        with pytest.raises(ValueError, match="plan|stale"):
+>           check(tmp_path, supplied)
+
+tests/test_real_bound_admission_check.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_mutated_plan_is_rejected_1')
+supplied = {'admission': 'unresolved', 'contract': None, 'familySourceDigest': 'sha256:90fd0b87cd50d92c34377c40447ab132e76bdacfb0...RealBound.BoundMonotone (F := _root_.SequenceBounds.Object) (P := _root_.Nat) (_root_.SequenceBounds.envelope)'}], ...}
+terms = None, options = {}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+_ test_mutated_plan_is_rejected_before_execution[familySourceDigest-sha256:0000000000000000000000000000000000000000000000000000000000000000] _
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_mutated_plan_is_rejected_2')
+field = 'familySourceDigest'
+value = 'sha256:0000000000000000000000000000000000000000000000000000000000000000'
+
+    @pytest.mark.parametrize("field,value", [("admission", "checked"), ("status", "admitted"),
+                                            ("familySourceDigest", "sha256:" + "0" * 64)])
+    def test_mutated_plan_is_rejected_before_execution(tmp_path, field, value):
+        supplied = deepcopy(plan())
+        supplied[field] = value
+        with pytest.raises(ValueError, match="plan|stale"):
+>           check(tmp_path, supplied)
+
+tests/test_real_bound_admission_check.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_mutated_plan_is_rejected_2')
+supplied = {'admission': 'unresolved', 'contract': None, 'familySourceDigest': 'sha256:000000000000000000000000000000000000000000...RealBound.BoundMonotone (F := _root_.SequenceBounds.Object) (P := _root_.Nat) (_root_.SequenceBounds.envelope)'}], ...}
+terms = None, options = {}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+_______________ test_caller_cannot_replace_generated_proposition _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_caller_cannot_replace_gen0')
+
+    def test_caller_cannot_replace_generated_proposition(tmp_path):
+        supplied = plan()
+        supplied["goals"][0]["proposition"] = "True"
+        with pytest.raises(ValueError, match="plan|stale"):
+>           check(tmp_path, supplied)
+
+tests/test_real_bound_admission_check.py:29: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_caller_cannot_replace_gen0')
+supplied = {'admission': 'unresolved', 'contract': None, 'familySourceDigest': 'sha256:90fd0b87cd50d92c34377c40447ab132e76bdacfb0...RealBound.BoundMonotone (F := _root_.SequenceBounds.Object) (P := _root_.Nat) (_root_.SequenceBounds.envelope)'}], ...}
+terms = None, options = {}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+___________ test_missing_or_extra_proof_entries_are_invalid[terms0] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_missing_or_extra_proof_en0')
+terms = {}
+
+    @pytest.mark.parametrize("terms", [{}, {"predicate-equivalence": "by trivial"},
+                                       {"predicate-equivalence": "by trivial", "order-prefix": "by trivial",
+                                        "bound-monotonicity": "by trivial", "admitted": True}])
+    def test_missing_or_extra_proof_entries_are_invalid(tmp_path, terms):
+        with pytest.raises(ValueError, match="term|proof"):
+>           check(tmp_path, terms=terms)
+
+tests/test_real_bound_admission_check.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_missing_or_extra_proof_en0')
+supplied = None, terms = {}, options = {}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+___________ test_missing_or_extra_proof_entries_are_invalid[terms1] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_missing_or_extra_proof_en1')
+terms = {'predicate-equivalence': 'by trivial'}
+
+    @pytest.mark.parametrize("terms", [{}, {"predicate-equivalence": "by trivial"},
+                                       {"predicate-equivalence": "by trivial", "order-prefix": "by trivial",
+                                        "bound-monotonicity": "by trivial", "admitted": True}])
+    def test_missing_or_extra_proof_entries_are_invalid(tmp_path, terms):
+        with pytest.raises(ValueError, match="term|proof"):
+>           check(tmp_path, terms=terms)
+
+tests/test_real_bound_admission_check.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_missing_or_extra_proof_en1')
+supplied = None, terms = {'predicate-equivalence': 'by trivial'}, options = {}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+___________ test_missing_or_extra_proof_entries_are_invalid[terms2] ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_missing_or_extra_proof_en2')
+terms = {'admitted': True, 'bound-monotonicity': 'by trivial', 'order-prefix': 'by trivial', 'predicate-equivalence': 'by trivial'}
+
+    @pytest.mark.parametrize("terms", [{}, {"predicate-equivalence": "by trivial"},
+                                       {"predicate-equivalence": "by trivial", "order-prefix": "by trivial",
+                                        "bound-monotonicity": "by trivial", "admitted": True}])
+    def test_missing_or_extra_proof_entries_are_invalid(tmp_path, terms):
+        with pytest.raises(ValueError, match="term|proof"):
+>           check(tmp_path, terms=terms)
+
+tests/test_real_bound_admission_check.py:37: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_missing_or_extra_proof_en2')
+supplied = None
+terms = {'admitted': True, 'bound-monotonicity': 'by trivial', 'order-prefix': 'by trivial', 'predicate-equivalence': 'by trivial'}
+options = {}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+_______________ test_invalid_shared_budget_cannot_start_work[0] ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_invalid_shared_budget_can0')
+timeout = 0
+
+    @pytest.mark.parametrize("timeout", [0, -1, True, float("nan"), float("inf")])
+    def test_invalid_shared_budget_cannot_start_work(tmp_path, timeout):
+        with pytest.raises(ValueError, match="timeout|budget"):
+>           check(tmp_path, timeout_seconds=timeout)
+
+tests/test_real_bound_admission_check.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_invalid_shared_budget_can0')
+supplied = None, terms = None, options = {'timeout_seconds': 0}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+_______________ test_invalid_shared_budget_cannot_start_work[-1] _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_invalid_shared_budget_can1')
+timeout = -1
+
+    @pytest.mark.parametrize("timeout", [0, -1, True, float("nan"), float("inf")])
+    def test_invalid_shared_budget_cannot_start_work(tmp_path, timeout):
+        with pytest.raises(ValueError, match="timeout|budget"):
+>           check(tmp_path, timeout_seconds=timeout)
+
+tests/test_real_bound_admission_check.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_invalid_shared_budget_can1')
+supplied = None, terms = None, options = {'timeout_seconds': -1}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+______________ test_invalid_shared_budget_cannot_start_work[True] ______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_invalid_shared_budget_can2')
+timeout = True
+
+    @pytest.mark.parametrize("timeout", [0, -1, True, float("nan"), float("inf")])
+    def test_invalid_shared_budget_cannot_start_work(tmp_path, timeout):
+        with pytest.raises(ValueError, match="timeout|budget"):
+>           check(tmp_path, timeout_seconds=timeout)
+
+tests/test_real_bound_admission_check.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_invalid_shared_budget_can2')
+supplied = None, terms = None, options = {'timeout_seconds': True}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+______________ test_invalid_shared_budget_cannot_start_work[nan] _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_invalid_shared_budget_can3')
+timeout = nan
+
+    @pytest.mark.parametrize("timeout", [0, -1, True, float("nan"), float("inf")])
+    def test_invalid_shared_budget_cannot_start_work(tmp_path, timeout):
+        with pytest.raises(ValueError, match="timeout|budget"):
+>           check(tmp_path, timeout_seconds=timeout)
+
+tests/test_real_bound_admission_check.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_invalid_shared_budget_can3')
+supplied = None, terms = None, options = {'timeout_seconds': nan}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+______________ test_invalid_shared_budget_cannot_start_work[inf] _______________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-68/test_invalid_shared_budget_can4')
+timeout = inf
+
+    @pytest.mark.parametrize("timeout", [0, -1, True, float("nan"), float("inf")])
+    def test_invalid_shared_budget_cannot_start_work(tmp_path, timeout):
+        with pytest.raises(ValueError, match="timeout|budget"):
+>           check(tmp_path, timeout_seconds=timeout)
+
+tests/test_real_bound_admission_check.py:43: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/pytest-of-codex/pytest-68/test_invalid_shared_budget_can4')
+supplied = None, terms = None, options = {'timeout_seconds': inf}
+
+    def check(root, supplied=None, terms=None, **options):
+>       from ladon.real_bound_admission_check import check_prefix_admission
+E       ModuleNotFoundError: No module named 'ladon.real_bound_admission_check'
+
+tests/test_real_bound_admission_check.py:10: ModuleNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_admission_check.py::test_mutated_plan_is_rejected_before_execution[admission-checked]
+FAILED tests/test_real_bound_admission_check.py::test_mutated_plan_is_rejected_before_execution[status-admitted]
+FAILED tests/test_real_bound_admission_check.py::test_mutated_plan_is_rejected_before_execution[familySourceDigest-sha256:0000000000000000000000000000000000000000000000000000000000000000]
+FAILED tests/test_real_bound_admission_check.py::test_caller_cannot_replace_generated_proposition
+FAILED tests/test_real_bound_admission_check.py::test_missing_or_extra_proof_entries_are_invalid[terms0]
+FAILED tests/test_real_bound_admission_check.py::test_missing_or_extra_proof_entries_are_invalid[terms1]
+FAILED tests/test_real_bound_admission_check.py::test_missing_or_extra_proof_entries_are_invalid[terms2]
+FAILED tests/test_real_bound_admission_check.py::test_invalid_shared_budget_cannot_start_work[0]
+FAILED tests/test_real_bound_admission_check.py::test_invalid_shared_budget_cannot_start_work[-1]
+FAILED tests/test_real_bound_admission_check.py::test_invalid_shared_budget_cannot_start_work[True]
+FAILED tests/test_real_bound_admission_check.py::test_invalid_shared_budget_cannot_start_work[nan]
+FAILED tests/test_real_bound_admission_check.py::test_invalid_shared_budget_cannot_start_work[inf]
+12 failed in 0.08s

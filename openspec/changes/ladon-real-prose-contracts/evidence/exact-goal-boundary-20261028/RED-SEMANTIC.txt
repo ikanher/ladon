@@ -1,0 +1,31 @@
+F
+=================================== FAILURES ===================================
+___ test_exact_goal_retains_formal_type_authored_value_and_ordered_premises ____
+
+project = PosixPath('/tmp/pytest-of-codex/pytest-209/exact-goal0')
+
+    def test_exact_goal_retains_formal_type_authored_value_and_ordered_premises(project):
+        text = source(request())
+        text += f'example : ({goal(request())}) = ((∀ n : Nat, True) → True → False → False) := rfl\n'
+        (project / 'Case.lean').write_text(text)
+        result = run(project, 'Case.lean')
+>       assert result.succeeded, result.stdout + result.stderr
+E       AssertionError: Case.lean:2:14: warning: Variable name `n` is not explicitly referenced.
+E         
+E         The binding can be removed (if unused) or named `_` (if used implicitly).
+E         
+E         Note: This linter can be disabled with `set_option linter.unusedVariables false`
+E         Case.lean:6:10: error: exact source-owner construction not implemented
+E         Case.lean:7:8: error: Tactic `introN` failed: There are no additional binders or `let` bindings in the goal to introduce
+E         
+E         ⊢ sorry
+E         Case.lean:9:11: error: exact source-owner construction not implemented
+E         
+E       assert False
+E        +  where False = ProcessResult(command=('/home/codex/.elan/toolchains/leanprover--lean4---v4.32.1/bin/lean', 'Case.lean'), returncode=1...sed_seconds=0.4178572280216031, timed_out=False, output_limited=False, memory_limited=False, peak_rss_bytes=1570295808).succeeded
+
+tests/test_real_prose_exact_goal.py:88: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_real_prose_exact_goal.py::test_exact_goal_retains_formal_type_authored_value_and_ordered_premises
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed in 1.52s

@@ -1,0 +1,210 @@
+..FFFF.                                                                  [100%]
+=================================== FAILURES ===================================
+______ test_formal_worker_binder_information_is_retained[strict-implicit] ______
+
+p = {'assumptionRefs': [], 'checkRunRefs': [{'artifactRef': 'sha256:247f3a9785f23f7150e400018d2f8bc0b7a64c38ce05f7dcd23b54...c96d6e98f54bc89d07a3'}, 'contractId': 'contract:9e76ce932f1ed5760748a679a08555110e76baf4844ac96d6e98f54bc89d07a3', ...}
+value = {'artifactId': 'sha256:b7c402c4f91c642846141fc17ee78990975f7eb3b19e14ca912c8bc41bc97afa', 'artifactKind': 'proofir.con...'expected': 17, ...}, 'environmentRef': 'sha256:f1edff8e3f3466094a1d4c619ed25880869359101b794dcc5a5c45304c0fa0e4', ...}
+subjects = {('contract', 'contract:9e76ce932f1ed5760748a679a08555110e76baf4844ac96d6e98f54bc89d07a3'), ('expression', 'expr:035c0...79a32350b8bda75991e9cc'), ('expression', 'expr:65d1fecdccfcc1089f639e4fdcbd8ba5e675447df6031c3fb0f7353f6436e9f3'), ...}
+env = 'sha256:f1edff8e3f3466094a1d4c619ed25880869359101b794dcc5a5c45304c0fa0e4'
+
+    def _validate_contract(p, value, subjects, env):
+        from ladon.proof_contract_payloads import validate_contract_payload
+    
+        try:
+>           validate_contract_payload(p, value, subjects, env)
+
+src/ladon/proofir_v3_payloads.py:142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_payloads.py:62: in validate_contract_payload
+    return validate_payload(p, value, subjects, env)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/real_bound_native_payload.py:24: in validate_payload
+    record = validate_record(p["record"])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/real_bound_native_record.py:92: in validate_record
+    _scope(record)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+record = {'admission': {'checkerIdentity': 'sha256:aad366cd85ff532e0055b51c6c7356b0bad119cb8ed8592ef31bfdb6ec136576', 'evidence...760748a679a08555110e76baf4844ac96d6e98f54bc89d07a3', 'constant': {'binderId': 'b1', 'permittedBinderIds': ['b0']}, ...}
+
+    def _scope(record):
+        rows(record["telescope"], "Real telescope", minimum=1)
+        binders, universals = [], []
+        allowed = None
+        for index, row in enumerate(record["telescope"]):
+            closed(row, {"binderId", "quantifier", "binderInfo", "typeRef", "originPath"}, "Real binder")
+            if row["binderId"] != f"b{index}" or row["quantifier"] not in {"forall", "exists"}:
+                raise ValueError("Real telescope must retain ordered quantified binders")
+            if row["binderInfo"] not in {"explicit", "implicit", "strictImplicit", "instImplicit"}:
+>               raise ValueError("unsupported Real binder information")
+E               ValueError: unsupported Real binder information
+
+src/ladon/real_bound_native_record.py:108: ValueError
+
+During handling of the above exception, another exception occurred:
+
+binder_info = 'strict-implicit'
+
+    @pytest.mark.parametrize("binder_info", ["explicit", "implicit", "strict-implicit", "instance-implicit"])
+    def test_formal_worker_binder_information_is_retained(binder_info):
+        artifact = recorded()[-1]
+        artifact["payload"]["record"]["telescope"][0]["binderInfo"] = binder_info
+>       checked = validate_envelope(rehash(artifact)).to_dict()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_real_bound_native_binder_protocol.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_v3.py:349: in validate_envelope
+    owned, encoded = _prepare_envelope(value, max_artifact_bytes)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proofir_v3.py:362: in _prepare_envelope
+    _validate_envelope_shape(owned)
+src/ladon/proofir_v3.py:442: in _validate_envelope_shape
+    _validate_kind_payload(value)
+src/ladon/proofir_v3.py:1035: in _validate_kind_payload
+    validate_kind_payload(value)
+src/ladon/proofir_v3_payloads.py:135: in validate_kind_payload
+    validator(p, value, subjects, env)
+src/ladon/proofir_v3_payloads.py:144: in _validate_contract
+    _invalid_field(value, "/payload", str(error))
+src/ladon/proofir_v3_payloads.py:45: in _invalid_field
+    _fail("kind-schema-valid", "invalid-payload-field", pointer, message, value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+stage = 'kind-schema-valid', code = 'invalid-payload-field'
+pointer = '/payload', message = 'unsupported Real binder information'
+value = {'artifactId': 'sha256:b7c402c4f91c642846141fc17ee78990975f7eb3b19e14ca912c8bc41bc97afa', 'artifactKind': 'proofir.con...'expected': 17, ...}, 'environmentRef': 'sha256:f1edff8e3f3466094a1d4c619ed25880869359101b794dcc5a5c45304c0fa0e4', ...}
+
+    def _fail(
+        stage: str,
+        code: str,
+        pointer: str,
+        message: str,
+        value: Mapping[str, Any] | None = None,
+    ) -> None:
+        artifact_id = value.get("artifactId") if value is not None else None
+>       raise ProofIRV3Error(
+            message, ProofIRV3Diagnostic(stage, code, pointer, message, artifact_id)
+        )
+E       ladon.proofir_v3.ProofIRV3Error: unsupported Real binder information
+
+src/ladon/proofir_v3.py:123: ProofIRV3Error
+_____ test_formal_worker_binder_information_is_retained[instance-implicit] _____
+
+p = {'assumptionRefs': [], 'checkRunRefs': [{'artifactRef': 'sha256:247f3a9785f23f7150e400018d2f8bc0b7a64c38ce05f7dcd23b54...c96d6e98f54bc89d07a3'}, 'contractId': 'contract:9e76ce932f1ed5760748a679a08555110e76baf4844ac96d6e98f54bc89d07a3', ...}
+value = {'artifactId': 'sha256:fd9820139efcc92214e2312a069f3d5324c91c8ee549e41c8505a11926dc9f70', 'artifactKind': 'proofir.con...'expected': 17, ...}, 'environmentRef': 'sha256:f1edff8e3f3466094a1d4c619ed25880869359101b794dcc5a5c45304c0fa0e4', ...}
+subjects = {('contract', 'contract:9e76ce932f1ed5760748a679a08555110e76baf4844ac96d6e98f54bc89d07a3'), ('expression', 'expr:035c0...79a32350b8bda75991e9cc'), ('expression', 'expr:65d1fecdccfcc1089f639e4fdcbd8ba5e675447df6031c3fb0f7353f6436e9f3'), ...}
+env = 'sha256:f1edff8e3f3466094a1d4c619ed25880869359101b794dcc5a5c45304c0fa0e4'
+
+    def _validate_contract(p, value, subjects, env):
+        from ladon.proof_contract_payloads import validate_contract_payload
+    
+        try:
+>           validate_contract_payload(p, value, subjects, env)
+
+src/ladon/proofir_v3_payloads.py:142: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_contract_payloads.py:62: in validate_contract_payload
+    return validate_payload(p, value, subjects, env)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/real_bound_native_payload.py:24: in validate_payload
+    record = validate_record(p["record"])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/real_bound_native_record.py:92: in validate_record
+    _scope(record)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+record = {'admission': {'checkerIdentity': 'sha256:aad366cd85ff532e0055b51c6c7356b0bad119cb8ed8592ef31bfdb6ec136576', 'evidence...760748a679a08555110e76baf4844ac96d6e98f54bc89d07a3', 'constant': {'binderId': 'b1', 'permittedBinderIds': ['b0']}, ...}
+
+    def _scope(record):
+        rows(record["telescope"], "Real telescope", minimum=1)
+        binders, universals = [], []
+        allowed = None
+        for index, row in enumerate(record["telescope"]):
+            closed(row, {"binderId", "quantifier", "binderInfo", "typeRef", "originPath"}, "Real binder")
+            if row["binderId"] != f"b{index}" or row["quantifier"] not in {"forall", "exists"}:
+                raise ValueError("Real telescope must retain ordered quantified binders")
+            if row["binderInfo"] not in {"explicit", "implicit", "strictImplicit", "instImplicit"}:
+>               raise ValueError("unsupported Real binder information")
+E               ValueError: unsupported Real binder information
+
+src/ladon/real_bound_native_record.py:108: ValueError
+
+During handling of the above exception, another exception occurred:
+
+binder_info = 'instance-implicit'
+
+    @pytest.mark.parametrize("binder_info", ["explicit", "implicit", "strict-implicit", "instance-implicit"])
+    def test_formal_worker_binder_information_is_retained(binder_info):
+        artifact = recorded()[-1]
+        artifact["payload"]["record"]["telescope"][0]["binderInfo"] = binder_info
+>       checked = validate_envelope(rehash(artifact)).to_dict()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_real_bound_native_binder_protocol.py:13: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_v3.py:349: in validate_envelope
+    owned, encoded = _prepare_envelope(value, max_artifact_bytes)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proofir_v3.py:362: in _prepare_envelope
+    _validate_envelope_shape(owned)
+src/ladon/proofir_v3.py:442: in _validate_envelope_shape
+    _validate_kind_payload(value)
+src/ladon/proofir_v3.py:1035: in _validate_kind_payload
+    validate_kind_payload(value)
+src/ladon/proofir_v3_payloads.py:135: in validate_kind_payload
+    validator(p, value, subjects, env)
+src/ladon/proofir_v3_payloads.py:144: in _validate_contract
+    _invalid_field(value, "/payload", str(error))
+src/ladon/proofir_v3_payloads.py:45: in _invalid_field
+    _fail("kind-schema-valid", "invalid-payload-field", pointer, message, value)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+stage = 'kind-schema-valid', code = 'invalid-payload-field'
+pointer = '/payload', message = 'unsupported Real binder information'
+value = {'artifactId': 'sha256:fd9820139efcc92214e2312a069f3d5324c91c8ee549e41c8505a11926dc9f70', 'artifactKind': 'proofir.con...'expected': 17, ...}, 'environmentRef': 'sha256:f1edff8e3f3466094a1d4c619ed25880869359101b794dcc5a5c45304c0fa0e4', ...}
+
+    def _fail(
+        stage: str,
+        code: str,
+        pointer: str,
+        message: str,
+        value: Mapping[str, Any] | None = None,
+    ) -> None:
+        artifact_id = value.get("artifactId") if value is not None else None
+>       raise ProofIRV3Error(
+            message, ProofIRV3Diagnostic(stage, code, pointer, message, artifact_id)
+        )
+E       ladon.proofir_v3.ProofIRV3Error: unsupported Real binder information
+
+src/ladon/proofir_v3.py:123: ProofIRV3Error
+_ test_unregistered_api_spellings_are_not_formal_worker_protocol[strictImplicit] _
+
+binder_info = 'strictImplicit'
+
+    @pytest.mark.parametrize("binder_info", ["strictImplicit", "instImplicit", "unknown"])
+    def test_unregistered_api_spellings_are_not_formal_worker_protocol(binder_info):
+        artifact = recorded()[-1]
+        artifact["payload"]["record"]["telescope"][0]["binderInfo"] = binder_info
+>       with pytest.raises(ValueError, match="binder"):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_real_bound_native_binder_protocol.py:21: Failed
+_ test_unregistered_api_spellings_are_not_formal_worker_protocol[instImplicit] _
+
+binder_info = 'instImplicit'
+
+    @pytest.mark.parametrize("binder_info", ["strictImplicit", "instImplicit", "unknown"])
+    def test_unregistered_api_spellings_are_not_formal_worker_protocol(binder_info):
+        artifact = recorded()[-1]
+        artifact["payload"]["record"]["telescope"][0]["binderInfo"] = binder_info
+>       with pytest.raises(ValueError, match="binder"):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_real_bound_native_binder_protocol.py:21: Failed
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_native_binder_protocol.py::test_formal_worker_binder_information_is_retained[strict-implicit]
+FAILED tests/test_real_bound_native_binder_protocol.py::test_formal_worker_binder_information_is_retained[instance-implicit]
+FAILED tests/test_real_bound_native_binder_protocol.py::test_unregistered_api_spellings_are_not_formal_worker_protocol[strictImplicit]
+FAILED tests/test_real_bound_native_binder_protocol.py::test_unregistered_api_spellings_are_not_formal_worker_protocol[instImplicit]
+4 failed, 3 passed in 0.77s

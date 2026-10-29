@@ -1,0 +1,48 @@
+FFF.                                                                     [100%]
+=================================== FAILURES ===================================
+_________ test_relabelled_predicate_result_cannot_replace_scalar_goal __________
+
+    def test_relabelled_predicate_result_cannot_replace_scalar_goal():
+        artifacts = recorded()
+        substituted = copy.deepcopy(artifacts[1])
+        substituted["payload"]["operation"] = "real-bound:scalar-semantics"
+        rehash(substituted)
+        contract = copy.deepcopy(artifacts[-1])
+        replacement = {"artifactRef": substituted["artifactId"], "kind": "check-run",
+                       "localId": substituted["payload"]["checkRunId"]}
+        contract["payload"]["checkRunRefs"][1] = replacement
+        contract["payload"]["record"]["admission"]["scalarCheckRef"] = replacement
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_real_bound_native_evidence.py:22: Failed
+___________ test_limited_supervisor_receipt_cannot_project_a_success ___________
+
+    def test_limited_supervisor_receipt_cannot_project_a_success():
+        from ladon.real_bound_native_artifacts import real_bound_artifacts
+    
+        fixture = json.loads(FIXTURE.read_text())
+        fixture["check"]["processReceipt"]["memoryLimited"] = True
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_real_bound_native_evidence.py:31: Failed
+____ test_native_goal_guarantee_cannot_be_promoted_from_stored_observation _____
+
+    def test_native_goal_guarantee_cannot_be_promoted_from_stored_observation():
+        artifacts = recorded()
+        promoted = copy.deepcopy(artifacts[2])
+        promoted["payload"]["guarantee"]["scope"] = "none"
+        rehash(promoted)
+        contract = copy.deepcopy(artifacts[-1])
+        contract["payload"]["checkRunRefs"][1]["artifactRef"] = promoted["artifactId"]
+        contract["payload"]["record"]["admission"]["scalarCheckRef"]["artifactRef"] = promoted["artifactId"]
+>       with pytest.raises(ValueError):
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_real_bound_native_evidence.py:43: Failed
+=========================== short test summary info ============================
+FAILED tests/test_real_bound_native_evidence.py::test_relabelled_predicate_result_cannot_replace_scalar_goal
+FAILED tests/test_real_bound_native_evidence.py::test_limited_supervisor_receipt_cannot_project_a_success
+FAILED tests/test_real_bound_native_evidence.py::test_native_goal_guarantee_cannot_be_promoted_from_stored_observation
+3 failed, 1 passed in 0.68s
