@@ -16,7 +16,7 @@ ladon proof-search index ideas-sync --repo-root /path/to/project --format json
 ladon proof-search index ideas --repo-root /path/to/project --limit 100 --format json
 ```
 
-All accept the usual `--index-path`. Migration accepts an existing v6 index and
+All accept the usual `--index`. Migration accepts an existing v6 index and
 adds the v7 historical tables without running Lean, scanning sources, re-extracting
 signatures or clearing semantic evidence. Repeating it on v7 is a no-op. v5 snapshots
 remain readable; they need a separate ordinary upgrade before this migration.

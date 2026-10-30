@@ -132,10 +132,11 @@ def test_locked_and_missing_database_have_cli_diagnostics(tmp_path, capsys):
                 "migrate",
                 "--repo-root",
                 str(repo),
-                "--index-path",
+                "--index",
                 str(missing),
             ]
         )
         != 0
     )
     assert not missing.exists()
+    assert "unable to open database" in capsys.readouterr().err
