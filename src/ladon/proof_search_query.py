@@ -133,7 +133,13 @@ def _query_declarations(
         )
     ]
     ranked = _rank_rows(rows, text, min_matched_segments)
-    return [_query_row(row) for row in ranked[:limit]], len(ranked) > limit
+    from ladon.idea_history import historical_projection
+
+    result = [_query_row(row) for row in ranked[:limit]]
+    history = historical_projection(connection, [row["id"] for row in result])
+    for row in result:
+        row["historicalIdeas"] = history[row["id"]]
+    return result, len(ranked) > limit
 
 
 def _rank_rows(rows: list[dict[str, Any]], text: str | None, minimum: int) -> list[dict[str, Any]]:

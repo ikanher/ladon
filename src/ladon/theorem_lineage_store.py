@@ -10,7 +10,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from ladon.proof_search_schema import PROOF_SEARCH_SCHEMA_GENERATION
+from ladon.proof_search_schema import EVIDENCE_SCHEMA_GENERATION
 from ladon.theorem_capsule_models import canonical_json_bytes, sha256_bytes
 
 
@@ -28,7 +28,7 @@ class LineageIdentity:
     toolchain_identity: str
     base_generation_identity: str
     helper_identity: str
-    schema_generation: str = PROOF_SEARCH_SCHEMA_GENERATION
+    schema_generation: str = EVIDENCE_SCHEMA_GENERATION
 
 
 @dataclass(frozen=True)

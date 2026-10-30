@@ -60,6 +60,15 @@ def build_proof_search_parser(*, evidence_kinds: Sequence[str]) -> argparse.Argu
     _add_output_options(update)
     update.add_argument("--max-history-mib", type=_positive_integer)
 
+    for operation, help_text in (("migrate", "Preserve evidence while adding historical schema."),
+                                 ("ideas-sync", "Synchronize the authored ladon-ideas.json catalogue."),
+                                 ("ideas", "Read historical ideas, attributions and prerequisite edges.")):
+        command = commands.add_parser(operation, help=help_text)
+        _add_repository_options(command)
+        _add_output_options(command)
+        if operation == "ideas":
+            command.add_argument("--limit", type=_positive_integer, default=1000)
+
     history = commands.add_parser("history", help="List preserved evidence snapshots.")
     _add_repository_options(history)
     _add_output_options(history)

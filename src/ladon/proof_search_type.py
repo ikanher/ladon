@@ -63,6 +63,9 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
     if any(verification.values()):
         raise ValueError("type-text freshness verifier cannot supply candidate verification")
     result_rows, diagnostics = _result_rows(rows, request)
+    from ladon.idea_history import attach_declaration_history
+
+    attach_declaration_history(connection, result_rows, id_key="declarationId")
     truncated = len(rows) > request.limit + request.diagnostic_limit
     omission_rows = _omissions(scope_evidence, truncated, len(rows), request)
     field_counts = _field_counts(result_rows)

@@ -34,6 +34,8 @@ from ladon.proof_search_name_query import (
     semantic_name_segments_v1,
 )
 from ladon.proof_search_schema import (
+    EVIDENCE_INDEX_SCHEMA,
+    EVIDENCE_SCHEMA_GENERATION,
     EXPECTED_FOREIGN_KEYS,
     PROOF_SEARCH_HELPER_IDENTITY,
     PROOF_SEARCH_INDEX_SCHEMA,
@@ -194,8 +196,8 @@ def capture_repository_snapshot(repo_root: Path) -> RepositorySnapshot:
     source_fingerprint = _stable_digest([source.identity_payload() for source in sources])
     generation = _stable_digest(
         {
-            "schema": PROOF_SEARCH_INDEX_SCHEMA,
-            "schemaGeneration": PROOF_SEARCH_SCHEMA_GENERATION,
+            "schema": EVIDENCE_INDEX_SCHEMA,
+            "schemaGeneration": EVIDENCE_SCHEMA_GENERATION,
             "helper": PROOF_SEARCH_HELPER_IDENTITY,
             "toolchain": toolchain,
             "configuration": configuration,
@@ -237,6 +239,9 @@ def build_proof_search_index(
         from ladon.proof_search_history_store import refuse_history_replacement
 
         refuse_history_replacement(destination)
+        from ladon.idea_history import refuse_unrecoverable_rebuild
+
+        refuse_unrecoverable_rebuild(destination, root)
         _build_progress(progress, "discovery")
         snapshot = capture_repository_snapshot(root)
         temporary = _temporary_database_path(destination)
@@ -574,6 +579,12 @@ def _write_database_connection(
         _insert_module_semantic_states(connection, snapshot, declaration_count, import_count)
         _insert_layout_omissions(connection, snapshot.layout)
         _insert_symbol_rows(connection)
+        from ladon.idea_history import ingest_catalogue
+
+        try:
+            ingest_catalogue(connection, snapshot.repo_root)
+        except ValueError as exc:
+            raise ProofSearchIndexError(str(exc)) from exc
         proofir_counts = _insert_proofir_catalog(connection, snapshot)
         _insert_coverage(
             connection,

@@ -105,13 +105,16 @@ def _index_path(args: Any, repo_root: Path) -> Path:
 
 
 def _identity(repo_root: Path, snapshot: Any, status: dict[str, Any]) -> LineageIdentity:
+    from ladon.proof_search_schema import evidence_schema_generation
+
+    evidence_schema = evidence_schema_generation(status.get("schemaGeneration") or "sqlite-v2-fts1-lineage1")
     return LineageIdentity(
         repository=str(repo_root), source_fingerprint=snapshot.source_fingerprint,
         configuration_fingerprint=snapshot.configuration_fingerprint,
         toolchain_identity=snapshot.toolchain_identity,
         base_generation_identity=str(status.get("generationIdentity") or snapshot.generation_identity),
         helper_identity="lexical-navigation-v1;theorem-lineage-v1",
-        schema_generation=str(status.get("schemaGeneration") or "sqlite-v2-fts1-lineage1"),
+        schema_generation=str(evidence_schema or "sqlite-v2-fts1-lineage1"),
     )
 
 

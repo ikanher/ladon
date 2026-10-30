@@ -145,3 +145,6 @@ with AI assistance.
 For current support and known limits, see [product scope](docs/PRODUCT_SCOPE.md)
 and the [measured alpha profile](docs/MEASURED_ALPHA_PROFILE.md). Agent
 instructions are in the [Ladon skill](skills/ladon/SKILL.md).
+
+Historical idea dates, source attributions and the evidence-preserving v6→v7 migration
+are documented in [Historical ideas](docs/HISTORICAL_IDEAS.md).

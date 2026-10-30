@@ -216,6 +216,12 @@ def _populate_updated_copy(temporary, old, snapshot, changed, removed, max_index
     with sqlite3.connect(temporary) as copy:
         copy.execute("PRAGMA foreign_keys = ON")
         copy.execute("PRAGMA synchronous = FULL")
+        from ladon.idea_history import available, ingest_catalogue
+        from ladon.idea_history_schema import create_history_schema
+        from ladon.proof_search_schema import PROOF_SEARCH_INDEX_SCHEMA_VERSION
+
+        if not available(copy):
+            create_history_schema(copy)
         clear_retained_projection(copy)
         create_history_catalog(copy, history)
         page_size = int(copy.execute("PRAGMA page_size").fetchone()[0])
@@ -253,7 +259,11 @@ def _populate_updated_copy(temporary, old, snapshot, changed, removed, max_index
         _insert_proofir_catalog(copy, snapshot)
         copy.execute("DELETE FROM metadata")
         _insert_metadata(copy, snapshot, max_index_bytes=max_index_bytes)
-        copy.execute("PRAGMA user_version = 6")
+        try:
+            ingest_catalogue(copy, snapshot.repo_root)
+        except ValueError as exc:
+            raise ProofSearchIndexError(str(exc)) from exc
+        copy.execute(f"PRAGMA user_version = {PROOF_SEARCH_INDEX_SCHEMA_VERSION}")
         copy.execute("PRAGMA optimize")
         copy.commit()
         _validate_database(copy)

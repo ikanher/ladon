@@ -6,6 +6,8 @@ import sqlite3
 from functools import lru_cache
 
 from ladon.proof_search_schema import (
+    EVIDENCE_INDEX_SCHEMA,
+    EVIDENCE_SCHEMA_GENERATION,
     LEGACY_INDEX_SCHEMA,
     LEGACY_SCHEMA_GENERATION,
     PROOF_SEARCH_INDEX_SCHEMA,
@@ -17,6 +19,7 @@ def supported_index_schema(metadata) -> bool:
     return (metadata.get("indexSchema"), metadata.get("schemaGeneration")) in {
         (PROOF_SEARCH_INDEX_SCHEMA, PROOF_SEARCH_SCHEMA_GENERATION),
         (LEGACY_INDEX_SCHEMA, LEGACY_SCHEMA_GENERATION),
+        (EVIDENCE_INDEX_SCHEMA, EVIDENCE_SCHEMA_GENERATION),
     }
 
 
@@ -49,7 +52,11 @@ def require_supported_layout(connection, *, verify_integrity=True) -> None:
     expected = dict(_supported_layout())
     if metadata.get("indexSchema") == LEGACY_INDEX_SCHEMA:
         expected.pop("index_history")
-    expected_version = 5 if metadata.get("indexSchema") == LEGACY_INDEX_SCHEMA else 6
+    if metadata.get("indexSchema") != PROOF_SEARCH_INDEX_SCHEMA:
+        from ladon.idea_history_schema import HISTORY_TABLES
+        for name in HISTORY_TABLES:
+            expected.pop(name)
+    expected_version = {LEGACY_INDEX_SCHEMA: 5, EVIDENCE_INDEX_SCHEMA: 6, PROOF_SEARCH_INDEX_SCHEMA: 7}.get(metadata.get("indexSchema"))
     if (metadata.get("schemaVersion") != str(expected_version)
             or connection.execute("PRAGMA user_version").fetchone()[0] != expected_version):
         raise ProofSearchIndexError("unsupported private index schema version", code="full-build-required")

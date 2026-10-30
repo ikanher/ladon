@@ -16,6 +16,7 @@ from ladon.proof_search_index import (
     inspect_proof_search_index,
     update_proof_search_index,
 )
+from ladon.proof_search_schema import evidence_schema_generation
 from ladon.theorem_lineage_store import LineageIdentity, ingest_theorem_lineage
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -44,7 +45,7 @@ def seed_archived_lineage(
         toolchain_identity=snapshot.toolchain_identity,
         base_generation_identity=status["generationIdentity"],
         helper_identity="lexical-navigation-v1;theorem-lineage-v1",
-        schema_generation=status["schemaGeneration"],
+        schema_generation=evidence_schema_generation(status["schemaGeneration"]),
     )
     with sqlite3.connect(index) as db:
         db.execute("PRAGMA foreign_keys=ON")
@@ -73,7 +74,7 @@ def test_exact_historical_lineage_survives_missing_live_project(tmp_path: Path, 
     repo.rename(moved_repo)
     monkeypatch.setattr(
         "ladon.theorem_lineage_cli.plan_theorem_capsule",
-        lambda *args, **kwargs: pytest.fail("historical selection attempted Lean planning"),
+        lambda *_args, **_kwargs: pytest.fail("historical selection attempted Lean planning"),
     )
 
     code = run_history_lineage(missing_live_root, index, snapshot_id)

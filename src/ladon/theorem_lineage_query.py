@@ -373,6 +373,9 @@ def _node_rows(
         [closure_id, *names],
     ).fetchall()
     result = [dict(row) for row in rows]
+    from ladon.idea_history import attach_lineage_history
+
+    attach_lineage_history(connection, result)
     components = {
         str(row["member"]): str(row["component_id"])
         for row in connection.execute(

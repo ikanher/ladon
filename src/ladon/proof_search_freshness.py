@@ -7,6 +7,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from ladon.proof_search_schema import (
+    EVIDENCE_INDEX_SCHEMA,
+    EVIDENCE_SCHEMA_GENERATION,
     PROOF_SEARCH_HELPER_IDENTITY,
     PROOF_SEARCH_INDEX_SCHEMA,
     PROOF_SEARCH_SCHEMA_GENERATION,
@@ -104,9 +106,10 @@ def _selected_impact(changed: set[str], roots: Sequence[str]) -> str:
 def _freshness_from_snapshot(
     snapshot: RepositorySnapshot, metadata: Mapping[str, str]
 ) -> tuple[str, str]:
-    if metadata.get("indexSchema") != PROOF_SEARCH_INDEX_SCHEMA or (
-        metadata.get("schemaGeneration") != PROOF_SEARCH_SCHEMA_GENERATION
-    ):
+    if (metadata.get("indexSchema"), metadata.get("schemaGeneration")) not in {
+        (PROOF_SEARCH_INDEX_SCHEMA, PROOF_SEARCH_SCHEMA_GENERATION),
+        (EVIDENCE_INDEX_SCHEMA, EVIDENCE_SCHEMA_GENERATION),
+    }:
         return "incompatible-schema", snapshot.generation_identity
     if metadata.get("toolchainIdentity") != snapshot.toolchain_identity:
         return "incompatible-toolchain", snapshot.generation_identity

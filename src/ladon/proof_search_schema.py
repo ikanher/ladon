@@ -8,9 +8,11 @@ from __future__ import annotations
 
 import sqlite3
 
-PROOF_SEARCH_INDEX_SCHEMA = "ladon-proof-search-index-v6"
-PROOF_SEARCH_INDEX_SCHEMA_VERSION = 6
-PROOF_SEARCH_SCHEMA_GENERATION = "sqlite-v6-name2-fts2-lineage1-proofir1-history1"
+PROOF_SEARCH_INDEX_SCHEMA = "ladon-proof-search-index-v7"
+PROOF_SEARCH_INDEX_SCHEMA_VERSION = 7
+PROOF_SEARCH_SCHEMA_GENERATION = "sqlite-v7-name2-fts2-lineage1-proofir1-history1-ideas1"
+EVIDENCE_INDEX_SCHEMA = "ladon-proof-search-index-v6"
+EVIDENCE_SCHEMA_GENERATION = "sqlite-v6-name2-fts2-lineage1-proofir1-history1"
 LEGACY_INDEX_SCHEMA = "ladon-proof-search-index-v5"
 LEGACY_SCHEMA_GENERATION = "sqlite-v5-name2-fts2-lineage1-proofir1"
 PROOF_SEARCH_HELPER_IDENTITY = "lexical-navigation-v6;theorem-lineage-v2;proofir-catalog-v3"
@@ -523,6 +525,10 @@ def create_proof_search_schema(connection: sqlite3.Connection) -> None:
         """
     )
 
+    from ladon.idea_history_schema import create_history_schema
+
+    create_history_schema(connection)
+
 
 def schema_lookup_indexes(connection: sqlite3.Connection) -> frozenset[str]:
     """Return the named non-auto indexes installed in one database."""
@@ -629,3 +635,10 @@ __all__ = [
     "schema_lookup_indexes",
     "schema_query_surfaces",
 ]
+
+
+def evidence_schema_generation(physical_generation: str) -> str:
+    """Historical tables do not change the v6 proof-input identity contract."""
+    if physical_generation == PROOF_SEARCH_SCHEMA_GENERATION:
+        return EVIDENCE_SCHEMA_GENERATION
+    return physical_generation

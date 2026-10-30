@@ -23,14 +23,10 @@ from ladon.proof_search_lifecycle import apply_prune, list_indexes, preview_prun
 def _dispatch_index(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
+    if args.index_operation in {"migrate", "ideas-sync", "ideas"}:
+        return _dispatch_ideas(args, repo_root, index_path)
     if args.index_operation == "build":
-        payload = build_proof_search_index(
-            repo_root,
-            index_path=index_path,
-            max_index_bytes=args.max_index_mib * 1024 * 1024,
-            **({"progress": _stage_reporter()} if args.progress else {}),
-        ).payload
-        return payload
+        return _build_index(args, repo_root, index_path)
     if args.index_operation == "update":
         return update_proof_search_index(
             repo_root, index_path=index_path,
@@ -91,3 +87,27 @@ def _stage_reporter():
         print(json.dumps(row, sort_keys=True, separators=(",", ":")), file=sys.stderr, flush=True)
 
     return report
+
+
+def _dispatch_ideas(args, repo_root, index_path):
+    import sqlite3
+
+    from ladon.idea_migration import migrate_index, read_ideas, sync_ideas
+    from ladon.sqlite_publication import PublicationLockBusy
+
+    try:
+        if args.index_operation == "ideas":
+            return read_ideas(repo_root, index_path=index_path, limit=args.limit)
+        operation = migrate_index if args.index_operation == "migrate" else sync_ideas
+        return operation(repo_root, index_path=index_path)
+    except (sqlite3.Error, ValueError, PublicationLockBusy) as error:
+        raise ProofSearchIndexError(str(error), exit_class="operational") from error
+
+
+def _build_index(args, repo_root, index_path):
+    return build_proof_search_index(
+        repo_root,
+        index_path=index_path,
+        max_index_bytes=args.max_index_mib * 1024 * 1024,
+        **({"progress": _stage_reporter()} if args.progress else {}),
+    ).payload

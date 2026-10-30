@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from ladon.proof_search_history import open_history_snapshot
 from ladon.proof_search_index import ProofSearchIndexError
+from ladon.proof_search_schema import evidence_schema_generation
 from ladon.theorem_lineage_query import lineage_query_receipt
 from ladon.theorem_lineage_store import LineageIdentity
 from ladon.theorem_lineage_summary import summarize_lineage
@@ -21,7 +22,7 @@ def run_historical_lineage(args, repo_root, index):
             toolchain_identity=metadata["toolchainIdentity"],
             base_generation_identity=metadata["generationIdentity"],
             helper_identity="lexical-navigation-v1;theorem-lineage-v1",
-            schema_generation=metadata["schemaGeneration"],
+            schema_generation=evidence_schema_generation(metadata["schemaGeneration"]),
         )
         status = _closure_status(connection, identity, args.theorem)
         if status["status"] != "fresh":

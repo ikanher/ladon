@@ -17,6 +17,11 @@ from ladon.sqlite_publication import acquire_publication_lock, release_publicati
 def test_changed_legacy_v5_layout_migrates_with_original_rows(tmp_path):
     repo, index = evidence_index(tmp_path)
     with sqlite3.connect(index) as connection:
+        from ladon.idea_history_schema import HISTORY_TABLES
+        connection.execute('DROP VIEW declaration_idea_dates')
+        connection.execute('DROP VIEW idea_dates')
+        for table in HISTORY_TABLES:
+            connection.execute(f'DROP TABLE {table}')
         connection.execute('DROP TABLE index_history')
         connection.execute('PRAGMA user_version=5')
         for key, value in {'indexSchema': 'ladon-proof-search-index-v5',
@@ -32,7 +37,7 @@ def test_changed_legacy_v5_layout_migrates_with_original_rows(tmp_path):
         connection.row_factory = None
         assert _all_table_rows(connection) == original
     with sqlite3.connect(index) as connection:
-        assert connection.execute('PRAGMA user_version').fetchone()[0] == 6
+        assert connection.execute('PRAGMA user_version').fetchone()[0] == 7
 
 
 def test_archive_directory_sync_failure_keeps_active_and_discloses_orphan(tmp_path, monkeypatch):
