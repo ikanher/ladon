@@ -130,6 +130,33 @@ See the [CLI reference](docs/CLI.md) and
 | Atlas, runsets, and reportsets | Compare reports and manage batches of analysis. [Reference](docs/CLI.md) |
 | `doctor` | Inspect the installation and a project's execution prerequisites. [Reference](docs/CLI.md#build-and-execution-security) |
 
+### Inspect compiled theorem lineage
+
+Use the `closure` view to read the typed dependency graph already stored for a
+compiled theorem. It is independent of representative-route limits and includes
+disconnected records in the selected closure. If you only need example paths,
+use `graph` instead; that view remains route-based.
+
+```bash
+ladon theorem lineage Fully.Qualified.theorem \
+  --repo-root "$PWD" --index "$INDEX" --refresh never \
+  --view closure --edge-kind all \
+  --max-nodes 100000 --max-edges 200000 \
+  --max-output-bytes 33554432 --format json --output -
+```
+
+Node, edge, and output-byte limits are finite. The JSON reports source-closure
+coverage separately from selected-graph coverage and route coverage; inspect
+omissions and truncation before treating a projection as complete. Filters such
+as `--edge-kind type` and `--exclude-generated` change the selected graph and
+are recorded in the result. The projection stops at recorded external library
+frontiers and does not verify theorem truth or expand all library proofs.
+
+For a preserved observation, pass `--history SNAPSHOT_ID --refresh never`.
+Historical coverage describes that snapshot and does not establish current
+source freshness. See the [lineage CLI reference](docs/CLI.md#theorem-lineage)
+for route and closure options.
+
 ## Development and status
 
 Run the maintained Python quality and test gate:
