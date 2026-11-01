@@ -81,8 +81,32 @@ a new acquisition or a theorem check.
 | Field packet verifier | `python openspec/changes/ladon-complete-lineage-closure-projection/evidence/verify.py` | PASS before implementation replay |
 | Focused lineage/history suite | `python -m pytest -q tests/test_theorem_lineage_closure.py tests/test_theorem_lineage_closure_filters.py tests/test_theorem_lineage_closure_determinism.py tests/test_theorem_lineage_history_fingerprint.py tests/test_theorem_lineage_reachability.py tests/test_theorem_lineage_reachability_caps.py tests/test_theorem_lineage_query.py tests/test_theorem_lineage_projection.py tests/test_theorem_lineage_hardening.py tests/test_theorem_lineage_cli.py tests/test_theorem_lineage_integration.py tests/test_index_history_offline.py` | PASS, 57 passed |
 | Changed-file strict Radon/Vulture, Ruff, compileall | scripted checks over changed Python files | PASS |
-| Repository strict Python quality | `python scripts/python_quality.py --strict --target ...` (runs all `tests/`) | FAIL after 4,423.72s: 5,579 passed, 86 skipped, 3 unrelated failures |
+| Repository strict Python quality | `python scripts/python_quality.py --strict` with the changed-file targets below (runs all `tests/`) | FAIL after 4,423.72s: 5,579 passed, 86 skipped, 3 unrelated failures |
 | Strict OpenSpec validation | `openspec validate ladon-complete-lineage-closure-projection --strict` | PASS |
+
+The full quality-gate command was:
+
+```bash
+python scripts/python_quality.py --strict \
+  --target src/ladon/theorem_cli.py \
+  --target src/ladon/theorem_lineage_cli.py \
+  --target src/ladon/theorem_lineage_closure.py \
+  --target src/ladon/theorem_lineage_history.py \
+  --target src/ladon/theorem_lineage_projection.py \
+  --target src/ladon/theorem_lineage_query.py \
+  --target tests/test_index_history_offline.py \
+  --target tests/test_theorem_lineage_cli.py \
+  --target tests/test_theorem_lineage_closure.py \
+  --target tests/test_theorem_lineage_closure_determinism.py \
+  --target tests/test_theorem_lineage_closure_filters.py \
+  --target tests/test_theorem_lineage_hardening.py \
+  --target tests/test_theorem_lineage_history_fingerprint.py \
+  --target tests/test_theorem_lineage_integration.py \
+  --target tests/test_theorem_lineage_projection.py \
+  --target tests/test_theorem_lineage_query.py \
+  --target tests/test_theorem_lineage_reachability.py \
+  --target tests/test_theorem_lineage_reachability_caps.py
+```
 
 The three broad-suite failures were rerun individually and reproduce outside
 the changed files. Two proof-contract scratch tests fail because their worker

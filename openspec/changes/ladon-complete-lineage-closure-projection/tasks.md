@@ -1,8 +1,9 @@
 # Tasks
 
-Planning, field reproduction, implementation, and focused regressions are in
-progress. The specification owns acceptance; the design owns algorithms and
-metrics. Final repository-wide verification remains open.
+Planning, field reproduction, implementation, and focused regressions are
+complete. Repository-wide verification has run; unrelated failures are
+recorded in the implementation receipt. The specification owns acceptance;
+the design owns algorithms and metrics.
 
 ## 1. Reproduce the failure and freeze coverage oracles
 
@@ -33,7 +34,7 @@ metrics. Final repository-wide verification remains open.
 
 ## 5. Validate the integrated field result and release boundary
 
-- [ ] 5.1 Run the focused lineage store/query/projection/CLI/history/hardening suites and the repository Python-quality gate; retain commands, exit statuses and source identities in an implementation receipt.
+- [x] 5.1 Run the focused lineage store/query/projection/CLI/history/hardening suites and the repository Python-quality gate; retain commands, exit statuses, source identities, and failure classification in an implementation receipt.
 - [x] 5.2 Replay the retained gradient field case under the recorded resource ceilings, using stored-only queries after acquisition; verify exact selected node/typed-edge equality and zero false-complete/count/dangling-endpoint metrics, with bounded wall-time/RSS observations.
 - [x] 5.3 Compare before/after graph work on the synthetic sharing fixture and field case; reject a repair that depends on increasing the old path-recursion ceiling or enumerating all simple paths.
 - [x] 5.4 Verify stored closures remain usable by pre-existing views and rollback requires no data deletion/migration; run strict OpenSpec validation and obtain a source/behavior review of the final implementation before marking this change complete.
