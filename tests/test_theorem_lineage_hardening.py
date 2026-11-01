@@ -22,7 +22,7 @@ def fixture_identity() -> LineageIdentity:
     )
 
 
-def test_lineage_query_plan_has_frontier_key_in_recursive_step() -> None:
+def test_lineage_query_plan_retains_forward_and_reverse_closure_indexes() -> None:
     result = query_lineage(
         populated_connection(edge_fanout=4, edge_layers=3),
         fixture_identity(),
@@ -38,11 +38,14 @@ def test_lineage_acquisition_reports_finite_cap_and_preserves_authority() -> Non
     result = query_lineage(
         populated_connection(edge_fanout=8, edge_layers=5),
         fixture_identity(),
-        LineageQuery(theorem=THEOREM, boundary="trust", max_depth=5, max_nodes=32, recursive_row_limit=64),
+        LineageQuery(
+            theorem=THEOREM, boundary="trust", max_depth=5, max_nodes=32,
+            max_traversal_edges=64,
+        ),
     )
     assert result["authority"] == "lean_environment"
     assert result["acquisition"]["rowsObserved"] <= 33
-    assert result["bounds"]["recursiveRowLimit"] == 64
+    assert result["bounds"]["maxTraversalEdges"] == 64
     assert result["truncated"] is True
 
 

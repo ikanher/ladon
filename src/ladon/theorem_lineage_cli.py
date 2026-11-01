@@ -3,13 +3,16 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import sys
+import tempfile
 import time
+from itertools import chain
 from pathlib import Path
 from typing import Any
 
-from ladon.cli_execution import EXIT_OPERATIONAL, EXIT_SUCCESS, write_output_file
+from ladon.cli_execution import EXIT_OPERATIONAL, EXIT_SUCCESS
 from ladon.evidence_receipt import project_evidence_receipt
 from ladon.evidence_receipt_readers import receipt_text_lines
 from ladon.proof_search_index import (
@@ -22,7 +25,11 @@ from ladon.sqlite_publication import (
     release_publication_lock,
 )
 from ladon.theorem_capsule_planning import plan_theorem_capsule
-from ladon.theorem_lineage_projection import ProjectionQuery, project_lineage
+from ladon.theorem_lineage_projection import (
+    ProjectionQuery,
+    TheoremLineageInvocationError,
+    project_lineage,
+)
 from ladon.theorem_lineage_query import LineageQuery, lineage_query_receipt
 from ladon.theorem_lineage_store import LineageIdentity, ingest_theorem_lineage
 from ladon.theorem_lineage_summary import summarize_lineage
@@ -124,11 +131,17 @@ def _should_refresh(policy: str, status: dict[str, Any]) -> bool:
 
 def _project(connection: sqlite3.Connection, identity: LineageIdentity, args: Any) -> dict[str, Any]:
     view = "routes" if args.view == "spines" else args.view
+    if view == "closure":
+        _reject_inapplicable_closure_options(args)
     query = LineageQuery(
-        theorem=args.theorem, boundary=args.boundary, roots=tuple(args.roots),
+        theorem=args.theorem,
+        boundary=getattr(args, "boundary", "trust"),
+        roots=tuple(getattr(args, "roots", ())),
         edge_kind=args.edge_kind, include_generated=args.include_generated,
-        max_depth=args.max_depth, max_nodes=args.max_nodes,
-        max_edges=args.max_edges, max_routes=args.max_routes,
+        direction=getattr(args, "direction", "ancestry"),
+        max_depth=getattr(args, "max_depth", 32), max_nodes=args.max_nodes,
+        max_edges=args.max_edges, max_routes=getattr(args, "max_routes", 20),
+        max_traversal_edges=getattr(args, "max_traversal_edges", 100000),
     )
     return project_lineage(
         connection,
@@ -136,9 +149,30 @@ def _project(connection: sqlite3.Connection, identity: LineageIdentity, args: An
         ProjectionQuery(
             lineage=query,
             view=view,
-            max_dominator_rows=args.max_dominators,
+            max_dominator_rows=getattr(args, "max_dominators", 100),
         ),
     )
+
+
+def _reject_inapplicable_closure_options(args: Any) -> None:
+    explicit = set(getattr(args, "_lineage_explicit_options", ()))
+    if getattr(args, "roots", ()):
+        explicit.add("roots")
+    inapplicable = {
+        "boundary": "--from",
+        "roots": "--root",
+        "direction": "--direction",
+        "max_depth": "--max-depth",
+        "max_routes": "--max-routes",
+        "max_traversal_edges": "--max-traversal-edges",
+        "max_dominators": "--max-dominators",
+    }
+    used = [option for key, option in inapplicable.items() if key in explicit]
+    if used:
+        raise TheoremLineageInvocationError(
+            "--view closure does not use route selectors or route limits: "
+            + ", ".join(used)
+        )
 
 
 def _closure_status(connection: sqlite3.Connection, identity: LineageIdentity, theorem: str) -> dict[str, Any]:
@@ -152,21 +186,58 @@ def _write_result(result: dict[str, Any], args: Any) -> int:
     result["evidenceReceipt"] = project_evidence_receipt(
         result["evidenceReceipt"], projection_kind="json-renderer",
     )
-    if args.format == "json":
-        content = json.dumps(result, ensure_ascii=False, sort_keys=True, indent=2) + "\n"
-    else:
-        content = _render_text(result)
-    if args.max_output_bytes is not None and len(content.encode()) > args.max_output_bytes:
-        raise RuntimeError("lineage result exceeds output byte cap")
-    if args.output == "-":
-        sys.stdout.write(content)
-    else:
-        path = Path(args.output)
-        if path.exists() and not path.is_file():
-            raise RuntimeError(f"output is not a regular file: {path}")
-        write_output_file(path, content)
+    chunks = (
+        chain(
+            json.JSONEncoder(ensure_ascii=False, sort_keys=True, indent=2).iterencode(result),
+            ("\n",),
+        )
+        if args.format == "json" else (_render_text(result),)
+    )
+    _write_bounded_output(chunks, args.output, int(getattr(args, "max_output_bytes", None) or 33554432))
     _progress("terminal", str(result.get("status", "unknown")))
     return EXIT_SUCCESS if result.get("status") == "available" else EXIT_OPERATIONAL
+
+
+def _write_bounded_output(chunks, destination: str, byte_cap: int) -> None:
+    """Stage a bounded report before stdout or atomic file publication."""
+
+    with tempfile.SpooledTemporaryFile(
+        max_size=1024 * 1024, mode="w+", encoding="utf-8", newline=""
+    ) as staged:
+        byte_count = 0
+        for chunk in chunks:
+            byte_count += len(chunk.encode("utf-8"))
+            if byte_count > byte_cap:
+                raise RuntimeError("lineage result exceeds output byte cap")
+            staged.write(chunk)
+        staged.flush()
+        staged.seek(0)
+        if destination == "-":
+            _copy_text(staged, sys.stdout)
+            return
+        path = Path(destination)
+        if path.exists() and not path.is_file():
+            raise RuntimeError(f"output is not a regular file: {path}")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        descriptor, temporary = tempfile.mkstemp(
+            dir=path.parent, prefix=f".{path.name}.", suffix=".tmp"
+        )
+        temporary_path = Path(temporary)
+        try:
+            with os.fdopen(descriptor, "w", encoding="utf-8", newline="") as output:
+                _copy_text(staged, output)
+                output.flush()
+                os.fsync(output.fileno())
+            os.replace(temporary_path, path)
+        except Exception:
+            temporary_path.unlink(missing_ok=True)
+            raise
+
+
+def _copy_text(source, destination) -> None:
+    source.seek(0)
+    while chunk := source.read(65536):
+        destination.write(chunk)
 
 
 def _progress(phase: str, detail: str) -> None:
@@ -180,6 +251,22 @@ def _render_text(result: dict[str, Any]) -> str:
                       f"Original association: {result['historicalAssociation']}",
                       "Current compiled association: not established"))
     lines.extend(receipt_text_lines(result.get("evidenceReceipt")))
+    coverage = result.get("coverage", {})
+    graph_coverage = coverage.get("selectedGraph", {})
+    if graph_coverage:
+        lines.append(
+            "Selected graph: "
+            f"{graph_coverage.get('returnedUniqueNodes', 0)}/"
+            f"{graph_coverage.get('selectedUniqueNodes', 0)} nodes, "
+            f"{graph_coverage.get('returnedTypedEdges', 0)}/"
+            f"{graph_coverage.get('selectedTypedEdges', 0)} typed edges "
+            f"({graph_coverage.get('status', 'unknown')})"
+        )
+        lines.append(
+            "Source closure: "
+            f"{coverage.get('sourceClosure', {}).get('status', 'unknown')}; "
+            f"external scope: {coverage.get('externalExpansion', {}).get('scope', 'unknown')}"
+        )
     for route in result.get("routes", []):
         lines.append("  " + " -> ".join(route["nodes"]))
     bottlenecks = result.get("bottlenecks", {}).get("chain", [])

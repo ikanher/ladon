@@ -15,6 +15,17 @@ class TheoremLineageQueryError(ValueError):
     """A lineage query is invalid or cannot be answered from stored evidence."""
 
 
+@dataclass
+class _WalkState:
+    visited: dict[str, dict[str, Any]]
+    effective_edge_cap: int
+    distinct_nodes_expanded: int = 0
+    adjacency_rows_examined: int = 0
+    node_limit_reached: bool = False
+    work_limit_reached: bool = False
+    depth_limited: bool = False
+
+
 @dataclass(frozen=True)
 class LineageQuery:
     """Finite SQL query parameters for one theorem closure."""
@@ -29,7 +40,7 @@ class LineageQuery:
     max_nodes: int = 1000
     max_edges: int = 4000
     max_routes: int = 20
-    recursive_row_limit: int = 10000
+    max_traversal_edges: int = 100000
     explain: bool = False
 
     def __post_init__(self) -> None:
@@ -48,7 +59,7 @@ class LineageQuery:
             ("max_nodes", self.max_nodes),
             ("max_edges", self.max_edges),
             ("max_routes", self.max_routes),
-            ("recursive_row_limit", self.recursive_row_limit),
+            ("max_traversal_edges", self.max_traversal_edges),
         ):
             if value < 1:
                 raise TheoremLineageQueryError(f"{name} must be positive")
@@ -59,13 +70,30 @@ def query_lineage(
     identity: LineageIdentity,
     query: LineageQuery,
 ) -> dict[str, Any]:
-    """Run one bounded query against one fresh exact closure."""
+    """Run one bounded query in a coherent read snapshot."""
+
+    owns_snapshot = not connection.in_transaction
+    if owns_snapshot:
+        connection.execute("BEGIN")
+    try:
+        return _query_lineage_snapshot(connection, identity, query)
+    finally:
+        if owns_snapshot and connection.in_transaction:
+            connection.rollback()
+
+
+def _query_lineage_snapshot(
+    connection: sqlite3.Connection,
+    identity: LineageIdentity,
+    query: LineageQuery,
+) -> dict[str, Any]:
+    """Run a bounded query after its caller established a coherent snapshot."""
 
     started = time.monotonic()
     status = inspect_lineage_closure(connection, query.theorem, identity)
     if status["status"] != "fresh":
         return {
-            "schema": "ladon-theorem-lineage-result-v1",
+            "schema": "ladon-theorem-lineage-result-v2",
             "operation": "lineage",
             "status": "unavailable",
             "reason": status.get("reason", status["status"]),
@@ -77,23 +105,28 @@ def query_lineage(
             "nonclaim": _NONCLAIM,
         }
     closure_id = str(status["closureId"])
-    walk_rows = _walk_rows(connection, closure_id, query)
-    routes, route_truncated = _route_rows_from_walk(connection, closure_id, query, walk_rows)
+    walk = _discover_nodes(connection, closure_id, query)
+    walk_rows = walk["rows"]
+    route_candidates, route_truncated = _route_rows_from_walk(
+        connection, closure_id, query, walk_rows
+    )
+    routes = route_candidates[: query.max_routes]
     edge_count = sum(len(route["edges"]) for route in routes)
     edge_truncated = edge_count > query.max_edges
     if edge_truncated:
         routes = _trim_routes_to_edge_cap(routes, query.max_edges)
     nodes = _node_rows(connection, closure_id, walk_rows)
     query_plan = _query_plan(connection, closure_id, query) if query.explain else []
-    node_limit_reached = len(walk_rows) > query.max_nodes
-    recursive_limit_reached = (
-        len(walk_rows) >= query.recursive_row_limit
-        and query.max_nodes + 1 >= query.recursive_row_limit
+    node_limit_reached = bool(walk["node_limit_reached"])
+    truncated = (
+        route_truncated or edge_truncated or node_limit_reached
+        or walk["work_limit_reached"] or walk["depth_limited"]
     )
-    truncated = route_truncated or edge_truncated or node_limit_reached or recursive_limit_reached
     boundary_count = _boundary_population_count(connection, closure_id, query)
+    returned_routes = routes[: query.max_routes]
+    route_occurrences, route_pairs, route_typed_edges = _route_edge_counts(returned_routes)
     return {
-        "schema": "ladon-theorem-lineage-result-v1",
+        "schema": "ladon-theorem-lineage-result-v2",
         "operation": "lineage",
         "status": "available",
         "theorem": query.theorem,
@@ -107,17 +140,33 @@ def query_lineage(
             "maxNodes": query.max_nodes,
             "maxEdges": query.max_edges,
             "maxRoutes": query.max_routes,
-            "recursiveRowLimit": query.recursive_row_limit,
+            "maxTraversalEdges": query.max_traversal_edges,
         },
         "acquisition": {
             "rowsObserved": len(walk_rows),
-            "recursiveRowLimitReached": recursive_limit_reached,
+            "distinctNodesExpanded": walk["distinct_nodes_expanded"],
+            "typedAdjacencyRowsExamined": walk["adjacency_rows_examined"],
+            "traversalWorkLimitReached": walk["work_limit_reached"],
             "nodeLimitReached": node_limit_reached,
+            "depthLimitReached": walk["depth_limited"],
             "boundaryPopulation": boundary_count,
         },
+        "truncation": {
+            "nodeLimited": node_limit_reached,
+            "depthLimited": walk["depth_limited"],
+            "traversalWorkLimited": walk["work_limit_reached"],
+            "routeLimited": route_truncated,
+            "edgeLimited": edge_truncated,
+        },
         "nodes": nodes[: query.max_nodes],
-        "routes": routes[: query.max_routes],
-        "returned": {"nodes": min(len(nodes), query.max_nodes), "routes": min(len(routes), query.max_routes), "edges": min(edge_count, query.max_edges)},
+        "routes": returned_routes,
+        "returned": {
+            "nodes": min(len(nodes), query.max_nodes),
+            "routes": len(returned_routes),
+            "routeEdgeOccurrences": route_occurrences,
+            "uniqueRouteEdgePairs": route_pairs,
+            "uniqueTypedRouteEdges": route_typed_edges,
+        },
         "truncated": truncated,
         "routeExplanation": _route_explanation(
             query, routes, truncated, boundary_count
@@ -188,35 +237,120 @@ def _walk_rows(
     closure_id: str,
     query: LineageQuery,
 ) -> list[dict[str, Any]]:
-    join = "e.source = walk.node" if query.direction == "ancestry" else "e.target = walk.node"
-    next_node = "e.target" if query.direction == "ancestry" else "e.source"
-    edge_filter, edge_values = _edge_filter("e.kind", query.edge_kind)
-    sql = f"""
-        WITH RECURSIVE walk(node, depth, path, edge_kinds) AS (
-            SELECT ?, 0, '|' || ? || '|', ''
-            UNION ALL
-            SELECT {next_node}, walk.depth + 1,
-                   walk.path || {next_node} || '|',
-                   CASE WHEN walk.edge_kinds = '' THEN e.kind
-                        ELSE walk.edge_kinds || ',' || e.kind END
-            FROM walk
-            CROSS JOIN lineage_edges e ON e.closure_id = ? AND {join}
-            WHERE walk.depth < ?
-              AND instr(walk.path, '|' || {next_node} || '|') = 0
-              AND ({edge_filter})
-            LIMIT ?
-        )
-        SELECT walk.node, walk.depth, walk.path, walk.edge_kinds
-        FROM walk
-        JOIN lineage_nodes n ON n.closure_id = ? AND n.name = walk.node
-        WHERE { _node_filter("n", query) }
-        ORDER BY walk.depth, walk.node
-        LIMIT ?
-    """
-    values = [query.theorem, query.theorem, closure_id, query.max_depth]
-    values.extend(edge_values)
-    values.extend((query.recursive_row_limit, closure_id, query.max_nodes + 1))
-    return [dict(row) for row in connection.execute(sql, values)]
+    return _discover_nodes(connection, closure_id, query)["rows"]
+
+
+def _discover_nodes(
+    connection: sqlite3.Connection, closure_id: str, query: LineageQuery
+) -> dict[str, Any]:
+    """Discover each declaration once before constructing bounded routes."""
+
+    state = _WalkState(
+        visited={query.theorem: {"depth": 0, "parent": None, "kind": None}},
+        effective_edge_cap=query.max_traversal_edges,
+    )
+    frontier = [query.theorem]
+    while frontier and not state.work_limit_reached and not state.node_limit_reached:
+        next_frontier: set[str] = set()
+        for node_batch in _chunks(sorted(frontier), 250):
+            state.distinct_nodes_expanded += len(node_batch)
+            next_frontier.update(
+                _expand_frontier_batch(connection, closure_id, node_batch, query, state)
+            )
+            if state.work_limit_reached or state.node_limit_reached:
+                break
+        frontier = sorted(next_frontier)
+
+    walk_rows = _materialize_walk_rows(state.visited)
+    return {
+        "rows": walk_rows,
+        "distinct_nodes_expanded": state.distinct_nodes_expanded,
+        "adjacency_rows_examined": state.adjacency_rows_examined,
+        "work_limit_reached": state.work_limit_reached,
+        "node_limit_reached": state.node_limit_reached,
+        "depth_limited": state.depth_limited,
+    }
+
+
+def _expand_frontier_batch(
+    connection: sqlite3.Connection,
+    closure_id: str,
+    node_batch: list[str],
+    query: LineageQuery,
+    state: _WalkState,
+) -> set[str]:
+    batch_depth = min(int(state.visited[node]["depth"]) for node in node_batch)
+    rows = _adjacency_rows(
+        connection, closure_id, node_batch, query,
+        limit=state.effective_edge_cap - state.adjacency_rows_examined + 1,
+    )
+    next_frontier = set()
+    for row in rows:
+        if state.adjacency_rows_examined >= state.effective_edge_cap:
+            state.work_limit_reached = True
+            break
+        state.adjacency_rows_examined += 1
+        candidate = str(row["nextNode"])
+        if candidate in state.visited or (not query.include_generated and row["generated"]):
+            continue
+        if batch_depth >= query.max_depth:
+            state.depth_limited = True
+            continue
+        if len(state.visited) >= query.max_nodes:
+            state.node_limit_reached = True
+            break
+        state.visited[candidate] = {
+            "depth": batch_depth + 1,
+            "parent": str(row["currentNode"]),
+            "kind": str(row["kind"]),
+        }
+        next_frontier.add(candidate)
+    return next_frontier
+
+
+def _adjacency_rows(
+    connection: sqlite3.Connection,
+    closure_id: str,
+    current_nodes: list[str],
+    query: LineageQuery,
+    *,
+    limit: int,
+) -> list[sqlite3.Row]:
+    if not current_nodes or limit <= 0:
+        return []
+    join_key = "e.source" if query.direction == "ancestry" else "e.target"
+    next_key = "e.target" if query.direction == "ancestry" else "e.source"
+    filter_sql, filter_values = _edge_filter("e.kind", query.edge_kind)
+    placeholders = ",".join("?" for _ in current_nodes)
+    return connection.execute(
+        f"""SELECT {join_key} AS currentNode, {next_key} AS nextNode,
+                   e.kind, n.compiler_generated AS generated
+            FROM lineage_edges e
+            JOIN lineage_nodes n ON n.closure_id=e.closure_id AND n.name={next_key}
+            WHERE e.closure_id=? AND {join_key} IN ({placeholders})
+              AND ({filter_sql})
+            ORDER BY currentNode, e.kind, nextNode
+            LIMIT ?""",
+        (closure_id, *current_nodes, *filter_values, limit),
+    ).fetchall()
+
+
+def _materialize_walk_rows(
+    visited: dict[str, dict[str, Any]]
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "node": node,
+            "depth": int(item["depth"]),
+            "parent": item["parent"],
+            "edge_kind": item["kind"],
+        }
+        for node, item in sorted(visited.items(), key=lambda pair: (pair[1]["depth"], pair[0]))
+    ]
+
+
+def _chunks(items: list[str], size: int) -> list[list[str]]:
+    return [items[offset : offset + size] for offset in range(0, len(items), size)]
 
 
 def _route_rows(
@@ -234,29 +368,55 @@ def _route_rows_from_walk(
     query: LineageQuery,
     rows: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], bool]:
-    boundary_nodes = _boundary_nodes(connection, closure_id, query, {
-        str(row["node"]) for row in rows if row["node"] != query.theorem
-    })
-    routes = []
-    for row in rows:
-        if row["node"] == query.theorem or row["node"] not in boundary_nodes:
-            continue
-        nodes = str(row["path"]).strip("|").split("|")
-        edges = str(row["edge_kinds"]).split(",") if row["edge_kinds"] else []
-        if query.direction == "ancestry":
-            nodes.reverse()
-            edges.reverse()
-        routes.append(
-            {
-                "root": nodes[0],
-                "target": nodes[-1],
-                "depth": len(edges),
-                "nodes": nodes,
-                "edges": edges,
-            }
-        )
+    parent_rows = {str(row["node"]): row for row in rows}
+    boundary_nodes = sorted(_boundary_nodes(
+        connection, closure_id, query,
+        set(parent_rows) - {query.theorem},
+    ))
+    routes = [
+        _representative_route(node, parent_rows, query)
+        for node in boundary_nodes[: query.max_routes + 1]
+    ]
     routes.sort(key=lambda item: (item["root"], item["depth"], item["edges"], item["nodes"]))
-    return routes[: query.max_routes + 1], len(routes) > query.max_routes
+    return routes, len(boundary_nodes) > query.max_routes
+
+
+def _route_edge_counts(routes: list[dict[str, Any]]) -> tuple[int, int, int]:
+    pairs = set()
+    typed = set()
+    occurrences = 0
+    for route in routes:
+        for source, target, kind in zip(
+            route["nodes"], route["nodes"][1:], route["edges"]
+        ):
+            occurrences += 1
+            pairs.add((source, target))
+            typed.add((source, target, kind))
+    return occurrences, len(pairs), len(typed)
+
+
+def _representative_route(
+    boundary: str, parents: dict[str, dict[str, Any]], query: LineageQuery
+) -> dict[str, Any]:
+    reverse_nodes = [boundary]
+    reverse_edges = []
+    cursor = boundary
+    while parents[cursor]["parent"] is not None:
+        reverse_edges.append(str(parents[cursor]["edge_kind"]))
+        cursor = str(parents[cursor]["parent"])
+        reverse_nodes.append(cursor)
+    nodes = list(reversed(reverse_nodes))
+    edges = list(reversed(reverse_edges))
+    if query.direction == "ancestry":
+        nodes.reverse()
+        edges.reverse()
+    return {
+        "root": nodes[0],
+        "target": nodes[-1],
+        "depth": len(edges),
+        "nodes": nodes,
+        "edges": edges,
+    }
 
 
 def _boundary_nodes(
@@ -269,10 +429,9 @@ def _boundary_nodes(
         return set()
     if query.boundary == "declaration":
         return names & set(query.roots)
-    placeholders = ",".join("?" for _ in names)
     if query.boundary == "trust":
-        return _trust_boundary_nodes(connection, closure_id, names, placeholders)
-    rows = _lineage_boundary_rows(connection, closure_id, names, placeholders)
+        return _trust_boundary_nodes(connection, closure_id, names)
+    rows = _lineage_boundary_rows(connection, closure_id, names)
     return _filter_boundary_rows(rows, query)
 
 
@@ -288,19 +447,27 @@ def _package_boundary_nodes(rows: list[sqlite3.Row], roots: tuple[str, ...]) -> 
     return {str(row[0]) for row in rows if any(str(row[3]) == root or str(row[3]).startswith(f"{root}.") for root in roots)}
 
 
-def _trust_boundary_nodes(connection: sqlite3.Connection, closure_id: str, names: set[str], placeholders: str) -> set[str]:
-    rows = connection.execute(
-        f"SELECT target FROM lineage_trust WHERE closure_id = ? AND target IN ({placeholders})",
-        (closure_id, *sorted(names)),
-    ).fetchall()
-    return {str(row[0]) for row in rows}
+def _trust_boundary_nodes(connection: sqlite3.Connection, closure_id: str, names: set[str]) -> set[str]:
+    result = set()
+    for batch in _chunks(sorted(names), 250):
+        placeholders = ",".join("?" for _ in batch)
+        rows = connection.execute(
+            f"SELECT target FROM lineage_trust WHERE closure_id = ? AND target IN ({placeholders})",
+            (closure_id, *batch),
+        ).fetchall()
+        result.update(str(row[0]) for row in rows)
+    return result
 
 
-def _lineage_boundary_rows(connection: sqlite3.Connection, closure_id: str, names: set[str], placeholders: str) -> list[sqlite3.Row]:
-    return connection.execute(
-        f"SELECT name,project_owned,external_frontier,owner_module FROM lineage_nodes WHERE closure_id = ? AND name IN ({placeholders})",
-        (closure_id, *sorted(names)),
-    ).fetchall()
+def _lineage_boundary_rows(connection: sqlite3.Connection, closure_id: str, names: set[str]) -> list[sqlite3.Row]:
+    rows = []
+    for batch in _chunks(sorted(names), 250):
+        placeholders = ",".join("?" for _ in batch)
+        rows.extend(connection.execute(
+            f"SELECT name,project_owned,external_frontier,owner_module FROM lineage_nodes WHERE closure_id = ? AND name IN ({placeholders})",
+            (closure_id, *batch),
+        ).fetchall())
+    return rows
 
 
 def _is_boundary_node(
@@ -337,9 +504,11 @@ def _node_rows(
     names = sorted({str(row["node"]) for row in walk_rows})
     if not names:
         return []
-    placeholders = ",".join("?" for _ in names)
-    rows = connection.execute(
-        f"""
+    result = []
+    for name_batch in _chunks(names, 250):
+        placeholders = ",".join("?" for _ in name_batch)
+        result.extend(connection.execute(
+            f"""
         SELECT n.name, n.owner_module AS ownerModule, n.kind,
                n.project_owned AS projectOwned,
                n.external_frontier AS externalFrontier,
@@ -370,19 +539,22 @@ def _node_rows(
         WHERE n.closure_id = ? AND n.name IN ({placeholders})
         ORDER BY n.name
         """,
-        [closure_id, *names],
-    ).fetchall()
-    result = [dict(row) for row in rows]
+        [closure_id, *name_batch],
+        ).fetchall())
+    result = [dict(row) for row in result]
     from ladon.idea_history import attach_lineage_history
 
     attach_lineage_history(connection, result)
-    components = {
-        str(row["member"]): str(row["component_id"])
-        for row in connection.execute(
-            f"SELECT member, component_id FROM lineage_scc_members WHERE closure_id = ? AND member IN ({placeholders})",
-            [closure_id, *names],
-        )
-    }
+    components = {}
+    for name_batch in _chunks(names, 250):
+        placeholders = ",".join("?" for _ in name_batch)
+        components.update({
+            str(row["member"]): str(row["component_id"])
+            for row in connection.execute(
+                f"SELECT member, component_id FROM lineage_scc_members WHERE closure_id = ? AND member IN ({placeholders})",
+                [closure_id, *name_batch],
+            )
+        })
     for row in result:
         row["sccId"] = components.get(str(row["name"]))
     return result
@@ -397,19 +569,7 @@ def _query_plan(connection: sqlite3.Connection, closure_id: str, query: LineageQ
         "EXPLAIN QUERY PLAN SELECT source FROM lineage_edges WHERE closure_id = ? AND target = ?",
         (closure_id, query.theorem),
     ).fetchall()
-    recursive_join = "e.source = walk.node" if query.direction == "ancestry" else "e.target = walk.node"
-    recursive_next = "e.target" if query.direction == "ancestry" else "e.source"
-    recursive = connection.execute(
-        f"""EXPLAIN QUERY PLAN WITH RECURSIVE walk(node, depth) AS (
-            SELECT ? , 0
-            UNION ALL
-            SELECT {recursive_next}, walk.depth + 1
-            FROM walk CROSS JOIN lineage_edges e ON e.closure_id = ? AND {recursive_join}
-            WHERE walk.depth < ? LIMIT ?
-        ) SELECT node FROM walk""",
-        (query.theorem, closure_id, query.max_depth, query.recursive_row_limit),
-    ).fetchall()
-    return [str(tuple(row)) for row in [*forward, *reverse, *recursive]]
+    return [str(tuple(row)) for row in [*forward, *reverse]]
 
 
 def _edge_filter(column: str, edge_kind: str) -> tuple[str, list[str]]:
@@ -453,8 +613,8 @@ def _trim_routes_to_edge_cap(routes: list[dict[str, Any]], max_edges: int) -> li
         size = len(route["edges"])
         if kept and used + size > max_edges:
             break
-        if not kept and size > max_edges:
-            return [route]
+        if used + size > max_edges:
+            break
         kept.append(route)
         used += size
     return kept

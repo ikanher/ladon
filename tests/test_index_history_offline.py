@@ -156,12 +156,31 @@ def test_prune_protects_history_owning_active_index(tmp_path: Path) -> None:
 
 
 def _assert_historical_result(result, snapshot_id, missing_live_root):
+    _assert_historical_identity(result)
+    _assert_historical_authority(result)
+    assert result["snapshotId"] == snapshot_id
+    assert result["originalObservation"]["repository"] == str(missing_live_root.resolve())
+
+
+def _assert_historical_identity(result):
     assert result["status"] == "available"
     assert result["theorem"] == "Demo.target"
     assert result["closureId"]
     assert result["selectionBasis"] == "historical-snapshot"
-    assert result["currentAssociation"] == "not-established"
     assert result["freshness"] == "historical"
     assert result["historicalAssociation"] == "fresh"
-    assert result["snapshotId"] == snapshot_id
-    assert result["originalObservation"]["repository"] == str(missing_live_root.resolve())
+
+
+def _assert_historical_authority(result):
+    assert result["currentAssociation"] == "not-established"
+    assert result["evidenceReceipt"]["sourceFreshness"] == "not-assessed"
+    _assert_historical_coverage(result)
+
+
+def _assert_historical_coverage(result):
+    coverage = result.get("coverage")
+    if not coverage:
+        return
+    source_closure = coverage["sourceClosure"]
+    assert source_closure["freshness"] == "historical"
+    assert source_closure["currentAssociation"] == "not-established"

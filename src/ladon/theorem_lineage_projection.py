@@ -14,12 +14,17 @@ from ladon.theorem_lineage_algorithms import (
     compute_dominators,
     unfold_tree,
 )
+from ladon.theorem_lineage_closure import query_stored_closure
 from ladon.theorem_lineage_query import LineageQuery, query_lineage
 from ladon.theorem_lineage_store import LineageIdentity
 
 
 class TheoremLineageProjectionError(ValueError):
     """Projection input is unavailable or exceeds declared bounds."""
+
+
+class TheoremLineageInvocationError(TheoremLineageProjectionError):
+    """A view was combined with an inapplicable public option."""
 
 
 @dataclass(frozen=True)
@@ -32,7 +37,7 @@ class ProjectionQuery:
     max_dominator_rows: int = 100
 
     def __post_init__(self) -> None:
-        if self.view not in {"routes", "graph", "tree", "bottlenecks"}:
+        if self.view not in {"routes", "graph", "tree", "bottlenecks", "closure"}:
             raise TheoremLineageProjectionError("unsupported projection view")
         if self.max_algorithm_nodes < 1:
             raise TheoremLineageProjectionError("algorithm node cap must be positive")
@@ -46,6 +51,8 @@ def project_lineage(
     query: ProjectionQuery,
 ) -> dict[str, Any]:
     """Return one bounded projection; SQL query output is the sole source of rows."""
+    if query.view == "closure":
+        return query_stored_closure(connection, identity, query.lineage)
     result = query_lineage(connection, identity, query.lineage)
     if result.get("status") != "available":
         return {**result, "projection": query.view}
@@ -120,6 +127,16 @@ def _route_edges(routes: list[dict[str, Any]]) -> list[tuple[str, str]]:
     )
 
 
+def _route_typed_edges(routes: list[dict[str, Any]]) -> list[tuple[str, str, str]]:
+    return sorted({
+        (source, target, kind)
+        for route in routes
+        for source, target, kind in zip(
+            route["nodes"], route["nodes"][1:], route["edges"]
+        )
+    })
+
+
 def _base_payload(
     result: dict[str, Any],
     query: ProjectionQuery,
@@ -127,16 +144,21 @@ def _base_payload(
     routes: list[dict[str, Any]],
     edges: list[tuple[str, str]],
 ) -> dict[str, Any]:
+    typed_edges = _route_typed_edges(routes)
     return {
         **result,
         "projection": query.view,
         "evidenceReceipt": project_evidence_receipt(result["evidenceReceipt"], projection_kind="aggregate"),
         "nodes": nodes,
         "edges": [{"source": source, "target": target} for source, target in edges],
+        "typedEdges": [
+            {"source": source, "target": target, "kind": kind}
+            for source, target, kind in typed_edges
+        ],
         "routes": routes,
         "collapses": _collapses(nodes),
         "branchPoints": _branch_points(edges),
-        "projectionFingerprint": _fingerprint(query, nodes, edges),
+        "projectionFingerprint": _fingerprint(query, nodes, edges, typed_edges),
         "nonclaim": result["nonclaim"],
     }
 
@@ -162,7 +184,10 @@ def _branch_points(edges: list[tuple[str, str]]) -> list[dict[str, Any]]:
 
 
 def _fingerprint(
-    query: ProjectionQuery, nodes: list[dict[str, Any]], edges: list[tuple[str, str]]
+    query: ProjectionQuery,
+    nodes: list[dict[str, Any]],
+    edges: list[tuple[str, str]],
+    typed_edges: list[tuple[str, str, str]],
 ) -> str:
     encoded = json.dumps(
         {
@@ -170,10 +195,16 @@ def _fingerprint(
             "view": query.view,
             "nodes": [row["name"] for row in nodes],
             "edges": edges,
+            "typedEdges": typed_edges,
         },
         sort_keys=True,
     )
     return hashlib.sha256(encoded.encode()).hexdigest()
 
 
-__all__ = ["ProjectionQuery", "TheoremLineageProjectionError", "project_lineage"]
+__all__ = [
+    "ProjectionQuery",
+    "TheoremLineageInvocationError",
+    "TheoremLineageProjectionError",
+    "project_lineage",
+]

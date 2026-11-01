@@ -26,6 +26,11 @@ def test_route_projection_is_authoritative_and_render_neutral() -> None:
     assert result["status"] == "available"
     assert result["authority"] == "lean_environment"
     assert result["routes"][0]["nodes"] == ["Classical.choice", "Demo.helper", "Demo.target"]
+    assert result["returned"]["routeEdgeOccurrences"] == sum(
+        len(route["edges"]) for route in result["routes"]
+    )
+    assert result["returned"]["uniqueRouteEdgePairs"] == len(result["edges"])
+    assert result["returned"]["uniqueTypedRouteEdges"] == len(result["typedEdges"])
     assert "possible proof" not in result["nonclaim"].lower()
     assert "alternative proofs" in result["nonclaim"]
 

@@ -18,6 +18,7 @@ from ladon.theorem_capsule_models import (
     TheoremPlan,
 )
 from ladon.theorem_capsule_planning import plan_theorem_capsule
+from ladon.theorem_lineage_projection import TheoremLineageInvocationError
 
 
 def build_theorem_parser() -> argparse.ArgumentParser:
@@ -99,12 +100,12 @@ def build_theorem_parser() -> argparse.ArgumentParser:
     lineage.add_argument("--history", help="Inspect an exact registered snapshot offline; requires --refresh never.")
     lineage.add_argument(
         "--view",
-        choices=("summary", "graph", "routes", "spines", "tree", "bottlenecks"),
+        choices=("summary", "graph", "routes", "spines", "tree", "bottlenecks", "closure"),
         default="summary",
         help=(
-            "Projection to return; defaults to summary. Routes may be empty when "
-            "the bounded population is truncated. Bottlenecks requires a returned "
-            "root-to-target route."
+            "Projection to return; defaults to summary. Closure returns the "
+            "selected stored typed graph; graph remains route-oriented. Routes "
+            "may be empty when bounded. Bottlenecks requires a returned route."
         ),
     )
     lineage.add_argument(
@@ -112,6 +113,7 @@ def build_theorem_parser() -> argparse.ArgumentParser:
         dest="boundary",
         choices=("trust", "project", "external", "package", "declaration"),
         default="trust",
+        action=_TrackLineageOption,
     )
     lineage.add_argument(
         "--root",
@@ -126,14 +128,25 @@ def build_theorem_parser() -> argparse.ArgumentParser:
     lineage.add_argument("--edge-kind", choices=("all", "type", "value"), default="all")
     lineage.add_argument("--include-generated", action="store_true", default=True)
     lineage.add_argument("--exclude-generated", dest="include_generated", action="store_false")
-    lineage.add_argument("--max-depth", type=_positive_integer, default=32)
+    lineage.add_argument("--max-depth", type=_positive_integer, default=32, action=_TrackLineageOption)
     lineage.add_argument("--max-nodes", type=_positive_integer, default=1000)
     lineage.add_argument("--max-edges", type=_positive_integer, default=4000)
-    lineage.add_argument("--max-routes", type=_positive_integer, default=20)
+    lineage.add_argument("--max-routes", type=_positive_integer, default=20, action=_TrackLineageOption)
+    lineage.add_argument(
+        "--max-traversal-edges", type=_positive_integer, default=100000,
+        action=_TrackLineageOption,
+        help="Maximum typed adjacency rows examined during route reachability; defaults to 100000.",
+    )
+    lineage.add_argument(
+        "--direction", choices=("ancestry", "dependencies"), default="ancestry",
+        action=_TrackLineageOption,
+        help="Route traversal direction; unavailable for the whole-closure view.",
+    )
     lineage.add_argument(
         "--max-dominators",
         type=_positive_integer,
         default=100,
+        action=_TrackLineageOption,
         help="Maximum compact dominator-summary rows; defaults to 100.",
     )
     lineage.add_argument(
@@ -147,6 +160,7 @@ def build_theorem_parser() -> argparse.ArgumentParser:
         help="Complete project-local SQLite database ceiling during lineage refresh; defaults to 1536 MiB.",
     )
     _add_result_options(lineage, default_output="-")
+    lineage.set_defaults(max_output_bytes=33554432)
     _add_timeout(lineage)
     return parser
 
@@ -200,6 +214,9 @@ def theorem_main(argv: Sequence[str]) -> int:
         args = parser.parse_args(list(argv))
         return _dispatch(args)
     except CapsuleInvocationError as exc:
+        print(f"ladon theorem: invalid invocation: {exc}", file=sys.stderr)
+        return EXIT_INVOCATION
+    except TheoremLineageInvocationError as exc:
         print(f"ladon theorem: invalid invocation: {exc}", file=sys.stderr)
         return EXIT_INVOCATION
     except (CapsuleContentError, CapsuleOperationalError) as exc:
@@ -411,6 +428,17 @@ def _positive_integer(value: str) -> int:
     if parsed <= 0:
         raise argparse.ArgumentTypeError("must be a positive integer")
     return parsed
+
+
+class _TrackLineageOption(argparse.Action):
+    """Retain whether an otherwise defaulted route option was explicitly supplied."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, values)
+        selected = set(getattr(namespace, "_lineage_explicit_options", ()))
+        if option_string is not None:
+            selected.add(self.dest)
+        namespace._lineage_explicit_options = selected
 
 
 def _max_rss_bytes(args: argparse.Namespace) -> int | None:

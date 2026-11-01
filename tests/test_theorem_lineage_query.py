@@ -76,7 +76,8 @@ def test_empty_trust_route_explains_unclassified_boundary() -> None:
         LineageQuery(theorem="Demo.target", boundary="trust", max_depth=1),
     )
 
-    assert result["routeExplanation"]["status"] == "no-route-within-boundary"
+    assert result["routeExplanation"]["status"] == "unknown-bounded"
+    assert result["truncation"]["depthLimited"] is True
     assert result["acquisition"]["boundaryPopulation"] == 1
 
 

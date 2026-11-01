@@ -64,7 +64,17 @@ def test_installed_cli_refreshes_then_serves_a_warm_source_linked_route(
         boundary="declaration",
         roots=("CapsuleFixture.base",),
     )
+    closure_payload = _run_lineage(
+        compiled_repository,
+        tmp_path / "closure.json",
+        "never",
+        view="closure",
+    )
     _assert_refresh_and_source_anchor(first_payload, warm_payload, route_payload)
+    assert closure_payload["projection"] == "closure"
+    assert closure_payload["coverage"]["selectedGraph"]["status"] == "complete"
+    assert closure_payload["returned"]["edges"] == len(closure_payload["edges"])
+    assert all(edge["kind"] in {"type", "value"} for edge in closure_payload["edges"])
 
 
 def _run_lineage(
@@ -72,16 +82,19 @@ def _run_lineage(
     output: Path,
     refresh: str,
     *,
+    view: str = "routes",
     boundary: str = "project",
     roots: tuple[str, ...] = (),
 ) -> dict[str, object]:
     command = [
         "lineage", "CapsuleFixture.chosen", "--repo-root", str(repository),
-        "--view", "routes", "--from", boundary, "--format", "json",
+        "--view", view, "--format", "json",
         "--refresh", refresh, "--output", str(output),
     ]
-    for root in roots:
-        command.extend(("--root", root))
+    if view != "closure":
+        command.extend(("--from", boundary))
+        for root in roots:
+            command.extend(("--root", root))
     assert theorem_main(command) == 0
     return json.loads(output.read_text(encoding="utf-8"))
 
