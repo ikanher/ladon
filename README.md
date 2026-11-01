@@ -124,7 +124,7 @@ See the [CLI reference](docs/CLI.md) and
 | --- | --- |
 | `proof-search explain`, `consumers`, `constructor` | Inspect available type, usage, and constructor evidence. [Reference](docs/CLI.md) |
 | `proofir`, `proof-search evidence` | Validate proof-evidence files and inspect stored checks. [Reference](docs/CLI.md#stored-proofir-evidence) |
-| `theorem lineage` | Explore dependencies of a compiled proof. [Reference](docs/CLI.md#theorem-lineage) |
+| `theorem lineage` | Inspect representative routes or the complete stored typed dependency closure of a compiled proof. [Reference](docs/CLI.md#theorem-lineage) |
 | `theorem extract` | Package a theorem's source context and replay it in a fresh copy. [Theorem capsules](docs/THEOREM_CAPSULES.md) |
 | `inspect` | Filter and page through an existing report. [Reference](docs/CLI.md) |
 | Atlas, runsets, and reportsets | Compare reports and manage batches of analysis. [Reference](docs/CLI.md) |

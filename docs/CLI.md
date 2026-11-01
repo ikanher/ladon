@@ -248,23 +248,41 @@ ladon theorem lineage Fully.Qualified.theorem --repo-root /path/to/project \
 ```
 
 The default `missing` policy plans and ingests only an absent closure. `never`
-forbids Lean refresh, while `stale` and `always` permit it. The bounded views
-are `routes`, `graph`, `tree` (a DAG unfolding with shared references), and
-`bottlenecks`; `spines` is a routes alias. Filters include trust/project,
-external/package/declaration roots, type/value/all edges, generated-node policy,
-and finite depth/node/edge/route/output caps. Results identify freshness,
-authority, closure identity, omissions, and truncation. They describe
-dependencies of one compiled proof term; they do not enumerate all proofs,
-alternative proofs, or a natural-language proof.
+forbids Lean refresh, while `stale` and `always` permit it. Views include
+`routes`, `graph`, `tree` (a DAG unfolding with shared references),
+`bottlenecks`, and `closure`; `spines` is a routes alias. `graph` remains a
+bounded graph of representative routes. `closure` reads the whole selected
+stored closure, including disconnected declarations, and returns typed `type`
+and `value` edges independently of route count:
 
-For route acquisition, `--max-nodes` currently bounds traversal rows as well
-as the returned distinct-node list. Different paths can visit the same
-declaration, so `acquisition.rowsObserved` can exceed `returned.nodes`.
-One extra row detects truncation: a budget of 3,000 can report 3,001 observed
-rows. The closure summary counts distinct nodes; it cannot determine a route
-budget that guarantees complete traversal. Keep `truncated` and omissions
-visible even when a desired route was found. `bounds.recursiveRowLimit` reports
-the separate internal bound on recursive expansion.
+```bash
+ladon theorem lineage Fully.Qualified.theorem --repo-root /path/to/project \
+  --refresh never --view closure --max-nodes 100000 --max-edges 200000 \
+  --max-output-bytes 33554432 --format json --output -
+```
+
+Closure selection is whole-closure and does not use route selectors. Supplying
+`--from`, `--root`, `--direction`, `--max-depth`, `--max-routes`,
+`--max-traversal-edges`, or `--max-dominators` with `--view closure` is an error.
+Type/value and generated-node filters apply; excluded nodes and incident edges
+are omitted without synthetic shortcut edges. Node and edge caps return
+endpoint-closed partial graphs with exact population counts.
+
+Route acquisition discovers distinct declarations at minimum depth before it
+constructs deterministic representative routes. `--max-traversal-edges` defaults
+to 100,000 examined typed adjacency rows; `--max-nodes`, `--max-depth`,
+`--max-routes`, and `--max-edges` govern separate limits. A depth boundary is
+partial when an eligible unseen dependency remains beyond it. Route results
+distinguish route-edge occurrences, unique untyped pairs, and unique typed route
+edges. The default output byte cap is 32 MiB and can be set with
+`--max-output-bytes`.
+
+Coverage reports source-closure extraction, selected graph, representative
+routes, and external-library scope separately. A complete project closure ends
+at recorded library declarations; it does not recursively expand library proofs
+or establish theorem truth. Results describe dependencies of one compiled proof
+term; they do not enumerate all proofs, alternative proofs, or a natural-language
+proof.
 
 ## Build and execution security
 

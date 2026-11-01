@@ -121,10 +121,14 @@ dependency closure when a pinned Lean environment is available.
 ladon proof-search evidence theorem Project.Owner.goal --repo-root /path/to/project
 ladon theorem lineage Project.Owner.goal --repo-root /path/to/project \
   --refresh missing --view routes
+ladon theorem lineage Project.Owner.goal --repo-root /path/to/project \
+  --refresh never --view closure --max-nodes 100000 --max-edges 200000
 ```
 
-Stored evidence, structural routes, and lineage dependencies do not become
-unqualified theorem-truth claims.
+The routes view gives bounded representative paths; the closure view returns the
+selected stored typed graph and reports its coverage and external library
+frontier. Stored evidence, structural routes, and lineage dependencies do not
+become unqualified theorem-truth claims.
 
 ## Optional layers
 

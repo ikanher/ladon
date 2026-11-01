@@ -99,11 +99,13 @@ ladon theorem lineage Project.theorem --repo-root "$PWD" \
 ```
 
 History listing uses `ladon-proof-search-index-history-v1`, with bounded
-`--limit`/`--offset` pagination. Historical lineage uses `ladon-theorem-lineage-history-result-v1`, preserves
-the ordinary projection and adds `selectionBasis: historical-snapshot`, `freshness:
+`--limit`/`--offset` pagination. Historical lineage preserves the selected
+projection and adds `selectionBasis: historical-snapshot`, `freshness:
 historical`, the original observation and `currentAssociation:
-not-established`. Its receipt describes the original observation. An already
-stale closure stays unavailable: selection does not repair its identity.
+not-established`. Count/coverage-bearing projections use
+`ladon-theorem-lineage-history-result-v2`; legacy summary results retain v1. The
+receipt leaves current source freshness not assessed. An already stale closure
+stays unavailable: selection does not repair its identity.
 Historical selection requires `--refresh never`, runs no Lean, and works
 without the original project. A joint relocation needs an explicit `--index`
 pointing to the moved database. Fresh acquisition still requires the pinned
