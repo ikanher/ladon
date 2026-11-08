@@ -1,0 +1,296 @@
+{
+  "status": "resource-limit",
+  "capsuleIdentity": "sha256:3362ff9da58d063e2164728da28ae0b6c9724c58c3e37d0adc404cd273442d9a",
+  "planIdentity": "sha256:e3cdcbb450bf67ca5aa828ae762f081e7f8223f2327bae5102c8c3455fa6207a",
+  "target": {
+    "name": "Mf.Optimization.StochasticApproximation.Adam.ordinaryGaussian_expectedNorm_tendsto_zero",
+    "module": "Mf.Optimization.StochasticApproximation.AdamGaussianConvergence"
+  },
+  "toolchain": {
+    "helperVersion": "ladon-theorem-capsule-helper-v1",
+    "leanVersion": "4.33.0",
+    "protocolVersion": "ladon-theorem-capsule-stream-v1"
+  },
+  "isolation": {
+    "level": "fresh_copy_sanitized_environment",
+    "passed": true,
+    "originalCheckoutReferencedByCommand": false,
+    "originalCheckoutReferencedByEnvironment": false,
+    "replayRootRole": "fresh_temporary_repository"
+  },
+  "stages": [
+    {
+      "stage": "dependency_resolution",
+      "command": [
+        "lake",
+        "update"
+      ],
+      "returncode": 0,
+      "timedOut": false,
+      "outputLimited": false,
+      "memoryLimited": false,
+      "peakRssBytes": 2041749504,
+      "resourceObservations": {
+        "version": 1,
+        "status": "sampled",
+        "samples": 1206,
+        "unavailableSamples": 0,
+        "unidentifiedProcessNames": 2,
+        "leanMeasurement": "partial",
+        "maxDescendantProcesses": 5,
+        "maxLeanProcesses": 2,
+        "largestLeanRssBytes": 919150592,
+        "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+        "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+      },
+      "stdoutSha256": "sha256:4cb8252d6d2b997297ed07470436da96d2eba87602d6c1150dfed70314799b1d",
+      "stderrSha256": "sha256:dfd159141b2459ab677aaa72f85f880f32cccc26602822b434651a9592ff190f",
+      "stdoutExcerpt": "Current branch: HEAD\nUsing cache from origin: (some leanprover-community/mathlib4)\nDecompressing 8689 already-cached file(s) (1 already decompressed)\nNo files to download\nDecompressed 8689 already-cached file(s)\nCompleted successfully in 11758 ms!\n",
+      "stderrExcerpt": "info: leanprover-community/mathlib: cloning https://github.com/leanprover-community/mathlib4\ninfo: leanprover-community/mathlib: checking out revision 'db584cd6d46c92f209a44c0f1c829460d327499d'\ninfo: kolmogorov_extension4: cloning https://github.com/RemyDegenne/kolmogorov_extension4.git\ninfo: kolmogorov_extension4: checking out revision '7d76e184c3d2138a2741baf923b57e9a01b9cf25'\ninfo: BrownianMotion: cloning https://github.com/RemyDegenne/brownian-motion.git\ninfo: BrownianMotion: checking out revision 'd94b0c1786e84d6e921d6cda18ea691bea17103c'\ninfo: MathFin: cloning https://github.com/raphaelrrcoelho/formal-mathfin.git\ninfo: MathFin: checking out revision '1df87ce9b7b7dfbfc57424cef8cce6cf21d9b12c'\ninfo: toolchain not updated; already up-to-date\ninfo: plausible: cloning https://github.com/leanprover-community/plausible\ninfo: plausible: checking out revision 'b7eb3304aeae834b12dda98993a37f6a41f6f0bb'\ninfo: LeanSearchClient: cloning https://github.com/leanprover-community/LeanSearchClient"
+    },
+    {
+      "stage": "lean_build",
+      "buildTimeoutSeconds": 180,
+      "steps": [
+        {
+          "stage": "lean_build",
+          "command": [
+            "lake",
+            "--no-build",
+            "build",
+            "+Mf.CertifiedNumerics.SignedExpTaylor:deps"
+          ],
+          "returncode": 0,
+          "timedOut": false,
+          "outputLimited": false,
+          "memoryLimited": false,
+          "peakRssBytes": 895488000,
+          "resourceObservations": {
+            "version": 1,
+            "status": "sampled",
+            "samples": 31,
+            "unavailableSamples": 0,
+            "unidentifiedProcessNames": 0,
+            "leanMeasurement": "sampled",
+            "maxDescendantProcesses": 2,
+            "maxLeanProcesses": 0,
+            "largestLeanRssBytes": 0,
+            "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+            "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+          },
+          "stdoutSha256": "sha256:ed74827c6547f6a4c62720ec4e6dc8e04d8ec48bd6876ffbe98d7fe66986ae20",
+          "stderrSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutExcerpt": "All targets up-to-date (1934 jobs).\n",
+          "stderrExcerpt": "",
+          "module": "Mf.CertifiedNumerics.SignedExpTaylor",
+          "role": "deps"
+        },
+        {
+          "stage": "lean_build",
+          "command": [
+            "lake",
+            "build",
+            "+Mf.CertifiedNumerics.SignedExpTaylor:leanArts"
+          ],
+          "returncode": 0,
+          "timedOut": false,
+          "outputLimited": false,
+          "memoryLimited": false,
+          "peakRssBytes": 3394166784,
+          "resourceObservations": {
+            "version": 1,
+            "status": "sampled",
+            "samples": 49,
+            "unavailableSamples": 0,
+            "unidentifiedProcessNames": 0,
+            "leanMeasurement": "sampled",
+            "maxDescendantProcesses": 2,
+            "maxLeanProcesses": 1,
+            "largestLeanRssBytes": 2499301376,
+            "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+            "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+          },
+          "stdoutSha256": "sha256:494a15645a2d381081a28ebd19e3abff34dc8e7c78f9c07d7fdb69b77589f29f",
+          "stderrSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutExcerpt": "\u2714 [1934/1934] Built Mf.CertifiedNumerics.SignedExpTaylor (<duration>)\nBuild completed successfully (1934 jobs).\n",
+          "stderrExcerpt": "",
+          "module": "Mf.CertifiedNumerics.SignedExpTaylor",
+          "role": "leanArts"
+        },
+        {
+          "stage": "lean_build",
+          "command": [
+            "lake",
+            "--no-build",
+            "build",
+            "+Mf.DP.FiniteMeasurePositivePartSecondMoment:deps"
+          ],
+          "returncode": 0,
+          "timedOut": false,
+          "outputLimited": false,
+          "memoryLimited": false,
+          "peakRssBytes": 913371136,
+          "resourceObservations": {
+            "version": 1,
+            "status": "sampled",
+            "samples": 22,
+            "unavailableSamples": 0,
+            "unidentifiedProcessNames": 0,
+            "leanMeasurement": "sampled",
+            "maxDescendantProcesses": 2,
+            "maxLeanProcesses": 0,
+            "largestLeanRssBytes": 0,
+            "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+            "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+          },
+          "stdoutSha256": "sha256:78d8b62cc009e354c99fb14a658923c6959bd5c991ece568e4612b60c27c3609",
+          "stderrSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutExcerpt": "All targets up-to-date (2865 jobs).\n",
+          "stderrExcerpt": "",
+          "module": "Mf.DP.FiniteMeasurePositivePartSecondMoment",
+          "role": "deps"
+        },
+        {
+          "stage": "lean_build",
+          "command": [
+            "lake",
+            "build",
+            "+Mf.DP.FiniteMeasurePositivePartSecondMoment:leanArts"
+          ],
+          "returncode": 0,
+          "timedOut": false,
+          "outputLimited": false,
+          "memoryLimited": false,
+          "peakRssBytes": 4251791360,
+          "resourceObservations": {
+            "version": 1,
+            "status": "sampled",
+            "samples": 49,
+            "unavailableSamples": 0,
+            "unidentifiedProcessNames": 0,
+            "leanMeasurement": "sampled",
+            "maxDescendantProcesses": 2,
+            "maxLeanProcesses": 1,
+            "largestLeanRssBytes": 3315290112,
+            "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+            "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+          },
+          "stdoutSha256": "sha256:35b6031ebb5903e005388c692eabeed3606c9f5a6f83e6b3d56345afe314047f",
+          "stderrSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutExcerpt": "\u2714 [2865/2865] Built Mf.DP.FiniteMeasurePositivePartSecondMoment (<duration>)\nBuild completed successfully (2865 jobs).\n",
+          "stderrExcerpt": "",
+          "module": "Mf.DP.FiniteMeasurePositivePartSecondMoment",
+          "role": "leanArts"
+        },
+        {
+          "stage": "lean_build",
+          "command": [
+            "lake",
+            "--no-build",
+            "build",
+            "+Mf.DP.GaussianPrivacyLoss:deps"
+          ],
+          "returncode": 0,
+          "timedOut": false,
+          "outputLimited": false,
+          "memoryLimited": false,
+          "peakRssBytes": 1003044864,
+          "resourceObservations": {
+            "version": 1,
+            "status": "sampled",
+            "samples": 56,
+            "unavailableSamples": 0,
+            "unidentifiedProcessNames": 0,
+            "leanMeasurement": "sampled",
+            "maxDescendantProcesses": 2,
+            "maxLeanProcesses": 0,
+            "largestLeanRssBytes": 0,
+            "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+            "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+          },
+          "stdoutSha256": "sha256:b07b538e09b1b534ba56890dc50fa7a9abbd987c7afa9ae6995a05ab69ac4ab6",
+          "stderrSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutExcerpt": "All targets up-to-date (8706 jobs).\n",
+          "stderrExcerpt": "",
+          "module": "Mf.DP.GaussianPrivacyLoss",
+          "role": "deps"
+        },
+        {
+          "stage": "lean_build",
+          "command": [
+            "lake",
+            "build",
+            "+Mf.DP.GaussianPrivacyLoss:leanArts"
+          ],
+          "returncode": -15,
+          "timedOut": false,
+          "outputLimited": false,
+          "memoryLimited": true,
+          "peakRssBytes": 6539939840,
+          "resourceObservations": {
+            "version": 1,
+            "status": "sampled",
+            "samples": 75,
+            "unavailableSamples": 0,
+            "unidentifiedProcessNames": 0,
+            "leanMeasurement": "sampled",
+            "maxDescendantProcesses": 2,
+            "maxLeanProcesses": 1,
+            "largestLeanRssBytes": 5403742208,
+            "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+            "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+          },
+          "stdoutSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderrSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutExcerpt": "",
+          "stderrExcerpt": "",
+          "diagnostic": "Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 6 GiB (6442450944 bytes). Observed sampled peak 6.09079 GiB (6539939840 bytes). Ask the user before retrying with a higher --max-rss-mib limit.",
+          "module": "Mf.DP.GaussianPrivacyLoss",
+          "role": "leanArts"
+        }
+      ],
+      "peakRssBytes": 6539939840,
+      "timedOut": false,
+      "memoryLimited": true,
+      "outputLimited": false,
+      "resourceObservations": {
+        "version": 1,
+        "status": "sampled",
+        "leanMeasurement": "sampled",
+        "maxLeanProcesses": 1,
+        "largestLeanRssBytes": 5403742208,
+        "maxDescendantProcesses": 2
+      },
+      "diagnostic": "Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 6 GiB (6442450944 bytes). Observed sampled peak 6.09079 GiB (6539939840 bytes). Ask the user before retrying with a higher --max-rss-mib limit."
+    }
+  ],
+  "comparisons": {},
+  "trustFrontier": [
+    {
+      "kind": "axiom_reference",
+      "scope": "value",
+      "target": "propext"
+    }
+  ],
+  "nonclaims": [
+    "The capsule is not claimed to be globally or declaration-level minimal.",
+    "External dependencies are locked but are not necessarily vendored for offline use.",
+    "Native and operating-system dependencies are not packaged hermetically.",
+    "Ladon reports Lean replay evidence and is not an independent proof authority."
+  ],
+  "schema": "ladon-theorem-capsule-replay-v1",
+  "buildPolicy": {
+    "version": 1,
+    "requested": "ordered",
+    "effective": "ordered",
+    "scope": "project module compilation; dependency resolution is separately supervised"
+  },
+  "resourceLimits": {
+    "version": 1,
+    "stageTimeoutSeconds": 180,
+    "maxProcessTreeRssBytes": 6442450944,
+    "maxProcessOutputBytes": 16777216,
+    "memoryMetric": "aggregate process-tree RSS; shared pages may be counted repeatedly"
+  },
+  "receiptIdentity": "sha256:ee452bfbb190cf6b102b3f9ee275b92db8e52102b294e926f9b4efd4aefe73ec"
+}

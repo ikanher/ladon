@@ -84,6 +84,39 @@ Planning and replay default to a 12 GiB process-tree resident-memory ceiling
 Memory-limit failures tell agents to stop progress and report the configured
 limit and observed peak to the user before retrying with a higher limit.
 
+### Control replay build concurrency
+
+`replay --build-policy ordered` builds project modules in dependency order,
+one module request at a time. The default, `lake-default`, retains Lake's
+normal scheduling. The same option is available with `extract --verify`:
+
+```bash
+ladon theorem replay /tmp/theorem-capsule --build-policy ordered \
+  --timeout 180 --max-rss-mib 12288 --format json --output /tmp/replay.json
+```
+
+Before each exact module build, ordered replay runs Lake's `--no-build`
+dependency preflight. Missing or stale imported artifacts produce an
+`unsupported-facet` result with the failed preflight; replay does not fall back
+to parallel compilation. Locked external dependency acquisition remains a
+separate supervised stage controlled by `--network`. Toolchains lacking the
+required Lake facets also fail the preflight. The ordered graph supports up to
+4,096 project modules and 262,144 import edges.
+
+All module preflights and compilations share one build-stage `--timeout`
+budget. Dependency resolution and the final comparison helper each retain their
+own stage budget. Each process tree retains the configured RSS and output caps.
+A single expensive module can still exceed the memory cap.
+
+Receipts include versioned `buildPolicy`, `resourceLimits`, and sampled
+`resourceObservations`. The build row retains bounded per-module `steps`, the
+maximum sampled Lean-process count, and the largest sampled individual Lean
+RSS. Descendant counts exclude the supervised root. Missing measurements are
+explicit, and short-lived processes may escape sampling. Aggregate RSS can
+count shared pages repeatedly; these observations do not measure unique
+physical memory. Completion still requires the existing theorem, dependency,
+and trust comparisons after the build.
+
 ## Capsule layout and verification
 
 The target module is copied from byte zero through the end of the theorem command.

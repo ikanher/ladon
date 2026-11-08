@@ -6,6 +6,13 @@ model invokes them. There is no caller-specific analysis mode.
 
 ## Finding commands
 
+Theorem capsules are planned and packaged with `theorem extract`, and checked
+in a fresh copy with `theorem replay`. Replay and `extract --verify` accept
+`--build-policy lake-default|ordered`. Ordered execution uses dependency-first
+module builds and one shared build-stage deadline; its dependency preflight
+fails explicitly when imported artifacts need rebuilding. See
+[capsule replay and resource controls](THEOREM_CAPSULES.md#control-replay-build-concurrency).
+
 `ladon -h` (or `ladon --help`) shows a compact guide to common workflows,
 including index freshness, proposition-text search, candidate checking, source
 goals, and compiled lineage. It does not load the analyzer or inspect a project.

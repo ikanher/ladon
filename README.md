@@ -130,6 +130,12 @@ See the [CLI reference](docs/CLI.md) and
 | Atlas, runsets, and reportsets | Compare reports and manage batches of analysis. [Reference](docs/CLI.md) |
 | `doctor` | Inspect the installation and a project's execution prerequisites. [Reference](docs/CLI.md#build-and-execution-security) |
 
+For memory-heavy capsule builds, `theorem replay --build-policy ordered` (also
+available with `theorem extract --verify`) builds project modules in dependency
+order under one shared build-stage deadline. See the
+[resource controls](docs/THEOREM_CAPSULES.md#control-replay-build-concurrency)
+for required imported artifacts and memory limits.
+
 ### Inspect compiled theorem lineage
 
 Use the `closure` view to read the typed dependency graph already stored for a

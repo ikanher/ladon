@@ -17,7 +17,7 @@ The current archived replay contract already requires content validation, isolat
 
 **Goals:** Give the replay owner an enforceable bounded-build strategy, actionable resource evidence and tests. Distinguish a fan-out problem from a single expensive compiler or dependency initialization. Preserve the same exact capsule and verification contract.
 
-**Non-Goals:** Raising defaults again, changing theorem source or its import closure, copying project OLeans from the original checkout, bypassing content/identity checks, changing the RSS metric silently, solving the separate large-lineage JSON export issue, or claiming a mathematical failure. This packet performs no implementation.
+**Non-Goals:** Raising defaults again, changing theorem source or its import closure, copying project OLeans from the original checkout, bypassing content/identity checks, changing the RSS metric silently, solving the separate large-lineage JSON export issue, or claiming a mathematical failure. The initial reporting packet performed no implementation; the subsequently authorized policy is recorded below.
 
 ## Decisions
 
@@ -50,3 +50,33 @@ The first feasibility gate is one small fixture run with the narrowest supported
 Preserve existing replay behavior unless a new policy is explicitly selected, or document a separately justified default change. Add versioned receipt fields without reinterpreting historical receipts. Update CLI help, examples and error messages alongside tests. Rollback is removal of the new policy path while retaining the existing verifier and all historical failure evidence.
 
 The scheduling mechanism is selected by the bounded feasibility gate above; its implementation may vary without changing the external requirements or stage-budget semantics.
+
+## Selected implementation after the feasibility gate
+
+The user subsequently authorized implementation. The pinned 4.33 experiment
+confirmed three simultaneous compilers on the small fixture (4.50 GiB aggregate
+RSS), versus one with ordered module requests (1.62 GiB). The first frontier of
+the actual capsule reproduced the fan-out; its three selected modules all built
+individually under the same 6 GiB ceiling. Raw measurements and scripts are in
+[evidence/implementation/hypothesis-check/REPORT.md](evidence/implementation/hypothesis-check/REPORT.md).
+
+The explicit public policy is `--build-policy ordered`; `lake-default` preserves
+existing scheduling. Ordered execution validates a dependency-first module DAG,
+then runs `lake --no-build build +Module:deps` before each exact
+`lake build +Module:leanArts`. The preflight fails closed with unsupported-facet
+when imports need rebuilding or the toolchain lacks the needed facet. It never
+falls back to a parallel rebuild. One deadline covers all preflights and module
+compilations. Separate dependency resolution and helper stages keep their prior
+budgets. Supported graph bounds are 4,096 modules and 262,144 import edges.
+
+Optional request-local process observations retain constant-space summaries:
+observed Lean fan-out, individual Lean peak RSS and descendant counts, with
+explicit unavailable/partial states. Receipt additions carry their own version 1;
+historical replay receipts are not rewritten. Aggregate process-tree RSS retains
+its prior interpretation. No PSS-based cap substitution was made.
+
+One public ordered replay of the actual capsule, capped at 6 GiB and 180 seconds
+per stage, kept one compiler active but hit the memory limit in
+`Mf.DP.GaussianPrivacyLoss` (6.09 GiB aggregate RSS). It did not reach comparison.
+This exposes the next individual-module cost and is not a verified replay. See
+[evidence/implementation/REPORT.md](evidence/implementation/REPORT.md).

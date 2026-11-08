@@ -1,0 +1,41 @@
+{
+  "status": "resource-limit",
+  "wallSeconds": 111.36439246078953,
+  "receiptIdentity": "sha256:ee452bfbb190cf6b102b3f9ee275b92db8e52102b294e926f9b4efd4aefe73ec",
+  "stages": [
+    {
+      "stage": "dependency_resolution",
+      "timedOut": false,
+      "memoryLimited": false,
+      "peakRssBytes": 2041749504,
+      "resourceObservations": {
+        "version": 1,
+        "status": "sampled",
+        "samples": 1206,
+        "unavailableSamples": 0,
+        "unidentifiedProcessNames": 2,
+        "leanMeasurement": "partial",
+        "maxDescendantProcesses": 5,
+        "maxLeanProcesses": 2,
+        "largestLeanRssBytes": 919150592,
+        "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+        "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+      }
+    },
+    {
+      "stage": "lean_build",
+      "peakRssBytes": 6539939840,
+      "timedOut": false,
+      "memoryLimited": true,
+      "resourceObservations": {
+        "version": 1,
+        "status": "sampled",
+        "leanMeasurement": "sampled",
+        "maxLeanProcesses": 1,
+        "largestLeanRssBytes": 5403742208,
+        "maxDescendantProcesses": 2
+      },
+      "diagnostic": "Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 6 GiB (6442450944 bytes). Observed sampled peak 6.09079 GiB (6539939840 bytes). Ask the user before retrying with a higher --max-rss-mib limit."
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "status": "resource-limit",
+  "stages": [
+    {
+      "stage": "dependency_resolution",
+      "command": [
+        "lake",
+        "update"
+      ],
+      "returncode": 0,
+      "timedOut": false,
+      "outputLimited": false,
+      "memoryLimited": false,
+      "peakRssBytes": 1945649152,
+      "stdoutSha256": "sha256:1e9297993486734613ef93f94f785d04ff28bb00238cb960520020b4ba2ce900",
+      "stderrSha256": "sha256:d47e96c4f9767fde19e022990d0d0bdb4b72d4400748146bead90a84fa2d7233",
+      "stdoutExcerpt": "Current branch: HEAD\nUsing cache from origin: (some leanprover-community/mathlib4)\nDecompressing 8689 already-cached file(s) (1 already decompressed)\nNo files to download\nDecompressed 8689 already-cached file(s)\nCompleted successfully in 8481 ms!\n",
+      "stderrExcerpt": "info: leanprover-community/mathlib: cloning https://github.com/leanprover-community/mathlib4\ninfo: leanprover-community/mathlib: checking out revision 'db584cd6d46c92f209a44c0f1c829460d327499d'\ninfo: kolmogorov_extension4: cloning https://github.com/RemyDegenne/kolmogorov_extension4.git\ninfo: kolmogorov_extension4: checking out revision '7d76e184c3d2138a2741baf923b57e9a01b9cf25'\ninfo: BrownianMotion: cloning https://github.com/RemyDegenne/brownian-motion.git\ninfo: BrownianMotion: checking out revision 'd94b0c1786e84d6e921d6cda18ea691bea17103c'\ninfo: MathFin: cloning https://github.com/raphaelrrcoelho/formal-mathfin.git\ninfo: MathFin: checking out revision '1df87ce9b7b7dfbfc57424cef8cce6cf21d9b12c'\ninfo: toolchain not updated; already up-to-date\ninfo: plausible: cloning https://github.com/leanprover-community/plausible\ninfo: plausible: checking out revision 'b7eb3304aeae834b12dda98993a37f6a41f6f0bb'\ninfo: LeanSearchClient: cloning https://github.com/leanprover-community/LeanSearchClient"
+    },
+    {
+      "stage": "lean_build",
+      "command": [
+        "lake",
+        "build",
+        "Mf.Optimization.StochasticApproximation.AdamGaussianConvergence"
+      ],
+      "returncode": -15,
+      "timedOut": false,
+      "outputLimited": false,
+      "memoryLimited": true,
+      "peakRssBytes": 7590899712,
+      "stdoutSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutExcerpt": "",
+      "stderrExcerpt": "",
+      "diagnostic": "Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 6 GiB (6442450944 bytes). Observed sampled peak 7.06958 GiB (7590899712 bytes). Ask the user before retrying with a higher --max-rss-mib limit."
+    }
+  ],
+  "diagnosticOnly": true
+}
