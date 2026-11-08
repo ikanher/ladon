@@ -8,9 +8,9 @@ The goal is to make AI-assisted mathematics easier to understand, check,
 attribute, and reuse. Ladon is in **alpha**. Lean performs the proof checking;
 a successful check does not certify the meaning or argument of nearby prose.
 
-The **0.4.0 development snapshot** adds bounded mathematical contract analysis
-and improves lexical theorem navigation. See the [release notes](docs/RELEASE_0_4_0.md)
-for migration, verification results and remaining limits.
+The **0.4.1 development snapshot** adds complete stored lineage projections and
+ordered capsule replay builds, retaining the 12 GiB default memory ceiling.
+See the [release notes](docs/RELEASE_0_4_1.md) for verification results and limits.
 
 ## Setup
 
