@@ -1,0 +1,73 @@
+{
+  "capsuleIdentity": "sha256:3362ff9da58d063e2164728da28ae0b6c9724c58c3e37d0adc404cd273442d9a",
+  "comparisons": {},
+  "isolation": {
+    "level": "fresh_copy_sanitized_environment",
+    "originalCheckoutReferencedByCommand": false,
+    "originalCheckoutReferencedByEnvironment": false,
+    "passed": true,
+    "replayRootRole": "fresh_temporary_repository"
+  },
+  "nonclaims": [
+    "The capsule is not claimed to be globally or declaration-level minimal.",
+    "External dependencies are locked but are not necessarily vendored for offline use.",
+    "Native and operating-system dependencies are not packaged hermetically.",
+    "Ladon reports Lean replay evidence and is not an independent proof authority."
+  ],
+  "planIdentity": "sha256:e3cdcbb450bf67ca5aa828ae762f081e7f8223f2327bae5102c8c3455fa6207a",
+  "receiptIdentity": "sha256:fa7b08d5996548a0095d48a9ef9a0d39fc7fe73d2efe9b188961052c974f09a5",
+  "schema": "ladon-theorem-capsule-replay-v1",
+  "stages": [
+    {
+      "command": [
+        "lake",
+        "update"
+      ],
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 1950691328,
+      "returncode": 0,
+      "stage": "dependency_resolution",
+      "stderrExcerpt": "info: leanprover-community/mathlib: cloning https://github.com/leanprover-community/mathlib4\ninfo: leanprover-community/mathlib: checking out revision 'db584cd6d46c92f209a44c0f1c829460d327499d'\ninfo: kolmogorov_extension4: cloning https://github.com/RemyDegenne/kolmogorov_extension4.git\ninfo: kolmogorov_extension4: checking out revision '7d76e184c3d2138a2741baf923b57e9a01b9cf25'\ninfo: BrownianMotion: cloning https://github.com/RemyDegenne/brownian-motion.git\ninfo: BrownianMotion: checking out revision 'd94b0c1786e84d6e921d6cda18ea691bea17103c'\ninfo: MathFin: cloning https://github.com/raphaelrrcoelho/formal-mathfin.git\ninfo: MathFin: checking out revision '1df87ce9b7b7dfbfc57424cef8cce6cf21d9b12c'\ninfo: toolchain not updated; already up-to-date\ninfo: plausible: cloning https://github.com/leanprover-community/plausible\ninfo: plausible: checking out revision 'b7eb3304aeae834b12dda98993a37f6a41f6f0bb'\ninfo: LeanSearchClient: cloning https://github.com/leanprover-community/LeanSearchClient",
+      "stderrSha256": "sha256:d47e96c4f9767fde19e022990d0d0bdb4b72d4400748146bead90a84fa2d7233",
+      "stdoutExcerpt": "Current branch: HEAD\nUsing cache from origin: (some leanprover-community/mathlib4)\nDecompressing 8689 already-cached file(s) (1 already decompressed)\nNo files to download\nDecompressed 8689 already-cached file(s)\nCompleted successfully in 8252 ms!\n",
+      "stdoutSha256": "sha256:336c3909670d2c13cb6c802b8f3be55954b7d30177b6e6ae9c9504dc3199f8c6",
+      "timedOut": false
+    },
+    {
+      "command": [
+        "lake",
+        "build",
+        "<target-module>"
+      ],
+      "diagnostic": "Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 32 GiB (34359738368 bytes). Observed sampled peak 32.0665 GiB (34431090688 bytes). Ask the user before retrying with a higher --max-rss-mib limit.",
+      "memoryLimited": true,
+      "outputLimited": false,
+      "peakRssBytes": 34431090688,
+      "returncode": -15,
+      "stage": "lean_build",
+      "stderrExcerpt": "",
+      "stderrSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutExcerpt": "⚠ [8080/8216] Built Mf.Probability.FiniteProductGaussian (<duration>)\nwarning: Mf/Probability/FiniteProductGaussian.lean:39:0: automatically included section variable(s) unused in theorem `Mf.Probability.FiniteProductGaussian.neg_measurable`:\n  [Fintype ι]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [Fintype ι] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`\nwarning: Mf/Probability/FiniteProductGaussian.lean:38:0: `neg_measurable` does not use the following hypothesis in its type:\n  • [Fintype ι] (#2)\n\nConsider replacing this hypothesis with the corresponding instance of `Finite` and using `Fintype.ofFinite` in the proof, or removing it entirely.\n\nNote: This linter can be disabled with `set_option linter.unusedFintypeInType false`\n⚠ [8628/8709] Built Mf.Optimization.PoissonClippedSGD.BernoulliMoments (<duration>)\nwarning: Mf/Optimization/PoissonClippedSGD/Be",
+      "stdoutSha256": "sha256:bd2d523973a643e5ede52b3cd6199cc79ad299575943c80a090eaf1d96199a86",
+      "timedOut": false
+    }
+  ],
+  "status": "resource-limit",
+  "target": {
+    "module": "Mf.Optimization.StochasticApproximation.AdamGaussianConvergence",
+    "name": "Mf.Optimization.StochasticApproximation.Adam.ordinaryGaussian_expectedNorm_tendsto_zero"
+  },
+  "toolchain": {
+    "helperVersion": "ladon-theorem-capsule-helper-v1",
+    "leanVersion": "4.33.0",
+    "protocolVersion": "ladon-theorem-capsule-stream-v1"
+  },
+  "trustFrontier": [
+    {
+      "kind": "axiom_reference",
+      "scope": "value",
+      "target": "propext"
+    }
+  ]
+}
