@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import os
 import re
 import shutil
@@ -58,34 +59,62 @@ def replay_theorem_capsule(
     timeout_seconds: float = 120.0,
     max_rss_bytes: int | None = DEFAULT_MAX_RSS_BYTES,
     network: str = "deny",
+    build_policy: str = "lake-default",
 ) -> dict[str, Any]:
     """Replay a capsule and return a receipt for success or classified failure."""
 
-    if timeout_seconds <= 0:
-        raise CapsuleInvocationError("replay timeout must be positive")
+    if not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
+        raise CapsuleInvocationError("replay timeout must be finite and positive")
     if max_rss_bytes is not None and max_rss_bytes <= 0:
         raise CapsuleInvocationError("replay RSS limit must be positive")
     if network not in SUPPORTED_NETWORK_POLICIES:
         raise CapsuleInvocationError(f"unsupported replay network policy: {network}")
+    if build_policy not in {"lake-default", "ordered"}:
+        raise CapsuleInvocationError(f"unsupported replay build policy: {build_policy}")
     try:
-        return _replay_validated(
+        receipt = _replay_validated(
             capsule,
             timeout_seconds,
             max_rss_bytes,
             network,
+            build_policy,
         )
     except CapsuleContentError as exc:
-        return _failure_receipt(
+        receipt = _failure_receipt(
             STATUS_CONTENT_INVALID,
             "content_validation",
             str(exc),
         )
     except OSError as exc:
-        return _failure_receipt(
+        receipt = _failure_receipt(
             STATUS_ENVIRONMENT_UNAVAILABLE,
             "environment_setup",
             str(exc),
         )
+
+
+    return replay_receipt({
+        **receipt,
+        "buildPolicy": {
+            "version": 1, "requested": build_policy,
+            "effective": _effective_policy(receipt, build_policy),
+            "scope": "project module compilation; dependency resolution is separately supervised",
+        },
+        "resourceLimits": {
+            "version": 1, "stageTimeoutSeconds": timeout_seconds,
+            "maxProcessTreeRssBytes": max_rss_bytes,
+            "maxProcessOutputBytes": PROCESS_OUTPUT_LIMIT_BYTES,
+            "memoryMetric": "aggregate process-tree RSS; shared pages may be counted repeatedly",
+        },
+    })
+
+
+def _effective_policy(receipt: Mapping[str, Any], requested: str) -> str:
+    if receipt.get("status") == STATUS_UNSUPPORTED:
+        return "not-enforced"
+    if any(row.get("stage") == "lean_build" for row in receipt.get("stages", [])):
+        return requested
+    return "not-started"
 
 
 def _replay_validated(
@@ -93,10 +122,18 @@ def _replay_validated(
     timeout_seconds: float,
     max_rss_bytes: int | None,
     network: str,
+    build_policy: str,
 ) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="ladon-capsule-source-") as source_temp:
         source = _capsule_source(capsule, Path(source_temp))
         manifest, plan = validate_capsule_content(source)
+        if build_policy == "ordered":
+            from ladon.theorem_capsule_build import ordered_modules
+
+            try:
+                ordered_modules(plan)
+            except ValueError as exc:
+                raise CapsuleContentError(f"ordered build graph: {exc}") from exc
         with tempfile.TemporaryDirectory(prefix="ladon-capsule-replay-") as replay_temp:
             replay_root = Path(replay_temp) / "repository"
             shutil.copytree(source, replay_root)
@@ -118,6 +155,7 @@ def _replay_validated(
                 max_rss_bytes,
                 network,
                 isolation,
+                build_policy,
             )
 
 
@@ -233,6 +271,7 @@ def _execute_replay(
     max_rss_bytes: int | None,
     network: str,
     isolation: Mapping[str, Any],
+    build_policy: str,
 ) -> dict[str, Any]:
     stages: list[dict[str, Any]] = []
     environment = _replay_environment(network)
@@ -262,16 +301,23 @@ def _execute_replay(
                 isolation,
                 comparisons={},
             )
-    target_module = str(plan.target["module"])
-    build = _run_stage(
-        ["lake", "build", target_module],
-        replay_root,
-        timeout_seconds,
-        max_rss_bytes,
-        environment,
-        stage="lean_build",
-        display_command=("lake", "build", "<target-module>"),
-    )
+    if build_policy == "ordered":
+        from ladon.theorem_capsule_build import run_ordered_build
+
+        build = run_ordered_build(
+            plan, replay_root, timeout_seconds, max_rss_bytes, environment, _run_stage
+        )
+    else:
+        target_module = str(plan.target["module"])
+        build = _run_stage(
+            ["lake", "build", target_module],
+            replay_root,
+            timeout_seconds,
+            max_rss_bytes,
+            environment,
+            stage="lean_build",
+            display_command=("lake", "build", "<target-module>"),
+        )
     stages.append(build["row"])
     if build["status"] is not None:
         status = _classify_build_failure(
@@ -368,6 +414,7 @@ def _run_stage(
         max_output_bytes=PROCESS_OUTPUT_LIMIT_BYTES,
         max_rss_bytes=max_rss_bytes,
         env=environment,
+        observe_resources=max_rss_bytes is not None,
     )
     status = _process_failure_status(result)
     return {
@@ -392,7 +439,7 @@ def _classify_build_failure(
     locked_external: bool,
     network: str,
 ) -> str:
-    if status == STATUS_RESOURCE_LIMIT:
+    if status in {STATUS_RESOURCE_LIMIT, STATUS_UNSUPPORTED}:
         return status
     text = f"{result.stderr}\n{result.stdout}".lower()
     dependency_markers = (
@@ -485,6 +532,7 @@ def _process_stage_row(
         "outputLimited": result.output_limited,
         "memoryLimited": result.memory_limited,
         "peakRssBytes": result.peak_rss_bytes,
+        "resourceObservations": getattr(result, "resource_observations", None) or {"version": 1, "status": "unavailable"},
         "stdoutSha256": sha256_bytes(stdout.encode()),
         "stderrSha256": sha256_bytes(stderr.encode()),
         "stdoutExcerpt": stdout[:1000],

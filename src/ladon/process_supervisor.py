@@ -21,6 +21,11 @@ from time import monotonic
 from typing import IO
 
 from ladon.correspondence_execution_accounting import measured_bounded_process
+from ladon.process_resource_observations import (
+    ProcessTreeObserver,
+    new_observer,
+    observed_resources,
+)
 from ladon.progress import process_tree_rss_bytes
 
 TERMINATE_GRACE_SECONDS = 2.0
@@ -51,6 +56,7 @@ class ProcessResult:
     output_limited: bool = False
     memory_limited: bool = False
     peak_rss_bytes: int | None = None
+    resource_observations: dict | None = None
 
     @property
     def succeeded(self) -> bool:
@@ -137,6 +143,7 @@ def run_bounded_target_process(
     env: Mapping[str, str] | None = None,
     max_rss_bytes: int | None = None,
     input_bytes: bytes | None = None,
+    observe_resources: bool = False,
 ) -> ProcessResult:
     """Run a bounded process group, optionally with finite file-backed stdin."""
 
@@ -151,6 +158,7 @@ def run_bounded_target_process(
     normalized = tuple(str(part) for part in command)
     raise_if_cancelled(cancel_event)
     started = monotonic()
+    observer = new_observer(observe_resources)
     with ExitStack() as temp_files:
         stdout_file = temp_files.enter_context(tempfile.TemporaryFile())
         stderr_file = temp_files.enter_context(tempfile.TemporaryFile())
@@ -175,6 +183,7 @@ def run_bounded_target_process(
                 cancel_event=cancel_event,
                 terminate_grace_seconds=terminate_grace_seconds,
                 max_rss_bytes=max_rss_bytes,
+                observer=observer,
             )
         )
         stdout, stderr = _read_bounded_outputs(
@@ -192,6 +201,7 @@ def run_bounded_target_process(
             output_limited=output_limited,
             memory_limited=memory_limited,
             peak_rss_bytes=peak_rss_bytes,
+            resource_observations=observed_resources(observer),
         )
 
 
@@ -217,6 +227,7 @@ def _supervise_file_backed_process(
     cancel_event: threading.Event | None,
     terminate_grace_seconds: float,
     max_rss_bytes: int | None,
+    observer: ProcessTreeObserver | None = None,
 ) -> tuple[bool, bool, bool, int | None]:
     try:
         with termination_signal_handler():
@@ -229,6 +240,7 @@ def _supervise_file_backed_process(
                 max_rss_bytes=max_rss_bytes,
                 started=started,
                 cancel_event=cancel_event,
+                observer=observer,
             )
     except BaseException:
         _terminate_file_backed_process(process, terminate_grace_seconds)
@@ -253,12 +265,15 @@ def _wait_for_file_backed_process(
     max_rss_bytes: int | None,
     started: float,
     cancel_event: threading.Event | None,
+    observer: ProcessTreeObserver | None = None,
 ) -> tuple[bool, bool, bool, int | None]:
     """Poll one process until completion or the first configured limit."""
 
     peak_rss_bytes: int | None = None
     while process.poll() is None:
         raise_if_cancelled(cancel_event)
+        if observer is not None:
+            observer.sample(process.pid)
         timed_out = monotonic() - started >= timeout_seconds
         output_limited = _captured_size(stdout_file, stderr_file) > max_output_bytes
         memory_limited, peak_rss_bytes = _sample_rss_limit(

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -58,6 +59,7 @@ def build_theorem_parser() -> argparse.ArgumentParser:
     replay.add_argument("capsule", help="Capsule directory or supported archive.")
     _add_result_options(replay, default_output="-")
     _add_timeout(replay)
+    _add_build_policy(replay)
     replay.add_argument(
         "--network",
         choices=("deny", "allow"),
@@ -90,6 +92,7 @@ def build_theorem_parser() -> argparse.ArgumentParser:
         help="Whether verification may acquire locked external packages.",
     )
     _add_timeout(extract)
+    _add_build_policy(extract)
     lineage = commands.add_parser(
         "lineage",
         help="Query exact compiled theorem dependencies from the project-local SQLite index.",
@@ -297,6 +300,7 @@ def _replay_command(args: argparse.Namespace) -> int:
         timeout_seconds=args.timeout,
         max_rss_bytes=_max_rss_bytes(args),
         network=args.network,
+        build_policy=args.build_policy,
     )
     _write_result(
         receipt,
@@ -310,6 +314,8 @@ def _replay_command(args: argparse.Namespace) -> int:
 def _extract_command(args: argparse.Namespace) -> int:
     from ladon.theorem_capsule_materialization import materialize_theorem_capsule
 
+    if args.build_policy != "lake-default" and not args.verify:
+        raise CapsuleInvocationError("--build-policy ordered requires --verify for extraction")
     plan = plan_theorem_capsule(
         Path(args.repo_root),
         args.theorem,
@@ -332,10 +338,13 @@ def _extract_command(args: argparse.Namespace) -> int:
             timeout_seconds=args.timeout,
             max_rss_bytes=_max_rss_bytes(args),
             network=args.network,
+            build_policy=args.build_policy,
         )
         result["status"] = receipt["status"]
         result["receiptIdentity"] = receipt["receiptIdentity"]
         result["stages"] = receipt.get("stages", [])
+        result["buildPolicy"] = receipt.get("buildPolicy")
+        result["resourceLimits"] = receipt.get("resourceLimits")
     _write_command_result(result, args.format)
     return (
         EXIT_SUCCESS
@@ -415,8 +424,8 @@ def _positive_timeout(value: str) -> float:
         parsed = float(value)
     except ValueError as exc:
         raise argparse.ArgumentTypeError("timeout must be numeric") from exc
-    if parsed <= 0:
-        raise argparse.ArgumentTypeError("timeout must be positive")
+    if not math.isfinite(parsed) or parsed <= 0:
+        raise argparse.ArgumentTypeError("timeout must be finite and positive")
     return parsed
 
 
@@ -447,3 +456,10 @@ def _max_rss_bytes(args: argparse.Namespace) -> int | None:
 
 
 __all__ = ["build_theorem_parser", "theorem_main"]
+
+
+def _add_build_policy(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument(
+        "--build-policy", choices=("lake-default", "ordered"), default="lake-default",
+        help="Build scheduling: Lake defaults, or dependency-first project modules with a shared build deadline. Ordered requires up-to-date imported dependencies.",
+    )
