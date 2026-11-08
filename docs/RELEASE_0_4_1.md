@@ -4,7 +4,9 @@ This internal snapshot adds complete stored theorem-lineage projections and
 controlled capsule replay builds. It retains the shared **12 GiB** default
 process-tree RSS ceiling (`--max-rss-mib 12288`) for planning and replay,
 including `--build-policy ordered`. The earlier 6 GiB capsule failures used an
-explicit experimental override; 6 GiB was never the product default.
+explicit experimental override; 6 GiB was never the product default. A follow-up
+with the 12 GiB default built 19 modules, peaked at 7.60 GiB, and then exhausted
+the shared 180-second build deadline before final verification.
 
 ## Changes
 

@@ -1,0 +1,14 @@
+{
+  "version": "0.4.1",
+  "wheelSha256": "95497affa89856ded8c364d7d800796d5ae7f4e04d2bac266e8aee2ab94d6a7c",
+  "defaultMemoryLimitBytes": 12884901888,
+  "defaultCliRssMiB": 12288,
+  "note": "The shared 12 GiB default predates this bump; new tests protect service/CLI forwarding. Previous 6 GiB receipts are explicit-override history.",
+  "tests": {
+    "command": "python -m pytest -q tests/test_capsule_memory_defaults.py tests/test_version_cli.py",
+    "passed": 7,
+    "exitStatus": 0
+  },
+  "lockCheck": "uv lock --check --offline: passed",
+  "installedWheelCheck": "version0.4.1, replay API12GiB, ordered CLI12288MiB: passed"
+}

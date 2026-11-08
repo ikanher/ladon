@@ -1,8 +1,8 @@
 # Tasks
 
 Implementation was authorized after the reporting session and measured hypothesis check.
-Current result: ordered scheduling and small verified replay pass; the actual
-6 GiB integration stops in one expensive compiler. Tests and the remaining
+Current result: ordered scheduling and small verified replay pass; the authorized
+12 GiB default-cap follow-up completed 19 modules before its shared build deadline. Tests and the remaining
 large-case gate are recorded in [the implementation report](evidence/implementation/REPORT.md).
 
 ## 1. Establish the resource-control mechanism on a small fixture

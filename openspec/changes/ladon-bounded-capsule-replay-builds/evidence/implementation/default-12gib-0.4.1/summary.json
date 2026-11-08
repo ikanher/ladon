@@ -1,0 +1,48 @@
+{
+  "status": "resource-limit",
+  "wallSeconds": 267.937469891971,
+  "resourceLimits": {
+    "version": 1,
+    "stageTimeoutSeconds": 180,
+    "maxProcessTreeRssBytes": 12884901888,
+    "maxProcessOutputBytes": 16777216,
+    "memoryMetric": "aggregate process-tree RSS; shared pages may be counted repeatedly"
+  },
+  "stages": [
+    {
+      "stage": "dependency_resolution",
+      "timedOut": false,
+      "memoryLimited": false,
+      "peakRssBytes": 1957093376,
+      "resourceObservations": {
+        "version": 1,
+        "status": "sampled",
+        "samples": 1165,
+        "unavailableSamples": 0,
+        "unidentifiedProcessNames": 2,
+        "leanMeasurement": "partial",
+        "maxDescendantProcesses": 4,
+        "maxLeanProcesses": 2,
+        "largestLeanRssBytes": 906244096,
+        "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+        "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+      }
+    },
+    {
+      "stage": "lean_build",
+      "peakRssBytes": 8159080448,
+      "timedOut": true,
+      "memoryLimited": false,
+      "resourceObservations": {
+        "version": 1,
+        "status": "partial",
+        "leanMeasurement": "partial",
+        "maxLeanProcesses": 1,
+        "largestLeanRssBytes": 7113117696,
+        "maxDescendantProcesses": 1
+      }
+    }
+  ],
+  "completedModuleBuilds": 19,
+  "lastModule": "Mf.DP.BNB.BNBTraceLaw"
+}

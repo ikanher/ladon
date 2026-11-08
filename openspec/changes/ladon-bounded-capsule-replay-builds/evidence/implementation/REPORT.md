@@ -42,8 +42,8 @@ Dependency resolution succeeded. Two project modules built. The next module,
 - The final theorem/dependency comparison was not reached.
 
 This is a resource-limit outcome, not verified or mathematically rejected.
-No retry with a larger memory limit was made. The next large-case gate requires
-an explicitly authorized memory budget sufficient for this single module.
+No retry with a larger memory limit was made. The user subsequently authorized a 12 GiB trial; its outcome is recorded in
+the follow-up below.
 
 The attempt preceded review fixes rejecting non-finite timeouts and oversized
 edge populations and correcting descendant counts to exclude the supervised
@@ -94,3 +94,33 @@ No schemas or stored evidence require migration. The existing replay receipt
 schema receives additive `buildPolicy`, `resourceLimits` and observation fields,
 each versioned independently; historical receipts are unchanged. Removing the
 new policy path restores legacy scheduling without deleting capsule data.
+
+## Authorized 12 GiB default and 0.4.1 follow-up
+
+The user authorized 12 GiB and requested a version bump. The shared product
+default was already 12 GiB; the prior 6 GiB experiments explicitly overrode it.
+The default is now protected by CLI/parser/service-forwarding regression tests,
+and the package/lockfile are bumped to **0.4.1**. The isolated 0.4.1 wheel and
+`uv run --locked --offline ladon --version` both report the new version. The
+installed replay API default is 12,884,901,888 bytes and the CLI default is
+12,288 MiB. Seven focused default/version checks pass; no runtime implementation
+changed in this follow-up.
+
+One further public ordered replay used the service default (no explicit RSS
+argument), `network="allow"`, and the existing 180-second stage budgets.
+It passed `Mf.DP.GaussianPrivacyLoss` and completed **19** module builds before
+exhausting the shared build deadline during `Mf.DP.BNB.BNBTraceLaw`.
+The build peak was **8,159,080,448 bytes (7.60 GiB)**, `memoryLimited=false`,
+`timedOut=true`, with at most one sampled Lean process. Total replay wall time
+was 267.94 seconds including dependency setup. Final theorem comparison was
+not reached; this is a timeout result, not a verified capsule. The remaining
+large-case gate is enough build time for the full closure; the unbuilt remainder
+has not been qualified under this memory cap.
+
+The new [input identity](default-12gib-0.4.1/inputs.json),
+[receipt](default-12gib-0.4.1/receipt.json),
+[summary](default-12gib-0.4.1/summary.json),
+[installed version](default-12gib-0.4.1/installed-version.json), and
+[release checks](default-12gib-0.4.1/release-checks.json) preserve this outcome
+separately from the historical 6/32/48 GiB runs. The cap and timeout were not
+raised further after the timeout.
