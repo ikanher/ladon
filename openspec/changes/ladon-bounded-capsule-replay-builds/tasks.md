@@ -32,3 +32,11 @@ large-case gate are recorded in [the implementation report](evidence/implementat
 
 - Hand the result back to the historical proof-lineage owner; that owner alone updates mathematical/capsule acceptance in the proof project.
 - Archive only after the owning Ladon review and implementation acceptance gates pass.
+
+## Full research-capsule field result, R05
+
+All434project modules and868ordered build steps now pass within4636seconds
+and10.067GiB. The separate final theorem query hits the16MiB output cap; its
+comparisons remain empty. See [documentation-only owner handoff](FIELD-OUTPUT-LIMIT-R05.md).
+This is a new transport gate, not a failure of ordered build scheduling or a
+verified whole replay. No implementation or cap change was made by the caller.
