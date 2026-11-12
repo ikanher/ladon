@@ -460,6 +460,7 @@ def _rebuild_original_plan(plan, repo_root, source_root, native_artifacts):
         selection["occurrence"],
         scoped=profile_is_scoped(plan["slice"]),
         max_nodes=plan["slice"]["limits"]["nodes"],
+        max_depth=plan["slice"]["limits"]["depth"],
     )
     if fresh.get("sliceId") != plan["slice"]["sliceId"]:
         raise ValueError("stale source, context, toolchain, or selected application")
@@ -605,6 +606,7 @@ def _verify_inputs_unchanged(root, selection, source, fresh, plan, source_root):
         selection["occurrence"],
         scoped=profile_is_scoped(fresh),
         max_nodes=fresh["limits"]["nodes"],
+        max_depth=fresh["limits"]["depth"],
     )
     if final.get("sliceId") != fresh["sliceId"]:
         raise ValueError("environment changed during correspondence checking")

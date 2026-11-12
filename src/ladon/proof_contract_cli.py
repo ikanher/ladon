@@ -8,6 +8,7 @@ from pathlib import Path
 from ladon.correspondence_cli import load_plan, publish
 from ladon.proof_contract_io import load_bounded_plans
 from ladon.proof_contract_source import produce_prose_contract, verify_prose_snapshot
+from ladon.proof_slice_limits import DEFAULT_MAX_DEPTH
 from ladon.resource_limits import DEFAULT_MAX_RSS_MIB
 
 
@@ -73,6 +74,8 @@ def _parser():
     _input_arguments(expand)
     expand.add_argument("--application", required=True)
     expand.add_argument("--obligation-id", required=True)
+    expand.add_argument("--max-depth", type=int, default=DEFAULT_MAX_DEPTH,
+                        help="Expression traversal depth allowance (default: 128; 1..4096).")
     expand.add_argument("--occurrence", type=int, default=0)
     return parser
 
@@ -131,6 +134,9 @@ def contract_main(argv):
                   "review-probe": application_probe,
                   "check-route-context-bridge": route_context_bridge}[args.operation](args)
         publish(result, args.output)
+        from ladon.proof_contract_guidance import emit_contract_guidance
+
+        emit_contract_guidance(args, result)
         return _exit_status(result)
     except (ProbeCalibrationOutputLimit, ApplicationProbeOutputLimit) as error:
         print(str(error), file=sys.stderr)
@@ -281,7 +287,8 @@ def _expand(args):
     from ladon.proof_contract_formal import expand_formal_snapshot
 
     return expand_formal_snapshot(load_plan(args.input), args.root, application=args.application,
-                                  obligation_id=args.obligation_id, occurrence=args.occurrence)
+                                  obligation_id=args.obligation_id, occurrence=args.occurrence,
+                                  max_depth=args.max_depth)
 
 
 def _fidelity_record(args):

@@ -63,7 +63,8 @@ def prepare_context(request):
     if hashlib.sha256(source).hexdigest() != frozen['source']['sha256']:
         raise ValueError('original context source changed after planning')
     actual = extract_proof_slice(root, selection['sourceFile'], selection['module'],
-        selection['declaration'], selection['application'], selection['occurrence'], scoped=True)
+        selection['declaration'], selection['application'], selection['occurrence'], scoped=True,
+        max_nodes=frozen['limits']['nodes'], max_depth=frozen['limits']['depth'])
     if _resource_stop(actual, owned['limits']) or not actual.get('complete'):
         return {'status': 'incomplete', 'extraction': actual}
     if actual['sliceId'] != frozen['sliceId']:

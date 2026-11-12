@@ -4,7 +4,7 @@ import json
 
 from ladon._expr_graph_protocol import validate_structural_text
 from ladon.correspondence_interpretation import closed, text
-from ladon.proof_slice_limits import validate_max_nodes
+from ladon.proof_slice_limits import validate_max_depth, validate_max_nodes
 from ladon.scoped_slice import (
     premise_rows,
     profile_is_scoped,
@@ -76,7 +76,7 @@ def _arguments(rows):
         _expression(row["type"])
 
 
-def _observations(frame, *, scoped=False, transported=False):
+def _observations(frame, *, scoped=False, transported=False, max_depth=64):
     closed(
         frame,
         {
@@ -113,7 +113,7 @@ def _observations(frame, *, scoped=False, transported=False):
         validate_structural_text(row["closedApplicationProofStructural"])
         if scoped:
             _locals(row["localContext"])
-            validate_provider_rows(row, _expression)
+            validate_provider_rows(row, _expression, max_depth=max_depth)
 
 
 def validate_slice_shape(value):
@@ -134,6 +134,7 @@ def validate_slice_shape(value):
         "limits",
     )
     validate_max_nodes(value["limits"]["nodes"])
+    validate_max_depth(value["limits"]["depth"])
     inventory = value["compiledInventory"]
     closed(
         inventory,
@@ -153,7 +154,7 @@ def validate_slice_shape(value):
         closed(row, {"module", "digest"}, "compiled module")
     _locals(value["localContext"])
     scoped = profile_is_scoped(value)
-    _observations(value["observation"], scoped=scoped,
+    _observations(value["observation"], scoped=scoped, max_depth=value["limits"]["depth"],
                   transported=value["helper"]["profile"] == "scoped-identity-transport-v2")
     if len(value["nodes"]) != 1:
         raise ValueError("selected-application profile requires exactly one selected node")

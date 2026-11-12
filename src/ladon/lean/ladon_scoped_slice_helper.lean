@@ -18,7 +18,7 @@ private structure ScopedOccurrence where
   deriving Inhabited
 
 private partial def scopedOccurrences (root : Expr) (needle : Name)
-    (maxNodes := 8192) (maxDepth := 64) : MetaM (Array ScopedOccurrence) := do
+    (maxNodes := 8192) (maxDepth := 128) : MetaM (Array ScopedOccurrence) := do
   let visited ← IO.mkRef 0
   let rec walk (e : Expr) (depth : Nat) (path : Array Nat)
       (isLeading : Bool) (nestedIds : Array String) : MetaM (Array ScopedOccurrence) := do
@@ -162,7 +162,7 @@ private partial def identityTransport (selected : Expr) : MetaM Json := do
         ("closedProof", toJson closedProofText)]
   rebuild 0 #[] #[] #[]
 
-elab "#ladon_proof_slice " decl:ident app:ident maxNodes:num : command => do
+elab "#ladon_proof_slice " decl:ident app:ident maxNodes:num maxDepth:num : command => do
   liftTermElabM do
     let declName ← resolveName decl.getId
     let appName ← resolveName app.getId
@@ -183,7 +183,7 @@ elab "#ladon_proof_slice " decl:ident app:ident maxNodes:num : command => do
           ("type", ← jsonExpr d.type),
           ("isImplementationDetail", toJson d.isImplementationDetail)]
     let range? ← findDeclarationRanges? declName
-    let occurrences ← scopedOccurrences value appName maxNodes.getNat
+    let occurrences ← scopedOccurrences value appName maxNodes.getNat maxDepth.getNat
     let (locals, resultRows) ← lambdaLetTelescope value fun proofLocals _ => do
       let localRows ← proofLocals.mapM fun fvar => do
         let d ← fvar.fvarId!.getDecl

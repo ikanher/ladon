@@ -17,7 +17,12 @@ from ladon._proof_slice_runtime import (
 )
 from ladon._source_goal_helpers import helper_source
 from ladon.lean_toolchain import resolve_toolchain_context, verify_toolchain_identities
-from ladon.proof_slice_limits import DEFAULT_MAX_NODES, validate_max_nodes
+from ladon.proof_slice_limits import (
+    DEFAULT_MAX_DEPTH,
+    DEFAULT_MAX_NODES,
+    validate_max_depth,
+    validate_max_nodes,
+)
 from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
 from ladon.source_association_io import _read_regular, _source_path
@@ -53,8 +58,9 @@ def _validate_selection(module, declaration, application, occurrence):
 
 
 def extract_proof_slice(repo_root, source_file, module, declaration, application, occurrence=0,
-                        *, scoped=False, max_nodes=DEFAULT_MAX_NODES):
+                        *, scoped=False, max_nodes=DEFAULT_MAX_NODES, max_depth=DEFAULT_MAX_DEPTH):
     max_nodes = validate_max_nodes(max_nodes)
+    max_depth = validate_max_depth(max_depth)
     if type(scoped) is not bool:
         raise TypeError("scoped profile selection must be boolean")
     root = Path(repo_root).resolve(strict=True)
@@ -91,7 +97,7 @@ def extract_proof_slice(repo_root, source_file, module, declaration, application
             "rssBytes": DEFAULT_MAX_RSS_BYTES,
             "outputBytes": 8 * 1024**2,
             "nodes": max_nodes,
-            "depth": 64,
+            "depth": max_depth,
         },
     }
     with tempfile.TemporaryDirectory(prefix="ladon-proof-slice-") as temporary:
@@ -109,7 +115,7 @@ def extract_proof_slice(repo_root, source_file, module, declaration, application
             selected_application = declaration.rsplit(".", 1)[0] + "." + application
         code = code.replace(
             b"-- LADON_SELECTION",
-            f"#ladon_proof_slice {declaration} {selected_application} {max_nodes}".encode(),
+            f"#ladon_proof_slice {declaration} {selected_application} {max_nodes} {max_depth}".encode(),
         )
         path = private / "LadonSlice.lean"
         path.write_bytes(code)

@@ -10,7 +10,7 @@ open Lean Elab Command Meta
 -- LADON_ROUNDTRIP_PRINT
 
 private def boundedOccurrences (root : Expr) (needle : Name)
-    (maxNodes := 8192) (maxDepth := 64) : MetaM (Array Expr) := do
+    (maxNodes := 8192) (maxDepth := 128) : MetaM (Array Expr) := do
   let mut todo : Array (Expr × Nat) := #[(root, 0)]
   let mut visited := 0
   let mut found := #[]
@@ -80,7 +80,7 @@ private def checkedRoundtrip (target proof : Expr) : MetaM (String × String) :=
           throwError "closed proof round-trip changed its expression"
         pure (targetText, proofText)
 
-elab "#ladon_proof_slice " decl:ident app:ident maxNodes:num : command => do
+elab "#ladon_proof_slice " decl:ident app:ident maxNodes:num maxDepth:num : command => do
   liftTermElabM do
     let declName ← resolveName decl.getId
     let appName ← resolveName app.getId
@@ -113,7 +113,7 @@ elab "#ladon_proof_slice " decl:ident app:ident maxNodes:num : command => do
           ("isProp", toJson (← isProp d.type)),
           ("binderInfo", toJson (repr d.binderInfo).pretty),
           ("type", ← jsonExpr d.type), ("letValue", valueJson)]
-      let occurrences ← boundedOccurrences body appName maxNodes.getNat
+      let occurrences ← boundedOccurrences body appName maxNodes.getNat maxDepth.getNat
       if occurrences.isEmpty then throwError "no exact application head {appName} in {declName}"
       let mut rows := #[]
       for occurrence in [:occurrences.size] do

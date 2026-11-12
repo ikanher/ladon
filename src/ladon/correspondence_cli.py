@@ -13,7 +13,7 @@ from ladon.correspondence_interpretation import (
     validate_interpretation,
 )
 from ladon.investigation import load_plan as _load_plan
-from ladon.proof_slice_limits import DEFAULT_MAX_NODES, MAX_NODE_BUDGET
+from ladon.proof_slice_limits import DEFAULT_MAX_DEPTH, DEFAULT_MAX_NODES, MAX_NODE_BUDGET
 from ladon.proofir_correspondence import (
     bind_native_interpretation,
     correspondence_artifacts,
@@ -54,13 +54,15 @@ def proof_slice_main(argv):
         "--max-nodes", type=int, default=DEFAULT_MAX_NODES,
         help=f"Traversal node allowance, 1..{MAX_NODE_BUDGET} (default: {DEFAULT_MAX_NODES})",
     )
+    parser.add_argument("--max-depth", type=int, default=DEFAULT_MAX_DEPTH,
+                        help="Expression traversal depth allowance (default: 128; 1..4096).")
     parser.add_argument("--scoped", action="store_true", help="Open bounded nested local scopes")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
     try:
         result = extract_proof_slice(
             args.repo, args.source, args.module, args.declaration, args.application, args.occurrence,
-            scoped=args.scoped, max_nodes=args.max_nodes,
+            scoped=args.scoped, max_nodes=args.max_nodes, max_depth=args.max_depth,
         )
         publish(result, args.output)
         return 0 if result["complete"] else 2

@@ -23,6 +23,8 @@ from ladon.proof_contract_expressions import (
 )
 from ladon.proof_contract_worker import PROFILE
 
+MAX_ESTIMATE_BINDERS = 8
+
 
 def _recognize_estimate(expression: dict[str, Any]) -> dict[str, Any]:
     binders: list[dict[str, Any]] = []
@@ -66,7 +68,7 @@ def _recognize_estimate(expression: dict[str, Any]) -> dict[str, Any]:
     }
 
 def _validate_initial_telescope(binders):
-    if len(binders) > 8:
+    if len(binders) > MAX_ESTIMATE_BINDERS:
         raise _Unsupported(
             "telescope-limit", "statement telescope exceeds the supported bound", "telescope"
         )

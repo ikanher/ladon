@@ -8,6 +8,7 @@ from ladon.proof_contract_artifacts import source_contract_artifact
 from ladon.proof_contract_rules import PROFILE_DIGEST
 from ladon.proof_contract_source import snapshot_identity
 from ladon.proof_slice import _validate_selection, extract_proof_slice, pinned_toolchain
+from ladon.proof_slice_limits import DEFAULT_MAX_DEPTH, validate_max_depth
 from ladon.proofir_v3 import canonical_bytes, make_envelope, validate_envelope_batch
 from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES
 from ladon.source_association_io import _read_regular, _source_path
@@ -120,10 +121,12 @@ def _extract_slice(*args, **kwargs):
     return extract_proof_slice(*args, **kwargs)
 
 
-def expand_formal_snapshot(snapshot, root, *, application, obligation_id, occurrence=0):
+def expand_formal_snapshot(snapshot, root, *, application, obligation_id, occurrence=0,
+                           max_depth=DEFAULT_MAX_DEPTH):
     """Expand a named obligation while keeping the frozen statement observation."""
     from ladon.proof_contract_payloads import identifier
 
+    max_depth = validate_max_depth(max_depth)
     frozen = verify_formal_snapshot(snapshot, root)
     selection = frozen["selection"]
     _validate_selection(selection["module"], selection["declaration"], application, occurrence)
@@ -131,7 +134,8 @@ def expand_formal_snapshot(snapshot, root, *, application, obligation_id, occurr
     request = {"statementSnapshotId": frozen["snapshotId"], "obligationId": obligation_id,
                "application": application, "occurrence": occurrence}
     sliced = _extract_slice(Path(root), frozen["source"]["path"], selection["module"],
-                            selection["declaration"], application, occurrence, scoped=True)
+                            selection["declaration"], application, occurrence, scoped=True,
+                            max_depth=max_depth)
     # Even a successful selected slice does not cover all providers or the whole body.
     result = {"schema": "ladon-contract-expansion-v1", "request": request,
               "statementSnapshot": frozen, "slice": sliced,

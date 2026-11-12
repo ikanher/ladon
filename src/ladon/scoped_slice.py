@@ -44,9 +44,9 @@ def _validate_provider_row(row, locals_, expression_validator):
         raise ValueError("provider boundary/value classification changed")
 
 
-def _validate_scope_observations(application, locals_):
+def _validate_scope_observations(application, locals_, max_depth):
     path = application["scopePath"]
-    if not isinstance(path, list) or len(path) > 64 or any(
+    if not isinstance(path, list) or len(path) > max_depth or any(
         type(index) is not int or not 0 <= index <= 4096 for index in path
     ):
         raise ValueError("invalid bounded lexical scope path")
@@ -60,12 +60,12 @@ def _valid_nested_ids(nested, locals_):
             and len(nested) == len(set(nested)))
 
 
-def validate_provider_rows(application, expression_validator):
+def validate_provider_rows(application, expression_validator, *, max_depth=64):
     providers = _validate_provider_order(application)
     locals_ = {row["localId"]: row for row in application["localContext"]}
     for row in providers:
         _validate_provider_row(row, locals_, expression_validator)
-    _validate_scope_observations(application, locals_)
+    _validate_scope_observations(application, locals_, max_depth)
 
 
 def premise_rows(application, *, scoped):

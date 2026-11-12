@@ -219,6 +219,20 @@ Inspection checks freshness and deterministic native attachments without proof
 body extraction. Expansion requires an explicit application and obligation and
 retains the original statement snapshot even if the selected body slice is
 unavailable. Selected slices leave overall provider/body coverage incomplete.
+An `unsupported` statement result can still retain the full typed Lean observation.
+The `norm-scale-v1` recognizer admits at most eight binders and a restricted Nat
+inequality shape. This profile rejection does not prevent `expand` from inspecting
+an original proof application. Use the saved observation as `--input`, even when
+`contract` is null; the CLI prints this next step on stderr. Expansion has separate
+resource and expression bounds. Both `contract expand` and
+`ladon proof-search proof slice` accept `--max-depth` (default 128; range 1–4096).
+For example, append `--max-depth 1024` to inspect a deeper proof. The requested
+depth is retained in `slice.limits.depth` and reused by correspondence rechecks;
+raising it does not raise the time, memory, output or node allowances.
+A failed slice leaves the route unresolved; the
+CLI prints a bounded excerpt of the failing process output. Complete details stay
+in the saved `slice.processReceipts`.
+
 Statement completeness describes the admitted feature fragment only. A snapshot
 hash binds recorded bytes; it is not an authenticated Lean certificate.
 
