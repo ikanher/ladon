@@ -1,0 +1,9 @@
+# Configurable production traversal depth
+
+User authorized default 128 with CLI configuration after the depth-1024 measurement. The extractor API and both native helpers now receive the exact requested traversal depth. `proof-search proof slice --max-depth N` and `investigation contract expand --max-depth N` default to 128 and accept integer values 1 through 4096. Time, memory, node and output bounds still apply independently.
+
+The saved `limits.depth` binds slice identity; shape validation uses that value for scoped paths. Both correspondence re-extraction passes and original-context preparation replay the saved depth and node allowances. Legacy explicit depth 64 values remain valid; helper hashes change with this implementation, so historical slices must be re-extracted for fresh checking.
+
+Independent read-only review by the Luna-medium agent found no saved-slice consumer omission. It confirmed this configures AST occurrence traversal and scoped paths, not separate printer/lambda or expression serialization bounds. The measured DP-SGD provider extraction remains unavailable downstream at term reconstruction. No mathematical detection gain is claimed.
+
+Tests exercise invalid API depths, CLI depth selection in both native extraction profiles, scoped traversal exhaustion, recorded limits and saved artifact validation, and contract-expansion CLI forwarding. Existing node-budget/replay and formal CLI/snapshot tests were included. One new-test expectation was corrected because the unscoped fixture's shallow proof fits depth 1. Final depth tests passed 9/9 in 22.21 seconds ([output](depth-tests-final.txt)). The earlier combined run passed all 25 existing tests and seven of eight depth tests before that expectation was corrected ([retained output](depth-tests-initial.txt)). Ruff on changed Python files and strict umbrella validation passed.

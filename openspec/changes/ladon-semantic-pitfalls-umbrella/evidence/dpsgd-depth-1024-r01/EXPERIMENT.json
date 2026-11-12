@@ -1,0 +1,33 @@
+{
+  "purpose": "Measure original selected application at expression depth 1024 before selecting a default or changing production API",
+  "maxDepth": 1024,
+  "maxNodes": 131072,
+  "maxRssMiB": 12288,
+  "secondsPerProcess": 60,
+  "changes": {
+    "lean/ladon_proof_slice_helper.lean": {
+      "old": "(maxDepth := 64)",
+      "new": "(maxDepth := 1024)",
+      "originalSha256": "e6269db96f5ab2efe4bb76965459ce1c953d2e9741b45ce9613c24a7ebf0d0d8",
+      "experimentSha256": "21d6967f4729bbdb687b135fa717685fb42e7201de04a89322e73df1ba6d8df4"
+    },
+    "lean/ladon_scoped_slice_helper.lean": {
+      "old": "(maxDepth := 64)",
+      "new": "(maxDepth := 1024)",
+      "originalSha256": "e4e8b6c625b8a08b1b69cd47a68943c6e2de2bcd709a49127419a610ba012019",
+      "experimentSha256": "b02c3c45107cb64baa18a76780950bca61a175098b7f7e464da629cd1f06b23c"
+    },
+    "proof_slice.py": {
+      "old": "\"depth\": 64",
+      "new": "\"depth\": 1024",
+      "originalSha256": "fe670f44a4349531ad45e02a974739a55226b822dca379ebe1838d76a3ab301a",
+      "experimentSha256": "5496897bcba2bc05ba27ca46f40951b85689954554535e8b22da0a8817677939"
+    },
+    "scoped_slice.py": {
+      "old": "len(path) > 64",
+      "new": "len(path) > 1024",
+      "originalSha256": "fe30335e0a7cbe53862be345f9a04e2289c44f35f6705cbb870ed74e1336c7dd",
+      "experimentSha256": "807bf22cb873b20df9cd2dfdd53dc7cef736ec9c60527353d2d611b6f7e6a821"
+    }
+  }
+}

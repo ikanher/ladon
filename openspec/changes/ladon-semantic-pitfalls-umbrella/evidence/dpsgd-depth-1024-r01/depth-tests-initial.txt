@@ -1,0 +1,23 @@
+......F..........................                                        [100%]
+=================================== FAILURES ===================================
+______________ test_native_depth_failure_and_cli_override[False] _______________
+
+scoped = False
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-410/test_native_depth_failure_and_0')
+
+    @pytest.mark.parametrize('scoped', [False, True])
+    def test_native_depth_failure_and_cli_override(scoped, tmp_path):
+        args = ['--repo', str(ROOT), '--source', 'Proof.lean', '--module', 'Proof',
+                '--declaration', 'Correspondence.term', '--application', 'bridge']
+        if scoped:
+            args += ['--scoped']
+        for depth, expected in [(1, 2), (256, 0)]:
+            output = tmp_path / f'{depth}.json'
+>           assert proof_slice_main(args + ['--max-depth', str(depth), '--output', str(output)]) == expected
+E           AssertionError: assert 0 == 2
+E            +  where 0 = proof_slice_main((['--repo', '/home/codex/projects/ladon/tests/fixtures/correspondence_m1', '--source', 'Proof.lean', '--module', 'Proof', ...] + ['--max-depth', '1', '--output', '/tmp/pytest-of-codex/pytest-410/test_native_depth_failure_and_0/1.json']))
+
+tests/test_proof_slice_depth.py:30: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_proof_slice_depth.py::test_native_depth_failure_and_cli_override[False]
+1 failed, 32 passed in 110.15s (0:01:50)

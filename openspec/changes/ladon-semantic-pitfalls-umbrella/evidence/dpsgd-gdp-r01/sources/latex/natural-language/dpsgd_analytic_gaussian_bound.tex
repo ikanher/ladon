@@ -1,0 +1,1288 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=0.95in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools,booktabs,graphicx}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,citecolor=blue!55!black]{hyperref}
+\setlength{\emergencystretch}{3em}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\R}{\mathbb R}
+\newcommand{\E}{\mathbb E}
+\newcommand{\N}{\mathcal N}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\clip}{\operatorname{clip}}
+\newcommand{\sg}{\mathrm{sg}}
+\newcommand{\gap}{\mathrm{gap}}
+\title{DP-SGD batch-size theory with the analytical GDP approximation\\
+\large Convergence, optimal learning rates, and a separate finite privacy guarantee}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{abstract}
+We study how privacy calibration affects batch-size predictions for
+Poisson-sampled, per-example clipped SGD. The analytical GDP approximation
+provides a logarithmic noise prescription, retaining batch dependence that
+cancels in the Abadi scaling prescription. For any specified positive noise
+variance, we prove a finite bound on the average expected gradient norm and
+the learning rate minimizing that bound. We then specialize these exact
+optimization results to the GDP approximation, distinguish fixed updates
+from fixed expected passes, and compare with numerical privacy accounting.
+At fixed expected passes, we show that the inverse-CLT prescription has a
+degenerate privacy limit, so its batch-size predictions require a model-based
+interpretation. An explicit finite event also disproves a universal transcript
+privacy guarantee at this noise. A separate appendix gives a sufficient
+finite calibration. Numerical accounting supplies the practical comparator.
+\end{abstract}
+
+\section{Algorithm and main results}
+\label{sec:main}
+The utility proof adapts the clipping regimes and descent argument of
+Koloskova, Hendrikx and Stich~\cite[Appendices C.3--C.4]{clipping}, with
+explicit Poisson sampling moments and constants. Selecting a learning rate
+by minimizing a convergence bound also underlies Section~4.2 of Monzio
+Compagnoni et al.~\cite{amap}; we derive the optimizer of the bound given here.
+For the main batch-size model we use the analytical GDP approximation of
+Bu et al.~\cite{bu2020deepgdp}, based on Gaussian differential
+privacy~\cite{gdp}. Its privacy interpretation is asymptotic; the convergence
+bound below is finite and holds for every chosen $V>0$.
+Appendix~\ref{sec:privacy} provides a separate sufficient finite privacy
+calibration. Neither that sufficient calibration nor the CLT approximation
+is asserted to equal the smallest feasible noise variance.
+
+\paragraph{Sampling and adjacency.}
+Fix public integers $N,d,T\ge1$, a sampling probability $q\in(0,1]$, a
+clipping threshold $C>0$, and an initialization $X_0\in\R^d$.
+A dataset consists of $N$ slots, each empty or containing one record.
+Neighboring datasets differ by the addition or removal of one record in one
+slot. The public $N$ and the denominator $B=qN$ stay fixed across neighbors.
+A common record-query function supplies a measurable vector $h(r,x)$;
+an empty slot contributes zero. Write $h_i(x)$ for the query in slot $i$ and
+let $\clip_C$ denote Euclidean projection onto the ball of radius $C$.
+For fixed public $\eta>0$ and multiplier variance $V>0$, use
+\begin{equation}\label{eq:algorithm}
+ Y_t=\sum_{i=1}^N B_{t,i}\clip_C(h_i(X_t))+C\sqrt V\,Z_t,
+ \qquad X_{t+1}=X_t-\frac{\eta}{B}Y_t,
+ \quad 0\le t<T.
+\end{equation}
+Here all $B_{t,i}\sim\operatorname{Bernoulli}(q)$ and $Z_t\sim\N(0,I_d)$
+are independent. Sampling masks and noise draws remain internal. The
+privacy theorem protects the entire noisy-sum transcript $(Y_t)_{t<T}$,
+and hence any public postprocessing such as the final iterate.
+
+\paragraph{Noise units.}
+The noise multiplier is $\sigma_{\mathrm{mult}}=\sqrt V$.
+After division by $B$, the Gaussian noise has coordinate standard deviation
+$C\sqrt V/B$ and total noise second moment
+\begin{equation}\label{eq:noise}
+ s^2=\E\norm{C\sqrt V Z_t/B}^2=\frac{C^2dV}{B^2}.
+\end{equation}
+The stepsize multiplies this noise subsequently. The quantity $s$ is
+distinct from the stochastic-gradient standard deviation $\sigma_{\sg}$.
+
+\paragraph{Analytical GDP calibration.}
+Let $\Phi$ and $\varphi$ denote the standard normal distribution function and
+density. For separation $\mu>0$, the exact Gaussian privacy profile is
+\begin{equation}\label{eq:gaussian-profile}
+ g_\mu(z)=\Phi\left(\frac\mu2-\frac z\mu\right)
+       -e^z\Phi\left(-\frac\mu2-\frac z\mu\right).
+\end{equation}
+For public $\varepsilon>0$ and $\delta\in(0,1)$, select the unique
+$\mu>0$ satisfying $g_\mu(\varepsilon)=\delta$. This scalar inversion is
+numerical in general: $\partial_\mu g_\mu(\varepsilon)
+=\varphi(\mu/2-\varepsilon/\mu)>0$, and the endpoint limits are zero and one.
+The subsampled CLT model and its inverse are
+\begin{equation}\label{eq:clt-calibration}
+ \mu_{\mathrm{CLT}}^2=Tq^2(e^{1/V}-1),\qquad
+ V_{\mathrm{CLT}}(T,q;\mu)
+ =\frac{1}{\log(1+\mu^2/(Tq^2))},\quad 0<q<1.
+\end{equation}
+Thus the variance is closed form in $(T,q,\mu)$; the full calibration from
+$(\varepsilon,\delta)$ also involves the one-dimensional Gaussian inversion.
+At $q=1$, use exact Gaussian composition instead:
+\begin{equation}\label{eq:full-calibration}
+ V_{\mathrm{full}}(T;\mu)=T/\mu^2.
+\end{equation}
+The raw expression in \eqref{eq:clt-calibration} evaluated at $q=1$ is
+larger than \eqref{eq:full-calibration} and is not the exact Gaussian formula.
+Write $V_{\mathrm{model}}$ for $V_{\mathrm{CLT}}$ on $(0,1)$ and
+$V_{\mathrm{full}}$ at one. With this positive variance, the following
+convergence theorem applies exactly; for $q<1$, an additional privacy
+argument is required to assert finite $(\varepsilon,\delta)$-DP.
+
+\begin{theorem}[Expected-gradient convergence]\label{thm:main}
+Consider \eqref{eq:algorithm} at any fixed $V>0$, in particular
+$V=V_{\mathrm{model}}$.
+Fix a dataset and suppose that $f:\R^d\to\R$
+is differentiable, $\nabla f(x)=N^{-1}\sum_i h_i(x)$, and, for every $x,y$,
+\begin{equation}\label{eq:assumptions}
+ \norm{\nabla f(x)-\nabla f(y)}\le L\norm{x-y},\qquad
+ \frac1N\sum_i\norm{h_i(x)-\nabla f(x)}^2\le\sigma_{\sg}^2.
+\end{equation}
+Assume $L>0$, $\sigma_{\sg}\ge0$, $f\ge f_{\mathrm{lower}}$, and let
+$F\ge F_{\gap}:=f(X_0)-f_{\mathrm{lower}}$. If
+\begin{equation}\label{eq:step-domain}
+ C\ge4\sigma_{\sg},\qquad
+ b=\frac{1-q}{B},\qquad 0<\eta\le\bar\eta:=\frac1{L(1+b)},
+\end{equation}
+then
+\begin{equation}\label{eq:utility}
+ \frac1T\sum_{t=0}^{T-1}\E\norm{\nabla f(X_t)}
+ \le U(\eta):=\sqrt{D(\eta)}+\frac{D(\eta)}C,
+ \qquad
+ D(\eta)=\frac{4F}{\eta T}+\frac{8\sigma_{\sg}^4}{C^2}
+            +2\eta L\left(b\sigma_{\sg}^2+\frac{C^2dV}{B^2}\right).
+\end{equation}
+The expectation is over the complete sampling and Gaussian history.
+\end{theorem}
+
+\paragraph{Proof idea.}
+The Poisson second moment contains an extra squared-mean term from the random
+batch count. The stepsize condition absorbs that term. A clipping-alignment
+inequality then gives a telescoping bound on
+$\min\{\norm{\nabla f}^2,C\norm{\nabla f}\}$, which implies
+\eqref{eq:utility}. Appendix~\ref{sec:utility-proof} gives the proof.
+Privacy calibration enters this argument only through the chosen variance.
+
+\begin{corollary}[Learning rate minimizing the bound]\label{cor:rate}
+Fix $q,T,C,L,\sigma_{\sg},F,V$ as above, with $F>0$, and define
+\[
+ W=b\sigma_{\sg}^2+\frac{C^2dV}{B^2}>0.
+\]
+For any fixed public cap $0<\eta_{\max}\le\bar\eta$, the choice
+\begin{equation}\label{eq:eta-star}
+ \eta_\star=\min\left\{\eta_{\max},
+            \sqrt{\frac{2F}{TLW}}\right\}
+\end{equation}
+satisfies $U(\eta_\star)\le U(\eta)$ for every $0<\eta\le\eta_{\max}$.
+This holds in particular at $V=V_{\mathrm{model}}$; the minimization is
+exact for that noise choice, independently of its privacy interpretation.
+\end{corollary}
+
+\begin{proof}
+The map $z\mapsto\sqrt z+z/C$ is strictly increasing on $[0,\infty)$,
+so it suffices to minimize $D$. Set $A=4F/T$, $J=2LW$, and
+$D_0=8\sigma_{\sg}^4/C^2$. Then
+\[
+ D(\eta)=A/\eta+D_0+J\eta,\qquad
+ D'(\eta)=-A/\eta^2+J.
+\]
+It decreases until $\eta_0=\sqrt{A/J}$ and increases afterwards.
+The minimum on $(0,\eta_{\max}]$ is therefore attained at
+$\min\{\eta_{\max},\eta_0\}$, which is \eqref{eq:eta-star}.
+\end{proof}
+
+Thus, when the cap is inactive,
+\begin{equation}\label{eq:optimal-value}
+ D(\eta_\star)=\frac{8\sigma_{\sg}^4}{C^2}
+                     +4\sqrt{\frac{2FLW}{T}}.
+\end{equation}
+When the cap is active, substitute $\eta_{\max}$ into \eqref{eq:utility}.
+A more conservative cap, such as $1/[2L(1+b)]$, changes only the first
+argument of the minimum in \eqref{eq:eta-star}.
+
+\paragraph{Public selection and the zero-gap case.}
+The optimizer of an upper bound need not be the best learning rate for actual
+training performance. Also, substituting a privately computed exact objective
+gap into \eqref{eq:eta-star} would require accounting for that private selection.
+To use the theorem as a private parameter-selection rule, $F,L$ and
+$\sigma_{\sg}$ must be public inputs common across neighbors, with the
+utility assumptions valid for the dataset under consideration. Public uniform
+bounds on a dataset class are one sufficient choice. The theorem does not
+require those bounds to be attained.
+
+If $F=0$, then $D(\eta)=D_0+2\eta LW$, where $D_0=8\sigma_{\sg}^4/C^2$.
+Both $D$ and $U$ are strictly increasing for $\eta>0$, so neither has a
+minimizing positive learning rate. On any admissible interval
+$(0,\eta_{\max}]$,
+\[
+ \inf D(\eta)=D_0,\qquad
+ \inf U(\eta)=\sqrt{D_0}+D_0/C.
+\]
+Both infima are approached as $\eta\downarrow0$. Positive chosen
+variance and $d\ge1$ ensure $W>0$.
+
+\section{Batch-size predictions of the analytical model}
+\label{sec:clt-batches}
+Fix the public privacy target, hence $\mu$, and the problem parameters
+$N,d,C,L,\sigma_{\sg},F$, with $F>0$. Substitution in \eqref{eq:utility}
+gives, for $0<q<1$,
+\begin{equation}\label{eq:clt-D}
+ D_{\mathrm{CLT}}(\eta)
+ =\frac{4F}{\eta T}+D_0
+  +2\eta L\left[\frac{1-q}{qN}\sigma_{\sg}^2+
+  \frac{C^2d}{N^2q^2\log(1+\mu^2/(Tq^2))}\right],
+ \qquad D_0=\frac{8\sigma_{\sg}^4}{C^2}.
+\end{equation}
+The optimal rate remains \eqref{eq:eta-star}, with the bracketed quantity
+as $W$. In particular, changing the privacy prescription changes both the
+noise term and its minimizing learning rate.
+
+\paragraph{The quantity that survives learning-rate minimization.}
+When the cap is inactive, \eqref{eq:optimal-value} depends on $W/T$.
+Its privacy contribution is $C^2dR/N^2$, where
+\begin{equation}\label{eq:clt-normalization}
+ R_{\mathrm{CLT}}(T,q)
+ =\frac{V_{\mathrm{CLT}}}{Tq^2}
+ =\frac{1}{m\log(1+\mu^2/m)},\qquad m=Tq^2.
+\end{equation}
+If the sampling contribution $S=b\sigma_{\sg}^2$ to $W$ is negligible, the minimized coefficient above $D_0$
+is approximately
+\[
+ \frac{4C}{N}\sqrt{2FLd\,R_{\mathrm{CLT}}(T,q)}.
+\]
+This is an approximation to the bound, not an upper bound obtained by
+discarding a positive term. Proposition~\ref{prop:dominance} makes it
+quantitative: if $S$ is at most $\rho$ times the Gaussian-noise contribution $P$,
+the two minimized coefficients above $D_0$ differ by at most a factor
+$\sqrt{1+\rho}$, including active caps. That proposition is independent of
+the choice of privacy calibration.
+
+\begin{lemma}[Batch comparison for a prescribed variance]\label{lem:batch-general}
+Fix the problem parameters with $F>0$, prescribe $V(T,q)>0$, and use the
+full admissible cap.
+At fixed $T$, if $V(T,q)/q^2$ is nonincreasing in $q$, then the minimized
+bound is nonincreasing, including active caps.
+At exact expected passes $Tq=E$, if $V(T,q)/(Tq^2)$ is nonincreasing
+as $q$ increases along the compared runs, then the minimized bound is nonincreasing
+whenever both unconstrained rates are admissible.
+\end{lemma}
+\begin{proof}
+At fixed $T$, $W$ is nonincreasing and $\bar\eta(q)$ is nondecreasing.
+Every previously admissible rate remains admissible with no larger
+$D(\eta)$, so minimization preserves the comparison.
+At exact expected passes,
+\[
+ \frac WT=\frac{1-q}{EN}\sigma_{\sg}^2+
+ \frac{C^2d}{N^2}\frac{V(T,q)}{Tq^2}.
+\]
+This is nonincreasing. With inactive caps the result follows from
+$D_\star=D_0+4\sqrt{2FLW/T}$ and monotonicity of $\sqrt D+D/C$.
+\end{proof}
+
+The common monotonicity calculation below uses
+$h_a(s)=s\log(1+a/s)$, which is increasing in both $a,s>0$:
+\begin{equation}\label{eq:log-perspective}
+ \partial_a h_a(s)=\frac{s}{s+a}>0,\qquad
+ h_a'(s)=\log(1+a/s)-\frac{a}{s+a}>0.
+\end{equation}
+The second inequality follows by integrating the positive derivative
+$z/(1+z)^2$ of $\log(1+z)-z/(1+z)$ from zero to $z=a/s$.
+
+\begin{proposition}[Batch comparisons within the model]\label{prop:clt-batch}
+Use $V=V_{\mathrm{model}}$ and the full cap $\bar\eta(q)$ from
+\eqref{eq:step-domain}. At fixed integer $T\ge1$, the minimized upper bound
+is nonincreasing in $q\in(0,1]$.
+If instead integer horizons satisfy $Tq=T'q'=E>0$ and $q\le q'$, then
+$W(T',q')/T'\le W(T,q)/T$. The minimized upper bound is therefore
+nonincreasing when both unconstrained rates satisfy their caps.
+These are comparisons of finite convergence bounds at the chosen noise;
+they do not supply finite privacy for the subsampled runs.
+\end{proposition}
+\begin{proof}
+For fixed $T$, take $a=\mu^2/T$ and $s=q^2$ in
+\eqref{eq:log-perspective}. Thus $V_{\mathrm{CLT}}/q^2=1/h_a(q^2)$
+decreases, and Lemma~\ref{lem:batch-general} gives the comparison.
+
+At exact expected passes, $m=Eq$ and
+\begin{equation}\label{eq:clt-fixed-passes}
+ \frac{W(T,q)}T
+ =\frac{1-q}{EN}\sigma_{\sg}^2+
+   \frac{C^2d}{N^2}\frac{1}{Eq\log(1+\mu^2/(Eq))}.
+\end{equation}
+Both terms are nonincreasing by \eqref{eq:log-perspective}, with
+$a=\mu^2$ and $s=Eq$. Lemma~\ref{lem:batch-general} applies. At $q=1$, exact Gaussian
+composition gives $R=1/\mu^2$, which is smaller than every raw CLT value
+because $\log(1+x)<x$. This also gives the endpoint comparison in both
+budget policies.
+\end{proof}
+
+\paragraph{Why an interior best batch can still occur.}
+At fixed expected passes, write $\tau=T\eta$. The coefficient becomes
+$4F/\tau+D_0+2\tau L(W/T)$, but its cap is
+\[
+ \tau\le\frac{EN}{L[1+(N-1)q]}.
+\]
+For $N>1$, this admissible interval shrinks with $q$. Thus improving the
+privacy contribution does not imply an unconditional ordering of the
+optimized bounds. With $T=\lceil E/q\rceil$, one must additionally retain
+the rounding slack $E\le Tq<E+q$. Our numerical comparison uses these
+integer horizons and the cap, without replacing them by $T=E/q$.
+
+\paragraph{What changes relative to Abadi scaling.}
+Theorem~1 of Abadi et al.~\cite{abadi} supplies constants $c_1,c_2$
+and, within $\varepsilon<c_1Tq^2$, the sufficient prescription
+$V_A=c_2^2Tq^2\log(1/\delta)/\varepsilon^2$. This makes
+$V_A/(Tq^2)=c_2^2\log(1/\delta)/\varepsilon^2$ independent of batch size.
+By contrast, \eqref{eq:clt-normalization} varies with $Tq^2$. For large
+$m=Tq^2$ it approaches $1/\mu^2$, but as $m\downarrow0$ it grows like
+\[
+ R_{\mathrm{CLT}}\sim\frac{1}{m\log(\mu^2/m)}.
+\]
+These are asymptotics of the analytical formula, not a privacy theorem in
+that limit. They exhibit a small-batch penalty in the retuned analytical-model
+bound that disappears under the linear-in-$q$ prescription. In the high-noise regime,
+$e^{1/V}-1\simeq1/V$, so the CLT model itself gives
+$\sqrt V\simeq q\sqrt T/\mu$. Its nonlinear dependence matters when this
+approximation is inadequate. The Abadi cancellation alone does not prove
+that small batches are optimal under the Abadi-based full bound. Moreover,
+its theorem requires $\varepsilon<c_1Tq^2$; neither that restriction nor
+$c_2$ may be silently dropped or set to one. At exact expected passes,
+the restriction becomes $q>\varepsilon/(c_1E)$, excluding arbitrarily
+small batches at fixed $E$.
+
+\paragraph{The asymptotic privacy assumption.}\label{par:clt-scope}
+The subsampling CLT of Bu et al.~\cite[Appendix B.2, Theorem 6 and
+Lemma B.1]{bu2020deepgdp} holds with fixed
+positive multiplier variance and $q\sqrt T\to\nu\in(0,\infty)$. Its
+Gaussian limit has $\mu=\nu\sqrt{e^{1/V}-1}$, motivating
+\eqref{eq:clt-calibration}. An approximation at finite $T$ requires an
+error estimate before it becomes a finite privacy guarantee. A directly
+covered sequence is $q_T=\nu/\sqrt T$ and the fixed variance
+$V=1/\log(1+\mu^2/\nu^2)$, for sufficiently large $T$.
+In particular, at fixed $E=Tq$ and $q\downarrow0$,
+\[
+ q\sqrt T=\sqrt{Eq}\longrightarrow0,\qquad
+ V_{\mathrm{CLT}}=\frac{1}{\log(1+\mu^2/(Eq))}\longrightarrow0.
+\]
+The fixed-noise CLT does not justify this moving-noise limit. In fact,
+Lemma~\ref{lem:fixed-pass-clt-collapse} proves that the corresponding
+scalar product experiments converge in total variation to each other.
+Their limiting trade-off is $G_0=\mathrm{Id}$, rather than the prescribed
+$G_\mu$ with $\mu>0$. The adaptive transport gives the same
+indistinguishability conclusion for neighboring transcript laws.
+Thus the fixed-pass comparisons describe the analytical noise model;
+they do not establish equal actual privacy. This limiting discrepancy
+is toward stronger privacy and does not prove a privacy violation in any
+finite numerical cell. The fixed-$q$ limit in \emph{Subsampling is not
+Magic}~\cite{snm} likewise cannot be specialized to $q=E/T$.
+
+\section{Comparison with numerical accounting}
+\label{sec:clt-numerical}
+We compare the CLT model, saved numerical PLD calibration, and the finite
+sufficient calibration $V_\star$ of Appendix~\ref{sec:privacy}. All three
+use the same convergence bound and their own minimizing rate with the
+full cap $1/[L(1+b)]$. The illustrative parameters are
+\[
+ N=50000,\quad d=100000,\quad C=0.4,\quad L=0.25,\quad
+ \sigma_{\sg}^2=0.0099,\quad F=0.637145646205098.
+\]
+They satisfy $C\ge4\sigma_{\sg}$. We take $\delta=10^{-5}$,
+$\varepsilon\in\{1,8\}$, and the batch grid
+\[
+ B\in\{64,256,512,1024,2048,4096,8192,50000\},
+\]
+separately at $T=1000$ and $T=\lceil8/q\rceil$.
+At full sampling the CLT-model curve uses
+\eqref{eq:full-calibration}.
+
+The retained PLD values use Google's \texttt{dp-accounting} version 0.6.0
+for Poisson subsampling and add/remove adjacency, with pessimistic
+discretization, connect-the-dots, mesh
+$\min(10^{-3},0.1\varepsilon/T)$, log-mass truncation $-50$, composition
+tail truncation $10^{-15}$, and inversion tolerance $10^{-7}$.
+These are numerical reference values, not exact minimum variances or
+interval-certified computations. A fresh run of the same accountant reevaluates
+all 32 saved multipliers and finds $\delta_{\rm upper}\le10^{-5}$ in every
+case. Three cells are also reinverted at the original mesh and half that mesh,
+as reported below. The curves retain the original calibrations; the refinement
+is a separate sensitivity check. No training outcomes are measured.
+
+\begin{table}[ht]
+\centering\small
+\input{dpsgd_analytic_gaussian_bound.evidence/clt-model/comparison-table.tex}
+\caption{Variance ratios over the subsampled grid and batch sizes minimizing
+the displayed bound on the eight-point grid. ``Finite'' means $V_\star$.
+Each method uses its own capped optimal learning rate.}
+\label{tab:clt-comparison}
+\end{table}
+
+The CLT prescription selects less noise than the saved PLD calibration in
+every subsampled cell. The largest difference occurs at $T=1000$,
+$\varepsilon=1$, where the variance ratio is approximately $0.589$.
+This variance comparison does not itself prove a privacy violation: the PLD values
+are numerical sufficient calibrations, not lower bounds on the exact
+required variance. It does show that replacing them by the CLT prescription
+is a substantive modeling choice. For $T=\lceil8/q\rceil$ and
+$\varepsilon=1$, the best grid batch changes from $8192$ under PLD to
+$4096$ under the CLT model. The respective bounds must not be interpreted
+as already establishing equal finite privacy. For the most discrepant cell,
+$T=1000$, $B=64$, $\varepsilon=1$, Proposition~\ref{prop:finite-clt-failure}
+gives a separate event-based proof of failure of the target transcript privacy
+for a constant query. This is a lower-bound argument, independent of the
+pessimistic accountant's upper estimates.
+
+\paragraph{Numerical sensitivity and winner margins.}
+Reinversion at the original mesh reproduces the three selected saved
+multipliers within the $10^{-7}$ inversion tolerance. At half the mesh,
+the multipliers for $(T,B)=(1000,64),(98,4096),(49,8192)$ at
+$\varepsilon=1$ are approximately $0.667837898$, $3.254955024$ and
+$4.526649890$. The accountant's upper estimates of $\delta$ at the CLT
+noise are respectively $2.15208\times10^{-3}$, $2.17605\times10^{-5}$
+and $2.00916\times10^{-5}$. Exceeding the target in this sufficient test
+does not alone prove privacy failure.
+
+For the two rounded-pass candidates $B=4096,8192$, the refined PLD bounds
+are $0.2363835891$ and $0.2355537135$, preserving the original ordering.
+The relative excess over the smaller value is about $0.35\%$; the CLT
+ordering of the same two batches has a margin of about $0.23\%$.
+For the finite sufficient calibration, the runner-up bound is only about
+$0.00010\%$ above the winning bound.
+These are small differences between grid values of an upper bound, not
+evidence of a substantial difference in training performance. The retained
+script, settings, input hashes and fresh outputs make these checks reproducible.
+
+The sampling term $S=b\sigma_{\sg}^2$ retained in $W$ is at most
+$0.00481$ times the Gaussian-noise term $P=C^2dV/B^2$ across the
+CLT-model grid. The complete conditional Poisson sampling variance is
+$b(\norm m^2+\nu^2)$; the additional squared-mean contribution is
+absorbed through the stepsize restriction. Nevertheless the stepsize cap changes the batch-size
+prediction: at eight expected epochs it is active for CLT batches $8192$
+and $50000$ when $\varepsilon=1$, and also for $4096$ when
+$\varepsilon=8$. Privacy domination therefore does not justify ignoring
+the stepsize restriction.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[width=0.96\textwidth]{dpsgd_analytic_gaussian_bound.evidence/clt-model/bound-comparison.pdf}
+\caption{The minimized finite convergence bound at three noise choices.
+The CLT curve has an approximate privacy interpretation for $q<1$;
+the finite sufficient curve has the separate guarantee of
+Theorem~\ref{thm:privacy}. Fixed updates and rounded expected epochs give
+different comparisons.}
+\label{fig:clt-comparison}
+\end{figure}
+
+\clearpage
+\appendix
+\section{A separate finite Gaussian-reference guarantee}\label{sec:privacy}
+
+The calibration here is sufficient for finite privacy. It is distinct from
+$V_{\mathrm{model}}$ and is not claimed to be equally accurate as an
+approximation to numerical accounting. The same convergence theorem and
+learning-rate optimizer apply after substituting this variance.
+
+\paragraph{Explicit privacy calibration.}
+For $\varepsilon>0$ and $0<\delta<1$, define
+\begin{equation}\label{eq:order}
+ \ell=\log(1/\delta),\quad M=Tq^2,\quad
+ \theta=\varepsilon/2,\quad a=1-e^{-\theta},\quad
+ p=\left\lceil\frac{\varepsilon+\ell+\log2}{\log2}\right\rceil.
+\end{equation}
+Since $\varepsilon+\ell>0$, the integer $p$ is at least two. For $q<1$ put
+\begin{equation}\label{eq:residual-variance}
+ \lambda_0=\log(1+a^2/4),\qquad
+ r_0=\sqrt{\frac{2\lambda_0}{M(1-q)^2}},\qquad
+ V_R=\frac{p-1}{\log(1+r_0)}.
+\end{equation}
+Set $V_R=0$ at $q=1$. For all $q\in(0,1]$, put
+\begin{equation}\label{eq:gaussian-variance}
+ m_0=\frac{\varepsilon}{\sqrt{2\varepsilon+2\ell}+\sqrt{\varepsilon+2\ell}},
+ \qquad V_G=\frac{M}{m_0^2},\qquad V_\star=\max\{V_R,V_G\}.
+\end{equation}
+All logarithms are natural. The subscripts $R$ and $G$ distinguish the
+residual and Gaussian requirements.
+
+\begin{theorem}[Finite privacy]\label{thm:privacy}
+Use $V\ge V_\star$ in \eqref{eq:algorithm}, with all algorithm parameters
+fixed publicly across neighboring datasets. Then its transcript and final
+iterate satisfy $(\varepsilon,\delta)$-differential privacy.
+\end{theorem}
+
+
+
+\subsection{A common scalar experiment for adaptive releases}
+For $V>0$, let
+\[
+ Q_V=\N(0,V),\qquad P_V=(1-q)\N(0,V)+q\N(1,V).
+\]
+For probability laws $P,Q$, write
+$H_{e^u}(P\mid Q)=\sup_A\{P(A)-e^uQ(A)\}$, where $A$ ranges over
+measurable sets. Its density expression is $\int(p-e^u q)_+$.
+Define the two-direction product profile
+\[
+ \Delta(V)=\max\{H_{e^\varepsilon}(P_V^{\otimes T}\mid Q_V^{\otimes T}),
+                 H_{e^\varepsilon}(Q_V^{\otimes T}\mid P_V^{\otimes T})\}.
+\]
+
+\begin{lemma}[Adaptive transport]\label{lem:transport}
+Both directed privacy errors of the transcript in \eqref{eq:algorithm}
+are at most $\Delta(V)$.
+\end{lemma}
+\begin{proof}
+Fix neighboring datasets. At any common transcript history their public
+recursion reconstructs the same state. Write the differing clipped query as
+$v=Cw$, where $\norm w\le1$. Given a scalar input $z$, generate
+\[
+ Cwz+\xi,\qquad \xi\sim\N(0,C^2V(I_d-ww^{\mathsf T})).
+\]
+The covariance is positive semidefinite. Under $Q_V$ the output is
+$\N(0,C^2VI_d)$; under $P_V$ it is that Gaussian plus an independent
+Bernoulli-$q$ multiple of $v$. Simulate the common slots independently,
+add their contributions, and advance the public recursion. Iterating gives
+one measurable randomized map from the scalar product experiment to the
+two transcript laws. It is the same map on both sides of this fixed
+neighboring pair. Data processing for $H_{e^\varepsilon}$ proves the claim.
+This argument does not require independence of the optimizer's privacy-loss
+increments.
+\end{proof}
+
+\subsection{The Gaussian reference and its residual}
+Standardize by $u=V^{-1/2}$ and set
+\[
+ Q=\N(0,1),\qquad P=(1-q)\N(0,1)+q\N(u,1),\qquad G=\N(qu,1).
+\]
+Write $P_T=P^{\otimes T}$, $Q_T=Q^{\otimes T}$ and $G_T=G^{\otimes T}$.
+The two directions between $G_T$ and $Q_T$ have the exact
+Gaussian profile $g_{\mu_{\mathrm{ref}}}$ from \eqref{eq:gaussian-profile}, with the
+reference separation
+\[
+ \mu_{\mathrm{ref}}=q\sqrt{T/V}.
+\]
+This reference separation differs from the CLT parameter in
+\eqref{eq:clt-calibration}.
+Indeed, the product Gaussian likelihood depends only on the coordinate sum;
+standardizing that sum gives separation $\mu_{\mathrm{ref}}$. Thresholding the likelihood
+ratio and integrating gives \eqref{eq:gaussian-profile}; reflection exchanges
+the two directions. The profile is increasing in $\mu_{\mathrm{ref}}$, by adding Gaussian
+noise and rescaling.
+
+\begin{lemma}[Centered moment bound]\label{lem:moment}
+For every integer $p\ge2$, the density ratio
+$R=dP_T/dG_T$ satisfies
+\begin{equation}\label{eq:moment}
+ \E_{G_T}|R-1|^p\le H^p,\qquad
+ H=(e^S-1)^{1/2},\quad
+ S=\frac{Tq^2(1-q)^2}{2}x^2e^x,\quad x=\frac{p-1}{V}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+For $A\sim\operatorname{Bernoulli}(q)$, the one-step ratio in coordinates
+centered at $G$ is
+\[
+ r_u(z)=\E_A\exp\{u(A-q)z-u^2(A-q)^2/2\},\qquad
+ R_u(z_1,\ldots,z_T)=\prod_{t=1}^T r_u(z_t).
+\]
+Let $\gamma_k$ be standard Gaussian measure on $\R^k$ for $k\ge1$, and define
+\[
+ (\mathcal U_\rho F)(z)=\E_Z F(\rho z+\sqrt{1-\rho^2}Z),
+ \qquad Z\sim\gamma_T.
+\]
+Gaussian hypercontractivity~\cite[p.~1062]{gross} states that
+$\|\mathcal U_\rho F\|_{L^p(\gamma_T)}\le\|F\|_{L^2(\gamma_T)}$
+for $F\in L^2(\gamma_T)$, $2\le p<\infty$, and $0\le\rho\le(p-1)^{-1/2}$.
+Here $R_u-1$ is a finite signed sum of Gaussian shift likelihoods,
+so all its finite Gaussian moments exist.
+Gaussian integration sends each shift vector $v$ to $\rho v$, since
+\[
+ \mathcal U_\rho e^{\langle v,\cdot\rangle-\|v\|^2/2}(z)
+ =e^{\langle\rho v,z\rangle-\|\rho v\|^2/2}.
+\]
+All shifts in $R_u$ are linear in $u$. Thus, for
+$w=\sqrt{p-1}\,u$ and $\rho=(p-1)^{-1/2}$,
+\begin{equation}\label{eq:hypercontractivity}
+ R_u-1=\mathcal U_\rho(R_w-1),\qquad
+ \E|R_u-1|^p\le\bigl(\E(R_w-1)^2\bigr)^{p/2}.
+\end{equation}
+For independent $A,A'\sim\operatorname{Bernoulli}(q)$, put
+\[
+ K=\E e^{w^2(A-q)(A'-q)}.
+\]
+Gaussian integration and independence give
+\[
+ \E_{\gamma_1}r_w=1,\qquad \E_{\gamma_1}r_w^2=K,\qquad
+ \E_{\gamma_T}(R_w-1)^2=K^T-1.
+\]
+The variable $Z_0=w^2(A-q)(A'-q)$ satisfies
+\[
+ \E Z_0=0,\qquad Z_0\le w^2,\qquad
+ \E Z_0^2=w^4q^2(1-q)^2.
+\]
+Taylor's integral remainder therefore yields
+\[
+ K-1\le\tfrac12q^2(1-q)^2w^4e^{w^2},\qquad
+ K^T-1\le\exp\!\left(\tfrac12Tq^2(1-q)^2w^4e^{w^2}\right)-1.
+\]
+Combining this with \eqref{eq:hypercontractivity} and $w^2=(p-1)/V$
+proves the claim.
+\end{proof}
+
+\begin{lemma}[Both directed privacy errors]\label{lem:directions}
+Put $\theta=\varepsilon/2$ and $c_p=(p-1)^{p-1}/p^p$. Then
+\begin{equation}\label{eq:budget}
+ \Delta(V)\le e^\theta g_{\mu_{\mathrm{ref}}}(\theta)
+       +\frac{e^\varepsilon c_pH^p}{(1-e^{-\theta})^{p-1}}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+Write $E_p=c_pH^p/(e^\theta-1)^{p-1}$.
+For $a_0>0$, maximizing $(z-a_0)_+/z^p$ over $z>0$ gives
+\[
+ (z-a_0)_+\le\frac{c_p(z_+)^p}{a_0^{p-1}},\qquad z\in\R.
+\]
+Apply this to $R-1$ and $1-R$, with thresholds $e^\theta-1$ and
+$1-e^{-\theta}$, respectively, using $(\pm(R-1))_+^p\le|R-1|^p$.
+Lemma~\ref{lem:moment} implies, for every measurable event $A$,
+\[
+ P_T(A)\le e^\theta G_T(A)+E_p,\qquad
+ G_T(A)\le e^\theta P_T(A)+e^{p\theta}E_p.
+\]
+For the reverse inequality use
+$(1-e^\theta R)_+=e^\theta(1-R-(1-e^{-\theta}))_+$.
+Compose the forward inequality with the Gaussian bound from $G_T$ to
+$Q_T$ at parameter $\varepsilon-\theta$. In the other direction first
+compare $Q_T$ to $G_T$, and then $G_T$ to $P_T$. The latter residual
+therefore receives the factor $e^{\varepsilon-\theta}e^{p\theta}$.
+The two directed errors are consequently bounded by
+\[
+ e^\theta g_{\mu_{\mathrm{ref}}}(\theta)+E_p,\qquad
+ g_{\mu_{\mathrm{ref}}}(\theta)+e^{\varepsilon+(p-1)\theta}E_p.
+\]
+Both are at most the right-hand side of \eqref{eq:budget}: $g_{\mu_{\mathrm{ref}}}(\theta)\ge0$, and the larger
+residual equals $e^\varepsilon c_pH^p/(1-e^{-\theta})^{p-1}$.
+\end{proof}
+
+\subsection{Verification of the calibration}
+Use \eqref{eq:order}--\eqref{eq:gaussian-variance}. For $r\ge0$,
+\begin{equation}\label{eq:log-inequality}
+ \log(1+r)\sqrt{1+r}\le r.
+\end{equation}
+To see this, put $w=\sqrt{1+r}\ge1$. The function
+$w-w^{-1}-2\log w$ vanishes at one and has derivative $(w-1)^2/w^2$.
+When $q<1$ and $V\ge V_R$, we have $0\le x\le\log(1+r_0)$, hence
+$x^2e^x\le r_0^2$. It follows that $S\le\lambda_0$ and $H\le a/2$.
+The residual in \eqref{eq:budget} obeys
+\begin{align*}
+ \frac{e^\varepsilon c_pH^p}{a^{p-1}}
+ &\le e^\varepsilon a\,2^{-p}
+ \le e^\varepsilon2^{-p}\le\delta/2.
+\end{align*}
+Here $c_p\le1$, $0<a<1$, and the last inequality is exactly the order
+choice in \eqref{eq:order}. At $q=1$, $P=G$ and the residual is zero.
+
+For the Gaussian part, put $t=\sqrt{\varepsilon+2\ell}$. The definition
+of $m_0$ gives $\varepsilon/(2m_0)-m_0/2=t$.
+If $V\ge V_G$, then $\mu_{\mathrm{ref}}\le m_0$. Monotonicity of the Gaussian profile,
+followed by dropping its nonnegative subtracted term, yields
+\[
+ e^\theta g_{\mu_{\mathrm{ref}}}(\varepsilon-\theta)
+ \le e^{\varepsilon/2}\Phi(-t)
+ \le\tfrac12 e^{\varepsilon/2-t^2/2}=\delta/2.
+\]
+The tail inequality follows by writing
+$\Phi(-t)=\int_0^\infty\varphi(t+z)\,dz
+\le e^{-t^2/2}\int_0^\infty\varphi(z)\,dz$ for $t\ge0$.
+Both terms in \eqref{eq:budget} are now at most $\delta/2$.
+Lemma~\ref{lem:transport} proves Theorem~\ref{thm:privacy}.
+The formula deliberately retains the sufficient value $V_G$ at full
+sampling; it does not claim the smallest feasible Gaussian variance.
+
+\section{Convergence for any positive noise variance}\label{sec:utility-proof}
+The following proof holds at any fixed noise variance $V>0$.
+Thus it applies to the recursion at any $V>0$, including $V=V_\star$.
+
+\subsection{Exact sampling moments and clipping alignment}
+Let $\mathcal F_t$ be the history before update $t$, and write
+$\E_t[\cdot]=\E[\cdot\mid\mathcal F_t]$.
+Condition on this history, so $X_t=x$ is fixed for the fresh update. Abbreviate
+\begin{align*}
+ g&=\nabla f(x),\qquad r=\norm g,\qquad v_i=\clip_C(h_i(x)),\\
+ m&=N^{-1}\sum_i v_i,\qquad \nu^2=N^{-1}\sum_i\norm{v_i-m}^2,
+ \qquad \widehat g=B^{-1}\sum_i B_{t,i}v_i.
+\end{align*}
+Independence and centering of the Bernoulli indicators give
+\begin{equation}\label{eq:poisson}
+ \E_t\widehat g=m,\qquad
+ \E_t\norm{\widehat g-m}^2=b\bigl(\norm m^2+\nu^2\bigr),\qquad
+ \E_t\norm{\widehat g}^2=(1+b)\norm m^2+b\nu^2.
+\end{equation}
+The squared-mean term remains even when all $v_i$ are identical.
+It is therefore essential to the stepsize restriction.
+
+By variance decomposition and nonexpansiveness of projection,
+\begin{equation}\label{eq:clip-moments}
+ \nu^2+\norm{m-\clip_C(g)}^2
+ =\frac1N\sum_i\norm{v_i-\clip_C(g)}^2
+ \le\frac1N\sum_i\norm{h_i(x)-g}^2\le\sigma_{\sg}^2.
+\end{equation}
+
+\begin{lemma}[Clipping alignment]\label{lem:alignment}
+If $C\ge4\sigma_{\sg}$ and $\phi_C(r)=\min\{r^2,Cr\}$, then
+\begin{equation}\label{eq:alignment}
+ \langle g,m\rangle\ge\tfrac14\phi_C(r)+\tfrac12\norm m^2
+                          -\frac{2\sigma_{\sg}^4}{C^2}.
+\end{equation}
+\end{lemma}
+\begin{proof}
+If $r<C/2$, clipping a record requires
+$\norm{h_i(x)-g}>C-r$. Its clipping displacement is at most
+$\norm{h_i(x)-g}$, because $g$ belongs to the clipping ball. Since
+$N^{-1}\sum_i(h_i(x)-g)=0$, we obtain
+\[
+ \norm{m-g}\le N^{-1}\sum_i\norm{h_i(x)-g}
+  \mathbf1_{\{\norm{h_i(x)-g}>C-r\}}
+ \le\frac{\sigma_{\sg}^2}{C-r}\le\frac{2\sigma_{\sg}^2}{C}.
+\]
+Use $2\langle g,m\rangle=r^2+\norm m^2-\norm{m-g}^2$.
+If $C/2\le r\le C$, \eqref{eq:clip-moments} gives
+$\norm{m-g}^2\le\sigma_{\sg}^2\le r^2/4$; the same identity gives
+$\langle g,m\rangle\ge3r^2/8+\norm m^2/2$.
+Finally, if $r>C$, apply the identity to $v=Cg/r$ and $m$:
+\[
+ \langle v,m\rangle\ge\tfrac12(C^2+\norm m^2-\sigma_{\sg}^2)
+ \ge\tfrac{15}{32}C^2+\tfrac12\norm m^2.
+\]
+Multiplying by $r/C>1$ proves \eqref{eq:alignment} in the last regime.
+All three estimates imply the stated conservative common bound.
+\end{proof}
+
+\subsection{Descent, telescoping, and the expected gradient norm}
+Let $z_t=C\sqrt V Z_t/B$. Global smoothness, zero mean of $z_t$, and its
+independence from the sample give
+\begin{align}
+ \E_t f(X_{t+1})
+ &\le f(x)-\eta\langle g,m\rangle
+   +\frac{L\eta^2}{2}\left((1+b)\norm m^2+b\nu^2+s^2\right)\notag\\
+ &\le f(x)-\frac\eta4\phi_C(r)+\frac{2\eta\sigma_{\sg}^4}{C^2}
+       +\frac{L\eta^2}{2}(b\sigma_{\sg}^2+s^2)\notag\\
+ &\hspace{2em}-\frac\eta2[1-\eta L(1+b)]\norm m^2.\label{eq:descent}
+\end{align}
+The final term is nonpositive by \eqref{eq:step-domain}.
+All expectations are finite: $\norm{\widehat g}\le C/q$ and Gaussian
+noise has finite second moment, so each finite-time iterate has finite second
+moment. Global smoothness gives linear gradient growth and at most quadratic
+growth of $|f|$. In particular, the conditional estimates and the following
+telescoping are legitimate.
+
+Take expectations in \eqref{eq:descent}, sum over $0\le t<T$, and use
+$f(X_T)\ge f_{\mathrm{lower}}$ and $F_{\gap}\le F$. This gives
+\begin{equation}\label{eq:progress}
+ \frac1T\sum_{t<T}\E\phi_C(\norm{\nabla f(X_t)})\le D(\eta).
+\end{equation}
+For every $r\ge0$,
+$r\le\sqrt{\phi_C(r)}+\phi_C(r)/C$.
+Applying Jensen's inequality jointly over the uniformly weighted times and
+the algorithm's randomness proves \eqref{eq:utility}.
+This completes Theorem~\ref{thm:main}. Its constants are sufficient rather
+than optimal. It bounds pre-update expected gradient norms; it makes no
+corresponding final-iterate gradient claim.
+
+\section{Batch comparisons for the finite calibration}
+\label{sec:batch}
+Keep $N,d,C,L,\sigma_{\sg},F,\varepsilon,\delta$ fixed, with $F>0$,
+and choose the public variance $V=V_\star(T,q)$ from
+\eqref{eq:gaussian-variance}. Write
+\[
+ P(q)=\frac{C^2dV_\star(T,q)}{N^2q^2},\qquad
+ S(q)=\frac{1-q}{qN}\sigma_{\sg}^2,\qquad W(q)=S(q)+P(q).
+\]
+Use the full admissible cap $\bar\eta(q)=1/[L(1+(1-q)/(qN))]$,
+and let $\eta_\star(q)$ be \eqref{eq:eta-star} with this cap and $W(q)$.
+Denote the resulting upper bound by $U_\star(q)=U(\eta_\star(q))$.
+
+\begin{theorem}[Fixed-update batch comparison]\label{thm:batch}
+For fixed integer $T\ge1$ and $0<q\le q'\le1$,
+\[
+ \frac{V_\star(T,q')}{q'^2}\le\frac{V_\star(T,q)}{q^2},
+ \qquad U_\star(q')\le U_\star(q).
+\]
+Under the assumptions of Theorem~\ref{thm:main}, the publicly tuned algorithm
+at $q'$ is $(\varepsilon,\delta)$-DP and its average expected gradient norm
+is at most $U_\star(q')\le U_\star(q)$. The comparison includes an active
+stepsize cap.
+\end{theorem}
+\begin{proof}
+The Gaussian contribution satisfies $V_G/q^2=T/m_0^2$, independently of $q$.
+For the residual contribution, put $k=\sqrt{2\lambda_0/T}>0$. For $0<q<1$,
+\[
+ \frac{V_R(T,q)}{q^2}
+ =\frac{p-1}{q^2\log(1+k/[q(1-q)])}.
+\]
+By \eqref{eq:log-perspective}, $h_a(s)$ increases in both arguments.
+Set $s=q^2$ and $a=kq/(1-q)$. Both increase with $q$, and
+\[
+ s\log(1+a/s)=q^2\log(1+k/[q(1-q)]).
+\]
+Thus $V_R/q^2$ is nonincreasing on $(0,1)$. At $q=1$ the residual is zero,
+so the same comparison holds at the endpoint. Taking the maximum with the
+constant Gaussian contribution proves the first claim.
+
+Lemma~\ref{lem:batch-general} now proves the optimized-bound comparison.
+The privacy and expected-gradient claims follow from
+Theorems~\ref{thm:privacy} and~\ref{thm:main} for that same public run.
+\end{proof}
+
+This theorem compares upper bounds at equal update counts. Larger batches
+then use more expected record evaluations. It neither orders actual training
+errors nor supplies an equal-computation comparison.
+
+\begin{proposition}[Quantitative privacy domination]\label{prop:dominance}
+Fix a batch probability and a public cap $0<\eta_{\max}\le\bar\eta$.
+Let $P=C^2dV/B^2>0$ and $S=b\sigma_{\sg}^2\ge0$ be the
+Gaussian-noise and sampling contributions to $W=P+S$, and let
+$D_0=8\sigma_{\sg}^4/C^2$. Define the two minimized coefficients
+\[
+ D_{\mathrm{priv}}=\min_{0<\eta\le\eta_{\max}}
+     \left\{\frac{4F}{\eta T}+D_0+2\eta LP\right\},\qquad
+ D_{\mathrm{full}}=\min_{0<\eta\le\eta_{\max}}
+     \left\{\frac{4F}{\eta T}+D_0+2\eta L(P+S)\right\}.
+\]
+If $S\le\rho P$ for $\rho\ge0$, then, including an active cap,
+\[
+ D_{\mathrm{priv}}-D_0
+ \le D_{\mathrm{full}}-D_0
+ \le\sqrt{1+\rho}\,(D_{\mathrm{priv}}-D_0).
+\]
+\end{proposition}
+\begin{proof}
+The lower inequality follows by increasing the variance at each $\eta$.
+For the upper inequality let $k=\sqrt{1+\rho}\ge1$, and let $e$ minimize
+the privacy-only coefficient. The step $e/k$ is positive and admissible.
+Since $P+S\le k^2P$, its full coefficient above $D_0$ is at most
+\[
+ \frac{4F}{(e/k)T}+2(e/k)Lk^2P
+ =k\left(\frac{4F}{eT}+2eLP\right).
+\]
+Minimizing the full coefficient can only decrease this value.
+\end{proof}
+
+The privacy-only coefficient is an approximation to the convergence bound;
+it is not itself a valid upper bound obtained by dropping a positive term.
+The proposition quantifies this approximation for the coefficient $D-D_0$,
+not directly for $U$ or the actual gradient norm.
+When the privacy-only cap is inactive, its value is
+\[
+ D_{\mathrm{priv}}-D_0
+ =\frac{4C}{N}\sqrt{2FLd\,\frac{V_\star(T,q)}{Tq^2}}.
+\]
+Thus the normalized quantity $V_\star/(Tq^2)$ determines this part of the
+retuned bound. The residual contribution may vary with $q$; the Gaussian
+contribution is the constant $1/m_0^2$.
+
+\subsection{Fixed expected participation}
+\label{sec:fixed-passes}
+The effective one-step noise variance $V/q^2$ used in
+\emph{Subsampling is not Magic}~\cite{snm} becomes $V/(Tq^2)$ after division
+by the horizon. With exact expected participation $E=Tq$, this is
+$TV/E^2$. This is also the privacy normalization in the minimized coefficient
+\eqref{eq:optimal-value}. The paper's many-composition limit holds at fixed
+positive $q$; it cannot be specialized to $q=E/T$ without a separate argument.
+We give a finite comparison directly for the sufficient variance $V_\star$.
+
+Now allow $T$ to vary and write
+\[
+ R(T,q)=\frac{V_\star(T,q)}{Tq^2},\qquad
+ W(T,q)=\frac{1-q}{qN}\sigma_{\sg}^2+
+             \frac{C^2dV_\star(T,q)}{N^2q^2}.
+\]
+At $Tq=E$, the exact identity
+\begin{equation}\label{eq:fixed-pass-normalization}
+ \frac{W(T,q)}{T}
+ =\frac{1-q}{EN}\sigma_{\sg}^2+\frac{C^2d}{N^2}R(T,q)
+\end{equation}
+decomposes the coefficient retained after stepsize optimization. It is not
+a formula for the full variance of an averaged gradient: even with frozen
+gradients, the full sampling variance also contains the squared-mean term.
+The adaptive convergence guarantee follows from Theorem~\ref{thm:main}.
+
+\begin{theorem}[Equal expected passes]\label{thm:fixed-passes}
+Let $E>0$, $T,T'\ge1$ be integers, and $0<q\le q'\le1$ satisfy
+$Tq=T'q'=E$. With the other public parameters fixed as above,
+\[
+ R(T',q')\le R(T,q),\qquad
+ \frac{W(T',q')}{T'}\le\frac{W(T,q)}{T}.
+\]
+If both unconstrained learning rates are admissible, that is,
+\[
+ \sqrt{\frac{2F}{TLW(T,q)}}\le\bar\eta(q),\qquad
+ \sqrt{\frac{2F}{T'LW(T',q')}}\le\bar\eta(q'),
+\]
+then $U_\star(T',q')\le U_\star(T,q)$. Under the convergence assumptions,
+the publicly tuned run at $(T',q')$ has finite $(\varepsilon,\delta)$ privacy
+and average expected gradient norm at most this smaller upper bound.
+\end{theorem}
+\begin{proof}
+Put $m=Tq^2$ and $\kappa=\sqrt{2\lambda_0}>0$. For $q<1$,
+\[
+ \frac{V_R(T,q)}{Tq^2}
+ =\frac{p-1}{m\log(1+\kappa/[\sqrt m(1-q)])}.
+\]
+Use \eqref{eq:log-perspective} with $s=m$ and
+$a=\kappa\sqrt m/(1-q)$. Its value is the displayed denominator.
+Consequently the normalized residual cannot increase when both $m$ and $q$
+increase. The normalized Gaussian contribution is $1/m_0^2$, and the
+residual is zero at $q=1$. Taking their maximum proves the same comparison
+for $R$. Since $m=Eq$, increasing $q$ increases $m$ at equal expected passes.
+Lemma~\ref{lem:batch-general} proves the $W/T$ and optimized-bound comparisons.
+The privacy and gradient claims use the same
+publicly chosen variance and learning rate.
+\end{proof}
+
+\paragraph{Why the cap condition matters.}
+For the horizon-scaled step $\tau=T\eta$, the admissible cap at equal expected
+passes is
+\begin{equation}\label{eq:fixed-pass-cap}
+ \tau_{\max}=T\bar\eta(q)
+ =\frac{EN}{L[1+(N-1)q]}.
+\end{equation}
+For $N>1$ this decreases as $q$ grows, whereas the bound at fixed $\tau$ is
+$4F/\tau+D_0+2\tau L\,W/T$. The improving variance coefficient therefore
+competes with a shrinking admissible interval.
+
+\begin{proposition}[A capped-bound reversal]\label{prop:cap-reversal}
+For every $\varepsilon>0$ and $\delta\in(0,1)$, there is a public gap
+majorant $F>0$ such that, at $N=2$, $d=C=L=1$, $\sigma_{\sg}=0$, and
+$V=V_\star$,
+\[
+ U_\star(2,1/2)<U_\star(1,1).
+\]
+Both runs have one expected pass. Thus the inactive-cap hypothesis cannot
+simply be removed from Theorem~\ref{thm:fixed-passes}.
+\end{proposition}
+\begin{proof}
+Let $P=W(2,1/2)>0$, $Q=W(1,1)>0$, and choose $F=1+4P+Q$.
+The caps are $2/3$ and $1$, respectively, and both square-root optima exceed
+their caps. Substitution gives
+\[
+ D_\star(2,1/2)=3F+\tfrac43P,\qquad
+ D_\star(1,1)=4F+2Q.
+\]
+The second minus the first is $1+\tfrac83P+3Q>0$. Strict monotonicity of
+$D\mapsto\sqrt D+D$ proves the claim. This orders bounds, not the realized
+performance of the two algorithms.
+\end{proof}
+
+\paragraph{Integer rounding.}
+The policy $T=\lceil E/q\rceil$ satisfies
+$E\le Tq<E+q$; it generally does not keep expected passes exactly equal.
+The proof above still compares the normalized privacy costs $R(T,q)$
+whenever both $q$ and
+$Tq^2$ increase, but those two conditions must be checked after rounding.
+The capped-bound reversal above also follows this policy, since $1/q$ is
+integer at both of its points. An inactive-cap comparison for general rounded
+horizons requires a separate rounding analysis. For example, at $E=1$,
+$(q,T)=(0.405,3)$ and $(q',T')=(0.5,2)$ increase both $q$ and $Tq^2$,
+but $(1-q')/(T'q')=0.5>(1-q)/(Tq)\approx0.4897$.
+Thus these conditions alone do not order the sampling contribution to $W/T$.
+
+
+\section{The fixed-pass CLT prescription has a zero privacy limit}
+\label{sec:clt-collapse}
+\begin{lemma}\label{lem:fixed-pass-clt-collapse}
+Fix $E,\mu>0$. For integers $T\ge\max\{1,E\}$ set
+\[
+ q_T=E/T,\qquad u_T=\sqrt{\log(1+\mu^2T/E^2)},\qquad
+ Q=\mathcal N(0,1),\qquad
+ \widetilde P_T=(1-q_T)Q+q_T\mathcal N(u_T,1).
+\]
+Then $\operatorname{TV}(\widetilde P_T^{\otimes T},Q^{\otimes T})\to0$.
+In particular, the testing trade-off converges uniformly to
+$G_0(\alpha)=1-\alpha$, not to $G_\mu$.
+The same total-variation conclusion holds for neighboring adaptive
+transcript laws with $q=q_T$ and $V=u_T^{-2}$, by the common transport of
+Lemma~\ref{lem:transport}.
+\end{lemma}
+\begin{proof}
+For $Z\sim Q$, put $L_T=\exp(u_T Z-u_T^2/2)$, so that
+$d\widetilde P_T/dQ=1+q_T(L_T-1)$. Define
+\[
+ h_T^2=\E_Q\bigl(\sqrt{1+q_T(L_T-1)}-1\bigr)^2.
+\]
+For $x\ge-1$, rationalizing the square root gives
+$(\sqrt{1+x}-1)^2\le\min\{x^2,|x|\}\le |x|^{3/2}$.
+Also $|L-1|^{3/2}\le L^{3/2}+1$ for $L\ge0$.
+The Gaussian exponential moment therefore gives
+\[
+ h_T^2\le q_T^{3/2}\bigl(\E_Q L_T^{3/2}+1\bigr)
+       =q_T^{3/2}\bigl(e^{3u_T^2/8}+1\bigr).
+\]
+The Hellinger affinity of the one-step pair is $a_T=1-h_T^2/2\in[0,1]$.
+Its product affinity is $a_T^T$, hence the product squared Hellinger
+distance is $H_T^2=2(1-a_T^T)\le T h_T^2$. Consequently
+\[
+ H_T^2\le E^{3/2}T^{-1/2}
+       \left[\left(1+\frac{\mu^2T}{E^2}\right)^{3/8}+1\right]
+       =O(T^{-1/8})\longrightarrow0.
+\]
+For probability densities $p,r$, Cauchy--Schwarz applied to
+$|p-r|=|\sqrt p-\sqrt r|(\sqrt p+\sqrt r)$ gives
+$\operatorname{TV}(p,r)\le H(p,r)$ with this Hellinger convention.
+Thus the product total variation tends to zero. A test with type-I
+error at most $\alpha$ has type-II error at least
+$1-\alpha-\operatorname{TV}$; the constant randomized test gives
+$1-\alpha$ as an upper bound. This proves uniform trade-off convergence.
+Finally, total variation contracts under the common Markov kernel.
+\end{proof}
+
+There is no contradiction with
+$Tq_T^2(e^{u_T^2}-1)=\mu^2$. Indeed the product likelihood ratio has
+second centered moment $(1+\mu^2/T)^T-1\to e^{\mu^2}-1$.
+Increasingly rare likelihood-ratio tails sustain this moment even as
+the experiments become indistinguishable. Matching the quadratic
+quantity alone does not establish a Gaussian limit.
+
+\section{Finite correction and calibration of CLT-model noise}
+\label{sec:finite-correction}
+The CLT parameter can appear in a valid finite bound, provided its correction
+is retained. Here the correction is obtained by direct comparison of finite
+experiments; no CLT or fixed-noise asymptotic assumption is used.
+
+Fix an integer $T\ge1$, $0<q\le1$, $V>0$, $\varepsilon>0$, $\theta>0$, and an integer
+$p\ge2$. Write
+\[
+ \mu_c=q\sqrt{T(e^{1/V}-1)},\qquad \mu_r=q\sqrt{T/V},\qquad
+ a=\frac{Tq(1-q)}{2V},\qquad c_p=\frac{(p-1)^{p-1}}{p^p},
+\]
+\[
+ S_p=\frac{Tq^2(1-q)^2}{2}
+       \left(\frac{p-1}{V}\right)^2 e^{(p-1)/V},\qquad
+ E_p=\frac{c_p(e^{S_p}-1)^{p/2}}{(e^\theta-1)^{p-1}},\qquad
+ E_p^-=
+ \begin{cases}0,&\theta\ge a,\\ e^{p\theta}E_p,&\theta<a.\end{cases}
+\]
+The complete higher-moment allowance is
+\begin{equation}\label{eq:finite-correction-budget}
+ \mathcal B_p(V,\theta)=\max\left\{
+ e^\theta g_{\mu_r}(\varepsilon-\theta)+E_p,\quad
+ g_{\mu_r}(\varepsilon-\theta)+e^{\varepsilon-\theta}E_p^-
+ \right\}.
+\end{equation}
+For signed arguments the Gaussian profile retains its displayed formula.
+One may restrict $0<\theta<\varepsilon$ in an implementation.
+
+\begin{theorem}[Finite remainder for the adaptive transcript]
+\label{thm:finite-clt-correction}
+For the algorithm and adjacency in Section~\ref{sec:main}, let
+$\delta_{\rm actual}(\varepsilon)$ be the supremum of
+$\Pr_D(A)-e^\varepsilon\Pr_{D'}(A)$ over ordered neighboring datasets and
+measurable transcript events. With the public parameters above,
+\[
+ \delta_{\rm actual}(\varepsilon)\le
+ \min\{1,\mathcal B_p(V,\theta)\}
+ \le g_{\mu_c}(\varepsilon)+\mathcal R_{\varepsilon,p,\theta}(T,q,V),
+\]
+where the explicit nonnegative remainder is
+\begin{equation}\label{eq:finite-clt-remainder}
+ \mathcal R_{\varepsilon,p,\theta}(T,q,V)
+ =\left[\min\{1,\mathcal B_p(V,\theta)\}-g_{\mu_c}(\varepsilon)\right]_+.
+\end{equation}
+The same bound holds after public postprocessing. It covers arbitrary finite
+$T,q,V$ in the stated domain, including varying-noise sequences and the full
+numerical grid. The correction depends on $\varepsilon$ and the chosen public
+comparison parameters; it is not claimed to be a uniform CLT error rate.
+\end{theorem}
+\begin{proof}
+Use the scalar product pair $P_T,Q_T$ from Lemma~\ref{lem:transport} and its
+mean-matched Gaussian $G_T$. Lemma~\ref{lem:moment} and the positive-part
+inequality used in Lemma~\ref{lem:directions} give
+\[
+ P_T(A)\le e^\theta G_T(A)+E_p,\qquad
+ G_T(A)\le e^\theta P_T(A)+e^{p\theta}E_p.
+\]
+The centered one-step likelihood ratio is
+$r_u(z)=\E_A e^{u(A-q)z-u^2(A-q)^2/2}$, with
+$A\sim\operatorname{Bernoulli}(q)$ and $u=V^{-1/2}$.
+Jensen's inequality gives $r_u(z)\ge e^{-q(1-q)/(2V)}$.
+Its product is therefore at least $e^{-a}$, so the reverse comparison has
+zero additive error when $\theta\ge a$. This proves the allowance $E_p^-$.
+Both Gaussian directions between $G_T$ and $Q_T$ have exact profile
+$g_{\mu_r}(\varepsilon-\theta)$.
+Composing the two event comparisons gives precisely
+\eqref{eq:finite-correction-budget}, including both exponential factors.
+The common adaptive kernel preserves both inequalities. The bound by one
+is trivial; the final assertion follows from $b\le g+(b-g)_+$.
+\end{proof}
+
+\paragraph{A second-moment alternative.}
+An independently available finite allowance uses the exact centered moment
+\[
+ A_2=(1-q)^2e^{q^2/V}+2q(1-q)e^{-q(1-q)/V}
+       +q^2e^{(1-q)^2/V},\qquad M_2=A_2^T-1.
+\]
+Set $E_2=M_2/[4(e^\theta-1)]$, and set $E_2^-=0$ if $\theta\ge a$,
+otherwise $E_2^-=e^{2\theta}E_2$. Replacing $E_p,E_p^-$ by these quantities
+and $\mu_r$ by $\mu_c$ in \eqref{eq:finite-correction-budget} gives another
+valid bound. Indeed $M_2$ is the exact squared-density residual and
+$\mu_r\le\mu_c$ follows from $1/V\le e^{1/V}-1$.
+One may take the minimum of any finite list of these valid bounds, then
+use the same positive-part formula for its remainder. The higher-moment
+version is often considerably sharper than a second-moment estimate alone.
+
+For fixed $T,q,p,\theta$, the allowance $\mathcal B_p(V,\theta)$ is
+nonincreasing in $V$: the Gaussian profile, $S_p$, and $E_p$ decrease,
+and the reverse-floor transition is a downward jump. The minimum over any
+fixed finite comparison family is also nonincreasing. Exact-arithmetic
+bisection can therefore bracket that family's passing threshold; this does
+not establish optimal actual privacy noise or monotonicity across batch sizes.
+
+\paragraph{Calibration must pay the complete allowance.}
+At nominal CLT noise, $g_{\mu_c}(\varepsilon)=\delta$ uses the entire
+budget. A positive remainder cannot then be discarded. A corrected
+public choice must verify
+\begin{equation}\label{eq:finite-corrected-selection}
+ V\ge V_{\rm CLT},\qquad \mathcal B_p(V,\theta)\le\delta.
+\end{equation}
+The condition $\mathcal B_p\le\delta$ alone suffices for finite privacy.
+The additional constraint $V\ge V_{\rm CLT}$ defines the upward-correction
+policy; it is not a necessary privacy condition. Together these conditions
+imply $g_{\mu_c}(\varepsilon)+\mathcal R\le\delta$.
+They have an unconditional fallback: take
+$V=\max\{V_{\rm CLT},V_\star\}$, $\theta=\varepsilon/2$, and the order
+in \eqref{eq:order}. The calibration proof in
+Appendix~\ref{sec:privacy} pays the ordinary higher-moment allowance for
+every $V\ge V_\star$; the reverse-floor improvement can only reduce it.
+At $q=1$, use exact Gaussian composition and $V=T/\mu^2$ instead.
+Thus feasibility is supplied by a proved calibration, not assumed of the
+nominal CLT variance. Searching public candidates for a smaller passing
+variance is legitimate; it is not a proof of minimum feasible privacy noise.
+
+\paragraph{Coverage and utility at the corrected noise.}
+On the 28 subsampled grid cells, a finite search with
+$p\in\{2,\ldots,32\}$ (also including the fallback order) and
+$\theta/\varepsilon\in\{1/20,\ldots,19/20\}$ finds no passing nominal
+CLT variance under this sufficient test. Corrected candidates with budget
+at most $0.95\delta$ have variance ratios to nominal CLT between about
+$1.38$ and $10.40$, and to saved PLD between $1.37$ and $8.80$.
+These ranges describe the tested family, not unavoidable privacy penalties.
+In particular, failure of this upper-bound screen does not prove failure
+of DP; Proposition~\ref{prop:finite-clt-failure} establishes that separately
+for one cell. The retained reference budgets were checked independently at 70-digit
+precision; the maintained implementation also passed a separate 80-digit
+check. These are floating diagnostics, not interval certificates.
+
+For every such public corrected variance, the noise energy remains
+$C^2dV/(qN)^2$. Theorem~\ref{thm:main} and Corollary~\ref{cor:rate} therefore
+apply to exactly the same compact coefficient and the full cap
+$1/[L(1+b)]$. No additional CLT hypothesis or smaller stepsize cap enters
+that utility argument. Comparisons at these corrected variances share a
+guaranteed target privacy level; their actual privacy losses need not be equal.
+
+\section{A finite failure of the CLT prescription}
+\label{sec:finite-clt-failure}
+\begin{proposition}\label{prop:finite-clt-failure}
+Let $T=1000$, $q=64/50000=4/3125$, and let $\mu>0$ solve
+$g_\mu(1)=10^{-5}$. Put
+\[
+ V=\frac1{\log(1+\mu^2/(Tq^2))},\qquad u=V^{-1/2},\qquad
+ Q=\N(0,1),\qquad P=(1-q)Q+q\N(u,1).
+\]
+For $A=\{\max_{1\le t\le T}Z_t>5\}$,
+\[
+ P^{\otimes T}(A)-eQ^{\otimes T}(A)>6.9\times10^{-4}>10^{-5}.
+\]
+Consequently this noise prescription does not give a universal finite
+$(1,10^{-5})$ transcript guarantee for the record-query class in
+\eqref{eq:algorithm}.
+\end{proposition}
+\begin{proof}
+Write $\overline\Phi(x)=1-\Phi(x)$. For $x>0$, integration by parts gives
+the Mills inequalities
+\[
+ \frac{x\varphi(x)}{1+x^2}<\overline\Phi(x)<\frac{\varphi(x)}x.
+\]
+Indeed the upper bound follows by replacing $1$ by $z/x$ in the tail
+integral; integration by parts gives
+$\overline\Phi(x)=\varphi(x)/x-\int_x^\infty\varphi(z)/z^2\,dz$,
+which yields the lower bound.
+Using $e\varphi(33/8)=\varphi(31/8)$, these imply
+\[
+ g_{1/4}(1)
+ <\varphi(31/8)\left(\frac8{31}-\frac{264}{1153}\right)
+ <6.4\times10^{-6}<10^{-5}.
+\]
+Strict monotonicity of $g_\mu(1)$ gives $\mu>1/4$.
+Since $e^{361/100}<1+(1/16)/(Tq^2)$, it follows that $u>1.9$.
+
+Put $\alpha=\overline\Phi(5)$ and
+$\beta=(1-q)\alpha+q\overline\Phi(5-u)$.
+Independence gives
+\[
+ Q^{\otimes T}(A)=1-(1-\alpha)^T,\qquad
+ P^{\otimes T}(A)=1-(1-\beta)^T.
+\]
+The following loose constants suffice:
+\[
+ 1.48\times10^{-6}<\varphi(5)<1.49\times10^{-6},\qquad
+ \varphi(3.1)>0.00326,\qquad e<2.72.
+\]
+Thus $\alpha<a_U=1.49\times10^{-6}/5$ and $\beta>b_L$, where
+\[
+ b_L=(1-q)\frac{5(1.48\times10^{-6})}{26}
+       +q\frac{3.1(0.00326)}{1+3.1^2}.
+\]
+The union bound and $(1-\beta)^T\le e^{-T\beta}$ now give, with $x=Tb_L$,
+\[
+ P^{\otimes T}(A)-eQ^{\otimes T}(A)
+ >1-e^{-x}-2.72Ta_U
+ \ge x-\frac{x^2}{2}-2.72Ta_U
+ >0.00069175.
+\]
+All displayed decimal bounds can be checked by rational arithmetic:
+use $223/71<\pi<22/7$, hence $2.506<\sqrt{2\pi}<2.508$, and, for
+$z>0$ and $n+2>z$,
+\[
+ \sum_{k=0}^n\frac{z^k}{k!}<e^z<
+ \sum_{k=0}^n\frac{z^k}{k!}
+ +\frac{z^{n+1}}{(n+1)!}\frac1{1-z/(n+2)}.
+\]
+Taking $n=80$ verifies the exponential and density bounds above; the final
+comparison is rational.
+
+To realize the product experiment, take $N=50000$ slots and a one-dimensional
+query equal to $C$ on the sole present record, independent of the state;
+all other slots are empty. Its neighbor has every slot empty. The normalized
+transcript $Y_t/(C\sqrt V)$ has law $P^{\otimes T}$ or $Q^{\otimes T}$,
+respectively, so the displayed event disproves the transcript guarantee.
+For larger $d$, the same construction uses the first coordinate.
+\end{proof}
+
+This realization concerns the general privacy query class. It does not
+satisfy the bounded-below objective assumptions of the utility theorem,
+and does not establish failure for every adaptive instance or final model.
+Data processing can reduce distinguishability. Direct evaluation at the
+inverted value gives $V\approx0.2629208143$, $u\approx1.950237557$ and an
+event gap approximately $0.00097140769$; these diagnostics are not needed
+for the conservative proof. There is no conflict with the fixed-pass
+$G_0$ limit: the finite failure and the limiting excess privacy concern
+different points along the parameter family.
+
+\begin{thebibliography}{9}
+\bibitem{bu2020deepgdp}
+Z. Bu, J. Dong, Q. Long and W. J. Su.
+\emph{Deep Learning with Gaussian Differential Privacy}.
+Harvard Data Science Review 2(3), 2020.
+\href{https://doi.org/10.1162/99608f92.cfc5dd25}{doi:10.1162/99608f92.cfc5dd25}.
+
+\bibitem{clipping}
+A. Koloskova, H. Hendrikx and S. U. Stich.
+\emph{Revisiting Gradient Clipping: Stochastic Bias and Tight Convergence
+Guarantees}. ICML, 2023. \href{https://arxiv.org/abs/2305.01588}{arXiv:2305.01588}.
+\bibitem{amap}
+E. Monzio Compagnoni, A. Stanghellini, R. Islamov, A. Lucchi and A. Koloskova.
+\emph{Adaptive Methods Are Preferable in High Privacy Settings:
+An SDE Perspective}. ICLR, 2026.
+\href{https://arxiv.org/abs/2603.03226}{arXiv:2603.03226}.
+\bibitem{gross}
+L. Gross. \emph{Logarithmic Sobolev Inequalities}.
+American Journal of Mathematics, 97(4):1061--1083, 1975.
+\href{https://doi.org/10.2307/2373688}{doi:10.2307/2373688}.
+\bibitem{gdp}
+J. Dong, A. Roth and W. J. Su.
+\emph{Gaussian Differential Privacy}. Journal of the Royal Statistical
+Society: Series B, 84(1):3--37, 2022.
+\href{https://arxiv.org/abs/1905.02383}{arXiv:1905.02383}.
+\bibitem{abadi}
+M. Abadi et al.\ \emph{Deep Learning with Differential Privacy}.
+ACM CCS, 2016. \href{https://arxiv.org/abs/1607.00133}{arXiv:1607.00133}.
+\bibitem{snm}
+O. R\"ais\"a, J. J\"alk\"o and A. Honkela.
+\emph{Subsampling is not Magic: Why Large Batch Sizes Work for Differentially
+Private Stochastic Optimisation}. ICML, PMLR 235:41959--41981, 2024.
+\href{https://proceedings.mlr.press/v235/raisa24a.html}{Published version}.
+\end{thebibliography}
+\end{document}

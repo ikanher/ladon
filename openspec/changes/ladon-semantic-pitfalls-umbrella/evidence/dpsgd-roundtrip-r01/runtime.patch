@@ -1,0 +1,68 @@
+--- a/src/ladon/_proof_slice_runtime.py
++++ b/src/ladon/_proof_slice_runtime.py
+@@ -31,7 +31,7 @@
+             cwd=self.root,
+             env=self.environment,
+             timeout_seconds=60,
+-            max_output_bytes=8 * 1024**2,
++            max_output_bytes=16 * 1024**2,
+             max_rss_bytes=DEFAULT_MAX_RSS_BYTES,
+         )
+         receipt = asdict(process)
+--- a/src/ladon/lean/ladon_scoped_slice_helper.lean
++++ b/src/ladon/lean/ladon_scoped_slice_helper.lean
+@@ -2,6 +2,7 @@
+ -- LADON_TARGET_IMPORT
+ 
+ open Lean Elab Command Meta
++set_option maxHeartbeats 1000000
+ 
+ /- A bounded, read-only proposal for extracting an exact application from an
+    imported theorem value.  Root owns compilation and runtime qualification. -/
+@@ -67,7 +68,9 @@
+ 
+ private def jsonExpr (expr : Expr) : MetaM Json := do
+   let display ← withOptions (fun o => o.setBool `pp.all true |>.setBool `pp.explicit true
+-    |>.setBool `pp.fullNames true |>.setBool `pp.notation false) do
++    |>.setBool `pp.fullNames true |>.setBool `pp.notation false
++        |>.setBool `pp.proofs true |>.setBool `pp.deepTerms true
++        |>.set `pp.maxSteps (1000000 : Nat)) do
+     pure (← ppExpr expr).pretty
+   let result := Json.mkObj [
+     ("display", toJson display), ("structural", toJson (structuralText expr))]
+@@ -81,7 +84,9 @@
+     withTheReader Lean.Core.Context
+       (fun c => { c with currNamespace := Name.anonymous, openDecls := [] }) do
+       withOptions (fun o => o.setBool `pp.all true |>.setBool `pp.explicit true
+-        |>.setBool `pp.fullNames true |>.setBool `pp.notation false) do
++        |>.setBool `pp.fullNames true |>.setBool `pp.notation false
++        |>.setBool `pp.proofs true |>.setBool `pp.deepTerms true
++        |>.set `pp.maxSteps (1000000 : Nat)) do
+         let targetText := (← ppExpr target).pretty
+         let proofText ← roundtripProofText proof
+         if targetText.utf8ByteSize > 1048576 || proofText.utf8ByteSize > 1048576 then
+@@ -323,7 +328,12 @@
+       ("compiledModulePaths", Json.arr paths),
+       ("applications", Json.arr resultRows)]
+     let frame := "LADON_PROOF_SLICE " ++ Json.compress output
+-    if frame.utf8ByteSize > 8388608 then throwError "serialized result exceeds 8 MiB"
++    IO.eprintln s!"LADON_FRAME_BYTES total={frame.utf8ByteSize} locals={(Json.compress (Json.arr locals)).utf8ByteSize} applications={(Json.compress (Json.arr resultRows)).utf8ByteSize}"
++    for row in resultRows do
++      for key in ["localContext", "providerObservations", "transport", "arguments", "closedApplicationProofText", "closedApplicationProofStructural"] do
++        if let .ok value := row.getObjVal? key then
++          IO.eprintln s!"LADON_FIELD_BYTES {key}={(Json.compress value).utf8ByteSize}"
++    if frame.utf8ByteSize > 16777216 then throwError "serialized result exceeds 16 MiB"
+     logInfo frame
+ 
+ -- LADON_SELECTION
+--- a/src/ladon/proof_slice.py
++++ b/src/ladon/proof_slice.py
+@@ -95,7 +95,7 @@
+         "limits": {
+             "secondsPerProcess": 60,
+             "rssBytes": DEFAULT_MAX_RSS_BYTES,
+-            "outputBytes": 8 * 1024**2,
++            "outputBytes": 16 * 1024**2,
+             "nodes": max_nodes,
+             "depth": max_depth,
+         },

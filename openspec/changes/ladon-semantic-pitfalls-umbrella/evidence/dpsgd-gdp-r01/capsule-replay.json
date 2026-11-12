@@ -1,0 +1,106 @@
+{
+  "buildPolicy": {
+    "effective": "not-enforced",
+    "requested": "ordered",
+    "scope": "project module compilation; dependency resolution is separately supervised",
+    "version": 1
+  },
+  "capsuleIdentity": "sha256:45f8f836359eb8c56e7bbc02cc597441750ad06ae2da301d4b87c6c5901a1476",
+  "comparisons": {},
+  "isolation": {
+    "level": "fresh_copy_sanitized_environment",
+    "originalCheckoutReferencedByCommand": false,
+    "originalCheckoutReferencedByEnvironment": false,
+    "passed": true,
+    "replayRootRole": "fresh_temporary_repository"
+  },
+  "nonclaims": [
+    "The capsule is not claimed to be globally or declaration-level minimal.",
+    "External dependencies are locked but are not necessarily vendored for offline use.",
+    "Native and operating-system dependencies are not packaged hermetically.",
+    "Ladon reports Lean replay evidence and is not an independent proof authority."
+  ],
+  "planIdentity": "sha256:c868a3d2d551e3cc1a13dcacef417634036dd7604302a1bddd346ff1f1c518f0",
+  "receiptIdentity": "sha256:b45fcec352e35710028c504f2a336d697394d5f35b8599b96a59756cd797719e",
+  "resourceLimits": {
+    "maxProcessOutputBytes": 16777216,
+    "maxProcessTreeRssBytes": 12884901888,
+    "memoryMetric": "aggregate process-tree RSS; shared pages may be counted repeatedly",
+    "stageTimeoutSeconds": 120.0,
+    "version": 1
+  },
+  "schema": "ladon-theorem-capsule-replay-v1",
+  "stages": [
+    {
+      "buildTimeoutSeconds": 120.0,
+      "diagnostic": "Ordered build dependency preflight failed: required imported artifacts or Lake facets are unavailable. No unrestricted compilation fallback was run.",
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 50225152,
+      "resourceObservations": {
+        "largestLeanRssBytes": 0,
+        "leanMeasurement": "sampled",
+        "maxDescendantProcesses": 0,
+        "maxLeanProcesses": 0,
+        "status": "sampled",
+        "version": 1
+      },
+      "stage": "lean_build",
+      "steps": [
+        {
+          "command": [
+            "lake",
+            "--no-build",
+            "build",
+            "+Mf.DP.VectorClipping:deps"
+          ],
+          "diagnostic": "Ordered build dependency preflight failed: required imported artifacts or Lake facets are unavailable. No unrestricted compilation fallback was run.",
+          "memoryLimited": false,
+          "module": "Mf.DP.VectorClipping",
+          "originalStatus": "Lean-rejected",
+          "outputLimited": false,
+          "peakRssBytes": 50225152,
+          "resourceObservations": {
+            "largestLeanRssBytes": 0,
+            "leanMeasurement": "sampled",
+            "maxDescendantProcesses": 0,
+            "maxLeanProcesses": 0,
+            "memoryMetric": "RSS per process; shared pages may be counted repeatedly",
+            "samples": 1,
+            "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+            "status": "sampled",
+            "unavailableSamples": 0,
+            "unidentifiedProcessNames": 0,
+            "version": 1
+          },
+          "returncode": 1,
+          "role": "deps",
+          "stage": "lean_build",
+          "stderrExcerpt": "info: mathlib: cloning https://github.com/leanprover-community/mathlib4\ninfo: stderr:\nCloning into '<replay-root>/.lake/packages/mathlib'...\nfatal: '/nonexistent/github.com/leanprover-community/mathlib4' does not appear to be a git repository\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists.\nerror: external command 'git' exited with code 128\n",
+          "stderrSha256": "sha256:f090141aed3ee5ea6ba6c34e68f851a117076eee491886f42c2e08cc017457d2",
+          "stdoutExcerpt": "",
+          "stdoutSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "timedOut": false
+        }
+      ],
+      "timedOut": false
+    }
+  ],
+  "status": "unsupported-facet",
+  "target": {
+    "module": "Mf.Optimization.PoissonClippedSGD.Convergence",
+    "name": "Mf.Optimization.PoissonClippedSGD.gaussian_convergence"
+  },
+  "toolchain": {
+    "helperVersion": "ladon-theorem-capsule-helper-v1",
+    "leanVersion": "4.33.0",
+    "protocolVersion": "ladon-theorem-capsule-stream-v1"
+  },
+  "trustFrontier": [
+    {
+      "kind": "axiom_reference",
+      "scope": "value",
+      "target": "propext"
+    }
+  ]
+}
