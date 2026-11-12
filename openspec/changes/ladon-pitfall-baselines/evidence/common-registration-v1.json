@@ -1,0 +1,1374 @@
+{
+  "schema": "ladon-pitfall-common-registration-v1",
+  "registrationId": "pitfall-common-registration-v1",
+  "status": "accepted-configuration-freeze",
+  "chronology": {
+    "createdAfter": [
+      "feasibility-run-v1-r18",
+      "feasibility-run-v1-r19"
+    ],
+    "preregistrationClaim": false,
+    "compatibility": "Feasibility profile and r19 report are bound to their original policy; this common registration governs only future runs."
+  },
+  "population": {
+    "corpusPath": "evidence/corpus/cases.json",
+    "corpusSha256": "891e81619dd552af1311b794d48eb10fe10d931361c9fca9ddbe2aa5507ee367",
+    "caseCount": 24,
+    "orderedCases": [
+      "domain-quantifier-01",
+      "domain-quantifier-02",
+      "domain-quantifier-03",
+      "domain-quantifier-04",
+      "assumption-feasibility-01",
+      "assumption-feasibility-02",
+      "assumption-feasibility-03",
+      "assumption-feasibility-04",
+      "premise-provenance-01",
+      "premise-provenance-02",
+      "premise-provenance-03",
+      "premise-provenance-04",
+      "existence-defaults-01",
+      "existence-defaults-02",
+      "existence-defaults-03",
+      "existence-defaults-04",
+      "operation-semantics-01",
+      "operation-semantics-02",
+      "operation-semantics-03",
+      "operation-semantics-04",
+      "claim-trust-01",
+      "claim-trust-02",
+      "claim-trust-03",
+      "claim-trust-04"
+    ],
+    "childUnlockCases": {
+      "assumption-feasibility": 4,
+      "premise-provenance": 4,
+      "existence-defaults": 4,
+      "operation-semantics": 4
+    },
+    "fullBaselineOnlyCases": {
+      "domain-quantifier": 4,
+      "claim-trust": 4
+    },
+    "caseListingOrder": "unchanged accepted cases.json order; not execution order",
+    "executionOrder": [
+      "assumption-feasibility",
+      "premise-provenance",
+      "existence-defaults",
+      "operation-semantics",
+      "domain-quantifier",
+      "claim-trust"
+    ],
+    "executionOrderRule": "within a family, preserve the order of case IDs in the accepted corpus; the first three child-unlock batches precede the two full-baseline-only families"
+  },
+  "runtime": {
+    "manifestIdentity": "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+    "acceptancePath": "evidence/runtime-freeze/acceptance-v3.json",
+    "acceptanceSha256": "c9e86960608a9978890147b0bf0890e84a2e9db95a69b6ee489b454272ef7128",
+    "sourceArtifactInventoryPath": "evidence/runtime-freeze/source-artifacts-v2.json",
+    "sourceArtifactInventorySha256": "d6ce329748083e772dd4671dba2d9432230f03d918f0e062f5ed2f1ecf89cd17",
+    "toolchain": "leanprover/lean4:v4.32.1"
+  },
+  "limits": {
+    "secondsPerCaseIncludingPreparation": 600,
+    "maxRssBytesPerProcessTree": 12884901888,
+    "maxOutputBytesPerProcess": 8388608,
+    "execution": "sequential"
+  },
+  "profiles": {
+    "assumption-feasibility": {
+      "commandProfile": "feasibility-policy-v1",
+      "qualification": "accepted-r19",
+      "argv": [
+        "python",
+        "openspec/changes/ladon-pitfall-baselines/scripts/feasibility_baseline.py",
+        "run",
+        "--runtime-root",
+        "<pinned-baseline-v3-root>",
+        "--output",
+        "<new-output-directory>"
+      ],
+      "inputBinding": "exact comparisonGoal.formalClaim; operational worker receives only generated Lean module and goal",
+      "judgmentKind": "formal-proposition-inhabitation-and-inconsistency",
+      "rubric": "Only independently replayed, trusted proofs of P or not-P establish formal outcomes. They do not alone establish source error. Cases 03 and 04 remain implication/parameterized claim controls, not full selected-context tests.",
+      "historicalBaselineBinding": {
+        "feasibility-policy-v1.json": {
+          "path": "evidence/feasibility-policy-v1.json",
+          "sha256": "9178b6453cf940d983490c98b69967f2795a61d41ca9d2ccfad227b1972e2287"
+        },
+        "feasibility-runner-lock-v1.json": {
+          "path": "evidence/feasibility-runner-lock-v1.json",
+          "sha256": "6258711d37181f59908c02ce39de58f1450f5d376be6fd8f25413d847703d7c1"
+        },
+        "feasibility-run-v1-r19/acceptance-index.json": {
+          "path": "evidence/feasibility-run-v1-r19/acceptance-index.json",
+          "sha256": "d8e4a0b0d4d57b89fdf5a2cfbcb961c51b1d1ce1fb39f0c83dbad02254ed229d"
+        },
+        "feasibility-run-v1-r19/STATUS-ADDENDUM.md": {
+          "path": "evidence/feasibility-run-v1-r19/STATUS-ADDENDUM.md",
+          "sha256": "f7b294482cfee7415b8c452df1f94e5c379a2fff55af2784bf6d0a2c8b18e4a4"
+        },
+        "feasibility-run-v1-r19/BLIND-ADJUDICATION.md": {
+          "path": "evidence/feasibility-run-v1-r19/BLIND-ADJUDICATION.md",
+          "sha256": "c50b23f140dfd01dc0dfaabaf12a943e90d29be50134deec4c6f3022b8bcb666"
+        },
+        "feasibility-run-v1-r19/PROTOCOL-REVIEW.md": {
+          "path": "evidence/feasibility-run-v1-r19/PROTOCOL-REVIEW.md",
+          "sha256": "f3a940bd44be75cb07167fd413e3e8be0fcd8f884fd1085e624c16a71bf2b8d5"
+        }
+      }
+    },
+    "premise-provenance": {
+      "commandProfile": "proof-slice-provider-route-v1",
+      "qualification": "pending-per-batch",
+      "argvTemplates": [
+        [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint",
+          "proof-search",
+          "proof",
+          "slice",
+          "--repo",
+          "<case-repo>",
+          "--source",
+          "<leanSource-path>",
+          "--module",
+          "<module>",
+          "--declaration",
+          "<qualified-subject>",
+          "--application",
+          "<observed-provider-application>",
+          "--max-nodes",
+          "131072",
+          "--scoped",
+          "--output",
+          "<new-evidence.json>"
+        ]
+      ],
+      "inputBinding": "Bind module/source/declaration from leanSource and comparisonGoal.formalDeclaration; application selected from the case source syntax above; preserve scoped proof slice and local provider identities.",
+      "judgmentKind": "observed-premise-route-and-provider-projection",
+      "rubric": "Use the proof-slice route and owner-qualified context: implicit provider containing P contrary to source in 01; explicit provider field projection is a control in 02; explicit P premise is a control in 03; independently proved arithmetic provider is a control in 04. A route is not proof the premise is necessary.",
+      "executionEnvironment": {
+        "argvPrefix": [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint"
+        ],
+        "pythonInvocation": "runtime_custody.py supplies the preserved Python executable, loader libraries, PATH and runtime src import origin; do not invoke PATH ladon/python or pip Ladon",
+        "leanPath": "<baseline-root>/lean-core/bin/lean",
+        "lakePath": "<baseline-root>/lean-core/bin/lake",
+        "importRoot": "per-case isolated workspace only"
+      },
+      "unresolvedRule": "Incomplete extraction, missing source anchor, malformed run, or resource stop is qualification failure or unresolved per terminal evidence; never classify the route as absent from a failed probe.",
+      "preparation": "Build selected source/artifact from the pinned runtime and run the exact proof-slice command. Source span/quote and sourceClaim remain in independent source-fidelity adjudication. Incomplete slices remain unresolved.",
+      "applicationBindings": {
+        "premise-provenance-01": "h.proof",
+        "premise-provenance-02": "h.proof",
+        "premise-provenance-03": "h",
+        "premise-provenance-04": "provider.proof"
+      }
+    },
+    "existence-defaults": {
+      "commandProfile": "source-goal-probe-v1",
+      "qualification": "pending-per-batch",
+      "argvTemplates": [
+        [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint",
+          "proof-search",
+          "goal",
+          "capture",
+          "--repo-root",
+          "<case-repo>",
+          "--source",
+          "<source>",
+          "--module",
+          "<module>",
+          "--line",
+          "<line>",
+          "--column",
+          "<column>",
+          "--expected-source-digest",
+          "<sha256>",
+          "--toolchain-mode",
+          "explicit",
+          "--lean-path",
+          "<pinned-lean>",
+          "--lake-path",
+          "<pinned-lake>",
+          "--format",
+          "json"
+        ],
+        [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint",
+          "proof-search",
+          "goal",
+          "complete",
+          "--repo-root",
+          "<case-repo>",
+          "--capture-file",
+          "<capture>",
+          "--term",
+          "by first | assumption | rfl | simp | omega",
+          "--toolchain-mode",
+          "explicit",
+          "--lean-path",
+          "<pinned-lean>",
+          "--lake-path",
+          "<pinned-lake>",
+          "--format",
+          "json"
+        ]
+      ],
+      "inputBinding": "case leanSource/declaration; exact selected-value property, predicate and context must be generated from source-bound case plan",
+      "judgmentKind": "existence-membership-leastness-and-default",
+      "rubric": "Separate existence, selected-value membership/leastness, nonempty conditions, and intentional empty-set default. A well-typed total value alone establishes none of the missing properties.",
+      "executionEnvironment": {
+        "argvPrefix": [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint"
+        ],
+        "pythonInvocation": "runtime_custody.py supplies the preserved Python executable, loader libraries, PATH and runtime src import origin; do not invoke PATH ladon/python or pip Ladon",
+        "leanPath": "<baseline-root>/lean-core/bin/lean",
+        "lakePath": "<baseline-root>/lean-core/bin/lake",
+        "importRoot": "per-case isolated workspace only"
+      },
+      "candidatePolicy": "fixed generic tactic only; no case-specific term, oracle or answer certificate",
+      "unresolvedRule": "If the qualified exact-subject probe cannot observe the family judgment, retain unresolved; a failed/unavailable command is qualification failure, not evidence of absent capability.",
+      "preparation": "Bind the exact selected declaration, typed predicate, selected value, and original condition from the case plan; no repair premise is inserted. If the accepted case data cannot elaborate the obligation exactly, retain unresolved."
+    },
+    "operation-semantics": {
+      "commandProfile": "source-goal-probe-v1",
+      "qualification": "pending-per-batch",
+      "argvTemplates": [
+        [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint",
+          "proof-search",
+          "goal",
+          "capture",
+          "--repo-root",
+          "<case-repo>",
+          "--source",
+          "<source>",
+          "--module",
+          "<module>",
+          "--line",
+          "<line>",
+          "--column",
+          "<column>",
+          "--expected-source-digest",
+          "<sha256>",
+          "--toolchain-mode",
+          "explicit",
+          "--lean-path",
+          "<pinned-lean>",
+          "--lake-path",
+          "<pinned-lake>",
+          "--format",
+          "json"
+        ],
+        [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint",
+          "proof-search",
+          "goal",
+          "complete",
+          "--repo-root",
+          "<case-repo>",
+          "--capture-file",
+          "<capture>",
+          "--term",
+          "by first | assumption | rfl | simp | omega",
+          "--toolchain-mode",
+          "explicit",
+          "--lean-path",
+          "<pinned-lean>",
+          "--lake-path",
+          "<pinned-lake>",
+          "--format",
+          "json"
+        ]
+      ],
+      "inputBinding": "case leanSource/declaration, elaborated operation/type/instance/coercion identities, exact source-attributed property and context",
+      "judgmentKind": "typed-operation-property-and-guard",
+      "rubric": "Check type/coercion identity, universal scope, required guard and exact property. A failed proof search is unresolved; a checked counterexample may refute only the bound property.",
+      "executionEnvironment": {
+        "argvPrefix": [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint"
+        ],
+        "pythonInvocation": "runtime_custody.py supplies the preserved Python executable, loader libraries, PATH and runtime src import origin; do not invoke PATH ladon/python or pip Ladon",
+        "leanPath": "<baseline-root>/lean-core/bin/lean",
+        "lakePath": "<baseline-root>/lean-core/bin/lake",
+        "importRoot": "per-case isolated workspace only"
+      },
+      "candidatePolicy": "fixed generic tactic only; no case-specific term, oracle or answer certificate",
+      "unresolvedRule": "If the qualified exact-subject probe cannot observe the family judgment, retain unresolved; a failed/unavailable command is qualification failure, not evidence of absent capability.",
+      "preparation": "Bind the exact typed operation declarations, instances/coercions, operands, original guards and source-attributed property. Do not infer a counterexample from failed proof search."
+    },
+    "domain-quantifier": {
+      "commandProfile": "correspondence-input-probe-v1",
+      "qualification": "pending-per-batch",
+      "argvTemplates": [
+        [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint",
+          "investigation",
+          "contract",
+          "audit",
+          "--input",
+          "<case-audit-plan.json>",
+          "--output-dir",
+          "<new-output-directory>"
+        ]
+      ],
+      "inputBinding": "sourceQuote/sourceSpan/sourceClaim and exact formalClaim/formalDeclaration; separate source-reading input from Lean proof-validation input",
+      "judgmentKind": "source-formal-domain-and-quantifier-fidelity",
+      "rubric": "Compare domains, binder order, dependency and scope. Formal truth is scored separately; it cannot establish source/formal fidelity.",
+      "executionEnvironment": {
+        "argvPrefix": [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint"
+        ],
+        "pythonInvocation": "runtime_custody.py supplies the preserved Python executable, loader libraries, PATH and runtime src import origin; do not invoke PATH ladon/python or pip Ladon",
+        "leanPath": "<baseline-root>/lean-core/bin/lean",
+        "lakePath": "<baseline-root>/lean-core/bin/lake",
+        "importRoot": "per-case isolated workspace only"
+      },
+      "candidatePolicy": "fixed generic tactic only; no case-specific term, oracle or answer certificate",
+      "unresolvedRule": "If the qualified exact-subject probe cannot observe the family judgment, retain unresolved; a failed/unavailable command is qualification failure, not evidence of absent capability.",
+      "preparation": "Create one source/fidelity input from the quote/span and sourceClaim and a separate formal validation input from formalClaim/declaration. Preserve both source and generated request digests."
+    },
+    "claim-trust": {
+      "commandProfile": "source-formal-and-declaration-trust-v1",
+      "qualification": "pending-per-batch",
+      "argvTemplates": [
+        [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint",
+          "investigation",
+          "interpret",
+          "--record",
+          "<prepared-attribution-record.json>",
+          "--root",
+          "<case-repo>",
+          "--output",
+          "<new-interpretation.json>"
+        ],
+        [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "exec",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "core",
+          "--",
+          "<prepared-axiom-probe.lean>"
+        ]
+      ],
+      "inputBinding": "selected formalDeclaration and source/formal claim; `#print axioms` probe imports only the selected subject and accepted dependencies",
+      "judgmentKind": "source-formal-strengthening-and-declaration-axiom-closure",
+      "rubric": "For 01 compare unconditional “every natural is zero” with the strengthened formal subject; for 02 report supplied_axiom in the selected theorem dependency; 03 and 04 are faithful/trust controls. A source/formal mismatch and an axiom-policy violation are separate dimensions.",
+      "executionEnvironment": {
+        "sourceCommandPrefix": [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "run",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "python",
+          "--",
+          "-m",
+          "ladon.entrypoint"
+        ],
+        "axiomCommandPrefix": [
+          "openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+          "exec",
+          "--bundle",
+          ".codex/state/pitfall-runtime/bundles/baseline-v3",
+          "--identity",
+          "<manifestIdentity>",
+          "--root",
+          "<reconstructed-baseline-v3-root>",
+          "--profile",
+          "core",
+          "--"
+        ],
+        "sourceImportRoot": "selected isolated case only",
+        "axiomProbeImportRoot": "selected frozen Lean module and its recorded dependency closure"
+      },
+      "preparation": "Create attribution record from the exact sourceQuote/sourceSpan/sourceClaim in cases.json; compare that lowered interpretation with the exact formalClaim/formalDeclaration in the independent rubric review. Generate a Lean probe importing only the selected declaration and issuing #print axioms for that declaration. Bind both inputs and outputs to the frozen source and artifact digests; do not query a persistent evidence index."
+    }
+  },
+  "cases": [
+    {
+      "caseId": "domain-quantifier-01",
+      "family": "domain-quantifier",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "One bound works for every natural number.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 7,
+          "startColumn": 0,
+          "endLine": 7,
+          "endColumn": 41,
+          "quoteSha256": "acf802d75646bbcb10600f337225ef90a832b7120c0cb052636012b9f99c654a",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/domain_quantifier_01.lean#PitfallCases.DomainQuantifier01.subject",
+        "declaration": "lean/CoreCases/domain_quantifier_01.lean#PitfallCases.DomainQuantifier01.subject",
+        "sourceClaim": "∃ k : Nat, ∀ n : Nat, n < k",
+        "formalClaim": "∃ k : Nat, ∀ n : Nat, n < k",
+        "obligation": "Check whether the uniform-bound proposition stated by both source and formal subject holds; validation refutes it. No source/formal quantifier mismatch is claimed."
+      },
+      "profile": "correspondence-input-probe-v1",
+      "operationalProjection": {
+        "family": "domain-quantifier",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "domain-quantifier-02",
+      "family": "domain-quantifier",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "Every integer z satisfies z + 0 = z.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 11,
+          "startColumn": 0,
+          "endLine": 11,
+          "endColumn": 36,
+          "quoteSha256": "78ece63c14b39008c6f3c7d51d3c99c427797e0b5af490ccb855e0450f8b2371",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/domain_quantifier_02.lean#PitfallCases.DomainQuantifier02.subject",
+        "declaration": "lean/CoreCases/domain_quantifier_02.lean#PitfallCases.DomainQuantifier02.subject",
+        "sourceClaim": "∀ z : Int, z + 0 = z",
+        "formalClaim": "∀ n : Nat, n + 0 = n",
+        "obligation": "Check preservation of the quantified domain Int versus Nat."
+      },
+      "profile": "correspondence-input-probe-v1",
+      "operationalProjection": {
+        "family": "domain-quantifier",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "domain-quantifier-03",
+      "family": "domain-quantifier",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "Every natural below five is represented by a finite index with its value preserved.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 15,
+          "startColumn": 0,
+          "endLine": 15,
+          "endColumn": 83,
+          "quoteSha256": "0da313aa75e6f7e94f1f8f62abeba9b08ff5b4fe98f6550410f8e2a97405b680",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/domain_quantifier_03.lean#PitfallCases.DomainQuantifier03.subject",
+        "declaration": "lean/CoreCases/domain_quantifier_03.lean#PitfallCases.DomainQuantifier03.subject",
+        "sourceClaim": "∀ n : Nat, n < 5 → ∃ i : Fin 5, i.val = n",
+        "formalClaim": "∀ n : Nat, n < 5 → ∃ i : Fin 5, i.val = n",
+        "obligation": "Check bounded-index representation and value preservation."
+      },
+      "profile": "correspondence-input-probe-v1",
+      "operationalProjection": {
+        "family": "domain-quantifier",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "domain-quantifier-04",
+      "family": "domain-quantifier",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "A separate bound may be chosen for each natural input.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 19,
+          "startColumn": 0,
+          "endLine": 19,
+          "endColumn": 54,
+          "quoteSha256": "1760cda86c419347f6070845f57d9d7165fbc0fe9886688ac13181b8bb4936b5",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/domain_quantifier_04.lean#PitfallCases.DomainQuantifier04.subject",
+        "declaration": "lean/CoreCases/domain_quantifier_04.lean#PitfallCases.DomainQuantifier04.subject",
+        "sourceClaim": "∀ n : Nat, ∃ k : Nat, n < k",
+        "formalClaim": "∀ n : Nat, ∃ k : Nat, n < k",
+        "obligation": "Check witness may depend on n."
+      },
+      "profile": "correspondence-input-probe-v1",
+      "operationalProjection": {
+        "family": "domain-quantifier",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "assumption-feasibility-01",
+      "family": "assumption-feasibility",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "Some natural number is both zero and one.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 23,
+          "startColumn": 0,
+          "endLine": 23,
+          "endColumn": 41,
+          "quoteSha256": "e6a3889455a793de58a317f2be217117674b93ff072999ba0e6cba26287f6b76",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/assumption_feasibility_01.lean#PitfallCases.AssumptionFeasibility01.subject",
+        "declaration": "lean/CoreCases/assumption_feasibility_01.lean#PitfallCases.AssumptionFeasibility01.subject",
+        "sourceClaim": "∃ n : Nat, n = 0 ∧ n = 1",
+        "formalClaim": "∃ n : Nat, n = 0 ∧ n = 1",
+        "obligation": "Establish whether the supplied context has a witness."
+      },
+      "profile": "feasibility-policy-v1",
+      "operationalProjection": {
+        "family": "assumption-feasibility",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "assumption-feasibility-02",
+      "family": "assumption-feasibility",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "There is a natural n with n > 0 and n = 0.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 27,
+          "startColumn": 0,
+          "endLine": 27,
+          "endColumn": 42,
+          "quoteSha256": "006fb76907ffff55b97b88c61ab8b57247a651b9459bef3ff4ba646529b52500",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/assumption_feasibility_02.lean#PitfallCases.AssumptionFeasibility02.subject",
+        "declaration": "lean/CoreCases/assumption_feasibility_02.lean#PitfallCases.AssumptionFeasibility02.subject",
+        "sourceClaim": "∃ n : Nat, n > 0 ∧ n = 0",
+        "formalClaim": "∃ n : Nat, n > 0 ∧ n = 0",
+        "obligation": "Establish whether the supplied context has a witness."
+      },
+      "profile": "feasibility-policy-v1",
+      "operationalProjection": {
+        "family": "assumption-feasibility",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "assumption-feasibility-03",
+      "family": "assumption-feasibility",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "An impossible branch may be eliminated in proving a conditional goal.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 31,
+          "startColumn": 0,
+          "endLine": 31,
+          "endColumn": 69,
+          "quoteSha256": "f844c3e9c3463cf0ffe6d171affeba9efb97fb123d393587ae742ce56159c890",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/assumption_feasibility_03.lean#PitfallCases.AssumptionFeasibility03.subject",
+        "declaration": "lean/CoreCases/assumption_feasibility_03.lean#PitfallCases.AssumptionFeasibility03.subject",
+        "sourceClaim": "False → True",
+        "formalClaim": "False → True",
+        "obligation": "Check elimination from the explicitly contradictory premise."
+      },
+      "profile": "feasibility-policy-v1",
+      "operationalProjection": {
+        "family": "assumption-feasibility",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "assumption-feasibility-04",
+      "family": "assumption-feasibility",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "For each fixed natural input, a matching witness may depend on it.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 35,
+          "startColumn": 0,
+          "endLine": 35,
+          "endColumn": 66,
+          "quoteSha256": "427516440941fac44b9622469570d72546c8e960dcf6414f24b987d851b9073d",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/assumption_feasibility_04.lean#PitfallCases.AssumptionFeasibility04.subject",
+        "declaration": "lean/CoreCases/assumption_feasibility_04.lean#PitfallCases.AssumptionFeasibility04.subject",
+        "sourceClaim": "∀ n : Nat, ∃ k : Nat, k = n",
+        "formalClaim": "∀ n : Nat, ∃ k : Nat, k = n",
+        "obligation": "Check witness construction for each fixed n."
+      },
+      "profile": "feasibility-policy-v1",
+      "operationalProjection": {
+        "family": "assumption-feasibility",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "premise-provenance-01",
+      "family": "premise-provenance",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "The proof establishes P using only the explicitly stated data, without assuming P through an implicit instance.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 39,
+          "startColumn": 0,
+          "endLine": 39,
+          "endColumn": 111,
+          "quoteSha256": "5e80f7d8b27090a190ffa06adada47ad9472722bc5957b92bd6e50e2f793fe70",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/premise_provenance_01.lean#PitfallCases.PremiseProvenance01.subject",
+        "declaration": "lean/CoreCases/premise_provenance_01.lean#PitfallCases.PremiseProvenance01.subject",
+        "sourceClaim": "P",
+        "formalClaim": "[HasConclusion P] → P",
+        "obligation": "Compare required assumptions and instance-derived proof path."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "premise-provenance",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "premise-provenance-02",
+      "family": "premise-provenance",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "Given an explicit provider argument carrying P, projecting its P field establishes P.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 43,
+          "startColumn": 0,
+          "endLine": 43,
+          "endColumn": 85,
+          "quoteSha256": "3ee97828a30847e6efb9cba510530472f26dab91bd2bb1b404e78b445fc9e0be",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/premise_provenance_02.lean#PitfallCases.PremiseProvenance02.subject",
+        "declaration": "lean/CoreCases/premise_provenance_02.lean#PitfallCases.PremiseProvenance02.subject",
+        "sourceClaim": "HasConclusion P → P",
+        "formalClaim": "HasConclusion P → P",
+        "obligation": "Check explicit provider field projection."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "premise-provenance",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "premise-provenance-03",
+      "family": "premise-provenance",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "P follows without an additional assumption.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 47,
+          "startColumn": 0,
+          "endLine": 47,
+          "endColumn": 43,
+          "quoteSha256": "0219dfd6f4b6d974c998ded38d7f0f20eb84266c0abdd8eb17bacf889e463536",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/premise_provenance_03.lean#PitfallCases.PremiseProvenance03.subject",
+        "declaration": "lean/CoreCases/premise_provenance_03.lean#PitfallCases.PremiseProvenance03.subject",
+        "sourceClaim": "P",
+        "formalClaim": "P → P",
+        "obligation": "Compare unconditional claim with explicit premise."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "premise-provenance",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "premise-provenance-04",
+      "family": "premise-provenance",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "An independently proved arithmetic fact supplies the provider.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 51,
+          "startColumn": 0,
+          "endLine": 51,
+          "endColumn": 62,
+          "quoteSha256": "bf7a43f580baf57d6cdde34402b8a62ac939fa47bfc52ab825cf3e0b7aae6e34",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/premise_provenance_04.lean#PitfallCases.PremiseProvenance04.subject",
+        "declaration": "lean/CoreCases/premise_provenance_04.lean#PitfallCases.PremiseProvenance04.subject",
+        "sourceClaim": "2 + 2 = 4 supplied via provider",
+        "formalClaim": "2 + 2 = 4",
+        "obligation": "Check independently proved provider construction and projection."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "premise-provenance",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "existence-defaults-01",
+      "family": "existence-defaults",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "The selected natural infimum of the defining set belongs to that set.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 55,
+          "startColumn": 0,
+          "endLine": 55,
+          "endColumn": 69,
+          "quoteSha256": "0c33e9e9fea0d5af5cd4b87e9c8d56f9c68975d7cc98e5850f95ff389dbabbd0",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "mathlib/ExistenceCases/Case01.lean#ExistenceCases.Case01.subject",
+        "declaration": "mathlib/ExistenceCases/Case01.lean#ExistenceCases.Case01.subject",
+        "sourceClaim": "n_e ∈ {n : Nat | B_e n}",
+        "formalClaim": "n_e ∈ {n : Nat | B_e n}",
+        "obligation": "Check selected-value membership in the defining set."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "existence-defaults",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "existence-defaults-02",
+      "family": "existence-defaults",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "The defining predicate has a natural witness.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 59,
+          "startColumn": 0,
+          "endLine": 59,
+          "endColumn": 45,
+          "quoteSha256": "55079ff4c3c90babe86b737531eb57a622c40f2d0aae45a0e83c0062f0391327",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "mathlib/ExistenceCases/Case02.lean#ExistenceCases.Case02.subject",
+        "declaration": "mathlib/ExistenceCases/Case02.lean#ExistenceCases.Case02.subject",
+        "sourceClaim": "∃ n : Nat, B_e n",
+        "formalClaim": "∃ n : Nat, B_e n",
+        "obligation": "Check existence of a witness for the defining predicate."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "existence-defaults",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "existence-defaults-03",
+      "family": "existence-defaults",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "A nonempty set of naturals has an infimum in that set, and it is least.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 63,
+          "startColumn": 0,
+          "endLine": 63,
+          "endColumn": 71,
+          "quoteSha256": "411739c55ea0087b0159490b2202c22cadfdb20203cb4fdbafed94cd01860998",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "mathlib/ExistenceCases/Case03.lean#ExistenceCases.Case03.subject",
+        "declaration": "mathlib/ExistenceCases/Case03.lean#ExistenceCases.Case03.subject",
+        "sourceClaim": "∀ S : Set Nat, S.Nonempty → sInf S ∈ S ∧ ∀ n ∈ S, sInf S ≤ n",
+        "formalClaim": "∀ S : Set Nat, S.Nonempty → sInf S ∈ S ∧ ∀ n ∈ S, sInf S ≤ n",
+        "obligation": "Check conditional membership and leastness."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "existence-defaults",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "existence-defaults-04",
+      "family": "existence-defaults",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "When the defining set is empty, the total natural infimum returns zero.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 67,
+          "startColumn": 0,
+          "endLine": 67,
+          "endColumn": 71,
+          "quoteSha256": "55a52be9dcfbec6888d0c0652265f9bb619f060db5982902b629d5b518cbbd1b",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "mathlib/ExistenceCases/Case04.lean#ExistenceCases.Case04.subject",
+        "declaration": "mathlib/ExistenceCases/Case04.lean#ExistenceCases.Case04.subject",
+        "sourceClaim": "n_e = 0 where n_e := sInf {n | B_e n}",
+        "formalClaim": "n_e = 0",
+        "obligation": "Check total empty-set default without membership assertion."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "existence-defaults",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "operation-semantics-01",
+      "family": "operation-semantics",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "Natural subtraction agrees with integer subtraction without an order guard.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 71,
+          "startColumn": 0,
+          "endLine": 71,
+          "endColumn": 75,
+          "quoteSha256": "0e107ae3d6f83b5e09e885995642758b010530c16a1ee423aace1b7ff4873159",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/operation_semantics_01.lean#PitfallCases.OperationSemantics01.subject",
+        "declaration": "lean/CoreCases/operation_semantics_01.lean#PitfallCases.OperationSemantics01.subject",
+        "sourceClaim": "∀ a b : Nat, ((a - b : Nat) : Int) = (a : Int) - (b : Int)",
+        "formalClaim": "∀ a b : Nat, ((a - b : Nat) : Int) = (a : Int) - (b : Int)",
+        "obligation": "Compare the same typed operations for all operands."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "operation-semantics",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "operation-semantics-02",
+      "family": "operation-semantics",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "For every natural a and b, a - b + b = a, without an order premise.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 75,
+          "startColumn": 0,
+          "endLine": 75,
+          "endColumn": 67,
+          "quoteSha256": "82a4ca154cc5c8e96a5c19b03319c284ded5c6f9d0f6cad30ef20eded5579a2b",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/operation_semantics_02.lean#PitfallCases.OperationSemantics02.subject",
+        "declaration": "lean/CoreCases/operation_semantics_02.lean#PitfallCases.OperationSemantics02.subject",
+        "sourceClaim": "∀ a b : Nat, a - b + b = a",
+        "formalClaim": "∀ a b : Nat, a - b + b = a",
+        "obligation": "Check unguarded Nat identity."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "operation-semantics",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "operation-semantics-03",
+      "family": "operation-semantics",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "Adding zero preserves a natural number.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 79,
+          "startColumn": 0,
+          "endLine": 79,
+          "endColumn": 39,
+          "quoteSha256": "831b6eceea919ab4b1a7981a4c7674426fa20ef233620ad63385cf463a31d77e",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/operation_semantics_03.lean#PitfallCases.OperationSemantics03.subject",
+        "declaration": "lean/CoreCases/operation_semantics_03.lean#PitfallCases.OperationSemantics03.subject",
+        "sourceClaim": "∀ n : Nat, n + 0 = n",
+        "formalClaim": "∀ n : Nat, n + 0 = n",
+        "obligation": "Check typed Nat addition identity."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "operation-semantics",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "operation-semantics-04",
+      "family": "operation-semantics",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "For every natural a and b with b ≤ a, a - b + b = a.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 83,
+          "startColumn": 0,
+          "endLine": 83,
+          "endColumn": 52,
+          "quoteSha256": "5817228d88b9fa96edc2ddb59b151f25e6a29078165dc4aa53454fa580579d12",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/operation_semantics_04.lean#PitfallCases.OperationSemantics04.subject",
+        "declaration": "lean/CoreCases/operation_semantics_04.lean#PitfallCases.OperationSemantics04.subject",
+        "sourceClaim": "∀ a b : Nat, b ≤ a → a - b + b = a",
+        "formalClaim": "∀ a b : Nat, b ≤ a → a - b + b = a",
+        "obligation": "Check guarded Nat subtraction identity."
+      },
+      "profile": "source-goal-probe-v1",
+      "operationalProjection": {
+        "family": "operation-semantics",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "claim-trust-01",
+      "family": "claim-trust",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "Every natural number equals zero.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 87,
+          "startColumn": 0,
+          "endLine": 87,
+          "endColumn": 33,
+          "quoteSha256": "a96c4372bce5c7487bb18e7299c54c418b9fa7828f3157ea56668ec1aa685d5e",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/claim_trust_01.lean#PitfallCases.ClaimTrust01.subject",
+        "declaration": "lean/CoreCases/claim_trust_01.lean#PitfallCases.ClaimTrust01.subject",
+        "sourceClaim": "∀ n : Nat, n = 0",
+        "formalClaim": "∀ n : Nat, n = 0 → n = 0",
+        "obligation": "Compare unconditional claim with strengthened conditional theorem."
+      },
+      "profile": "declaration-trust-probe-v1",
+      "operationalProjection": {
+        "family": "claim-trust",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "claim-trust-02",
+      "family": "claim-trust",
+      "role": "fault",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "A theorem depending on an explicit axiom has no extra assumption.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 91,
+          "startColumn": 0,
+          "endLine": 91,
+          "endColumn": 65,
+          "quoteSha256": "b9dfdc951ca3618feb62ee8b1a26b1619dc04ddee39d70167de4fd6a03eb3fdc",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/claim_trust_02.lean#PitfallCases.ClaimTrust02.subject",
+        "declaration": "lean/CoreCases/claim_trust_02.lean#PitfallCases.ClaimTrust02.subject",
+        "sourceClaim": "Theorem claims no extra assumption",
+        "formalClaim": "True [depends on supplied_axiom]",
+        "obligation": "Check theorem dependency closure against trust policy."
+      },
+      "profile": "declaration-trust-probe-v1",
+      "operationalProjection": {
+        "family": "claim-trust",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "claim-trust-03",
+      "family": "claim-trust",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "The unchanged equality goal n=n is valid.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 95,
+          "startColumn": 0,
+          "endLine": 95,
+          "endColumn": 41,
+          "quoteSha256": "843d2a75e618cb7d6fb157fb708b5a63744f5588064a9fc369b2ba46b420129d",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/claim_trust_03.lean#PitfallCases.ClaimTrust03.subject",
+        "declaration": "lean/CoreCases/claim_trust_03.lean#PitfallCases.ClaimTrust03.subject",
+        "sourceClaim": "∀ n : Nat, n = n",
+        "formalClaim": "∀ n : Nat, n = n",
+        "obligation": "Check unchanged goal."
+      },
+      "profile": "declaration-trust-probe-v1",
+      "operationalProjection": {
+        "family": "claim-trust",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    },
+    {
+      "caseId": "claim-trust-04",
+      "family": "claim-trust",
+      "role": "control",
+      "source": {
+        "path": "INPUTS.md",
+        "quote": "The standard arithmetic equality has a kernel proof.",
+        "span": {
+          "path": "INPUTS.md",
+          "startLine": 99,
+          "startColumn": 0,
+          "endLine": 99,
+          "endColumn": 52,
+          "quoteSha256": "76a2b03e05730a3d954b741ed8fa70221448567a55fd3637d5a550e260980d13",
+          "sourceFileSha256": "d05d514f0f17c91b2797898fe013e490db27105b5a8bc7180a749845fef3623b"
+        }
+      },
+      "formalSubject": {
+        "leanSource": "lean/CoreCases/claim_trust_04.lean#PitfallCases.ClaimTrust04.subject",
+        "declaration": "lean/CoreCases/claim_trust_04.lean#PitfallCases.ClaimTrust04.subject",
+        "sourceClaim": "2 + 2 = 4",
+        "formalClaim": "2 + 2 = 4",
+        "obligation": "Check standard proof and axiom policy."
+      },
+      "profile": "declaration-trust-probe-v1",
+      "operationalProjection": {
+        "family": "claim-trust",
+        "role": "withheld",
+        "expectedEvidence": "withheld",
+        "oracleSource": "withheld",
+        "evidenceSources": "withheld"
+      }
+    }
+  ],
+  "scoringRules": {
+    "faultDetection": "requires family rubric evidence tied to exact source/formal subject",
+    "falseAccusation": "any fault claim against a reviewed control counts as false accusation",
+    "unresolved": [
+      "unsupported-after-qualified-probe",
+      "capture-failure",
+      "no-proof",
+      "replay-rejected",
+      "resource-stop"
+    ],
+    "unresolvedRule": "unresolved is not falsity and receives neither detection nor justified-control credit",
+    "validationIsolation": "oracleSource and validation evidence may enter validation only and never the operational worker"
+  },
+  "compatibilityNote": "This config-only registration does not claim pending command profiles are qualified. Their exact plans, subjects, import isolation, commands and outputs must pass per-batch qualification before execution under Tasks 1.4/2.2.",
+  "operationalProtocol": {
+    "selection": "Use population.executionOrder; within each family preserve accepted corpus order. Do not expose case IDs, roles or expected outcomes to the operational worker; family-level profile selection is permitted.",
+    "propositionSearchTactic": "by first | assumption | rfl | simp | omega",
+    "candidatePolicy": "the same fixed script for both polarities and every case where a formal proposition is the probe; no generated theorem-name selection or answer term",
+    "goalPolarity": [
+      "P",
+      "not (P)"
+    ],
+    "sourceFidelity": "separate source-reading track consumes exact quote/span and sourceClaim; it cannot convert proof success into fidelity acceptance",
+    "validationOnlyFields": [
+      "role",
+      "expectedEvidence",
+      "oracleSource",
+      "evidenceSources"
+    ],
+    "caseDispatch": "forbidden",
+    "isolation": {
+      "allowed": "Selected case source/module and its inventoried compiled dependencies, plus the explicitly permitted shared source modules: lean/Pitfalls.lean and mathlib/LeastElement.lean. These files contain shared statement/definition-level encodings only; they contain no proof terms, oracle certificates, case roles, expected outcomes, or validation evidence. No other case source or artifact is allowed.",
+      "excluded": "All other 23 case source modules and compiled artifacts; all aggregate and Validation modules including CoreCases and each fixture Validation; every oracleSource, evidenceSources validation certificate, expectedEvidence/role/label, other-case request, generated answer/proof term, prior case output, and validation-only report.",
+      "manifestFiles": "The accepted corpus and expected-evidence manifest stay on the host side and are never copied into the operational workspace. Each per-case workspace starts empty and is populated only from its allowlist.",
+      "qualification": "For each batch, positively import the selected subject in the live workspace; prove each excluded module unavailable with the exact diagnostic; inject one excluded artifact and require the guard to reject it; inject an unrelated compiler failure and reject it as isolation evidence.",
+      "limitations": "This controls the constructed repository/import path; it is not an operating-system sandbox.",
+      "sharedModuleReview": {
+        "lean/Pitfalls.lean": "shared structures and proposition/definition encodings used by core cases; no theorem proofs, answer certificates or labels",
+        "mathlib/LeastElement.lean": "shared Nat-set infimum/selector definitions for existence/default cases; no proof of case obligations, answer certificates or labels"
+      }
+    }
+  },
+  "registrationReview": {
+    "status": "accepted",
+    "evidencePath": "evidence/common-registration-review-v1.md",
+    "qualificationBoundary": "Feasibility is accepted under r19. The other five profiles are registered but require per-batch qualification under Tasks 1.4/2.2."
+  }
+}

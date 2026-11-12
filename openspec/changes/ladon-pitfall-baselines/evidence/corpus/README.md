@@ -1,0 +1,3 @@
+# Pitfall corpus status
+
+Task 1.2 passed independent review at the r3 revision; see `reviews/final-review-20261110-r3.txt`. All 24 source/formal pairings, evidence references, family roles, compilation/axiom checks and per-case import diagnostics passed. `python scripts/prepare_corpus.py` reproduces preparation and counterchecks; its retained terminal receipt is `reviews/r3-preparation.json`. This is an authored development corpus; the targeted checker does not implement general prose interpretation or goal elaboration. Runtime custody, the actual operational invocation protocol and baseline scoring remain open in `../../tasks.md`.

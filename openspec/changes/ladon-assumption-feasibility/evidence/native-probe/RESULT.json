@@ -1,0 +1,77 @@
+{
+  "status": "passed",
+  "scope": "supplied-term validation on native generated goals; not operational discovery",
+  "qualificationSeconds": 114.62911075307056,
+  "allQualificationAttemptSeconds": 172.4795913011767,
+  "peakProcessTreeRssBytes": 3800809472,
+  "cases": [
+    {
+      "id": "Witness",
+      "goal": "\u2203 n, n = 0",
+      "status": "completed",
+      "replay": "accepted",
+      "axioms": [],
+      "term": "\u27e80, rfl\u27e9",
+      "ordinaryLocals": 0
+    },
+    {
+      "id": "Refutation",
+      "goal": "\u00ac\u2203 n, n = 0 \u2227 n = 1",
+      "status": "completed",
+      "replay": "accepted",
+      "axioms": [],
+      "term": "fun witness => Exists.elim witness (fun _ pair => Nat.zero_ne_one (pair.1.symm.trans pair.2))",
+      "ordinaryLocals": 0
+    },
+    {
+      "id": "Fixed",
+      "goal": "\u00ac1 = 0",
+      "status": "completed",
+      "replay": "accepted",
+      "axioms": [],
+      "term": "by decide",
+      "ordinaryLocals": 0
+    },
+    {
+      "id": "Leak",
+      "goal": "\u2203 n, n = 0 \u2227 n = 1",
+      "status": "rejected",
+      "replay": "not-run",
+      "axioms": null,
+      "term": "by exact h0",
+      "ordinaryLocals": 0
+    },
+    {
+      "id": "Sorry",
+      "goal": "\u2203 n, n = 0 \u2227 n = 1",
+      "status": "trust-rejected",
+      "replay": "accepted",
+      "axioms": [
+        "sorryAx"
+      ],
+      "term": "by sorry",
+      "ordinaryLocals": 0
+    }
+  ],
+  "remaining": [
+    "source-position local context capture",
+    "fixed-parameter assignment API",
+    "transitive local-value alias controls",
+    "bounded unsupplied proof search",
+    "production stage API and full matched evaluation"
+  ],
+  "recordedLimitation": "Supplied omega refutation reached application but failed independent replay on unknown _proof_1; r3 retained. Direct equality proof of same goal passed in r4.",
+  "evidence": {
+    "verification/qualification-r4/qualification.json": "sha256:8b6b3c77c5e27ffd16c8851528d2cc94b2bb9d009cd3237c51ea64374992403e",
+    "verification/qualification-r4/completion.json": "sha256:bf1e2c2eadca9f44d98a8f5c029bfca29c19d675bbbddc12a970025980cfefa2",
+    "verification/qualification-r3/completion.json": "sha256:88e7c397816dbdc55da07feb566cb5efc167c5d6eaf968512262d2ead89178d0"
+  },
+  "independentReview": {
+    "status": "accepted bounded prototype",
+    "review": "verification/independent/REVIEW.md",
+    "receipt": "verification/independent/completion-alternative.json",
+    "receiptSha256": "sha256:fa4b26e3db14bf6bd3ca92d4d0fccdf564e0c2d88bac40e2d957d8fd3172b78d",
+    "nativeHelperSha256": "sha256:08b12c406a923787bf7b46c993005cc2af21a56c54ad5b353ec24c5c592dee2b",
+    "seconds": 111.90402913209982
+  }
+}

@@ -1,0 +1,313 @@
+{
+  "schema": "ladon-runtime-reconstruction-v1",
+  "identity": "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+  "bundle": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+  "reconstructedRoot": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3",
+  "commands": [
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "verify",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 0,
+      "seconds": 51.99991212808527,
+      "stdout": "verified\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "exec",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3",
+        "--profile",
+        "python",
+        "--",
+        "-I",
+        "-B",
+        "-c",
+        "import sys, pathlib, json, os, hashlib, sqlite3, ssl, ctypes, subprocess, _ssl, _sqlite3\nroot=pathlib.Path(sys.argv[1]);sys.path.insert(0,str(root/'src'));import ladon\nmodules=[json,hashlib,sqlite3,ssl,ctypes,subprocess,_ssl,_sqlite3,ladon]\norigins={m.__name__:str(pathlib.Path(m.__file__).resolve()) for m in modules}\nassert pathlib.Path(sys.prefix).resolve()==root/'python',(sys.prefix,root)\nassert pathlib.Path(sys.executable).resolve()==root/'python/bin/python3',sys.executable\nassert all(pathlib.Path(x).is_relative_to(root) for x in origins.values()),origins\nassert all('site-packages' not in x for x in sys.path),sys.path\nassert 'PYTHONPATH' not in os.environ\nprint(json.dumps({'python':sys.executable,'prefix':sys.prefix,'origins':origins,'sysPath':sys.path,'environment':dict(os.environ)},indent=2))",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 0,
+      "seconds": 47.54983587004244,
+      "stdout": "{\n  \"python\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/bin/python3\",\n  \"prefix\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python\",\n  \"origins\": {\n    \"json\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/json/__init__.py\",\n    \"hashlib\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/hashlib.py\",\n    \"sqlite3\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/sqlite3/__init__.py\",\n    \"ssl\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/ssl.py\",\n    \"ctypes\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/ctypes/__init__.py\",\n    \"subprocess\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/subprocess.py\",\n    \"_ssl\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload/_ssl.cpython-311-x86_64-linux-gnu.so\",\n    \"_sqlite3\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload/_sqlite3.cpython-311-x86_64-linux-gnu.so\",\n    \"ladon\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/src/ladon/__init__.py\"\n  },\n  \"sysPath\": [\n    \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/src\",\n    \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python311.zip\",\n    \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11\",\n    \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload\"\n  ],\n  \"environment\": {\n    \"LANG\": \"C.UTF-8\",\n    \"LC_ALL\": \"C.UTF-8\",\n    \"TZ\": \"UTC\",\n    \"PYTHONDONTWRITEBYTECODE\": \"1\",\n    \"LEAN_PATH\": \"\",\n    \"PATH\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/bin:/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/system-tools/bin\",\n    \"GIT_EXEC_PATH\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/system-tools/libexec/git-core\",\n    \"GIT_CONFIG_NOSYSTEM\": \"1\",\n    \"GIT_CONFIG_GLOBAL\": \"/dev/null\",\n    \"LD_LIBRARY_PATH\": \"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib:/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib:/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/hostlib\",\n    \"HOME\": \"/tmp/custody-execution-12qtdsrs\",\n    \"TMPDIR\": \"/tmp/custody-execution-12qtdsrs\"\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "run",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3",
+        "--",
+        "version",
+        "--json"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 0,
+      "seconds": 50.07245205086656,
+      "stdout": "{\"nonclaims\":[\"A local source revision is installation provenance, not proof that installed bytes equal the current checkout.\"],\"package\":{\"distributionIdentity\":null,\"filesHashed\":0,\"installedContentIdentity\":null,\"name\":\"ladon\",\"version\":\"source-tree\"},\"runtime\":{\"pythonExecutable\":\"/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/bin/python3\"},\"schema\":\"ladon-version-result-v1\",\"source\":{\"commit\":null,\"dirty\":null,\"path\":null,\"status\":\"unavailable\"},\"status\":\"available\"}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "exec",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3",
+        "--profile",
+        "core",
+        "--",
+        "--print-prefix"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 0,
+      "seconds": 50.508732669986784,
+      "stdout": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/lean-core\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "exec",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3",
+        "--profile",
+        "core",
+        "--cwd",
+        "core-fixture",
+        "--",
+        "Validation.lean"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 0,
+      "seconds": 54.457446412881836,
+      "stdout": "'PitfallCorpus.Validation.oracle_domain_quantifier_01' does not depend on any axioms\n'PitfallCorpus.Validation.oracle_assumption_feasibility_01' does not depend on any axioms\n'PitfallCorpus.Validation.oracle_assumption_feasibility_02' depends on axioms: [propext, Quot.sound]\n'PitfallCorpus.Validation.oracle_operation_semantics_01' does not depend on any axioms\n'PitfallCorpus.Validation.oracle_operation_semantics_02' depends on axioms: [propext, Quot.sound]\n'PitfallCorpus.Validation.oracle_claim_trust_01' depends on axioms: [propext, Quot.sound]\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "exec",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3",
+        "--profile",
+        "mathlib",
+        "--",
+        "--print-prefix"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 0,
+      "seconds": 50.68270482192747,
+      "stdout": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/lean-mathlib\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "exec",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3",
+        "--profile",
+        "mathlib",
+        "--cwd",
+        "mathlib-fixture",
+        "--",
+        "Validation.lean"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 0,
+      "seconds": 68.03221557405777,
+      "stdout": "'Audit.LeastElement.Validation.oracle_existence_defaults_01' depends on axioms: [propext, Classical.choice, Quot.sound]\n'Audit.LeastElement.Validation.oracle_existence_defaults_02' depends on axioms: [propext, Quot.sound]\n'Audit.LeastElement.Validation.validates_case_03' depends on axioms: [propext, Classical.choice, Quot.sound]\n'Audit.LeastElement.Validation.validates_case_04' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "verify",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3"
+      ],
+      "expectedExitStatus": 1,
+      "exitStatus": 1,
+      "seconds": 9.38998958398588,
+      "stdout": "",
+      "stderr": "custody failure: runtime bytes/mode drift: core-fixture/Pitfalls.lean\n"
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "verify",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3"
+      ],
+      "expectedExitStatus": 1,
+      "exitStatus": 1,
+      "seconds": 7.19060448394157,
+      "stdout": "",
+      "stderr": "custody failure: runtime bytes/mode drift: core-fixture/.lake/build/lib/lean/Pitfalls.olean\n"
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "run",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3",
+        "--",
+        "--version"
+      ],
+      "expectedExitStatus": 1,
+      "exitStatus": 1,
+      "seconds": 34.34851665608585,
+      "stdout": "",
+      "stderr": "custody failure: runtime bytes/mode drift: src/ladon/entrypoint.py\n"
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "run",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3",
+        "--",
+        "--version"
+      ],
+      "expectedExitStatus": 1,
+      "exitStatus": 1,
+      "seconds": 17.223820799961686,
+      "stdout": "",
+      "stderr": "custody failure: runtime bytes/mode drift: runtime_custody.py\n"
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "verify",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3"
+      ],
+      "expectedExitStatus": 1,
+      "exitStatus": 1,
+      "seconds": 6.4163733520545065,
+      "stdout": "",
+      "stderr": "custody failure: runtime inventory drift: extra=['src/ladon/_unexpected_custody_probe.py'], missing=[]\n"
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "verify",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 0,
+      "seconds": 20.442823241930455,
+      "stdout": "verified\n",
+      "stderr": ""
+    }
+  ],
+  "status": "passed",
+  "pythonIdentity": {
+    "python": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/bin/python3",
+    "prefix": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python",
+    "origins": {
+      "json": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/json/__init__.py",
+      "hashlib": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/hashlib.py",
+      "sqlite3": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/sqlite3/__init__.py",
+      "ssl": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/ssl.py",
+      "ctypes": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/ctypes/__init__.py",
+      "subprocess": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/subprocess.py",
+      "_ssl": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload/_ssl.cpython-311-x86_64-linux-gnu.so",
+      "_sqlite3": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload/_sqlite3.cpython-311-x86_64-linux-gnu.so",
+      "ladon": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/src/ladon/__init__.py"
+    },
+    "sysPath": [
+      "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/src",
+      "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python311.zip",
+      "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11",
+      "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload"
+    ],
+    "environment": {
+      "LANG": "C.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "TZ": "UTC",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "LEAN_PATH": "",
+      "PATH": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/bin:/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/system-tools/bin",
+      "GIT_EXEC_PATH": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/system-tools/libexec/git-core",
+      "GIT_CONFIG_NOSYSTEM": "1",
+      "GIT_CONFIG_GLOBAL": "/dev/null",
+      "LD_LIBRARY_PATH": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib:/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/python/lib:/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/hostlib",
+      "HOME": "/tmp/custody-execution-12qtdsrs",
+      "TMPDIR": "/tmp/custody-execution-12qtdsrs"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+import Lean
+namespace FeasibilityProbe.Native
+open Lean Meta
+inductive UnsupportedReason where
+  | dependency | bounds | profile
+inductive BuildResult where
+  | supported (closedGoal : Expr)
+  | unsupported (reason : UnsupportedReason)
+-- Red-only scaffold: it has no feasibility behavior.
+def buildPremiseGoal (_declarationType : Expr) : MetaM BuildResult :=
+  pure (.supported (mkConst ``True))
+end FeasibilityProbe.Native

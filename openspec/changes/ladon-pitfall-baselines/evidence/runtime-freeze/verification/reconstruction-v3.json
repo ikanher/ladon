@@ -1,0 +1,110 @@
+{
+  "schema": "ladon-runtime-reconstruction-v1",
+  "identity": "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+  "bundle": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+  "reconstructedRoot": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3",
+  "commands": [
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "verify",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 0,
+      "seconds": 45.90947169996798,
+      "stdout": "verified\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "exec",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3",
+        "--profile",
+        "python",
+        "--",
+        "-I",
+        "-B",
+        "-c",
+        "import sys, pathlib, json, os, hashlib, sqlite3, ssl, ctypes, subprocess, _ssl, _sqlite3\nroot=pathlib.Path(sys.argv[1]);sys.path.insert(0,str(root/'src'));import ladon\nmodules=[json,hashlib,sqlite3,ssl,ctypes,subprocess,_ssl,_sqlite3,ladon]\norigins={m.__name__:str(pathlib.Path(m.__file__).resolve()) for m in modules}\nassert pathlib.Path(sys.prefix).resolve()==root/'python',(sys.prefix,root)\nassert pathlib.Path(sys.executable).resolve()==root/'python/bin/python3',sys.executable\nassert all(pathlib.Path(x).is_relative_to(root) for x in origins.values()),origins\nassert all('site-packages' not in x for x in sys.path),sys.path\nassert 'PYTHONPATH' not in os.environ\nprint(json.dumps({'python':sys.executable,'prefix':sys.prefix,'origins':origins,'sysPath':sys.path,'environment':dict(os.environ)},indent=2))",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 0,
+      "seconds": 44.21179365506396,
+      "stdout": "{\n  \"python\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/bin/python3\",\n  \"prefix\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python\",\n  \"origins\": {\n    \"json\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/json/__init__.py\",\n    \"hashlib\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/hashlib.py\",\n    \"sqlite3\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/sqlite3/__init__.py\",\n    \"ssl\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/ssl.py\",\n    \"ctypes\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/ctypes/__init__.py\",\n    \"subprocess\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/subprocess.py\",\n    \"_ssl\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload/_ssl.cpython-311-x86_64-linux-gnu.so\",\n    \"_sqlite3\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload/_sqlite3.cpython-311-x86_64-linux-gnu.so\",\n    \"ladon\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/src/ladon/__init__.py\"\n  },\n  \"sysPath\": [\n    \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/src\",\n    \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python311.zip\",\n    \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11\",\n    \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload\"\n  ],\n  \"environment\": {\n    \"LANG\": \"C.UTF-8\",\n    \"LC_ALL\": \"C.UTF-8\",\n    \"TZ\": \"UTC\",\n    \"PYTHONDONTWRITEBYTECODE\": \"1\",\n    \"LEAN_PATH\": \"\",\n    \"PATH\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/bin:/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/system-tools/bin\",\n    \"GIT_EXEC_PATH\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/system-tools/libexec/git-core\",\n    \"GIT_CONFIG_NOSYSTEM\": \"1\",\n    \"GIT_CONFIG_GLOBAL\": \"/dev/null\",\n    \"LD_LIBRARY_PATH\": \"/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib:/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib:/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/hostlib\",\n    \"HOME\": \"/tmp/custody-execution-6kpx4y3f\",\n    \"TMPDIR\": \"/tmp/custody-execution-6kpx4y3f\"\n  }\n}\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+        "run",
+        "--bundle",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/bundles/baseline-v3",
+        "--identity",
+        "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+        "--root",
+        "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3",
+        "--",
+        "--version",
+        "--json"
+      ],
+      "expectedExitStatus": 0,
+      "exitStatus": 2,
+      "seconds": 46.28426275704987,
+      "stdout": "",
+      "stderr": "usage: ladon [-h] [--repo-root REPO_ROOT] [--root ANALYSIS_ROOTS]\n             [--scope {changed-set,closure,inventory,multi-root,namespace,owner}]\n             [--changed-path CHANGED_PATH]\n             [--changed-manifest CHANGED_MANIFEST] [--max-modules MAX_MODULES]\n             [--max-context-modules MAX_CONTEXT_MODULES]\n             [--cache-dir CACHE_DIR] [--no-cache] [--build]\n             [--build-timeout BUILD_TIMEOUT]\n             [--extraction-backend {text,lean}]\n             [--lean-extraction-scope {root,inventory}]\n             [--lean-cache-dir LEAN_CACHE_DIR]\n             [--lean-batch-size LEAN_BATCH_SIZE] [--lean-timeout LEAN_TIMEOUT]\n             [--lean-strict] [--progress {auto,plain,json,off}]\n             [--overall-timeout OVERALL_TIMEOUT] [--max-rss-mib MAX_RSS_MIB]\n             [--max-report-bytes MAX_REPORT_BYTES] [--format {text,json}]\n             [--output OUTPUT] [--emit FORMAT=PATH]\n             [--report-version {v3,v2,v1}]\n             [--projection {summary,review,full}] [--output-json LEGACY_JSON]\n             [--output-text LEGACY_TEXT] [--fail-on FAIL_ON]\n             [--generated-at-utc GENERATED_AT_UTC] [--doc-file DOC_FILE]\n             [--packet-dir PACKET_DIR]\n             [--architecture-policy ARCHITECTURE_POLICY]\n             [--source-pattern-policy SOURCE_PATTERN_POLICY]\n             [--generated-family-policy GENERATED_FAMILY_POLICY]\n             [--generated-family-candidate-profile GENERATED_FAMILY_CANDIDATE_PROFILE]\n             [--module-system-witness MODULE_SYSTEM_WITNESS]\n             [--import-diet-witness IMPORT_DIET_WITNESS]\n             [--proof-xray PROOF_XRAY]\n             [--packet-profile {generic,review_packet,witness_bundle,release_bundle}]\n             [--certificate-artifact CERTIFICATE_ARTIFACT]\n             [target]\nladon: error: argument --output-json/--json: expected one argument\n"
+    }
+  ],
+  "status": "failed",
+  "pythonIdentity": {
+    "python": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/bin/python3",
+    "prefix": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python",
+    "origins": {
+      "json": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/json/__init__.py",
+      "hashlib": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/hashlib.py",
+      "sqlite3": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/sqlite3/__init__.py",
+      "ssl": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/ssl.py",
+      "ctypes": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/ctypes/__init__.py",
+      "subprocess": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/subprocess.py",
+      "_ssl": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload/_ssl.cpython-311-x86_64-linux-gnu.so",
+      "_sqlite3": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload/_sqlite3.cpython-311-x86_64-linux-gnu.so",
+      "ladon": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/src/ladon/__init__.py"
+    },
+    "sysPath": [
+      "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/src",
+      "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python311.zip",
+      "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11",
+      "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib/python3.11/lib-dynload"
+    ],
+    "environment": {
+      "LANG": "C.UTF-8",
+      "LC_ALL": "C.UTF-8",
+      "TZ": "UTC",
+      "PYTHONDONTWRITEBYTECODE": "1",
+      "LEAN_PATH": "",
+      "PATH": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/bin:/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/system-tools/bin",
+      "GIT_EXEC_PATH": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/system-tools/libexec/git-core",
+      "GIT_CONFIG_NOSYSTEM": "1",
+      "GIT_CONFIG_GLOBAL": "/dev/null",
+      "LD_LIBRARY_PATH": "/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib:/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/python/lib:/home/codex/projects/ladon/.codex/state/pitfall-runtime/reconstructed-v3/hostlib",
+      "HOME": "/tmp/custody-execution-6kpx4y3f",
+      "TMPDIR": "/tmp/custody-execution-6kpx4y3f"
+    }
+  },
+  "error": "run ('--', '--version', '--json'): 2: usage: ladon [-h] [--repo-root REPO_ROOT] [--root ANALYSIS_ROOTS]\n             [--scope {changed-set,closure,inventory,multi-root,namespace,owner}]\n             [--changed-path CHANGED_PATH]\n             [--changed-manifest CHANGED_MANIFEST] [--max-modules MAX_MODULES]\n             [--max-context-modules MAX_CONTEXT_MODULES]\n             [--cache-dir CACHE_DIR] [--no-cache] [--build]\n             [--build-timeout BUILD_TIMEOUT]\n             [--extraction-backend {text,lean}]\n             [--lean-extraction-scope {root,inventory}]\n             [--lean-cache-dir LEAN_CACHE_DIR]\n             [--lean-batch-size LEAN_BATCH_SIZE] [--lean-timeout LEAN_TIMEOUT]\n             [--lean-strict] [--progress {auto,plain,json,off}]\n             [--overall-timeout OVERALL_TIMEOUT] [--max-rss-mib MAX_RSS_MIB]\n             [--max-report-bytes MAX_REPORT_BYTES] [--format {text,json}]\n             [--output OUTPUT] [--emit FORMAT=PATH]\n             [--report-version {v3,v2,v1}]\n             [--projection {summary,review,full}] [--output-json LEGACY_JSON]\n             [--output-text LEGACY_TEXT] [--fail-on FAIL_ON]\n             [--generated-at-utc GENERATED_AT_UTC] [--doc-file DOC_FILE]\n             [--packet-dir PACKET_DIR]\n             [--architecture-policy ARCHITECTURE_POLICY]\n             [--source-pattern-policy SOURCE_PATTERN_POLICY]\n             [--generated-family-policy GENERATED_FAMILY_POLICY]\n             [--generated-family-candidate-profile GENERATED_FAMILY_CANDIDATE_PROFILE]\n             [--module-system-witness MODULE_SYSTEM_WITNESS]\n             [--import-diet-witness IMPORT_DIET_WITNESS]\n             [--proof-xray PROOF_XRAY]\n             [--packet-profile {generic,review_packet,witness_bundle,release_bundle}]\n             [--certificate-artifact CERTIFICATE_ARTIFACT]\n             [target]\nladon: error: argument --output-json/--json: expected one argument\n"
+}

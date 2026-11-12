@@ -1,0 +1,510 @@
+{
+  "schema": "ladon-feasibility-baseline-case-v1",
+  "operationalInput": {
+    "goal": "\u2203 n : Nat, n = 0 \u2227 n = 1",
+    "module": "CoreCases.assumption_feasibility_01"
+  },
+  "tacticScript": "by first | assumption | rfl | simp | omega",
+  "attempts": [
+    {
+      "polarity": "positive",
+      "goal": "(\u2203 n : Nat, n = 0 \u2227 n = 1)",
+      "sourcePath": "attempt-positive/Probe.lean",
+      "sourceDigest": "sha256:30b6a85eba474d8c4bf49a0f43275d65ae634c28aa6ec5e238f8c18aeeeaf0d1",
+      "capturePath": "capture-positive.json",
+      "captureSha256": "aa8687bc617eb8d051f014ddfbba5f1ac1bc342ee11bc8c3ce4a08147119553e",
+      "captureId": "sha256:5058f30ee7775311d6dfdd07513542c0850d4dca9b8a75ed9d235874f1fa944c",
+      "captureStatus": "captured",
+      "compiledModuleCount": 2272,
+      "compiledForbiddenModules": [],
+      "captureElapsedSeconds": 8.03150387108326,
+      "completionPath": "complete-positive.json",
+      "completionSha256": "b6cb8d79c209fdb6b56e3fcb6dbc8734e3d1f13ded36ec6695a7e8563ee4ad91",
+      "completionStatus": "trust-rejected",
+      "completionReturnCode": 0,
+      "completionDiagnostic": {
+        "code": "disallowed-axiom-dependency",
+        "message": "compiled application depends on an axiom outside the declared policy"
+      },
+      "replay": {
+        "coverage": "complete",
+        "declaration": "ladonCompletion_7cdc7c8a2c1c1eddcc86b4382c549afb",
+        "declarationBodyDigest": "sha256:e130bd671fcd4c1694eb807bf2c172eecc9f3b8a9b5c4f517a87a81235d58062",
+        "generatedSource": "import Lean\nimport CoreCases.assumption_feasibility_01\nimport LadonCompletionContext_7cdc7c8a2c1c1eddcc86b4382c549afb\n\ndef ladonCompletion_7cdc7c8a2c1c1eddcc86b4382c549afb : @Exists.{1} Nat fun (n : Nat) =>\n  And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n    (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) :=\n@Eq.mpr.{0}\n  (@Exists.{1} Nat fun (n : Nat) =>\n    And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n      (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))\n  False\n  (@id.{0}\n    (@Eq.{1} Prop\n      (@Exists.{1} Nat fun (n : Nat) =>\n        And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))\n      False)\n    (@Eq.trans.{1} Prop\n      (@Exists.{1} Nat fun (a : Nat) =>\n        And (@Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))\n      (@Eq.{1} Nat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))\n        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))\n      False\n      (@exists_eq_left._simp_1.{1} Nat\n        (fun (a : Nat) => @Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))\n        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n      Nat.zero_ne_one._simp_1))\n  (sorryAx.{0} (\u2200 (tag : Lean.Name), False) Bool.true\n    (Lean.Name.num\n      (Lean.Name.str\n        (Lean.Name.str\n          (Lean.Name.str\n            (Lean.Name.num\n              (Lean.Name.num\n                (Lean.Name.num\n                  (Lean.Name.num\n                    (Lean.Name.num\n                      (Lean.Name.num (Lean.Name.str Lean.Name.anonymous \"Probe\")\n                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                  (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n              (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n            \"_sorry\")\n          \"_@\")\n        \"_hyg\")\n      (@OfNat.ofNat.{0} Nat (nat_lit 21) (instOfNatNat (nat_lit 21)))))\n\n-- LADON_COMPLETION_REPLAY_REQUEST {\"captureId\": \"sha256:5058f30ee7775311d6dfdd07513542c0850d4dca9b8a75ed9d235874f1fa944c\", \"declaration\": \"ladonCompletion_7cdc7c8a2c1c1eddcc86b4382c549afb\", \"frame\": \"LADON_COMPLETION_REPLAY\", \"protocolVersion\": \"ladon-lean-source-completion-replay-v2\", \"requestId\": \"7cdc7c8a2c1c1eddcc86b4382c549afb\", \"sourceContextDigest\": \"sha256:f5f1899fcff1ce175f027b78dc51289dea89fb0fba21550ff65451774df61c98\", \"sourceDigest\": \"sha256:e130bd671fcd4c1694eb807bf2c172eecc9f3b8a9b5c4f517a87a81235d58062\", \"termDigest\": \"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\"}\nrun_cmd do\n  let env \u2190 Lean.getEnv\n  unless (env.checked.get.find? `ladonCompletion_7cdc7c8a2c1c1eddcc86b4382c549afb).isSome do\n    throwError \"generated declaration unavailable to kernel axiom observation\"\n  let axioms \u2190 Lean.collectAxioms `ladonCompletion_7cdc7c8a2c1c1eddcc86b4382c549afb\n  let names := (axioms.map toString).qsort (fun a b => a < b)\n  let value := Lean.Json.mkObj [(\"frame\", Lean.toJson (\"LADON_COMPLETION_REPLAY\" : String)), (\"protocolVersion\", Lean.toJson (\"ladon-lean-source-completion-replay-v2\" : String)), (\"requestId\", Lean.toJson (\"7cdc7c8a2c1c1eddcc86b4382c549afb\" : String)), (\"captureId\", Lean.toJson (\"sha256:5058f30ee7775311d6dfdd07513542c0850d4dca9b8a75ed9d235874f1fa944c\" : String)), (\"termDigest\", Lean.toJson (\"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\" : String)), (\"sourceDigest\", Lean.toJson (\"sha256:e130bd671fcd4c1694eb807bf2c172eecc9f3b8a9b5c4f517a87a81235d58062\" : String)), (\"declaration\", Lean.toJson (\"ladonCompletion_7cdc7c8a2c1c1eddcc86b4382c549afb\" : String)), (\"sourceContextDigest\", Lean.toJson (\"sha256:f5f1899fcff1ce175f027b78dc51289dea89fb0fba21550ff65451774df61c98\" : String)), (\"observedAxioms\", Lean.toJson names), (\"coverage\", Lean.toJson (\"complete\" : String))]\n  Lean.Elab.Command.liftIO <| IO.println (\"LADON_COMPLETION_REPLAY \" ++ Lean.Json.compress value)\n",
+        "observation": {
+          "captureId": "sha256:5058f30ee7775311d6dfdd07513542c0850d4dca9b8a75ed9d235874f1fa944c",
+          "coverage": "complete",
+          "declaration": "ladonCompletion_7cdc7c8a2c1c1eddcc86b4382c549afb",
+          "frame": "LADON_COMPLETION_REPLAY",
+          "observedAxioms": [
+            "propext",
+            "sorryAx"
+          ],
+          "protocolVersion": "ladon-lean-source-completion-replay-v2",
+          "requestId": "7cdc7c8a2c1c1eddcc86b4382c549afb",
+          "sourceContextDigest": "sha256:f5f1899fcff1ce175f027b78dc51289dea89fb0fba21550ff65451774df61c98",
+          "sourceDigest": "sha256:e130bd671fcd4c1694eb807bf2c172eecc9f3b8a9b5c4f517a87a81235d58062",
+          "termDigest": "sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b"
+        },
+        "sourceContext": {
+          "basis": "selected-source-environment",
+          "bytes": 7216,
+          "digest": "sha256:f5f1899fcff1ce175f027b78dc51289dea89fb0fba21550ff65451774df61c98",
+          "module": "LadonCompletionContext_7cdc7c8a2c1c1eddcc86b4382c549afb"
+        },
+        "sourceDigest": "sha256:4b7b4012e85f92f8ea81eb5d4036a4db0c1fc596fa491daa1c78bc8458fe1098",
+        "status": "accepted"
+      },
+      "trust": {
+        "accepted": false,
+        "allowedAxioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "coverage": "complete",
+        "forbiddenPlaceholders": [
+          "sorryAx"
+        ],
+        "observedAxioms": [
+          "propext",
+          "sorryAx"
+        ],
+        "policy": "lean-standard-no-placeholders-v1"
+      },
+      "resourceAccounting": {
+        "elapsedScope": "complete-original-goal-operation",
+        "elapsedSeconds": 14.839808577904478,
+        "helperElapsedSeconds": 8.650734539842233,
+        "peakRssBytes": 3996135424,
+        "peakRssScope": "supervised-lean-process-tree"
+      },
+      "proofEstablished": false,
+      "attemptState": "complete"
+    },
+    {
+      "polarity": "negative",
+      "goal": "\u00ac (\u2203 n : Nat, n = 0 \u2227 n = 1)",
+      "sourcePath": "attempt-negative/Probe.lean",
+      "sourceDigest": "sha256:2a7b2804ae2073bd4ce431e56410f146dfe06c44c40ba0d95eb74c6a69452cf0",
+      "capturePath": "capture-negative.json",
+      "captureSha256": "b71062b9d5fe14225ee90bc5fd6144420a349a5e386606c5c63644e5f22f291d",
+      "captureId": "sha256:7118397d631df3fae0586d482b3af328c4ce2a6599f94bd8f0bf30be7d590d6c",
+      "captureStatus": "captured",
+      "compiledModuleCount": 2272,
+      "compiledForbiddenModules": [],
+      "captureElapsedSeconds": 7.832832662854344,
+      "completionPath": "complete-negative.json",
+      "completionSha256": "5fef391cd9354b695ff99bfe573463538bf466821b59d435ff942a61ca597a6c",
+      "completionStatus": "completed",
+      "completionReturnCode": 0,
+      "completionDiagnostic": null,
+      "replay": {
+        "coverage": "complete",
+        "declaration": "ladonCompletion_259e2f037faaf49adda000523ee5ad2d",
+        "declarationBodyDigest": "sha256:014b90eb57b5ff90a8c75345f9e765da1c9865fcb393e86f1aee16e62afd3aef",
+        "generatedSource": "import Lean\nimport CoreCases.assumption_feasibility_01\nimport LadonCompletionContext_259e2f037faaf49adda000523ee5ad2d\n\ndef ladonCompletion_259e2f037faaf49adda000523ee5ad2d : Not\n  (@Exists.{1} Nat fun (n : Nat) =>\n    And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n      (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))) :=\n@of_eq_true\n  (Not\n    (@Exists.{1} Nat fun (n : Nat) =>\n      And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n        (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))\n  (@Eq.trans.{1} Prop\n    (Not\n      (@Exists.{1} Nat fun (n : Nat) =>\n        And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))\n    (Not False) True\n    (@congrArg.{1, 1} Prop Prop\n      (@Exists.{1} Nat fun (n : Nat) =>\n        And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))\n      False Not\n      (@Eq.trans.{1} Prop\n        (@Exists.{1} Nat fun (a : Nat) =>\n          And (@Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n            (@Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))\n        (@Eq.{1} Nat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))\n          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))\n        False\n        (@exists_eq_left._simp_1.{1} Nat\n          (fun (a : Nat) => @Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))\n          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n        Nat.zero_ne_one._simp_1))\n    not_false_eq_true)\n\n-- LADON_COMPLETION_REPLAY_REQUEST {\"captureId\": \"sha256:7118397d631df3fae0586d482b3af328c4ce2a6599f94bd8f0bf30be7d590d6c\", \"declaration\": \"ladonCompletion_259e2f037faaf49adda000523ee5ad2d\", \"frame\": \"LADON_COMPLETION_REPLAY\", \"protocolVersion\": \"ladon-lean-source-completion-replay-v2\", \"requestId\": \"259e2f037faaf49adda000523ee5ad2d\", \"sourceContextDigest\": \"sha256:7620d98608d621675a5710810df9dfc5452c29862799d0f6f1afbe7b16374e95\", \"sourceDigest\": \"sha256:014b90eb57b5ff90a8c75345f9e765da1c9865fcb393e86f1aee16e62afd3aef\", \"termDigest\": \"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\"}\nrun_cmd do\n  let env \u2190 Lean.getEnv\n  unless (env.checked.get.find? `ladonCompletion_259e2f037faaf49adda000523ee5ad2d).isSome do\n    throwError \"generated declaration unavailable to kernel axiom observation\"\n  let axioms \u2190 Lean.collectAxioms `ladonCompletion_259e2f037faaf49adda000523ee5ad2d\n  let names := (axioms.map toString).qsort (fun a b => a < b)\n  let value := Lean.Json.mkObj [(\"frame\", Lean.toJson (\"LADON_COMPLETION_REPLAY\" : String)), (\"protocolVersion\", Lean.toJson (\"ladon-lean-source-completion-replay-v2\" : String)), (\"requestId\", Lean.toJson (\"259e2f037faaf49adda000523ee5ad2d\" : String)), (\"captureId\", Lean.toJson (\"sha256:7118397d631df3fae0586d482b3af328c4ce2a6599f94bd8f0bf30be7d590d6c\" : String)), (\"termDigest\", Lean.toJson (\"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\" : String)), (\"sourceDigest\", Lean.toJson (\"sha256:014b90eb57b5ff90a8c75345f9e765da1c9865fcb393e86f1aee16e62afd3aef\" : String)), (\"declaration\", Lean.toJson (\"ladonCompletion_259e2f037faaf49adda000523ee5ad2d\" : String)), (\"sourceContextDigest\", Lean.toJson (\"sha256:7620d98608d621675a5710810df9dfc5452c29862799d0f6f1afbe7b16374e95\" : String)), (\"observedAxioms\", Lean.toJson names), (\"coverage\", Lean.toJson (\"complete\" : String))]\n  Lean.Elab.Command.liftIO <| IO.println (\"LADON_COMPLETION_REPLAY \" ++ Lean.Json.compress value)\n",
+        "observation": {
+          "captureId": "sha256:7118397d631df3fae0586d482b3af328c4ce2a6599f94bd8f0bf30be7d590d6c",
+          "coverage": "complete",
+          "declaration": "ladonCompletion_259e2f037faaf49adda000523ee5ad2d",
+          "frame": "LADON_COMPLETION_REPLAY",
+          "observedAxioms": [
+            "propext"
+          ],
+          "protocolVersion": "ladon-lean-source-completion-replay-v2",
+          "requestId": "259e2f037faaf49adda000523ee5ad2d",
+          "sourceContextDigest": "sha256:7620d98608d621675a5710810df9dfc5452c29862799d0f6f1afbe7b16374e95",
+          "sourceDigest": "sha256:014b90eb57b5ff90a8c75345f9e765da1c9865fcb393e86f1aee16e62afd3aef",
+          "termDigest": "sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b"
+        },
+        "sourceContext": {
+          "basis": "selected-source-environment",
+          "bytes": 7352,
+          "digest": "sha256:7620d98608d621675a5710810df9dfc5452c29862799d0f6f1afbe7b16374e95",
+          "module": "LadonCompletionContext_259e2f037faaf49adda000523ee5ad2d"
+        },
+        "sourceDigest": "sha256:c00ae5fc7629065331b119ab08256c1505e00d23882a7db1de21273ba7a2793b",
+        "status": "accepted"
+      },
+      "trust": {
+        "accepted": true,
+        "allowedAxioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "coverage": "complete",
+        "forbiddenPlaceholders": [
+          "sorryAx"
+        ],
+        "observedAxioms": [
+          "propext"
+        ],
+        "policy": "lean-standard-no-placeholders-v1"
+      },
+      "resourceAccounting": {
+        "elapsedScope": "complete-original-goal-operation",
+        "elapsedSeconds": 14.590549398213625,
+        "helperElapsedSeconds": 8.5277530613821,
+        "peakRssBytes": 3999506432,
+        "peakRssScope": "supervised-lean-process-tree"
+      },
+      "proofEstablished": true,
+      "attemptState": "complete"
+    }
+  ],
+  "formalOutcome": "inconsistent",
+  "isolation": {
+    "libraryRoots": [
+      "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean"
+    ],
+    "selectedAndExcludedProbes": [
+      {
+        "role": "selected",
+        "module": "CoreCases.assumption_feasibility_01",
+        "returnCode": 0,
+        "stdout": "",
+        "stderr": "",
+        "elapsedSeconds": 0.4131391372065991,
+        "peakRssBytes": 1845993472,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "imported"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.domain_quantifier_01",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-8f5808848549.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/domain_quantifier_01.olean' of module CoreCases.domain_quantifier_01 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06885710498318076,
+        "peakRssBytes": 75980800,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.domain_quantifier_02",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-3dac99006fb1.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/domain_quantifier_02.olean' of module CoreCases.domain_quantifier_02 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06891192891635001,
+        "peakRssBytes": 76087296,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.domain_quantifier_03",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-d36e3925d810.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/domain_quantifier_03.olean' of module CoreCases.domain_quantifier_03 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06886471901088953,
+        "peakRssBytes": 76050432,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.domain_quantifier_04",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-2bcfa08105d8.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/domain_quantifier_04.olean' of module CoreCases.domain_quantifier_04 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06872861902229488,
+        "peakRssBytes": 76087296,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.assumption_feasibility_02",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-0d30aff7da38.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/assumption_feasibility_02.olean' of module CoreCases.assumption_feasibility_02 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06880094204097986,
+        "peakRssBytes": 76087296,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.assumption_feasibility_03",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-ff66584b18f2.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/assumption_feasibility_03.olean' of module CoreCases.assumption_feasibility_03 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06915650586597621,
+        "peakRssBytes": 76079104,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.assumption_feasibility_04",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-53f8d8d1acf2.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/assumption_feasibility_04.olean' of module CoreCases.assumption_feasibility_04 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06970860413275659,
+        "peakRssBytes": 76038144,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.premise_provenance_01",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-289b745b5d31.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/premise_provenance_01.olean' of module CoreCases.premise_provenance_01 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06937490496784449,
+        "peakRssBytes": 76087296,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.premise_provenance_02",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-bbc8d21e287c.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/premise_provenance_02.olean' of module CoreCases.premise_provenance_02 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.0693869679234922,
+        "peakRssBytes": 76087296,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.premise_provenance_03",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-7921b03eeb2f.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/premise_provenance_03.olean' of module CoreCases.premise_provenance_03 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06918872706592083,
+        "peakRssBytes": 76083200,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.premise_provenance_04",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-06bb5f1e60a6.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/premise_provenance_04.olean' of module CoreCases.premise_provenance_04 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06901312083937228,
+        "peakRssBytes": 76091392,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "ExistenceCases.Case01",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-3aff7d917c4d.lean:1:0: error: unknown module prefix 'ExistenceCases'\n\nNo directory 'ExistenceCases' or file 'ExistenceCases.olean' in the search path entries:\n/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean\n/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/lean-core/lib/lean\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06856851698830724,
+        "peakRssBytes": 76083200,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "ExistenceCases.Case02",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-5560c13c3115.lean:1:0: error: unknown module prefix 'ExistenceCases'\n\nNo directory 'ExistenceCases' or file 'ExistenceCases.olean' in the search path entries:\n/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean\n/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/lean-core/lib/lean\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06869490095414221,
+        "peakRssBytes": 76087296,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "ExistenceCases.Case03",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-2f28f87772af.lean:1:0: error: unknown module prefix 'ExistenceCases'\n\nNo directory 'ExistenceCases' or file 'ExistenceCases.olean' in the search path entries:\n/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean\n/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/lean-core/lib/lean\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06864081881940365,
+        "peakRssBytes": 76070912,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "ExistenceCases.Case04",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-d589b8e2e620.lean:1:0: error: unknown module prefix 'ExistenceCases'\n\nNo directory 'ExistenceCases' or file 'ExistenceCases.olean' in the search path entries:\n/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean\n/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/lean-core/lib/lean\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06864983192645013,
+        "peakRssBytes": 76091392,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.operation_semantics_01",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-36277690d14c.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/operation_semantics_01.olean' of module CoreCases.operation_semantics_01 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.0686290180310607,
+        "peakRssBytes": 76070912,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.operation_semantics_02",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-9fd36592563c.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/operation_semantics_02.olean' of module CoreCases.operation_semantics_02 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06865434115752578,
+        "peakRssBytes": 76070912,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.operation_semantics_03",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-7056a9260d4f.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/operation_semantics_03.olean' of module CoreCases.operation_semantics_03 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06869084085337818,
+        "peakRssBytes": 76058624,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.operation_semantics_04",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-98958f3afd89.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/operation_semantics_04.olean' of module CoreCases.operation_semantics_04 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06891533290036023,
+        "peakRssBytes": 76087296,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.claim_trust_01",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-55c670d57b52.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/claim_trust_01.olean' of module CoreCases.claim_trust_01 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06877128407359123,
+        "peakRssBytes": 75976704,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.claim_trust_02",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-bc814874c897.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/claim_trust_02.olean' of module CoreCases.claim_trust_02 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06881310511380434,
+        "peakRssBytes": 76087296,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.claim_trust_03",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-8f17c2b0624c.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/claim_trust_03.olean' of module CoreCases.claim_trust_03 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06881593796424568,
+        "peakRssBytes": 75976704,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases.claim_trust_04",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-7246336874bc.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases/claim_trust_04.olean' of module CoreCases.claim_trust_04 does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06857696897350252,
+        "peakRssBytes": 76091392,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "CoreCases",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-d08be1c927c8.lean:1:0: error: object file '/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean/CoreCases.olean' of module CoreCases does not exist\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06872146297246218,
+        "peakRssBytes": 76087296,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      },
+      {
+        "role": "excluded",
+        "module": "Validation",
+        "returnCode": 1,
+        "stdout": "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/results/imports/probe-68e1ca575295.lean:1:0: error: unknown module prefix 'Validation'\n\nNo directory 'Validation' or file 'Validation.olean' in the search path entries:\n/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/feasibility-run-v1-r16/case-01/workspace/.lake/build/lib/lean\n/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3/lean-core/lib/lean\n",
+        "stderr": "",
+        "elapsedSeconds": 0.06864435016177595,
+        "peakRssBytes": 76087296,
+        "timedOut": false,
+        "outputLimited": false,
+        "memoryLimited": false,
+        "diagnosticClass": "module-unavailable"
+      }
+    ],
+    "unrelatedFailureRejected": true,
+    "forbiddenModuleInjectionDetected": true,
+    "injectedModule": "CoreCases.domain_quantifier_01",
+    "standardLibraryModuleCount": 2272
+  },
+  "elapsedSeconds": 49.55114908586256,
+  "status": "attempts-complete",
+  "interpretation": "Only independently replayed, trust-accepted proof outcomes can establish the corresponding formal proposition. All other outcomes are unresolved."
+}

@@ -1,0 +1,58 @@
+{
+  "schema": "ladon-pitfall-baseline-policy-v1",
+  "policyId": "feasibility-policy-v1",
+  "corpus": {
+    "path": "evidence/corpus/cases.json",
+    "sha256": "891e81619dd552af1311b794d48eb10fe10d931361c9fca9ddbe2aa5507ee367",
+    "orderedCases": [
+      "assumption-feasibility-01",
+      "assumption-feasibility-02",
+      "assumption-feasibility-03",
+      "assumption-feasibility-04"
+    ]
+  },
+  "runtime": {
+    "manifestIdentity": "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+    "acceptanceSha256": "c9e86960608a9978890147b0bf0890e84a2e9db95a69b6ee489b454272ef7128",
+    "sourceArtifactInventorySha256": "d6ce329748083e772dd4671dba2d9432230f03d918f0e062f5ed2f1ecf89cd17",
+    "pythonProfile": "python",
+    "pythonFlags": ["-I", "-B"],
+    "leanProfile": "core",
+    "leanToolchain": "leanprover/lean4:v4.32.1"
+  },
+  "operationalInput": {
+    "goalSource": "the exact comparisonGoal.formalClaim from the accepted corpus record",
+    "attempts": ["P", "not (P)"],
+    "caseSelection": "fixed corpus order; no role, label, expectation, oracle, or validation term is passed to the operational process",
+    "fixture": "one selected case source module plus the shared Pitfalls source/module; all other case, aggregate, and validation modules are omitted from the temporary repository and Lean library path",
+    "freshness": "selected source and compiled artifacts must match both the accepted corpus and frozen source-artifact inventory"
+  },
+  "automaticRoute": {
+    "operation": "source-goal capture followed by exact goal completion",
+    "tacticScript": "by first | assumption | rfl | simp | omega",
+    "tacticOrder": ["assumption", "rfl", "simp", "omega"],
+    "sameForAllCasesAndBothGoals": true,
+    "manualProofTerms": false,
+    "scratchMode": "not applicable",
+    "interpretation": "a replayed proof of P establishes an inhabited formal claim; a replayed proof of not P establishes its inconsistency. Capture failure, no proof, rejected proof, or replay/resource failure is unresolved. This does not by itself establish a source error."
+  },
+  "limits": {
+    "secondsPerCaseIncludingPreparation": 600,
+    "maxRssBytesPerProcessTree": 12884901888,
+    "maxOutputBytesPerProcess": 8388608,
+    "execution": "sequential",
+    "preparation": "included in the per-case elapsed-time receipt"
+  },
+  "isolationChecks": {
+    "selectedImport": "must succeed",
+    "excludedImports": "all other corpus case modules plus CoreCases and Validation must fail with the exact requested-module-unavailable diagnostic",
+    "unrelatedFailure": "must not be accepted as evidence of isolation",
+    "forbiddenModuleInjection": "a deliberately copied forbidden compiled module must make the isolation guard fail"
+  },
+  "nonclaims": [
+    "This protocol does not parse natural-language prose or certify prose/formal fidelity.",
+    "A rejected candidate or failed tactic is not evidence that a proposition is false.",
+    "A checked positive or negative proposition does not by itself determine whether a premise is intentional or an exposition error.",
+    "The import guard is not an operating-system filesystem sandbox."
+  ]
+}

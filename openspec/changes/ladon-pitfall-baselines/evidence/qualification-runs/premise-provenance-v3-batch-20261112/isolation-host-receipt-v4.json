@@ -1,0 +1,33 @@
+{
+  "schema": "ladon-pitfall-isolation-host-receipt-v1",
+  "registrationId": "pitfall-common-registration-v3",
+  "registrationSha256": "52f5acda607d5a56230db7617796211ab74a9ecbf15ff6af0eec75195dda78f0",
+  "argv": [
+    "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/scripts/runtime_custody.py",
+    "exec",
+    "--bundle",
+    ".codex/state/pitfall-runtime/bundles/baseline-v3",
+    "--identity",
+    "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+    "--root",
+    "/tmp/ladon-pitfall-baseline-v3-20261112",
+    "--profile",
+    "python",
+    "--",
+    "-I",
+    "-B",
+    "-c",
+    "import sys,pathlib,runpy; a=sys.argv[1:]; r=pathlib.Path(a[0]).resolve(); s=(r/\"src\").resolve(); sys.path.insert(0,str(s)); import ladon; assert pathlib.Path(ladon.__file__).resolve().is_relative_to(s); sys.argv=[a[1],a[0],a[2],a[3]]; runpy.run_path(a[1],run_name=\"__main__\")",
+    "/tmp/ladon-pitfall-baseline-v3-20261112",
+    "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/qualification-runs/premise-provenance-v3-batch-20261112/isolation_check.py",
+    "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/qualification-runs/premise-provenance-v3-batch-20261112",
+    "/home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/corpus"
+  ],
+  "exitCode": 1,
+  "elapsedSeconds": 26.900509650819004,
+  "stdout": "",
+  "stderr": "isolation qualification failed; inspect isolation-check-v4.json\n",
+  "timedOut": false,
+  "isolationScriptSha256": "38fc99748016338ac449b8ae2527fdf5ff417a56c436a968f3f1abf1aa9fcb95",
+  "runtimeManifestIdentity": "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d"
+}

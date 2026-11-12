@@ -1,0 +1,88 @@
+{
+  "schema": "ladon-pitfall-runtime-custody-acceptance-v1",
+  "status": "accepted",
+  "task": "ladon-pitfall-baselines 1.1",
+  "manifestIdentity": "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+  "bundlePathRelativeToRepo": ".codex/state/pitfall-runtime/bundles/baseline-v3",
+  "manifestPathRelativeToBundle": "manifest.json",
+  "payloadSha256": "d63966354b88ef99472a13fd145529e97443a55ef933ed366e83da57041ec68b",
+  "archiveBytes": 5286674379,
+  "uncompressedBytes": 14816083606,
+  "inventoryRows": 174981,
+  "sourceArtifactPairs": 13644,
+  "helperSha256": "15eae12c49994ff8231f58ef1fa5b4055c9982242272d805f118616225d962a7",
+  "requiredHostLoader": {
+    "path": "/lib64/ld-linux-x86-64.so.2",
+    "sha256": "bda779ea9e9ad234f60315477d7cfd0bdde861cd8ddd9df8cdaf62f18c4cec14"
+  },
+  "declaredSourceVersion": "0.4.1",
+  "profiles": {
+    "core": {
+      "executable": "lean-core/bin/lean",
+      "fixture": "core-fixture",
+      "leanPath": [
+        "core-fixture/.lake/build/lib/lean",
+        "lean-core/lib/lean"
+      ]
+    },
+    "mathlib": {
+      "executable": "lean-mathlib/bin/lean",
+      "fixture": "mathlib-fixture",
+      "leanPath": [
+        "mathlib-fixture/.lake/packages/Cli/.lake/build/lib/lean",
+        "mathlib-fixture/.lake/packages/batteries/.lake/build/lib/lean",
+        "mathlib-fixture/.lake/packages/Qq/.lake/build/lib/lean",
+        "mathlib-fixture/.lake/packages/aesop/.lake/build/lib/lean",
+        "mathlib-fixture/.lake/packages/proofwidgets/.lake/build/lib/lean",
+        "mathlib-fixture/.lake/packages/importGraph/.lake/build/lib/lean",
+        "mathlib-fixture/.lake/packages/LeanSearchClient/.lake/build/lib/lean",
+        "mathlib-fixture/.lake/packages/plausible/.lake/build/lib/lean",
+        "mathlib-fixture/.lake/packages/mathlib/.lake/build/lib/lean",
+        "mathlib-fixture/.lake/build/lib/lean",
+        "lean-mathlib/lib/lean"
+      ]
+    },
+    "python": {
+      "executable": "python/bin/python3",
+      "leanPath": []
+    }
+  },
+  "checks": {
+    "independentContractTests": 5,
+    "reconstructionAndDriftChecks": 13,
+    "lakeProfiles": [
+      "core",
+      "mathlib"
+    ],
+    "cliConsumers": [
+      "version",
+      "investigation contract --help",
+      "proof-search --help"
+    ],
+    "externallyPinnedIdentityRequired": true,
+    "originalSourceDonorUsedAtRuntime": false
+  },
+  "qualificationRoot": "/home/codex/.cache/ladon-pitfall-runtime/reconstructed-v3",
+  "qualificationRootRetained": false,
+  "cleanupPolicy": "Disposable full reconstruction removed after acceptance to release approximately14.8GB; complete archive and inventories retained for offline restore.",
+  "evidence": {
+    "verification/capture-v3.json": "e9bc61024a946b73c4be8cfcb67841ae3149ecf066b13c066925e6c05cfb42b5",
+    "verification/reconstruction-v3-r2.json": "dd007bc7751bb76a9f017c9f8cc8e165a99875ef1a34caf8f4d3c43f7cbcb292",
+    "verification/lake-relocation-v3-r2.json": "aa1f398f2c4d50aadf2dc5f3a7f2f1a0d59995f32cf25151bff88b8f529003f3",
+    "verification/runtime-consumers-v3.json": "4376f67d596f3370edb5b3658300c9861ae0d18f970075b25b1535c8b289ef73",
+    "verification/independent-audit-v3.md": "27f390140dde34fc4405220c15091e69fdfe4391b214cc6f76fce8fcc36651a7",
+    "verification/red-results.txt": "3bd2ca3252af53965dc7aa4650c600ddb3fd0b2c4e99f9305553c69ae136b4dc",
+    "verification/supplemental-results.txt": "a5a39467c82cf6077985f69db7cb9ea15b4ee284898ccdfb3dffbcb60ea5c442",
+    "verification/artifact-results.txt": "6c6ee6b6ff1f6fe182a6d632feb6d136ebd96514a5e2a67c7f3c454146858cab",
+    "verification/strict-quality-context.json": "d49ffa2859e9fbf2f2fb9b9255864f09f4e1e3138b46f3a2963fb27ff8780bef",
+    "source-artifacts-v2.json": "d6ce329748083e772dd4671dba2d9432230f03d918f0e062f5ed2f1ecf89cd17"
+  },
+  "scope": "Runtime byte custody, reconstruction, origin and drift checks only; no baseline detections or semantic improvements measured.",
+  "limitations": [
+    "x86_64 Linux; selected-profile execution requires recorded host loader identity",
+    "Runtime uses preserved source-tree Ladon; pip distribution metadata is intentionally absent",
+    "Symlink targets are materialized as effective regular-file bytes under declared snapshot policy",
+    "Full repository strict quality still has10 pre-existing complexity failures in7 unchanged files; local helper checks pass",
+    "Task1.3 must freeze actual invocation, isolation, HOME/TMPDIR lifecycle, tactics, ordering and bounds; scorer/baseline remain open"
+  ]
+}

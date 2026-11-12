@@ -1,0 +1,55 @@
+{
+  "scope": "Mathematical diagnostic probe, not scored full-corpus baseline; both conditionals are valid, source error not asserted",
+  "status": "observed",
+  "cases": [
+    {
+      "id": "impossible",
+      "expectedContext": "inconsistent",
+      "sourceErrorExpected": false,
+      "seconds": 7.609437738079578,
+      "residuals": [],
+      "domainGoals": [
+        {
+          "id": "domain",
+          "kind": "domain-admissibility",
+          "goal": "\u2200 (ladonNL0 : Nat), let ladonFormal0 : Nat := ladonNL0; (\u2203 (ladonDomainWitness : Nat), ladonDomainWitness = ladonFormal0)",
+          "status": "open",
+          "binding": {
+            "probe": "actual native extraction; no checked-status promotion"
+          },
+          "goalDigest": "sha256:55264b2e68e19e03d23b76ba01cde63c664f0fecb603a9945c787f8bec28b8b9"
+        }
+      ],
+      "conditionalGoal": "\u2200 (n : Nat) (h0 : @Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n  (h1 : @Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))),\n  @Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 37) (instOfNatNat (nat_lit 37)))",
+      "sliceId": "d60425484ad5c73511731953f0fa0d107ac2b8b04327592c55460634214c73fc"
+    },
+    {
+      "id": "inhabited",
+      "expectedContext": "witnessed",
+      "sourceErrorExpected": false,
+      "seconds": 7.569423398002982,
+      "residuals": [],
+      "domainGoals": [
+        {
+          "id": "domain",
+          "kind": "domain-admissibility",
+          "goal": "\u2200 (ladonNL0 : Nat), let ladonFormal0 : Nat := ladonNL0; (\u2203 (ladonDomainWitness : Nat), ladonDomainWitness = ladonFormal0)",
+          "status": "open",
+          "binding": {
+            "probe": "actual native extraction; no checked-status promotion"
+          },
+          "goalDigest": "sha256:55264b2e68e19e03d23b76ba01cde63c664f0fecb603a9945c787f8bec28b8b9"
+        }
+      ],
+      "conditionalGoal": "\u2200 (n : Nat) (h0 : @Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))),\n  @Eq.{1} Nat\n    (@HAdd.hAdd.{0, 0, 0} Nat Nat Nat (@instHAdd.{0} Nat instAddNat) n\n      (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))\n    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))",
+      "sliceId": "726f5e780f09c52d1c65b966f014e0b5532466869462626e223ae365b334e122"
+    }
+  ],
+  "implementation": {
+    "src/ladon/_proof_contract_context_goals.py": "sha256:30510d962e8172799758635e6c6d55be98d4aef5c1e5f96aab640b1cc20efb10",
+    "src/ladon/correspondence_check.py": "sha256:2100e5370856833b7c40d5472cd85d9f082cde3fa0d2452501c5939564171dd4",
+    "src/ladon/correspondence_transport.py": "sha256:8f0cb85c6d210e6aae2643367b8463d36061a0d4a12cca2a2dfff846609d9665",
+    "src/ladon/proof_slice.py": "sha256:fe670f44a4349531ad45e02a974739a55226b822dca379ebe1838d76a3ab301a"
+  },
+  "rawObservationSha256": "sha256:b7647a16a6d9a549e583796a53a7b97ad33bf73ae68b9b4866006c7b87207353"
+}

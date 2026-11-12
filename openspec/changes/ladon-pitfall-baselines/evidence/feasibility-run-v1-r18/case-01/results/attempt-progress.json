@@ -1,0 +1,149 @@
+[
+  {
+    "polarity": "positive",
+    "goal": "(\u2203 n : Nat, n = 0 \u2227 n = 1)",
+    "sourcePath": "attempt-positive/Probe.lean",
+    "sourceDigest": "sha256:30b6a85eba474d8c4bf49a0f43275d65ae634c28aa6ec5e238f8c18aeeeaf0d1",
+    "capturePath": "capture-positive.json",
+    "captureSha256": "a1473beb914cd00ddc5ffa149fc35dbdfe04045b11ed82cbd62c03a8b1a64829",
+    "captureId": "sha256:cd3c19c80cc332f507b82b9b02e81942075909971bdf02de16bdb5b03e32d8a1",
+    "captureStatus": "captured",
+    "compiledModuleCount": 2272,
+    "compiledForbiddenModules": [],
+    "captureElapsedSeconds": 7.8066551689989865,
+    "completionPath": "complete-positive.json",
+    "completionSha256": "03a957491af5f5ad58443150a1eb946a6957fd1fa658af611b13806e9041e108",
+    "completionStatus": "trust-rejected",
+    "completionReturnCode": 0,
+    "completionDiagnostic": {
+      "code": "disallowed-axiom-dependency",
+      "message": "compiled application depends on an axiom outside the declared policy"
+    },
+    "replay": {
+      "coverage": "complete",
+      "declaration": "ladonCompletion_9674b74e3567fc98245773b815f5b38b",
+      "declarationBodyDigest": "sha256:363fd6752375e73f7e609b5bb070f2eb64d5df4732dd33e5f10ec1faa43b88c7",
+      "generatedSource": "import Lean\nimport CoreCases.assumption_feasibility_01\nimport LadonCompletionContext_9674b74e3567fc98245773b815f5b38b\n\ndef ladonCompletion_9674b74e3567fc98245773b815f5b38b : @Exists.{1} Nat fun (n : Nat) =>\n  And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n    (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))) :=\n@Eq.mpr.{0}\n  (@Exists.{1} Nat fun (n : Nat) =>\n    And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n      (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))\n  False\n  (@id.{0}\n    (@Eq.{1} Prop\n      (@Exists.{1} Nat fun (n : Nat) =>\n        And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))\n      False)\n    (@Eq.trans.{1} Prop\n      (@Exists.{1} Nat fun (a : Nat) =>\n        And (@Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))\n      (@Eq.{1} Nat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))\n        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))\n      False\n      (@exists_eq_left._simp_1.{1} Nat\n        (fun (a : Nat) => @Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))\n        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n      Nat.zero_ne_one._simp_1))\n  (sorryAx.{0} (\u2200 (tag : Lean.Name), False) Bool.true\n    (Lean.Name.num\n      (Lean.Name.str\n        (Lean.Name.str\n          (Lean.Name.str\n            (Lean.Name.num\n              (Lean.Name.num\n                (Lean.Name.num\n                  (Lean.Name.num\n                    (Lean.Name.num\n                      (Lean.Name.num (Lean.Name.str Lean.Name.anonymous \"Probe\")\n                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                  (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n              (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n            \"_sorry\")\n          \"_@\")\n        \"_hyg\")\n      (@OfNat.ofNat.{0} Nat (nat_lit 21) (instOfNatNat (nat_lit 21)))))\n\n-- LADON_COMPLETION_REPLAY_REQUEST {\"captureId\": \"sha256:cd3c19c80cc332f507b82b9b02e81942075909971bdf02de16bdb5b03e32d8a1\", \"declaration\": \"ladonCompletion_9674b74e3567fc98245773b815f5b38b\", \"frame\": \"LADON_COMPLETION_REPLAY\", \"protocolVersion\": \"ladon-lean-source-completion-replay-v2\", \"requestId\": \"9674b74e3567fc98245773b815f5b38b\", \"sourceContextDigest\": \"sha256:a6a6fbbd965a02e9408f63a3dafc2bc94a3e8f22a91befadd63a1d3686d0c817\", \"sourceDigest\": \"sha256:363fd6752375e73f7e609b5bb070f2eb64d5df4732dd33e5f10ec1faa43b88c7\", \"termDigest\": \"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\"}\nrun_cmd do\n  let env \u2190 Lean.getEnv\n  unless (env.checked.get.find? `ladonCompletion_9674b74e3567fc98245773b815f5b38b).isSome do\n    throwError \"generated declaration unavailable to kernel axiom observation\"\n  let axioms \u2190 Lean.collectAxioms `ladonCompletion_9674b74e3567fc98245773b815f5b38b\n  let names := (axioms.map toString).qsort (fun a b => a < b)\n  let value := Lean.Json.mkObj [(\"frame\", Lean.toJson (\"LADON_COMPLETION_REPLAY\" : String)), (\"protocolVersion\", Lean.toJson (\"ladon-lean-source-completion-replay-v2\" : String)), (\"requestId\", Lean.toJson (\"9674b74e3567fc98245773b815f5b38b\" : String)), (\"captureId\", Lean.toJson (\"sha256:cd3c19c80cc332f507b82b9b02e81942075909971bdf02de16bdb5b03e32d8a1\" : String)), (\"termDigest\", Lean.toJson (\"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\" : String)), (\"sourceDigest\", Lean.toJson (\"sha256:363fd6752375e73f7e609b5bb070f2eb64d5df4732dd33e5f10ec1faa43b88c7\" : String)), (\"declaration\", Lean.toJson (\"ladonCompletion_9674b74e3567fc98245773b815f5b38b\" : String)), (\"sourceContextDigest\", Lean.toJson (\"sha256:a6a6fbbd965a02e9408f63a3dafc2bc94a3e8f22a91befadd63a1d3686d0c817\" : String)), (\"observedAxioms\", Lean.toJson names), (\"coverage\", Lean.toJson (\"complete\" : String))]\n  Lean.Elab.Command.liftIO <| IO.println (\"LADON_COMPLETION_REPLAY \" ++ Lean.Json.compress value)\n",
+      "observation": {
+        "captureId": "sha256:cd3c19c80cc332f507b82b9b02e81942075909971bdf02de16bdb5b03e32d8a1",
+        "coverage": "complete",
+        "declaration": "ladonCompletion_9674b74e3567fc98245773b815f5b38b",
+        "frame": "LADON_COMPLETION_REPLAY",
+        "observedAxioms": [
+          "propext",
+          "sorryAx"
+        ],
+        "protocolVersion": "ladon-lean-source-completion-replay-v2",
+        "requestId": "9674b74e3567fc98245773b815f5b38b",
+        "sourceContextDigest": "sha256:a6a6fbbd965a02e9408f63a3dafc2bc94a3e8f22a91befadd63a1d3686d0c817",
+        "sourceDigest": "sha256:363fd6752375e73f7e609b5bb070f2eb64d5df4732dd33e5f10ec1faa43b88c7",
+        "termDigest": "sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b"
+      },
+      "sourceContext": {
+        "basis": "selected-source-environment",
+        "bytes": 7216,
+        "digest": "sha256:a6a6fbbd965a02e9408f63a3dafc2bc94a3e8f22a91befadd63a1d3686d0c817",
+        "module": "LadonCompletionContext_9674b74e3567fc98245773b815f5b38b"
+      },
+      "sourceDigest": "sha256:870c9120ffe2177872b62d173174bd3d3832c05011ca75a176320e75d6693661",
+      "status": "accepted"
+    },
+    "trust": {
+      "accepted": false,
+      "allowedAxioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "coverage": "complete",
+      "forbiddenPlaceholders": [
+        "sorryAx"
+      ],
+      "observedAxioms": [
+        "propext",
+        "sorryAx"
+      ],
+      "policy": "lean-standard-no-placeholders-v1"
+    },
+    "resourceAccounting": {
+      "elapsedScope": "complete-original-goal-operation",
+      "elapsedSeconds": 14.508815694134682,
+      "helperElapsedSeconds": 8.386621318291873,
+      "peakRssBytes": 3996672000,
+      "peakRssScope": "supervised-lean-process-tree"
+    },
+    "proofEstablished": false,
+    "attemptState": "complete"
+  },
+  {
+    "polarity": "negative",
+    "goal": "\u00ac (\u2203 n : Nat, n = 0 \u2227 n = 1)",
+    "sourcePath": "attempt-negative/Probe.lean",
+    "sourceDigest": "sha256:2a7b2804ae2073bd4ce431e56410f146dfe06c44c40ba0d95eb74c6a69452cf0",
+    "capturePath": "capture-negative.json",
+    "captureSha256": "4debda29befba25b9caa457743b2925a9f6ca084c6021ca7c743491c994170d0",
+    "captureId": "sha256:f2299f1060e8e0944295bf313217b2efadb512a0efa4ebe8f9838457581a8317",
+    "captureStatus": "captured",
+    "compiledModuleCount": 2272,
+    "compiledForbiddenModules": [],
+    "captureElapsedSeconds": 7.7947984740603715,
+    "completionPath": "complete-negative.json",
+    "completionSha256": "30bf1ce7374cc2f99cf6c416f9f89e4381765f6ddff634379e3b29d4aeba7808",
+    "completionStatus": "completed",
+    "completionReturnCode": 0,
+    "completionDiagnostic": null,
+    "replay": {
+      "coverage": "complete",
+      "declaration": "ladonCompletion_d22ba85e1d10bb5084fd8d4b13016796",
+      "declarationBodyDigest": "sha256:86a3d56d3b32ac32b50f2faa9f53053fb523ac3e64dba0bbaf7c467fcf3496bb",
+      "generatedSource": "import Lean\nimport CoreCases.assumption_feasibility_01\nimport LadonCompletionContext_d22ba85e1d10bb5084fd8d4b13016796\n\ndef ladonCompletion_d22ba85e1d10bb5084fd8d4b13016796 : Not\n  (@Exists.{1} Nat fun (n : Nat) =>\n    And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n      (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))) :=\n@of_eq_true\n  (Not\n    (@Exists.{1} Nat fun (n : Nat) =>\n      And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n        (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))\n  (@Eq.trans.{1} Prop\n    (Not\n      (@Exists.{1} Nat fun (n : Nat) =>\n        And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))))\n    (Not False) True\n    (@congrArg.{1, 1} Prop Prop\n      (@Exists.{1} Nat fun (n : Nat) =>\n        And (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))\n      False Not\n      (@Eq.trans.{1} Prop\n        (@Exists.{1} Nat fun (a : Nat) =>\n          And (@Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n            (@Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))))\n        (@Eq.{1} Nat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))\n          (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))\n        False\n        (@exists_eq_left._simp_1.{1} Nat\n          (fun (a : Nat) => @Eq.{1} Nat a (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1))))\n          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n        Nat.zero_ne_one._simp_1))\n    not_false_eq_true)\n\n-- LADON_COMPLETION_REPLAY_REQUEST {\"captureId\": \"sha256:f2299f1060e8e0944295bf313217b2efadb512a0efa4ebe8f9838457581a8317\", \"declaration\": \"ladonCompletion_d22ba85e1d10bb5084fd8d4b13016796\", \"frame\": \"LADON_COMPLETION_REPLAY\", \"protocolVersion\": \"ladon-lean-source-completion-replay-v2\", \"requestId\": \"d22ba85e1d10bb5084fd8d4b13016796\", \"sourceContextDigest\": \"sha256:587b1210e16ddede49aed9cfa549cb8447547066a225dae6193f3c960de0e8be\", \"sourceDigest\": \"sha256:86a3d56d3b32ac32b50f2faa9f53053fb523ac3e64dba0bbaf7c467fcf3496bb\", \"termDigest\": \"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\"}\nrun_cmd do\n  let env \u2190 Lean.getEnv\n  unless (env.checked.get.find? `ladonCompletion_d22ba85e1d10bb5084fd8d4b13016796).isSome do\n    throwError \"generated declaration unavailable to kernel axiom observation\"\n  let axioms \u2190 Lean.collectAxioms `ladonCompletion_d22ba85e1d10bb5084fd8d4b13016796\n  let names := (axioms.map toString).qsort (fun a b => a < b)\n  let value := Lean.Json.mkObj [(\"frame\", Lean.toJson (\"LADON_COMPLETION_REPLAY\" : String)), (\"protocolVersion\", Lean.toJson (\"ladon-lean-source-completion-replay-v2\" : String)), (\"requestId\", Lean.toJson (\"d22ba85e1d10bb5084fd8d4b13016796\" : String)), (\"captureId\", Lean.toJson (\"sha256:f2299f1060e8e0944295bf313217b2efadb512a0efa4ebe8f9838457581a8317\" : String)), (\"termDigest\", Lean.toJson (\"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\" : String)), (\"sourceDigest\", Lean.toJson (\"sha256:86a3d56d3b32ac32b50f2faa9f53053fb523ac3e64dba0bbaf7c467fcf3496bb\" : String)), (\"declaration\", Lean.toJson (\"ladonCompletion_d22ba85e1d10bb5084fd8d4b13016796\" : String)), (\"sourceContextDigest\", Lean.toJson (\"sha256:587b1210e16ddede49aed9cfa549cb8447547066a225dae6193f3c960de0e8be\" : String)), (\"observedAxioms\", Lean.toJson names), (\"coverage\", Lean.toJson (\"complete\" : String))]\n  Lean.Elab.Command.liftIO <| IO.println (\"LADON_COMPLETION_REPLAY \" ++ Lean.Json.compress value)\n",
+      "observation": {
+        "captureId": "sha256:f2299f1060e8e0944295bf313217b2efadb512a0efa4ebe8f9838457581a8317",
+        "coverage": "complete",
+        "declaration": "ladonCompletion_d22ba85e1d10bb5084fd8d4b13016796",
+        "frame": "LADON_COMPLETION_REPLAY",
+        "observedAxioms": [
+          "propext"
+        ],
+        "protocolVersion": "ladon-lean-source-completion-replay-v2",
+        "requestId": "d22ba85e1d10bb5084fd8d4b13016796",
+        "sourceContextDigest": "sha256:587b1210e16ddede49aed9cfa549cb8447547066a225dae6193f3c960de0e8be",
+        "sourceDigest": "sha256:86a3d56d3b32ac32b50f2faa9f53053fb523ac3e64dba0bbaf7c467fcf3496bb",
+        "termDigest": "sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b"
+      },
+      "sourceContext": {
+        "basis": "selected-source-environment",
+        "bytes": 7352,
+        "digest": "sha256:587b1210e16ddede49aed9cfa549cb8447547066a225dae6193f3c960de0e8be",
+        "module": "LadonCompletionContext_d22ba85e1d10bb5084fd8d4b13016796"
+      },
+      "sourceDigest": "sha256:d608e1e672919913d553a45bb042a0131c1247f91ff509fdc70fcba54ecdb5e1",
+      "status": "accepted"
+    },
+    "trust": {
+      "accepted": true,
+      "allowedAxioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "coverage": "complete",
+      "forbiddenPlaceholders": [
+        "sorryAx"
+      ],
+      "observedAxioms": [
+        "propext"
+      ],
+      "policy": "lean-standard-no-placeholders-v1"
+    },
+    "resourceAccounting": {
+      "elapsedScope": "complete-original-goal-operation",
+      "elapsedSeconds": 14.506323198089376,
+      "helperElapsedSeconds": 8.362888587173074,
+      "peakRssBytes": 4004229120,
+      "peakRssScope": "supervised-lean-process-tree"
+    },
+    "proofEstablished": true,
+    "attemptState": "complete"
+  }
+]

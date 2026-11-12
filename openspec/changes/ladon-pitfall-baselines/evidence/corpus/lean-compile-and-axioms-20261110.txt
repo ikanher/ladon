@@ -1,0 +1,59 @@
+Lean: leanprover/lean4:v4.32.1
+Manifest SHA-256: 470d191ae25b69931081cec1195a0e80ef00e6e546ba39405a250d321e543658  /home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/corpus/cases.json
+Lake file SHA-256: bec271d0d9e8a7de25d17a396c4c20524067a55133d3f99e453e6ae71eff0c43  /home/codex/projects/ladon/openspec/changes/ladon-pitfall-baselines/evidence/corpus/lean/lakefile.toml
+Commands: lake build; compile every case into project for validation; lake env lean Validation.lean; python scripts/check_isolation.py
+Build completed successfully (3 jobs).
+'PitfallCases.AssumptionFeasibility01.subject' does not depend on any axioms
+'PitfallCases.AssumptionFeasibility02.subject' does not depend on any axioms
+'PitfallCases.AssumptionFeasibility03.subject' does not depend on any axioms
+'PitfallCases.AssumptionFeasibility04.subject' does not depend on any axioms
+'PitfallCases.ClaimTrust01.subject' does not depend on any axioms
+'PitfallCases.ClaimTrust02.subject' depends on axioms: [supplied_axiom]
+'PitfallCases.ClaimTrust03.subject' does not depend on any axioms
+'PitfallCases.ClaimTrust04.subject' does not depend on any axioms
+'PitfallCases.DomainQuantifier01.subject' does not depend on any axioms
+'PitfallCases.DomainQuantifier02.subject' does not depend on any axioms
+'PitfallCases.DomainQuantifier03.subject' does not depend on any axioms
+'PitfallCases.DomainQuantifier04.subject' does not depend on any axioms
+'PitfallCases.OperationSemantics01.subject' does not depend on any axioms
+'PitfallCases.OperationSemantics02.subject' does not depend on any axioms
+'PitfallCases.OperationSemantics03.subject' depends on axioms: [propext, Quot.sound]
+'PitfallCases.OperationSemantics04.subject' depends on axioms: [propext, Quot.sound]
+'PitfallCases.PremiseProvenance01.subject' does not depend on any axioms
+'PitfallCases.PremiseProvenance02.subject' does not depend on any axioms
+'PitfallCases.PremiseProvenance03.subject' does not depend on any axioms
+CoreCases/premise_provenance_04.lean:4:0: warning: Definition `PitfallCases.PremiseProvenance04.provider` of class type must be marked with `@[reducible]` or `@[implicit_reducible]`
+CoreCases/premise_provenance_04.lean:4:0: warning: Definition `provider` is a proposition; use `theorem` instead of `def`
+
+Note: This linter can be disabled with `set_option linter.defProp false`
+'PitfallCases.PremiseProvenance04.subject' does not depend on any axioms
+'PitfallCorpus.Validation.oracle_domain_quantifier_01' does not depend on any axioms
+'PitfallCorpus.Validation.oracle_assumption_feasibility_01' does not depend on any axioms
+'PitfallCorpus.Validation.oracle_assumption_feasibility_02' depends on axioms: [propext, Quot.sound]
+'PitfallCorpus.Validation.oracle_operation_semantics_01' does not depend on any axioms
+'PitfallCorpus.Validation.oracle_operation_semantics_02' depends on axioms: [propext, Quot.sound]
+'PitfallCorpus.Validation.oracle_claim_trust_01' depends on axioms: [propext, Quot.sound]
+PASS domain-quantifier-01: import CoreCases.domain_quantifier_01; reject sibling CoreCases.domain_quantifier_02 and Validation
+PASS domain-quantifier-02: import CoreCases.domain_quantifier_02; reject sibling CoreCases.domain_quantifier_03 and Validation
+PASS domain-quantifier-03: import CoreCases.domain_quantifier_03; reject sibling CoreCases.domain_quantifier_04 and Validation
+PASS domain-quantifier-04: import CoreCases.domain_quantifier_04; reject sibling CoreCases.assumption_feasibility_01 and Validation
+PASS assumption-feasibility-01: import CoreCases.assumption_feasibility_01; reject sibling CoreCases.assumption_feasibility_02 and Validation
+PASS assumption-feasibility-02: import CoreCases.assumption_feasibility_02; reject sibling CoreCases.assumption_feasibility_03 and Validation
+PASS assumption-feasibility-03: import CoreCases.assumption_feasibility_03; reject sibling CoreCases.assumption_feasibility_04 and Validation
+PASS assumption-feasibility-04: import CoreCases.assumption_feasibility_04; reject sibling CoreCases.premise_provenance_01 and Validation
+PASS premise-provenance-01: import CoreCases.premise_provenance_01; reject sibling CoreCases.premise_provenance_02 and Validation
+PASS premise-provenance-02: import CoreCases.premise_provenance_02; reject sibling CoreCases.premise_provenance_03 and Validation
+PASS premise-provenance-03: import CoreCases.premise_provenance_03; reject sibling CoreCases.premise_provenance_04 and Validation
+PASS premise-provenance-04: import CoreCases.premise_provenance_04; reject sibling CoreCases.operation_semantics_01 and Validation
+PASS operation-semantics-01: import CoreCases.operation_semantics_01; reject sibling CoreCases.operation_semantics_02 and Validation
+PASS operation-semantics-02: import CoreCases.operation_semantics_02; reject sibling CoreCases.operation_semantics_03 and Validation
+PASS operation-semantics-03: import CoreCases.operation_semantics_03; reject sibling CoreCases.operation_semantics_04 and Validation
+PASS operation-semantics-04: import CoreCases.operation_semantics_04; reject sibling CoreCases.claim_trust_01 and Validation
+PASS claim-trust-01: import CoreCases.claim_trust_01; reject sibling CoreCases.claim_trust_02 and Validation
+PASS claim-trust-02: import CoreCases.claim_trust_02; reject sibling CoreCases.claim_trust_03 and Validation
+PASS claim-trust-03: import CoreCases.claim_trust_03; reject sibling CoreCases.claim_trust_04 and Validation
+PASS claim-trust-04: import CoreCases.claim_trust_04; reject sibling CoreCases.domain_quantifier_01 and Validation
+PASS existence-defaults-01: import ExistenceCases.Case01; reject sibling ExistenceCases.Case02 and Validation
+PASS existence-defaults-02: import ExistenceCases.Case02; reject sibling ExistenceCases.Case03 and Validation
+PASS existence-defaults-03: import ExistenceCases.Case03; reject sibling ExistenceCases.Case04 and Validation
+PASS existence-defaults-04: import ExistenceCases.Case04; reject sibling ExistenceCases.Case01 and Validation

@@ -1,0 +1,153 @@
+[
+  {
+    "polarity": "positive",
+    "goal": "(\u2203 n : Nat, n > 0 \u2227 n = 0)",
+    "sourcePath": "attempt-positive/Probe.lean",
+    "sourceDigest": "sha256:f2347949f307aff7f3dbd07d82ca9180f6fefa6386a0ea27b3c72ade938f110d",
+    "capturePath": "capture-positive.json",
+    "captureSha256": "47cc8dfff0e74fe2b836ff87e86e9abc1fa46a8836b52449a9bba7a3282bbc4f",
+    "captureId": "sha256:48ac7b20060f37f26285c8b065d28c3f4f4d111807dc0da20431adaeea04d266",
+    "captureStatus": "captured",
+    "compiledModuleCount": 2272,
+    "compiledForbiddenModules": [],
+    "captureElapsedSeconds": 7.902550032129511,
+    "completionPath": "complete-positive.json",
+    "completionSha256": "ab9e7f1e65485c1102b159b68b3258c6b36e87dcfd600fe97250e2bf5a0f0b45",
+    "completionStatus": "trust-rejected",
+    "completionReturnCode": 0,
+    "completionDiagnostic": {
+      "code": "disallowed-axiom-dependency",
+      "message": "compiled application depends on an axiom outside the declared policy"
+    },
+    "replay": {
+      "coverage": "complete",
+      "declaration": "ladonCompletion_2372c0163c34b2490cae3945349a0bd0",
+      "declarationBodyDigest": "sha256:bfea8e5f0ab99e761a7affdf0a6e26a8182ef5757e036e47579c41b7f41d3845",
+      "generatedSource": "import Lean\nimport CoreCases.assumption_feasibility_02\nimport LadonCompletionContext_2372c0163c34b2490cae3945349a0bd0\n\ndef ladonCompletion_2372c0163c34b2490cae3945349a0bd0 : @Exists.{1} Nat fun (n : Nat) =>\n  And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n    (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))) :=\n@Eq.mpr.{0}\n  (@Exists.{1} Nat fun (n : Nat) =>\n    And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n      (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n  False\n  (@id.{0}\n    (@Eq.{1} Prop\n      (@Exists.{1} Nat fun (n : Nat) =>\n        And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n      False)\n    (@Eq.trans.{1} Prop\n      (@Exists.{1} Nat fun (n : Nat) =>\n        And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n      (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))\n        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n      False\n      (@Eq.trans.{1} Prop\n        (@Exists.{1} Nat fun (n : Nat) =>\n          And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n            (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n        (@Exists.{1} Nat fun (n : Nat) =>\n          And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n)\n            (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n        (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))\n          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n        (@congrArg.{1, 1} ((n : Nat) \u2192 Prop) Prop\n          (fun (n : Nat) =>\n            And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n              (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n          (fun (n : Nat) =>\n            And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n)\n              (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n          (@Exists.{1} Nat)\n          (@funext.{1, 1} Nat (fun (x : Nat) => Prop)\n            (fun (x : Nat) =>\n              And (@GT.gt.{0} Nat instLTNat x (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                (@Eq.{1} Nat x (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n            (fun (x : Nat) =>\n              And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) x)\n                (@Eq.{1} Nat x (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n            fun (n : Nat) =>\n            @congrFun'.{1, 1} Prop Prop\n              (And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n              (And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n))\n              (@congrArg.{1, 1} Prop ((b : Prop) \u2192 Prop)\n                (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n) And\n                (@gt_iff_lt._simp_1.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n              (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))))\n        (@exists_eq_right._simp_1.{1} Nat\n          (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n      (Nat.lt_irrefl._simp_1 (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))))\n  (sorryAx.{0} (\u2200 (tag : Lean.Name), False) Bool.true\n    (Lean.Name.num\n      (Lean.Name.str\n        (Lean.Name.str\n          (Lean.Name.str\n            (Lean.Name.num\n              (Lean.Name.num\n                (Lean.Name.num\n                  (Lean.Name.num\n                    (Lean.Name.num\n                      (Lean.Name.num (Lean.Name.str Lean.Name.anonymous \"Probe\")\n                        (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                      (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                  (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n              (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n            \"_sorry\")\n          \"_@\")\n        \"_hyg\")\n      (@OfNat.ofNat.{0} Nat (nat_lit 21) (instOfNatNat (nat_lit 21)))))\n\n-- LADON_COMPLETION_REPLAY_REQUEST {\"captureId\": \"sha256:48ac7b20060f37f26285c8b065d28c3f4f4d111807dc0da20431adaeea04d266\", \"declaration\": \"ladonCompletion_2372c0163c34b2490cae3945349a0bd0\", \"frame\": \"LADON_COMPLETION_REPLAY\", \"protocolVersion\": \"ladon-lean-source-completion-replay-v2\", \"requestId\": \"2372c0163c34b2490cae3945349a0bd0\", \"sourceContextDigest\": \"sha256:e32ee2a6829c63fa2d584d20abe0c8b65dcf2381fc2153ab8a2996ee5e78ceb0\", \"sourceDigest\": \"sha256:bfea8e5f0ab99e761a7affdf0a6e26a8182ef5757e036e47579c41b7f41d3845\", \"termDigest\": \"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\"}\nrun_cmd do\n  let env \u2190 Lean.getEnv\n  unless (env.checked.get.find? `ladonCompletion_2372c0163c34b2490cae3945349a0bd0).isSome do\n    throwError \"generated declaration unavailable to kernel axiom observation\"\n  let axioms \u2190 Lean.collectAxioms `ladonCompletion_2372c0163c34b2490cae3945349a0bd0\n  let names := (axioms.map toString).qsort (fun a b => a < b)\n  let value := Lean.Json.mkObj [(\"frame\", Lean.toJson (\"LADON_COMPLETION_REPLAY\" : String)), (\"protocolVersion\", Lean.toJson (\"ladon-lean-source-completion-replay-v2\" : String)), (\"requestId\", Lean.toJson (\"2372c0163c34b2490cae3945349a0bd0\" : String)), (\"captureId\", Lean.toJson (\"sha256:48ac7b20060f37f26285c8b065d28c3f4f4d111807dc0da20431adaeea04d266\" : String)), (\"termDigest\", Lean.toJson (\"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\" : String)), (\"sourceDigest\", Lean.toJson (\"sha256:bfea8e5f0ab99e761a7affdf0a6e26a8182ef5757e036e47579c41b7f41d3845\" : String)), (\"declaration\", Lean.toJson (\"ladonCompletion_2372c0163c34b2490cae3945349a0bd0\" : String)), (\"sourceContextDigest\", Lean.toJson (\"sha256:e32ee2a6829c63fa2d584d20abe0c8b65dcf2381fc2153ab8a2996ee5e78ceb0\" : String)), (\"observedAxioms\", Lean.toJson names), (\"coverage\", Lean.toJson (\"complete\" : String))]\n  Lean.Elab.Command.liftIO <| IO.println (\"LADON_COMPLETION_REPLAY \" ++ Lean.Json.compress value)\n",
+      "observation": {
+        "captureId": "sha256:48ac7b20060f37f26285c8b065d28c3f4f4d111807dc0da20431adaeea04d266",
+        "coverage": "complete",
+        "declaration": "ladonCompletion_2372c0163c34b2490cae3945349a0bd0",
+        "frame": "LADON_COMPLETION_REPLAY",
+        "observedAxioms": [
+          "Quot.sound",
+          "propext",
+          "sorryAx"
+        ],
+        "protocolVersion": "ladon-lean-source-completion-replay-v2",
+        "requestId": "2372c0163c34b2490cae3945349a0bd0",
+        "sourceContextDigest": "sha256:e32ee2a6829c63fa2d584d20abe0c8b65dcf2381fc2153ab8a2996ee5e78ceb0",
+        "sourceDigest": "sha256:bfea8e5f0ab99e761a7affdf0a6e26a8182ef5757e036e47579c41b7f41d3845",
+        "termDigest": "sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b"
+      },
+      "sourceContext": {
+        "basis": "selected-source-environment",
+        "bytes": 7464,
+        "digest": "sha256:e32ee2a6829c63fa2d584d20abe0c8b65dcf2381fc2153ab8a2996ee5e78ceb0",
+        "module": "LadonCompletionContext_2372c0163c34b2490cae3945349a0bd0"
+      },
+      "sourceDigest": "sha256:33550bc0fe77a0fe42781804d6c51ec562b96cd326861e5a9475e1fc0a3bf69f",
+      "status": "accepted"
+    },
+    "trust": {
+      "accepted": false,
+      "allowedAxioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "coverage": "complete",
+      "forbiddenPlaceholders": [
+        "sorryAx"
+      ],
+      "observedAxioms": [
+        "Quot.sound",
+        "propext",
+        "sorryAx"
+      ],
+      "policy": "lean-standard-no-placeholders-v1"
+    },
+    "resourceAccounting": {
+      "elapsedScope": "complete-original-goal-operation",
+      "elapsedSeconds": 14.337124210782349,
+      "helperElapsedSeconds": 8.29470435809344,
+      "peakRssBytes": 4004823040,
+      "peakRssScope": "supervised-lean-process-tree"
+    },
+    "proofEstablished": false,
+    "attemptState": "complete"
+  },
+  {
+    "polarity": "negative",
+    "goal": "\u00ac (\u2203 n : Nat, n > 0 \u2227 n = 0)",
+    "sourcePath": "attempt-negative/Probe.lean",
+    "sourceDigest": "sha256:a978ad43a1d14dc3be281a1225ce3f5e3463aba1cf4e4aad717128c3a81cc159",
+    "capturePath": "capture-negative.json",
+    "captureSha256": "c649fabdbde33efb96c5e460894c66a62e65d5263ee089e09d8112ec8e8e3ce3",
+    "captureId": "sha256:4ead2e6bddb667ea890ad1283b22cb6b88cf41974cd50fb50e5b2b45ac7e7a25",
+    "captureStatus": "captured",
+    "compiledModuleCount": 2272,
+    "compiledForbiddenModules": [],
+    "captureElapsedSeconds": 7.727759225992486,
+    "completionPath": "complete-negative.json",
+    "completionSha256": "b310c7028abd3278de45fc4d001c5731662b79a1716749293a85b2645e723e9b",
+    "completionStatus": "completed",
+    "completionReturnCode": 0,
+    "completionDiagnostic": null,
+    "replay": {
+      "coverage": "complete",
+      "declaration": "ladonCompletion_e15700222299819c0a680d19d90b291a",
+      "declarationBodyDigest": "sha256:81aa7282a644fa34fb73e10d8c465ba74f4a56a32ce215b7719b299339f03465",
+      "generatedSource": "import Lean\nimport CoreCases.assumption_feasibility_02\nimport LadonCompletionContext_e15700222299819c0a680d19d90b291a\n\ndef ladonCompletion_e15700222299819c0a680d19d90b291a : Not\n  (@Exists.{1} Nat fun (n : Nat) =>\n    And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n      (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))) :=\n@of_eq_true\n  (Not\n    (@Exists.{1} Nat fun (n : Nat) =>\n      And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n        (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))))\n  (@Eq.trans.{1} Prop\n    (Not\n      (@Exists.{1} Nat fun (n : Nat) =>\n        And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))))\n    (Not False) True\n    (@congrArg.{1, 1} Prop Prop\n      (@Exists.{1} Nat fun (n : Nat) =>\n        And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n      False Not\n      (@Eq.trans.{1} Prop\n        (@Exists.{1} Nat fun (n : Nat) =>\n          And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n            (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n        (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))\n          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n        False\n        (@Eq.trans.{1} Prop\n          (@Exists.{1} Nat fun (n : Nat) =>\n            And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n              (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n          (@Exists.{1} Nat fun (n : Nat) =>\n            And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n)\n              (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n          (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))\n            (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n          (@congrArg.{1, 1} ((n : Nat) \u2192 Prop) Prop\n            (fun (n : Nat) =>\n              And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n            (fun (n : Nat) =>\n              And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n)\n                (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n            (@Exists.{1} Nat)\n            (@funext.{1, 1} Nat (fun (x : Nat) => Prop)\n              (fun (x : Nat) =>\n                And (@GT.gt.{0} Nat instLTNat x (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                  (@Eq.{1} Nat x (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n              (fun (x : Nat) =>\n                And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) x)\n                  (@Eq.{1} Nat x (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n              fun (n : Nat) =>\n              @congrFun'.{1, 1} Prop Prop\n                (And (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n                (And (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n))\n                (@congrArg.{1, 1} Prop ((b : Prop) \u2192 Prop)\n                  (@GT.gt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n                  (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))) n) And\n                  (@gt_iff_lt._simp_1.{0} Nat instLTNat n\n                    (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n                (@Eq.{1} Nat n (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))))\n          (@exists_eq_right._simp_1.{1} Nat\n            (@LT.lt.{0} Nat instLTNat (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))\n            (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))\n        (Nat.lt_irrefl._simp_1 (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0))))))\n    not_false_eq_true)\n\n-- LADON_COMPLETION_REPLAY_REQUEST {\"captureId\": \"sha256:4ead2e6bddb667ea890ad1283b22cb6b88cf41974cd50fb50e5b2b45ac7e7a25\", \"declaration\": \"ladonCompletion_e15700222299819c0a680d19d90b291a\", \"frame\": \"LADON_COMPLETION_REPLAY\", \"protocolVersion\": \"ladon-lean-source-completion-replay-v2\", \"requestId\": \"e15700222299819c0a680d19d90b291a\", \"sourceContextDigest\": \"sha256:ec6cdb4065f9a1d8073b4ab58451113fef623611f173ac21bc1d40d627fc0a3c\", \"sourceDigest\": \"sha256:81aa7282a644fa34fb73e10d8c465ba74f4a56a32ce215b7719b299339f03465\", \"termDigest\": \"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\"}\nrun_cmd do\n  let env \u2190 Lean.getEnv\n  unless (env.checked.get.find? `ladonCompletion_e15700222299819c0a680d19d90b291a).isSome do\n    throwError \"generated declaration unavailable to kernel axiom observation\"\n  let axioms \u2190 Lean.collectAxioms `ladonCompletion_e15700222299819c0a680d19d90b291a\n  let names := (axioms.map toString).qsort (fun a b => a < b)\n  let value := Lean.Json.mkObj [(\"frame\", Lean.toJson (\"LADON_COMPLETION_REPLAY\" : String)), (\"protocolVersion\", Lean.toJson (\"ladon-lean-source-completion-replay-v2\" : String)), (\"requestId\", Lean.toJson (\"e15700222299819c0a680d19d90b291a\" : String)), (\"captureId\", Lean.toJson (\"sha256:4ead2e6bddb667ea890ad1283b22cb6b88cf41974cd50fb50e5b2b45ac7e7a25\" : String)), (\"termDigest\", Lean.toJson (\"sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b\" : String)), (\"sourceDigest\", Lean.toJson (\"sha256:81aa7282a644fa34fb73e10d8c465ba74f4a56a32ce215b7719b299339f03465\" : String)), (\"declaration\", Lean.toJson (\"ladonCompletion_e15700222299819c0a680d19d90b291a\" : String)), (\"sourceContextDigest\", Lean.toJson (\"sha256:ec6cdb4065f9a1d8073b4ab58451113fef623611f173ac21bc1d40d627fc0a3c\" : String)), (\"observedAxioms\", Lean.toJson names), (\"coverage\", Lean.toJson (\"complete\" : String))]\n  Lean.Elab.Command.liftIO <| IO.println (\"LADON_COMPLETION_REPLAY \" ++ Lean.Json.compress value)\n",
+      "observation": {
+        "captureId": "sha256:4ead2e6bddb667ea890ad1283b22cb6b88cf41974cd50fb50e5b2b45ac7e7a25",
+        "coverage": "complete",
+        "declaration": "ladonCompletion_e15700222299819c0a680d19d90b291a",
+        "frame": "LADON_COMPLETION_REPLAY",
+        "observedAxioms": [
+          "Quot.sound",
+          "propext"
+        ],
+        "protocolVersion": "ladon-lean-source-completion-replay-v2",
+        "requestId": "e15700222299819c0a680d19d90b291a",
+        "sourceContextDigest": "sha256:ec6cdb4065f9a1d8073b4ab58451113fef623611f173ac21bc1d40d627fc0a3c",
+        "sourceDigest": "sha256:81aa7282a644fa34fb73e10d8c465ba74f4a56a32ce215b7719b299339f03465",
+        "termDigest": "sha256:91ad6b10ba8e0a1f7fed7daf1415a496a097e8ca0a87f58f7f4665151c78126b"
+      },
+      "sourceContext": {
+        "basis": "selected-source-environment",
+        "bytes": 7600,
+        "digest": "sha256:ec6cdb4065f9a1d8073b4ab58451113fef623611f173ac21bc1d40d627fc0a3c",
+        "module": "LadonCompletionContext_e15700222299819c0a680d19d90b291a"
+      },
+      "sourceDigest": "sha256:12c8245850201dc1926dcd98280360a74a1ec7161b7c81b36fffac00c8c8a941",
+      "status": "accepted"
+    },
+    "trust": {
+      "accepted": true,
+      "allowedAxioms": [
+        "Classical.choice",
+        "Quot.sound",
+        "propext"
+      ],
+      "coverage": "complete",
+      "forbiddenPlaceholders": [
+        "sorryAx"
+      ],
+      "observedAxioms": [
+        "Quot.sound",
+        "propext"
+      ],
+      "policy": "lean-standard-no-placeholders-v1"
+    },
+    "resourceAccounting": {
+      "elapsedScope": "complete-original-goal-operation",
+      "elapsedSeconds": 14.608836284140125,
+      "helperElapsedSeconds": 8.521927751833573,
+      "peakRssBytes": 4005355520,
+      "peakRssScope": "supervised-lean-process-tree"
+    },
+    "proofEstablished": true,
+    "attemptState": "complete"
+  }
+]

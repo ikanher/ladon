@@ -1,0 +1,39 @@
+{
+  "schema": "ladon-pitfall-probe-observation-addendum-v1",
+  "registrationId": "pitfall-common-registration-v2",
+  "registrationSha256": "4543d5675f26ee96ae096399d094d67bfbfff85499f7ed86665315c1b082afef",
+  "disposition": "unqualified-contract-mismatch",
+  "caseId": "premise-provenance-03",
+  "caseSlot": "slot-bd1287",
+  "runReceipt": "host-receipt.json",
+  "output": "slot-bd1287/proof-slice.json",
+  "workspaceReceipt": "workspace-receipt.json",
+  "runtimeManifestIdentity": "9043c1d61ca611055087474740419a049e5b554ef839ada4b9e30e3b94f2a78d",
+  "registrationV3Path": "../../common-registration-v3.json",
+  "registrationV3Sha256": "52f5acda607d5a56230db7617796211ab74a9ecbf15ff6af0eec75195dda78f0",
+  "observed": {
+    "exitCode": 2,
+    "hostStdout": "empty",
+    "hostStderr": "empty",
+    "outputCreated": true,
+    "status": "unavailable",
+    "complete": false,
+    "selectedApplication": "h",
+    "helperReturnCode": 1,
+    "helperStdout": "/tmp/custody-execution-_b9yycsc/ladon-proof-slice-48qtndsa/LadonSlice.lean:397:0: error: constant not found; supply a qualified name: PitfallCases.PremiseProvenance03.h\n",
+    "helperStderr": "",
+    "frontierReasons": [
+      "bounded-process-failed"
+    ]
+  },
+  "comparison": "The v2 contract required the selector-name diagnostic in the failed helper stderr. The preserved Lean helper emitted the exact diagnostic in stdout; helper stderr was empty. The command otherwise reached Lean and the selected declaration compiled. This is a registration/terminal-stream mismatch, so this observation does not classify the capability as unsupported and receives no detection or control credit.",
+  "setupAttempts": [
+    {
+      "path": "../premise-provenance-v2-case-probe-20261112/startup-failure.json",
+      "disposition": "custody launcher did not start; host executable permission denied; no Ladon process"
+    },
+    {
+      "disposition": "invalid isolated workspace root; Lean could not resolve allowed import Pitfalls; not evidence about selected local binder"
+    }
+  ]
+}

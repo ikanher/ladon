@@ -1,0 +1,21 @@
+Independent acceptance review — Task 1.2, r3
+Date: 2026-11-10
+Reviewer: /root/corpus_review (independent agent)
+
+Result: PASS. No current source/formal pairing, role, expected-evidence, oracle or isolation blocker remains.
+
+Exact reviewed identities (SHA-256):
+- cases.json: 891e81619dd552af1311b794d48eb10fe10d931361c9fca9ddbe2aa5507ee367
+- reviews/r3-preparation.json: b4d1e6c0603ff0d2e6223697c1cd56f10902c1835f6092e931e092cf5e822c3c
+- reviews/r3-environment.json: 4fc63a05617668e489adaf4f54045eab6377ebd441c09d291916b58cd70dcca1
+- scripts/check_corpus.py: 9d8c88d99eda7000bfec277492444d36cba4d56390f9b2f2800f16afa2f4d611
+- scripts/check_isolation.py: cf67af71f5c34982e557a29a411a36664acd12e025c0252ff2695312ec12a0e2
+
+The preparation receipt retains the complete 39-file input inventory, 26 source/olean artifact bindings, and all 32 successful commands with stdout/stderr and exit status. The reviewer verified every recorded input/artifact hash and independently ran both check scripts. All corpus checks and adversarial counterchecks passed. All 24 cases imported in their restricted search paths; sibling and validation imports were rejected with the requested resolution diagnostics.
+
+Resolved findings:
+- The uniform-bound quote is now represented by uniform quantifiers in both source and formal claims; the case tests falsity of the uniform claim and makes no fidelity-mismatch accusation.
+- Expected evidence uses current fully qualified declarations with resolvable evidenceSources.
+- Forbidden-import checks reject unrelated failures, signals, memory failures, successful forbidden imports, and missing-module diagnostics accompanied by fatal or unrelated output. A deliberately exposed sibling artifact is rejected by the isolation guard.
+
+Scope: accepts the authored corpus, Lean counterparts, validation evidence and tested per-case import isolation. The checker is specific to these development examples, not a general natural-language-to-Lean type checker. General goal elaboration, complete runtime custody and the actual operational invocation boundary remain in later tasks. No baseline metrics or autonomous detection claims follow from this acceptance. Earlier review records and preserved revisions remain historical.

@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+set -eu
+repo_root=$(CDPATH= cd -- "$(dirname -- "$0")/../../../.." && pwd)
+export PYTHONPATH="$repo_root/src${PYTHONPATH:+:$PYTHONPATH}"
+exec uv run --locked --offline --no-sync --project "$repo_root" python -m ladon.entrypoint "$@"

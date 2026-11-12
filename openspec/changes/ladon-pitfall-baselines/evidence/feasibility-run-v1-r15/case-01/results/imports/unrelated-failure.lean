@@ -1,0 +1,1 @@
+def notAnImport : Nat := noSuchIdentifier
