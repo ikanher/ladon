@@ -1,0 +1,13 @@
+import Mf.DP.SampledGaussianFiniteBracketCalibration
+
+#check Mf.DP.binaryAccountingProfile
+#check Mf.DP.sampledGaussianProductProfileStddev
+#check Mf.DP.sampledGaussianProductProfileStddev_antitone
+#check Mf.DP.sampledGaussianProductMaximumEventLowerBound_le_binaryProfile
+#check Mf.DP.sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds
+#check Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates
+#check ProbabilityTheory.gaussianReal_zero_var
+
+#print axioms Mf.DP.sampledGaussianProductProfileStddev_antitone
+#print axioms Mf.DP.sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds
+#print axioms Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates

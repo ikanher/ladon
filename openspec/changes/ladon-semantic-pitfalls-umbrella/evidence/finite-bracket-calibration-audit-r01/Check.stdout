@@ -1,0 +1,45 @@
+Mf.DP.binaryAccountingProfile.{u_1} {Y : Type u_1} [MeasurableSpace Y] (mu nu : MeasureTheory.ProbabilityMeasure Y)
+  (epsilon : ℝ) : ENNReal
+Mf.DP.sampledGaussianProductProfileStddev (horizon : ℕ) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+  (sensitivity : ℝ) (noiseStddev : NNReal) (epsilon : ℝ) : ENNReal
+Mf.DP.sampledGaussianProductProfileStddev_antitone (horizon : ℕ) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+  (sensitivity epsilon : ℝ) {small large : NNReal} (hStddev : small ≤ large) :
+  Mf.DP.sampledGaussianProductProfileStddev horizon samplingRate hRate sensitivity large epsilon ≤
+    Mf.DP.sampledGaussianProductProfileStddev horizon samplingRate hRate sensitivity small epsilon
+Mf.DP.sampledGaussianProductMaximumEventLowerBound_le_binaryProfile (horizon : ℕ) (samplingRate : NNReal)
+  (hRate : samplingRate ≤ 1) (sensitivity epsilon threshold : ℝ) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+  Mf.DP.sparseGaussianProductMaximumEventForwardLowerBound horizon samplingRate hRate (sensitivity / ↑noiseStddev)
+      epsilon threshold ≤
+    Mf.DP.binaryAccountingProfile
+      (Mf.DP.sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity (noiseStddev ^ 2))
+      (Mf.DP.sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon
+Mf.DP.sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds (horizon : ℕ) (samplingRate : NNReal)
+  (hRate : samplingRate ≤ 1) (sensitivity epsilon forwardThreshold reverseThreshold : ℝ) (noiseStddev : NNReal)
+  (hStddev : 0 < noiseStddev) :
+  Mf.DP.binaryAccountingProfile
+      (Mf.DP.sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity (noiseStddev ^ 2))
+      (Mf.DP.sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon ≤
+    Mf.DP.sampledGaussianProductFiniteProfileUpperBoundWithThresholds horizon samplingRate sensitivity epsilon
+      forwardThreshold reverseThreshold noiseStddev
+Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates (horizon : ℕ)
+  (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+  (sensitivity epsilon delta lowerThreshold forwardUpperThreshold reverseUpperThreshold : ℝ)
+  (lowerCandidate upperCandidate : NNReal) (hLowerCandidate : 0 < lowerCandidate) (hUpperCandidate : 0 < upperCandidate)
+  (hLower :
+    ENNReal.ofReal delta <
+      Mf.DP.sparseGaussianProductMaximumEventForwardLowerBound horizon samplingRate hRate
+        (sensitivity / ↑lowerCandidate) epsilon lowerThreshold)
+  (hUpper :
+    Mf.DP.sampledGaussianProductFiniteProfileUpperBoundWithThresholds horizon samplingRate sensitivity epsilon
+        forwardUpperThreshold reverseUpperThreshold upperCandidate ≤
+      ENNReal.ofReal delta) :
+  lowerCandidate ≤ Mf.DP.sampledGaussianCalibratedStddev horizon samplingRate hRate sensitivity epsilon delta ∧
+    Mf.DP.sampledGaussianCalibratedStddev horizon samplingRate hRate sensitivity epsilon delta ≤ upperCandidate
+ProbabilityTheory.gaussianReal_zero_var (μ : ℝ) : ProbabilityTheory.gaussianReal μ 0 = MeasureTheory.Measure.dirac μ
+'Mf.DP.sampledGaussianProductProfileStddev_antitone' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mf.DP.sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]

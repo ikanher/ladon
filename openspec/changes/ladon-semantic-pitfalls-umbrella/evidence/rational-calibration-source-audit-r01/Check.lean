@@ -1,0 +1,12 @@
+import Mf.DP.PoissonMomentRationalPrivacy
+
+#check Mf.DP.PoissonMomentCalibration.Rational.check_power_sound
+#check Mf.DP.PoissonMomentCalibration.Rational.eventually_check_of_strict
+#check Mf.DP.PoissonAdaptiveQuery.Data.optionalTranscript_approxDP_of_rationalCheck
+#check Mf.DP.PoissonAdaptiveQuerySeed.Data.publicSeedTranscript_approxDP_of_rationalCheck
+#check Mf.DP.PoissonAdaptiveQuerySeed.Data.publicSeedPostprocess_approxDP_of_rationalCheck
+#check Mf.DP.RationalExpInterval.interval_encloses
+
+#print axioms Mf.DP.PoissonMomentCalibration.Rational.check_power_sound
+#print axioms Mf.DP.PoissonMomentCalibration.Rational.eventually_check_of_strict
+#print axioms Mf.DP.PoissonAdaptiveQuerySeed.Data.publicSeedPostprocess_approxDP_of_rationalCheck

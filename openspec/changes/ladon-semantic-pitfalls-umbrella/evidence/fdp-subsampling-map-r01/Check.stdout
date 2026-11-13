@@ -1,0 +1,14 @@
+Mf.DP.TradeoffFunction.pSamplingOperator (p : ℝ) (T : Mf.DP.TradeoffFunction) : Mf.DP.TradeoffFunction
+Mf.DP.PrivacyObject.subsampleTradeoffAt (P : Mf.DP.PrivacyObject) (p ε : ℝ) : Mf.DP.TradeoffFunction
+Mf.DP.TradeoffFunction.pSamplingOperator_le_withIdentityWeight (p : ℝ) (T : Mf.DP.TradeoffFunction) :
+  (Mf.DP.TradeoffFunction.pSamplingOperator p T).PointwiseLE (Mf.DP.TradeoffFunction.withIdentityWeight p T)
+Mf.DP.pSamplingOperator_ofDPEventBound_le_classicalSubsamplingEventBoundWitness {p ε δ : ℝ}
+  (harg : 0 < 1 - p + p * Real.exp ε) :
+  (Mf.DP.TradeoffFunction.pSamplingOperator p (Mf.DP.TradeoffFunction.ofDPEventBound ε δ)).PointwiseLE
+    (Mf.DP.classicalSubsamplingEventBoundWitness p ε δ)
+'Mf.DP.TradeoffFunction.pSamplingOperator_le_withIdentityWeight' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mf.DP.pSamplingOperator_ofDPEventBound_le_classicalSubsamplingEventBoundWitness' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]

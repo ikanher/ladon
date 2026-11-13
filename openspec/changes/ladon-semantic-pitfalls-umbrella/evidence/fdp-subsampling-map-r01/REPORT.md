@@ -1,0 +1,39 @@
+# Hidden fixed-size f-DP subsampling: source-to-formal map
+
+## Verdict
+
+**Unresolved support boundary; no mathematical fault established.** The inspected Lean declarations define the public `C_p`-style operator and prove pointwise comparisons involving it. They do not establish, in their statements, that an arbitrary `f`-DP mechanism composed with the source's *hidden, uniformly chosen, exactly `m`-record* sampler has that trade-off bound. Related Lean files construct a branch-tagged exact pair and a fixed-cardinality law in a Gaussian model, but the inspected material does not connect either construction to the source theorem's arbitrary mechanism and hidden output law.
+
+This is an **informed source audit**. The prior C05 inventory already identified a convexified operator and an unresolved law-realization map. It is not a held-out fault-discovery result, a whole-paper audit, or evidence that the source theorem is false.
+
+## Source claim and first interpretation
+
+The frozen [first interpretation](FIRST.md) was written from [the tracked source copy](SOURCE.tex) before reading the formal declarations. In the source, `Sample_m` chooses uniformly among subsets of exactly `m` from `n` indices, keeps the subset hidden, and passes its records to an arbitrary mechanism `M` on `X^m` (source lines 35–37). Theorem `thm:subsample` claims `M ∘ Sample_m` is `C_{m/n}(f)`-DP when `M` is `f`-DP (lines 41–59). The proof invokes the classical fixed-size approximate-DP subsampling theorem, then converts its family of bounds back to the asymmetric weighted branch and convexified symmetric envelope (lines 161–200). The Bernoulli sampling extension is separate. The precise dataset adjacency relation was not settled by this bounded excerpt and remains part of any faithful formal map.
+
+The source input and revision are identified in [INPUTS.json](INPUTS.json). The formal files, toolchain and manifest copied from the sibling checkout have byte hashes in [FORMAL_INPUTS.json](FORMAL_INPUTS.json). All selected source/formal files were tracked and clean in that checkout when copied.
+
+## Formal evidence
+
+| Inspected owner | Checked or observed fact | Limit for this source claim |
+| --- | --- | --- |
+| [`FDPSubsampling.lean`](formal/Mf/DP/FDPSubsampling.lean) | `pSamplingOperator p T` is the greatest convex lower-envelope implementation of the minimum of `withIdentityWeight p T` and its left-continuous inverse; `PrivacyObject.subsampleTradeoffAt` applies the operator to an existing privacy object's trade-off. The exact code was inspected; nearby comments describing a future convexification are stale. | These definitions contain no input dataset, random subset, private mechanism, or resulting hidden output law. |
+| [`ClassicalEventDPSubsampling.lean`](formal/Mf/DP/ClassicalEventDPSubsampling.lean) | The compiled theorem `pSamplingOperator_ofDPEventBound_le_classicalSubsamplingEventBoundWitness` is a pointwise inequality of trade-off functions. Its exact type and axioms are in [Check.stdout](Check.stdout). | Its statement has no mechanism or sampling law. A theorem name or paper analogy cannot supply those missing binders. |
+| [`FDPSubsamplingExactSurface.lean`](formal/Mf/DP/FDPSubsamplingExactSurface.lean) | Transports equality of existing exact privacy objects through `subsampleTradeoffAt`; the file explicitly describes the absent construction of a new subsampled neighboring object. | Equality transport does not produce the hidden subsampled output law. |
+| [`FDPSubsamplingWithIdentityExactSurface.lean`](formal/Mf/DP/FDPSubsamplingWithIdentityExactSurface.lean) | Constructs a branch-tagged `Bool × α` represented density pair and proves branch facts and a bounded comparison to the public weighted branch. | The branch tag is present in that representation; this is not a construction or verification of the source's hidden fixed-size `M ∘ Sample_m` for arbitrary `M`. The file's header itself leaves an exact public weighted-branch extraction theorem open. |
+| [`OptimalSubsamplingLaw.lean`](formal/Mf/DP/OptimalSubsamplingLaw.lean), [`OptimalSubsamplingFixedCardinality.lean`](formal/Mf/DP/OptimalSubsamplingFixedCardinality.lean) | Define a uniform fixed-cardinality participation law and special Gaussian mixture densities. | The model and theorem targets are narrower than arbitrary `M : X^m →` random output. The fixed-cardinality file was inspected as source; direct compilation was blocked by a missing imported `.olean`, not by a Lean proof error. |
+
+Direct `lake env lean` checks succeeded for `FDPSubsampling.lean`, `FDPSubsamplingExactSurface.lean`, `FDPSubsamplingWithIdentityExactSurface.lean`, and the small [type/axiom probe](Check.lean). The exact-surface files emitted only linter `simp` warnings. `OptimalSubsamplingFixedCardinality.lean` could not be directly compiled in this checkout because `Mf.DP.Training.Common.ExactDensityPairProfile.olean` was missing from the build cache; no negative mathematical inference is drawn from that failure.
+
+Ladon from this checkout (`PYTHONPATH="$PWD/src" uv run --project "$PWD" python -m ladon.entrypoint`) provided source-verified lexical navigation for `subsampleTradeoffAt`, `fixedCardinality`, and `pSamplingOperator`; the retained responses are `search_*.json`. A targeted [compiled lineage summary](lineage.json) for the event-bound comparison reports `status=available`, `authority=lean_environment`, `freshness=fresh`, 346 nodes (53 project-owned and 293 external-frontier nodes), 2,506 type/value edges, and zero recorded omissions, after about 97.45 seconds of acquisition. The external frontier remains explicit. This is a dependency closure, **not** a proof that the source mechanism theorem is absent, a theorem replay, or an enumeration of alternative proof routes. A bounded `Mf/DP` text search found no file containing both the public `pSamplingOperator`/`subsampleTradeoffAt` names and the identified fixed-cardinality sampling names; this is navigation evidence only, not a global absence proof.
+
+## Exact unresolved obligation
+
+A completed source-to-formal application would need a consistent `n,m` and `p=m/n` map, the source adjacency relations, a uniform exact-cardinality subset law, the selected-dataset map, a kernel for arbitrary `M` with its `f`-DP assumption, and the neighboring output laws after **discarding the subset identity**. It would then check the trade-off lower bound by the source's `C_p(f)` in the needed neighboring directions, including any bridge from the library's trade-off-function representation to the paper's biconjugate description. None of the checked operator comparisons discharges that whole obligation.
+
+The reader consequence is precise: the current formal operator may be used as an algebraic/accountant surface, but these inspected results should not be cited as a formal proof of `thm:subsample` for arbitrary mechanisms. Conversely, the paper theorem is not refuted by this gap.
+
+## Ladon contribution and next decision
+
+Ladon shortened owner navigation and supplied an exact, fresh compiled dependency boundary for the selected operator theorem. The key source-to-formal distinction was made by reading the source and Lean types; no incremental detection benefit over ordinary Lean was measured. No production diagnostic follows from this audit alone.
+
+Use this as a **negative support control** for a later source-to-owner exercise: a candidate owner with a matching `C_p` name must yield `unresolved` until an actual hidden-mechanism application and conclusion transfer are checked. Pair it with a genuinely complete mechanism-law theorem as a faithful control. Keep the source interpretation hidden from the owner-selection step in any fresh comparison, and count answer custody and review effort. Implement a new Ladon operation only if that paired exercise reveals a repeatable missing tool action.

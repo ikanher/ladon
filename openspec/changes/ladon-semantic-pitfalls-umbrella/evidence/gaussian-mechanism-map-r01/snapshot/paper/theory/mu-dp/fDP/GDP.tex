@@ -1,0 +1,147 @@
+% root = ../paper.tex
+\subsection{Gaussian Differential Privacy} % (fold)
+\label{sub:gaussian_differential_privacy}
+
+
+%Therefore, it is natural to use $f$ that is itself a trade-off function in $f$-DP. Unless explicitly noted, $f$ is always assumed to be a trade-off function when we talk about $f$-DP.
+% \begin{definition} \label{def:Gmu}% \end{definition}
+
+This subsection introduces a parametric family of $f$-DP guarantees, where $f$ is the trade-off function of two normal distributions. We refer to this specialization as Gaussian differential privacy (GDP). GDP enjoys many desirable properties that lead to its central role in this paper. Among others, we can now precisely define the trade-off function with a single parameter. To define this notion, let
+\[
+G_\mu:=\F\big(\N(0,1), \N(\mu,1)\big)
+\]
+for $\mu \ge 0$. An explicit expression for the trade-off function $G_\mu$ reads
+\begin{equation}\label{eq:Gmu}
+	G_\mu(\alpha) = \Phi\big(\Phi^{-1}(1-\alpha)-\mu\big),
+\end{equation}
+where $\Phi$ denotes the standard normal CDF. For completeness, we provide a proof of \eqref{eq:Gmu} in \Cref{app:fDP}. This trade-off function is decreasing in $\mu$ in the sense that $G_\mu \leqslant G_{\mu'}$ if $\mu \ge \mu'$. We now define GDP:
+%Another special case of $f$-DP is Gaussian differential privacy --- . Here . Apparently we should give it a name:
+\begin{definition} \label{def:GDP}
+A mechanism $M$ is said to satisfy $\mu$-Gaussian Differential Privacy ($\mu$-GDP) if it is $G_\mu$-DP. That is,
+\[
+T\big(M(S),M(S')\big) \ge G_\mu
+\]
+for all neighboring datasets $S$ and $S'$.
+\end{definition}
+GDP has several attractive properties. First, this privacy definition is fully described by the single mean parameter of a unit-variance Gaussian distribution, which makes it easy to describe and interpret the privacy guarantees. For instance, one can see from the right panel of \Cref{fig:DPvsGDP} that $\mu \le 0.5$ guarantees a reasonable amount of privacy, whereas if $\mu \geqslant 6$, almost nothing is being promised. Second, loosely speaking, GDP occupies a role among all hypothesis testing based notions of privacy that is similar to the role that the Gaussian distribution has among general probability distributions. We formalize this important point by proving central limit theorems for $f$-DP in \Cref{sec:composition-theorems}, which, roughly speaking, says that $f$-DP converges to GDP under composition in the limit. Lastly, as shown in the remainder of this subsection, GDP \emph{precisely} characterizes the Gaussian mechanism, one of the most fundamental building blocks of differential privacy.
+
+%he single parameter $\mu$ encodes the level of privacy: the smaller the $\mu$ is, the more private the mechanism is. Loosely speaking, a mechanism is reasonably private if $\mu \le 0.5$, hardly private if $\mu \ge 3$, and blatantly non-private if $\mu \geqslant 6$ by recognizing the three-sigma rule. Next, loosely speaking, GDP is to general $f$-DP as normal distribution is to general probability distributions. This universality of GDP is built on top a central limit theorem applied to a sequence of (small) private losses measured by $f$-DP, which is the subject of \Cref{sec:composition-theorems}. Last, as shown in the remainder of this subsection, GDP precisely models the Gaussian mechanism, one of the most fundamental building blocks of differential privacy.
+
+% central limit theorem
+% %Of course, for this to make sense, $\mu$ is ideally small, at least not significantly greater than 1.
+% the central notion and hence the title of this paper
+
+% The fact that $\mu$-GDP is parametrized by only one parameter is the result of the rich invariances of Gaussian distribution.
+% An invertible transformation on the probability space effectively only changes the labeling of the outcomes, so it does not change the essence of the testing problem, and neither the trade-off function. We collect a few frequently used facts about trade-off functions of Gaussian distributions, most of which are simple consequences of the this observation.
+% \begin{enumerate}
+% 	\item
+% 	$\mu_0,\mu_1\in\R,\sigma>0$. Then
+% 	$$\F\big(N(\mu_0,\sigma^2),N(\mu_1,\sigma^2)\big) = \F\big(N(0,1),N(\tfrac{\mu_1-\mu_0}{\sigma},1)\big) .$$
+% 	\item
+% 	$G_\mu = \F\big(N(0,1),N(\mu,1)\big)=\F\big(N(-\mu,1),N(0,1)\big)=\F\big(N(\mu,1),N(0,1)\big).$
+
+% 	\item $\mu_0,\mu_1 \in \R^d$. Then
+% 	\begin{equation*}\label{eqn:multinormal}
+% 		\F\big(N(\mu_0,I_d),N(\mu_1,I_d)\big) = \F\big(N(0,1),N(\|\mu_0-\mu_1\|_2,1)\big) = G_{\|\mu_0-\mu_1\|_2}.
+% 	\end{equation*}
+% 	\item If $\mu\geqslant 0$, then
+% 	$$G_\mu(\alpha) = \Phi\big(\Phi^{-1}(1-\alpha)-\mu\big).$$
+% 	In particular, if $\mu>\mu'$, then $G_\mu<G_{\mu'}$.
+% \end{enumerate}
+
+% Property 1 follows from applying the obvious linear transform $x\mapsto \frac{x-\mu_0}{\sigma}$. The first equality of property 2 follows by applying a $-\mu$ translation and the second a reflection.
+
+% Property 3 is worth of a bit more elaboration: first by a translation we have $\F\big(N(\mu_0,I_d),N(\mu_1,I_d)\big) = \F\big(N(0,I_d),N(\mu_1-\mu_0,I_d)\big)$. $N(0,I_d)$ is rotational invariant, so we can rotate $N(\mu_1-\mu_0,I_d)$ so that the mean vector has only one non-zero entry, which has to be (up to $\pm$ sign) $\|\mu_0-\mu_1\|_2$. The other coordinates are indistinguishable and hence ineffective. The non-zero entry leads to $\F\big(N(0,1),N(\|\mu_0-\mu_1\|_2,1)\big)$.
+
+% Property 4 is the result of Neyman-Pearson lemma: since $\mu\geqslant0$, likelihood ratio tests of $N(0,1)$ vs $N(\mu,1)$ has the form $\phi(x) = 1_{\{x>h\}}$. The errors of $\phi$ are:
+% \begin{align*}
+% 	\alpha &= P_{X\sim N(0,1)}[X>h] = 1-\Phi(h),\\
+% 	\beta &= P_{X\sim N(\mu,1)}[X\leqslant h] = P_{X\sim N(0,1)}[X\leqslant h-\mu] = \Phi(h-\mu)
+% \end{align*}
+% Solve for $h$ from $\alpha$: $h = \Phi^{-1}(1-\alpha)$. Plug into $\beta$ and we have
+% \begin{equation}\label{eq:gmu}
+% 	G_\mu(\alpha) = \Phi\big(\Phi^{-1}(1-\alpha)-\mu\big).
+% \end{equation}
+% Pointwise relation is the consequence of the monotonicity of $\Phi$ and $\Phi^{-1}$.
+% \djs{Plot}
+% %Note that
+% %\djs{Interesting but definitely should not put here.}The more general case with common positive definite covariance matrix is almost as easy, and is related to LDA(linear discriminant analysis). The even more general case with different covariance matrix is related to QDA(quadratic discriminant analysis).
+% \bigskip
+%%\noindent \textbf{Example: Answering a Numeric Query}
+%%A numeric query is a real-valued function $q$ on a dataset space $(X,\sim)$.
+% In general this notion can be extended to functions whose codomain has a metric structure. If we endow $X$ with a graph structure, then the graph geodesic distance is a metric on $X$. By a simple arguement we can show that the sensitivity of $f$ is the minimal Lipschitz constant of $f$ as a mapping between metric spaces. \ar{Is this discussion relevant?}
+
+%\footnote{For example, continuing the medical example with $X=\R^{n\times d}$, a \thetauery $\theta$ may be the mean of the first medical measurement, corresponding to the first column, i.e. $\theta(x) = ({x_{11}+\cdots+x_{n1}})/{n}$. Releasing the exact \thetauery value $\theta(x)$ is not differential private, as $\theta(x)$ can be perfectly distinguished from $\theta(x')$ for a pair of neighbors $x $ and $ x'$.}.
+
+Consider the problem of privately releasing a univariate statistic $\theta(S)$ of the dataset $S$. Define the sensitivity of $\theta$ as
+\[
+\mathrm{sens}(\theta) = \sup_{S, S'} | \theta(S) - \theta(S') |,
+\]
+where the supremum is over all neighboring datasets. The Gaussian mechanism adds Gaussian noise to the statistic $\theta$ in order to obscure whether $\theta$ is computed on $S$ or $S'$. The following result shows that the Gaussian mechanism with noise properly scaled to the sensitivity of the statistic satisfies GDP.
+\begin{theorem}\label{thm:g_mech}
+%Let $M$ be a mechanism that adds $\N(0, \sigma^2)$ to $\theta(x)$.
+Define the Gaussian mechanism that operates on a statistic $\theta$ as $M(S) = \theta(S) + \xi$, where $\xi \sim \N(0, \mathrm{sens}(\theta)^2/\mu^2)$. Then, $M$ is $\mu$-GDP.
+\end{theorem}
+%The noise should be proportional to $\mathrm{sens}(\theta)$ in order to blur the value on $x$ from the values on its neighbors. For example, a valid mechanism is $M(x) = \theta(x) + \mathrm{sens}(\theta)\cdot\xi$ where $\xi\sim N(0,\sigma^2)$.
+% \begin{claim}
+% 	$M$ is $\sigma^{-1}$-GDP.
+% \end{claim}
+\begin{proof}[Proof of Theorem~\ref{thm:g_mech}]
+Recognizing that $M(S), M(S')$ are normally distributed with means $\theta(S), \theta(S')$, respectively, and common variance $\sigma^2 = \mathrm{sens}(\theta)^2/\mu^2$, we get
+\begin{align*}
+\F\big(M(S),M(S')\big) = \F\big( \N(\theta(S), \sigma^2), \N(\theta(S'), \sigma^2)\big) = G_{|\theta(S)-\theta(S')|/\sigma}.
+\end{align*}
+By the definition of sensitivity, $|\theta(S)-\theta(S')|/\sigma \le \mathrm{sens}(\theta)/\sigma = \mu$. Therefore, we get
+\[
+\F\big(M(S),M(S')\big) = G_{|\theta(S)-\theta(S')|/\sigma} \geqslant G_\mu.
+\]
+This completes the proof.
+	% By definition of sensitivity,
+	% $$|\mu-\mu'|/s = {|\theta(x)-\theta(x')|}\cdot{\mathrm{sens}^{-1}(\theta)}\cdot\sigma^{-1}\le\thetaslant \sigma^{-1}.$$
+	% It's easy to see $G_\mu$ is monotone decreasing in $\mu$ from the expression \e\thetaref{e\theta:gmu}, so
+	% $$T\big(M(x),M(x')\big)= G_{|\mu-\mu'|/s} \ge\thetaslant G_{\sigma^{-1}},$$
+	% which means $M$ is $\sigma^{-1}$-GDP.
+\end{proof}
+
+
+%The claim can be generalized in different directions. For multiple queries (or equivalently, a vector valued query), similar mechanism and analysis exist with $L^2$ sensitivity.
+% Privacy protections are stronger when the noise is large or when the sensitivity is small. \djs{Mention accuracy now?}
+% \djs{Maybe a bit distracting, but it's quite short so I guess it's ok to leave it here.}
+% another direction is to replace the noise $N(0,\sigma^2)$ with a general distribution, resulting in a $f$-DP mechanism. We briefly explain an interesting result on how the noise determines $f$. Let $P$ be a probability distribution on $\R$ with density $p$, cdf $F:\R\to[0,1]$ and quantile $F^{-1}:[0,1]\to[-\infty,+\infty]$.
+
+As implied by the proof above, GDP offers the tightest possible privacy bound of the Gaussian mechanism. More precisely, the Gaussian mechanism in \Cref{thm:g_mech} satisfies
+\begin{equation}\label{eq:f_inf}
+G_{\mu}(\alpha) = \inf_{\text{neighboring }S, S'} \, \F \big(M(S),M(S') \big)(\alpha),
+\end{equation}
+where the infimum is (asymptotically) achieved at the two neighboring datasets such that $|\theta(S) - \theta(S')| = \mathrm{sens}(\theta)$ \textit{irrespective} of the type I error $\alpha$. As such, the characterization by GDP is precise in the pointwise sense. In contrast, the right-hand side of \eqref{eq:f_inf} in general is not necessarily a convex function of $\alpha$ and, in such case, is not a trade-off function according to \Cref{prop:trade-off}. This nice property of Gaussian mechanism is related to the log-concavity of Gaussian distributions. See \Cref{prop:logconcave} for a detailed treatment of log-concave distributions.
+
+% the Without the log-concavity assumption, however, the point-wise minimum function in \eqref{eq:f_inf} in general is no longer a trade-off function.
+% On a related note, The Gaussian trade-off function is clearly tailored to the addition of Gaussian noise. In principle, we can consider mechanisms that perturb statistics using noise drawn from other distributions. In the case in which the noise has log-concave density, we can describe the privacy of any such mechanism using a trade-off function. More precisely, if the CDF of the noise is $F$ and the sensitivity of the statistic is $\mu$, then the mechanism is $f$-DP for $f(\alpha) = F(F^{-1}(1-\alpha) - \mu)$. \Cref{thm:g_mech} is a corollary of this more general result.
+
+% % \wjs{ to remove:
+% Interestingly, this theorem has a converse: the trade-off function has this form if and only if the noise distribution has log-concave density. For a precise statement and the proof, see \Cref{app:fDP}.
+% %For convenience, let $t=\mathrm{sens}(q)$. Consider the mechanism $M(x) = q(x) + \xi$ where $\xi\sim P$. A similar analysis as above shows $M$ is $\F(\xi,t+\xi)$-DP. The following proposition characterizes the class of distributions for which $\F(\xi,t+\xi)$ has a ``GDP-like'' form.
+% \djs{This paragraph had better be written in terms of GDP. And we need to do a better job explaining this.}
+% \ar{The remainder of this section should be moved to an appendix. It is interesting, but not core to the development of the paper. And it seems to be referring to the details of a proof which is itself in an appendix.}
+% The log-concavity of the noise is vital to this result. To see this point, the proof makes use of the identify
+% \begin{equation}\label{eq:t_log_con}
+% \F \big(M(x),M(x') \big)(\alpha) + \zeta) = \F(\zeta, t + \zeta)(\alpha) = F(F^{-1}(1- \alpha) - t),
+% \end{equation}
+% \ar{Parentheses don't match}
+% where $t$ is a short-hand for $|q(x') - q(x)|$. As an interesting fact, the second equality \eqref{eq:t_log_con} holds for all $t \ge 0$ and $0 \le \alpha \le 1$ if and only if $F$ is log-concave. This expression shows that the trade-off function $\F \big(M(x),M(x') \big)$ is monotonically decreasing as $|q(x) - q(x')|$ increases. As a consequence, $f$ is the tightest bound in this privacy definition because of the equality
+% \begin{equation}\label{eq:f_inf}
+% f(\alpha) = \inf_{x, x'} \, \F \big(M(x),M(x') \big)(\alpha),
+% \end{equation}
+% where the infimum is (asymptotically) achieved at two neighboring datasets such that $|q(x) - q(x')| = \mathrm{sens}(q)$, regardless of $\alpha$. Without the log-concavity assumption, however, the point-wise minimum function in \eqref{eq:f_inf} in general is no longer a trade-off function.
+% }
+
+
+%satisfies the point-wise minimum function
+% \djs{Is there any high dimensional analogue?}
+% subsection gaussian_differential_privacy (end)
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../paper"
+%%% End:

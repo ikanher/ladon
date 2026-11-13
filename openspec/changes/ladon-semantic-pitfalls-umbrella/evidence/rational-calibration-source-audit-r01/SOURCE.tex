@@ -1,0 +1,149 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\setlength{\emergencystretch}{3em}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\R}{\mathbb R}
+\title{Rational arithmetic for Poisson Gaussian noise calibration}
+\author{}\date{}
+\begin{document}\maketitle
+
+Fix integers $T\ge1$ and $m\ge2$, and rational numbers
+$\varepsilon>0$, $0<\delta<1$, $0<q<1$, and $\sigma>0$.
+Write
+\[
+ w_j=\binom mj(1-q)^{m-j}q^j,\qquad
+ a_j=\frac{j(j-1)}{2\sigma^2},\qquad E=(m-1)\varepsilon,
+ \qquad A=\sum_{j=0}^m w_j e^{a_j}.
+\]
+The weights and exponents are nonnegative rational numbers. Although $A$
+need not be rational, the following sufficient privacy condition can be
+established using only rational arithmetic:
+\begin{equation}\label{eq:real}
+ A^T\le\delta e^E.
+\end{equation}
+Indeed $A>0$, so taking logarithms gives
+$T\log A\le E-\log(1/\delta)$.
+The exact moment bound established in the companion note
+\emph{Instance-dependent calibration of Poisson-sampled Gaussian noise}
+then gives $(\varepsilon,\delta)$-differential privacy.
+The mechanism has a fixed public number of optional record slots, with
+add/remove adjacency. At each step, independent Bernoulli sampling with
+probability $q$ is followed by clipping at radius $C>0$ and independent
+Gaussian noise of covariance $C^2\sigma^2 I$. Only the noisy sum is released.
+Queries may depend measurably on the full preceding public history. The
+bound covers both adjacency directions, an independent public initial seed,
+and common randomized postprocessing.
+
+\begin{lemma}[Rational exponential bounds]\label{lem:exp}
+For rational $t\ge0$, choose an integer $p\ge0$ with $t\le2^p$ and put
+$r=t/2^p\in[0,1]$. For an integer $N\ge1$, define
+\[
+ P_N(r)=\sum_{k=0}^{N-1}\frac{r^k}{k!},\qquad
+ R_N(r)=\frac{r^N}{N!}\frac{N+1}{N},
+\]
+\[
+ L_N(t)=P_N(r)^{2^p},\qquad
+ U_N(t)=(P_N(r)+R_N(r))^{2^p}.
+\]
+These numbers are rational and satisfy
+$0<L_N(t)\le e^t\le U_N(t)$.
+For each fixed $t,p$, both endpoints converge to $e^t$ as $N\to\infty$.
+\end{lemma}
+\begin{proof}
+The exponential series has nonnegative terms. Moreover,
+$(N+\ell)!\ge N!(N+1)^\ell$ for every $\ell\ge0$. Hence
+\[
+ 0\le e^r-P_N(r)
+ =\sum_{\ell=0}^{\infty}\frac{r^{N+\ell}}{(N+\ell)!}
+ \le\frac{r^N}{N!}\sum_{\ell=0}^{\infty}
+       \left(\frac1{N+1}\right)^\ell
+ =R_N(r).
+\]
+Since $P_N(r)\ge1$, raising the inequalities to the integer power $2^p$
+preserves their direction. Also $(e^r)^{2^p}=e^t$. Finally,
+$R_N(r)\le2/N!\to0$ and $P_N(r)\to e^r$; continuity of a fixed integer
+power proves convergence. A sufficient $p$ is found by successively
+doubling $1$, using rational comparisons only.
+\end{proof}
+
+Apply Lemma~\ref{lem:exp} separately to $a_0,\ldots,a_m,E$, keeping each
+chosen range-reduction power fixed as $N$ increases. Define
+\[
+ B_N=\sum_{j=0}^m w_j U_N(a_j),\qquad D_N=\delta L_N(E).
+\]
+All these quantities are rational. The proposed test is the exact comparison
+\begin{equation}\label{eq:test}
+ B_N^T\le D_N.
+\end{equation}
+
+\begin{theorem}[Soundness and eventual acceptance]\label{thm:check}
+If \eqref{eq:test} holds at any precision $N\ge1$, the mechanism above is
+$(\varepsilon,\delta)$-differentially private. If
+$A^T<\delta e^E$, then \eqref{eq:test} holds for every sufficiently large $N$.
+\end{theorem}
+\begin{proof}
+Since $w_j\ge0$, termwise upper bounds give $0<A\le B_N$.
+Thus acceptance yields
+\[
+ A^T\le B_N^T\le\delta L_N(E)\le\delta e^E,
+\]
+which is \eqref{eq:real}. No logarithm or exponential is evaluated by the
+test itself.
+
+For termination, finiteness of the sum and Lemma~\ref{lem:exp} give
+$B_N\to A$ and $D_N\to\delta e^E$. Consequently
+$D_N-B_N^T\to g:=\delta e^E-A^T$.
+If $g>0$, choose $N_0$ such that for $N\ge N_0$ the difference between
+$D_N-B_N^T$ and $g$ has absolute value less than $g/2$.
+Then $D_N-B_N^T>g/2>0$, so the exact comparison succeeds.
+\end{proof}
+
+\begin{theorem}[Noise above an admissible threshold]\label{thm:noise}
+Put $h=\log(1/\delta)$. Suppose $(m-1)\varepsilon>h$, and let $s_m>0$
+be the unique solution of
+\[
+ T\log A_m(q,1/s_m^2)=(m-1)\varepsilon-h,
+ \qquad A_m(q,x)=\sum_{j=0}^m w_j e^{j(j-1)x/2}.
+\]
+Every rational $\sigma>s_m$ is accepted at all sufficiently large
+precisions. Such a rational $\sigma$ exists, and can be chosen in
+$(s_m,s_m+\eta)$ for every real $\eta>0$.
+\end{theorem}
+\begin{proof}
+The function $A_m(q,x)$ is continuous and strictly increasing in $x$:
+all summands are nondecreasing, and the $j=m$ summand has positive weight
+and positive exponent coefficient. It equals $1$ at zero and is unbounded.
+Therefore the positive threshold exists uniquely by the intermediate
+value theorem. If $\sigma>s_m>0$, then $1/\sigma^2<1/s_m^2$, so
+\[
+ T\log A_m(q,1/\sigma^2)
+ <T\log A_m(q,1/s_m^2)=E-h.
+\]
+Exponentiating gives $A^T<e^{E-h}=\delta e^E$.
+Theorem~\ref{thm:check} applies. Density of the rationals supplies a
+rational $\sigma$ in any stated interval.
+\end{proof}
+
+For every valid rational request $(T,\varepsilon,\delta,q)$ an admissible
+integer $m$ exists, since $(m-1)\varepsilon$ is unbounded as $m$ grows.
+Thus rational noise and a finite successful precision always exist.
+An exhaustive search that interleaves integer orders, positive rational
+noise candidates, and precisions therefore terminates on every valid request.
+This does not say that testing precisions forever at an arbitrary fixed
+noise terminates: a failing noise, or a noise exactly at a moment threshold,
+need not pass. A bounded search may return ``not established.''
+
+The effective factor $c_2=\varepsilon\sigma/
+(q\sqrt{T\log(1/\delta)})$ remains a real number even when $\sigma$ is
+rational. It can be represented by its defining formula; the rational
+privacy test does not require its numerical evaluation. There is no
+additional $c_1$ cutoff in this construction. These are sufficient
+instance-dependent calibrations, not identifications of the hidden universal
+constants in Abadi et al.'s theorem, and not a claim of optimal DP noise.
+\end{document}

@@ -1,0 +1,9 @@
+import Mf.DP.ClassicalEventDPSubsampling
+
+#check Mf.DP.TradeoffFunction.pSamplingOperator
+#check Mf.DP.PrivacyObject.subsampleTradeoffAt
+#check Mf.DP.TradeoffFunction.pSamplingOperator_le_withIdentityWeight
+#check Mf.DP.pSamplingOperator_ofDPEventBound_le_classicalSubsamplingEventBoundWitness
+
+#print axioms Mf.DP.TradeoffFunction.pSamplingOperator_le_withIdentityWeight
+#print axioms Mf.DP.pSamplingOperator_ofDPEventBound_le_classicalSubsamplingEventBoundWitness

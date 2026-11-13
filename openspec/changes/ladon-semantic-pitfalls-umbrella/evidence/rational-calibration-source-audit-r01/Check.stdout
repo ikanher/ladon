@@ -1,0 +1,50 @@
+Mf.DP.PoissonMomentCalibration.Rational.check_power_sound {T m n : ℕ} {eps δ q σ : ℚ}
+  (hc : Mf.DP.PoissonMomentCalibration.Rational.check T m eps δ q σ n = true) :
+  Mf.DP.PoissonMomentCalibration.Rational.Valid T m eps δ q σ ∧
+    Mf.DP.sampledGaussianRenyiMoment m (↑q) (1 / ↑σ ^ 2) ^ T ≤ ↑δ * Real.exp ((↑m - 1) * ↑eps)
+Mf.DP.PoissonMomentCalibration.Rational.eventually_check_of_strict {T m : ℕ} {eps δ q σ : ℚ}
+  (hv : Mf.DP.PoissonMomentCalibration.Rational.Valid T m eps δ q σ)
+  (hs : Mf.DP.sampledGaussianRenyiMoment m (↑q) (1 / ↑σ ^ 2) ^ T < ↑δ * Real.exp ((↑m - 1) * ↑eps)) :
+  ∀ᶠ (n : ℕ) in Filter.atTop, Mf.DP.PoissonMomentCalibration.Rational.check T m eps δ q σ n = true
+Mf.DP.PoissonAdaptiveQuery.Data.optionalTranscript_approxDP_of_rationalCheck {n d T m precision : ℕ} {Record : Type}
+  (data : Mf.DP.PoissonAdaptiveQuery.Data n d) {eps δ q σ : ℚ}
+  (hc : Mf.DP.PoissonMomentCalibration.Rational.check T m eps δ q σ precision = true) (hq : ↑data.q = ↑q)
+  (hnoise : ↑σ ≤ data.multiplier)
+  (g : Record → (t : ℕ) → Mf.DP.PoissonAdaptiveQuery.SumHistory d t → Mf.DP.PoissonAdaptiveQuery.SumRelease d)
+  (hg : ∀ (r : Record) (t : ℕ), Measurable (g r t)) :
+  Mf.DP.ApproxDP Mf.DP.OptionalRecordAdjacent (data.optionalTranscriptLaw g hg T) ↑eps ↑δ
+Mf.DP.PoissonAdaptiveQuerySeed.Data.publicSeedTranscript_approxDP_of_rationalCheck {n d T m precision : ℕ}
+  {Seed Record : Type} [MeasurableSpace Seed] (data : Mf.DP.PoissonAdaptiveQuery.Data n d) {eps δ q σ : ℚ}
+  (hc : Mf.DP.PoissonMomentCalibration.Rational.check T m eps δ q σ precision = true) (hq : ↑data.q = ↑q)
+  (hnoise : ↑σ ≤ data.multiplier) (μ : MeasureTheory.Measure Seed) [MeasureTheory.IsProbabilityMeasure μ]
+  (g :
+    Seed →
+      Record → (t : ℕ) → Mf.DP.PoissonAdaptiveQuerySeed.SumHistory d t → Mf.DP.PoissonAdaptiveQuerySeed.SumRelease d)
+  (hg : ∀ (r : Record) (t : ℕ), Measurable fun p => g p.1 r t p.2) :
+  Mf.DP.ApproxDP Mf.DP.OptionalRecordAdjacent
+    (fun D => μ.compProd (Mf.DP.PoissonAdaptiveQuerySeed.Data.optionalTranscriptKernel data g hg T D)) ↑eps ↑δ
+Mf.DP.PoissonAdaptiveQuerySeed.Data.publicSeedPostprocess_approxDP_of_rationalCheck {n d T m precision : ℕ}
+  {Seed Record Output : Type} [MeasurableSpace Seed] [MeasurableSpace Output]
+  (data : Mf.DP.PoissonAdaptiveQuery.Data n d) {eps δ q σ : ℚ}
+  (hc : Mf.DP.PoissonMomentCalibration.Rational.check T m eps δ q σ precision = true) (hq : ↑data.q = ↑q)
+  (hnoise : ↑σ ≤ data.multiplier) (μ : MeasureTheory.Measure Seed) [MeasureTheory.IsProbabilityMeasure μ]
+  (g :
+    Seed →
+      Record → (t : ℕ) → Mf.DP.PoissonAdaptiveQuerySeed.SumHistory d t → Mf.DP.PoissonAdaptiveQuerySeed.SumRelease d)
+  (hg : ∀ (r : Record) (t : ℕ), Measurable fun p => g p.1 r t p.2)
+  (kernel : Seed × Mf.DP.PoissonAdaptiveQuerySeed.SumHistory d T → MeasureTheory.Measure Output)
+  (hkernel : ∀ (event : Set Output), MeasurableSet event → Measurable fun h => (kernel h) event)
+  (hprob : ∀ (h : Seed × Mf.DP.PoissonAdaptiveQuerySeed.SumHistory d T), (kernel h) Set.univ = 1) :
+  Mf.DP.ApproxDP Mf.DP.OptionalRecordAdjacent
+    (fun D => (μ.compProd (Mf.DP.PoissonAdaptiveQuerySeed.Data.optionalTranscriptKernel data g hg T D)).bind kernel)
+    ↑eps ↑δ
+Mf.DP.RationalExpInterval.interval_encloses (x : ℚ) (power order : ℕ)
+  (hpower : Mf.DP.RationalExpInterval.PowerSufficient x power) (horder : 0 < order) :
+  (Mf.DP.RationalExpInterval.interval x power order).Encloses (Real.exp ↑x)
+'Mf.DP.PoissonMomentCalibration.Rational.check_power_sound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mf.DP.PoissonMomentCalibration.Rational.eventually_check_of_strict' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mf.DP.PoissonAdaptiveQuerySeed.Data.publicSeedPostprocess_approxDP_of_rationalCheck' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
