@@ -1,0 +1,124 @@
+{
+  "version": 2,
+  "startedAt": "2026-11-12T21:12:52.789426+00:00",
+  "budgetSeconds": 5400,
+  "scope": {
+    "path": "repair/source.txt",
+    "sha256": "a0c8695d39d64ecdb4406d98b2955fec9a41433b067244defbfe3ba613c3c28c",
+    "startLine": 1,
+    "endLine": 1
+  },
+  "units": [
+    {
+      "id": "unit-0001",
+      "startLine": 1,
+      "endLine": 1,
+      "inventory": "done",
+      "note": "One elementary implication supplied in this complete source."
+    }
+  ],
+  "claims": [
+    {
+      "id": "repair",
+      "unit": "unit-0001",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "Assume rational a>0, x>0 and y=a*x. Then x=y/a.",
+      "state": "contract",
+      "contract": {
+        "objects": "Rational scalars: a, x, y",
+        "assumptions": "[{\"left\": {\"var\": \"a\"}, \"op\": \"gt\", \"right\": {\"rat\": 0}}, {\"left\": {\"var\": \"x\"}, \"op\": \"gt\", \"right\": {\"rat\": 0}}, {\"left\": {\"var\": \"y\"}, \"op\": \"eq\", \"right\": {\"args\": [{\"var\": \"a\"}, {\"var\": \"x\"}], \"op\": \"mul\"}}]",
+        "domains": "Every declared variable ranges over the rational numbers.",
+        "quantifiers": "For all declared variables satisfying every premise.",
+        "conclusion": "{\"left\": {\"var\": \"x\"}, \"op\": \"eq\", \"right\": {\"args\": [{\"var\": \"y\"}, {\"var\": \"a\"}], \"op\": \"div\"}}",
+        "dependencies": "Only the explicitly supplied premises; inspect the source argument.",
+        "neededImplication": "The premises jointly imply exactly the encoded conclusion."
+      },
+      "concern": "Check this local inference independently.",
+      "derivation": {
+        "author": "case-transcriber",
+        "steps": [
+          {
+            "id": "inference",
+            "startLine": 1,
+            "endLine": 1,
+            "quote": "Assume rational a>0, x>0 and y=a*x. Then x=y/a.",
+            "contract": {
+              "objects": "Rational scalars: a, x, y",
+              "assumptions": "[{\"left\": {\"var\": \"a\"}, \"op\": \"gt\", \"right\": {\"rat\": 0}}, {\"left\": {\"var\": \"x\"}, \"op\": \"gt\", \"right\": {\"rat\": 0}}, {\"left\": {\"var\": \"y\"}, \"op\": \"eq\", \"right\": {\"args\": [{\"var\": \"a\"}, {\"var\": \"x\"}], \"op\": \"mul\"}}]",
+              "domains": "Every declared variable ranges over the rational numbers.",
+              "quantifiers": "For all declared variables satisfying every premise.",
+              "conclusion": "{\"left\": {\"var\": \"x\"}, \"op\": \"eq\", \"right\": {\"args\": [{\"var\": \"y\"}, {\"var\": \"a\"}], \"op\": \"div\"}}",
+              "dependencies": "Only the explicitly supplied premises; inspect the source argument.",
+              "neededImplication": "The premises jointly imply exactly the encoded conclusion."
+            },
+            "rule": "The inference stated in the source quotation.",
+            "substitution": "Each scalar name refers to the same rational in source and AST.",
+            "dependsOn": [],
+            "arithmetic": {
+              "variables": [
+                "a",
+                "x",
+                "y"
+              ],
+              "premises": [
+                {
+                  "op": "gt",
+                  "left": {
+                    "var": "a"
+                  },
+                  "right": {
+                    "rat": 0
+                  }
+                },
+                {
+                  "op": "gt",
+                  "left": {
+                    "var": "x"
+                  },
+                  "right": {
+                    "rat": 0
+                  }
+                },
+                {
+                  "op": "eq",
+                  "left": {
+                    "var": "y"
+                  },
+                  "right": {
+                    "op": "mul",
+                    "args": [
+                      {
+                        "var": "a"
+                      },
+                      {
+                        "var": "x"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "conclusion": {
+                "op": "eq",
+                "left": {
+                  "var": "x"
+                },
+                "right": {
+                  "op": "div",
+                  "args": [
+                    {
+                      "var": "y"
+                    },
+                    {
+                      "var": "a"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

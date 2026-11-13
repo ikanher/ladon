@@ -1,0 +1,38 @@
+%!TEX root=./MAIN.tex
+%The $f$-DP framework, recently proposed in~\cite{DongRS19}, allows us to reason about a collection of $(\eps,\delta)$-privacy guarantees simultaneously which can then be composed to get a much better $(\eps,\delta)$-privacy for the final algorithm. 
+%We will first define the notion of $(\eps,\delta)$-DP formally and then define the notion of $f$-DP. We then state a proposition from~\cite{DongRS19} which shows that these two notions are dual to each other.
+
+%We will begin with definition of $(\eps,\delta)$-differentially private algorithm.
+%\begin{definition}[$(\eps,\delta)$-DP~\cite{DMNS06}]
+%	We say that an algorithm $\cM$ is $(\eps,\delta)$-DP if for any two neighboring databases $D,D'$ and any subset $S$ of outputs, we have $\Pr[\cM(D)\in S] \le e^\eps\Pr[\cM(D')\in S]+\delta.$
+%\end{definition}
+
+Given a DP algorithm $\cM$, for each value of $\eps\ge 0$, there exists some $\delta \in [0,1]$ such that $\cM$ is $(\eps,\delta)$-DP. We can represent all these privacy guarantees by a function $\delta_\cM(\eps):\R^{\ge 0} \to [0,1]$ and say that $\delta_\cM(\cdot)$ is the \emph{privacy curve} of $\cM.$ This inspires the following definition of a privacy curve between two random variables.
+
+\begin{definition}[Privacy curve]
+	Given two random variables $X,Y$ supported on some set $\Omega$, define $\delta(X||Y): \R \to [0,1]$ as:
+	$$\delta(X||Y)(\eps) = \sup_{S\subset \Omega} \Pr[Y\in S] - e^\eps \Pr[X\in S].$$
+\end{definition}
+
+Therefore an algorithm $\cM$ is $(\eps,\delta)$-DP iff $\delta\lp \cM(D)||\cM(D')\rp(\eps) \le \delta$ for all neighboring databases $D,D'.$ 
+
+\begin{remark}
+	Note that not all functions $\delta:\R \to [0,1]$ are privacy curves. A characterization of privacy curves can be obtained using the $f$-DP framework of~\cite{DongRS19}. The notion of privacy curve $\delta(X||Y)$ and tradeoff function $T(X||Y)$ are dual to each other via convex duality~\cite{DongRS19}. This implies a characterization of privacy curves as shown in \cite{zhu2021optimal}.
+\end{remark}
+
+\begin{definition}[Composition of privacy curves~\cite{DongRS19}]
+	Let $\delta_1\equiv \delta(X_1||Y_1)$ and $\delta_2\equiv \delta(X_2||Y_2)$ be any two privacy curves. The composition of the privacy curves, denoted by $\delta_1 \otimes \delta_2$, is defined as $$\delta_1 \otimes \delta_2 \equiv \delta\lp(X_1,X_2)||(Y_1,Y_2)\rp$$ where $X_1,X_2$ are independently sampled and $Y_1,Y_2$ are independently sampled.
+\end{definition}
+Note that there can be many pairs of random variables which have the same privacy curve, but the above operation is well-defined. If $\delta(X_1||Y_1)\equiv \delta(X_1'||Y_1')$ and $\delta(X_2||Y_2)\equiv \delta(X_2'||Y_2')$, then it was shown by~\cite{DongRS19} that $$\delta\lp(X_1,X_2)||(Y_1,Y_2)\rp=\delta\lp(X_1',X_2')||(Y_1',Y_2')\rp.$$ \cite{DongRS19} also show that $\otimes$ is a commutative and associative operation.
+
+Given two DP algorithms $M_1$ and $M_2$, the adaptive composition $(M_2 \circ M_1)(D)$ is an algorithm which outputs $(M_1(D),M_2(D,M_1(D))$, i.e., $M_2$ can look at the database $D$ and also the output of the previous algorithm $M_1(D)$. Adaptive composition of more than two algorithms is similarly defined. Suppose $M_1$ has privacy curve $\delta_1$ and $M_2$ has privacy curve $\delta_2$ (i.e., $M_2(\cdot, y)$ is a DP algorithm with privacy curve $\delta_2$ for any fixed $y.$). The following composition theorem shows how to get the privacy curve of $M_2 \circ M_1.$
+\begin{theorem}[Composition theorem~\cite{DongRS19}]
+\label{prop:composition}
+	Let $M_1,M_2,\dots,M_k$ be DP algorithms with privacy curves given by $\delta_1,\delta_2,\dots,\delta_k$ respectively. The privacy curve of the adaptive composition $M_k\circ M_{k-1} \circ \dots \circ M_1$ is given by $\delta_1\otimes \delta_2 \otimes \cdots \otimes \delta_k.$
+\end{theorem}
+
+
+
+
+
+

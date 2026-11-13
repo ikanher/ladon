@@ -1,0 +1,118 @@
+{
+  "schema": "ladon-derivation-challenge-v1",
+  "scope": {
+    "path": "unit/source.txt",
+    "sha256": "b67aab6c2b0a37c55196ab4059cbd4900a7c031290b72b60150703e9fea87d47",
+    "startLine": 1,
+    "endLine": 1
+  },
+  "claim": {
+    "id": "unit",
+    "unit": "unit-0001",
+    "startLine": 1,
+    "endLine": 1,
+    "quote": "Assume rational a=1, x>0 and y=a*x. Then x=a*y.",
+    "contract": {
+      "objects": "Rational scalars: a, x, y",
+      "assumptions": "[{\"left\": {\"var\": \"a\"}, \"op\": \"gt\", \"right\": {\"rat\": 0}}, {\"left\": {\"var\": \"x\"}, \"op\": \"gt\", \"right\": {\"rat\": 0}}, {\"left\": {\"var\": \"y\"}, \"op\": \"eq\", \"right\": {\"args\": [{\"var\": \"a\"}, {\"var\": \"x\"}], \"op\": \"mul\"}}, {\"left\": {\"var\": \"a\"}, \"op\": \"eq\", \"right\": {\"rat\": 1}}]",
+      "domains": "Every declared variable ranges over the rational numbers.",
+      "quantifiers": "For all declared variables satisfying every premise.",
+      "conclusion": "{\"left\": {\"var\": \"x\"}, \"op\": \"eq\", \"right\": {\"args\": [{\"var\": \"a\"}, {\"var\": \"y\"}], \"op\": \"mul\"}}",
+      "dependencies": "Only the explicitly supplied premises; inspect the source argument.",
+      "neededImplication": "The premises jointly imply exactly the encoded conclusion."
+    }
+  },
+  "author": "case-transcriber",
+  "steps": [
+    {
+      "id": "inference",
+      "startLine": 1,
+      "endLine": 1,
+      "quote": "Assume rational a=1, x>0 and y=a*x. Then x=a*y.",
+      "contract": {
+        "objects": "Rational scalars: a, x, y",
+        "assumptions": "[{\"left\": {\"var\": \"a\"}, \"op\": \"gt\", \"right\": {\"rat\": 0}}, {\"left\": {\"var\": \"x\"}, \"op\": \"gt\", \"right\": {\"rat\": 0}}, {\"left\": {\"var\": \"y\"}, \"op\": \"eq\", \"right\": {\"args\": [{\"var\": \"a\"}, {\"var\": \"x\"}], \"op\": \"mul\"}}, {\"left\": {\"var\": \"a\"}, \"op\": \"eq\", \"right\": {\"rat\": 1}}]",
+        "domains": "Every declared variable ranges over the rational numbers.",
+        "quantifiers": "For all declared variables satisfying every premise.",
+        "conclusion": "{\"left\": {\"var\": \"x\"}, \"op\": \"eq\", \"right\": {\"args\": [{\"var\": \"a\"}, {\"var\": \"y\"}], \"op\": \"mul\"}}",
+        "dependencies": "Only the explicitly supplied premises; inspect the source argument.",
+        "neededImplication": "The premises jointly imply exactly the encoded conclusion."
+      },
+      "rule": "The inference stated in the source quotation.",
+      "substitution": "Each scalar name refers to the same rational in source and AST.",
+      "dependsOn": [],
+      "arithmetic": {
+        "variables": [
+          "a",
+          "x",
+          "y"
+        ],
+        "premises": [
+          {
+            "op": "gt",
+            "left": {
+              "var": "a"
+            },
+            "right": {
+              "rat": 0
+            }
+          },
+          {
+            "op": "gt",
+            "left": {
+              "var": "x"
+            },
+            "right": {
+              "rat": 0
+            }
+          },
+          {
+            "op": "eq",
+            "left": {
+              "var": "y"
+            },
+            "right": {
+              "op": "mul",
+              "args": [
+                {
+                  "var": "a"
+                },
+                {
+                  "var": "x"
+                }
+              ]
+            }
+          },
+          {
+            "op": "eq",
+            "left": {
+              "var": "a"
+            },
+            "right": {
+              "rat": 1
+            }
+          }
+        ],
+        "conclusion": {
+          "op": "eq",
+          "left": {
+            "var": "x"
+          },
+          "right": {
+            "op": "mul",
+            "args": [
+              {
+                "var": "a"
+              },
+              {
+                "var": "y"
+              }
+            ]
+          }
+        }
+      },
+      "subjectSha256": "64f68ccb7a33ea82b01de99d45e7fa550199e0489d0f2ec0db1d48d102a8ed19"
+    }
+  ],
+  "instructions": "Challenge each original implication. Save first responses separately; a sampled success is not a proof. Reviewer identity and interpretation remain attributed, and this packet does not enforce filesystem isolation."
+}

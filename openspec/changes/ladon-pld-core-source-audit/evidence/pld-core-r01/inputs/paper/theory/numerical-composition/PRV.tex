@@ -1,0 +1,87 @@
+%!TEX root=./MAIN.tex
+
+%Given a privacy curve $\delta$, there can be many pairs of random variables $(X,Y)$ such that $\delta(X||Y)\equiv \delta$. 
+The notion of \emph{privacy loss random variables} (PRVs) is a unique way to assign a pair $(X,Y)$ for any privacy curve $\delta$ such that $\delta \equiv \delta(X||Y).$ PRVs allow us to compute composition of two algorithms via summing random variables (Theorem~\ref{thm:composition_PRVs}) (equivalently, convolving their distributions). Thus PRVs can be thought of as a \emph{reparametrization of privacy curves} where composition becomes convolution. In this paper, we differ from the usual definition of PRVs given in~\cite{DR16,koskela2020computing}, which are tied to a specific algorithm. Instead we think of them as a reparametrization of privacy curves and study them directly. This allows us to succinctly prove many useful properties of PRVs.
+
+Let $\bR=\R\cup\set{-\infty,\infty}$ be the extended real line where we define $\infty+x=\infty$ and $-\infty+x=-\infty$ for $x\in \R.$
+
+
+\begin{definition}[Privacy loss random variables (PRVs)]
+	Given a privacy curve $\delta:\R\to[0,1]$, we say that $(X,Y)$ are \emph{privacy loss random variables} for $
+	\delta$, if they satisfy the following conditions:
+	\begin{itemize}
+	 	\item $X,Y$ are supported on $\bR$,
+	 	\item $\delta(X||Y)\equiv \delta$,
+	 	\item $Y(t)=e^t X(t)$ for every $t\in \R$ and
+	 	\item $Y(-\infty)=0$ and $X(\infty)=0$
+	 \end{itemize} 
+	 where $X(t),Y(t)$ are probability density functions of $X,Y$ respectively.
+\end{definition}
+Mathematically, the correct way to write the condition $Y(t)=e^t X(t)$ is to say that $\E_{Y}[\phi(Y)] = \E_{X}[\phi(X)e^X]$ for all test functions $\phi:\bR \to [0,1]$ with $\phi(\infty)=\phi(-\infty)=0.$ This will generalize to all situations where $X,Y$ are continuous or discrete or both. 
+%Equivalently, one can rewrite the condition as $\frac{dY}{dX}(t)=e^t$ where $\frac{dY}{dX}$ is the Radon-Nikodym derivative of the distribution of $Y$ w.r.t to the distribution of $X$. 
+For ease of exposition, we ignore this complication and assume that $X(t),Y(t)$ represent the PDFs if $X,Y$ are continuous at $t$, or the probability masses if they have point masses at $t$.
+
+
+
+
+The following theorem shows that the PRVs for a privacy curve $\delta=\delta(P||Q)$ are given by the log-likelihood random variables of $P,Q.$ 
+\begin{restatable}{theorem}{PRVLLRV}
+\label{thm:PRV_LLRV}
+ Let $\delta:\R \to [0,1]$ be a privacy curve given by $\delta \equiv \delta(P||Q)$ where $P,Q$ are two random variables supported on $\Omega$. The PRVs $(X,Y)$ for the privacy curve $\delta$ are given by\footnote{Here $Q(\omega)$ and $P(\omega)$ are the probability density functions of $Q,P$ respectively. Note that the mathematically precise way is to replace the ratio $\frac{Q(\omega)}{P(\omega)}$ by the Radon-Nikodym derivative $\frac{dQ}{dP}(\omega).$}:
+ $$X = \log\lp \frac{Q(\omega)}{P(\omega)}\rp \text{ where } \omega \sim P,$$
+ $$Y = \log\lp \frac{Q(\omega)}{P(\omega)}\rp \text{ where } \omega \sim Q.$$
+ % Moreover, the privacy curve $\delta$ can be expressed in terms of PRVs $(X,Y)$ as:
+ % \begin{equation}
+ % \label{eqn:delta_PRV_simple}
+ % \delta(\eps)=\Pr[Y> \eps] - e^\eps \Pr[X > \eps]=\E_Y[(1-e^{\eps-Y})_+] =\Pr[Y\ge \eps+Z].
+ % \end{equation}
+ % where $Z$ is an exponential random variable.\footnote{For $x\in \R, x_+=\max\{x,0\}$.}
+\end{restatable}
+
+The following theorem provides a formula for computing the privacy curve $\delta$ in terms of the PRVs and conversely a formula for PRVs in terms of the privacy curve. A similar statement appears in~\cite{sommer2019privacy,koskela2020computing}.
+
+\begin{restatable}{theorem}{PRVprivacycurve}
+\label{thm:PRV_privacycurve}
+ The privacy curve $\delta$ can be expressed in terms of PRVs $(X,Y)$ as:
+ \begin{equation}
+ \label{eqn:delta_PRV_simple}
+ \delta(\eps)=\Pr[Y> \eps] - e^\eps \Pr[X > \eps]=\E_Y[(1-e^{\eps-Y})_+] =\Pr[Y\ge \eps+Z].
+ \end{equation}
+ where $Z$ is an exponential random variable.\footnote{For $x\in \R, x_+=\max\{x,0\}$.} Conversely, given a privacy curve $\delta:\R\to [0,1]$, we can compute the PDFs of its PRVs $(X,Y)$ as:
+ \begin{equation}
+ \label{eqn:PRV_from_delta}
+ Y(t) = \delta''(t)-\delta'(t) \text{ and } X(t)=e^t(\delta''(t)-\delta'(t)).
+ \end{equation}
+\end{restatable}
+
+\begin{remark}
+	Theorem~\ref{thm:PRV_privacycurve} shows that the PRVs $X,Y$ do not depend on the particular $P,Q$ used to represent the privacy curve $\delta$ in Theorem~\ref{thm:PRV_LLRV}. So we should think of the PDF of of the PRV $Y$ (or $X$) as an equivalent reparametrization of the privacy curve $\delta:\R \to [0,1]$, just as the notion of $f$-DP~\cite{DongRS19} is a reparametrization of the privacy curve $\delta$. %In particular any random variable $Y$ supported on $\R\cup {\infty}$ which satisfies $\E[e^{-Y}]=1$ is the PRV of some privacy curve.\footnote{This condition arises because $X(t)=e^tY(t)$ and $\E[e^{-Y}]=\int_{-\infty}^{\infty} e^{-t}Y(t) dt =\int_{-\infty}^{\infty} X(t) dt =1$.}
+\end{remark}
+
+
+
+
+
+PRVs are useful in computing privacy curves because the composition of two privacy curves can be computed by adding the corresponding pairs of PRVs. A similar statement appears in~\cite{DR16}.
+\begin{restatable}{theorem}{compositePRV}
+\label{thm:composition_PRVs}
+Let $\delta_1,\delta_2$ be two privacy curves with PRVs $(X_1,Y_1)$ and $(X_2,Y_2)$ respectively. Then the PRVs for $\delta_1 \otimes \delta_2=\delta(X_1,X_2||Y_1,Y_2)$ are given by $(X_1+X_2,Y_1+Y_2)$. In particular, $$\delta_1\otimes \delta_2 = \delta(X_1+X_2||Y_1+Y_2).$$
+\end{restatable}
+\begin{proof}
+Let $(X,Y)$ be the privacy random variables for $\delta(X_1,X_2||Y_1,Y_2)$. By Theorem~\ref{thm:PRV_LLRV},
+\begin{align*}
+	X & = \log\lp\frac{(Y_1,Y_2)(t_1,t_2)}{(X_1,X_2)(t_1,t_2)}\rp \text{ where } (t_1,t_2)\sim (X_1,X_2)\\
+	& = \log\lp\frac{Y_1(t_1)Y_2(t_2)}{X_1(t_1)X_2(t_2)}\rp \text{ where } t_1\sim X_1,t_2\sim X_2\tag{By independence of $X_1,X_2$ and indpendence of $Y_1,Y_2$}\\
+	& = \log\lp e^{t_1} \cdot e^{t_2}\rp \text{ where } t_1\sim X_1,t_2\sim X_2\\
+	& = t_1+t_2 \text{ where } t_1\sim X_1,t_2\sim X_2\\
+	& = X_1 + X_2.
+\end{align*}
+Similarly, \begin{align*}
+	Y & = \log\lp\frac{(Y_1,Y_2)(t_1,t_2)}{(X_1,X_2)(t_1,t_2)}\rp \text{ where } (t_1,t_2)\sim (Y_1,Y_2)\\
+	& = t_1+t_2 \text{ where } t_1\sim Y_1,t_2\sim Y_2\\
+	& = Y_1 + Y_2.
+\end{align*}
+\end{proof}
+
+
+In Appendix~\ref{sec:appendix_PRV}, we provide a proof of Theorems \ref{thm:PRV_LLRV} and \ref{thm:PRV_privacycurve}. We also discuss how to compute the PRVs for a subsampled mechanism given the PRVs for the original mechanism and give examples of PRVs for few standard mechanisms. These are used in our experiments to calculate the PRVs for DP-SGD.

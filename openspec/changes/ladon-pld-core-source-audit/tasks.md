@@ -1,0 +1,38 @@
+# Tasks
+
+Current state (2026-11-12, r03): the reopened bounded audit is complete. [REPORT-v2.md](evidence/pld-core-r03/REPORT-v2.md) and [ADJUDICATION.md](evidence/pld-core-r03/ADJUDICATION.md) own accepted results and limits. A fresh reviewer assessed all 13 stable IDs before seeing author findings, independently upheld P3.d's incorrect X-density exponent, then reconciled the exact Y/−X law map and Gaussian scope. Original reports remain preserved and superseded. The Gaussian control has mathematical source support, including later monotonicity checked during reconciliation; exact Lean bridge correspondence and broader PRV reconstruction/uniqueness remain unresolved. Historical timing, memory and freeze omissions remain explicit. No production operation or comparative benefit was established.
+
+## 1. Freeze a reviewable mathematical question
+
+- [x] 1.1 Prepare a new collision-safe run directory and source/context manifest using recipe step 1. Verify copied hashes, toolchain/Lake metadata and local Ladon identity; record prior exposure, checking limits and the effort ledger. Deliver input manifest and command/environment record without editing sibling sources.
+- [x] 1.2 Inventory the complete selected PLD theorem blocks, corresponding proofs and Gaussian control passage using recipe step 2. Freeze first interpretations before checking, with exact laws, assumptions, quantifiers and source spans. Verify that converse/intermediate assertions and excluded context remain visible; select a substantive PLD obligation and control with explicit reasons. Deliver hashed `INVENTORY.md` and first interpretations.
+
+## 2. Resolve local questions with existing tools
+
+- [x] 2.1 Check the selected PLD obligations through actual formal owners using recipe step 3. Preserve original targets and scope, original-proof evidence when needed, source/compiled authority, logs, unsuccessful attempts and resource stops. Deliver source-linked evidence rows establishing support, a discrepancy, or the exact unresolved mathematical/operational boundary; never infer falsity from missing support.
+- [x] 2.2 Check the candidate Gaussian control under the same evidence rules and retain its result even if it is unresolved or disputed. Reconcile every inventory row as supported, discrepancy, unresolved or unexamined; freeze `FINDINGS.md`, `EVIDENCE.md`, their manifest and `EFFORT.json` before review. Verify no claimed result depends on an added assumption or changed source without a separate identity.
+
+## 3. Deliver an independently reviewed reader result
+
+- [x] 3.1 Obtain an independent first assessment from unchanged sources, obligations and raw evidence with proposed verdicts withheld. Verify mathematical scope, source inventory, control, original-proof claims and checking authority, then reconcile with frozen findings. Deliver attributed `REVIEW.md` and separate corrections, preserving first reports and actual cost/timestamp records.
+- [x] 3.2 Deliver final `REPORT.md` with verified evidence hashes, reader consequences, unexamined/unresolved scope and Ladon's actual contribution. Record whether existing tools suffice, a concrete missing operation needs a narrowly scoped follow-up, or a fresh comparison is worth preparing. Update the umbrella/provenance pointers and run strict OpenSpec validation plus diff checks. Close only the bounded audit disposition; do not claim detection/cost improvement or full mathematical coverage from completed reporting.
+
+## Workflow follow-up
+
+- The sibling [source repair and bounded impact review](../../../../lean/matrix-factorization/openspec/changes/fix-prv-density-reconstruction-sign/tasks.md) is now complete. It adds a local erratum/scalar Lean guard and reports no affected maintained runtime formula or false Lean theorem in the inspected routes. Runtime execution and wider consumer safety remain outside its acceptance. This later result does not rewrite this audit's frozen source or complete its broader probability-law/Lean correspondence.
+- The separate [matched pilot](../ladon-matched-source-audit-pilot/tasks.md) is complete; its six selected claims were judged faithful in both arms. Current next work is owned by the [pitfalls umbrella](../ladon-semantic-pitfalls-umbrella/tasks.md#current-program-state--2026-11-13).
+- Any discovered engineering need gets its own concrete requirement and applicable existing acceptance gates; this packet does not implement it automatically.
+- A comparison with ordinary Lean plus the same LLM/recipes needs separate frozen inputs, budgets, primary success criterion and practical threshold before launch.
+- Navier–Stokes remains a subsequent known-fault regression with fresh auditors, isolated inputs and no prior diagnosis. No rerun starts from completing this child.
+
+## Executed reopened-task recipe after review r02 (historical instructions)
+
+Execute these in order; do not erase or silently upgrade r01 evidence.
+
+1. **1.2 — version the inventory.** Write INVENTORY-v2 with verified source lines and theorem labels. Keep P2=LLRV, P3=privacy-curve identities/reconstruction, P4=composition. Split P3 into forward identities, exponential-tail identity, Y recovery, X recovery and uniqueness. Bind G1/G2 to their actual passages and record exactly which later sections are excluded. Freeze the version before further checking. Preserve the original inventory.
+2. **2.1 — resolve the mathematical rows.** Attach r02's smooth Gaussian witness to the original erroneous X formula and a separately identified corrected formula. Preserve its status as mathematical evidence unless separately Lean-checked. For P2/P4 explicitly map the source's Q/P orientation to Lean's f/g fields, normalization, product independence, loss laws and quantifiers. Missing maps stay unresolved; theorem-name similarity and #check do not discharge them. No broad new formalization is required.
+3. **2.2 — reconcile the actual control.** Keep original G1/G2 unresolved unless their extremal/radial assertions are answered. Give the restricted one-way implication a separate support-row ID; record ε≥0 and δ<1 as restrictions. Freeze the complete revised evidence package and effort record before requesting review. Historical freeze/timing omissions cannot be repaired retroactively; explicitly list them as deviations.
+4. **3.1 — review every stable ID.** Give a reviewer the revised inventory, source and raw evidence; record their exposure to r02's answer. Require a disposition for every selected ID, an original-versus-narrowed control check, and the exact compiled/source authority. The prior r01 review does not satisfy this because IDs drifted. Record disagreements separately.
+5. **3.2 — close only after reconciliation.** Deliver a new report version and manifest pointing to both first and corrected reports. State this real-source formula finding, remaining unexamined scope, Ladon's actual contribution and unknown costs. Enforce/record caps for any new heavy process; no claim of historical cap enforcement without a receipt. Update the parent pointer and validate. Do not launch a comparison or Navier–Stokes automatically.
+
+Completion evidence: INVENTORY-v2 and its freeze complete 1.2; EVIDENCE-v2 supplies the exact orientation and restricted product map for 2.1; FINDINGS-v2, EFFORT and PRE-REVIEW-MANIFEST complete the revised evidence freeze in 2.2 without asserting a retrospective r01 freeze. FIRST-REVIEW plus RECONCILIATION-REVIEW and root ADJUDICATION complete 3.1. REPORT-v2 and FINAL-MANIFEST complete 3.2 after hash verification and strict validation. Mathematical coverage remains partial; these are bounded audit tasks, not acceptance of the umbrella's runtime capabilities.

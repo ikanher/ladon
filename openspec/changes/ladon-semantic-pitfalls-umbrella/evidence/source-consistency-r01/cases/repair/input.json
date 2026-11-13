@@ -1,0 +1,64 @@
+{
+  "id": "repair",
+  "goal": {
+    "variables": [
+      "a",
+      "x",
+      "y"
+    ],
+    "premises": [
+      {
+        "op": "gt",
+        "left": {
+          "var": "a"
+        },
+        "right": {
+          "rat": 0
+        }
+      },
+      {
+        "op": "gt",
+        "left": {
+          "var": "x"
+        },
+        "right": {
+          "rat": 0
+        }
+      },
+      {
+        "op": "eq",
+        "left": {
+          "var": "y"
+        },
+        "right": {
+          "op": "mul",
+          "args": [
+            {
+              "var": "a"
+            },
+            {
+              "var": "x"
+            }
+          ]
+        }
+      }
+    ],
+    "conclusion": {
+      "op": "eq",
+      "left": {
+        "var": "x"
+      },
+      "right": {
+        "op": "div",
+        "args": [
+          {
+            "var": "y"
+          },
+          {
+            "var": "a"
+          }
+        ]
+      }
+    }
+  }
+}

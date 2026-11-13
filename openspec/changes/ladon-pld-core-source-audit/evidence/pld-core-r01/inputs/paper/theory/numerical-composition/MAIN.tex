@@ -1,0 +1,205 @@
+\documentclass{article}
+
+% if you need to pass options to natbib, use, e.g.:
+%     \PassOptionsToPackage{numbers, compress}{natbib}
+% before loading neurips_2021
+
+% ready for submission
+%\usepackage{neurips_2021}
+
+% to compile a preprint version, e.g., for submission to arXiv, add add the
+% [preprint] option:
+%     \usepackage[preprint]{neurips_2021}
+
+% to compile a camera-ready version, add the [final] option, e.g.:
+%     \usepackage[final]{neurips_2021}
+
+% to avoid loading the natbib package, add option nonatbib:
+%    \usepackage[nonatbib]{neurips_2021}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+%\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{xcolor}         % colors
+\usepackage{fullpage}
+\usepackage{authblk}
+\usepackage{hyperref,url}
+\usepackage{sidecap}
+\sidecaptionvpos{figure}{c}
+
+\title{Numerical Composition of Differential Privacy\footnote{Author ordering is alphabetical. Code is available at \url{https://github.com/microsoft/prv_accountant}.}}
+
+% The \author macro works with any number of authors. There are two commands
+% used to separate the names and addresses of multiple authors: \And and \AND.
+%
+% Using \And between authors leaves it to LaTeX to determine where to break the
+% lines. Using \AND forces a line break at that point. So, if LaTeX puts 3 of 4
+% authors names on the first line, and the last on the second line, try using
+% \AND instead of \And before the third author name.
+
+
+
+
+
+\author[1]{Sivakanth Gopi}
+\author[2]{Yin Tat Lee}
+\author[1]{Lukas Wutschitz}
+\affil[1]{Microsoft\\
+\texttt{\{sigopi,lukas.wutschitz\}@microsoft.com}}
+\affil[2]{University of Washington\\
+\texttt{yintat@uw.edu}}
+% \affil[3]{Microsoft\\
+% \texttt{lukas.wutschitz@microsoft.com}}
+
+\date{}
+
+
+%%%%%%%%%%%%%%%%%%%%% MACROS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{amsthm,thmtools}
+\usepackage{thm-restate}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx,subcaption}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage[ruled,vlined]{algorithm2e}
+
+\usepackage{placeins}
+\input{stdinc}
+
+\declaretheorem[within=section]{theorem}
+\declaretheorem[sibling=theorem]{corollary}
+\declaretheorem[sibling=theorem]{assumption}
+
+\declaretheorem[sibling=theorem]{lemma}
+\declaretheorem[sibling=theorem]{claim}
+
+\declaretheorem[sibling=theorem]{definition}
+
+\declaretheorem[sibling=theorem]{proposition}
+\declaretheorem[sibling=theorem]{remark}
+\declaretheorem[sibling=theorem]{question}
+\declaretheorem[sibling=theorem]{conjecture}
+\declaretheorem[sibling=theorem]{example}
+\declaretheorem[sibling=theorem]{fact}
+
+\newcommand{\Lap}{\mathsf{Lap}}
+\newcommand{\Gauss}{\mathsf{Gauss}}
+\DeclareMathOperator{\E}{\mathbb{E}}
+
+\newcommand{\grad}{\nabla}
+%\newcommand{\tg}{\widetilde{g}}
+\newcommand{\Id}{\mathrm{Id}}
+\newcommand{\SF}{\mathrm{SF}}
+\newcommand{\CDF}{\mathrm{CDF}}
+\newcommand{\sample}{\mathsf{Sample}}
+\newcommand{\ones}{\mathbf{1}}
+\newcommand{\tP}{\widetilde{P}}
+\newcommand{\tQ}{\widetilde{Q}}
+\newcommand{\tZ}{\widetilde{Z}}
+\newcommand{\tz}{\widetilde{z}}
+\newcommand{\ty}{\widetilde{y}}
+\newcommand{\tY}{\widetilde{Y}}
+\newcommand{\tx}{\widetilde{x}}
+\newcommand{\tX}{\widetilde{X}}
+
+
+\newcommand{\vjp}{\texttt{vjp}}
+\newcommand{\jvp}{\texttt{jvp}}
+\graphicspath{{Figures/}}
+
+
+
+\newcommand*{\affaddr}[1]{#1} 
+\newcommand*{\affmark}[1][*]{\textsuperscript{#1}}
+\newcommand*{\email}[1]{\texttt{#1}}
+
+
+\newcommand{\error}{\mathrm{error}}
+\newcommand{\upper}{\mathrm{upper}}
+\newcommand{\lp}{\left(}
+\newcommand{\lb}{\left[}
+\newcommand{\rb}{\right]}
+\newcommand{\rp}{\right)}
+\newcommand{\bR}{\overline{\R}}
+
+\newcommand{\num}[1]{#1}
+\newcommand{\SI}[1]{#1}
+\newcommand{\second}{\ sec}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% disable note. %%%
+\iffalse
+\let\gnote\undefined
+\let\ynote\undefined
+\newcommand{\gnote}[1]{}%
+\newcommand{\ynote}[1]{}%
+\fi
+%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We give a fast algorithm to optimally compose privacy guarantees of differentially private (DP) algorithms to arbitrary accuracy. Our method is based on the notion of \emph{privacy loss random variables} to quantify the privacy loss of DP algorithms. %This has an intuitive meaning: if a DP algorithm $M$ has privacy random variables $(X,Y)$ (which are real-valued), then inferring membership of any user from the output of $M$ is at least as hard as distinguishing between $X$ and $Y$ from a random sample. Though mathematically equivalent to the $(\epsilon,\delta)$-DP framework of Dwork et al.~\cite{DMNS06} and the recently proposed $f$-DP framework of Dong et al.~\cite{DongRS19}, this notion allows for a much simpler way to compute the privacy loss of \emph{composition} of DP algorithms, compared to the other frameworks. If $M_1$ and $M_2$ are DP algorithms with privacy random variables $(X_1,Y_1)$ and $(X_2,Y_2)$ respectively, then the (adaptive) composition $M_1\circ M_2$ has privacy random variables $(X_1+X_2,Y_1+Y_2)$.
+The running time and memory needed for our algorithm to approximate the privacy curve of a DP algorithm composed with itself $k$ times is $\tilde{O}(\sqrt{k})$. This improves over the best prior method by Koskela et al.~\cite{koskela2021computing} which requires $\tilde{\Omega}(k^{1.5})$ running time. We demonstrate the utility of our algorithm by accurately computing the privacy loss of DP-SGD algorithm of Abadi et al.~\cite{Abadi16} and showing that our algorithm speeds up the privacy computations by a few orders of magnitude compared to prior work, while maintaining similar accuracy.
+\end{abstract}
+
+% We give a fast algorithm to optimally compose privacy guarantees of differentially private (DP) algorithms to arbitrary accuracy. Our method is based on the notion of privacy loss random variables to quantify the privacy loss of DP algorithms. The running time and memory needed for our algorithm to approximate the privacy curve of a DP algorithm composed with itself $k$ times is $\tilde{O}(\sqrt{k})$. This improves over the best prior method by Koskela et al. (2020) which requires $\tilde{\Omega}(k^{1.5})$ running time. We demonstrate the utility of our algorithm by accurately computing the privacy loss of DP-SGD algorithm of Abadi et al. (2016) and showing that our algorithm speeds up the privacy computations by a few orders of magnitude compared to prior work, while maintaining similar accuracy.
+\newpage
+\tableofcontents
+\newpage
+
+
+
+
+%\ynote{Need to handle the question 3 and 4 in checklist}
+\section{Introduction}
+\label{sec:intro}
+\input{introduction}
+
+\section{DP Preliminaries}
+\label{sec:prelims}
+\input{prelims}
+
+%\newpage
+\section{Privacy Loss Random Variables (PRVs)}
+\label{sec:PRV}
+\input{PRV}
+
+
+\section{Numerical composition of privacy curves}
+\label{sec:numerical_composition}
+\input{numerical_composition.tex}
+
+\section{Experiments}
+\label{sec:experiments}
+\input{experiments.tex}
+
+
+\subsection*{Acknowledgements}
+We would like to thank Janardhan Kulkarni and Sergey Yekhanin for several useful discussions and encouraging us to work on this problem.
+L.W. would like to thank Daniel Jones and Victor R\"uhle for fruitful discussions and helpful guidance.
+
+\FloatBarrier
+\bibliographystyle{alpha}
+\bibliography{references}
+
+
+
+
+\appendix
+\input{appendix_num_acc}
+\input{appendix_PRV}
+\input{appendix}
+
+
+
+\end{document}

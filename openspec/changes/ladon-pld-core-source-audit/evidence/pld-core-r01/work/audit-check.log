@@ -1,0 +1,44 @@
+Mf.DP.privacyLossSet_bound_iff_dp_event_bound {α : Type} [MeasurableSpace α] {μ : MeasureTheory.Measure α} (p q : α → ℝ)
+  (ε δ : ℝ) (hp_meas : Measurable p) (hq_meas : Measurable q) (hp_int : MeasureTheory.Integrable p μ)
+  (hq_int : MeasureTheory.Integrable q μ) :
+  ∫ (x : α) in Mf.DP.posRegion fun x => p x - Real.exp ε * q x, p x - Real.exp ε * q x ∂μ ≤ δ ↔
+    ∀ (s : Set α), MeasurableSet s → ∫ (x : α) in s, p x ∂μ ≤ Real.exp ε * ∫ (x : α) in s, q x ∂μ + δ
+Mf.DP.expHockeyStickLaw_densityMeasure_map_forwardLossValue_eq_integral_gap_local {α : Type} [MeasurableSpace α]
+  (μ : MeasureTheory.Measure α) (f g : α → ℝ) (ε : ℝ) (hf_meas : Measurable f) (hg_meas : Measurable g)
+  (hf_pos : ∀ (a : α), 0 < f a) (hg_pos : ∀ (a : α), 0 < g a) :
+  Mf.DP.expHockeyStickLaw ε (MeasureTheory.Measure.map (Mf.DP.forwardLossValue f g) (Mf.DP.densityMeasure μ f)) =
+    ∫ (x : α), Mf.DP.sourceHockeyStickGapIntegrand ε f g x ∂μ
+Mf.DP.PLDPair.comp (L₁ L₂ : Mf.DP.PLDPair) : Mf.DP.PLDPair
+Mf.DP.concretePLDPair_sharedBaseProduct_eq_compFamily {α : Type} [MeasurableSpace α] {n : ℕ}
+  (μ : MeasureTheory.Measure α) [MeasureTheory.SigmaFinite μ] (p q : Fin n → α → ℝ)
+  (hp_meas : ∀ (i : Fin n), Measurable (p i)) (hq_meas : ∀ (i : Fin n), Measurable (q i))
+  (hp_nonneg : ∀ (i : Fin n) (x : α), 0 ≤ p i x) (hq_nonneg : ∀ (i : Fin n) (x : α), 0 ≤ q i x)
+  (hp_pos : ∀ (i : Fin n) (x : α), 0 < p i x) (hq_pos : ∀ (i : Fin n) (x : α), 0 < q i x)
+  [∀ (i : Fin n), MeasureTheory.IsFiniteMeasure (Mf.DP.densityMeasure μ (p i))]
+  [∀ (i : Fin n), MeasureTheory.IsFiniteMeasure (Mf.DP.densityMeasure μ (q i))] :
+  (Mf.DP.concretePLDPair (MeasureTheory.Measure.pi fun x => μ) (fun z => ∏ i, p i (z i)) fun z => ∏ i, q i (z i)) =
+    Mf.DP.PLDPair.compFamily fun i => Mf.DP.concretePLDPair μ (p i) (q i)
+Mf.DP.analyticGaussianCondition_iff_event_form (Δ σ ε δ : ℝ) :
+  Mf.DP.analyticGaussianCondition Δ σ ε δ ↔
+    Mf.DP.stdNormalMeasure.real (Set.Iic (Mf.DP.privacyLossArgPlus Δ σ ε)) -
+        Real.exp ε * Mf.DP.stdNormalMeasure.real (Set.Iic (Mf.DP.privacyLossArgMinus Δ σ ε)) ≤
+      δ
+'Mf.DP.analyticGaussianCondition_iff_event_form' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mf.DP.privacyLossSet_bound_iff_dp_event_bound' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mf.DP.concretePLDPair_sharedBaseProduct_eq_compFamily' depends on axioms: [propext, Classical.choice, Quot.sound]
+Mf.DP.analyticGaussianCondition_iff_gaussianReal_event_form_explicit (Δ σ ε δ : ℝ) (hσ : 0 < σ) :
+  Mf.DP.analyticGaussianCondition Δ σ ε δ ↔
+    (ProbabilityTheory.gaussianReal (Δ / 2) ⟨σ ^ 2, ⋯⟩).real (Set.Iic (Δ - ε * σ ^ 2 / Δ)) -
+        Real.exp ε * (ProbabilityTheory.gaussianReal (-Δ / 2) ⟨σ ^ 2, ⋯⟩).real (Set.Iic (-Δ - ε * σ ^ 2 / Δ)) ≤
+      δ
+Mf.DP.gaussianPair_eventApproxDP_centered_of_analyticCondition_lt_one {n : ℕ} (d : Mf.DP.BSROutput n) (Δ σ ε δ : ℝ) :
+  0 < σ →
+    0 ≤ ε →
+      0 ≤ Δ →
+        (Mf.DP.bsrSqDist d fun x => 0) ≤ (Δ / 2) ^ 2 →
+          Mf.DP.analyticGaussianCondition Δ σ ε δ →
+            δ < 1 →
+              ∀ (s : Set (Mf.Probability.FiniteGaussian.Vector n)),
+                MeasurableSet s →
+                  (Mf.DP.bsrGaussianMeasure σ d) s ≤
+                    ENNReal.ofReal (Real.exp ε) * (Mf.DP.bsrGaussianMeasure σ fun i => -d i) s + ENNReal.ofReal δ

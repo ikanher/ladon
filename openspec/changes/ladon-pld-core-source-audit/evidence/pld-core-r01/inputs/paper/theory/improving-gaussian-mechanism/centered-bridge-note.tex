@@ -1,0 +1,426 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{hyperref}
+
+\title{A Pure Probability Formulation of the Centered Gaussian Bridge Problem}
+\author{}
+\date{\today}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\N}{\mathcal{N}}
+\newcommand{\ip}[2]{\left\langle #1,#2\right\rangle}
+\newcommand{\norm}[1]{\left\lVert #1\right\rVert}
+\newcommand{\PhiStd}{\Phi}
+\newcommand{\Beps}{\mathcal{B}_\varepsilon}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+
+\begin{document}
+\maketitle
+
+\section{The object under study}
+Fix dimension $n\ge 1$, noise scale $\sigma>0$, and a vector $d\in\R^n$.
+Consider two Gaussian laws on $\R^n$:
+\[
+Y\sim \N(d,\sigma^2 I_n),
+\qquad
+Y'\sim \N(-d,\sigma^2 I_n).
+\]
+These are two equally spread clouds with opposite centers.
+
+Let $p_d,p_{-d}$ be their densities. For measurable $S\subseteq\R^n$, define
+\[
+\Delta_\varepsilon(S)
+:=\Pbb(Y\in S)-e^{\varepsilon}\Pbb(Y'\in S),
+\qquad \varepsilon\in\R.
+\]
+The central quantity is
+\[
+\sup_{S\in\mathcal B(\R^n)} \Delta_\varepsilon(S).
+\]
+This is a weighted set-separation functional between two Gaussian laws.
+
+\section{Equivalent statistical views of the same quantity}
+
+\subsection*{View A: extremal measurable set}
+A standard variational identity gives
+\[
+\sup_S \Delta_\varepsilon(S)
+=\int_{\R^n}(p_d-e^{\varepsilon}p_{-d})_+.
+\]
+Hence the maximizing set is
+\[
+S_\varepsilon^*:=\{y\in\R^n: p_d(y)-e^{\varepsilon}p_{-d}(y)\ge 0\}.
+\]
+So the problem is exactly: characterize this set and evaluate the corresponding integral.
+
+\subsection*{View B: log-likelihood geometry}
+The log-likelihood ratio is
+\[
+\log\frac{p_d(y)}{p_{-d}(y)}=\frac{2\ip{d}{y}}{\sigma^2}.
+\]
+Therefore
+\[
+S_\varepsilon^*
+=\left\{y:\ip{d}{y}\ge \frac{\varepsilon\sigma^2}{2}\right\},
+\]
+a halfspace orthogonal to $d$. Intuitively: all nonlinear coordinates are irrelevant; only projection onto $d$ matters.
+
+\subsection*{View C: one-dimensional reduction}
+Define the scalar projection
+\[
+T(y):=-\ip{d}{y}.
+\]
+Then
+\[
+T(Y)\sim \N(-r,\sigma^2 r),
+\qquad
+T(Y')\sim \N(+r,\sigma^2 r),
+\qquad
+r:=\norm{d}^2.
+\]
+And the extremal halfspace becomes a threshold event:
+\[
+\ip{d}{y}\ge \frac{\varepsilon\sigma^2}{2}
+\iff
+T(y)\le -\frac{\varepsilon\sigma^2}{2}.
+\]
+So the original $n$-dimensional supremum is equivalent to two one-dimensional Gaussian CDF values.
+
+\section{What must be matched exactly}
+Set
+\[
+\tau:=-\frac{\varepsilon\sigma^2}{2},
+\qquad r=\norm{d}^2.
+\]
+Then (for $r>0$)
+\[
+\Pbb(T(Y)\le\tau)=
+\PhiStd\!\left(\frac{\tau+r}{\sigma\sqrt r}\right),
+\qquad
+\Pbb(T(Y')\le\tau)=
+\PhiStd\!\left(\frac{\tau-r}{\sigma\sqrt r}\right).
+\]
+After simplification,
+\[
+\frac{\tau+r}{\sigma\sqrt r}=\frac{\sqrt r}{\sigma}-\frac{\varepsilon\sigma}{2\sqrt r},
+\qquad
+\frac{\tau-r}{\sigma\sqrt r}=-\frac{\sqrt r}{\sigma}-\frac{\varepsilon\sigma}{2\sqrt r}.
+\]
+If one introduces
+\[
+\Delta:=2\sqrt r,
+\]
+these become
+\[
+\frac{\Delta}{2\sigma}-\frac{\varepsilon\sigma}{\Delta},
+\qquad
+-\frac{\Delta}{2\sigma}-\frac{\varepsilon\sigma}{\Delta}.
+\]
+So the same statistical quantity can be parameterized either by $r=\norm d^2$ or by $\Delta=2\norm d$.
+
+\section{Exact bridge endpoints (tightened)}
+Define the \emph{Gaussian bridge functional}
+\[
+\Beps(d;\sigma)
+:=
+\sup_{S\in\mathcal B(\R^n)}
+\left[\Pbb(Y\in S)-e^\varepsilon \Pbb(Y'\in S)\right],
+\]
+for $Y\sim\N(d,\sigma^2I_n)$ and $Y'\sim\N(-d,\sigma^2I_n)$.
+
+Define the scalar profile (for $r>0$)
+\[
+G_{\varepsilon,\sigma}(r)
+:=
+\PhiStd\!\left(\frac{\sqrt r}{\sigma}-\frac{\varepsilon\sigma}{2\sqrt r}\right)
+-e^\varepsilon
+\PhiStd\!\left(-\frac{\sqrt r}{\sigma}-\frac{\varepsilon\sigma}{2\sqrt r}\right),
+\]
+and $G_{\varepsilon,\sigma}(0):=(1-e^\varepsilon)_+$.
+
+Define also the $\Delta$-parameterized profile
+\[
+H_{\varepsilon,\sigma}(\Delta)
+:=
+\PhiStd\!\left(\frac{\Delta}{2\sigma}-\frac{\varepsilon\sigma}{\Delta}\right)
+-e^\varepsilon
+\PhiStd\!\left(-\frac{\Delta}{2\sigma}-\frac{\varepsilon\sigma}{\Delta}\right),
+\qquad \Delta>0.
+\]
+
+Define two endpoint propositions:
+\begin{itemize}
+\item \textbf{(A) Radius-constrained vector statement}
+\[
+\forall d\in\R^n,\ \norm d\le \frac{\Delta}{2}
+\implies
+\Beps(d;\sigma)\le \delta.
+\]
+\item \textbf{(B) Single-scalar endpoint statement}
+\[
+H_{\varepsilon,\sigma}(\Delta)\le \delta.
+\]
+\end{itemize}
+
+These are deliberately adjacent: both are now inequalities about one explicit
+functional family, only indexed differently (vector radius versus scalar $\Delta$).
+
+\section{Minimal equivalence to prove}
+Using standard Gaussian likelihood-ratio calculus and one-dimensional projection,
+the bridge reduces to two analysis statements:
+\begin{enumerate}
+\item \textbf{Radial identity (rotation reduction):}
+\[
+\Beps(d;\sigma)=G_{\varepsilon,\sigma}(\norm d^2)\quad\text{for all }d\in\R^n.
+\]
+\item \textbf{Endpoint envelope identity:}
+\[
+\sup_{0\le r\le (\Delta/2)^2} G_{\varepsilon,\sigma}(r)
+=
+H_{\varepsilon,\sigma}(\Delta).
+\]
+\end{enumerate}
+Since $H_{\varepsilon,\sigma}(\Delta)=G_{\varepsilon,\sigma}(\Delta^2/4)$ for
+$\Delta>0$, the second line is exactly a one-variable envelope statement.
+In other words, once radial reduction is accepted, the remaining question is purely:
+\[
+\text{how does }G_{\varepsilon,\sigma}(r)\text{ behave on }[0,(\Delta/2)^2]?
+\]
+
+\section{Sharp bridge seam}
+For a standard PhD-level probability reader, the seam is exactly:
+\[
+\text{(A)}
+\Longleftrightarrow
+\Big(\sup_{0\le r\le(\Delta/2)^2} G_{\varepsilon,\sigma}(r)\le \delta\Big)
+\Longleftrightarrow
+\text{(B)}.
+\]
+Hence the remaining gap is one scalar fact:
+\[
+\sup_{0\le r\le R} G_{\varepsilon,\sigma}(r)=G_{\varepsilon,\sigma}(R),
+\qquad R=(\Delta/2)^2,
+\]
+i.e.\ monotonicity of one explicit one-variable profile.
+
+\section{Current formal seam (Lean-oriented)}
+The actual formal target is the theorem-level implication in
+\texttt{Mf/DP/GaussianCore.lean} that upgrades an explicit scalar bound into the
+set-wise Gaussian bound for all measurable events. Concretely, the bridge is:
+\begin{itemize}
+\item \textbf{End A (scalar endpoint):} an explicit inequality at $\Delta$
+\[
+\PhiStd\!\left(\frac{\Delta}{2\sigma}-\frac{\varepsilon\sigma}{\Delta}\right)
+-e^\varepsilon
+\PhiStd\!\left(-\frac{\Delta}{2\sigma}-\frac{\varepsilon\sigma}{\Delta}\right)
+\le \delta;
+\]
+\item \textbf{End B (event endpoint):} for all measurable $S\subseteq\R^n$,
+\[
+\Pbb(Y\in S)-e^\varepsilon \Pbb(Y'\in S)\le \delta
+\]
+for the centered Gaussian pair $Y\sim\N(d,\sigma^2I_n)$,
+$Y'\sim\N(-d,\sigma^2I_n)$ under $\|d\|\le \Delta/2$.
+\end{itemize}
+
+For the formal development, these are used under the natural domain assumptions
+\[
+\sigma>0,\qquad \Delta\ge 0.
+\]
+These are not cosmetic: they are exactly what makes the reparameterization and
+the comparison map
+\[
+\Delta \longmapsto \frac{\Delta}{2\sigma}
+\]
+well-behaved and order-preserving.
+
+The remaining formal step is therefore best stated as:
+\begin{itemize}
+\item from End A, i.e.
+\[
+\PhiStd\!\left(\frac{\Delta}{2\sigma}-\frac{\varepsilon\sigma}{\Delta}\right)
+-e^\varepsilon
+\PhiStd\!\left(-\frac{\Delta}{2\sigma}-\frac{\varepsilon\sigma}{\Delta}\right)
+\le \delta,
+\]
+\item and from
+\[
+r:=\norm d^2,\qquad r\le (\Delta/2)^2,
+\]
+\item deduce the same bound at the exact radius parameter
+\[
+\Delta_r:=2\sqrt r
+\]
+by monotonicity of the scalar profile on $(0,\infty)$, then transfer to End B.
+\end{itemize}
+
+Then one closes by a clean case split:
+\begin{itemize}
+\item $r>0$: use the explicit two-$\sqrt r$ reduction;
+\item $r=0$: the two Gaussian laws coincide, so the bridge value is the trivial
+degenerate edge case.
+\end{itemize}
+
+So the final gap is no longer conceptual; it is a precise endpoint transfer
+lemma under $\sigma>0,\Delta\ge 0$, followed by the $r=0$/$r>0$ split.
+
+\section{Monotonicity of the scalar profile \texorpdfstring{$G_{\varepsilon,\sigma}$}{G}}
+Set
+\[
+a:=\frac{\sqrt r}{\sigma}>0,
+\quad
+u(a):=a-\frac{\varepsilon}{2a},
+\quad
+v(a):=-a-\frac{\varepsilon}{2a},
+\]
+so that for $r>0$,
+\[
+G_{\varepsilon,\sigma}(r)
+=\PhiStd\!\bigl(u(a)\bigr)-e^\varepsilon\PhiStd\!\bigl(v(a)\bigr).
+\]
+
+\begin{lemma}[Gaussian density symmetry]\label{lem:density-sym}
+For all $a>0$,
+\[
+e^\varepsilon\,\varphi\!\bigl(v(a)\bigr)=\varphi\!\bigl(u(a)\bigr),
+\qquad
+\varphi(x):=\frac{1}{\sqrt{2\pi}}e^{-x^2/2}.
+\]
+\end{lemma}
+
+\begin{proof}
+A direct computation shows $v(a)^2-u(a)^2=2\varepsilon$, hence
+\[
+\varphi\!\bigl(v(a)\bigr)=\varphi\!\bigl(u(a)\bigr)e^{-\varepsilon}.
+\]
+Multiplying by $e^\varepsilon$ yields the claim.
+\end{proof}
+
+\begin{theorem}[Strict monotonicity]\label{thm:mono}
+For every fixed $\varepsilon\in\R$ and $\sigma>0$ the map
+$r\mapsto G_{\varepsilon,\sigma}(r)$ is
+\begin{enumerate}
+\item continuous on $[0,\infty)$,
+\item strictly increasing on $(0,\infty)$.
+\end{enumerate}
+Consequently,
+\[
+\sup_{0\le r\le (\Delta/2)^2}G_{\varepsilon,\sigma}(r)
+=
+G_{\varepsilon,\sigma}\!\bigl((\Delta/2)^2\bigr)
+\quad (\Delta\ge 0),
+\]
+and for $\Delta>0$,
+\[
+H_{\varepsilon,\sigma}(\Delta)=G_{\varepsilon,\sigma}(\Delta^2/4).
+\]
+\end{theorem}
+
+\begin{proof}
+Write $F(a):=\PhiStd(u(a))-e^\varepsilon\PhiStd(v(a))$ so that
+$G_{\varepsilon,\sigma}(r)=F(\sqrt r/\sigma)$ for $r>0$.
+Differentiate:
+\[
+F'(a)=\varphi(u(a))u'(a)-e^\varepsilon\varphi(v(a))v'(a).
+\]
+Using Lemma~\ref{lem:density-sym} and
+\[
+u'(a)=1+\frac{\varepsilon}{2a^2},
+\qquad
+v'(a)=-1+\frac{\varepsilon}{2a^2},
+\]
+gives
+\[
+F'(a)=\varphi(u(a))\bigl(u'(a)-v'(a)\bigr)
+=2\,\varphi(u(a))>0
+\quad(a>0),
+\]
+so $F$, hence $G_{\varepsilon,\sigma}$, is strictly increasing on $(0,\infty)$.
+
+For continuity at $r=0$, let $a\downarrow0$:
+\begin{itemize}
+\item if $\varepsilon>0$ then $u(a),v(a)\to-\infty$ and $F(a)\to0$;
+\item if $\varepsilon<0$ then $u(a),v(a)\to+\infty$ and $F(a)\to 1-e^\varepsilon$;
+\item if $\varepsilon=0$ then $F(a)=2\PhiStd(a)-1\to0$.
+\end{itemize}
+Thus $\lim_{r\downarrow0}G_{\varepsilon,\sigma}(r)=(1-e^\varepsilon)_+$,
+the declared value at $r=0$.
+\end{proof}
+
+\begin{corollary}[Envelope identity]\label{cor:envelope}
+For every $\Delta\ge0$,
+\[
+\sup_{0\le r\le (\Delta/2)^2} G_{\varepsilon,\sigma}(r)
+=
+\begin{cases}
+H_{\varepsilon,\sigma}(\Delta), & \Delta>0,\\[6pt]
+(1-e^\varepsilon)_+, & \Delta=0.
+\end{cases}
+\]
+\end{corollary}
+
+\begin{proof}
+Use Theorem~\ref{thm:mono}: the supremum on a closed interval of a strictly
+increasing function is attained at the right endpoint.
+\end{proof}
+
+\section{Closing the bridge}
+
+\begin{theorem}[Endpoint transfer]\label{thm:bridge}
+Assume $\sigma>0$ and $\Delta\ge0$.
+The radius-constrained statement \textbf{(A)} is equivalent to the
+single-scalar statement \textbf{(B)}:
+\[
+\forall d,\;\|d\|\le\frac{\Delta}{2}\;\Longrightarrow\;
+\Beps(d;\sigma)\le\delta
+\quad\Longleftrightarrow\quad
+H_{\varepsilon,\sigma}(\Delta)\le\delta.
+\]
+\end{theorem}
+
+\begin{proof}
+($\Rightarrow$)
+Take $d$ with $\|d\|=\Delta/2$ (possible if $\Delta>0$; otherwise $d=0$).
+Apply \textbf{(A)} and the radial identity
+\[
+\Beps(d;\sigma)=G_{\varepsilon,\sigma}(\|d\|^2)
+\]
+to get
+\[
+G_{\varepsilon,\sigma}(\Delta^2/4)\le\delta,
+\]
+i.e.\ $H_{\varepsilon,\sigma}(\Delta)\le\delta$.
+
+($\Leftarrow$)
+Assume $H_{\varepsilon,\sigma}(\Delta)\le\delta$.
+For any $d$ with $\|d\|\le\Delta/2$,
+\[
+\Beps(d;\sigma)=G_{\varepsilon,\sigma}(\|d\|^2)
+\le
+\sup_{0\le r\le(\Delta/2)^2}G_{\varepsilon,\sigma}(r)
+=H_{\varepsilon,\sigma}(\Delta)
+\le\delta,
+\]
+using Corollary~\ref{cor:envelope}.
+\end{proof}
+
+\section{What this solves analytically}
+With Theorem~\ref{thm:bridge}, the analytic seam is closed: verifying a
+single scalar inequality at $\Delta$ is both necessary and sufficient for the
+bound to hold for every vector $d$ with $\|d\|\le\Delta/2$.
+
+\medskip\noindent
+\textbf{Practical upshot.}
+All the high-dimensional, set-valued optimization collapses to checking
+\[
+H_{\varepsilon,\sigma}(\Delta)\le\delta,
+\]
+a one-line condition involving just the standard normal CDF.
+
+\end{document}

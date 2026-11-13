@@ -1,0 +1,9 @@
+# Independent mathematical correction review
+
+Reviewer: /root/pld_review_correction, gpt-6-luna, medium. Root provided the suspected sign error and requested verification against frozen sources, plus assessment of the actual composition theorem. This was prompted review, not blind discovery. No compilation, source edits or internet search. The following is the reviewer's returned assessment (recorded by root).
+
+**P3 / eqn:PRV_from_delta (PRV.tex:50–54) is wrong in the X exponent.** The PRV definition requires Y(t)=e^t X(t) (PRV.tex:15–20); therefore from its own stated Y(t)=δ″−δ′, it must have X(t)=e^{-t}(δ″−δ′), not e^t(...). This is a direct internal inconsistency, not a convention issue. Smooth normalized witness: take P=N(−1/2,1), Q=N(1/2,1), with densities p=φ(t+1/2), q=φ(t−1/2); q/p=e^t, so the log-likelihood PRVs are X~P and Y~Q, and y(t)=e^t x(t). Their privacy curve is δ(t)=Pr_Q[L>t]−e^t Pr_P[L>t]. Differentiating gives δ′(t)=−e^t Pr_P[L>t] and δ″(t)−δ′(t)=e^t p(t)=q(t). Thus source's Y formula recovers q, but its X formula gives e^t q=e^{2t}p rather than p (and is not normalized). Correct X recovery is e^{-t}(δ″−δ′). Appendix_PRV.tex:8–12 independently confirms the intended Y=e^tX size-biased relation.
+
+**P4 / thm:composition_PRVs (PRV.tex:65–84) is valid under the source's independence convention.** prelims.tex:23–25 defines ⊗ by independently sampled X1,X2 and independently sampled Y1,Y2 (the two product distributions); the proof takes exactly those products, factors joint densities, then the log likelihood ratio is t1+t2 on either side. The wording at PRV.tex:68 and proof's independence step at lines 73–82 are consistent with that convention. No P4 counterexample found. Keep finding indexed P3 (privacycurve/converse), not P2=LLRV or P4=composition.
+
+Root acceptance boundary: this review supports the density-product argument; no general singular/extended-law proof or Lean correspondence is inferred from it.

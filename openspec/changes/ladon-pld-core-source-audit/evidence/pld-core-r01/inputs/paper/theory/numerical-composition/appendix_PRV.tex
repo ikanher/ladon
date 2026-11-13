@@ -1,0 +1,203 @@
+%!TEX root=./MAIN.tex
+\section{Privacy Loss Random Variables}
+\label{sec:appendix_PRV}
+In this section, we continue the discussion on privacy random variables in Section \ref{sec:PRV}. First, we give the proof of the formula for PRVs of $\delta(P||Q)$ and the formula for a privacy curve given its PRVs (Theorem \ref{thm:PRV_LLRV}).
+
+{\renewcommand\footnote[1]{}\PRVLLRV*}
+\begin{proof}
+We will first verify that $Y(t)=e^t X(t).$ This is equivalent to proving that $\E_Y[\phi(Y)]=\E_X[\phi(X)e^X]$ for any test function $\phi:\bR \to [0,1]$. This is true since
+	\begin{align*}
+		\E_Y[\phi(Y)]&= \E_{\omega\sim Q}\lb \phi\lp\log\lp \frac{Q(\omega)}{P(\omega)}\rp\rp\rb \\
+		&= \E_{\omega\sim P}\lb \phi\lp\log\lp \frac{Q(\omega)}{P(\omega)}\rp\rp \frac{Q(\omega)}{P(\omega)}\rb\\
+		&= \E_X[\phi(X)e^X].
+	\end{align*}
+	We will now prove that $\delta(X||Y)=\delta(P||Q).$
+	We have
+	\begin{align*}
+		\delta(P||Q)(\eps) &= \sup_{S \subset \Omega} \Pr[Q\in S] - e^\eps\Pr[P\in S]\\
+		&= \Pr[Q\in S_\eps] - e^\eps\Pr[P\in S_\eps]
+	\end{align*}
+	where $$S_\eps = \left\{\omega\in \Omega: \frac{Q(\omega)}{P(\omega)} > e^\eps \right\}=\left\{\omega\in \Omega: \log\lp\frac{Q(\omega)}{P(\omega)}\rp > \eps \right\}.$$ 
+	Therefore $\Pr[Q\in S_\eps]=\Pr[Y > \eps]$ and $\Pr[P\in S_\eps]=\Pr[X > \eps]$. To complete the proof, note that 
+	\begin{align*}
+		\delta(X||Y)(\eps) &= \sup_{T \subset \bR} \Pr[Y\in T] - e^\eps\Pr[X\in T]\\
+		&= \Pr[Y\in T_\eps] - e^\eps\Pr[X\in T_\eps]
+	\end{align*}
+	where $$T_\eps = \left\{t\in \bR: \frac{Y(t)}{X(t)} > e^\eps \right\}= \left\{t\in \bR: e^t > e^\eps \right\}=(\eps,\infty].$$
+	Putting it all together, we have:
+	\begin{align*}
+		\delta(P||Q)(\eps)&=\Pr[Y>\eps] - e^\eps \Pr[X>\eps]=\delta(X||Y).
+	\end{align*}
+% Finally, since the PDFs of PRVs $(X,Y)$ satisfy the relation $Y(t)=e^tX(t)$, we can rewrite the equation~\ref{eqn:delta_PRV_simple} in terms of just $Y$ or just $X$.
+% 		\begin{align*}
+% 		\delta(\eps)&=\Pr[Y\ge \eps]-e^\eps \Pr[X\ge \eps]\\
+% 		&=\int_\eps^\infty Y(t) dt - \int_\eps^\infty e^\eps X(t) dt\\
+% 		&=\int_\eps^\infty Y(t) dt - \int_\eps^\infty e^{\eps-t} Y(t) dt \tag{Since $Y(t)=e^tX(t)$}\\
+% 		&=\int_\eps^\infty Y(t) (1-e^{\eps-t}) dt\\
+% 		&=\int_{-\infty}^\infty Y(t) (1-e^{\eps-t})_+ dt\\
+% 		&=\E_Y[(1-e^{\eps-Y})_+]
+% 	\end{align*}
+% 	To get the other form for $\delta(\eps)$, we use the integration by parts formula.
+% 	\begin{align*}
+% 		\delta(\eps)&=\int_{\eps}^\infty Y(t) (1-e^{\eps-t}) dt\\
+% 		&=\int_{\eps}^\infty Y(t) dt + \int_{\eps}^\infty \lp -Y(t) \rp e^{\eps-t} dt\\
+% 		&=\Pr[Y\ge \eps] + \lp \Pr[Y\ge t]e^{\eps-t}\Big|_\eps^\infty - \int_{\eps}^\infty \Pr[Y\ge t] \lp -e^{\eps-t}\rp dt \rp\\
+% 		&=\Pr[Y\ge \eps] - \Pr[Y\ge \eps] + \int_{\eps}^\infty \Pr[Y\ge t] e^{\eps-t} dt\\
+% 		&=\int_\eps^\infty e^{\eps-t} \Pr[Y\ge t] dt \\
+% 		&=\int_0^\infty e^{-z} \Pr[Y\ge \eps+z] dz  \tag{Substituting $z=t-\eps$}\\
+% 		&=\Pr[Y\ge \eps+Z]. \tag{where $Z$ is an exponential random variable}
+% 	\end{align*}
+\end{proof}
+
+{\renewcommand\footnote[1]{}\PRVprivacycurve*}
+\begin{proof}	
+Since the PDFs of PRVs $(X,Y)$ satisfy the relation $Y(t)=e^tX(t)$, we can rewrite the equation~\ref{eqn:delta_PRV_simple} in terms of just $Y$ or just $X$.
+		\begin{align*}
+		\delta(\eps)&=\Pr[Y\ge \eps]-e^\eps \Pr[X\ge \eps]\\
+		&=\int_\eps^\infty Y(t) dt - \int_\eps^\infty e^\eps X(t) dt\\
+		&=\int_\eps^\infty Y(t) dt - \int_\eps^\infty e^{\eps-t} Y(t) dt \tag{Since $Y(t)=e^tX(t)$}\\
+		&=\int_\eps^\infty Y(t) (1-e^{\eps-t}) dt\\
+		&=\int_{-\infty}^\infty Y(t) (1-e^{\eps-t})_+ dt\\
+		&=\E_Y[(1-e^{\eps-Y})_+]
+	\end{align*}
+	To get the other form for $\delta(\eps)$, we use the integration by parts formula.
+	\begin{align*}
+		\delta(\eps)&=\int_{\eps}^\infty Y(t) (1-e^{\eps-t}) dt\\
+		&=\int_{\eps}^\infty Y(t) dt + \int_{\eps}^\infty \lp -Y(t) \rp e^{\eps-t} dt\\
+		&=\Pr[Y\ge \eps] + \lp \Pr[Y\ge t]e^{\eps-t}\Big|_\eps^\infty - \int_{\eps}^\infty \Pr[Y\ge t] \lp -e^{\eps-t}\rp dt \rp\\
+		&=\Pr[Y\ge \eps] - \Pr[Y\ge \eps] + \int_{\eps}^\infty \Pr[Y\ge t] e^{\eps-t} dt\\
+		&=\int_\eps^\infty e^{\eps-t} \Pr[Y\ge t] dt \\
+		&=\int_0^\infty e^{-z} \Pr[Y\ge \eps+z] dz  \tag{Substituting $z=t-\eps$}\\
+		&=\Pr[Y\ge \eps+Z]. \tag{where $Z$ is an exponential random variable}
+	\end{align*}
+We now prove the converse relation by differentiating the expression for $\delta(\eps)$ twice. We have:
+	\begin{align*}
+ 	&\delta(\eps)=\int_\eps^\infty Y(t) dt - e^{\eps}\int_\eps^\infty e^{-t} Y(t) dt\\
+	\implies & \delta'(\eps)=-Y(\eps)+e^{\eps}\cdot e^{-\eps}Y(\eps)-e^{\eps}\cdot \int_\eps^\infty e^{-t} Y(t) dt = -e^{\eps}\cdot \int_\eps^\infty e^{-t} Y(t) dt \\
+	\implies & e^{-\eps}\delta'(\eps)=-\int_\eps^\infty e^{-t} Y(t) dt \\
+	\implies & e^{-\eps}\delta''(\eps)-e^{-\eps}\delta'(\eps)=e^{-\eps} Y(\eps) \\
+	\implies & Y(\eps)=\delta''(\eps)-\delta'(\eps).
+	\end{align*}
+
+
+\end{proof}
+
+
+
+
+\subsection{Examples of privacy loss random variables}
+In this section, we state the PRVs for a few standard mechanisms. 
+
+\begin{proposition}[Gaussian Mechanism]
+The PRVs for $\delta(\cN(\mu,1)||\cN(0,1))$ are:
+$$X=\cN(-\mu^2/2,\mu^2) \text{ and } Y=\cN(\mu^2/2,\mu^2).$$
+\end{proposition}
+\begin{proof}
+	Let $P=\cN(\mu,1)$ and $Q=\cN(0,1)$.
+	By Theorem~\ref{thm:PRV_LLRV},
+	\begin{align*}
+		Y &\sim \log\lp \frac{Q(t)}{P(t)}\rp \text{ where } t\sim Q\\
+		&\sim \log\lp \frac{\exp(-t^2/2)}{\exp(-(t-\mu)^2/2)}\rp \text{ where } t\sim \cN(0,1)\\
+		&\sim \frac{(t-\mu)^2}{2} - \frac{t^2}{2} \text{ where } t\sim \cN(0,1)\\
+		&\sim \frac{\mu^2}{2}-\mu t \text{ where } t\sim \cN(0,1)\\
+		&= \cN\lp \frac{\mu^2}{2},\mu^2 \rp.
+	\end{align*}
+	A similar calculation shows that $X=\cN\lp -\frac{\mu^2}{2},\mu^2\rp$
+\end{proof}
+
+
+
+
+\begin{proposition}[Laplace Mechanism]
+	The PRVs for the privacy curve $\delta\lp\Lap\lp \mu,1\rp||\Lap\lp 0,1\rp\rp$ are:
+	$$X=|Z|-|Z-\mu| \text{ and } Y= |Z-\mu|-|Z|$$ where $Z\sim \Lap(0,1).$
+\end{proposition}
+\begin{proof}
+	Let $P=\Lap(\mu,1)$ and $Q=\Lap(0,1)$.
+	By Theorem~\ref{thm:PRV_LLRV},
+	\begin{align*}
+		Y &\sim \log\lp \frac{Q(t)}{P(t)}\rp \text{ where } t\sim Q\\
+		&\sim \log\lp \frac{\exp(-|t|)}{\exp(-|t-\mu|}\rp \text{ where } t\sim \Lap(0,1)\\
+		&\sim |t-\mu|-|t| \text{ where } t\sim \Lap(0,1)\\
+		&= |Z-\mu|-|Z| \text{ where } Z\sim \Lap(0,1).
+	\end{align*}
+	A similar calculation shows that $X=|Z|-|Z-\mu|$ where $Z\sim\Lap(0,1).$
+\end{proof}
+
+\begin{proposition}[$(\eps,\delta)$-DP]
+	The PRVs for the privacy curve of a $(\eps,\delta)$-DP algorithm are
+	$$X=\begin{cases}
+	-\infty & \text{w.p. } \delta\\
+	-\eps & \text{w.p. }  \frac{(1-\delta)e^\eps}{e^\eps+1}\\
+	\eps & \text{w.p. } \frac{1-\delta}{e^\eps+1},
+	\end{cases}$$
+	$$Y=\begin{cases}
+	-\eps & \text{w.p. } \frac{1-\delta}{e^\eps+1}\\
+	\eps & \text{w.p. }  \frac{(1-\delta)e^\eps}{e^\eps+1}\\
+	\infty & \text{w.p. } \delta.
+	\end{cases}$$
+\end{proposition}
+\begin{proof}
+	It is easy to verify that $Y(t)=e^t X(t)$ for all $t\in \R$. We can also verify that $$\delta(\eps)=\Pr[Y> \eps] - e^\eps \Pr[X > \eps]=\delta.$$ Morever $X=-Y$, therefore the privacy curve $\delta(X||Y)$ is symmetric by Proposition~\ref{prop:finv_prv}, i.e., $\delta(X||Y)=\delta(Y||X)$. These conditions together imply that $X,Y$ are PRVs for the $(\eps,\delta)$-DP curve.
+\end{proof}
+
+
+
+Note that in the all the above examples, we have $X=-Y$ as the privacy curves are symmetric.
+
+
+
+\subsection{Subsampling}
+In this section, we calculate the PRVs for a subsampled mechanism given the PRVs for the original mechanism. Given two random variables $P,Q$ and a sampling probability $p\in [0,1]$,  $p\cdot P+(1-p)\cdot Q$ denotes the mixture where we sample $P$ w.p. $p$ and $Q$ w.p. $1-p.$
+\begin{proposition}
+	\label{prop:mixture_f_p_privacy_rv}
+	Let $(X,Y)$ be the PRVs for a privacy curve $\delta(P||Q)$. Let $(X_p,Y_p)$ be the PRVs for $\delta_p=\delta(P||\ p\cdot P+(1-p)\cdot Q)$. Then
+	\begin{align*}
+		X_p&=\log(1+p(e^X-1)),\\
+		Y_p&=\begin{cases}
+			\log(1+p(e^Y-1)) \text{ w.p. } p\\
+			\log(1+p(e^X-1)) \text{ w.p. } 1-p.
+		\end{cases}
+	\end{align*}
+	The CDFs of $X_p$ and $Y_p$ are given by:
+	\begin{align*}
+		\CDF_{X_p}(t) &= \begin{cases}
+			\CDF_X\lp\log\lp \frac{e^t-(1-p)}{p}\rp \rp &\text{ if } t\ge \log(1-p)\\
+			0 &\text{ if } t< \log(1-p)
+		\end{cases}\\
+		\CDF_{Y_p}(t) &= \begin{cases}
+			p\cdot \CDF_Y\lp \log\lp \frac{e^t-(1-p)}{p}\rp \rp + (1-p)\cdot \CDF_X\lp \log\lp \frac{e^t-(1-p)}{p}\rp \rp &\text{ if } t\ge \log(1-p)\\
+			0 & \text{ if } t <\log(1-p).
+		\end{cases}
+	\end{align*}
+
+\end{proposition}
+
+
+\begin{proof}
+By Theorem~\ref{thm:PRV_LLRV}, 
+\begin{align*}
+	X_p &= \log\lp \frac{pY(t)+(1-p)X(t)}{X(t)}\rp \text{ where } t\sim X\\
+	& = \log \lp p e^t + 1-p\rp \text{ where } t \sim X\\
+	& = \log \lp p e^X + 1-p\rp.
+\end{align*}
+Similarly,
+\begin{align*}
+	Y_p &= \log\lp \frac{pY(t)+(1-p)X(t)}{X(t)}\rp \text{ where } t\sim pY+(1-p)X\\
+	& = \log \lp p e^t + 1-p\rp \text{ where } t \sim pY+(1-p)X\\
+	& = \begin{cases}
+			\log(1+p(e^Y-1)) \text{ w.p. } p\\
+			\log(1+p(e^X-1)) \text{ w.p. } 1-p.
+		\end{cases} 
+\end{align*}
+The CDF of $X_p$ is given by:
+\begin{align*}
+	\Pr[X_p \le t] &= \Pr\lb \log \lp p e^X + 1-p\rp \le t\rb\\
+	&= \Pr\lb X \le \log\lp \frac{e^t-(1-p)}{p}\rp \rb
+\end{align*}
+The CDF of $Y_p$ is given by:
+\begin{align*}
+	\Pr[Y_p \le t] &= p \Pr\lb \log \lp p e^Y + 1-p\rp \le t\rb + (1-p) \Pr\lb \log \lp p e^X + 1-p\rp \le t\rb\\
+	&= p\Pr\lb Y \le \log\lp \frac{e^t-(1-p)}{p}\rp \rb + (1-p)\Pr\lb X \le \log\lp \frac{e^t-(1-p)}{p}\rp \rb.
+\end{align*}
+\end{proof}

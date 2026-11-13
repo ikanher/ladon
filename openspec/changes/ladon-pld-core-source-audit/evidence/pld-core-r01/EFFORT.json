@@ -1,0 +1,44 @@
+{
+  "startedUtc": "2026-11-12T20:16:55.825784+00:00",
+  "phases": [
+    {
+      "name": "input freeze and first inventory",
+      "startedUtc": "2026-11-12T20:16:55.825784+00:00",
+      "endedUtc": "2026-11-12T20:17:43.324290+00:00",
+      "elapsedSeconds": 47.5,
+      "basis": "Recorded manifest and inventory freeze timestamps."
+    },
+    {
+      "name": "fresh Lean signature and trust check",
+      "startedUtc": "2026-11-12T20:18:00+00:00",
+      "endedUtc": "2026-11-12T20:21:12+00:00",
+      "elapsedSeconds": 192,
+      "basis": "Execution interval recorded in the audit work notes; includes an initial incorrect declaration-name query followed by correction and successful check. Exact shell start/stop timestamps were not captured."
+    },
+    {
+      "name": "independent source review",
+      "elapsedSeconds": 240,
+      "basis": "Reviewer-reported approximate duration; performed in parallel with report preparation. No compilation."
+    },
+    {
+      "name": "reconciliation and report closeout",
+      "startedUtc": "2026-11-12T20:22:46+00:00",
+      "endedUtc": "2026-11-12T20:27:34+00:00",
+      "elapsedSeconds": 288,
+      "basis": "Observed closeout interval through final manifest generation and strict OpenSpec/diff validation."
+    }
+  ],
+  "tokenUsage": "Not available.",
+  "limits": {
+    "checkingDeadlineSeconds": 3600,
+    "processTreeMemoryGiB": 12,
+    "heavyProcessesAtOnce": 1,
+    "memoryStopOccurred": false
+  },
+  "notes": [
+    "The check ceiling did not require waiting for 60 minutes; the bounded question was resolved sooner.",
+    "Preparation, checking and review are separated. Reviewer duration is approximate and overlapped author work.",
+    "The review was supplied only frozen inputs; the reviewer reports no checkout inspection and no compile.",
+    "No historical or prior run effort is represented as zero-cost; no paired comparator was run."
+  ]
+}
