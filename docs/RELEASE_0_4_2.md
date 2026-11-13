@@ -52,8 +52,11 @@ the tested production code for that earlier receipt is unchanged by those
 follow-up edits. The subsequent lineage-query repair is qualified separately:
 145 affected tests pass, with the same field result payloads except timing
 fields. Its [implementation report](../openspec/changes/ladon-complete-lineage-closure-projection/evidence/query-validation-review-r01/IMPLEMENTATION.md)
-retains the exact scope and metrics. The final installed-package receipt is
-added after testing the updated candidate. Both supported Python-version CI
+retains the exact scope and metrics. The updated candidate built and installed successfully and passed all 41
+installed CLI contracts; the wheel contains the new lineage-validation module.
+The [updated verification receipt](releases/0.4.2/verification-lineage-update.json)
+binds this result to the tested commit. Lean helper sources are unchanged from
+the earlier pinned Lean qualification. Both supported Python-version CI
 jobs and a complete strict release gate remain unverified.
 
 ## Distribution and limits

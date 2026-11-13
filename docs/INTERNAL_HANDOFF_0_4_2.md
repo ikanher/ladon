@@ -48,7 +48,9 @@ Ladon 0.4.2 provides bounded proof extraction (default depth 128, configurable
 with `--max-depth`) and a closed-proof printer budget of 200,000 steps. Large
 expressions may receive an explicit bounded failure. The printer regression and
 focused completion tests, 41 isolated installed-CLI contracts, and pinned Lean
-integration passed.
+integration passed on the earlier printer candidate. The lineage update passed
+145 affected tests and a fresh installed-package check with 41 CLI contracts.
+See the [release notes](RELEASE_0_4_2.md) for exact candidate identities.
 The full strict quality gate remains open due to existing complexity findings. This
 handoff is for internal use and makes no claim of autonomous exposition-error
 detection or measured incremental detection benefit.
