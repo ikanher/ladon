@@ -6,6 +6,8 @@ Typed lowering prevents several encoding mistakes, but a correctly typed total o
 
 ## What Changes
 
+This is deferred production scope under the [umbrella's current plan](../ladon-semantic-pitfalls-umbrella/tasks.md#current-program-state--2026-11-13). Begin with explicit source-attributed typed properties using existing checking; special adapters need a demonstrated mathematical use. The historical change name is retained, but the goal is operation property checking, not rejecting total definitions.
+
 - Observe exact instantiated operation, type, instance and coercion identities, using existing typed interpretation machinery.
 - Introduce a small versioned adapter registry for domain-sensitive subtraction and a total-selector/default family, beginning with natural-set infimum.
 - Connect source-attributed expectations to explicit operation-preservation or existence/membership obligations; do not invent prerequisites from an operation name alone.

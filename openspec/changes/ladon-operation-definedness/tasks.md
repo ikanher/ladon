@@ -2,6 +2,8 @@
 
 Current state (2026-11-12): all eight existence/defaults and operation-semantics baseline cases remain unrun. The [baseline child's Task 1.3e](../ladon-pitfall-baselines/tasks.md) owns the required correction of proposition queries, selectors and toolchain bindings; v3 does not qualify these two profiles for execution. Semantic runtime implementation requires acceptance of all eight cases and the umbrella shared evidence contract. The full scorer and unrelated baseline families remain final-evaluation requirements. Baseline harness work must transport existing capabilities without implementing this child's semantic adapters in the preserved runtime.
 
+Execution disposition (2026-11-13): this production child remains deferred under the [umbrella's current plan](../ladon-semantic-pitfalls-umbrella/tasks.md#current-program-state--2026-11-13). Operation **property** checking is the mathematical goal: total Nat subtraction or a default value is not itself a defect. The completed four-case source-consistency qualification exercises explicit scalar witness checking, not these Nat/Int and infimum adapters. The completed six-claim pilot supplies no acceptance for this child. Start with an explicit typed property and existing Lean checking when a real source question needs it; implement a special adapter only after its repeated construction or unsupported evidence demonstrates a concrete need.
+
 ## 1. Bind operations to source-attributed properties
 
 - [ ] 1.1 Add red tests for missing infimum membership/existence, false selector properties, Nat/Int subtraction mismatch and intentional default/guarded controls; freeze original expectations independently of formal outcomes.

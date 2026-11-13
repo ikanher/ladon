@@ -6,6 +6,8 @@ The current correspondence goals check premise supply and conclusion transfer un
 
 ## What Changes
 
+This is deferred production scope. The [umbrella's current plan](../ladon-semantic-pitfalls-umbrella/tasks.md#current-program-state--2026-11-13) owns sequencing; accepted proposition checks and the later text-analysis pilot do not implement or qualify proof-position feasibility.
+
 - Generate separate witness and contradiction obligations for the complete local context captured at a selected proof position, with explicit fixed-parameter assignments and retained derived-value dependencies.
 - Accept only fresh checked evidence for `witnessed` or `inconsistent`; keep failed search, unsupported contexts and exhaustion unresolved.
 - Exclude the tested hypotheses and downstream consequences from witness construction; bind the exact parameter policy and full selected context.
