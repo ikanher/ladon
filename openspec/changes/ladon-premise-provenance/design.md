@@ -15,7 +15,21 @@ proof_slice already extracts selected scoped applications. proof_contract_provid
 
 Use existing owner/local IDs, application occurrence, branch scope, proof argument and provider closures. A node records origin category (boundary hypothesis, local definition, field projection, instance argument, theorem application or unresolved provider). Edges record actual term dependencies and exact scope. Shared nodes are deduplicated by scoped identity while occurrence edges remain distinct.
 
-Initial scope handles direct hypothesis use, local aliases, structure projection and instantiated type-class projection. Recursive/opaque providers and unsupported dependent projections retain named frontiers. Bounds start at 4096 nodes, 16384 edges and depth 64 within existing 8 MiB stage output; lowering limits is supported. Do not increase slice traversal defaults.
+Initial scope handles direct hypothesis use, local aliases, structure projection and instantiated type-class projection. Recursive/opaque providers and unsupported dependent projections retain named frontiers. The deferred provenance graph initially proposes 4096 nodes, 16384 edges and graph depth 64; those are graph limits, not proof-expression traversal limits. Existing slice traversal now defaults to 128 with a CLI override. Its 8 MiB output allowance did not fit the measured real-source observation. Keep future graph-output policy deferred until a selected mathematical obligation requires graph implementation; do not equate these separate limits.
+
+### Mathematical comparison before extraction usability work
+
+The revised [PLD bounded audit](../ladon-pld-core-source-audit/evidence/pld-core-r03/REPORT-v2.md) is complete. Its [child task ledger](../ladon-pld-core-source-audit/tasks.md) owns current status and its adjudication owns the upheld source formula finding, independent all-ID review, mathematical control support and incomplete formal correspondence. No production extension or comparative benefit follows from this exposed development result.
+
+The subsequent matched pilot did not exercise native provenance. Its negative discovery gate does not settle the value of scoped proof-route evidence. The [umbrella's current decision](../ladon-semantic-pitfalls-umbrella/design.md#current-decision-after-the-matched-pilot) owns the next workflow qualification; the graph and resource/API changes here remain conditional on a concrete unresolved source obligation.
+
+For each case retain the source claim, exact premise, observed original-proof route, available checked projection and reviewed source justification. The same formal projection can accompany either a faithful conditional passage or an omitted source obligation. The source mapping decides that distinction; do not infer an exposition fault from the formal route alone. A new proof of a projection does not establish that the original proof used it. Authored passages and mutations remain constructed development material, and exposed cases cannot establish blind discovery.
+
+Use existing local-checkout Ladon, ordinary Lean and the retained experimental observation. If a new extraction needs the working experimental runtime, record its exact identity and bounds; preserve historical and fresh evidence separately. No production re-extraction is required solely for this report. Independent provider replay remains unresolved unless actually performed.
+
+### Deferred resource configuration
+
+Q.1–Q.3 are activated only by a documented blocker on a selected mathematical obligation. The report owns the successful experimental settings; they are not production defaults. If configuration becomes necessary, define finite units/ranges, bind effective settings to identity, preserve legacy inspection and carry settings through all affected re-extraction consumers. Producer, supervisor, parser and validator byte bounds must agree. Distinguish printer, elaboration, frame/output, timeout and memory failures without automatic escalation. Keep correctness/compatibility review before any production change; avoid new canonical fields without their required version/reader review.
 
 ### What conclusion-supplied means
 

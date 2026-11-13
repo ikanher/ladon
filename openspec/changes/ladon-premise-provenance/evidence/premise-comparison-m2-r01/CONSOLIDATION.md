@@ -1,0 +1,7 @@
+# Post-acceptance consolidation and integrity correction
+
+The accepted adjudication remains historical. Its recommendation to consolidate the recipe has since been applied in [the audit guide](../../../../../docs/PROOF_CORRESPONDENCE_AUDIT.md) and the shared Ladon skill's `references/proofir-and-correspondence.md`. Current progress belongs in the change's tasks.md; this note does not revise case judgments or acceptance requirements.
+
+A later consolidation edit changed ADJUDICATION.md without updating or superseding its acceptance record. Review detected that mismatch. The exact accepted bytes were restored, verified against the existing digest `6c71833a399e2c4ed9f65b0e41ab3ff5bf7495252d3b083d2af1c553cd518226` in ADJUDICATION.json. The intervening documentation-only version had SHA-256 `a4323ab161fe7029de9d71d1bb7843e50974e2cdf52b8e4496b8a5a73e6f5880`. It replaced the consolidation recommendation with links to the delivered guidance; that progress is now recorded here. The acceptance record, first findings, inputs and independent review were not rewritten.
+
+The reviewed mathematical result remains one constructed discrepancy under a stipulated reading and three controls, including a bounded DP-SGD route. This supports a reusable evidence recipe; it does not establish a new real-source fault, general diagnostic accuracy or comparative benefit. Further work should start with a selected mathematical question, not automatic activation of deferred extraction work.

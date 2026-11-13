@@ -1,0 +1,156 @@
+{
+  "schema": "ladon-premise-comparison-development-v1",
+  "scope": "M.1; four exposed development inputs, three distinct Lean subjects",
+  "constructed": [
+    "A",
+    "B",
+    "C"
+  ],
+  "realSource": [
+    "D"
+  ],
+  "pairInvariant": "A and B use identical Lean source, declaration and retained slice; only the source passage differs.",
+  "exposure": "Root inspected corpus labels, accepted reviews and DP-SGD route before authoring these interpretations. Expected outcomes are review guidance, not measured results.",
+  "cases": [
+    {
+      "id": "A",
+      "sourceSpans": [
+        {
+          "path": "openspec/changes/ladon-premise-provenance/evidence/premise-comparison-r01/PASSAGES.md",
+          "startLine": 7,
+          "endLine": 7,
+          "lineConvention": "1-based inclusive; complete lines including newline",
+          "sha256": "889bd6064464ad5c188c4bdbc479bb896686e404793336e8177bc1889df74d6f",
+          "textSha256": "75f7df6c4ec8a4899e11706e8c020603250e8e1f121c6e06fd9d310b461026d3"
+        }
+      ],
+      "leanSource": "openspec/changes/ladon-pitfall-baselines/evidence/corpus/lean/CoreCases/premise_provenance_01.lean",
+      "declaration": "PitfallCases.PremiseProvenance01.subject",
+      "historicalSlice": "openspec/changes/ladon-pitfall-baselines/evidence/qualification-runs/premise-provenance-v3-family-20261112b/slot-4c19e2/proof-slice.json",
+      "parameterAndAssumptionPolicy": "P is arbitrary; formal input h : PitfallCorpus.HasConclusion P is an instance. A supplies no such premise; B explicitly does. No invented external context.",
+      "attributedClaim": "For arbitrary P, establish P with no supplied proof/provider premise.",
+      "routeToInspect": {
+        "application": "PitfallCorpus.HasConclusion.proof",
+        "occurrence": 0,
+        "argumentIndex": 1,
+        "identityCheck": "Argument fvar must match localContext.localId of h with no letValue."
+      },
+      "expectedEvidenceAndBoundary": "Expected omitted-premise discrepancy: identify actual use of h and lack of its construction in the complete passage. The formal conditional theorem remains valid. This is an authored omission, not a newly discovered source fault.",
+      "checkingStatus": "M.1 frozen interpretation; M.2/M.3 pending"
+    },
+    {
+      "id": "B",
+      "sourceSpans": [
+        {
+          "path": "openspec/changes/ladon-premise-provenance/evidence/premise-comparison-r01/PASSAGES.md",
+          "startLine": 11,
+          "endLine": 11,
+          "lineConvention": "1-based inclusive; complete lines including newline",
+          "sha256": "889bd6064464ad5c188c4bdbc479bb896686e404793336e8177bc1889df74d6f",
+          "textSha256": "54259e4fcd167002969519818970f022218c4c4f6b0d7a837f2a03b67b240eca"
+        }
+      ],
+      "leanSource": "openspec/changes/ladon-pitfall-baselines/evidence/corpus/lean/CoreCases/premise_provenance_01.lean",
+      "declaration": "PitfallCases.PremiseProvenance01.subject",
+      "historicalSlice": "openspec/changes/ladon-pitfall-baselines/evidence/qualification-runs/premise-provenance-v3-family-20261112b/slot-4c19e2/proof-slice.json",
+      "parameterAndAssumptionPolicy": "P is arbitrary; formal input h : PitfallCorpus.HasConclusion P is an instance. A supplies no such premise; B explicitly does. No invented external context.",
+      "attributedClaim": "Given an instance h : HasConclusion P, establish P.",
+      "routeToInspect": {
+        "application": "PitfallCorpus.HasConclusion.proof",
+        "occurrence": 0,
+        "argumentIndex": 1,
+        "identityCheck": "Argument fvar must match localContext.localId of h with no letValue."
+      },
+      "expectedEvidenceAndBoundary": "Expected faithful conditional: the same actual route is disclosed. An implicit Lean binder is not itself hidden in the prose. No circularity/necessity conclusion.",
+      "checkingStatus": "M.1 frozen interpretation; M.2/M.3 pending"
+    },
+    {
+      "id": "C",
+      "sourceSpans": [
+        {
+          "path": "openspec/changes/ladon-premise-provenance/evidence/premise-comparison-r01/PASSAGES.md",
+          "startLine": 15,
+          "endLine": 15,
+          "lineConvention": "1-based inclusive; complete lines including newline",
+          "sha256": "889bd6064464ad5c188c4bdbc479bb896686e404793336e8177bc1889df74d6f",
+          "textSha256": "1aab21624e46c6aadea5fc578ec0909e9f07eee7dc60413d826bd6423b382ac9"
+        }
+      ],
+      "leanSource": "openspec/changes/ladon-pitfall-baselines/evidence/corpus/lean/CoreCases/premise_provenance_04.lean",
+      "declaration": "PitfallCases.PremiseProvenance04.subject",
+      "historicalSlice": "openspec/changes/ladon-pitfall-baselines/evidence/qualification-runs/premise-provenance-v3-family-20261112b/slot-39d7a4/proof-slice.json",
+      "parameterAndAssumptionPolicy": "Closed Nat arithmetic identity; no caller-supplied HasConclusion assumption. Read arithmeticFact and provider definitions in the same file.",
+      "attributedClaim": "2 + 2 = 4 is independently established, packaged, then projected.",
+      "routeToInspect": {
+        "application": "PitfallCorpus.HasConclusion.proof",
+        "occurrence": 0,
+        "argumentIndex": 1,
+        "identityCheck": "Provider constant must be the source-owned provider; inspect its constructor argument arithmeticFact and the theorem proof by decide."
+      },
+      "expectedEvidenceAndBoundary": "Expected derived-provider control. The class field alone cannot justify a fault. Retained extraction/source review and independently replayed projection are distinct evidence.",
+      "checkingStatus": "M.1 frozen interpretation; M.2/M.3 pending"
+    },
+    {
+      "id": "D",
+      "sourceSpans": [
+        {
+          "path": "openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpsgd-gdp-r01/sources/latex/natural-language/dpsgd_analytic_gaussian_bound.tex",
+          "startLine": 58,
+          "endLine": 84,
+          "lineConvention": "1-based inclusive; complete lines including newline",
+          "sha256": "7c2dadfe52bf7c735c1eaf47d109786325326d959c9538d44b2b7b4e20b0dc1d",
+          "textSha256": "96bd9ded735df93cb64ba133c2191f15481fafb99149b1d7bad3cd939926fe0c"
+        },
+        {
+          "path": "openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpsgd-gdp-r01/sources/latex/natural-language/dpsgd_analytic_gaussian_bound.tex",
+          "startLine": 118,
+          "endLine": 143,
+          "lineConvention": "1-based inclusive; complete lines including newline",
+          "sha256": "7c2dadfe52bf7c735c1eaf47d109786325326d959c9538d44b2b7b4e20b0dc1d",
+          "textSha256": "f3e459ab1f37242aa4357a0aeaa518658fdfc7692d8aa0310038e99df5f5ddba"
+        },
+        {
+          "path": "openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpsgd-gdp-r01/sources/latex/natural-language/dpsgd_analytic_gaussian_bound.tex",
+          "startLine": 685,
+          "endLine": 705,
+          "lineConvention": "1-based inclusive; complete lines including newline",
+          "sha256": "7c2dadfe52bf7c735c1eaf47d109786325326d959c9538d44b2b7b4e20b0dc1d",
+          "textSha256": "c266d45464ab42e6af61f4244012324d3fc230068c1f2b8eb1ba25f02a6d2dc8"
+        },
+        {
+          "path": "openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpsgd-gdp-r01/sources/latex/natural-language/dpsgd_analytic_gaussian_bound.tex",
+          "startLine": 744,
+          "endLine": 753,
+          "lineConvention": "1-based inclusive; complete lines including newline",
+          "sha256": "7c2dadfe52bf7c735c1eaf47d109786325326d959c9538d44b2b7b4e20b0dc1d",
+          "textSha256": "8a4480be2de84928fe0173c03e2bd7aff7e0e7cd45c24c221f0e84a6fa3af3ec"
+        }
+      ],
+      "leanSource": "openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpsgd-gdp-r01/sources/Mf/Optimization/PoissonClippedSGD/GaussianStep.lean",
+      "declaration": "Mf.Optimization.PoissonClippedSGD.gaussian_actual_one_step",
+      "historicalSlice": "openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpsgd-roundtrip-r01/slice-attempt-05.json",
+      "parameterAndAssumptionPolicy": "Preserve the complete GaussianStep theorem telescope, lines 17–38, including dimensions, q, measurable queries, gradient/variance/smoothness assumptions, clipping and stepsize conditions. Fix x only as that theorem does. Keep remaining integrability/provider obligations outside the two-premise conclusion.",
+      "attributedClaim": "The concrete Gaussian update supplies the mean and second-moment premises used for the selected descent estimate; their appearance in the generic estimate is legitimate.",
+      "routeToInspect": {
+        "application": "Mf.Optimization.PoissonClippedSGD.expected_aligned_step_bound",
+        "occurrence": 0,
+        "argumentIndices": [
+          35,
+          36
+        ],
+        "identityCheck": "Use ROUTE.json IDs only as navigation; match actual argument DAG references to scoped local IDs and their let values. Energy uses a wrapped argument, not a bare fvar.",
+        "routeRecord": "openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpsgd-roundtrip-r01/ROUTE.json",
+        "formalPremiseSpan": {
+          "path": "openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpsgd-gdp-r01/sources/Mf/Optimization/PoissonClippedSGD/OneStep.lean",
+          "startLine": 110,
+          "endLine": 114,
+          "lineConvention": "1-based inclusive; complete lines including newline",
+          "sha256": "58cda6510f9f9e0f17eea95956b007caaa1c0e369d74e3fd2d994a93acf02577",
+          "textSha256": "9f081346bb8024d92f85219b0648ec2182f834f7c7c8598fdd37a915528305e6"
+        }
+      },
+      "expectedEvidenceAndBoundary": "Expected faithful real-source control in the selected scope. Preserve provider-boundary/provider-unreplayed frontiers. No whole-proof, privacy, feasibility, necessity or fresh-discovery conclusion.",
+      "checkingStatus": "M.1 frozen interpretation; M.2/M.3 pending"
+    }
+  ]
+}

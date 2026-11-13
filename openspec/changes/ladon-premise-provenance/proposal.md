@@ -4,6 +4,12 @@
 
 Scoped extraction exposes premise providers, but there is no general bounded report tracing a supplied conclusion through structure fields, instances and aliases back to its source assumption. An axiom allowlist cannot diagnose this because ordinary theorem parameters are not global axioms.
 
+## Immediate development scope
+
+The revised [PLD bounded audit](../ladon-pld-core-source-audit/evidence/pld-core-r03/REPORT-v2.md) is complete. Its [child task ledger](../ladon-pld-core-source-audit/tasks.md) owns current status and its adjudication owns the upheld source formula finding, independent all-ID review, mathematical control support and incomplete formal correspondence. No production extension or comparative benefit follows from this exposed development result.
+
+The later matched pilot is also complete and used only text analysis in its Ladon arm. Native provenance was not evaluated. Follow the [umbrella's current plan](../ladon-semantic-pitfalls-umbrella/tasks.md#current-program-state--2026-11-13) and reuse the completed M.1–M.3 evidence before selecting another run or resuming the deferred graph/API work below.
+
 ## What Changes
 
 - Trace selected actual proof applications and provider expressions through a bounded graph of source-owned hypotheses, field projections, local definitions and instance arguments.
