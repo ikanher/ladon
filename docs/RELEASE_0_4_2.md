@@ -1,11 +1,19 @@
 # Ladon 0.4.2 internal development snapshot
 
 This internal snapshot collects bounded proof-extraction controls, a closed-proof
-printer repair, and source-to-formal audit guidance. Ladon remains alpha. Lean
+printer repair, faster stored-lineage queries, and source-to-formal audit guidance. Ladon remains alpha. Lean
 checks supplied terms; it does not certify that a natural-language passage was
 interpreted correctly.
 
 ## Changes
+
+- Stored-lineage queries skip comprehensive index/history diagnostics. Missing
+  closures return before source scanning; existing closures reuse the validated
+  source snapshot and read coherent database metadata and projection rows.
+  On the measured matrix-factorization index, an existing summary fell from
+  61.17 to 5.70 seconds and a missing closure from 61.85 seconds to 0.009 seconds.
+  These are single local measurements. Source stability and evidence authority
+  checks remain in force; no persistent cache is introduced.
 
 - Proof slicing and contract expansion default to depth 128 and accept an
   explicit `--max-depth` bound. The selected bound is recorded across consumers,
@@ -40,8 +48,13 @@ The optional full candidate suite was intentionally stopped after 561 passing
 tests in 263.41 seconds; this is a partial result, not a full-suite pass.
 [Verification receipt and logs](releases/0.4.2/verification.json) identify the
 candidate. Follow-up edits correct the handoff path and record these results;
-the tested production code is unchanged. Both supported Python-version CI jobs
-and a complete strict release gate remain unverified.
+the tested production code for that earlier receipt is unchanged by those
+follow-up edits. The subsequent lineage-query repair is qualified separately:
+145 affected tests pass, with the same field result payloads except timing
+fields. Its [implementation report](../openspec/changes/ladon-complete-lineage-closure-projection/evidence/query-validation-review-r01/IMPLEMENTATION.md)
+retains the exact scope and metrics. The final installed-package receipt is
+added after testing the updated candidate. Both supported Python-version CI
+jobs and a complete strict release gate remain unverified.
 
 ## Distribution and limits
 

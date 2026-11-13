@@ -9,8 +9,14 @@ From the matrix-factorization root:
 ```bash
 uv run --project ../../ladon --locked python -m ladon.entrypoint --version
 uv run --project ../../ladon --locked python -m ladon.entrypoint \
-  proof-search index status --repo-root "$PWD" --changed
+  theorem lineage Fully.Qualified.theorem --repo-root "$PWD" \
+  --refresh never --view summary --format json --output -
 ```
+
+Replace `Fully.Qualified.theorem` with the declaration being inspected.
+Stored lineage performs its own source validation. Use `proof-search index
+status --changed` for comprehensive diagnostics when needed; it can also verify
+large retained history archives and is unnecessary before each lineage query.
 
 Before reporting evidence, record the Ladon checkout identity and target
 revision:

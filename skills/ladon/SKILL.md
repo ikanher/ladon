@@ -234,10 +234,17 @@ questions and coverage gaps when the work budget ends. Save initial findings
 before a reference answer is supplied. Built-in command help remains sufficient
 for invocation details; development examples are not required investigation inputs.
 
-For lineage routes, `--max-nodes` also limits traversal rows. Repeated paths can
-visit the same declaration, so `acquisition.rowsObserved` differs from returned
-distinct nodes. One extra row detects truncation. A closure's distinct-node
-count cannot establish a sufficient route budget; retain truncation and omissions.
+For lineage routes, reachability discovers distinct nodes before constructing
+bounded representative routes. Keep `--max-nodes` and `--max-traversal-edges`
+limits separate from route-count and displayed-edge limits. Use `--view closure`
+for every selected stored node and typed edge; keep coverage and omissions
+beside conclusions.
+
+Stored-only lineage looks up absence before scanning sources and validates
+existing closures itself. It skips full status/history diagnostics; do not run
+`proof-search index status` before every lineage call solely for freshness.
+Use that command when comprehensive index diagnostics are needed. This behavior
+adds no persistent result cache or snapshot token.
 
 ## Integration evidence boundary
 
