@@ -1,0 +1,214 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+\newcommand{\R}{\mathbb R}
+\newcommand{\Pp}{\mathsf P}
+\newcommand{\Qq}{\mathsf Q}
+\newcommand{\E}{\mathbb E}
+
+\title{Approximate Differential Privacy Is Closed Under Joint Weak Limits}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Statement}
+
+Let \(Y\) be a second-countable metric space equipped with its Borel
+sigma-algebra.  For probability measures \(\Pp,\Qq\) on \(Y\), define the
+ordered \((\varepsilon,\delta)\)-privacy relation by
+\begin{equation}
+  \Pp(A)
+  \leq
+  e^\varepsilon \Qq(A)+\delta
+  \qquad
+  \text{for every Borel set }A\subseteq Y.
+  \label{eq:ordered-dp}
+\end{equation}
+This is one ordered direction of approximate differential privacy.  The
+reverse direction is obtained by interchanging \(\Pp\) and \(\Qq\).
+
+\begin{theorem}[Ordered weak-limit closure]
+\label{thm:ordered-closure}
+Let \((\Pp_i)_i\) and \((\Qq_i)_i\) be nets of probability measures on \(Y\),
+indexed along a nontrivial filter.  Assume
+\[
+  \Pp_i \Rightarrow \Pp,
+  \qquad
+  \Qq_i \Rightarrow \Qq,
+\]
+and suppose that, eventually in \(i\),
+\[
+  \Pp_i(A)\leq e^\varepsilon\Qq_i(A)+\delta
+  \qquad
+  \text{for every Borel }A.
+\]
+If \(\delta\geq0\), then
+\[
+  \Pp(A)\leq e^\varepsilon\Qq(A)+\delta
+  \qquad
+  \text{for every Borel }A.
+\]
+\end{theorem}
+
+The use of nets rather than sequences is only a topological generalization.
+For the DP-Adam application the index is \(\mathbb N\) and the filter is
+eventual convergence as the mesh is refined.
+
+\section{Proof}
+
+The direct Portmanteau comparison of one set under both measures is not
+enough.  For a closed set \(F\), weak convergence gives an upper bound for
+\(\Pp(F)\), while for the same closed set it gives an upper bound, rather than
+the required lower control, for \(\Qq(F)\).  We therefore pass first through
+bounded continuous test functions.
+
+\begin{lemma}[From events to bounded tests]
+\label{lem:event-to-test}
+Suppose \(\Pp\) and \(\Qq\) satisfy~\eqref{eq:ordered-dp}.  If
+\(f:Y\to[0,1]\) is measurable, then
+\[
+  \int f\,d\Pp
+  \leq
+  e^\varepsilon\int f\,d\Qq+\delta.
+\]
+\end{lemma}
+
+\begin{proof}
+Use the layer-cake representation
+\[
+  \int f\,d\Pp
+  =
+  \int_0^1 \Pp\{f>t\}\,dt.
+\]
+Apply~\eqref{eq:ordered-dp} to every level set ({f>t}), then integrate:
+\[
+  \int_0^1 \Pp\{f>t\}\,dt
+  \leq
+  e^\varepsilon\int_0^1 \Qq\{f>t\}\,dt
+  +\int_0^1\delta\,dt.
+\]
+The two layer-cake identities and the fact that the interval has length one
+give the claim.
+\end{proof}
+
+Now let \(f:Y\to[0,1]\) be bounded and continuous.  By
+Lemma~\ref{lem:event-to-test}, eventually
+\[
+  \int f\,d\Pp_i
+  \leq
+  e^\varepsilon\int f\,d\Qq_i+\delta.
+\]
+Weak convergence is exactly convergence of integrals against bounded
+continuous functions.  Passing to the limit yields
+\begin{equation}
+  \int f\,d\Pp
+  \leq
+  e^\varepsilon\int f\,d\Qq+\delta
+  \qquad (0\leq f\leq1,\ f\text{ continuous}).
+  \label{eq:continuous-test}
+\end{equation}
+
+It remains to recover arbitrary Borel events.  Let \(F\subseteq U\), where
+\(F\) is closed and \(U\) is open.  Metric spaces are normal, so there is a
+continuous function \(f:Y\to[0,1]\) satisfying
+\[
+  f=1\text{ on }F,
+  \qquad
+  f=0\text{ on }U^c.
+\]
+Consequently,
+\[
+  \Pp(F)
+  \leq \int f\,d\Pp
+  \leq e^\varepsilon\int f\,d\Qq+\delta
+  \leq e^\varepsilon\Qq(U)+\delta.
+\]
+
+Finally let \(A\) be Borel.  Borel probability measures on a
+second-countable metric space are regular.  Thus
+\[
+  \Pp(A)=\sup_{F\subseteq A,\,F\text{ closed}}\Pp(F),
+  \qquad
+  \Qq(A)=\inf_{A\subseteq U,\,U\text{ open}}\Qq(U).
+\]
+Apply the preceding closed--open inequality to every
+\(F\subseteq A\subseteq U\), then take the supremum over \(F\) and the
+infimum over \(U\).  This proves Theorem~\ref{thm:ordered-closure}.
+
+\section{Mechanism corollary}
+
+Let \(\mathcal D\) be a dataset type with an ordered adjacency relation
+\(\sim\).  For every index \(i\), let
+\[
+  M_i:\mathcal D\to\mathcal P(Y)
+\]
+be a probability-measure mechanism, and let
+\(M_\infty:\mathcal D\to\mathcal P(Y)\).  Assume:
+\begin{enumerate}
+  \item for every fixed dataset \(D\), \(M_i(D)\Rightarrow M_\infty(D)\);
+  \item eventually in \(i\), the complete mechanism \(M_i\) is
+  \((\varepsilon,\delta)\)-DP, with the same index tail and the same privacy
+  parameters for all ordered adjacent pairs.
+\end{enumerate}
+Then \(M_\infty\) is \((\varepsilon,\delta)\)-DP.  Indeed, fix an ordered
+adjacent pair \(D\sim D'\) and apply Theorem~\ref{thm:ordered-closure} to
+\(M_i(D)\) and \(M_i(D')\).  Since the definition quantifies over ordered
+pairs, no unstated symmetry argument is needed.
+
+The uniform eventual-mechanism hypothesis is stronger than saying that every
+adjacent pair has its own unrelated tail.  It is exactly what is supplied by
+the finite-mechanism accountant in the DP-Adam application.
+
+\section{Formal source crosswalk and scope}
+
+The formal development is independently replayed in the repository.  The
+main declarations are:
+\begin{center}
+\begin{tabular}{p{0.43\linewidth}p{0.47\linewidth}}
+\hline
+Mathematical role & Lean declaration \\
+\hline
+Ordered event inequality &
+\path{Mf.DP.OrderedApproxDPLawPair} \\
+Event inequality for bounded tests &
+\path{OrderedApproxDPLawPair.lintegral_le} \\
+Passage of continuous tests to the limit &
+\path{orderedApproxDPLawPair_limit_lintegral_le} \\
+Closed--open separation &
+\path{orderedApproxDPLawPair_closed_le_open_of_limit_lintegral} \\
+Recovery of Borel events &
+\path{orderedApproxDPLawPair_of_limit_lintegral} \\
+Ordered closure theorem &
+\path{orderedApproxDPLawPair_closed_under_joint_weak_convergence} \\
+Mechanism-level corollary &
+\path{approxDP_closed_under_pointwise_weak_convergence} \\
+\hline
+\end{tabular}
+\end{center}
+
+The theorem is qualitative: it gives no finite-index privacy correction and
+no rate of weak convergence.  It also assumes probability laws on a common
+second-countable metric Borel carrier.  It does not identify a mathematical
+mechanism with any software implementation.  Those are separate application
+obligations.
+
+The printed axiom boundary of the terminal Lean theorems contains only
+\[
+  \texttt{propext},
+  \qquad
+  \texttt{Classical.choice},
+  \qquad
+  \texttt{Quot.sound}.
+\]
+
+\end{document}

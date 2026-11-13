@@ -1,0 +1,256 @@
+% root = paper.tex
+\section{Amplifying Privacy by Subsampling}
+\label{sec:subsampling}
+
+\newcommand{\Sample}{\mathtt{Sample}}
+\newcommand{\tm}{\widetilde{M}}
+\newcommand{\Sn}{S\cup\{n\}}
+\newcommand{\xv}{S}
+% \subsection{Subsampling} % (fold)
+%
+
+Subsampling is often used prior to a private mechanism $M$ as a way to \textit{amplify} privacy guarantees. Specifically, we can construct a smaller dataset $\tilde S$ by flipping a fair coin for each individual in the original dataset $S$ to decide whether the individual is included in $\tilde{S}$. This subsampling scheme roughly shrinks the dataset by half and, therefore, we would expect that the induced mechanism applied to $\tilde S$ is about twice as private as the original mechanism $M$. Intuitively speaking, this privacy amplification is due to the fact that every individual enjoys perfect privacy if the individual is not included in the resulting dataset $\tilde S$, which happens with probability 50\%.
+
+% \wjs{{\Renyi} Differential Privacy, {\Renyi} differential privacy, {\Renyi} DP. Should be consistent.}
+The claim above was first formalized in \cite{KLNRS} for $(\ep,\delta)$-DP. Such a privacy amplification property is, unfortunately, no longer true for the most natural previous relaxations of differential privacy aimed at recovering precise compositions (like concentrated differential privacy (CDP) \cite{concentrated,concentrated2}). Further modifications such as truncated CDP \cite{tcdp} have been introduced primarily to remedy this deficiency of CDP---but at the cost of extra complexity in the definition. Other relaxations like {\Renyi} differential privacy \cite{renyi} can be shown to satisfy a form of privacy amplification by subsampling, but both the analysis and the statement are complex \cite{wang2018subsampled}.
+
+% \ar{Here is the old paragraph. What part of it is inaccurate? \Renyi-DP and tCDP -do- have amplification theorems, right? So your new paragraph which says that ``all'' composition friendly relaxations are not compatible with the amplification property seems misleading.. }
+
+In this section, we show that these obstacles can be overcome by our hypothesis testing based relaxation of differential privacy. Explicitly, our main result is a simple, general, and easy-to-interpret subsampling theorem for $f$-DP. Somewhat surprisingly, our theorem significantly improves on the classical subsampling theorem for privacy amplification in the $(\ep,\delta)$-DP framework \cite{jon}. Note that this classical theorem continues to use $(\epsilon,\delta)$-DP to characterize the subsampled mechanism. However, $(\epsilon,\delta)$-DP is simply not expressive enough to capture the amplification of privacy.
+
+% (by no longer expressing the resulting guarantees using $(\epsilon,\delta)$-differential privacy).
+% in some parameter regimes.
+
+
+
+\subsection{A Subsampling Theorem} % (fold)
+\label{sec:subsample_theorems}
+
+% section subsample_theorems (end)
+%\djs{Determine the notation in earlier sections first.} Suppose the datum of each individual lies in an abstract domain $X$ (e.g. $X=\R^d$ or $X=\{0,1\}^d$). When there are $n$ individual, our dataset space is $X^n$. A particular dataset is denoted by $\xv = (x_1,\ldots, x_n)$. By individual we refer to an index in $\{1,2,...,n\}$. $x_i$ is the datum that belongs to individual $i$. Hence mechanisms of interest in this section are random mappings from $X^n$ to some abstract range $Y$. \ar{This is how we should define datasets/mechanisms initially.}
+	% \item For each of the $n$ individuals in $\xv$, include the individual's datum in the subsample independently with probability $p$. The resulting subsample is denoted by $\Sample(\xv,p)$;.
+ %It does not matter because our theory is based on a general reduction from subsampling theorems for $(\ep,\delta)$-DP to those for $f$-DP. Whatever is present for $(\ep,\delta)$-DP will be present for $f$-DP. \djs{Added this based on conversation with Aaron.}
+%	\item There are $n \choose m$ different subsets of the $n$ individuals with size $m$. Uniformly pick one from these $n \choose m$ subsets. The pick is (abusively) referred to as $\Sample(\xv,m)$.
+% Since $\Sample(\xv,p)$ can have uncertain size, in this case $M$ has to operate on $X^{\leqslant n}:=\bigcup_{i=0}^n X^i$. The neighboring relation is pieced together on each $X^i$: two datasets are neighbors if they differ by exactly one individual. In particular, if they are of different size then they are not neighbors.
+% Suppose we are given that $M$ is $f$-DP. After subsampling we get the mechanism $\tm(\xv)=M\big(\Sample(\xv,p)\big)$ (or $\tm(\xv)=M\big(\Sample(\xv,m)\big)$ depending on the sampling scheme). It is convenient to hide the input $\xv$ by abusing the deterministic mapping composition notation for randomized mappings and write $\tilde{M} = M\circ\Sample(p)$.
+
+Given an integer $1 \le m \le n$ and a dataset $S$ of $n$ individuals, let $\Sample_m(\xv)$ be a subset of $S$ that is chosen uniformly at random among all the $m$-sized subsets of $\xv$. For a mechanism $M$ defined on $X^m$, we call $M\big(\Sample_m(\xv)\big)$ the subsampled mechanism, which takes as input an $n$-sized dataset. Formally, we use $M \circ \Sample_m$ to denote this subsampled mechanism. To clear up any confusion, note that intermediate result $\Sample_m(\xv)$ is not released and, in particular, this is different from the composition in \Cref{sec:composition-theorems}.
+
+
+
+In brief, our main theorem shows that the privacy bound of the subsampled mechanism in the $f$-DP framework is given by an operator acting on trade-off functions. To introduce this operator, write the convex combination $f_p:= pf + (1-p)\Id$ for $0 \le p \le 1$, where $\Id(x) = 1-x$. Note that the trade-off function $f_p$ is asymmetric in general.
+\begin{definition} \label{def:Cp}
+For any $0 \le p \le 1$, define the operator $C_p$ acting on trade-off functions as
+\[C_p(f) := \min\{f_p, f_p^{-1}\}^{**}.\]
+We call $C_p$ the $p$-sampling operator.
+\end{definition}
+Above, the inverse $f_p^{-1}$ is defined in \eqref{eq:inver_f}. The biconjugate $\min\{f_p, f_p^{-1}\}^{**}$ is derived by applying the conjugate as defined in \eqref{eq:conjugate} twice to $\min\{f_p, f_p^{-1}\}$. For the moment, take for granted the fact that $C_p(f)$ is a symmetric trade-off function.
+
+% Basic properties of convex conjugates show that $C_p$ maps $f$ to a symmetric trade-off function:
+% \begin{lemma}
+% As a function defined on $[0, 1]$, $C_p(f)$ is a symmetric trade-off function provided that $f$ is a trade-off function.
+% \end{lemma}
+% % and is, therefore, convex. Consequently, $C_p(f)$ is a (symmetric) trade-off function.
+
+Now, we present the main theorem of this section.
+
+\begin{theorem}\label{thm:subsample}
+If $M$ is $f$-DP on $X^m$, then the subsampled mechanism $M\circ\Sample_m$ is $C_p(f)$-DP on $X^n$, where the sampling ratio $p=\frac{m}{n}$.
+\end{theorem}
+
+%This privacy guarantee of the subsampled mechanism is tight in the sense that the theorem does not hold if $C_p(f)$ is replaced by any larger trade-off function. \wjs{This is true?}
+
+Appreciating this theorem calls for a better understanding of the operator $C_p$. In effect, $C_p$ performs a two-step transformation: symmetrization (taking the minimum of $f_p$ and its inverse $f_p^{-1}$) and convexification (taking the largest convex lower envelope of $\min\{f_p, f_p^{-1}\}$). The convexification step is seen from convex analysis that the biconjugate $h^{**}$ of any function $h$ is the greatest convex lower bound of $h$. As such, $C_p(f)$ is convex and, with a bit more analysis, \Cref{prop:trade-off} ensures that $C_p(f)$ is indeed a trade-off function. As an aside, $C_p(f) \le \min\{f_p, f_p^{-1}\} \le f_p$. See \Cref{fig:subsample} for a graphical illustration.
+
+
+%$= \mathrm{Conv}\big(\min\{f_p,f_p^{-1}\}\big) $
+% Now, we present the main theorem of this section, which quantifies the privacy bound of the subsampled mechanism in the $f$-DP framework. In effect, subsampling
+% In our $f$-DP framework, privacy is quantified by trade-off functions, so in our theorems, amplification incurred by subsampling with ratio $p$ is described by an operation $C_p$ which acts on trade-off functions.
+%$C_p$ roughly does the following to a symmetric trade-off function $f$
+%The formal definition of $C_p$ and discussion is deferred until after the main theorem of this section.
+%Formalizing the description above, $C_p$ can be rigorously defined as follows:
+% Conv is just a semantically more interpretable notation for it.
+%understand how privacy is amplified by subsampling.
+%lead to a qualitative understanding of privacy
+%are we provide several easy to verify facts that help the reader better understand the qualitative behavior of this operator.
+
+
+Next, the following facts concerning the $p$-sampling operator qualitatively illustrate this privacy amplification phenomenon.
+\begin{enumerate}
+\item If $0\leqslant p\leqslant q\leqslant 1$ and $f$ is symmetric, we have $f=C_1(f)\leqslant C_q(f)\leqslant C_p(f)\leqslant C_0(f)= \Id$. That is, as the sampling ratio declines from 1 to 0, the privacy guarantee interpolates monotonically between the original $f$ and the perfect privacy guarantee $\Id$. This monotonicity follows from the fact that $g \ge h$ is equivalent to $g^{-1} \ge h^{-1}$ for any trade-off functions $g$ and $h$.
+
+\item
+If two trade-off functions $f$ and $g$ satisfy $f \ge g$, then $C_p(f) \ge C_p(g)$. This means that if a mechanism is more private than the other, using the same sampling ratio, the subsampled mechanism of the former remains more private than that of the latter, at least in terms of lower bounds.
+
+\item For any $0 \le p \le 1$, $C_p(\Id) = \Id$. That is, perfect privacy remains perfect privacy with subsampling.
+\end{enumerate}
+
+Explicitly, we provide a formula to calculate $C_p(f)$ for a symmetric trade-off function $f$. Letting $x^*$ be the unique fixed point of $f$, that is $f(x^*)= x^*$, we have
+\begin{equation}\label{eq:Cp_expression}
+		C_p(f)(x)=
+			\left\{
+			\begin{array}{ll}
+			f_p(x),&x\in[0,x^*] \\
+			x^*+f_p(x^*)-x, & x\in[x^*,f_p(x^*)]\\
+			f_p^{-1}(x), &x\in[f_p(x^*),1].
+			\end{array}
+			\right.
+	\end{equation}
+This expression is almost self-evident from the left panel of \Cref{fig:subsample}. Nevertheless, a proof of this formula is given in \Cref{app:property}. This formula, together with \Cref{thm:subsample}, allows us to get a closed-form characterization of the privacy amplification for $(\epsilon, \delta)$-DP.
+\begin{corollary}\label{cor:ep_d}
+If $M$ is $(\epsilon, \delta)$-DP on $X^m$, then the subsampled mechanism $M\circ\Sample_m$ is $C_p(f_{\epsilon, \delta})$-DP on $X^n$, where
+\begin{equation}\label{eq:ep_d_sump_for}
+C_p(f_{\epsilon, \delta})(\alpha) = \max\left\{f_{\epsilon', \delta'}(\alpha), 1 - p\delta - p \, \frac{\e^{\ep} - 1}{\e^{\ep} + 1} - \alpha \right\}.
+\end{equation}
+Above, $\epsilon'= \log(1-p + p \e^\ep), \delta' = p\delta$, and $p = \frac{m}{n}$.
+\end{corollary}
+
+% Further details can be found in \Cref{app:property}.
+% and provide the proof of expression \eqref{eq:Cp_expression} in \Cref{app:property}.
+% where $x^*$ is the unique fixed point of $f$, i.e. $f(x^*)= x^*$.
+% \end{proposition}
+% The second break point $px^*+(1-p)(1-x^*)$ is equal to $f_p(x^*)$.
+% \begin{proposition}\label{prop:Cp_expression}
+% For a symmetric trade-off function $f$ and $p\in[0,1]$, $C_p$ has the following expression:
+
+
+
+
+
+\begin{figure}[!htp]
+\centering
+  \includegraphics[width=.7\linewidth]
+{./figures/subsample_main.pdf}
+  \captionof{figure}{The action of $C_p$. Left panel: $f=G_{1.8}, p=0.35$. Right panel: $\ep = 3,\delta=0.1,p=0.2$. The subsampling theorem \ref{thm:subsample} results in a significantly tighter trade-off function compared to the classical theorem for $(\ep,\delta)$-DP.}
+% Even if one wants to express the final guarantee of a composition of subsampled mechanisms using $(\ep,\delta)$-DP, expressing the guarantees of intermediate steps of a composition in this way can be unavoidably wasteful.
+  \label{fig:subsample}
+\end{figure}
+
+% If we use $f_p$ to denote the convex combination $pf+(1-p)\Id$, then the expression for $C_p(f)$ is
+% Let's use $f_p$ to denote the convex combination $pf+(1-p)\Id$ temporarily in this section. Not to confuse it with other ``trade-off function with subscript'' notation used in this paper. \djs{Put it somewhere in the beginning of the paper.} Thus $C_p(f)$ is the maximum convex function that is smaller than both $f_p$ and $f_p^{-1}$.
+% The tightness of these theorems are less credible since there is no statement in terms of indistinguishability. Unlike composition theorems and group privacy, the universal quantifiers are necessary, even in the statement.
+% $\tilde{M} = M\circ\Sample(p)$ is $(\ep',\delta')$-DP with $\ep' = \log(1-p + pe^\ep), \delta' = p\delta$.
+
+For comparison, we now present the existing bound on the privacy amplification by subsampling for $(\ep,\delta)$-DP. To be self-contained, \Cref{app:property} gives a proof of this result, which primarily follows \cite{jon} .
+
+\begin{restatable}[\cite{jon}]{lemma}{DPsubsamplerep}\label{lem:DPsubsample}
+If $M$ is $(\ep,\delta)$-DP, then $M\circ\Sample_m$ is $(\ep',\delta')$-DP with $\ep'$ and $\delta'$ defined in \Cref{cor:ep_d}.
+%Recall the sampling ratio $p=\frac{m}{n}$.
+\end{restatable}
+
+Using the language of the $f$-DP framework, \Cref{lem:DPsubsample} states that $M\circ\Sample_m$ is $f_{\epsilon',\delta'}$-DP. \Cref{cor:ep_d} improves on \Cref{lem:DPsubsample} because, as is clear from \eqref{eq:ep_d_sump_for},
+\[
+C_p(f_{\epsilon, \delta}) \ge f_{\epsilon',\delta'}.
+\]
+The right panel of \Cref{fig:subsample} illustrates \Cref{lem:DPsubsample} and our \Cref{cor:ep_d} for $\epsilon = 3, \delta = 0.1$, and $p = 0.2$. In effect, the improvement is captured by the shaded triangle enclosed by $C_p(f_{\epsilon, \delta})$ and $f_{\epsilon',\delta'}$, revealing that the minimal sum of type I and type II errors in distinguishing two neighboring datasets with subsampling can be significantly lower than the prediction of \Cref{lem:DPsubsample}. This gain is only made possible by the flexibility of trade-off functions in the sense that $C_p(f_{\epsilon, \delta})$ \textit{cannot} be expressed within the $(\epsilon, \delta)$-DP framework. The unavoidable loss in the $(\epsilon,\delta)$-DP representation of the subsampled mechanism is compounded when analyzing the composition of many private mechanisms. 
+
+% it is   there is a large gain in terms of the guarantee on the minimal (type I $+$ type II) error that any adversary can achieve in distinguishing two pairs of neighboring datasets.
+%The proof of \Cref{lem:DPsubsample} is non-trivial. , which primarily follows Ullman's lecture notes \cite{jon}. \wjs{\cite{KLNRS} also did this?}
+
+In the next subsection, we prove \Cref{thm:subsample} by making use of \Cref{lem:DPsubsample}. Its proof implies that \Cref{thm:subsample} holds for any subsampling scheme for which \Cref{lem:DPsubsample} is true. In particular, it holds for the subsampling scheme described at the beginning of this section, that is, independent coin flips for every data item. 
+
+%\djs{Changed to this.}
+% Before moving on to the proof of \Cref{thm:subsample} in \Cref{sub:proof_of_subsample_theorems}, we briefly remark that this theorem can be extended to the subsampling scheme described at the beginning of this section, that is, independent coin flips for every data item. See \Cref{app:property} for more discussion.
+
+% Note that this scheme differs from the one informally described at the beginning of this section, since it results in datasets of size \emph{exactly} $p\cdot n$, rather than independently sampling each individual with probability $p$. But a similar theorem (with essentially the same proof) holds for the independent sampling scheme. This is because our proof gives a general way to lift known subsampling theorems for $(\ep,\delta)$-DP to theorems for $f$-DP, and amplification theorems for both sampling schemes are known for $(\ep,\delta)$-DP.
+	% From the above discussion, the new linear envelopes are averages of the old ones with the diagonal $\Id$. These new envelopes correspond to $f_p = pf+(1-p)\Id$. To see this, it suffices to
+
+
+\subsection{Proof of the Subsampling Theorem} % (fold)
+\label{sub:proof_of_subsample_theorems}
+The proof strategy is as follows. First, we convert the $f$-DP guarantee into an infinite collection of $(\ep,\delta)$-DP guarantees by taking a dual perspective that is enabled by \Cref{prop:ftoDP}. Next, by applying the classical subsampling theorem (that is, \Cref{lem:DPsubsample}) to these $(\ep,\delta)$-DP guarantees, we conclude that the subsampled mechanism satisfies a new infinite collection of $(\ep,\delta)$-DP guarantees. Finally, \Cref{prop:DPtof} allows us to convert these new privacy guarantees back into an $\tilde{f}$-DP guarantee, where $\tilde f$ can be shown to coincide with $C_p(f)$.
+
+%\wjs{For simplicity, all trade-off functions in this section are assumed to be smooth. All the statements carry over to general trade-off functions with a subdifferential argument.}
+% Executing the simple plan requires a slightly more advanced version of primal-dual conversion than what we have seen in \Cref{sub:a_primal_dual_connection_with_}.
+%%	We know $M$ is $f$-DP. Converting to the dual description by
+
+\begin{proof}[Proof of \Cref{thm:subsample}]
+% Without loss of generality, assume $f$ is symmetric. Otherwise, the symmetrization trick from \Cref{prop:symmetry} can improve the bound $C_p(f)$ in the present theorem to $C_p(\max\{f, f^{-1}\})$. Note that $C_p(\max\{f, f^{-1}\}) \ge C_p(f)$ since $\max\{f, f^{-1}\} \ge f$.
+Provided that $M$ is $f$-DP, from \Cref{prop:ftoDP} it follows that $M$ is $\big(\ep,\delta(\ep)\big)$-DP with $\delta(\ep) = 1+f^*(- \e^{\ep})$ for all $\ep\geqslant 0$. Making use of \Cref{lem:DPsubsample}, the subsampled mechanism $M \circ \Sample_m$ satisfies the following collection of $(\ep',\delta')$-DP guarantees for all $\ep\geqslant 0$:
+\[
+\ep' =\log(1 - p + p\e^\ep),\quad \delta' =p\big(1+f^*(-\e^{\ep})\big).
+\]
+Eliminating the variable $\epsilon$ from the two parametric equations above, we can relate $\ep'$ to $\delta'$ using
+\begin{equation}\label{eq:fp}
+\delta' = 1+f_p^*(-\e^{\ep'}),
+\end{equation}
+which is proved in \Cref{app:property}. The remainder of the proof is devoted to showing that $(\epsilon', \delta')$-DP guarantees for all $\ep' \ge 0$ is equivalent to the $C_p(f)$-DP guarantee.
+
+%the conversion of this collection back to an $\tilde{f}$-DP guarantee.
+%We provide some intuition why the convex combination $f_p = pf+(1-p)\Id$ arises in the main body after the proof.
+%, we cannot naively use the ``if and only if'' claim and convert it back to $f_p$-DP, because
+
+At first glance, \eqref{eq:fp} seems to enable the use of \Cref{prop:ftoDP}. Unfortunately, that would be invalid because $f_p$ is asymmetric. To this end, we need to extend \Cref{prop:ftoDP} to general trade-off functions. To avoid conflicting notation, let $g$ be a generic trade-off function, not necessarily symmetric. Denote by $\bar{x}$ be the smallest point such that $g'(x)=-1$, that is, $\bar{x} = \inf\{x\in[0,1]:g'(x)=-1\}$.\footnote{For simplicity, the proof assumes differentiable trade-off functions. If $g$ is not differentiable, use the definition $\bar{x} = \inf\{x\in[0,1]: -1 \in \partial g(x) \}$ instead. This adjustment applies to other parts of the proof.} As a special instance of \Cref{prop:asymm_env} in the appendix, the following result serves our purpose.
+\begin{proposition}\label{prop:asymm_for_proof}
+If $g(\bar{x})\geqslant\bar{x}$ and a mechanism $M$ is $(\ep,1+g^*(-\e^{\ep}))$-DP for all $\ep\geqslant 0$, then $M$ is $\min\{g,g^{-1}\}^{**}$-DP.
+%%\mathrm{Conv}
+\end{proposition}
+
+
+The proof of the present theorem would be complete if \Cref{prop:asymm_for_proof} can be applied to the collection of privacy guarantees in \eqref{eq:fp}for $f_p$. To use \Cref{prop:asymm_for_proof}, it suffices to verify the condition $f_p(\bar{x})\geqslant \bar{x}$ where $\bar{x}$ is the smallest point such that $f_p'(x)=-1$. Let $x^*$ be the (unique) fixed point of $f$. To this end, we collect a few simple facts:
+	\begin{itemize}
+		% \setlength\itemsep{0.1em}
+		\item First, $f'(x^*) = -1$. This is because the graph of $f$ is symmetric with respect to the $45^\circ$ line passing through the origin.
+%This is because $f$ is symmetric, so $f = f^{-1}$ have the same derivative at $x^*$. On the other hand, the two derivatives at $x^*$ must also be reciprocal, so it is $\pm 1$. In addition, $f$ is decreasing, so it has to be $-1$.
+		\item Second, $\bar{x}\leqslant x^*$. This is because $f_p'(x^*)=pf'(x^*)+(1-p)\Id'(x^*)=-1$ and, by definition, $\bar{x}$ can only be smaller.
+%		\item $f_p(x^*)\geqslant f(x^*)$. This is because $f$ is a trade-off function so by \Cref{prop:trade-off} $f\leqslant \Id$, and hence their average $f_p$ lies in between.
+	\end{itemize}
+With these facts in place, we get
+\[f_p(\bar{x})\geqslant f_p(x^*) \geqslant f(x^*) = x^* \geqslant \bar{x}\]
+by recognizing that $f_p$ is decreasing and $f_p \ge f$. Hence, the proof is complete.
+
+% So the condition is satisfied and we can apply \Cref{prop:asymm_for_proof} with $g=f_p$, which converts the collection \eqref{eq:fp} into $\mathrm{Conv}(\min\{f_p,f_p^{-1}\})$-DP, i.e. $C_p(f)$-DP.
+\end{proof}
+
+% \paragraph{Why $f_p$ Arises in \eqref{eq:fp}} % (fold)
+% \label{par:why1}
+
+% In previous literature, $\ep' = \log(1-p + pe^\ep)$ is often approximated by $\log(1-p + pe^\ep)\leqslant -p + pe^\ep =O(p\ep)$. Though convenient in terms of $\ep$, the approximation hides away a nice geometric interpretation:
+% $$f_{\ep',\delta'}(x) = pf_{\ep,\delta}(x)+(1-p)\Id(x) \text{ for small } x.$$
+% To see this, notice that for small $x$, all three functions involved are linear. Let $k(\cdot)$ and $b(\cdot)$ be the corresponding slope and intercept of the functions. We have
+% 	$k(f_{\ep,\delta}) = -e^{\ep} , b(f_{\ep,\delta}) = 1-\delta$ and
+% 	$k(\Id)=-1$  $b(\Id)=1$.
+% \begin{align*}
+% 	k(f_{\ep',\delta'}) &= -e^{\ep'} = -(1-p)-pe^\ep = (1-p)k(\Id)+pk(f_{\ep,\delta})\\
+% 	b(f_{\ep',\delta'}) &= 1-\delta' = 1-p\delta = (1-p)+p(1-\delta) = (1-p)b(\Id)+pb(f_{\ep,\delta})
+% \end{align*}
+% Hence both slope and intercept are averages. The linear function itself must also be an average.
+
+% $\ep$ and $\delta$ are related by $\delta(\ep) = 1+f^*(-e^{\ep})$ so that $f_{\ep,\delta}$ is tangent to $f$. The average $f_{\ep',\delta'} = pf_{\ep,\delta}+(1-p)\Id(x)$ must also be tangent to the average $f_p = pf+(1-p)\Id$. Hence $\ep'$ and $\delta'$ are related by a similar expression $\delta'(\ep') = 1+f_p^*(-e^{\ep})$. This explains why $f_p$ arises in \eqref{eq:fp}.
+
+% \paragraph{Why Symmetrization Induces $\mathrm{Conv}(\min\{g,g^{-1}\})$} % (fold)
+% \label{par:why_symmetrization_induces}
+% Just like \Cref{prop:DPtof}, we need to find the enveloping function of the collection $f_{\ep,\delta}$ with $\delta=1+g^*(-e^{\ep}),\ep\geqslant0$. Each enveloping $f_{\ep,\delta}$ is in fact the max of two linear functions that are symmetric to each other, one with slope $-e^{\ep}$ and the other $-e^{-\ep}$. We refer to these linear functions as the steeps and flats. The envelope of $f_{\ep,\delta}$ can be obtained by taking the max of the envelopes of steeps and flats. Each $f_{\ep,\delta}$ recovers a point on $g$ with derivative $-e^\ep\leqslant-1$. Hence the collection of steeps envelopes $g_\mathrm{env}$ in the right panel of \Cref{fig:symm_main}. Since flats are symmetric to steeps, they envelope the symmetric function, i.e. $g_\mathrm{env}^{-1}$. From \Cref{fig:symm_main}, it is easy to see that $\max\{g_\mathrm{env},g_\mathrm{env}^{-1}\}$ agrees with $\mathrm{Conv}(\min\{g,g^{-1}\})$.
+% paragraph why_symmetrization_induces (end)
+
+
+% \begin{figure}[t]
+%   \centering
+%   \includegraphics[width=0.7\linewidth]
+% {./figures/Symm_main.pdf}
+%   \captionof{figure}{\djs{TODO}}
+%   \label{fig:symm_main}
+% \end{figure}
+
+
+% subsection proof_of_subsample_theorems (end)
+
+% paragraph why_ (end)
+% Recall in \Cref{thm:subsample} we conclude that the subsample mechanism $\tm$ is $C_p(f)$-DP with
+% \[
+% C_p(f)(x)=
+% 	\left\{
+% 	\begin{array}{ll}
+% 	f_p(x),&x\in[0,x^*], \\
+% 	2px^*+1-p-x, & x\in[x^*,px^*+(1-p)(1-x^*)],\\
+% 	f_p^{-1}(x), &x\in[px^*+(1-p)(1-x^*),1]
+% 	\end{array}
+% 	\right.
+% \]
+% and $f_p = pf+(1-p)\Id$.
+% The proof strategy is to use primal-dual conversion to show that $\tm$ is $\Symm(f_p)$-DP, and then verify that $C_p(f) = \Symm(f_p)$.
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../paper"
+%%% End:

@@ -1,0 +1,82 @@
+{
+  "buildPolicy": {
+    "effective": "lake-default",
+    "requested": "lake-default",
+    "scope": "project module compilation; dependency resolution is separately supervised",
+    "version": 1
+  },
+  "capsuleIdentity": "sha256:4ce2fa29ef9b3553d2eec188da6dc6547629ad3666c2eca8bdbd7529faa6461d",
+  "comparisons": {},
+  "isolation": {
+    "level": "fresh_copy_sanitized_environment",
+    "originalCheckoutReferencedByCommand": false,
+    "originalCheckoutReferencedByEnvironment": false,
+    "passed": true,
+    "replayRootRole": "fresh_temporary_repository"
+  },
+  "nonclaims": [
+    "The capsule is not claimed to be globally or declaration-level minimal.",
+    "External dependencies are locked but are not necessarily vendored for offline use.",
+    "Native and operating-system dependencies are not packaged hermetically.",
+    "Ladon reports Lean replay evidence and is not an independent proof authority."
+  ],
+  "planIdentity": "sha256:f940acd3b0315e365ec0d49521f1e7278538c95c0faa0fdd8aaa76140add3aa1",
+  "receiptIdentity": "sha256:db0fb1d4aec5e8afe3153b8261af06c152147213497dc53ed677daa2f0e47962",
+  "resourceLimits": {
+    "maxProcessOutputBytes": 16777216,
+    "maxProcessTreeRssBytes": 12884901888,
+    "memoryMetric": "aggregate process-tree RSS; shared pages may be counted repeatedly",
+    "stageTimeoutSeconds": 3600.0,
+    "version": 1
+  },
+  "schema": "ladon-theorem-capsule-replay-v1",
+  "stages": [
+    {
+      "command": [
+        "lake",
+        "build",
+        "<target-module>"
+      ],
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 50233344,
+      "resourceObservations": {
+        "largestLeanRssBytes": 0,
+        "leanMeasurement": "sampled",
+        "maxDescendantProcesses": 0,
+        "maxLeanProcesses": 0,
+        "memoryMetric": "RSS per process; shared pages may be counted repeatedly",
+        "samples": 1,
+        "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+        "status": "sampled",
+        "unavailableSamples": 0,
+        "unidentifiedProcessNames": 0,
+        "version": 1
+      },
+      "returncode": 1,
+      "stage": "lean_build",
+      "stderrExcerpt": "info: mathlib: cloning https://github.com/leanprover-community/mathlib4\ninfo: stderr:\nCloning into '<replay-root>/.lake/packages/mathlib'...\nfatal: '/nonexistent/github.com/leanprover-community/mathlib4' does not appear to be a git repository\nfatal: Could not read from remote repository.\n\nPlease make sure you have the correct access rights\nand the repository exists.\nerror: external command 'git' exited with code 128\n",
+      "stderrSha256": "sha256:f090141aed3ee5ea6ba6c34e68f851a117076eee491886f42c2e08cc017457d2",
+      "stdoutExcerpt": "",
+      "stdoutSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "timedOut": false
+    }
+  ],
+  "status": "dependency-unavailable",
+  "target": {
+    "module": "Mf.Optimization.StochasticApproximation.MultiplicativeDescent",
+    "name": "Mf.Optimization.StochasticApproximation.almost_supermartingale_converges"
+  },
+  "toolchain": {
+    "helperVersion": "ladon-theorem-capsule-helper-v1",
+    "leanVersion": "4.33.0",
+    "protocolVersion": "ladon-theorem-capsule-stream-v1"
+  },
+  "trustFrontier": [
+    {
+      "kind": "axiom_reference",
+      "scope": "value",
+      "target": "propext"
+    }
+  ]
+}

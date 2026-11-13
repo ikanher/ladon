@@ -1,0 +1,9 @@
+# Synthetic comparison r01 — results
+
+All ten registered audits finished within their 20-minute deadlines and under the twenty-command limit. Ten first reports were frozen before any reference answers were released. Two independent fresh reviewers rated each report blind; all ten then completed unit-specific reference adjudication. Hashes and session receipts are retained under the workspaces in `/home/codex/projects/ladon-evaluations/synthetic-r01/`.
+
+The independent reviews confirmed two distinct exposition faults, faithful support on both controls, and a genuinely underspecified probability-scope passage. On the omitted-state-nonnegativity fault, the assisted report falsely called the passage supported while the control identified the missing premise and supplied a valid counterexample. On the omitted-nonnegative-dissipation fault, both arms identified the defect with valid deterministic counterexamples. Both arms noted the ambiguity in the final case but did not abstain as the reference required. No serious false accusation was attributed to the control.
+
+The frozen continuation gate was **not met**: the assisted arm produced no additional upheld fault finding over control and made one serious false accusation. This small synthetic study demonstrates that the shared recipe can support a useful fault finding in either arm; it does not demonstrate added detection benefit from Ladon. It does not establish natural-error discovery or general reliability. The findings are from source-mathematics review, with no new Lean oracle certificates.
+
+Counts, gate calculation, policy and limitations are recorded in [RESULT.json](RESULT.json). All first reports, blind ratings and reference reviews remain immutable under the linked workspaces; the answer mapping and detailed case references remain in custodian-only storage.

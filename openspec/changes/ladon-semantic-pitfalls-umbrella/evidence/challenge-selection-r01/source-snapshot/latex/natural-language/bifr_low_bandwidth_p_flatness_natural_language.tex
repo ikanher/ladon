@@ -1,0 +1,338 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\Eerr}{\mathcal E}
+\newcommand{\sens}{\mathrm{sens}}
+
+\title{Low-Bandwidth \(\gamma\)-BIFR: Constant-Factor \(p\)-Flatness of the Collapsed Factorwise Proof}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{Statement}
+
+This note uses the notation from the BIFR paper.
+The factorization is
+\[
+    E = B_\gamma^{(p)}C_\gamma^{(p)}
+\]
+and the native multi-participation error is
+\[
+    \Eerr(B_\gamma^{(p)},C_\gamma^{(p)})
+    =
+    \frac{\|B_\gamma^{(p)}\|_F}{\sqrt n}
+    \sens_{k,b}(C_\gamma^{(p)}).
+\]
+
+The low-bandwidth policy in the current proof is
+\[
+    \eta := 1-\gamma = \frac{p}{\sqrt n},
+    \qquad
+    \gamma = 1-\frac{p}{\sqrt n},
+\]
+with
+\[
+    2\le p\le \frac{\sqrt n}{4}.
+\]
+
+The point of this note is narrow.
+It proves that the collapsed factorwise low-bandwidth proof is \(p\)-flat: after multiplying the paper's RMSE and sensitivity estimates and simplifying to the asymptotic branch, the only remaining \(p\)-dependence is a bounded universal constant factor.
+Thus this proof route cannot explain a polynomial, logarithmic, or asymptotic decrease in \(p\).
+
+\section{Imported Bounds}
+
+The current proof bounds the two factors separately.
+We use the following two paper-level estimates.
+
+\begin{proposition}[Normalized RMSE bound]
+Under the low-bandwidth policy,
+\[
+    \frac{\|B_\gamma^{(p)}\|_F}{\sqrt n}
+    \le
+    C_R\sqrt{1+p^{2\eta}}
+\]
+for a universal constant \(C_R\).
+\end{proposition}
+
+\begin{proposition}[Strategy sensitivity bound]
+Under the low-bandwidth policy,
+\[
+    \sens_{k,b}(C_\gamma^{(p)})
+    \le
+    C_S
+    \left(
+        \sqrt{k}\sqrt{1+\sqrt n\,p^{-2\eta}}
+        +
+        \sqrt{\frac{k}{b}}
+        \left(1+\sqrt n\,p^{-\eta}\right)
+    \right)
+\]
+for a universal constant \(C_S\).
+\end{proposition}
+
+The RMSE bound worsens with \(p\) through \(p^\eta\).
+The sensitivity bound improves with \(p\) through \(p^{-\eta}\).
+The flatness comes from multiplying these two effects.
+
+\section{The Algebraic Cancellation}
+
+Set
+\[
+    x := p^\eta = p^{p/\sqrt n}.
+\]
+Since \(p\ge2\), we have \(x\ge1\).
+Since \(p\le\sqrt n/4\), we have \(\eta\le1/4\), so
+\[
+    x^2=p^{2\eta}\le p\le \frac{\sqrt n}{4}\le\sqrt n.
+\]
+Here the first inequality follows from \(2\eta\le1/2\le1\) and \(p\ge1\).
+
+Multiplying the two imported estimates gives
+\[
+\begin{aligned}
+    \Eerr(B_\gamma^{(p)},C_\gamma^{(p)})
+    &\le
+    C_R C_S
+    \sqrt{1+x^2}
+    \left(
+        \sqrt{k}\sqrt{1+\sqrt n\,x^{-2}}
+        +
+        \sqrt{\frac{k}{b}}
+        (1+\sqrt n\,x^{-1})
+    \right).
+\end{aligned}
+\]
+There are two product terms.
+It is useful to name the collapsed factor envelope:
+\[
+    U_{n,k,b}(p)
+    :=
+    \sqrt{1+x^2}
+    \left(
+        \sqrt{k}\sqrt{1+\sqrt n\,x^{-2}}
+        +
+        \sqrt{\frac{k}{b}}
+        (1+\sqrt n\,x^{-1})
+    \right).
+\]
+
+For the first one,
+\[
+\begin{aligned}
+    (1+x^2)(1+\sqrt n\,x^{-2})
+    &=
+    1+x^2+\sqrt n\,x^{-2}+\sqrt n  \\
+    &\le
+    2\sqrt n\,x^{-2}+2\sqrt n       \\
+    &=
+    2\sqrt n(1+x^{-2}),
+\end{aligned}
+\]
+because \(x^2\le\sqrt n\) and \(1\le \sqrt n\,x^{-2}\).
+Taking square roots,
+\[
+    \sqrt{1+x^2}\sqrt{1+\sqrt n\,x^{-2}}
+    \le
+    \sqrt2\, n^{1/4}\sqrt{1+x^{-2}}.
+\]
+
+For the second one, since \(x\ge1\),
+\[
+    \sqrt{1+x^2}\le \sqrt2\,x.
+\]
+Therefore
+\[
+    \sqrt{1+x^2}(1+\sqrt n\,x^{-1})
+    \le
+    \sqrt2(x+\sqrt n).
+\]
+The low-bandwidth assumptions imply \(n\ge64\) and \(x\le n^{1/4}\le\sqrt n\), so
+\[
+    \sqrt2(x+\sqrt n)
+    \le
+    2\sqrt2\,\sqrt n
+    \le
+    2\sqrt2\,\sqrt n\,\sqrt{1+x^{-2}}.
+\]
+
+\begin{lemma}[Two-sided flatness of the collapsed factor envelope]
+Assume
+\[
+    k\ge1,
+    \qquad
+    b>0,
+    \qquad
+    2\le p\le\frac{\sqrt n}{4}.
+\]
+Then
+\[
+    \sqrt{k}\,n^{1/4}
+    +
+    \sqrt{\frac{kn}{b}}
+    \le
+    U_{n,k,b}(p)
+    \le
+    2\sqrt2
+    \left(
+        \sqrt{k}\,n^{1/4}
+        +
+        \sqrt{\frac{kn}{b}}
+    \right).
+\]
+\end{lemma}
+
+\begin{proof}
+For the upper bound, the first product estimate and \(\sqrt{1+x^{-2}}\le\sqrt2\) give
+\[
+    \sqrt{1+x^2}\sqrt{1+\sqrt n\,x^{-2}}
+    \le
+    2n^{1/4}.
+\]
+The sharper intermediate estimate for the second product gives
+\[
+    \sqrt{1+x^2}(1+\sqrt n\,x^{-1})
+    \le
+    2\sqrt2\,\sqrt n.
+\]
+Since \(2\le2\sqrt2\), the desired upper comparison follows.
+For the lower bound, the first product satisfies
+\[
+    \sqrt{1+x^2}\sqrt{1+\sqrt n\,x^{-2}}
+    \ge
+    \sqrt{\sqrt n}
+    =
+    n^{1/4},
+\]
+because the square of the left-hand side contains the term \(\sqrt n\).
+The second product satisfies
+\[
+    \sqrt{1+x^2}(1+\sqrt n\,x^{-1})
+    \ge
+    x\cdot\frac{\sqrt n}{x}
+    =
+    \sqrt n.
+\]
+Multiplying these two lower bounds by \(\sqrt k\) and \(\sqrt{k/b}\), respectively, proves the lower comparison.
+\end{proof}
+
+Substituting the two upper product inequalities into the product bound gives
+\[
+    \Eerr(B_\gamma^{(p)},C_\gamma^{(p)})
+    \le
+    C
+    \sqrt{1+x^{-2}}
+    \left(
+        \sqrt{k}\,n^{1/4}
+        +
+        \sqrt{\frac{kn}{b}}
+    \right)
+\]
+for a universal constant \(C\).
+Since \(x^{-2}=p^{-2p/\sqrt n}\), this is
+\[
+    \Eerr(B_\gamma^{(p)},C_\gamma^{(p)})
+    \le
+    C
+    \sqrt{1+p^{-2p/\sqrt n}}
+    \left(
+        \sqrt{k}\,n^{1/4}
+        +
+        \sqrt{\frac{kn}{b}}
+    \right).
+\]
+
+\section{Flatness Consequence}
+
+\begin{theorem}[The collapsed factorwise low-bandwidth proof is \(p\)-flat]
+Assume
+\[
+    k\ge1,
+    \qquad
+    b>0,
+    \qquad
+    2\le p\le \frac{\sqrt n}{4},
+    \qquad
+    \gamma=1-\frac{p}{\sqrt n}.
+\]
+The collapsed factor envelope satisfies
+\[
+    U_{n,k,b}(p)
+    \asymp
+    \sqrt{k}\,n^{1/4}
+    +
+    \sqrt{\frac{kn}{b}},
+\]
+with universal comparison constants.
+Consequently, the collapsed factorwise proof route gives
+\[
+    \Eerr(B_\gamma^{(p)},C_\gamma^{(p)})
+    \le
+    C
+    \sqrt{1+p^{-2p/\sqrt n}}
+    \left(
+        \sqrt{k}\,n^{1/4}
+        +
+        \sqrt{\frac{kn}{b}}
+    \right),
+\]
+where \(C\) is universal.
+Moreover
+\[
+    1
+    \le
+    \sqrt{1+p^{-2p/\sqrt n}}
+    \le
+    \sqrt2.
+\]
+Consequently, up to universal constants, this proof route is exactly the \(p\)-independent bound
+\[
+    \Eerr(B_\gamma^{(p)},C_\gamma^{(p)})
+    =
+    O\!\left(
+        \sqrt{k}\,n^{1/4}
+        +
+        \sqrt{\frac{kn}{b}}
+    \right).
+\]
+\end{theorem}
+
+\begin{proof}
+The two-sided comparison for \(U_{n,k,b}(p)\) is exactly the previous lemma.
+The displayed p-sensitive estimate was proved in the previous section.
+The residual factor satisfies
+\[
+    0 < p^{-2p/\sqrt n}\le1,
+\]
+so
+\[
+    1
+    \le
+    \sqrt{1+p^{-2p/\sqrt n}}
+    \le
+    \sqrt2.
+\]
+Thus the p-sensitive display and the p-independent display differ only by a universal constant.
+In Big-O notation, the current factorwise proof has no asymptotic \(p\)-dependence.
+\end{proof}
+
+\begin{remark}[Boundary]
+This proves flatness of the collapsed asymptotic upper-bound route.
+It does not assert that the exact finite objective is flat in \(p\), and it does not assert that the uncollapsed finite-\(p\) envelope is flat.
+\end{remark}
+
+\end{document}

@@ -1,0 +1,290 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,hyperref}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\E}{\mathbb E}
+\newcommand{\F}{\mathcal F}
+\newcommand{\R}{\mathbb R}
+\title{Conditional descent and almost-sure convergence of stochastic root iterations}
+\author{}\date{}
+\begin{document}\maketitle
+\begin{abstract}
+A conditional descent inequality with pathwise summable multiplicative and
+additive errors yields a finite almost-sure limit and finite total restoring
+work. We prove the result using predictable stopping, without requiring an
+integrable infinite error budget. Applied to an initialized stochastic root
+iteration, it gives almost-sure convergence and boundedness under global
+restoration and square-summable, nonsummable steps. This explains a direct
+connection between the root-energy argument and the later
+almost-supermartingale approach to stochastic approximation.
+\end{abstract}
+
+\section{The conditional descent principle}
+Throughout, $(\Omega,\F,\mathbb P)$ is a probability space with a filtration
+$(\F_n)_{n\ge0}$. Conditional inequalities are understood almost surely.
+All processes in the first two sections are real valued. A process is adapted
+when its value at age $n$ is $\F_n$-measurable. Empty sums are zero and empty
+products are one.
+
+\begin{theorem}[Conditional descent]\label{thm:descent}
+Let $X,A,B,C$ be adapted processes. Suppose that $X_n,B_n,C_n$ are integrable
+for every finite $n$, that $X_n,A_n,B_n\ge0$ almost surely, and that
+\begin{equation}\label{eq:row}
+ \E[X_{n+1}\mid\F_n]\le(1+A_n)X_n-B_n+C_n.
+\end{equation}
+Assume also
+\[
+ \sum_{n=0}^\infty A_n<\infty,
+ \qquad \sum_{n=0}^\infty |C_n|<\infty
+ \quad\text{almost surely}.
+\]
+Then $X_n$ converges almost surely to a finite nonnegative random variable,
+and $\sum_n B_n<\infty$ almost surely.
+\end{theorem}
+The additive errors may be signed. The assumptions impose no integrability
+condition on $A_n$, on $A_nX_n$, or on either infinite error sum.
+Consequently, a direct expectation bound for the full unnormalized right
+side of \eqref{eq:row} need not be available.
+
+The proof has two steps. Division by the accumulated multiplicative factors
+produces an additive descent inequality whose terms remain integrable.
+Stopping just before the predictable error prefix crosses a deterministic
+level then permits supermartingale convergence. The stopping argument and
+normalization are proved in Section~\ref{sec:proof}.
+
+\begin{corollary}[Finite normalized account]\label{cor:finite}
+Under the finite-age assumptions of Theorem~\ref{thm:descent}, set
+\[
+ P_0=1,\qquad P_n=\prod_{j=0}^{n-1}(1+A_j).
+\]
+For every integer $N\ge0$,
+\begin{equation}\label{eq:finite}
+ \E\frac{X_N}{P_N}
+ +\sum_{n=0}^{N-1}\E\frac{B_n}{P_{n+1}}
+ \le \E X_0+\sum_{n=0}^{N-1}\E\frac{C_n}{P_{n+1}}.
+\end{equation}
+No infinite summability assumption is needed for this finite inequality.
+\end{corollary}
+The terminal quantity in \eqref{eq:finite} is the actual normalized value at
+age $N$. Each displayed expectation is finite because $P_n\ge1$. At $N=0$
+the inequality is equality.
+
+\section{Proof by predictable stopping}\label{sec:proof}
+We use the nonnegative supermartingale convergence theorem: an integrable
+nonnegative supermartingale converges almost surely to a finite limit. Its
+$L^1$ norms are bounded by its initial expectation. We also use discrete
+optional stopping for the process stopped at $n\wedge\tau$, which is a
+bounded stopping time for each fixed $n$.
+
+\begin{lemma}[A predictable lower envelope]\label{lem:localization}
+Let $M$ be an integrable supermartingale. Suppose $Q_0=0$, that $Q_{n+1}$ is
+$\F_n$-measurable, and that almost surely
+\[
+ M_n+Q_n\ge0\quad(n\ge0),\qquad \sup_{n\ge0}Q_n<\infty.
+\]
+Then $M_n$ converges almost surely to a finite limit.
+\end{lemma}
+\begin{proof}
+For each positive integer $K$, define
+\[
+ \tau_K=\inf\{n\ge0:Q_{n+1}>K\},\qquad \inf\varnothing=\infty.
+\]
+This is a stopping time because $Q_{n+1}$ is known at age $n$.
+For every $n$, the retained prefix satisfies
+\begin{equation}\label{eq:noovershoot}
+ Q_{n\wedge\tau_K}\le K.
+\end{equation}
+Indeed, this is immediate if $n\wedge\tau_K=0$. Otherwise, if the retained
+index is $j\ge1$, then $j-1<\tau_K$, so $Q_j\le K$ by the definition of the
+first crossing. This argument requires no monotonicity of $Q$.
+
+The stopped process $M_{n\wedge\tau_K}$ is an integrable supermartingale,
+and \eqref{eq:noovershoot} gives
+\[
+ M_{n\wedge\tau_K}+K\ge M_{n\wedge\tau_K}+Q_{n\wedge\tau_K}\ge0.
+\]
+It therefore converges to a finite limit almost surely. Intersect these
+probability-one convergence events over all positive integers $K$ and with
+the event on which $Q$ is bounded above. On any resulting path, choose
+$K>\sup_n Q_n$. Then $\tau_K=\infty$, and the stopped sequence is the
+original sequence for every age. This proves the assertion.
+\end{proof}
+
+\begin{lemma}[Additive descent]\label{lem:additive}
+Let $Z,d,c$ be adapted and integrable at each finite age. Suppose
+$Z_n,d_n\ge0$ almost surely, $\sum_n|c_n|<\infty$ almost surely, and
+\[
+ \E[Z_{n+1}\mid\F_n]\le Z_n-d_n+c_n.
+\]
+Then $\sum_n d_n<\infty$ almost surely and $Z_n$ has a finite nonnegative
+almost-sure limit.
+\end{lemma}
+\begin{proof}
+Write
+\[
+ D_n=\sum_{j<n}d_j,\qquad Q_n=\sum_{j<n}c_j,\qquad M_n=Z_n+D_n-Q_n.
+\]
+The conditional inequality makes $M$ a supermartingale. All its finite-age
+terms are integrable. Moreover, $M_n+Q_n=Z_n+D_n\ge0$,
+$Q_{n+1}$ is $\F_n$-measurable, and $Q_n$ converges almost surely by absolute
+summability. Lemma~\ref{lem:localization} shows that $M_n$ has a finite limit.
+On this probability-one event,
+\[
+ 0\le D_n\le M_n+Q_n.
+\]
+The right side converges, so the increasing sequence $D_n$ is bounded and
+has a finite limit. Hence $\sum_n d_n<\infty$, and
+$Z_n=M_n-D_n+Q_n$ converges. Its limit is nonnegative.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:descent} and Corollary~\ref{cor:finite}]
+To define denominators everywhere, use
+$P_n=\prod_{j<n}(1+\max\{A_j,0\})$. On the simultaneous probability-one
+event where all $A_j$ are nonnegative this agrees with the displayed product
+in Corollary~\ref{cor:finite}. In particular, $P_n\ge1$ everywhere and
+$P_{n+1}$ is $\F_n$-measurable. Set
+\[
+ Z_n=\frac{X_n}{P_n},\qquad
+ d_n=\frac{B_n}{P_{n+1}},\qquad
+ c_n=\frac{C_n}{P_{n+1}}.
+\]
+These variables are adapted and integrable, since their absolute values are
+bounded by those of $X_n,B_n,C_n$, respectively. The predictable factor
+$1/P_{n+1}$ is bounded by one, so it may be pulled through conditional
+expectation. Dividing \eqref{eq:row} therefore gives
+\begin{equation}\label{eq:normal}
+ \E[Z_{n+1}\mid\F_n]\le Z_n-d_n+c_n.
+\end{equation}
+This calculation integrates only the normalized quantities; it never requires
+integrability of $A_nX_n$. Taking expectations in \eqref{eq:normal} and
+summing proves \eqref{eq:finite}.
+
+For the infinite conclusion, $\sum_n|c_n|\le\sum_n|C_n|<\infty$ almost surely.
+Lemma~\ref{lem:additive} gives convergence of $Z_n$ and summability of $d_n$.
+On a path where $\sum_n A_n<\infty$, the product is increasing and satisfies
+\[
+ 1\le P_n\le\exp\!\left(\sum_{j=0}^\infty A_j\right)<\infty.
+\]
+Thus $P_n\to P_\infty<\infty$, and $X_n=P_nZ_n$ converges to a finite
+nonnegative limit. Finally,
+\[
+ \sum_{n=0}^\infty B_n
+ =\sum_{n=0}^\infty P_{n+1}d_n
+ \le P_\infty\sum_{n=0}^\infty d_n<\infty.
+\]
+The bound by $P_\infty$ is pathwise; no expectation of that bound is taken.
+\end{proof}
+
+\section{The initialized root iteration}
+Let $E$ be a real Hilbert space, $x_*\in E$, and $F:E\to E$ continuous.
+Consider the actual recursion
+\begin{equation}\label{eq:root}
+ X_{n+1}=X_n-a_nF(X_n)-a_n\xi_{n+1},\qquad n\ge0,
+\end{equation}
+with deterministic step sizes. All vector random variables below are strongly
+measurable with respect to the indicated sigma algebra. Conditional
+expectations of nonnegative variables may initially be interpreted in the
+extended sense.
+
+\begin{theorem}[Almost-sure root convergence]\label{thm:root}
+Suppose there are constants $c>0$, $L\ge0$, $s\ge0$ such that, for every $x\in E$,
+\begin{equation}\label{eq:geometry}
+ \langle x-x_*,F(x)\rangle\ge c\|x-x_*\|^2,
+ \qquad \|F(x)\|\le L\|x-x_*\|.
+\end{equation}
+Assume $X_0$ is $\F_0$-measurable and square integrable; $\xi_{n+1}$ is
+$\F_{n+1}$-measurable; and
+\[
+ \E[\xi_{n+1}\mid\F_n]=0,\qquad
+ \E[\|\xi_{n+1}\|^2\mid\F_n]\le s.
+\]
+Finally, suppose
+\[
+ a_n\ge0,\qquad \sum_n a_n=\infty,\qquad \sum_n a_n^2<\infty.
+\]
+Then $X_n\to x_*$ almost surely. In particular, $\sup_n\|X_n\|<\infty$
+almost surely.
+\end{theorem}
+\begin{proof}
+The extended conditional second-moment bound and the tower property give
+$\E\|\xi_{n+1}\|^2\le s$. Thus each innovation is square integrable before
+its vector conditional expectation is used. Continuity of $F$ and
+\eqref{eq:root} give adaptation inductively. The growth bound in
+\eqref{eq:geometry}, the triangle inequality and square integrability of
+the innovations give square integrability of $X_n$ at every finite age.
+
+Put $Z_n=\|X_n-x_*\|^2$. In the conditional square expansion, the cross term
+with $\xi_{n+1}$ vanishes because $X_n-x_*-a_nF(X_n)$ is predictable.
+The cross term is integrable by Cauchy--Schwarz. Therefore
+\begin{align*}
+ \E[Z_{n+1}\mid\F_n]
+ &=\|X_n-x_*-a_nF(X_n)\|^2
+   +a_n^2\E[\|\xi_{n+1}\|^2\mid\F_n]\\
+ &\le(1+L^2a_n^2)Z_n-2ca_nZ_n+sa_n^2.
+\end{align*}
+Apply Theorem~\ref{thm:descent} with
+\[
+ A_n=L^2a_n^2,\qquad B_n=2ca_nZ_n,\qquad C_n=sa_n^2.
+\]
+All finite-age integrability assumptions have just been proved. The two error
+series are finite, so $Z_n$ has a finite nonnegative limit and
+$\sum_n a_n Z_n<\infty$ almost surely. A positive limit would imply
+$Z_n\ge\varepsilon>0$ eventually and hence
+$\sum_n a_nZ_n\ge\varepsilon\sum_{n\ \mathrm{large}}a_n=\infty$.
+The limit must therefore be zero, which is equivalent to $X_n\to x_*$.
+Every convergent sequence is bounded.
+\end{proof}
+No independence of the innovations is required. Their conditional centering
+is the property used in the square expansion. There is also no restriction
+on finitely many early steps, beyond their nonnegativity.
+
+\begin{corollary}[Finite coordinate representations]\label{cor:coordinates}
+Under Theorem~\ref{thm:root}, let $I$ be finite and let
+$T:E\to\R^I$ be continuous and linear. Almost surely,
+\[
+ T X_n\longrightarrow T x_*,\qquad
+ \sup_{n\ge0}\|T X_n\|_\infty<\infty.
+\]
+\end{corollary}
+\begin{proof}
+Apply continuity of $T$ on each convergent path, then boundedness of a
+convergent sequence in the finite-coordinate maximum norm.
+\end{proof}
+
+\section{Connection with differential-equation methods}
+The root-energy calculation starts from the initialized iteration and a
+squared distance. The almost-supermartingale principle converts its
+conditional descent into a pathwise conclusion. The lineage runs from the
+stochastic root problem of Robbins and Monro~\cite{rm} to the conditional
+convergence principle of Robbins and Siegmund~\cite{rs}; the modern proof analysis of Neri and
+Powell uses the same product normalization and predictable stopping
+\cite{np}. The Hilbert-space result above is a modern application of that
+principle, rather than a claim about the exact scope of the original scalar
+root theorem.
+
+Bounded iterates are a substantive input in differential-equation tracking
+arguments. Corollary~\ref{cor:coordinates} supplies that input for this
+globally restoring subclass, using the same initialized trajectory.
+A differential-equation application must still identify the represented
+recursion and check its drift regularity, noise and remainder conditions.
+Global restoration does not establish boundedness for arbitrary stochastic
+approximation schemes. Nor does the argument above provide a finite
+convergence rate, a general limit-set theorem, or a central limit theorem.
+
+\begin{thebibliography}{9}
+\bibitem{rm} H. Robbins and S. Monro.
+\emph{A stochastic approximation method}.
+The Annals of Mathematical Statistics 22(3), 400--407, 1951.
+\bibitem{rs} H. Robbins and D. Siegmund.
+\emph{A convergence theorem for non negative almost supermartingales and some
+applications}. In \emph{Optimizing Methods in Statistics}, Elsevier, 1971,
+pp.\ 233--257.
+\bibitem{np} M. Neri and T. Powell.
+\emph{A quantitative Robbins--Siegmund theorem}.
+arXiv:2410.15986, version 2. In particular, the proof of the quantitative
+Robbins--Siegmund theorem gives the product normalization and stopping
+construction used here.
+\end{thebibliography}
+\end{document}

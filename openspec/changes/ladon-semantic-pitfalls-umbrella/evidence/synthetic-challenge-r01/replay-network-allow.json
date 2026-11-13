@@ -1,0 +1,162 @@
+{
+  "buildPolicy": {
+    "effective": "lake-default",
+    "requested": "lake-default",
+    "scope": "project module compilation; dependency resolution is separately supervised",
+    "version": 1
+  },
+  "capsuleIdentity": "sha256:4ce2fa29ef9b3553d2eec188da6dc6547629ad3666c2eca8bdbd7529faa6461d",
+  "comparisons": {
+    "checks": {
+      "declarationKind": true,
+      "exactName": true,
+      "leanVersion": true,
+      "semanticClosure": true,
+      "trustFrontier": true,
+      "typeFingerprint": true,
+      "valueFingerprint": true
+    },
+    "expectedSemanticClosure": "sha256:8e416a4d0912219794dd699ff29060f16083cd0e049f69e60c662699e1414041",
+    "expectedTrustFrontier": [
+      {
+        "kind": "axiom_reference",
+        "scope": "value",
+        "target": "propext"
+      }
+    ],
+    "matched": true,
+    "replayedSemanticClosure": "sha256:8e416a4d0912219794dd699ff29060f16083cd0e049f69e60c662699e1414041",
+    "replayedTrustFrontier": [
+      {
+        "kind": "axiom_reference",
+        "scope": "value",
+        "target": "propext"
+      }
+    ]
+  },
+  "isolation": {
+    "level": "fresh_copy_sanitized_environment",
+    "originalCheckoutReferencedByCommand": false,
+    "originalCheckoutReferencedByEnvironment": false,
+    "passed": true,
+    "replayRootRole": "fresh_temporary_repository"
+  },
+  "nonclaims": [
+    "The capsule is not claimed to be globally or declaration-level minimal.",
+    "External dependencies are locked but are not necessarily vendored for offline use.",
+    "Native and operating-system dependencies are not packaged hermetically.",
+    "Ladon reports Lean replay evidence and is not an independent proof authority."
+  ],
+  "planIdentity": "sha256:f940acd3b0315e365ec0d49521f1e7278538c95c0faa0fdd8aaa76140add3aa1",
+  "receiptIdentity": "sha256:63b263a5cef668cdb675ba823da3d27e61767a3edc5f4433d30d20699b2b8aad",
+  "resourceLimits": {
+    "maxProcessOutputBytes": 16777216,
+    "maxProcessTreeRssBytes": 12884901888,
+    "memoryMetric": "aggregate process-tree RSS; shared pages may be counted repeatedly",
+    "stageTimeoutSeconds": 3600.0,
+    "version": 1
+  },
+  "schema": "ladon-theorem-capsule-replay-v1",
+  "stages": [
+    {
+      "command": [
+        "lake",
+        "update"
+      ],
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 1963757568,
+      "resourceObservations": {
+        "largestLeanRssBytes": 924508160,
+        "leanMeasurement": "sampled",
+        "maxDescendantProcesses": 4,
+        "maxLeanProcesses": 2,
+        "memoryMetric": "RSS per process; shared pages may be counted repeatedly",
+        "samples": 1134,
+        "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+        "status": "sampled",
+        "unavailableSamples": 0,
+        "unidentifiedProcessNames": 0,
+        "version": 1
+      },
+      "returncode": 0,
+      "stage": "dependency_resolution",
+      "stderrExcerpt": "info: leanprover-community/mathlib: cloning https://github.com/leanprover-community/mathlib4\ninfo: leanprover-community/mathlib: checking out revision 'db584cd6d46c92f209a44c0f1c829460d327499d'\ninfo: kolmogorov_extension4: cloning https://github.com/RemyDegenne/kolmogorov_extension4.git\ninfo: kolmogorov_extension4: checking out revision '7d76e184c3d2138a2741baf923b57e9a01b9cf25'\ninfo: BrownianMotion: cloning https://github.com/RemyDegenne/brownian-motion.git\ninfo: BrownianMotion: checking out revision 'd94b0c1786e84d6e921d6cda18ea691bea17103c'\ninfo: MathFin: cloning https://github.com/raphaelrrcoelho/formal-mathfin.git\ninfo: MathFin: checking out revision '1df87ce9b7b7dfbfc57424cef8cce6cf21d9b12c'\ninfo: toolchain not updated; already up-to-date\ninfo: plausible: cloning https://github.com/leanprover-community/plausible\ninfo: plausible: checking out revision 'b7eb3304aeae834b12dda98993a37f6a41f6f0bb'\ninfo: LeanSearchClient: cloning https://github.com/leanprover-community/LeanSearchClient",
+      "stderrSha256": "sha256:d47e96c4f9767fde19e022990d0d0bdb4b72d4400748146bead90a84fa2d7233",
+      "stdoutExcerpt": "Current branch: HEAD\nUsing cache from origin: (some leanprover-community/mathlib4)\nDecompressing 8689 already-cached file(s) (1 already decompressed)\nNo files to download\nDecompressed 8689 already-cached file(s)\nCompleted successfully in 8844 ms!\n",
+      "stdoutSha256": "sha256:cfdcd4c405fa457f5d1f2a0c5e592e0346320134754ef75356c68d6772a170f1",
+      "timedOut": false
+    },
+    {
+      "command": [
+        "lake",
+        "build",
+        "<target-module>"
+      ],
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 6491783168,
+      "resourceObservations": {
+        "largestLeanRssBytes": 3452997632,
+        "leanMeasurement": "sampled",
+        "maxDescendantProcesses": 2,
+        "maxLeanProcesses": 2,
+        "memoryMetric": "RSS per process; shared pages may be counted repeatedly",
+        "samples": 123,
+        "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+        "status": "sampled",
+        "unavailableSamples": 0,
+        "unidentifiedProcessNames": 0,
+        "version": 1
+      },
+      "returncode": 0,
+      "stage": "lean_build",
+      "stderrExcerpt": "",
+      "stderrSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutExcerpt": "✔ [3020/3024] Built Mf.Optimization.StochasticApproximation.EnergyBalance (<duration>)\n✔ [3021/3024] Built Mf.Optimization.StochasticApproximation.AlmostSupermartingale (<duration>)\n✔ [3022/3024] Built Mf.Optimization.StochasticApproximation.StoppedDescent (<duration>)\n✔ [3023/3024] Built Mf.Optimization.StochasticApproximation.AdditiveDescent (<duration>)\n⚠ [3024/3024] Built Mf.Optimization.StochasticApproximation.MultiplicativeDescent (<duration>)\nwarning: Mf/Optimization/StochasticApproximation/MultiplicativeDescent.lean:235:0: unclosed sections or namespaces; expected: '\n\nend StochasticApproximation\n\nend Optimization\n\nend Mf'\n\nNote: This linter can be disabled with `set_option linter.style.missingEnd false`\nBuild completed successfully (3024 jobs).\n",
+      "stdoutSha256": "sha256:e3dfaf0b41fa53d2727b7533a0fbdeeec5e0d96068568e3c502aeff0102f2208",
+      "timedOut": false
+    },
+    {
+      "command": [
+        "lake",
+        "env",
+        "lean",
+        "--run",
+        "<ladon-helper>",
+        "<target>"
+      ],
+      "memoryLimited": false,
+      "outputLimited": false,
+      "peakRssBytes": 6176002048,
+      "resourceObservations": {
+        "status": "unavailable",
+        "version": 1
+      },
+      "returncode": 0,
+      "stage": "theorem_query",
+      "stderrExcerpt": "",
+      "stderrSha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutExcerpt": "{\"version\": \"1\",\n \"targetRange\":\n {\"start\": {\"line\": 165, \"column\": 1}, \"finish\": {\"line\": 233, \"column\": 41}},\n \"target\":\n \"Mf.Optimization.StochasticApproximation.almost_supermartingale_converges\",\n \"status\": \"complete\",\n \"protocolVersion\": \"ladon-theorem-capsule-stream-v1\",\n \"nonclaim\":\n \"Lean environment dependency evidence for capsule replay; Ladon does not independently prove theorem truth, global minimality, offline availability, or system hermeticity.\",\n \"nodes\":\n [{\"valueFingerprint\": \"1244240806\",\n   \"valueDependencies\":\n   [{\"unsafe\": false,\n     \"ownerModule\": \"Mathlib.MeasureTheory.OuterMeasure.AE\",\n     \"name\": \"MeasureTheory.ae\",\n     \"kind\": \"def\",\n     \"declaredAxiom\": false},\n    {\"unsafe\": false,\n     \"ownerModule\": \"Mathlib.Data.Real.Basic\",\n     \"name\": \"Real.instIsOrderedRing\",\n     \"kind\": \"theorem\",\n     \"declaredAxiom\": false},\n    {\"unsafe\": false,\n     \"ownerModule\": \"Mathlib.Tactic.Ring.Common\",\n     \"name\": \"Mathlib.Tactic.Ring.Common.neg_zero\",\n     \"kind\"",
+      "stdoutSha256": "sha256:c65cf87806cca624888e84a67f4d01453c293e22583acc2bdeebbf0dd79a9ca0",
+      "timedOut": false
+    }
+  ],
+  "status": "verified",
+  "target": {
+    "module": "Mf.Optimization.StochasticApproximation.MultiplicativeDescent",
+    "name": "Mf.Optimization.StochasticApproximation.almost_supermartingale_converges"
+  },
+  "toolchain": {
+    "helperVersion": "ladon-theorem-capsule-helper-v1",
+    "leanVersion": "4.33.0",
+    "protocolVersion": "ladon-theorem-capsule-stream-v1"
+  },
+  "trustFrontier": [
+    {
+      "kind": "axiom_reference",
+      "scope": "value",
+      "target": "propext"
+    }
+  ]
+}

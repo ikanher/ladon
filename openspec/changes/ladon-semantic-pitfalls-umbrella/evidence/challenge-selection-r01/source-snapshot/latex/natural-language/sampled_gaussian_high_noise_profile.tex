@@ -1,0 +1,129 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[margin=2.25cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+\newtheorem{corollary}{Corollary}
+\newcommand{\TV}{\operatorname{TV}}
+\newcommand{\KL}{\operatorname{KL}}
+\newcommand{\Normal}{\mathcal N}
+\newcommand{\E}{\mathbb E}
+\title{The High-Noise Privacy Limit of Independent Sampled Gaussian Releases}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+For probability measures $P,Q$ on the same measurable space, set
+\[
+ H_c(P\|Q)=\sup_A\{P(A)-cQ(A)\},\qquad
+ \TV(P,Q)=\sup_A|P(A)-Q(A)|.
+\]
+Here $A$ ranges over measurable events. Let $\Phi$ denote the standard normal cumulative distribution function and, for $\mu>0$, define
+\[
+ \delta_\mu(\varepsilon)=\Phi\left(\frac\mu2-\frac\varepsilon\mu\right)
+ -e^\varepsilon\Phi\left(-\frac\mu2-\frac\varepsilon\mu\right).
+\]
+
+\begin{theorem}\label{thm:limit}
+Fix $q\in(0,1]$. Let $T_j$ be positive integers tending to infinity, and let $\sigma_j>0$ satisfy $\sigma_j^2/T_j\to\kappa>0$. For independent releases define
+\[
+ P_j=\Normal(0,\sigma_j^2)^{\otimes T_j},\qquad
+ Q_j=((1-q)\Normal(0,\sigma_j^2)+q\Normal(1,\sigma_j^2))^{\otimes T_j}.
+\]
+Then, for every fixed $\varepsilon\geq0$, both
+\[
+ H_{e^\varepsilon}(Q_j\|P_j)\longrightarrow\delta_{q/\sqrt\kappa}(\varepsilon),
+ \qquad
+ H_{e^\varepsilon}(P_j\|Q_j)\longrightarrow\delta_{q/\sqrt\kappa}(\varepsilon).
+\]
+\end{theorem}
+
+\paragraph{Proof idea.}
+Replace each sampled shift by its mean $q$. A fourth-order relative-entropy estimate makes the error in the full product distribution vanish. The Gaussian product has an exact one-dimensional likelihood ratio, whose signal-to-noise parameter is $q\sqrt{T_j}/\sigma_j$.
+
+\begin{lemma}\label{lem:tv}
+For probability measures $P,Q,G$ and $c\geq0$,
+\[
+ |H_c(Q\|P)-H_c(G\|P)|\leq\TV(Q,G),\qquad
+ |H_c(P\|Q)-H_c(P\|G)|\leq c\TV(Q,G).
+\]
+\end{lemma}
+\begin{proof}
+For each event, changing the first measure changes the expression by at most $\TV(Q,G)$; changing the second measure changes it by at most $c\TV(Q,G)$. If two families of real numbers differ pointwise by at most $a$, their suprema differ by at most $a$. All these suprema are finite.
+\end{proof}
+
+\begin{lemma}\label{lem:gaussian}
+For $T\geq1$, $q>0$ and $\sigma>0$, let $P=\Normal(0,\sigma^2)^{\otimes T}$ and $G=\Normal(q,\sigma^2)^{\otimes T}$. Put $\mu=q\sqrt T/\sigma$. Both directed profiles equal $\delta_\mu(\varepsilon)$.
+\end{lemma}
+\begin{proof}
+The log density ratio $L=\log(dG/dP)$ is
+\[
+ L(x)=\frac q{\sigma^2}\sum_{i=1}^T x_i-\frac{Tq^2}{2\sigma^2}.
+\]
+Under $G$, its law is $\Normal(\mu^2/2,\mu^2)$, and under $P$ it is $\Normal(-\mu^2/2,\mu^2)$. The positive part of the signed density $dG-e^\varepsilon dP$ is supported on $\{L>\varepsilon\}$, so
+\[
+ H_{e^\varepsilon}(G\|P)=G(L>\varepsilon)-e^\varepsilon P(L>\varepsilon)=\delta_\mu(\varepsilon).
+\]
+For the reverse direction, $-L$ under $P$ and $G$ has the same respective laws as $L$ under $G$ and $P$. The same calculation applies.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:limit}]
+Write $G_j=\Normal(q,\sigma_j^2)^{\otimes T_j}$. When $q=1$, $Q_j=G_j$ exactly. For $0<q<1$, we use the one-step estimate proved in Appendix A.3 of R\"ais\"a, J\"alk\"o and Honkela~\cite{snm}:
+\begin{equation}\label{eq:kl}
+ \KL\left(\Normal(q,\sigma^2)\,\middle\|\,
+ (1-q)\Normal(0,\sigma^2)+q\Normal(1,\sigma^2)\right)
+ =\frac{q^2(1-q)^2}{4\sigma^4}+o_q(\sigma^{-4}).
+\end{equation}
+The estimate is for fixed $q$ as $\sigma\to\infty$. To describe its normalization, put $u=1/\sigma$ and $Y\sim\Normal(0,1)$. After centering at $q$ and scaling by $\sigma$, the relative entropy is
+\[
+ -\E\log\left[q e^{(1-q)uY-(1-q)^2u^2/2}
+ +(1-q)e^{-quY-q^2u^2/2}\right].
+\]
+The cited appendix bounds its first four derivatives by integrable Gaussian polynomial-exponential envelopes for $|u|\leq1$. Differentiation under expectation and the Gaussian moments give the fourth-order coefficient $q^2(1-q)^2/4$, with the lower coefficients zero. Thus the remainder in \eqref{eq:kl} is controlled after integration; a pointwise expansion alone would not suffice.
+
+The scale assumption implies $\sigma_j\to\infty$. Independence and additivity of relative entropy give
+\[
+ \KL(G_j\|Q_j)=O_q(T_j/\sigma_j^4)\longrightarrow0,
+ \qquad
+ \frac{T_j}{\sigma_j^4}
+ =\frac1{T_j}\left(\frac{T_j}{\sigma_j^2}\right)^2\longrightarrow0.
+\]
+Pinsker's inequality, with the stated total-variation convention, yields
+\[
+ \TV(G_j,Q_j)\leq\sqrt{\KL(G_j\|Q_j)/2}\longrightarrow0.
+\]
+For each fixed $\varepsilon$, Lemma~\ref{lem:tv} controls the two profile errors by $\TV(G_j,Q_j)$ and $e^\varepsilon\TV(G_j,Q_j)$. Lemma~\ref{lem:gaussian} identifies both comparison profiles as $\delta_{\mu_j}(\varepsilon)$, where
+\[
+ \mu_j=\frac{q\sqrt{T_j}}{\sigma_j}\longrightarrow\frac q{\sqrt\kappa}>0.
+\]
+The displayed normal-CDF formula is continuous in positive $\mu$. Combining these limits proves both conclusions.
+\end{proof}
+
+\begin{corollary}\label{cor:clock}
+Suppose additionally that $\sigma_j=qNs_j$, with fixed $N>0$ and $s_j^2/T_j\to c_s^2>0$, where $c_s>0$. The limiting parameter is $\mu=1/(Nc_s)$, independent of the fixed sampling rate. If a fixed target $\delta$ satisfies $\delta_\mu(\varepsilon)<\delta$, then both canonical directed profiles are at most $\delta$ for all sufficiently large $j$.
+\end{corollary}
+\begin{proof}
+Here $\kappa=q^2N^2c_s^2$, so $q/\sqrt\kappa=1/(Nc_s)$. For strict slack $a=\delta-\delta_\mu(\varepsilon)>0$, both errors are eventually less than $a/2$ by Theorem~\ref{thm:limit}. Hence both profiles are eventually below $\delta$.
+\end{proof}
+
+\paragraph{Algorithm policy and scope.}
+The cancellation concerns the leading privacy-calibration coefficient. A utility expression
+\[
+ \Delta^2+\frac{Cc_s}{\alpha_\beta}
+ \left(\frac{2G}{c_\eta(q)}+Ld\sigma_\beta^2c_\eta(q)\right)
+\]
+can retain batch dependence through $c_\eta(q)$. For example, sharing $\eta_j=a/\sqrt{E_j}$ across batches while $T_j=E_j/q$ gives $c_\eta(q)=a/\sqrt q$. Batch-independent utility therefore requires matched algorithm-policy coefficients. The theorem analyzes an independent canonical product experiment. To apply it to adaptive clipped-gradient transcripts one must separately prove domination or a common postprocessing comparison. It supplies no finite-noise approximation guarantee for a numerical accountant, and no ordering result for finite-horizon training.
+
+\begin{thebibliography}{1}
+\bibitem{snm}
+O. R\"ais\"a, J. J\"alk\"o and A. Honkela.
+\emph{Subsampling is not Magic: Why Large Batch Sizes Work for Differentially Private Stochastic Optimisation}.
+ICML, 2024. Theorem 5.2 and Appendix A.3.
+\url{https://arxiv.org/abs/2402.03990}.
+\end{thebibliography}
+\end{document}
