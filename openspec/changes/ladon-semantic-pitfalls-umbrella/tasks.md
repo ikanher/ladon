@@ -1,6 +1,14 @@
 # Tasks
 
-## Current program state — 2026-11-13
+## Current program state — 2026-11-14
+
+Internal 0.4.2 feedback: the [initialized Adam energy exercise](evidence/internal-0.4.2-adam-energy-r01/REPORT.md)
+completed a native source-goal application to the `2.9` ceiling with accepted replay
+and trust. Source interpretation needed an attributed root correction; the stronger
+intermediate bound was inspected, not separately completed. Capture/completion sampled
+peaks were about 8.39/8.51 GiB within the 12 GiB cap. No source fault or new product
+operation was established. Continue internal use and collect concrete blockers; this
+exercise does not close historical detection gates or the three production diagnostics.
 
 The objective remains useful mathematical detection: determine whether a source claim is supported under its actual assumptions, identify a concrete discrepancy when there is one, and explain the evidence to a reader. This ledger owns the umbrella's current sequencing; child ledgers own their detailed acceptance. Completed audit packets do not close the three planned production diagnostics.
 

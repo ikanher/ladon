@@ -1,0 +1,524 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,array,hyperref}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newcommand{\E}{\mathbb E}
+\newcommand{\R}{\mathbb R}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\clip}{\operatorname{clip}}
+\title{A finite stationarity rate for initialized Adam\\with heterogeneous clipped records}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study Adam with zero initial memories, both bias corrections, ordinary
+per-record clipping, independent Bernoulli record selection and additive
+Gaussian noise. Under a bounded-gradient and small-centered-deviation
+condition, clipping bias is supported away from small true gradients.
+Transporting this bias through the corrected first memory allows its cost to
+be absorbed into accumulated gradient energy. A finite logarithmic update-energy
+bound controls both momentum lag and curvature. The resulting explicit bound
+has an optimization term of order $T^{-1/2}$ and separate stochastic terms.
+At full batch and zero added noise it yields averaged stationarity for a
+horizon-indexed family of constant-step runs. A fixed nonseparable nonconvex
+example has active direction-changing clipping at initialization and satisfies
+the theorem.
+\end{abstract}
+
+\section{Problem, algorithm and assumptions}
+Let $N=50000$ and $d=100000$. All vector norms below are Euclidean.
+For a differentiable function $F:\R^d\to\R$, let $h=\nabla F$.
+There are $N$ record objectives
+\[
+ f_r(x)=a_r F(x)+\psi_r(x),\qquad
+ \frac1N\sum_r a_r=1,\qquad \sum_r\psi_r(x)=0\quad(x\in\R^d).
+\]
+Thus their mean objective is $F$. The assumptions are global:
+\begin{center}
+\begin{tabular}{p{.24\linewidth}p{.67\linewidth}}
+\toprule
+Object & Assumption\\
+\midrule
+Objective & $F\in C^1$, $F\ge F_*$, and $F(x_0)-F_*\le .501$.\\
+Regularity & $\norm{h(x)-h(z)}\le3\norm{x-z}$ for all $x,z$.\\
+Gradient size & $\lvert\sqrt d\,h_i(x)\rvert\le G=1.001$ for every $x,i$.\\
+Records & $a_r\in[1-\theta,1+\theta]$, $0\le\theta\le .38$;
+$\psi_r\in C^1$ and
+$\lvert\sqrt d\,\partial_i\psi_r(x)\rvert\le\rho$, $0\le\rho\le .005$.\\
+Sampling & $q\in[1/4,1]$; all $I_{t,r}$ are independent Bernoulli$(q)$.\\
+Added noise & Independent $Z_t\sim N(0,I_d)$, independent of the masks;
+$0\le\sigma\le1.9\sigma_0$, where
+$\displaystyle\sigma_0=\frac{1061065371702927}{31250000000000000000}$.\\
+Optimizer & $\beta_1=.9$, $\beta_2=.999$, $\zeta=10^{-8}$, constant step
+$\eta>0$, and zero initial first and second memories.\\
+\bottomrule
+\end{tabular}
+\end{center}
+Euclidean Lipschitz continuity also supplies a finite coordinate Lipschitz
+bound: if $\norm{x-z}_\infty\le r$, then
+$\lvert h_i(x)-h_i(z)\rvert\le3\sqrt d\,r$.
+Individual record objectives need not be lower bounded for the general
+theorem; the example in Section~\ref{sec:example} has that additional property.
+
+Define $\clip(u)=u/\max\{1,\norm u\}$ and
+\begin{equation}\label{eq:release}
+ Q_t=\frac1{Nq}\sum_{r=1}^N I_{t,r}\clip(\nabla f_r(X_{t-1}))
+           +\sigma Z_t .
+\end{equation}
+One mask selects a record in every coordinate. An empty selection still
+receives noise, and the denominator remains $Nq$.
+Adam uses coordinatewise squares and division:
+\begin{align}
+ m_t&=\beta_1m_{t-1}+(1-\beta_1)Q_t,&
+ v_t&=\beta_2v_{t-1}+(1-\beta_2)Q_t^{\odot2},\nonumber\\
+ \widehat m_t&=m_t/(1-\beta_1^t),&
+ \widehat v_t&=v_t/(1-\beta_2^t),\nonumber\\
+ D_{t,i}&=\frac{\widehat m_{t,i}}{\sqrt{\widehat v_{t,i}}+\zeta},&
+ X_t&=X_{t-1}-\eta D_t .\label{eq:adam}
+\end{align}
+Both memories use the same current release. The stabilizer is outside the
+square root.
+
+Let $K_T$ be independent and uniform on $\{0,\ldots,T-1\}$, and write
+\[
+ A_T=\frac1T\sum_{t=0}^{T-1}\E\norm{h(X_t)}^2
+     =\E\norm{h(X_{K_T})}^2,\qquad \gamma=\sqrt d\,\eta .
+\]
+Define the following quantities from the stated parameters:
+\begin{align}
+ R&=(1+\theta)(G-1)+\rho,\nonumber\\
+ M_2&=(1+R)^2+\theta^2,\qquad
+ M_4=(1+R)^4+6(1+R)^2\theta^2+\theta^4,\nonumber\\
+ V&=M_2\frac{1-q}{Nq}+d\sigma^2,\label{eq:budgets}\\
+ W_4&=M_4\frac{1-q}{N^3q^3}
+             +3M_2^2\frac{(1-q)^2}{N^2q^2},\nonumber\\
+ \Pi&=\min\left\{1,\frac{W_4}{(1/10)^4}
+                  +\frac{105(\sqrt d\,\sigma)^8}{(1/10)^8}\right\}.\nonumber
+\end{align}
+Neither $V$ nor $\Pi$ is a privacy parameter.
+
+\begin{theorem}[Finite rate]\label{thm:rate}
+Under the assumptions above, the output squared gradient is integrable.
+For every integer $T\ge16384$ and every constant $\gamma>0$,
+\begin{equation}\label{eq:common}
+ A_T\le\frac{66967}{80000\,\gamma T}
+       +\frac{49624411}{64000}\gamma+4\sqrt V+14\Pi .
+\end{equation}
+If the step for the declared horizon is chosen as
+\[
+ \gamma_T=\frac1{30\sqrt T},\qquad
+ \eta_T=\frac1{30\sqrt d\,\sqrt T},
+\]
+then
+\begin{equation}\label{eq:rate}
+ A_T\le\frac{51}{\sqrt T}+4\sqrt V+14\Pi
+       \le\frac{993959}{2000000}=0.4969795<\frac12.
+\end{equation}
+The step is constant throughout each run.
+\end{theorem}
+
+\begin{corollary}[Full batch and zero added noise]\label{cor:limit}
+For $q=1$ and $\sigma=0$, the same fixed objective and records satisfy
+$A_T\le51/\sqrt T\to0$ along the horizon-indexed policy above.
+\end{corollary}
+\begin{proof}
+Both quantities in \eqref{eq:budgets} that occur on the right of
+\eqref{eq:rate} vanish exactly. Apply Theorem~\ref{thm:rate} and nonnegativity.
+\end{proof}
+
+This is an averaged squared-stationarity statement. It does not assert
+final-iterate convergence or describe a single infinite run with a changing
+step. For positive stochastic error the proved bound retains a remainder;
+that remainder is not a lower bound on achieved performance.
+
+\section{The argument}
+Use scaled coordinates $y=\sqrt d\,x$, scaled gradient
+$g(y)=\sqrt d\,h(y/\sqrt d)$, scaled releases $Y_t=\sqrt d\,Q_t$, and
+$\epsilon=\sqrt d\,\zeta$. Scaling the first memory by $\sqrt d$ and the
+second by $d$ preserves the directions in \eqref{eq:adam}.
+The scaled position update is $y_t=y_{t-1}-\gamma D_t$.
+Write $g_t=g(y_{t-1})$.
+
+The clipped mean has the decomposition
+\begin{equation}\label{eq:mean}
+ \frac1N\sum_r\clip(\nabla f_r(x))=\mu(x)h(x)+b(x).
+\end{equation}
+The point of the record assumptions is that they imply this decomposition
+with quantitative bounds and a small-gradient region where $b$ vanishes.
+The next lemmas establish the estimates used in the proof.
+
+\begin{lemma}[Clipped mean, support and moments]\label{lem:query}
+Let $m=4/5$ and $b_0=1/1000$. Then
+\[
+ m\le\mu(x)\le1,\qquad
+ \lvert\sqrt d\,b_i(x)\rvert\le b_0,\qquad
+ \norm{b(x)}\le\frac{b_0}{(18/25)^2}\norm{h(x)}^2 .
+\]
+Given the full past, each scaled release can be written
+\[
+ Y_{t,i}=\mu(X_{t-1})g_{t,i}+\sqrt d\,b_i(X_{t-1})+e_{t,i},
+ \qquad \E[e_{t,i}\mid\mathcal F_{t-1}]=0,\quad
+ \E[e_{t,i}^2\mid\mathcal F_{t-1}]\le V.
+\]
+Its centered sampling component has conditional fourth moment at most $W_4$;
+its Gaussian component has eighth moment $105(\sqrt d\,\sigma)^8$.
+\end{lemma}
+
+\begin{lemma}[Corrected memory bounds]\label{lem:weights}
+For
+\[
+ p_{tj}=\frac{(1-\beta_1)\beta_1^{t-j}}{1-\beta_1^t},\quad
+ w_{tj}=\frac{(1-\beta_2)\beta_2^{t-j}}{1-\beta_2^t},
+ \qquad 1\le j\le t,
+\]
+every release history satisfies $\lvert D_{t,i}\rvert\le K=73/10$.
+Every finite first-memory column has mass at most $31/10$.
+Furthermore,
+\[
+ \frac1T\sum_{t=1}^T\sum_{j=1}^t p_{tj}^2
+ \le\bar r_T:=\min\left\{1,\frac{T+180}{19T}\right\}.
+\]
+The transposed first-memory lag kernel has mass at most nine.
+\end{lemma}
+
+Define the average update energy
+\[
+ J_T=\frac1{Td}\sum_{t=1}^T\sum_{i=1}^d\E D_{t,i}^2 .
+\]
+\begin{lemma}[Actual update energy]\label{lem:energy}
+For every $T\ge16384$ and every constant step,
+\[
+ J_T\le\frac{63K^2}{T}
+       +1011\left(\frac{26}{T}+\frac1{999}\right)\le2.9.
+\]
+\end{lemma}
+
+To retain historical clipping, set
+\[
+ A_t^\mu=\sum_{j\le t}p_{tj}\mu(X_{j-1}),\qquad
+ n_{t,i}=\sum_{j\le t}p_{tj}Y_{j,i}-A_t^\mu g_{t,i}.
+\]
+Here $A_t^\mu\in[m,1]$ is random and adapted; it is not replaced by the
+current attenuation.
+\begin{lemma}[Averaged residual]\label{lem:residual}
+With $\kappa=(31/10)b_0/(18/25)^2$,
+\[
+ \frac1{Td}\sum_{t,i}\E|n_{t,i}|
+ \le9(3)\gamma\sqrt{J_T}+\kappa A_T+\sqrt{V\bar r_T}.
+\]
+\end{lemma}
+
+Let $H=G+b_0+1/10+1/10+\epsilon\le1.203$, and set
+\[
+ a=\frac mH,\qquad b=\frac GH+\frac Km,\qquad
+ c=aG^2+GK .
+\]
+\begin{lemma}[Signed pairing and descent]\label{lem:pairing}
+For the actual initialized process,
+\begin{equation}\label{eq:absorbed}
+ (a-b\kappa)A_T
+ \le \frac{F(x_0)-F_*}{\gamma T}
+       +\frac{3\gamma J_T}{2}
+       +b\left(27\gamma\sqrt{J_T}+\sqrt{V\bar r_T}\right)
+       +c\Pi .
+\end{equation}
+\end{lemma}
+
+\begin{proof}[Proof of Theorem~\ref{thm:rate}]
+The appendix proves the lemmas, including the needed integrability.
+Put $B=b/a=G/m+KH/m^2$ and $C=c/a=G^2+GKH/m$.
+Direct rational bounds give
+\[
+ B\le\frac{95827}{6400},\qquad
+ C\le\frac{95922827}{8000000},\qquad B\kappa\le\frac1{10}.
+\]
+Divide \eqref{eq:absorbed} by $a>0$ and retain at least $9/10$ of $A_T$.
+Use $J_T\le29/10$, $\sqrt{J_T}\le171/100$, and
+\[
+ \frac{10}{9}\frac{95827}{6400}\sqrt{\bar r_T}\le4
+ \quad(T\ge16384).
+\]
+The resulting coefficients are bounded by those in \eqref{eq:common};
+also $(10/9)C<14$. Substitution of $\gamma_T$ makes the first two terms
+\[
+ \frac1{\sqrt T}\left(
+ 30\frac{66967}{80000}+\frac{49624411}{30\cdot64000}\right)
+ =\frac{97840651}{1920000\sqrt T}<\frac{51}{\sqrt T}.
+\]
+Throughout the parameter rectangle, the nonnegative terms in $V$ and $\Pi$
+are bounded by their largest endpoints. In particular
+\[
+ V\le\frac{513}{10^6}<\left(\frac{227}{10000}\right)^2,\qquad
+ \Pi\le\frac{553}{10^6}.
+\]
+Since $\sqrt T\ge128$, the final ceiling follows from
+\[
+ 51/128+4(227/10000)+14(553/10^6)=993959/2000000.
+\]
+This argument covers every allowed horizon and parameter value.
+\end{proof}
+
+\section{A fixed active nonconvex example}\label{sec:example}
+Write $d=2n$ with $n=50000$, fix $0<\delta\le .001$, and set
+\[
+ y_0=\operatorname{arcosh}(e^{1/2}),\quad
+ x_0=(y_0/\sqrt d)\mathbf1,\quad c_0=\pi/3-y_0.
+\]
+Define
+\begin{align*}
+ F(x)&=\frac1d\sum_{i=1}^d[1-\cos(\sqrt d\,x_i+c_0)]+\Phi_\delta(x),\\
+ \Phi_\delta(x)&=\frac{\delta^2}{d}
+  \sum_{j=1}^n\cos\left(\frac{\sqrt d}{\delta}(x_j-x_{n+j})\right).
+\end{align*}
+Let $v$ have its first $n$ coordinates $1/\sqrt d$ and its last $n$
+coordinates $-1/\sqrt d$. Half the records have objective
+\[
+ (1+\theta)F(x)+.005\sin\langle v,x-x_0\rangle
+\]
+and half have objective
+\[
+ (1-\theta)F(x)-.005\sin\langle v,x-x_0\rangle,
+ \qquad .3\le\theta\le .38 .
+\]
+\begin{proposition}\label{prop:example}
+This fixed objective and record family satisfy the assumptions above.
+At $x_0$,
+\[
+ \norm{\nabla F(x_0)}^2=\frac34,\qquad
+ v^\top\nabla^2F(x_0)v=-\frac32 .
+\]
+Exactly half the record gradients exceed unit norm and half have norm below
+one. Their mean clipped query is not collinear with the true gradient.
+The rate and zero-noise conclusion apply to this same family, with
+$A_T\ge(3/4)/T$.
+\end{proposition}
+\begin{proof}
+Each base-gradient coordinate is a sine divided by $\sqrt d$.
+Each perturbation-gradient coordinate has magnitude at most $\delta/\sqrt d$.
+The base gradient is one-Lipschitz and each paired perturbation Hessian block
+has operator norm at most two, giving the total Lipschitz constant three.
+Also $F\ge-\delta^2/2$, while $F(x_0)=1/2+\delta^2/2$; hence the initial
+gap is at most $1/2+\delta^2\le.500001$.
+The record deviations are centered, and their scaled coordinate derivatives
+have magnitude at most $.005$. All individual objectives are lower bounded,
+since the deviation sine is bounded and the amplitudes are positive.
+
+At initialization the perturbation gradient is zero and the base-gradient
+coordinates equal $\sqrt3/(2\sqrt d)$. The base Hessian is $(1/2)I$;
+the paired perturbation contributes $-2$ in direction $v$.
+The high and low record gradients are $(1\pm\theta)\nabla F(x_0)\pm.005v$.
+The two summands are orthogonal. The high squared norm is at least
+$1.3^2(3/4)+.005^2=1.267525$, and the low squared norm is at most
+$.7^2(3/4)+.005^2=.367525$.
+Only the high group is clipped. If its clipping multiplier is $\lambda<1$,
+the mean query has transverse component $.005(\lambda-1)v/2\ne0$.
+Theorem~\ref{thm:rate} applies, and nonnegativity of all terms in the
+pre-update average retains its initial contribution.
+\end{proof}
+
+\section{Scope}
+The small record deviations are essential to the bias-support argument.
+For comparison, take $F(x)=\norm x^2/2$, one quarter of records
+$F+3x_1$, and three quarters $F-x_1$. At $x=(2/3)e_1$ their unit-clipped
+full-batch mean is zero. Zero-noise initialized Adam stays at this point,
+where the squared true gradient is $4/9$. These smooth lower-bounded
+record losses lie outside the assumptions above. A broader theory must
+include a bias remainder or additional structure.
+
+The numerical domain starts at $16384$ updates and at least $4096$ expected
+passes. It does not directly describe a 16/32-update comparison. No privacy
+calibration is proved here. Squared stationarity, final held-out loss and
+accuracy are different observables; an ordering of upper bounds alone
+does not order achieved performance.
+
+\appendix
+\section{Clipping and conditional moments}
+For each record write $u_r=\nabla\psi_r$, $z_r=a_rh+u_r$, and
+$\lambda_r=1/\max(1,\norm{z_r})$.
+The coordinate assumptions imply $\norm h\le G$ and $\norm{u_r}\le\rho$.
+Since $a_r\ge0$,
+\[
+ \norm{z_r}\le a_rG+\rho\le a_r+R.
+\]
+For $a\ge0$ and $s\le a+R$,
+\[
+ a(1-\lambda(s))\le(a-1)_++R,\qquad
+ 1-\lambda(s)\le(a-1)_++R.
+\]
+The mean-one amplitudes in $[1-\theta,1+\theta]$ give
+$N^{-1}\sum_r(a_r-1)_+\le\theta/2$.
+Consequently $\mu=N^{-1}\sum_ra_r\lambda_r$ lies in
+$[1-\theta/2-R,1]$, with lower endpoint at least $.80362>m$.
+Differentiating $\sum_r\psi_r=0$ yields $\sum_ru_r=0$, so
+$b=N^{-1}\sum_r(\lambda_r-1)u_r$ has both norm and scaled coordinate
+bounds at most $\rho(\theta/2+R)\le.0009819<b_0$.
+
+If $\norm h\le18/25$, then
+$\norm{z_r}\le1.38(.72)+.005=.9986<1$, so all $\lambda_r=1$ and $b=0$.
+Otherwise $b_0\le b_0\norm h^2/(18/25)^2$. This proves the supported-bias
+claim without a coordinatewise sign assumption.
+
+For each coordinate, $|\sqrt d\,\lambda_r z_{r,i}|\le a_r+R$.
+Put $s=1+R$. For $a\in[1-\theta,1+\theta]$, convexity between the
+two endpoints gives
+\begin{align*}
+ (a+R)^2&\le s^2+\theta^2+2s(a-1),\\
+ (a+R)^4&\le s^4+6s^2\theta^2+\theta^4
+                  +4s(s^2+\theta^2)(a-1).
+\end{align*}
+For $\theta=0$ these are equalities. Averaging cancels the terms linear in
+$a_r-1$, giving $M_2$ and $M_4$ in \eqref{eq:budgets}.
+Fix the full vector past and set
+\[
+ \xi_{t,i}=\frac1{Nq}\sum_r(I_{t,r}-q)\sqrt d\,\lambda_rz_{r,i}.
+\]
+For fixed coefficients $c_r$ and $u=q(1-q)$, independence gives
+\[
+ \E\Big(\sum_r c_r(I_r-q)\Big)^4
+ =u(1-6u)\sum_rc_r^4+3u^2\Big(\sum_rc_r^2\Big)^2.
+\]
+Replacing $1-6u$ by one and inserting the second/fourth envelopes yields
+$W_4$; the second moment gives the sampling term in $V$.
+Adding fresh independent Gaussian noise gives the asserted variance and
+eighth Gaussian moment. No independence between releases at different
+updates is asserted.
+
+\section{Finite corrected memories}
+Both $p$ and $w$ are nonnegative and sum to one. Weighted Cauchy--Schwarz
+gives $D_{t,i}^2\le\sum_jp_{tj}^2/w_{tj}$.
+The geometric expression for this last sum is bounded by
+\[
+ \frac{(1-\beta_1)^2}{(1-\beta_2)(1-\beta_1^2/\beta_2)}
+ =\frac{370}{7}<K^2.
+\]
+Here the finite-correction ratio
+$(1-\beta_2^t)/(1-\beta_1^t)^2$ is at most one:
+$\beta_2\ge\beta_1(2-\beta_1)$ and
+$(2-\beta_1)^t+\beta_1^t\ge2$ imply the needed inequality.
+The stabilizer only reduces the absolute direction.
+
+The $j$th column is bounded termwise by the first. Splitting its first
+16 terms from its tail gives the all-horizon bound
+\[
+ \sum_{t=j}^T p_{tj}
+ \le\sum_{k=0}^{15}\frac{(1-\beta_1)\beta_1^k}{1-\beta_1^{k+1}}
+       +\frac{\beta_1^{16}}{1-\beta_1^{17}}<\frac{31}{10}.
+\]
+The last comparison is a finite rational inequality. The exact squared-weight
+sum is $(1+\beta_1^t)/(19(1-\beta_1^t))$.
+It is at most $1/19+(20/19)\beta_1^t$; summing
+$\sum_{t\ge1}\beta_1^t=9$ proves the stated average bound.
+Finally,
+\[
+ \sum_{j=1}^k p_{tj}
+ =\beta_1^{t-k}\frac{1-\beta_1^k}{1-\beta_1^t}
+ \le\beta_1^{t-k}\quad(k<t),
+\]
+so the transposed lag mass is at most nine.
+
+\section{Logarithmic update energy}
+For one scaled coordinate let $v_t$ be its raw second memory and let
+$S_t=v_t+\epsilon^2$. This is a proof quantity; the denominator in
+\eqref{eq:adam} is unchanged.
+It satisfies $S_t\ge\beta_2S_{t-1}+(1-\beta_2)Y_t^2$.
+The inequality $1-u^{-1}\le\log u$ for $u>0$ gives
+\[
+ (1-\beta_2)\frac{Y_t^2}{S_t}
+ \le\log S_t-\log S_{t-1}-\log\beta_2.
+\]
+Also $S_t\ge\beta_2^{t-j}S_j$. Jensen with the corrected first-memory weights,
+and the actual denominator squared being at least $S_t$, therefore imply,
+for any integer $r\ge1$,
+\[
+ \sum_{t=1}^T D_t^2
+ \le(r-1)K^2+\frac{1-\beta_1}
+ {(1-\beta_1^r)(1-\beta_1/\beta_2)(1-\beta_2)}
+ \left[\log\frac{S_T}{\epsilon^2}-T\log\beta_2\right].
+\]
+For $T<r$ the cap alone suffices. Otherwise exchange the finite sums over
+$t\ge r$ and $j$ and bound the remaining geometric series
+$\sum_{t\ge j}(\beta_1/\beta_2)^{t-j}$.
+Both startup and the forgetting term are retained.
+
+The conditional second moment of $Y_t$ is at most
+$(G+b_0)^2+V\le1.004517<1.005$. Thus $\E v_T\le1.005$.
+The logarithm is integrable: it is nonnegative after normalization by
+$\epsilon^2$, and $\log(1+v_T/\epsilon^2)\le v_T/\epsilon^2$.
+Its tangent inequality gives
+\[
+ \E\log(S_T/\epsilon^2)\le\log(1+1.005/\epsilon^2)<26.
+\]
+Here $\epsilon^2=10^{-11}$, and the finite rational comparison
+$\sum_{k=0}^{33}26^k/k!>100500000001$ suffices for the last step.
+Taking $r=64$, the coefficient of the logarithmic bracket is at most $1011$,
+and $-\log(.999)\le1/999$. Averaging proves Lemma~\ref{lem:energy}.
+The logarithmic bound depends on the fixed positive stabilizer.
+
+\section{Residual transport and signed descent}
+The residual splits exactly into
+\[
+ n_{t,i}=\sum_{j\le t}p_{tj}\mu_j(g_{j,i}-g_{t,i})
+          +\sum_{j\le t}p_{tj}\sqrt d\,b_i(X_{j-1})
+          +\sum_{j\le t}p_{tj}e_{j,i}.
+\]
+For the first term, Euclidean Lipschitz continuity, the position increments,
+the lag-mass bound and Cauchy--Schwarz give time/coordinate mean at most
+$27\gamma\sqrt{J_T}$. In particular
+$d^{-1}\sum_i|g_i(y)-g_i(z)|
+ \le\norm{h(y/\sqrt d)-h(z/\sqrt d)}$; this avoids a dimension penalty.
+
+For the bias term,
+$d^{-1}\sum_i|\sqrt d\,b_i|\le\norm b$.
+Transpose the nonnegative finite sums and apply the column bound and
+Lemma~\ref{lem:query}. Its time/coordinate mean is at most $\kappa A_T$.
+For the final term, adapted centering makes unequal-time products have zero
+expectation. Its second moment is at most $V\sum_jp_{tj}^2$.
+Cauchy--Schwarz over probability, time and coordinates proves
+Lemma~\ref{lem:residual}.
+
+For one update and coordinate, set
+\[
+ Q=\min\left\{1,\frac{\sum_jw_{tj}\xi_{j,i}^4}{(1/10)^4}
+                  +\frac{\sum_jw_{tj}(\sqrt d\,\sigma Z_{j,i})^8}{(1/10)^8}
+           \right\}.
+\]
+Weighted power inequalities show that $Q<1$ forces the weighted sampling
+and Gaussian root-mean-square energies to be at most $1/10$ each.
+The triangle inequality then bounds the actual denominator by $H$.
+Also $\E Q\le\Pi$, by integrating marginal moments under the original law.
+
+Write the numerator as $M=Ag+n$, with $A\ge m$.
+If $gM\ge0$ and the denominator is at most $H$, then
+$gD\ge mg^2/H-G|n|/H$.
+If $gM<0$, then $m|g|\le|n|$ and $mg^2\le G|n|$, whereas
+$gD\ge-K|g|$. Together these prove
+\[
+ gD\ge ag^2-b|n|
+\]
+on the denominator event. On its complement, $Q=1$ and the global caps give
+$gD\ge-GK\ge ag^2-c$. Hence, on every history,
+\[
+ gD\ge ag^2-b|n|-cQ.
+\]
+There is no cancellation of noise after division.
+
+Smoothness and the actual update give
+\[
+ F(X_t)-F(X_{t-1})
+ \le-\frac{\gamma}{d}\sum_i g_{t,i}D_{t,i}
+          +\frac{3\gamma^2}{2d}\sum_iD_{t,i}^2.
+\]
+All terms are integrable. Directions and true gradients are bounded;
+finite-horizon positions are bounded by the direction cap; the continuous
+objective is bounded on that enclosing compact set. Residual moments and
+charges are integrable by the finite Gaussian and mask moments.
+Sum, integrate, use $F\ge F_*$, and insert the averaged residual bound.
+This proves \eqref{eq:absorbed}. An independent uniform choice of pre-update
+index yields exactly $A_T$.
+
+\end{document}

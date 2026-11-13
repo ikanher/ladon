@@ -1,0 +1,363 @@
+{
+  "schema": "internal-consumer-command-log-v1",
+  "ladonVersion": {
+    "nonclaims": [
+      "A local source revision is installation provenance, not proof that installed bytes equal the current checkout."
+    ],
+    "package": {
+      "distributionIdentity": "sha256:4c16ddb60d125106b723ea6993bb3de27790bf135705897558686c2b7a0d6c26",
+      "filesHashed": 11,
+      "installedContentIdentity": "sha256:d268f01f953bf5031945c5b63efeb4b53b456134b98635ef86bccba68e123552",
+      "name": "ladon",
+      "version": "0.4.2"
+    },
+    "runtime": {
+      "pythonExecutable": "/home/codex/projects/ladon/.venv/bin/python"
+    },
+    "schema": "ladon-version-result-v1",
+    "source": {
+      "commit": "4218abbfc9fbab4af91edcf0406f73c4e3d9f941",
+      "dirty": true,
+      "path": "/home/codex/projects/ladon",
+      "status": "observed"
+    },
+    "status": "available"
+  },
+  "targetHead": "50810c904d0cfe31d4b397e688418040f71f2785",
+  "commands": [
+    {
+      "id": "version",
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "version",
+        "--json"
+      ],
+      "cwd": "/home/codex/projects/lean/matrix-factorization",
+      "exitCode": 0,
+      "stdoutFile": "ladon-version.stdout",
+      "stderrFile": "ladon-version.stderr"
+    },
+    {
+      "id": "general-help",
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "--help"
+      ],
+      "cwd": "/home/codex/projects/lean/matrix-factorization",
+      "exitCode": 0,
+      "stdoutFile": "ladon-help.stdout",
+      "stderrFile": "ladon-help.stderr"
+    },
+    {
+      "id": "capture-help",
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "goal",
+        "capture",
+        "--help"
+      ],
+      "cwd": "/home/codex/projects/lean/matrix-factorization",
+      "exitCode": 0,
+      "stdoutFile": "goal-capture-help.stdout",
+      "stderrFile": "goal-capture-help.stderr"
+    },
+    {
+      "id": "complete-help",
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "goal",
+        "complete",
+        "--help"
+      ],
+      "cwd": "/home/codex/projects/lean/matrix-factorization",
+      "exitCode": 0,
+      "stdoutFile": "goal-complete-help.stdout",
+      "stderrFile": "goal-complete-help.stderr"
+    },
+    {
+      "id": "capture-invalid-digest",
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "goal",
+        "capture",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--source",
+        "Mf/Optimization/FiniteMemoryAdam/CumulativeEnergyUsefulUtility.lean",
+        "--module",
+        "Mf.Optimization.FiniteMemoryAdam.CumulativeEnergyUsefulUtility",
+        "--line",
+        "32",
+        "--column",
+        "80",
+        "--expected-source-digest",
+        "<shell-computed sha256sum value>",
+        "--toolchain-mode",
+        "explicit",
+        "--lean-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "--lake-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+        "--timeout-seconds",
+        "180",
+        "--max-output-mib",
+        "8",
+        "--max-rss-mib",
+        "12288",
+        "--format",
+        "json",
+        "--output",
+        "/home/codex/projects/ladon/temp/internal-0.4.2-adam-energy-r01/energy-goal-capture.json"
+      ],
+      "cwd": "/home/codex/projects/lean/matrix-factorization",
+      "exitCode": 2,
+      "stdout": "",
+      "stderr": "{\"diagnostic\":{\"code\":\"invalid-source-digest\",\"message\":\"expected source digest must be a lowercase sha256 digest\"},\"exitClass\":\"invocation\",\"exitCode\":2,\"operation\":\"goal.capture\",\"schema\":\"ladon-proof-search-terminal-v1\",\"status\":\"failed\"}",
+      "note": "An early shell-provided digest argument was invalid; not treated as a theorem result. Corrected by omitting this optional precondition."
+    },
+    {
+      "id": "capture",
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "goal",
+        "capture",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--source",
+        "Mf/Optimization/FiniteMemoryAdam/CumulativeEnergyUsefulUtility.lean",
+        "--module",
+        "Mf.Optimization.FiniteMemoryAdam.CumulativeEnergyUsefulUtility",
+        "--line",
+        "32",
+        "--column",
+        "80",
+        "--toolchain-mode",
+        "explicit",
+        "--lean-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "--lake-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+        "--timeout-seconds",
+        "180",
+        "--max-output-mib",
+        "8",
+        "--max-rss-mib",
+        "12288",
+        "--format",
+        "json",
+        "--output",
+        "/home/codex/projects/ladon/temp/internal-0.4.2-adam-energy-r01/energy-goal-capture.json"
+      ],
+      "cwd": "/home/codex/projects/lean/matrix-factorization",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "resultFile": "energy-goal-capture.json",
+      "status": "captured",
+      "resourceAccounting": {
+        "elapsedScope": "complete-capture-operation",
+        "elapsedSeconds": 30.86082273395732,
+        "helperElapsedSeconds": 11.271559454035014,
+        "peakRssBytes": 9002942464,
+        "peakRssScope": "supervised-helper-process-tree"
+      },
+      "processReceipts": [
+        {
+          "command": [
+            "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+            "--run",
+            "/tmp/ladon-source-goal-x3x3olby/ladon_source_goal_helper.lean"
+          ],
+          "elapsedSeconds": 6.313573577906936,
+          "inputDigest": "sha256:f9e7ee0cf19ade6ae67e7e836ae7b8bf9ef5fd41a186a7383e9303476bd1cf28",
+          "maxOutputBytes": 8388608,
+          "memoryLimited": false,
+          "outputLimited": false,
+          "peakRssBytes": 8761581568,
+          "returnCode": 0,
+          "stderrBytes": 0,
+          "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutBytes": 2500043,
+          "stdoutDigest": "sha256:72309279afa65f82277dc7fbd32a105b8e22d5efd1ef237068f7d58ed9f99ac0",
+          "timedOut": false
+        },
+        {
+          "command": [
+            "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+            "--run",
+            "/tmp/ladon-source-goal-x3x3olby/ladon_source_goal_helper.lean"
+          ],
+          "elapsedSeconds": 4.9579858761280775,
+          "inputDigest": "sha256:f9309e8b11364f6e5c7035f2f86373a2295028df57fbef5f5237244205909d93",
+          "maxOutputBytes": 8388608,
+          "memoryLimited": false,
+          "outputLimited": false,
+          "peakRssBytes": 9002942464,
+          "returnCode": 0,
+          "stderrBytes": 0,
+          "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutBytes": 2500043,
+          "stdoutDigest": "sha256:219ce3643deb1ecd5e1bcd26be7f22c5b46ff6353920e36a83b2442e96818721",
+          "timedOut": false
+        }
+      ]
+    },
+    {
+      "id": "complete-captured-source-goal",
+      "argv": [
+        "/home/codex/projects/ladon/.venv/bin/python",
+        "-m",
+        "ladon.entrypoint",
+        "proof-search",
+        "goal",
+        "complete",
+        "--repo-root",
+        "/home/codex/projects/lean/matrix-factorization",
+        "--capture-file",
+        "/home/codex/projects/ladon/temp/internal-0.4.2-adam-energy-r01/energy-goal-capture.json",
+        "--term",
+        "by\n  have hq0 : 0 < q := by exact_mod_cast (show (0:\u211d) < q by linarith [hqr.1])\n  have hV0 := releaseVariance_nonneg 50000 100000 q.coe_nonneg hqr.2 \u03c3 \u03b8 \u03c1 (1001/1000)\n  have hV := releaseVariance_safe (G := 1001/1000) hqr h\u03b8 h\u03c1 (by norm_num)\n    (physical_noise_window_scaled h\u03c3)\n  exact (model_expected_update_energy_le (T := T) F data (by norm_num) (by norm_num)\n    h\u03b8 h\u03c1 (by norm_num) \u03b7 (1/100000000) x0 h\u03b7 (by norm_num) q hq hq0 \u03c3\n    (r := 64) (by norm_num)).trans (logEnergyBound_safe hT hV0 hV)",
+        "--toolchain-mode",
+        "explicit",
+        "--lean-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+        "--lake-path",
+        "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+        "--timeout-seconds",
+        "180",
+        "--max-output-mib",
+        "8",
+        "--max-rss-mib",
+        "12288",
+        "--format",
+        "json",
+        "--output",
+        "/home/codex/projects/ladon/temp/internal-0.4.2-adam-energy-r01/energy-goal-completion.json"
+      ],
+      "cwd": "/home/codex/projects/lean/matrix-factorization",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "",
+      "resultFile": "energy-goal-completion.json",
+      "status": "completed",
+      "applicationStatus": "accepted",
+      "replayStatus": "accepted",
+      "trust": {
+        "accepted": true,
+        "allowedAxioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "coverage": "complete",
+        "forbiddenPlaceholders": [
+          "sorryAx"
+        ],
+        "observedAxioms": [
+          "Classical.choice",
+          "Quot.sound",
+          "propext"
+        ],
+        "policy": "lean-standard-no-placeholders-v1"
+      },
+      "resourceAccounting": {
+        "elapsedScope": "complete-original-goal-operation",
+        "elapsedSeconds": 54.312255688011646,
+        "helperElapsedSeconds": 22.919567929115146,
+        "peakRssBytes": 9136914432,
+        "peakRssScope": "supervised-lean-process-tree"
+      },
+      "processReceipts": [
+        {
+          "command": [
+            "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+            "--run",
+            "/tmp/ladon-source-goal-oo66ustm/ladon_source_goal_helper.lean"
+          ],
+          "elapsedSeconds": 4.932604664936662,
+          "inputDigest": "sha256:42bcb32b723f1193e663a4a446318d202681bb9fcde49000875d86f2c466d828",
+          "maxOutputBytes": 8388608,
+          "memoryLimited": false,
+          "outputLimited": false,
+          "peakRssBytes": 8987586560,
+          "returnCode": 0,
+          "stderrBytes": 0,
+          "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutBytes": 2500043,
+          "stdoutDigest": "sha256:dfc0cb9faf1150400bf865ddd601a3ba08aa98c411dd73fd02c756dbebfa7133",
+          "timedOut": false
+        },
+        {
+          "command": [
+            "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+            "--run",
+            "/tmp/ladon-source-goal-oo66ustm/ladon_source_goal_helper.lean"
+          ],
+          "elapsedSeconds": 4.902686811052263,
+          "inputDigest": "sha256:e6cee66432ff7add6865dbecd94c85b735bae2d3dc51fc0ae4a5e847629ebc09",
+          "maxOutputBytes": 8388608,
+          "memoryLimited": false,
+          "outputLimited": false,
+          "peakRssBytes": 8989913088,
+          "returnCode": 0,
+          "stderrBytes": 0,
+          "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutBytes": 2500043,
+          "stdoutDigest": "sha256:2181280e2b452d4416ecdbf6f80037dae70611404608b1b4de5615f556fcd2e8",
+          "timedOut": false
+        },
+        {
+          "command": [
+            "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+            "--run",
+            "/tmp/ladon-source-completion-rnvwoi2w/ladon_source_goal_completion_helper.lean"
+          ],
+          "elapsedSeconds": 7.7298180621583015,
+          "inputDigest": "sha256:a58883189f02edd0ffdceb5faaa9f086fcb1e3c010864a3cff03d15f9d93187a",
+          "memoryLimited": false,
+          "outputLimited": false,
+          "peakRssBytes": 9136914432,
+          "returnCode": 0,
+          "stderrBytes": 0,
+          "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutBytes": 3393781,
+          "stdoutDigest": "sha256:e6f36381807c4e5dab4546f4dc12a69da38e7778242958969097a5d7dcfe38f6",
+          "timedOut": false
+        },
+        {
+          "command": [
+            "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+            "/tmp/ladon-source-completion-rnvwoi2w/LadonCompletion.lean"
+          ],
+          "elapsedSeconds": 5.35445839096792,
+          "inputDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "memoryLimited": false,
+          "outputLimited": false,
+          "peakRssBytes": 7528374272,
+          "returnCode": 0,
+          "stderrBytes": 0,
+          "stderrDigest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdoutBytes": 3436,
+          "stdoutDigest": "sha256:506198fc50cdb93a866d5cc4c906fa10a18cd89978f11f9371e63aae53d8ab7e",
+          "timedOut": false
+        }
+      ]
+    }
+  ]
+}
