@@ -10,7 +10,7 @@ a successful check does not certify the meaning or argument of nearby prose.
 
 The **0.4.1 development snapshot** adds complete stored lineage projections and
 ordered capsule replay builds, retaining the 12 GiB default memory ceiling.
-See the [release notes](docs/RELEASE_0_4_1.md) for verification results and limits.
+See the [release notes](docs/RELEASE_0_4_2.md) for verification results and limits.
 
 ## Setup
 

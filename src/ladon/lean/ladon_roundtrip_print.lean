@@ -1,6 +1,8 @@
 /- Closed proof telescopes need names even when an instance is referenced only
    by later binder types. Some Lean lambda printers omit those names. This local
    delaborator preserves binder kinds and leaves the expression unchanged. -/
+private def roundtripPrinterMaxSteps : Nat := 200000
+
 open Lean.PrettyPrinter.Delaborator Lean.PrettyPrinter.Delaborator.SubExpr in
 private partial def delabRoundtripLambda (maxDepth : Nat)
     (names : NameSet := {}) (depth := 0) : Delab := do
@@ -19,5 +21,6 @@ private partial def delabRoundtripLambda (maxDepth : Nat)
     | .instImplicit => `(fun [$name : $type] => $body)
 
 private def roundtripProofText (proof : Expr) (maxDepth : Nat := 64) : MetaM String := do
-  let printed ← Lean.PrettyPrinter.ppExprWithInfos proof (delab := delabRoundtripLambda maxDepth)
-  pure printed.fmt.pretty
+  withOptions (fun o => o.set `pp.maxSteps roundtripPrinterMaxSteps) do
+    let printed ← Lean.PrettyPrinter.ppExprWithInfos proof (delab := delabRoundtripLambda maxDepth)
+    pure printed.fmt.pretty

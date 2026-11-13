@@ -130,6 +130,9 @@ def originalLevelNames (target : Expr) : MetaM (List Name) := do
       levels := collectLevelParams levels value
   return levels.params.toList
 
+private partial def hasPrinterOmission (stx : Syntax) : Bool :=
+  stx.isOfKind ``Lean.Parser.Term.omission || stx.getArgs.any hasPrinterOmission
+
 /-- The closed expressions must survive controlled explicit printing and reparsing
     with no locals, instances, namespace or open declarations in scope. -/
 def emptyContextRoundtrip (target proof : Expr) : MetaM (String × String) := do
@@ -137,7 +140,8 @@ def emptyContextRoundtrip (target proof : Expr) : MetaM (String × String) := do
     withTheReader Lean.Core.Context
         (fun c => { c with currNamespace := Name.anonymous, openDecls := [] }) do
       withOptions (fun o => o.setBool `pp.all true |>.setBool `pp.explicit true
-        |>.setBool `pp.fullNames true |>.setBool `pp.notation false) do
+        |>.setBool `pp.fullNames true |>.setBool `pp.notation false
+        |>.set `pp.maxSteps roundtripPrinterMaxSteps) do
         let targetText := (← ppExpr target).pretty
         let proofText ← roundtripProofText proof (← MonadRecDepth.getMaxRecDepth)
         let targetStx ← match Parser.runParserCategory (← getEnv) `term targetText with
@@ -146,6 +150,8 @@ def emptyContextRoundtrip (target proof : Expr) : MetaM (String × String) := do
         let proofStx ← match Parser.runParserCategory (← getEnv) `term proofText with
           | .ok stx => pure stx
           | .error msg => throwError "closed proof parse failed: {msg}"
+        if hasPrinterOmission targetStx || hasPrinterOmission proofStx then
+          throwError "closed expression printing reached its step limit; increase the bounded printer budget"
         let sort ← inferType target
         let levelNames := (collectLevelParams (collectLevelParams {} target) proof).params.toList
         let (targetAgain, _) ← Lean.Elab.Term.TermElabM.run
