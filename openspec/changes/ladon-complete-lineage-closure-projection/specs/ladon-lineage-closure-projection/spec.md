@@ -121,3 +121,29 @@ path-multiplicity growth.
 #### Scenario: Increasing shared-path multiplicity
 - **WHEN** a test adds sharing without a proportional increase in unique nodes and edges
 - **THEN** reachability work is measured against unique graph work, not the exponential count of possible paths
+
+### Requirement: Minimal stored-query validation
+Live lineage queries SHALL separate required schema, layout and identity checks
+from comprehensive index diagnostics. With refresh disabled, a missing stored
+closure MUST be reported without capturing repository sources. An existing
+closure MUST use the same source snapshot that passed stability validation to
+construct identity. Metadata and projected closure rows MUST belong to one
+coherent database read transaction. Source instability MUST fail closed;
+removing diagnostic work MUST NOT grant additional freshness or proof authority.
+Historical selection MUST retain its existing historical integrity checks.
+
+#### Scenario: Stored closure is absent
+- **WHEN** a compatible index has no active closure for a theorem and refresh is never
+- **THEN** return not_ingested without source capture, Lean invocation or full status inspection
+
+#### Scenario: Existing closure is queried
+- **WHEN** stable source captures match a stored closure's identities
+- **THEN** return the existing projection and evidence semantics without counts, dbstat or historical-database validation
+
+#### Scenario: Source changes during validation
+- **WHEN** the stability capture differs from the identity capture
+- **THEN** return an unstable-source outcome without substituting a later capture or publishing new lineage
+
+#### Scenario: Concurrent index publication
+- **WHEN** a new database generation is published during a stored query
+- **THEN** the query either reads one coherent generation or fails closed, and never combines old metadata with new closure rows

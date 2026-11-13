@@ -57,3 +57,13 @@ need matching usage/coverage guidance. The stored closure schema and Lean extrac
 need no expansion for the initial implementation: the necessary rows already exist.
 No automatic external-library recursion, source-proof inference, or new theorem
 checking is included.
+
+## Internal-use performance follow-up — 2026-11-14
+
+Ordinary live lineage now performs minimal schema/layout and closure preflight
+without full index-status diagnostics. Missing stored closures with refresh
+disabled avoid source captures; existing closures retain stability validation
+and use its exact snapshot for identity. Metadata and projection reads share a
+transaction. The review and implementation receipts are in
+[evidence/query-validation-review-r01](evidence/query-validation-review-r01/IMPLEMENTATION.md).
+No persistent cache or public snapshot-token interface is included.

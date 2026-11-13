@@ -38,3 +38,85 @@ the design owns algorithms and metrics.
 - [x] 5.2 Replay the retained gradient field case under the recorded resource ceilings, using stored-only queries after acquisition; verify exact selected node/typed-edge equality and zero false-complete/count/dangling-endpoint metrics, with bounded wall-time/RSS observations.
 - [x] 5.3 Compare before/after graph work on the synthetic sharing fixture and field case; reject a repair that depends on increasing the old path-recursion ceiling or enumerating all simple paths.
 - [x] 5.4 Verify stored closures remain usable by pre-existing views and rollback requires no data deletion/migration; run strict OpenSpec validation and obtain a source/behavior review of the final implementation before marking this change complete.
+
+## Incoming internal-use review — 2026-11-14
+
+Source: review pasted by the owner in this session; reviewer identity and source
+revision were not supplied. Status at intake: **received / pending validation**.
+The review reports that a stored-only lineage query runs comprehensive index
+inspection, captures the repository twice for freshness/stability, captures it
+again to build the query identity, then checks for the selected closure. It
+recommends cheap stored lookup, reusing a validated snapshot, shared in-progress
+validation, and eventually shared result caching. Latency attribution is a
+hypothesis; the reviewer supplied no per-stage profile.
+
+Next checks: confirm the call sequence and database compatibility requirements;
+identify existing historical-query and evidence-receipt semantics; measure
+captures and status diagnostics separately before adding persistent caching.
+Preserve strict live validation and explicit snapshot-bound authority. Caller
+labels must not participate in freshness, authority, or cache identity. Distinct
+repositories/worktrees and evidence generations require distinct identities.
+The completed closure-projection tasks above retain their original acceptance;
+this follow-up does not silently reopen or qualify them.
+
+### Initial reconciliation
+
+Source inspection confirms the reported three captures and that the CLI calls
+full index status before the selected-closure lookup. Status includes database
+counts, history, schema diagnostics and `dbstat` accounting. The projected query
+already owns a coherent SQLite read transaction, and `--history` already reports
+historical association with current freshness withheld. The third source capture
+is independent of the earlier freshness comparison; the follow-up should pass
+the validated identity through rather than build another sampled identity.
+
+Accepted first work package (implemented; receipt below):
+
+- [x] F.1 Retain a stage-timed baseline for present and absent stored closures.
+  Freeze source/index/helper identities and distinguish inclusive timings from
+  disjoint stage costs. Record instability rather than treating a changing donor
+  checkout as an unchanged-source comparison.
+- [x] F.2 Qualify minimal index/closure preflight and remove comprehensive status
+  diagnostics from ordinary lineage queries. Missing `--refresh never` closures
+  must perform zero source captures. Preserve missing/corrupt/incompatible index
+  outcomes, refresh policy, output bounds and evidence authority.
+- [x] F.3 Pass the strictly validated repository snapshot through identity and
+  projection construction. Retain explicit source-stability checks and coherent
+  database-generation reads; qualify concurrent edits/publication and compare
+  unchanged-source output/evidence semantics with the baseline.
+- [x] F.4 Repeat the stage measurement, record capture counts and same-query
+  evidence equality, and update the CLI guide with measured behavior/limits.
+  Decide whether residual cost warrants a separate shared-validation/cache
+  packet. No agent-specific workaround, persistent cache or public snapshot-token
+  interface is authorized merely by completing these planning tasks.
+
+Shared in-flight validation and persistent results remain proposed follow-ups.
+They require a cross-process lifecycle and explicit snapshot-authority contract;
+a process-local dictionary or TTL cannot satisfy that contract. Caller labels
+are optional accounting metadata and must not determine reuse or authority.
+
+Measured review disposition: [REVIEW.md](evidence/query-validation-review-r01/REVIEW.md)
+confirms the call sequence and records a 61.17-second stored query with a
+0.000916-second closure lookup. A separate historical-availability check took
+51.68 seconds to hash 49 snapshots totaling 44.63 GiB. Three source captures
+totaled 8.95 seconds in the first query. Removing comprehensive status from the
+query path is the priority; persistent caching is not yet justified as the first
+implementation. These single-sample timings are not additive across runs and
+provide no percentile or speedup claim. F.1 remains open for an absent-closure
+baseline and a controlled before/after comparison at the review checkpoint.
+The subsequent implementation and measurements below supersede that pending state.
+
+### Follow-up implementation complete — 2026-11-14
+
+[Implementation report](evidence/query-validation-review-r01/IMPLEMENTATION.md):
+22 new contract cases were qualified within 145 passing affected tests. A stored
+summary fell from 61.17 to 5.70 seconds and a missing closure from 61.85 seconds
+to 0.009 seconds in the recorded single-run comparison. Payloads match except
+elapsed-time fields. Present/missing captures are now 2/0, with no comprehensive
+status or historical-availability scan. Coherent read transactions, refresh
+policies, unstable-source rejection and historical integrity behavior remain
+qualified. Scoped Ruff and complexity checks pass. The full strict quality gate
+retains ten pre-existing real-bound complexity failures. No persistent cache,
+public snapshot token, cross-process validation service or schema migration was
+introduced; roughly 5.7 seconds of strict source validation remain. A shared
+snapshot API is a separately specified follow-up if repeated-use measurements
+justify it. These changes do not retroactively update the 0.4.2 release receipt.

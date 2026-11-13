@@ -247,6 +247,17 @@ collapsed into theorem failure. Use the explicit index build command to refresh.
 
 ## Theorem lineage
 
+Stored-only lineage (`--refresh never`) looks up the requested closure before
+scanning repository sources. An absent closure returns `not_ingested` without a
+source scan. Existing closures retain strict source validation and change
+detection; one validated snapshot supplies the query identity. Metadata and
+projection rows are read from one database transaction. Ordinary queries do not
+run the comprehensive index-status counts, storage accounting or archived-history
+integrity scan. Use `proof-search index status` for those diagnostics. This is
+query-path work reduction, with no persistent result cache or new freshness
+claim; sources can change after validation.
+
+
 Use the project-local index for exact compiled dependency lineage:
 
 ```bash

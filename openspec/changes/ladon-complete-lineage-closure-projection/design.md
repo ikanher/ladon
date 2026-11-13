@@ -188,3 +188,48 @@ semantics. Run focused query/projection/CLI/history tests, then the existing Pyt
 quality gate and field replay. If release verification fails, revert the new query/
 view wiring; existing stored closures and prior views remain available. Do not
 rewrite or delete lineage evidence during rollback.
+
+## Implemented follow-up: stored-query validation efficiency
+
+This follow-up was prompted by an internal-use review on 2026-11-14. It preserves the completed projection contract and introduces no persistent
+cache. The first-stage implementation and measurements are recorded in
+[evidence/query-validation-review-r01/IMPLEMENTATION.md](evidence/query-validation-review-r01/IMPLEMENTATION.md).
+
+The live CLI currently performs full status inspection (including dbstat storage
+accounting), two repository captures for freshness/stability, and a third
+capture for lineage identity before the selected-closure lookup. Historical
+queries already select an archived identity and explicitly withhold current
+association; reuse that authority distinction for any later snapshot API.
+
+The first implementation should separate minimal compatible-index/closure lookup
+from comprehensive status diagnostics. A missing closure under `--refresh never`
+can be returned without source capture. Supported schema and layout checks remain
+required; an incompatible or corrupt index must not be treated as an empty one.
+For an existing live closure, strict validation must supply the same validated
+snapshot used to construct the query identity. Preserve a defined stability
+check; removing the third capture does not justify removing change detection.
+Read metadata, evidence generation and closure/projection rows in a coherent
+SQLite transaction. Keep publication and refresh policies unchanged.
+
+Measure elapsed time, repository-capture counts, status/diagnostic work and closure
+lookup separately for present and absent closures. Compare identical projections
+and evidence receipts on unchanged sources; retain stale-source/configuration,
+toolchain mismatch, unstable source, missing/corrupt index and output-cap cases.
+Reduced elapsed time alone cannot establish freshness or mathematical authority.
+
+Shared snapshot validation is a later contract decision: separate agent CLI
+processes require cross-process coordination. A waiter may reuse an explicit
+validated snapshot only with that snapshot's original scope. A token binds the
+resolved repository/worktree, source/configuration/toolchain identities, index
+instance and evidence generation, and relevant helper/schema versions; it does
+not guarantee the filesystem stayed unchanged. Expiry, cancellation, validator
+failure, index replacement and concurrent publication need bounded defined
+behavior. A database read transaction alone does not freeze source files.
+
+Persistent result caching follows only a measured residual need. Its identity
+must include the selected closure/version, snapshot and index identity, all query
+filters/projection limits and relevant output/schema/helper versions. Cache hits
+must not upgrade evidence authority, freshness, coverage, or completion. Caller
+labels serve accounting/cancellation rather than cache identity or trust. Time,
+mtime or watchers alone cannot authorize a live-fresh claim. Prefer the existing
+historical path when immutable archived evidence already answers the question.

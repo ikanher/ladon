@@ -18,7 +18,6 @@ from ladon.evidence_receipt_readers import receipt_text_lines
 from ladon.proof_search_index import (
     capture_repository_snapshot,
     default_proof_search_index_path,
-    inspect_proof_search_index,
 )
 from ladon.sqlite_publication import (
     acquire_publication_lock,
@@ -33,6 +32,7 @@ from ladon.theorem_lineage_projection import (
 from ladon.theorem_lineage_query import LineageQuery, lineage_query_receipt
 from ladon.theorem_lineage_store import LineageIdentity, ingest_theorem_lineage
 from ladon.theorem_lineage_summary import summarize_lineage
+from ladon.theorem_lineage_validation import has_stored_closure, open_lineage_index
 
 
 def run_lineage_command(args: Any) -> int:
@@ -58,53 +58,67 @@ def _run_lineage_command(
 ) -> int:
     """Run lineage while any mutation-capable invocation owns publication."""
 
-    status = inspect_proof_search_index(repo_root, index_path=index, verify_sources=True)
-    if status.get("status") != "available":
-        _progress("terminal", f"error:index-unavailable:{status.get('reason', 'unknown')}")
-        raise RuntimeError(f"proof-search index unavailable: {status.get('reason', 'unknown')}")
-    snapshot = capture_repository_snapshot(repo_root)
-    identity = _identity(repo_root, snapshot, status)
-    connection = sqlite3.connect(index)
-    connection.row_factory = sqlite3.Row
-    connection.execute("PRAGMA foreign_keys = ON")
-    terminal_emitted = False
     try:
-        closure_status = _closure_status(connection, identity, args.theorem)
-        should_refresh = _should_refresh(args.refresh, closure_status)
-        ingest_result = None
-        if should_refresh:
-            _progress("planning", args.theorem)
-            plan = plan_theorem_capsule(repo_root, args.theorem, timeout_seconds=args.timeout, max_rss_bytes=_max_rss_bytes(args))
-            _progress("persisting", args.theorem)
-            ingest_result = ingest_theorem_lineage(
-                connection,
-                plan.payload,
-                identity,
-                max_bytes=int(args.max_database_mib) * 1024 * 1024,
-            )
-        elif args.refresh == "never" and closure_status["status"] != "fresh":
-            result = {"schema": "ladon-theorem-lineage-result-v1", "operation": "lineage", "status": "unavailable", "theorem": args.theorem, "reason": closure_status.get("reason", closure_status["status"]), "refresh": {"policy": args.refresh, "performed": False}, "nonclaim": "No lexical or alternative-proof fallback is used."}
-            result["evidenceReceipt"] = lineage_query_receipt(closure_status, args.theorem)
-            code = _write_result(result, args)
-            terminal_emitted = True
-            return code
-        result = summarize_lineage(connection, identity, args.theorem) if args.view == "summary" else _project(connection, identity, args)
-        result["indexPath"] = str(index)
-        result["refresh"] = {"policy": args.refresh, "performed": should_refresh}
-        result["limits"] = {"completeDatabaseMaxBytes": int(args.max_database_mib) * 1024 * 1024}
-        result["acquisitionElapsedSeconds"] = round(time.monotonic() - started, 6)
-        if ingest_result is not None:
-            result["publication"] = ingest_result
-        _progress("rendering", args.theorem)
-        code = _write_result(result, args)
-        terminal_emitted = True
-        return code
+        with open_lineage_index(index, writable=args.refresh != "never") as (connection, metadata):
+            return _read_live_lineage(args, repo_root, index, started, connection, metadata)
     except Exception as exc:
-        if not terminal_emitted:
-            _progress("terminal", f"error:{type(exc).__name__}")
+        _progress("terminal", f"error:{type(exc).__name__}")
         raise
-    finally:
-        connection.close()
+
+
+def _read_live_lineage(args, repo_root, index, started, connection, metadata):
+    if args.refresh == "never" and not has_stored_closure(connection, args.theorem):
+        return _unavailable(args, {"status": "unavailable", "reason": "not_ingested"})
+    snapshot = capture_repository_snapshot(repo_root)
+    if capture_repository_snapshot(repo_root).generation_identity != snapshot.generation_identity:
+        return _unavailable(args, {"status": "unstable-source"})
+    identity = _identity(repo_root, snapshot, metadata)
+    closure_status = _closure_status(connection, identity, args.theorem)
+    should_refresh = _should_refresh(args.refresh, closure_status)
+    ingest_result = None
+    if should_refresh:
+        ingest_result, failure = _refresh_live_lineage(
+            args, repo_root, connection, metadata, snapshot, identity,
+        )
+        if failure is not None:
+            return _unavailable(args, {"status": failure})
+    elif args.refresh == "never" and closure_status["status"] != "fresh":
+        return _unavailable(args, closure_status)
+    result = summarize_lineage(connection, identity, args.theorem) if args.view == "summary" else _project(connection, identity, args)
+    result["indexPath"] = str(index)
+    result["refresh"] = {"policy": args.refresh, "performed": should_refresh}
+    result["limits"] = {"completeDatabaseMaxBytes": int(args.max_database_mib) * 1024 * 1024}
+    result["acquisitionElapsedSeconds"] = round(time.monotonic() - started, 6)
+    if ingest_result is not None:
+        result["publication"] = ingest_result
+    _progress("rendering", args.theorem)
+    return _write_result(result, args)
+
+
+def _refresh_live_lineage(args, repo_root, connection, metadata, snapshot, identity):
+    from ladon.proof_search_index import _metadata
+
+    # Ingestion owns BEGIN IMMEDIATE; release the read snapshot before planning.
+    connection.rollback()
+    _progress("planning", args.theorem)
+    plan = plan_theorem_capsule(repo_root, args.theorem, timeout_seconds=args.timeout, max_rss_bytes=_max_rss_bytes(args))
+    if capture_repository_snapshot(repo_root).generation_identity != snapshot.generation_identity:
+        return None, "unstable-source"
+    if _metadata(connection) != metadata:
+        return None, "stale-identity"
+    _progress("persisting", args.theorem)
+    result = ingest_theorem_lineage(
+        connection, plan.payload, identity,
+        max_bytes=int(args.max_database_mib) * 1024 * 1024,
+    )
+    connection.execute("BEGIN")
+    return result, None
+
+
+def _unavailable(args, closure_status):
+    result = {"schema": "ladon-theorem-lineage-result-v1", "operation": "lineage", "status": "unavailable", "theorem": args.theorem, "reason": closure_status.get("reason", closure_status["status"]), "refresh": {"policy": args.refresh, "performed": False}, "nonclaim": "No lexical or alternative-proof fallback is used."}
+    result["evidenceReceipt"] = lineage_query_receipt(closure_status, args.theorem)
+    return _write_result(result, args)
 
 
 def _index_path(args: Any, repo_root: Path) -> Path:
