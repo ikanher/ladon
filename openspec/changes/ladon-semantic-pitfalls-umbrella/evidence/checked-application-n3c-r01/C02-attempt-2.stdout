@@ -1,0 +1,29 @@
+N3Singleton.lean:46:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+N3Singleton.lean:48:4: warning: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+N3Singleton.lean:53:6: error: Application type mismatch: The argument
+  integrable_const (-(↑n + 1))
+has type
+  Integrable (fun x => -(↑n + 1)) ?m.302
+but is expected to have type
+  Integrable (fun x => -↑(n + 1)) ?m.273
+in the application
+  condExp_of_stronglyMeasurable (Filtration.le n3Filtration n) stronglyMeasurable_const (integrable_const (-(↑n + 1)))
+N3Singleton.lean:61:15: error: Function expected at
+  h
+but this term has type
+  ∀ᵐ (ω : N3Ω) ∂N3μ, Summable fun n => n3B n ω
+
+Note: Expected a function because this term is being applied to the argument
+  (show () ∈ (Set.univ : Set N3Ω) from Set.mem_univ ())
+'Mf.Optimization.StochasticApproximation.n3_singleton_counterexample' depends on axioms: [propext,
+ sorryAx,
+ Classical.choice,
+ Quot.sound]
+N3Singleton.lean:68:0: error: Unexpected name `Mf.Optimization.StochasticApproximation` after `end`: The current section is unnamed
+
+Hint: Delete the name `Mf.Optimization.StochasticApproximation` to end the current unnamed scope; outer named scopes can then be closed using additional `end` command(s):
+  end ̵M̵f̵.̵O̵p̵t̵i̵m̵i̵z̵a̵t̵i̵o̵n̵.̵S̵t̵o̵c̵h̵a̵s̵t̵i̵c̵A̵p̵p̵r̵o̵x̵i̵m̵a̵t̵i̵o̵n̵

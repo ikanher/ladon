@@ -1,0 +1,25 @@
+N3ShiftedFull.lean:19:35: error: unsolved goals
+Ω : Type u_1
+mΩ : MeasurableSpace Ω
+μ : Measure Ω
+inst✝ : IsProbabilityMeasure μ
+ℱ : Filtration ℕ mΩ
+X A B C : ℕ → Ω → ℝ
+hX : StronglyAdapted ℱ X
+hA : StronglyAdapted ℱ A
+hB : StronglyAdapted ℱ B
+hC : StronglyAdapted ℱ C
+hXi : ∀ (n : ℕ), Integrable (X n) μ
+hBi : ∀ (n : ℕ), Integrable (B n) μ
+hCi : ∀ (n : ℕ), Integrable (C n) μ
+K : ℝ
+hK : 0 ≤ K
+hlower : ∀ᵐ (ω : Ω) ∂μ, ∀ (n : ℕ), -K ≤ X n ω
+hA0 : ∀ᵐ (ω : Ω) ∂μ, ∀ (n : ℕ), 0 ≤ A n ω
+hB0 : ∀ᵐ (ω : Ω) ∂μ, ∀ (n : ℕ), 0 ≤ B n ω
+hAs : ∀ᵐ (ω : Ω) ∂μ, Summable fun n => A n ω
+hCs : ∀ᵐ (ω : Ω) ∂μ, Summable fun n => C n ω
+hstep : ∀ (n : ℕ), μ[X (n + 1) | ↑ℱ n] ≤ᵐ[μ] fun ω => (1 + A n ω) * X n ω - B n ω + C n ω
+⊢ ∀ᵐ (ω : Ω) ∂μ, ∃ x, -K ≤ x ∧ Tendsto (fun n => X n ω) atTop (𝓝 x) ∧ Summable fun n => B n ω
+N3ShiftedFull.lean:20:0: error: unexpected token 'by'; expected command
+'n3Shifted' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]

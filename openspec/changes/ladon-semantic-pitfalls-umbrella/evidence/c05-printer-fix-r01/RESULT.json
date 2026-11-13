@@ -1,0 +1,47 @@
+{
+  "schema": "ladon-c05-production-printer-fix-v1",
+  "cases": {
+    "N3C05": {
+      "status": "completed",
+      "replay": "accepted",
+      "trust": true,
+      "diagnostic": null,
+      "elapsedSeconds": 49.3815377750434,
+      "peakRssBytes": 5644619776
+    },
+    "N3C06": {
+      "status": "rejected",
+      "replay": "not-run",
+      "trust": false,
+      "diagnostic": {
+        "code": "typecheck-or-closure",
+        "message": "Type mismatch\n  this\nhas type\n  1 = 1\nbut is expected to have type\n  0 = 1"
+      },
+      "elapsedSeconds": 20.170215491903946,
+      "peakRssBytes": 5337206784
+    },
+    "N3C07Route": {
+      "status": "rejected",
+      "replay": "not-run",
+      "trust": false,
+      "diagnostic": {
+        "code": "typecheck-or-closure",
+        "message": "Type mismatch\n  Filter.mp_mem h ?m.186\nhas type\n  ?m.191 \u2208 MeasureTheory.ae \u03bc\nbut is expected to have type\n  \u2203 x, \u2200\u1d50 (\u03c9 : \u03a9) \u2202\u03bc, 0 \u2264 x \u2227 Filter.Tendsto (fun n => X n \u03c9) Filter.atTop (\ud835\udcdd x) \u2227 Summable fun n => B n \u03c9"
+      },
+      "elapsedSeconds": 19.902278722031042,
+      "peakRssBytes": 5330604032
+    }
+  },
+  "sourceFiles": {
+    "src/ladon/lean/ladon_roundtrip_print.lean": "2a7187a608520ad936ae52fd840be5529cc6fa2b4033292016aaa1a495990640",
+    "src/ladon/lean/ladon_source_goal_completion_helper.lean": "6b5fb946b961cd1330f6751f94750055c2d3ebeba9e4f71d05bbbb62f1c06f31",
+    "tests/test_source_goal_completion_printer_budget.py": "c7ba1ee8f8b3946c49ae93903898b144021e266a83f3a4c72685e255faed8b0b"
+  },
+  "testResult": "14 passed in 98.03 seconds",
+  "limits": {
+    "rssGiB": 12,
+    "operationSeconds": 600,
+    "outputMiB": 16
+  },
+  "claim": "corrected C05 native completion passes replay and trust; C06/C07 invalid applications rejected; no discovery benefit measured"
+}

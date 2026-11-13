@@ -1,0 +1,21 @@
+MeasureTheory.condExp_of_stronglyMeasurable.{u_1, u_3} {α : Type u_1} {E : Type u_3} {m m₀ : MeasurableSpace α}
+  {μ : MeasureTheory.Measure α} [NormedAddCommGroup E] [NormedSpace ℝ E] (hm : m ≤ m₀)
+  [hμm : MeasureTheory.SigmaFinite (μ.trim hm)] {f : α → E} (hf : MeasureTheory.StronglyMeasurable f)
+  (hfi : MeasureTheory.Integrable f μ) : μ[f | m] = f
+N3TwoPointProbe03.lean:3:7: error(lean.unknownIdentifier): Unknown identifier `MeasureTheory.condExp_of_aestronglyMeasurable`
+N3TwoPointProbe03.lean:4:7: error(lean.unknownIdentifier): Unknown identifier `MeasureTheory.condExp_of_stronglyMeasurable_of_le`
+MeasureTheory.integrable_const.{u_1, u_2} {α : Type u_1} {β : Type u_2} {m : MeasurableSpace α}
+  {μ : MeasureTheory.Measure α} [NormedAddCommGroup β] [MeasureTheory.IsFiniteMeasure μ] (c : β) :
+  MeasureTheory.Integrable (fun x => c) μ
+MeasureTheory.integrable_indicator_iff.{u_1, u_4} {α : Type u_1} {ε' : Type u_4} {mα : MeasurableSpace α} {s : Set α}
+  {μ : MeasureTheory.Measure α} [TopologicalSpace ε'] [ESeminormedAddMonoid ε'] {f : α → ε'} (hs : MeasurableSet s) :
+  MeasureTheory.Integrable (s.indicator f) μ ↔ MeasureTheory.IntegrableOn f s μ
+N3TwoPointProbe03.lean:7:7: error(lean.unknownIdentifier): Unknown identifier `MeasureTheory.integrable_iff_norm`
+N3TwoPointProbe03.lean:8:7: error(lean.unknownIdentifier): Unknown identifier `MeasureTheory.MeasureTheory.Measure.toReal`
+N3TwoPointProbe03.lean:9:7: error: Invalid field notation: Function `Function.const` does not have a usable parameter of type `Function` for which to substitute `Filter.Tendsto`
+
+Note: Such a parameter must be explicit, or implicit with a unique name, to be used by field notation
+tendsto_const_nhds.{u, u_1} {X : Type u} [TopologicalSpace X] {α : Type u_1} {x : X} {f : Filter α} :
+  Filter.Tendsto (fun x_1 => x) f (nhds x)
+tendsto_nhds_unique.{u_1, u_2} {X : Type u_1} {Y : Type u_2} [TopologicalSpace X] [T2Space X] {f : Y → X} {l : Filter Y}
+  {a b : X} [l.NeBot] (ha : Filter.Tendsto f l (nhds a)) (hb : Filter.Tendsto f l (nhds b)) : a = b

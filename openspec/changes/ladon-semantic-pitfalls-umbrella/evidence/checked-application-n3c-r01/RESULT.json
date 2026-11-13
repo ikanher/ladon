@@ -1,0 +1,75 @@
+{
+  "schema": "ladon-exposed-seven-case-qualification-v1",
+  "cases": [
+    {
+      "id": "C01",
+      "outcome": "supported",
+      "native": "completed",
+      "evidence": "../checked-application-n3u-r01/N3Faithful-complete.json",
+      "reuse": "Same frozen original claim/owner; retained prerequisite evidence, not a fresh run."
+    },
+    {
+      "id": "C02",
+      "outcome": "refuted",
+      "native": "incomplete selected route (retained N.3u)",
+      "evidence": [
+        "../checked-application-n3u-r01/N3OmissionExplicit-complete.json",
+        "N3Singleton.lean",
+        "C02-final.stdout"
+      ],
+      "scope": "Full singleton source-premise model; failure of B summability refutes conjunction; separate abs(C) lemma."
+    },
+    {
+      "id": "C03",
+      "outcome": "conditional support",
+      "native": "completed",
+      "evidence": "N3C03-complete.json"
+    },
+    {
+      "id": "C04",
+      "outcome": "support with derived sign",
+      "native": "completed",
+      "evidence": "N3C04-complete.json"
+    },
+    {
+      "id": "C05",
+      "outcome": "support by shifted-state route",
+      "native": "direct route incomplete; alternative native closure rejected",
+      "ordinaryLean": "whole shifted-state proof compiled, permitted axioms only",
+      "evidence": [
+        "N3C05-direct-complete.json",
+        "N3C05-v2-complete.json",
+        "N3ShiftedFull.lean",
+        "C05-ordinary-3.stdout"
+      ]
+    },
+    {
+      "id": "C06",
+      "outcome": "incompatible application rejected",
+      "native": "rejected",
+      "evidence": "N3C06-complete.json"
+    },
+    {
+      "id": "C07",
+      "outcome": "stronger conclusion refuted",
+      "native": "conclusion transfer rejected",
+      "evidence": [
+        "N3C07Route-complete.json",
+        "N3TwoPointRoot.lean",
+        "C07-root-4.stdout"
+      ],
+      "scope": "Full two-point probability assumptions, actual samplewise theorem result and no common limit."
+    }
+  ],
+  "mathematicalExpectedOutcomesMet": 7,
+  "caseCount": 7,
+  "allCasesNativeCompleted": false,
+  "nativeLimitation": "C05 valid proof fails closed proof round-trip; ordinary Lean proof succeeds. Cause not established.",
+  "independentReview": "not performed under the user instruction that no independent review is needed; root integrated worker contributions and checked actual Lean outputs",
+  "interpretationDiscoveryMeasured": false,
+  "incrementalBenefitMeasured": false,
+  "recommendation": "Consolidate the recipe and ordinary Lean alternative; preserve the exact native closure limitation for a focused follow-up if needed. No broad diagnostics or fresh comparison automatically.",
+  "finishedAtUtc": "2026-11-13T14:04:10.153351+00:00",
+  "stageElapsedSeconds": 772.164112,
+  "tokensAndCompleteHumanReviewCost": "unavailable"
+}

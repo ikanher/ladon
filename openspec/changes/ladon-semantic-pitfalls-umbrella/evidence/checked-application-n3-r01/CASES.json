@@ -1,0 +1,77 @@
+{
+  "schema": "ladon-exposed-application-development-cases-v1",
+  "exposure": "Author knows original proof, evaluation answers and pro review; no fresh discovery claim.",
+  "commonSetting": "Fix a probability space (Ω,mΩ,μ), μ a probability measure, and a filtration ℱ indexed by Nat. X,A,B,C are real processes strongly adapted to ℱ. Each X_n,B_n,C_n is integrable. A_n,B_n are nonnegative a.s. For each n, E[X_(n+1)|ℱ_n] ≤ (1+A_n)X_n−B_n+C_n a.s. A is summable a.s.; |C| is summable a.s. All series are finite real sums, not upper bounds admitting −∞. Separate countable a.s. statements may be combined only with the justified countability step. No integrability of A or of infinite error totals is assumed.",
+  "cases": [
+    {
+      "id": "C01",
+      "role": "faithful",
+      "sourceAssumptions": "Fix a probability space (Ω,mΩ,μ), μ a probability measure, and a filtration ℱ indexed by Nat. X,A,B,C are real processes strongly adapted to ℱ. Each X_n,B_n,C_n is integrable. A_n,B_n are nonnegative a.s. For each n, E[X_(n+1)|ℱ_n] ≤ (1+A_n)X_n−B_n+C_n a.s. A is summable a.s.; |C| is summable a.s. All series are finite real sums, not upper bounds admitting −∞. Separate countable a.s. statements may be combined only with the justified countability step. No integrability of A or of infinite error totals is assumed. Also X_n ≥ 0 a.s. for all n.",
+      "sourceConclusion": "Almost surely B is summable and there exists a finite nonnegative real limit of X, allowed to depend on ω. A measurable random-variable formulation needs its own measurable-limit bridge.",
+      "proposedRoute": "Identity object map; apply the retained theorem to the same X,A,B,C.",
+      "expectedOutcome": "completed",
+      "mathematicalJustification": "All original premises and conclusion retained.",
+      "leanQualification": "not-run"
+    },
+    {
+      "id": "C02",
+      "role": "omitted-state-sign",
+      "sourceAssumptions": "Fix a probability space (Ω,mΩ,μ), μ a probability measure, and a filtration ℱ indexed by Nat. X,A,B,C are real processes strongly adapted to ℱ. Each X_n,B_n,C_n is integrable. A_n,B_n are nonnegative a.s. For each n, E[X_(n+1)|ℱ_n] ≤ (1+A_n)X_n−B_n+C_n a.s. A is summable a.s.; |C| is summable a.s. All series are finite real sums, not upper bounds admitting −∞. Separate countable a.s. statements may be combined only with the justified countability step. No integrability of A or of infinite error totals is assumed.",
+      "sourceConclusion": "Almost surely B is summable and there exists a finite nonnegative real limit of X, allowed to depend on ω. A measurable random-variable formulation needs its own measurable-limit bridge.",
+      "proposedRoute": "Try the same direct application; hX0 must remain an unmet obligation.",
+      "expectedOutcome": "gap-and-counterexample",
+      "mathematicalJustification": "Singleton probability space; X_n=−n, A=C=0, B=1. Drift is equality; X has no finite limit and B is not summable. The sign omission is not evidence by itself; realize and check the witness separately.",
+      "leanQualification": "not-run"
+    },
+    {
+      "id": "C03",
+      "role": "explicit-conditional-repair",
+      "sourceAssumptions": "Fix a probability space (Ω,mΩ,μ), μ a probability measure, and a filtration ℱ indexed by Nat. X,A,B,C are real processes strongly adapted to ℱ. Each X_n,B_n,C_n is integrable. A_n,B_n are nonnegative a.s. For each n, E[X_(n+1)|ℱ_n] ≤ (1+A_n)X_n−B_n+C_n a.s. A is summable a.s.; |C| is summable a.s. All series are finite real sums, not upper bounds admitting −∞. Separate countable a.s. statements may be combined only with the justified countability step. No integrability of A or of infinite error totals is assumed. Explicitly suppose in addition X_n ≥ 0 a.s. for all n.",
+      "sourceConclusion": "Almost surely B is summable and there exists a finite nonnegative real limit of X, allowed to depend on ω. A measurable random-variable formulation needs its own measurable-limit bridge.",
+      "proposedRoute": "Apply the retained theorem conditionally under the newly stated premise.",
+      "expectedOutcome": "completed",
+      "mathematicalJustification": "Different source-claim identity from C02; adding the premise repairs this variant and does not establish C02.",
+      "leanQualification": "not-run"
+    },
+    {
+      "id": "C04",
+      "role": "derived-sign",
+      "sourceAssumptions": "Fix a probability space (Ω,mΩ,μ), μ a probability measure, and a filtration ℱ indexed by Nat. X,A,B,C are real processes strongly adapted to ℱ. Each X_n,B_n,C_n is integrable. A_n,B_n are nonnegative a.s. For each n, E[X_(n+1)|ℱ_n] ≤ (1+A_n)X_n−B_n+C_n a.s. A is summable a.s.; |C| is summable a.s. All series are finite real sums, not upper bounds admitting −∞. Separate countable a.s. statements may be combined only with the justified countability step. No integrability of A or of infinite error totals is assumed. Let Z be a real process and suppose X_n(ω)=Z_n(ω)^2 for all n,ω; retain the stated integrability/adaptation of X.",
+      "sourceConclusion": "Almost surely B is summable and there exists a finite nonnegative real limit of X, allowed to depend on ω. A measurable random-variable formulation needs its own measurable-limit bridge.",
+      "proposedRoute": "Derive hX0 from square nonnegativity at the same X, then apply the theorem.",
+      "expectedOutcome": "completed",
+      "mathematicalJustification": "The source supplies a representation, not hX0 verbatim. No additional measurability or integrability of Z is needed, since those properties of X remain source premises.",
+      "leanQualification": "not-run"
+    },
+    {
+      "id": "C05",
+      "role": "shifted-state-alternative",
+      "sourceAssumptions": "Fix a probability space (Ω,mΩ,μ), μ a probability measure, and a filtration ℱ indexed by Nat. X,A,B,C are real processes strongly adapted to ℱ. Each X_n,B_n,C_n is integrable. A_n,B_n are nonnegative a.s. For each n, E[X_(n+1)|ℱ_n] ≤ (1+A_n)X_n−B_n+C_n a.s. A is summable a.s.; |C| is summable a.s. All series are finite real sums, not upper bounds admitting −∞. Separate countable a.s. statements may be combined only with the justified countability step. No integrability of A or of infinite error totals is assumed. Fix deterministic real K ≥ 0 and assume X_n ≥ −K a.s. for all n.",
+      "sourceConclusion": "Almost surely B is summable and X converges to a finite real limit at least −K, allowed to depend on ω.",
+      "proposedRoute": "Direct application to X lacks hX0. Instead apply to Y_n=X_n+K with unchanged A,B,C; derive the drift and transfer the limit back.",
+      "expectedOutcome": "alternative-completed",
+      "mathematicalJustification": "Y≥0; E[Y_next|ℱ]≤(1+A)Y−B+C−KA≤(1+A)Y−B+C. Derive integrability/adaptation of Y and the conditional-expectation identity from source assumptions. No new integrability of A. The conclusion permits negative limits; it must not retain the original nonnegative-limit conclusion.",
+      "leanQualification": "not-run"
+    },
+    {
+      "id": "C06",
+      "role": "shared-parameter-mismatch",
+      "sourceAssumptions": "No source hypotheses. Proposed support is a theorem ∀ n : Nat, n=0 → n=1 → False. Separate supplied rows are rfl : (0:Nat)=0 and rfl : (1:Nat)=1.",
+      "sourceConclusion": "False.",
+      "proposedRoute": "Attempt a single theorem instantiation at one n; the separately valid rows at n=0 and n=1 cannot be combined.",
+      "expectedOutcome": "incomplete-or-rejected",
+      "mathematicalJustification": "The selected theorem is legitimate under inconsistent explicit premises; the source has no such premises. Do not import them, derive support from an added False, or infer that the selected theorem itself is false. This is a generic checking control, not stochastic evidence.",
+      "leanQualification": "not-run"
+    },
+    {
+      "id": "C07",
+      "role": "conclusion-quantifier",
+      "sourceAssumptions": "Fix a probability space (Ω,mΩ,μ), μ a probability measure, and a filtration ℱ indexed by Nat. X,A,B,C are real processes strongly adapted to ℱ. Each X_n,B_n,C_n is integrable. A_n,B_n are nonnegative a.s. For each n, E[X_(n+1)|ℱ_n] ≤ (1+A_n)X_n−B_n+C_n a.s. A is summable a.s.; |C| is summable a.s. All series are finite real sums, not upper bounds admitting −∞. Separate countable a.s. statements may be combined only with the justified countability step. No integrability of A or of infinite error totals is assumed. Also X_n ≥ 0 a.s. for all n.",
+      "sourceConclusion": "There exists one deterministic real x such that almost surely X_n converges to x; B is summable a.s.",
+      "proposedRoute": "The retained theorem supplies a sample-dependent x. Direct premise coverage does not transfer the changed quantifier.",
+      "expectedOutcome": "gap-and-counterexample",
+      "mathematicalJustification": "On Ω={0,1} with discrete sigma algebra, constant full filtration and probability 1/2 per atom, let X_n(ω)=ω and A=B=C=0. All original premises hold and each path is constant, but positive probability of each distinct limit precludes a common a.s. limit. Justify finite-space integrability, adaptation and uniqueness of real limits. The source realization must be checked, not replaced by a scalar formula.",
+      "leanQualification": "not-run"
+    }
+  ]
+}

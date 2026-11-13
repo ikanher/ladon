@@ -1,0 +1,6 @@
+by
+  have hX0 : ∀ᵐ ω ∂μ, ∀ n, 0 ≤ X n ω := Filter.Eventually.of_forall (fun ω n => by rw [hrep n ω]; exact sq_nonneg _)
+  have h := almost_supermartingale_converges ℱ X A B C hX hA hB hC hXi hBi hCi hX0 hA0 hB0 hAs hCs hstep
+  filter_upwards [h] with ω hω
+  rcases hω with ⟨hb, x, hx, hlim⟩
+  exact ⟨x, hx, hlim, hb⟩

@@ -1,0 +1,22 @@
+structure MeasureTheory.Filtration.{u_1, u_2} {Ω : Type u_1} (ι : Type u_2) [Preorder ι] (m : MeasurableSpace Ω) :
+  Type (max u_1 u_2)
+number of parameters: 4
+fields:
+  MeasureTheory.Filtration.seq : ι → MeasurableSpace Ω
+  MeasureTheory.Filtration.mono' : Monotone ↑self
+  MeasureTheory.Filtration.le' : ∀ (i : ι), ↑self i ≤ m
+constructor:
+  MeasureTheory.Filtration.mk.{u_1, u_2} {Ω : Type u_1} {ι : Type u_2} [Preorder ι] {m : MeasurableSpace Ω}
+    (seq : ι → MeasurableSpace Ω) (mono' : Monotone seq) (le' : ∀ (i : ι), seq i ≤ m) : MeasureTheory.Filtration ι m
+MeasureTheory.Measure.count_apply.{u_1} {α : Type u_1} [MeasurableSpace α] {s : Set α} (hs : MeasurableSet s) :
+  MeasureTheory.Measure.count s = ↑s.encard
+MeasureTheory.Measure.count_apply_finset.{u_1} {α : Type u_1} [MeasurableSpace α] [MeasurableSingletonClass α]
+  (s : Finset α) : MeasureTheory.Measure.count ↑s = ↑s.card
+MeasureTheory.Measure.smul_apply.{u_1, u_6} {α : Type u_1} {R : Type u_6} [SMul R ENNReal]
+  [IsScalarTower R ENNReal ENNReal] {_m : MeasurableSpace α} (c : R) (μ : MeasureTheory.Measure α) (s : Set α) :
+  (c • μ) s = c • μ s
+MeasureTheory.Measure.dirac_apply.{u_1} {α : Type u_1} [MeasurableSpace α] [MeasurableSingletonClass α] (a : α)
+  (s : Set α) : (MeasureTheory.Measure.dirac a) s = s.indicator 1 a
+MeasureTheory.IsProbabilityMeasure.{u_1} {α : Type u_1} {m0 : MeasurableSpace α} (μ : MeasureTheory.Measure α) : Prop
+MeasureTheory.ae_iff.{u_1, u_3} {α : Type u_1} {F : Type u_3} [FunLike F (Set α) ENNReal]
+  [MeasureTheory.OuterMeasureClass F α] {μ : F} {p : α → Prop} : (∀ᵐ (a : α) ∂μ, p a) ↔ μ {a | ¬p a} = 0

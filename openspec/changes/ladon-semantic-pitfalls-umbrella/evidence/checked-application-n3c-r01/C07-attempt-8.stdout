@@ -1,0 +1,47 @@
+N3TwoPoint.lean:10:43: error: expected token
+N3TwoPoint.lean:14:6: warning: declaration uses `sorry`
+N3TwoPoint.lean:12:0: warning: declaration uses `sorry`
+N3TwoPoint.lean:15:2: warning: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+N3TwoPoint.lean:15:2: warning: Unused tactic linter: `simp` does nothing
+
+Note: This linter can be disabled with `set_option linter.unusedTactic false`
+N3TwoPoint.lean:20:7: warning: Variable name `n` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _n
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+N3TwoPoint.lean:21:7: warning: Variable name `n` is not explicitly referenced.
+
+Hint: The binding can be removed (if unused) or named `_` (if used implicitly). Alternatively, prefix the name with `_` to silence this warning:
+  [apply] _n
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+N3TwoPoint.lean:29:40: error: unsolved goals
+x : ℝ
+hx : ∀ᵐ (ω : Ω) ∂μ, Tendsto (fun n => X n ω) atTop (𝓝 x)
+⊢ (sorry ()) {true} = 0
+N3TwoPoint.lean:32:4: error: Type mismatch
+  mp_mem hfalse ?m.57
+has type
+  ?m.62 ∈ ae μ
+but is expected to have type
+  Tendsto (fun x => 1) atTop (𝓝 x)
+N3TwoPoint.lean:34:107: error: Application type mismatch: The argument
+  ht
+has type
+  Tendsto (fun x => 1) atTop (𝓝 x)
+but is expected to have type
+  Tendsto ?m.71 ?m.72 (𝓝 1)
+in the application
+  tendsto_nhds_unique ?m.91 ht
+N3TwoPoint.lean:31:15: warning: This simp argument is unused:
+  Measure.smul_apply
+
+Hint: Omit it from the simp argument list.
+  [apply] simp [μ]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+'C07TwoPoint.no_common_limit' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]

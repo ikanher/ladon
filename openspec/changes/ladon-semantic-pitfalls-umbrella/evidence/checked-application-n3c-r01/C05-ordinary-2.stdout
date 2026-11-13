@@ -1,0 +1,38 @@
+N3ShiftedFull.lean:30:8: error: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  μ[X (n + 1) + fun x => K | ↑ℱ n] ω
+in the target expression
+  μ[fun ω => X (n + 1) ω + K | ↑ℱ n] ω ≤ (1 + A n ω) * (X n ω + K) - B n ω + C n ω
+
+Ω : Type u_1
+mΩ : MeasurableSpace Ω
+μ : Measure Ω
+inst✝ : IsProbabilityMeasure μ
+ℱ : Filtration ℕ mΩ
+X A B C : ℕ → Ω → ℝ
+hX : StronglyAdapted ℱ X
+hA✝ : StronglyAdapted ℱ A
+hB : StronglyAdapted ℱ B
+hC : StronglyAdapted ℱ C
+hXi : ∀ (n : ℕ), Integrable (X n) μ
+hBi : ∀ (n : ℕ), Integrable (B n) μ
+hCi : ∀ (n : ℕ), Integrable (C n) μ
+K : ℝ
+hK : 0 ≤ K
+hlower : ∀ᵐ (ω : Ω) ∂μ, ∀ (n : ℕ), -K ≤ X n ω
+hA0 : ∀ᵐ (ω : Ω) ∂μ, ∀ (n : ℕ), 0 ≤ A n ω
+hB0 : ∀ᵐ (ω : Ω) ∂μ, ∀ (n : ℕ), 0 ≤ B n ω
+hAs : ∀ᵐ (ω : Ω) ∂μ, Summable fun n => A n ω
+hCs : ∀ᵐ (ω : Ω) ∂μ, Summable fun n => C n ω
+hstep✝ : ∀ (n : ℕ), μ[X (n + 1) | ↑ℱ n] ≤ᵐ[μ] fun ω => (1 + A n ω) * X n ω - B n ω + C n ω
+Y : ℕ → Ω → ℝ := fun n ω => X n ω + K
+hY : StronglyAdapted ℱ fun n ω => X n ω + K
+hYi : ∀ (n : ℕ), Integrable (fun ω => X n ω + K) μ
+hY0 : ∀ᵐ (ω : Ω) ∂μ, ∀ (n : ℕ), 0 ≤ X n ω + K
+n : ℕ
+heq✝ : μ[X (n + 1) + fun x => K | ↑ℱ n] =ᵐ[μ] μ[X (n + 1) | ↑ℱ n] + μ[fun x => K | ↑ℱ n]
+ω : Ω
+heq : μ[X (n + 1) + fun x => K | ↑ℱ n] ω = μ[X (n + 1) | ↑ℱ n] ω + (fun x => K) ω
+hstep : μ[X (n + 1) | ↑ℱ n] ω ≤ (1 + A n ω) * X n ω - B n ω + C n ω
+hA : ∀ (n : ℕ), 0 ≤ A n ω
+⊢ μ[fun ω => X (n + 1) ω + K | ↑ℱ n] ω ≤ (1 + A n ω) * (X n ω + K) - B n ω + C n ω
+'n3Shifted' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]
