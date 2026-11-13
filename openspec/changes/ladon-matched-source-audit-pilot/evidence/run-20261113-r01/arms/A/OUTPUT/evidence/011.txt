@@ -1,0 +1,396 @@
+$ cat Mf/DP/SparseGaussianProductMaximumEventLowerBound.lean; rg -n "^(def|theorem|structure) |replayCertificate|sorry|axiom|admit" Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean Mf/DP/SparseGaussianProductLikelihoodRatio.lean Mf/DP/FiniteMeasurePositivePartSecondMoment.lean Mf/DP/SampledGaussianProductMaximumEvent.lean Mf/DP/SampledGaussianProductNoiseMonotonicity.lean Mf/DP/SampledGaussianCalibratedStddev.lean; nl -ba Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean | sed -n "1,180p"
+EXIT 0
+STDOUT
+import Mf.DP.FiniteProfileEventLowerBound
+import Mf.DP.SampledGaussianProductMaximumEvent
+
+/-!
+# Maximum-event lower witnesses for sparse Gaussian products
+
+The maximum-coordinate event is a certified lower witness for the forward
+hockey-stick profile.  This owner deliberately does not optimize the
+threshold and does not claim that the event is profile-optimal.
+-/
+
+open MeasureTheory ProbabilityTheory Set
+
+namespace Mf.DP
+
+noncomputable section
+
+set_option autoImplicit false
+
+/-- The real-valued maximum-event witness used by numerical certificates. -/
+def sparseGaussianProductMaximumEventForwardLowerBoundReal
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift epsilon threshold : Real) : Real :=
+  let p : Real :=
+    (1 - (samplingRate : Real)) * stdNormalCDFReal threshold +
+      (samplingRate : Real) *
+        stdNormalCDFReal (threshold - standardizedShift)
+  1 - p ^ horizon - Real.exp epsilon *
+    (1 - (stdNormalCDFReal threshold) ^ horizon)
+
+def sparseGaussianProductMaximumEventForwardLowerBound
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift epsilon threshold : Real) : ENNReal :=
+  1 -
+      ((1 - (samplingRate : ENNReal)) *
+          ENNReal.ofReal (stdNormalCDFReal threshold) +
+        (samplingRate : ENNReal) *
+          ENNReal.ofReal (stdNormalCDFReal (threshold - standardizedShift))) ^ horizon -
+    ENNReal.ofReal (Real.exp epsilon) *
+      (1 - (ENNReal.ofReal (stdNormalCDFReal threshold)) ^ horizon)
+
+/-- The nonnegative witness is exactly the positive part of its real formula. -/
+theorem ennreal_ofReal_sparseGaussianProductMaximumEventForwardLowerBoundReal
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift epsilon threshold : Real) :
+    ENNReal.ofReal
+        (sparseGaussianProductMaximumEventForwardLowerBoundReal
+          horizon samplingRate hRate standardizedShift epsilon threshold) =
+      sparseGaussianProductMaximumEventForwardLowerBound
+        horizon samplingRate hRate standardizedShift epsilon threshold := by
+  let c : Real := stdNormalCDFReal threshold
+  let d : Real := stdNormalCDFReal (threshold - standardizedShift)
+  let q : Real := (samplingRate : Real)
+  let p : Real := (1 - q) * c + q * d
+  have hq0 : 0 ≤ q := by
+    dsimp [q]
+    positivity
+  have hq1 : q ≤ 1 := by
+    dsimp [q]
+    exact_mod_cast hRate
+  have hc0 : 0 ≤ c := stdNormalCDFReal_nonneg _
+  have hc1 : c ≤ 1 := stdNormalCDFReal_le_one _
+  have hd0 : 0 ≤ d := stdNormalCDFReal_nonneg _
+  have hp0 : 0 ≤ p := by
+    dsimp [p]
+    positivity
+  have hpow0 : 0 ≤ p ^ horizon := pow_nonneg hp0 _
+  have hcPow0 : 0 ≤ c ^ horizon := pow_nonneg hc0 _
+  have hqENN : ENNReal.ofReal q = (samplingRate : ENNReal) := by
+    simp [q]
+  have hOneMinusQ : ENNReal.ofReal (1 - q) = 1 - (samplingRate : ENNReal) := by
+    rw [ENNReal.ofReal_sub 1 hq0, ENNReal.ofReal_one, hqENN]
+  have hpENN : ENNReal.ofReal p =
+      (1 - (samplingRate : ENNReal)) * ENNReal.ofReal c +
+        (samplingRate : ENNReal) * ENNReal.ofReal d := by
+    dsimp [p]
+    rw [ENNReal.ofReal_add]
+    · rw [ENNReal.ofReal_mul (sub_nonneg.mpr hq1), hOneMinusQ]
+      rw [ENNReal.ofReal_mul hq0, hqENN]
+    · positivity
+    · positivity
+  have hpowENN : ENNReal.ofReal (p ^ horizon) =
+      ((1 - (samplingRate : ENNReal)) * ENNReal.ofReal c +
+        (samplingRate : ENNReal) * ENNReal.ofReal d) ^ horizon := by
+    rw [ENNReal.ofReal_pow hp0, hpENN]
+  have hCDFPow : ENNReal.ofReal (c ^ horizon) =
+      (ENNReal.ofReal c) ^ horizon := ENNReal.ofReal_pow hc0 _
+  have hInner : ENNReal.ofReal (1 - c ^ horizon) =
+      1 - (ENNReal.ofReal c) ^ horizon := by
+    rw [ENNReal.ofReal_sub 1 hcPow0, ENNReal.ofReal_one, hCDFPow]
+  have hExp : 0 ≤ Real.exp epsilon := (Real.exp_pos _).le
+  have hTail0 : 0 ≤ 1 - c ^ horizon := by
+    have hcPow1 : c ^ horizon ≤ 1 := pow_le_one₀ hc0 hc1
+    linarith
+  have hExpTail : ENNReal.ofReal (Real.exp epsilon * (1 - c ^ horizon)) =
+      ENNReal.ofReal (Real.exp epsilon) *
+        (1 - (ENNReal.ofReal c) ^ horizon) := by
+    rw [ENNReal.ofReal_mul hExp, hInner]
+  have hFinal0 : 0 ≤ Real.exp epsilon * (1 - c ^ horizon) :=
+    mul_nonneg hExp hTail0
+  dsimp [sparseGaussianProductMaximumEventForwardLowerBoundReal]
+  unfold sparseGaussianProductMaximumEventForwardLowerBound
+  change ENNReal.ofReal ((1 - p ^ horizon) -
+      Real.exp epsilon * (1 - c ^ horizon)) =
+    1 -
+        ((1 - (samplingRate : ENNReal)) * ENNReal.ofReal c +
+            (samplingRate : ENNReal) * ENNReal.ofReal d) ^ horizon -
+      ENNReal.ofReal (Real.exp epsilon) *
+        (1 - (ENNReal.ofReal c) ^ horizon)
+  rw [ENNReal.ofReal_sub (1 - p ^ horizon) hFinal0,
+    ENNReal.ofReal_sub 1 hpow0, ENNReal.ofReal_one, hpowENN, hExpTail]
+
+theorem sparseGaussianProductMaximumEventForwardLowerBound_le_profile
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift epsilon threshold : Real) :
+    sparseGaussianProductMaximumEventForwardLowerBound horizon samplingRate hRate
+        standardizedShift epsilon threshold ≤
+      eventHockeyStickProfile
+        (sparseGaussianProductLaw horizon samplingRate hRate standardizedShift :
+          Measure (Fin horizon → Real))
+        (standardGaussianProductLaw horizon : Measure (Fin horizon → Real)) epsilon := by
+  unfold sparseGaussianProductMaximumEventForwardLowerBound
+  have hWitness := eventHockeyStickProfile_ge_measurableEvent
+    (sparseGaussianProductLaw horizon samplingRate hRate standardizedShift :
+      Measure (Fin horizon → Real))
+    (standardGaussianProductLaw horizon : Measure (Fin horizon → Real)) epsilon
+    (sparseGaussianProductMaximumEvent horizon threshold)
+    (measurableSet_sparseGaussianProductMaximumEvent horizon threshold)
+  rw [sparseGaussianProductLaw_maximumEvent_probability] at hWitness
+  have hstdEvent :
+      (standardGaussianProductLaw horizon : Measure (Fin horizon → Real))
+          (sparseGaussianProductMaximumEvent horizon threshold) =
+        1 - (ENNReal.ofReal (stdNormalCDFReal threshold)) ^ horizon := by
+    simpa [standardGaussianProductLaw,
+      ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure] using
+      standardGaussianProductLaw_maximumEvent_probability horizon threshold
+  rw [hstdEvent] at hWitness
+  exact hWitness
+
+theorem iSup_sparseGaussianProductMaximumEventForwardLowerBound_le_profile
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift epsilon : Real) :
+    (⨆ threshold : Real,
+      sparseGaussianProductMaximumEventForwardLowerBound horizon samplingRate hRate
+        standardizedShift epsilon threshold) ≤
+      eventHockeyStickProfile
+        (sparseGaussianProductLaw horizon samplingRate hRate standardizedShift :
+          Measure (Fin horizon → Real))
+        (standardGaussianProductLaw horizon : Measure (Fin horizon → Real)) epsilon := by
+  refine iSup_le ?_
+  intro threshold
+  exact sparseGaussianProductMaximumEventForwardLowerBound_le_profile
+    horizon samplingRate hRate standardizedShift epsilon threshold
+
+end
+
+end Mf.DP
+Mf/DP/SampledGaussianProductNoiseMonotonicity.lean:20:def centeredGaussianProductLaw (horizon : Nat) (variance : NNReal) :
+Mf/DP/SampledGaussianProductNoiseMonotonicity.lean:25:def coordinatewiseAdd (horizon : Nat) :
+Mf/DP/SampledGaussianProductNoiseMonotonicity.lean:29:theorem measurable_coordinatewiseAdd (horizon : Nat) :
+Mf/DP/SampledGaussianProductNoiseMonotonicity.lean:35:theorem map_productMeasures_coordinatewise
+Mf/DP/SampledGaussianProductNoiseMonotonicity.lean:60:theorem sampledGaussianSourceProductLaw_add_residual
+Mf/DP/SampledGaussianProductNoiseMonotonicity.lean:87:theorem sampledGaussianReferenceProductLaw_add_residual
+Mf/DP/SampledGaussianProductNoiseMonotonicity.lean:102:theorem sampledGaussianProductProfile_variance_antitone
+Mf/DP/SampledGaussianProductNoiseMonotonicity.lean:137:theorem sampledGaussianProductProfileStddev_antitone
+Mf/DP/SampledGaussianCalibratedStddev.lean:17:def sampledGaussianProductProfileStddev
+Mf/DP/SampledGaussianCalibratedStddev.lean:26:def SampledGaussianCalibrationAdmissible
+Mf/DP/SampledGaussianCalibratedStddev.lean:32:def sampledGaussianFeasibleStddevSet
+Mf/DP/SampledGaussianCalibratedStddev.lean:48:def sampledGaussianCalibratedStddev
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:21:def sparseGaussianProductLikelihoodRatio
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:28:theorem sparseGaussianProductLikelihoodRatio_ge_floor
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:46:def sparseGaussianProductLaw
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:52:theorem measurable_sparseGaussianProductLikelihoodRatio
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:62:theorem sparseGaussianProductLikelihoodRatio_pos
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:73:theorem sparseGaussianProductLaw_eq_withDensity
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:100:theorem integrable_sparseGaussianProductLikelihoodRatio
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:109:theorem integral_sparseGaussianProductLikelihoodRatio
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:125:theorem log_sparseGaussianProductLikelihoodRatio_eq_sum
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:139:def positiveGaussianProductScaleEquiv
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:146:theorem sampledGaussianReferenceProductLaw_map_positiveGaussianScale
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:165:theorem sampledGaussianSourceProductLaw_map_positiveGaussianScale
+Mf/DP/SparseGaussianProductLikelihoodRatio.lean:187:theorem sampledGaussianSourceProductLaw_map_positiveGaussianScale_eq_withDensity
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:25:def sparseGaussianProductBelowBoxReferenceMeasure
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:30:theorem integrable_sparseGaussianLikelihoodRatio_sq
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:54:theorem integrable_sparseGaussianProductLikelihoodRatio_sq
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:70:theorem integrableOn_sparseGaussianProductLikelihoodRatio_belowBox
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:79:theorem integrableOn_sparseGaussianProductLikelihoodRatio_sq_belowBox
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:89:theorem memLp_two_sparseGaussianProductLikelihoodRatio_belowBox
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:99:theorem integrable_sparseGaussianProductLikelihoodRatio_sub_const_sq_belowBox
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:120:theorem integral_sparseGaussianLikelihoodRatio_Iic
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:151:theorem integral_sparseGaussianLikelihoodRatio_sq_Iic
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:223:theorem integral_sparseGaussianProductLikelihoodRatio_belowBox
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:249:theorem integral_sparseGaussianProductLikelihoodRatio_sq_belowBox
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:288:theorem sparseGaussianProductBelowBoxReferenceMeasure_real_univ
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:308:theorem integral_sparseGaussianProductLikelihoodRatio_sub_const_sq_belowBox_eq
+Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:350:theorem sparseGaussianProductLikelihoodRatio_closedCenteredSquare_nonneg
+Mf/DP/FiniteMeasurePositivePartSecondMoment.lean:22:theorem integral_abs_le_sqrt_measureReal_mul_integral_sq
+Mf/DP/FiniteMeasurePositivePartSecondMoment.lean:47:theorem integral_positivePart_le_of_integrable_sq
+Mf/DP/FiniteMeasurePositivePartSecondMoment.lean:97:theorem integral_sub_const_sq_eq
+Mf/DP/FiniteMeasurePositivePartSecondMoment.lean:124:theorem integral_sub_const_sq_nonneg
+Mf/DP/SampledGaussianProductMaximumEvent.lean:21:def sparseGaussianProductMaximumEvent
+Mf/DP/SampledGaussianProductMaximumEvent.lean:25:def sparseGaussianProductBelowBox
+Mf/DP/SampledGaussianProductMaximumEvent.lean:31:def sampledGaussianProductMaximumEvent
+Mf/DP/SampledGaussianProductMaximumEvent.lean:35:theorem measurableSet_sampledGaussianProductMaximumEvent
+Mf/DP/SampledGaussianProductMaximumEvent.lean:47:theorem sampledGaussianProductMaximumEvent_preimage_positiveScale
+Mf/DP/SampledGaussianProductMaximumEvent.lean:82:theorem measurableSet_sparseGaussianProductMaximumEvent
+Mf/DP/SampledGaussianProductMaximumEvent.lean:88:theorem measurableSet_sparseGaussianProductBelowBox
+Mf/DP/SampledGaussianProductMaximumEvent.lean:102:theorem standardGaussianProductLaw_maximumEvent_probability
+Mf/DP/SampledGaussianProductMaximumEvent.lean:182:theorem sparseGaussianProductLaw_maximumEvent_probability
+Mf/DP/SampledGaussianProductMaximumEvent.lean:212:theorem sampledGaussianProductMaximumEvent_source_probability
+Mf/DP/SampledGaussianProductMaximumEvent.lean:239:theorem sampledGaussianProductMaximumEvent_reference_probability
+     1	import Mf.DP.SparseGaussianLikelihoodRatio
+     2	import Mf.DP.SparseGaussianProductLikelihoodRatio
+     3	import Mf.DP.FiniteMeasurePositivePartSecondMoment
+     4	import Mf.DP.SampledGaussianProductMaximumEvent
+     5	import Mf.DP.TruncatedGaussianExponentialMoments
+     6	import Mathlib.MeasureTheory.Function.L2Space
+     7	
+     8	/-!
+     9	# Truncated sparse-Gaussian likelihood moments
+    10	
+    11	These are the exact one-coordinate moment identities used by the finite
+    12	maximum-event bracket.  They are stated under the standard Gaussian
+    13	reference and retain the shifted CDF arguments explicitly.
+    14	-/
+    15	
+    16	open MeasureTheory ProbabilityTheory Set
+    17	
+    18	namespace Mf.DP
+    19	
+    20	noncomputable section
+    21	
+    22	set_option autoImplicit false
+    23	
+    24	/-- The standard product reference restricted to the below-threshold box. -/
+    25	def sparseGaussianProductBelowBoxReferenceMeasure
+    26	    (horizon : Nat) (threshold : Real) : Measure (Fin horizon → Real) :=
+    27	  (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)).restrict
+    28	    (sparseGaussianProductBelowBox horizon threshold)
+    29	
+    30	theorem integrable_sparseGaussianLikelihoodRatio_sq
+    31	    (samplingRate standardizedShift : Real) :
+    32	    Integrable (fun sample =>
+    33	      (sparseGaussianLikelihoodRatio samplingRate standardizedShift sample) ^ 2)
+    34	      (gaussianReal 0 1) := by
+    35	  let tilt : Real → Real := gaussianShiftLikelihoodRatio standardizedShift
+    36	  have hconst : Integrable (fun _ : Real => (1 - samplingRate) ^ 2)
+    37	      (gaussianReal 0 1) := integrable_const _
+    38	  have htilt : Integrable (fun sample : Real =>
+    39	      2 * samplingRate * (1 - samplingRate) * tilt sample)
+    40	      (gaussianReal 0 1) :=
+    41	    (integrable_gaussianShiftLikelihoodRatio standardizedShift).const_mul _
+    42	  have htiltSquare : Integrable (fun sample : Real =>
+    43	      samplingRate ^ 2 * (tilt sample * tilt sample))
+    44	      (gaussianReal 0 1) :=
+    45	    (integrable_gaussianShiftLikelihoodRatio_mul standardizedShift
+    46	      standardizedShift).const_mul _
+    47	  apply ((hconst.add htilt).add htiltSquare).congr
+    48	  filter_upwards with sample
+    49	  dsimp [tilt]
+    50	  simp only [sparseGaussianLikelihoodRatio, gaussianShiftLikelihoodRatio,
+    51	    Pi.add_apply, Pi.pow_apply]
+    52	  ring
+    53	
+    54	theorem integrable_sparseGaussianProductLikelihoodRatio_sq
+    55	    (horizon : Nat) (samplingRate standardizedShift : Real) :
+    56	    Integrable (fun sample =>
+    57	      (sparseGaussianProductLikelihoodRatio horizon samplingRate
+    58	        standardizedShift sample) ^ 2)
+    59	      (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) := by
+    60	  have h := Integrable.fintype_prod (ι := Fin horizon)
+    61	    (f := fun _ => fun sample =>
+    62	      (sparseGaussianLikelihoodRatio samplingRate standardizedShift sample) ^ 2)
+    63	    (μ := fun _ : Fin horizon => gaussianReal 0 1)
+    64	    (fun _ => integrable_sparseGaussianLikelihoodRatio_sq samplingRate standardizedShift)
+    65	  convert h using 1
+    66	  funext sample
+    67	  simp only [sparseGaussianProductLikelihoodRatio]
+    68	  rw [Finset.prod_pow]
+    69	
+    70	theorem integrableOn_sparseGaussianProductLikelihoodRatio_belowBox
+    71	    (horizon : Nat) (samplingRate standardizedShift threshold : Real) :
+    72	    IntegrableOn
+    73	      (sparseGaussianProductLikelihoodRatio horizon samplingRate standardizedShift)
+    74	      (sparseGaussianProductBelowBox horizon threshold)
+    75	      (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) :=
+    76	  (integrable_sparseGaussianProductLikelihoodRatio horizon samplingRate
+    77	    standardizedShift).integrableOn
+    78	
+    79	theorem integrableOn_sparseGaussianProductLikelihoodRatio_sq_belowBox
+    80	    (horizon : Nat) (samplingRate standardizedShift threshold : Real) :
+    81	    IntegrableOn (fun sample =>
+    82	      (sparseGaussianProductLikelihoodRatio horizon samplingRate
+    83	        standardizedShift sample) ^ 2)
+    84	      (sparseGaussianProductBelowBox horizon threshold)
+    85	      (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) :=
+    86	  (integrable_sparseGaussianProductLikelihoodRatio_sq horizon samplingRate
+    87	    standardizedShift).integrableOn
+    88	
+    89	theorem memLp_two_sparseGaussianProductLikelihoodRatio_belowBox
+    90	    (horizon : Nat) (samplingRate standardizedShift threshold : Real) :
+    91	    MemLp (sparseGaussianProductLikelihoodRatio horizon samplingRate standardizedShift) 2
+    92	      (sparseGaussianProductBelowBoxReferenceMeasure horizon threshold) := by
+    93	  rw [memLp_two_iff_integrable_sq]
+    94	  · exact integrableOn_sparseGaussianProductLikelihoodRatio_sq_belowBox horizon
+    95	      samplingRate standardizedShift threshold
+    96	  · exact (measurable_sparseGaussianProductLikelihoodRatio horizon samplingRate
+    97	      standardizedShift).aestronglyMeasurable
+    98	
+    99	theorem integrable_sparseGaussianProductLikelihoodRatio_sub_const_sq_belowBox
+   100	    (horizon : Nat) (samplingRate standardizedShift threshold coefficient : Real) :
+   101	    Integrable (fun sample =>
+   102	      (sparseGaussianProductLikelihoodRatio horizon samplingRate standardizedShift sample -
+   103	        coefficient) ^ 2)
+   104	      (sparseGaussianProductBelowBoxReferenceMeasure horizon threshold) := by
+   105	  have hratio := integrableOn_sparseGaussianProductLikelihoodRatio_belowBox horizon
+   106	    samplingRate standardizedShift threshold
+   107	  have hratioSq := integrableOn_sparseGaussianProductLikelihoodRatio_sq_belowBox horizon
+   108	    samplingRate standardizedShift threshold
+   109	  rw [show (fun sample =>
+   110	      (sparseGaussianProductLikelihoodRatio horizon samplingRate standardizedShift sample -
+   111	        coefficient) ^ 2) = fun sample =>
+   112	      (sparseGaussianProductLikelihoodRatio horizon samplingRate standardizedShift sample) ^ 2 -
+   113	        2 * coefficient *
+   114	          sparseGaussianProductLikelihoodRatio horizon samplingRate standardizedShift sample +
+   115	        coefficient ^ 2 by
+   116	    funext sample
+   117	    ring]
+   118	  exact (hratioSq.sub (hratio.const_mul _)).add (integrable_const _)
+   119	
+   120	theorem integral_sparseGaussianLikelihoodRatio_Iic
+   121	    (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+   122	    (standardizedShift threshold : Real) :
+   123	    (∫ sample in Set.Iic threshold,
+   124	      sparseGaussianLikelihoodRatio (samplingRate : Real) standardizedShift sample
+   125	      ∂gaussianReal 0 1) =
+   126	      (1 - (samplingRate : Real)) * stdNormalCDFReal threshold +
+   127	        (samplingRate : Real) * stdNormalCDFReal (threshold - standardizedShift) := by
+   128	  have hconst : IntegrableOn (fun _ : Real => 1 - (samplingRate : Real))
+   129	      (Set.Iic threshold) (gaussianReal 0 1) := (integrable_const _).integrableOn
+   130	  have htilt : IntegrableOn (fun sample : Real =>
+   131	      (samplingRate : Real) *
+   132	        Real.exp (standardizedShift * sample - standardizedShift ^ 2 / 2))
+   133	      (Set.Iic threshold) (gaussianReal 0 1) :=
+   134	    (integrable_gaussianLikelihoodTilt standardizedShift).integrableOn.const_mul _
+   135	  rw [show (fun sample : Real =>
+   136	      sparseGaussianLikelihoodRatio (samplingRate : Real) standardizedShift sample) =
+   137	      fun sample => (1 - (samplingRate : Real)) +
+   138	        (samplingRate : Real) *
+   139	          Real.exp (standardizedShift * sample - standardizedShift ^ 2 / 2) by
+   140	    funext sample
+   141	    simp [sparseGaussianLikelihoodRatio]]
+   142	  rw [integral_add hconst htilt, integral_const, integral_const_mul,
+   143	    integral_gaussianLikelihoodTilt_Iic]
+   144	  have hzero := gaussianReal_unitVar_apply_Iic_eq_stdNormalMeasure_shift 0 threshold
+   145	  have hzero' : gaussianReal 0 1 (Set.Iic threshold) =
+   146	      stdNormalMeasure (Set.Iic threshold) := by simpa using hzero
+   147	  simp [Measure.real, Measure.restrict_apply measurableSet_Iic, hzero',
+   148	    stdNormalCDFReal_eq_real_measure_Iic]
+   149	  ring
+   150	
+   151	theorem integral_sparseGaussianLikelihoodRatio_sq_Iic
+   152	    (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+   153	    (standardizedShift threshold : Real) :
+   154	    (∫ sample in Set.Iic threshold,
+   155	      (sparseGaussianLikelihoodRatio (samplingRate : Real) standardizedShift sample) ^ 2
+   156	      ∂gaussianReal 0 1) =
+   157	      (1 - (samplingRate : Real)) ^ 2 * stdNormalCDFReal threshold +
+   158	        2 * (samplingRate : Real) * (1 - (samplingRate : Real)) *
+   159	          stdNormalCDFReal (threshold - standardizedShift) +
+   160	        (samplingRate : Real) ^ 2 * Real.exp (standardizedShift ^ 2) *
+   161	          stdNormalCDFReal (threshold - 2 * standardizedShift) := by
+   162	  let q : Real := samplingRate
+   163	  let tilt : Real → Real := fun sample =>
+   164	    Real.exp (standardizedShift * sample - standardizedShift ^ 2 / 2)
+   165	  let tiltSquare : Real → Real := fun sample =>
+   166	    Real.exp (2 * standardizedShift * sample - standardizedShift ^ 2)
+   167	  have hconst : IntegrableOn (fun _ : Real => (1 - q) ^ 2)
+   168	      (Set.Iic threshold) (gaussianReal 0 1) := (integrable_const _).integrableOn
+   169	  have htilt : IntegrableOn (fun sample : Real =>
+   170	      2 * q * (1 - q) * tilt sample)
+   171	      (Set.Iic threshold) (gaussianReal 0 1) :=
+   172	    (integrable_gaussianLikelihoodTilt standardizedShift).integrableOn.const_mul _
+   173	  have htiltSquare : IntegrableOn (fun sample : Real => q ^ 2 * tiltSquare sample)
+   174	      (Set.Iic threshold) (gaussianReal 0 1) :=
+   175	    (integrable_gaussianLikelihoodTiltSquare standardizedShift).integrableOn.const_mul _
+   176	  have hdecomp :
+   177	      (fun sample : Real =>
+   178	        (sparseGaussianLikelihoodRatio q standardizedShift sample) ^ 2) =
+   179	      fun sample => (1 - q) ^ 2 + 2 * q * (1 - q) * tilt sample +
+   180	        q ^ 2 * tiltSquare sample := by
+
+STDERR

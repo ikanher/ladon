@@ -1,0 +1,22 @@
+$ python3 - <<'PYFINAL'
+from pathlib import Path
+import json,hashlib
+out=Path("/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT")
+p=out/"FIRST-REPORT.md"
+digest=hashlib.sha256(p.read_bytes()).hexdigest()
+assert (out/"evidence/FIRST-REPORT.sha256").read_text().split()[0]==digest
+assert p.stat().st_mode & 0o222 == 0
+for f in (out/"evidence").glob("*.json"):json.loads(f.read_text())
+for line in (out/"evidence/commands.jsonl").read_text().splitlines():json.loads(line)
+assert not any(x in p.read_text() for x in ("START_UTC","END_UTC","ELAPSED_SECONDS"))
+print("First report verified read-only; SHA-256",digest)
+print("Evidence JSON and command JSONL parse successfully.")
+print("First report bytes:",p.stat().st_size)
+PYFINAL
+EXIT 0
+STDOUT
+First report verified read-only; SHA-256 5b21ebc853ca2e7585b77744bc55c29db2a441fa42522dc460d440265ced9bcc
+Evidence JSON and command JSONL parse successfully.
+First report bytes: 28149
+
+STDERR

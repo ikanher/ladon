@@ -1,0 +1,1128 @@
+{
+  "schema_version": 1,
+  "reviewer": "reviewer-1",
+  "packet_identities": [
+    "X",
+    "Y"
+  ],
+  "signed_by": "pilot_blind_adjudicator_1",
+  "signed_date": "2026-11-13",
+  "independence_statement": "Fresh independent blinded review; ROLE-ACK.json was saved before dossiers were read. Only this reviewer INPUT and OUTPUT were inspected or written, with the provided pinned Lean environment used for bounded local checks. No arm identity was inferred or sought and no answer key or other reviewer findings were consulted.",
+  "method": "Read the rubric, registered score population, both anonymized dossiers, relevant TeX statements/proofs/crosswalks and Lean definitions/types/proof bodies directly. Ran one bounded Lean declaration/axiom check and one bounded input-only coverage/numerical check. Source/formal correspondences are supported by direct inspection as described per record, not by successful tactic execution alone.",
+  "registered_report_claim_ratings": [
+    {
+      "record_id": "X-C1",
+      "report": "X",
+      "registered_claim_index": 1,
+      "report_locations": [
+        "Finding 1"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/deterministic_koutoft_training_accountant_proof.tex",
+        "source_span": "63-71; crosswalk 428-431",
+        "source_claim_label": "release equation and schedule-marginalized transcript",
+        "lean_path": "Mf/DP/Training/KOutOfT/TrainingMechanism.lean",
+        "declaration": "Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript",
+        "interpreted_assertion": "With unit Euclidean clipping, zero initial history, measurable adaptive queries, fixed independent user k-subsets, and independent Gaussian releases, the complete conditional history transcript is formed before averaging hidden schedules."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "TrainingMechanism.lean: scheduledClippedAggregate sums only scheduled users after l2VectorClip. transcriptGivenScheduleAssignment keeps the same assignment through its recursive bind chain and writes one release at each step. kOutOfTTrainingTranscript sums assignment-weighted complete T-step laws outside that chain. AdaptiveTrainingOracle requires measurability in history. EuclideanVectorClipping.lean defines l2Norm using EuclideanSpace; FiniteGaussianDensity.lean measure uses coordinate Gaussian variance sigma squared. At zero initial history unwritten slots are public zero, so the infinite-history representation adds no private information or extra future observations.",
+      "assumptions_domains_quantifiers": "Record is an arbitrary type with decidable equality; datasets are finite sets. Source T>0, k<=T, arbitrary finite output dimension, positive sigma. Formal definition permits broader T, k, clippingNorm and initialHistory parameters; specialize clippingNorm=1 and initialHistory=zeroAdaptiveReleaseHistory.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/deterministic_koutoft_training_accountant_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/Training/Common/AdaptiveTranscript.lean: AdaptiveTrainingOracle, zeroAdaptiveReleaseHistory",
+          "Mf/DP/EuclideanVectorClipping.lean: l2Norm, l2VectorClip_norm_le",
+          "Mf/Probability/FiniteGaussianDensity.lean: measure, measure_eq_pi"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms the modeled mechanism has retained hidden schedules and the intended clipping/noise units. This does not certify its later privacy reduction, calibration procedure, or threshold theorems.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "X-C2",
+      "report": "X",
+      "registered_claim_index": 2,
+      "report_locations": [
+        "Finding 1"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/deterministic_koutoft_training_accountant_proof.tex",
+        "source_span": "53-71; crosswalk 428-431",
+        "source_claim_label": "fixed-cardinality user schedule probability mass",
+        "lean_path": "Mf/DP/Training/KOutOfT/TrainingMechanism.lean",
+        "declaration": "Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass_sum_eq_one",
+        "interpreted_assertion": "Each user independently receives the uniform probability mass on the cardinality-k subsets of Fin T."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "fixedCardinalityScheduleMass delegates to bisFixedCardUniformMass on Finset.univ. That definition is inverse choose(T,k) on powersetCard k and zero elsewhere. The registered normalization theorem assumes k<=T and proves the sum on all schedules is one. userScheduleAssignmentMass is the product of these masses over dataset members, and its normalization factors the finite product of sums. These are exact probability weights; ENNReal.ofReal in the transcript does not change nonnegative weights.",
+      "assumptions_domains_quantifiers": "T,k are natural numbers with k<=T. T>0 is imposed by the source but is unnecessary for this normalization theorem. No independent-coordinate Bernoulli assumption is present.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/deterministic_koutoft_training_accountant_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/OptimalSubsamplingBISLR.lean: bisFixedCardUniformMass",
+          "Mf/DP/Training/KOutOfT/TrainingMechanism.lean: userScheduleAssignmentMass, userScheduleAssignmentMass_sum_eq_one"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms fixed-cardinality uniform schedules and independence across users; prevents substituting a Bernoulli participation law that would change the mechanism.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "X-C3",
+      "report": "X",
+      "registered_claim_index": 3,
+      "report_locations": [
+        "Finding 4"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "source_span": "343-362; crosswalk 687-688",
+        "source_claim_label": "maximum-event lower witness",
+        "lean_path": "Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "declaration": "Mf.DP.sampledGaussianProductMaximumEventLowerBound_le_binaryProfile",
+        "interpreted_assertion": "The positive part of 1-pP(a)-exp(epsilon)*(1-pQ(a)) is a lower witness for the exact two-sided profile of the sampled Gaussian product."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "SampledGaussianProductMaximumEvent.lean defines the event as existence of a coordinate strictly above threshold and belowBox as the product of closed Iic sets. Exact source/reference probabilities are the displayed complement probabilities. SparseGaussianProductMaximumEventLowerBound.lean proves equivalence to the positive part of the real formula and applies the event-supremum witness theorem. The public facade transports by positive scaling and then bounds by the maximum of directed profiles.",
+      "assumptions_domains_quantifiers": "Arbitrary horizon Nat including zero; samplingRate NNReal with <=1, so exactly source q in [0,1]; arbitrary real sensitivity, epsilon and threshold; positive NNReal noise standard deviation. Standardized shift is sensitivity/noiseStddev; laws receive noiseStddev squared.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/SampledGaussianProductMaximumEvent.lean: sparseGaussianProductMaximumEvent, standardGaussianProductLaw_maximumEvent_probability, sparseGaussianProductLaw_maximumEvent_probability",
+          "Mf/DP/SparseGaussianProductMaximumEventLowerBound.lean: ennreal_ofReal_sparseGaussianProductMaximumEventForwardLowerBoundReal, sparseGaussianProductMaximumEventForwardLowerBound_le_profile"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Certifies the stated lower witness with no claim of event optimality. At T=0 the event is empty and its witness is zero; this is compatible with a positive identical-law profile when epsilon<0. The source explicitly defines the event as the complement of the box, which resolves its empty-maximum notation.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "X-C4",
+      "report": "X",
+      "registered_claim_index": 4,
+      "report_locations": [
+        "Finding 3"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "source_span": "364-405; crosswalk 697-698",
+        "source_claim_label": "forward capped restricted-second-moment bound",
+        "lean_path": "Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "declaration": "Mf.DP.sampledGaussianProductForwardProfile_le_cappedRestrictedSecondMomentUpperBound",
+        "interpreted_assertion": "The forward directed profile is bounded by 1-pP+min(pP,(sqrt(pQ*v)+pP-exp(xi)*pQ)/2), retaining restricted reference mass in both required places."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "SparseGaussianProductForwardUpperBound.lean gives exactly the source formulas: m2 has q^2*exp(mu^2)*Phi(a-2mu); v=m2-2*exp(xi)*pP+exp(2xi)*pQ; residual has sqrt(pQ*v). FiniteMeasurePositivePartSecondMoment.lean obtains the finite-measure inequality via |x|+x and Cauchy-Schwarz with total measure mass. FiniteProfileRestrictedSecondMomentUpperBound.lean splits the positive-part integral on the closed box/complement, bounds the complement by source mass and the inside by the smaller source-mass/residual bound. SparseGaussianTruncatedLikelihoodMoments.lean identifies exact moments using product factorization, tilting and square expansion. The public facade only transports this result under positive scaling.",
+      "assumptions_domains_quantifiers": "Arbitrary finite T, q in [0,1], arbitrary real shift/xi/threshold, and positive noise standard deviation. No positive-shift or nonnegative-xi restriction is added. Generic retained measure is finite and the supplied squared likelihood residual is integrable.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/FiniteMeasurePositivePartSecondMoment.lean: integral_positivePart_le_of_integrable_sq",
+          "Mf/DP/FiniteProfileRestrictedSecondMomentUpperBound.lean: eventHockeyStickProfile_withDensity_forward_le_restrictedSecondMomentCapped",
+          "Mf/DP/SparseGaussianProductForwardUpperBound.lean: sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBoundReal",
+          "Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean: integral_sparseGaussianProductLikelihoodRatio_sub_const_sq_belowBox_eq"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Supports both the claimed bound and its described proof method, including the pQ factor whose loss would change the numerical bracket.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "X-C5",
+      "report": "X",
+      "registered_claim_index": 5,
+      "report_locations": [
+        "Finding 3"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "source_span": "435-455; crosswalk 703-704",
+        "source_claim_label": "reverse likelihood-floor bound",
+        "lean_path": "Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "declaration": "Mf.DP.sampledGaussianProductReverseProfile_le_likelihoodFloorUpperBound",
+        "interpreted_assertion": "The reverse directed profile is bounded by the positive part of 1-exp(epsilon)*(1-q)^T."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "SparseGaussianProductLikelihoodRatio.lean proves the product likelihood floor (1-q)^T from the coordinate floors using nonnegative factors. SparseGaussianProductReverseBounds.lean rewrites the reverse profile as the integral of the positive part of 1-exp(epsilon)*Lambda, applies the pointwise floor, and integrates the resulting constant over the reference probability law. The public facade transports by the same scaling equivalence. There is no division by q or 1-q.",
+      "assumptions_domains_quantifiers": "Arbitrary horizon including zero, q in [0,1] including endpoints, arbitrary real sensitivity/epsilon, positive noise standard deviation. The normalized reference is a probability measure and exp(epsilon)>0.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/SparseGaussianProductLikelihoodRatio.lean: sparseGaussianProductLikelihoodRatio_ge_floor",
+          "Mf/DP/SparseGaussianProductReverseBounds.lean: sparseGaussianProductReverseLikelihoodFloorUpperBound, sparseGaussianProductReverseProfile_le_likelihoodFloorUpperBound"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms an independent valid reverse bound, including the endpoint sampling rates and empty horizon. It can safely be combined by a minimum with the reciprocal bound.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "X-C6",
+      "report": "X",
+      "registered_claim_index": 6,
+      "report_locations": [
+        "Finding 5"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "source_span": "487-509; crosswalk 712-713",
+        "source_claim_label": "certified calibration interval",
+        "lean_path": "Mf/DP/SampledGaussianFiniteBracketCalibration.lean",
+        "declaration": "Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates",
+        "interpreted_assertion": "A strict lower profile certificate at positive sigmaL and a non-strict upper certificate at positive sigmaU bound the nonnegative feasible-set infimum between sigmaL and sigmaU without assuming attainment."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "SampledGaussianCalibratedStddev.lean defines feasibility over all NNReal, including zero, and calibrated noise as sInf. The adapter first uses the upper certificate to prove feasibility and nonemptiness. Its lower branch proves the lower candidate infeasible, then invokes le_sampledGaussianCalibratedStddev_of_not_feasible. That lemma uses upward closure from profile antitonicity and le_csInf, rather than inferring a lower bound from an isolated infeasible point alone. The antitonicity theorem uses a common residual Gaussian vector and includes zero variance. The final conjunction is non-strict at both interval endpoints.",
+      "assumptions_domains_quantifiers": "Source epsilon>=0 and delta in [0,1], arbitrary T, q in [0,1], real sensitivity; positive lower and upper NNReal candidates; three independent real thresholds. Formal theorem allows arbitrary real epsilon/delta through ENNReal.ofReal; restricting to the source domain gives its exact meaning. No extra admissibility/strict-rate/positive-sensitivity hypothesis is required.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/SampledGaussianFiniteBracketCalibration.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/SampledGaussianCalibratedStddev.lean: sampledGaussianFeasibleStddevSet, sampledGaussianCalibratedStddev",
+          "Mf/DP/SampledGaussianCalibrationThresholds.lean: sampledGaussianFeasibleStddevSet_upward_closed, le_sampledGaussianCalibratedStddev_of_not_feasible",
+          "Mf/DP/SampledGaussianProductNoiseMonotonicity.lean: sampledGaussianProductProfileStddev_antitone"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms the infimum interval exactly as stated, while preserving the distinction between a certified interval and an attained or executable optimum.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "Y-C1",
+      "report": "Y",
+      "registered_claim_index": 1,
+      "report_locations": [
+        "Findings 1 and 2"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/deterministic_koutoft_training_accountant_proof.tex",
+        "source_span": "63-71; crosswalk 428-431",
+        "source_claim_label": "release equation and schedule-marginalized transcript",
+        "lean_path": "Mf/DP/Training/KOutOfT/TrainingMechanism.lean",
+        "declaration": "Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript",
+        "interpreted_assertion": "With unit Euclidean clipping, zero initial history, measurable adaptive queries, fixed independent user k-subsets, and independent Gaussian releases, the complete conditional history transcript is formed before averaging hidden schedules."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "TrainingMechanism.lean: scheduledClippedAggregate sums only scheduled users after l2VectorClip. transcriptGivenScheduleAssignment keeps the same assignment through its recursive bind chain and writes one release at each step. kOutOfTTrainingTranscript sums assignment-weighted complete T-step laws outside that chain. AdaptiveTrainingOracle requires measurability in history. EuclideanVectorClipping.lean defines l2Norm using EuclideanSpace; FiniteGaussianDensity.lean measure uses coordinate Gaussian variance sigma squared. At zero initial history unwritten slots are public zero, so the infinite-history representation adds no private information or extra future observations.",
+      "assumptions_domains_quantifiers": "Record is an arbitrary type with decidable equality; datasets are finite sets. Source T>0, k<=T, arbitrary finite output dimension, positive sigma. Formal definition permits broader T, k, clippingNorm and initialHistory parameters; specialize clippingNorm=1 and initialHistory=zeroAdaptiveReleaseHistory.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/deterministic_koutoft_training_accountant_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/Training/Common/AdaptiveTranscript.lean: AdaptiveTrainingOracle, zeroAdaptiveReleaseHistory",
+          "Mf/DP/EuclideanVectorClipping.lean: l2Norm, l2VectorClip_norm_le",
+          "Mf/Probability/FiniteGaussianDensity.lean: measure, measure_eq_pi"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms the modeled mechanism has retained hidden schedules and the intended clipping/noise units. This does not certify its later privacy reduction, calibration procedure, or threshold theorems.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "Y-C2",
+      "report": "Y",
+      "registered_claim_index": 2,
+      "report_locations": [
+        "Finding 1"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/deterministic_koutoft_training_accountant_proof.tex",
+        "source_span": "53-71; crosswalk 428-431",
+        "source_claim_label": "fixed-cardinality user schedule probability mass",
+        "lean_path": "Mf/DP/Training/KOutOfT/TrainingMechanism.lean",
+        "declaration": "Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass_sum_eq_one",
+        "interpreted_assertion": "Each user independently receives the uniform probability mass on the cardinality-k subsets of Fin T."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "fixedCardinalityScheduleMass delegates to bisFixedCardUniformMass on Finset.univ. That definition is inverse choose(T,k) on powersetCard k and zero elsewhere. The registered normalization theorem assumes k<=T and proves the sum on all schedules is one. userScheduleAssignmentMass is the product of these masses over dataset members, and its normalization factors the finite product of sums. These are exact probability weights; ENNReal.ofReal in the transcript does not change nonnegative weights.",
+      "assumptions_domains_quantifiers": "T,k are natural numbers with k<=T. T>0 is imposed by the source but is unnecessary for this normalization theorem. No independent-coordinate Bernoulli assumption is present.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/deterministic_koutoft_training_accountant_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/OptimalSubsamplingBISLR.lean: bisFixedCardUniformMass",
+          "Mf/DP/Training/KOutOfT/TrainingMechanism.lean: userScheduleAssignmentMass, userScheduleAssignmentMass_sum_eq_one"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms fixed-cardinality uniform schedules and independence across users; prevents substituting a Bernoulli participation law that would change the mechanism.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "Y-C3",
+      "report": "Y",
+      "registered_claim_index": 3,
+      "report_locations": [
+        "Finding 4"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "source_span": "343-362; crosswalk 687-688",
+        "source_claim_label": "maximum-event lower witness",
+        "lean_path": "Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "declaration": "Mf.DP.sampledGaussianProductMaximumEventLowerBound_le_binaryProfile",
+        "interpreted_assertion": "The positive part of 1-pP(a)-exp(epsilon)*(1-pQ(a)) is a lower witness for the exact two-sided profile of the sampled Gaussian product."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "SampledGaussianProductMaximumEvent.lean defines the event as existence of a coordinate strictly above threshold and belowBox as the product of closed Iic sets. Exact source/reference probabilities are the displayed complement probabilities. SparseGaussianProductMaximumEventLowerBound.lean proves equivalence to the positive part of the real formula and applies the event-supremum witness theorem. The public facade transports by positive scaling and then bounds by the maximum of directed profiles.",
+      "assumptions_domains_quantifiers": "Arbitrary horizon Nat including zero; samplingRate NNReal with <=1, so exactly source q in [0,1]; arbitrary real sensitivity, epsilon and threshold; positive NNReal noise standard deviation. Standardized shift is sensitivity/noiseStddev; laws receive noiseStddev squared.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/SampledGaussianProductMaximumEvent.lean: sparseGaussianProductMaximumEvent, standardGaussianProductLaw_maximumEvent_probability, sparseGaussianProductLaw_maximumEvent_probability",
+          "Mf/DP/SparseGaussianProductMaximumEventLowerBound.lean: ennreal_ofReal_sparseGaussianProductMaximumEventForwardLowerBoundReal, sparseGaussianProductMaximumEventForwardLowerBound_le_profile"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Certifies the stated lower witness with no claim of event optimality. At T=0 the event is empty and its witness is zero; this is compatible with a positive identical-law profile when epsilon<0. The source explicitly defines the event as the complement of the box, which resolves its empty-maximum notation.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "Y-C4",
+      "report": "Y",
+      "registered_claim_index": 4,
+      "report_locations": [
+        "Finding 3"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "source_span": "364-405; crosswalk 697-698",
+        "source_claim_label": "forward capped restricted-second-moment bound",
+        "lean_path": "Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "declaration": "Mf.DP.sampledGaussianProductForwardProfile_le_cappedRestrictedSecondMomentUpperBound",
+        "interpreted_assertion": "The forward directed profile is bounded by 1-pP+min(pP,(sqrt(pQ*v)+pP-exp(xi)*pQ)/2), retaining restricted reference mass in both required places."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "SparseGaussianProductForwardUpperBound.lean gives exactly the source formulas: m2 has q^2*exp(mu^2)*Phi(a-2mu); v=m2-2*exp(xi)*pP+exp(2xi)*pQ; residual has sqrt(pQ*v). FiniteMeasurePositivePartSecondMoment.lean obtains the finite-measure inequality via |x|+x and Cauchy-Schwarz with total measure mass. FiniteProfileRestrictedSecondMomentUpperBound.lean splits the positive-part integral on the closed box/complement, bounds the complement by source mass and the inside by the smaller source-mass/residual bound. SparseGaussianTruncatedLikelihoodMoments.lean identifies exact moments using product factorization, tilting and square expansion. The public facade only transports this result under positive scaling.",
+      "assumptions_domains_quantifiers": "Arbitrary finite T, q in [0,1], arbitrary real shift/xi/threshold, and positive noise standard deviation. No positive-shift or nonnegative-xi restriction is added. Generic retained measure is finite and the supplied squared likelihood residual is integrable.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/FiniteMeasurePositivePartSecondMoment.lean: integral_positivePart_le_of_integrable_sq",
+          "Mf/DP/FiniteProfileRestrictedSecondMomentUpperBound.lean: eventHockeyStickProfile_withDensity_forward_le_restrictedSecondMomentCapped",
+          "Mf/DP/SparseGaussianProductForwardUpperBound.lean: sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBoundReal",
+          "Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean: integral_sparseGaussianProductLikelihoodRatio_sub_const_sq_belowBox_eq"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Supports both the claimed bound and its described proof method, including the pQ factor whose loss would change the numerical bracket.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "Y-C5",
+      "report": "Y",
+      "registered_claim_index": 5,
+      "report_locations": [
+        "Finding 4"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "source_span": "435-455; crosswalk 703-704",
+        "source_claim_label": "reverse likelihood-floor bound",
+        "lean_path": "Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "declaration": "Mf.DP.sampledGaussianProductReverseProfile_le_likelihoodFloorUpperBound",
+        "interpreted_assertion": "The reverse directed profile is bounded by the positive part of 1-exp(epsilon)*(1-q)^T."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "SparseGaussianProductLikelihoodRatio.lean proves the product likelihood floor (1-q)^T from the coordinate floors using nonnegative factors. SparseGaussianProductReverseBounds.lean rewrites the reverse profile as the integral of the positive part of 1-exp(epsilon)*Lambda, applies the pointwise floor, and integrates the resulting constant over the reference probability law. The public facade transports by the same scaling equivalence. There is no division by q or 1-q.",
+      "assumptions_domains_quantifiers": "Arbitrary horizon including zero, q in [0,1] including endpoints, arbitrary real sensitivity/epsilon, positive noise standard deviation. The normalized reference is a probability measure and exp(epsilon)>0.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/SampledGaussianProductFiniteProfileBounds.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/SparseGaussianProductLikelihoodRatio.lean: sparseGaussianProductLikelihoodRatio_ge_floor",
+          "Mf/DP/SparseGaussianProductReverseBounds.lean: sparseGaussianProductReverseLikelihoodFloorUpperBound, sparseGaussianProductReverseProfile_le_likelihoodFloorUpperBound"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms an independent valid reverse bound, including the endpoint sampling rates and empty horizon. It can safely be combined by a minimum with the reciprocal bound.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "Y-C6",
+      "report": "Y",
+      "registered_claim_index": 6,
+      "report_locations": [
+        "Finding 5"
+      ],
+      "identity": {
+        "source_path": "latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "source_span": "487-509; crosswalk 712-713",
+        "source_claim_label": "certified calibration interval",
+        "lean_path": "Mf/DP/SampledGaussianFiniteBracketCalibration.lean",
+        "declaration": "Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates",
+        "interpreted_assertion": "A strict lower profile certificate at positive sigmaL and a non-strict upper certificate at positive sigmaU bound the nonnegative feasible-set infimum between sigmaL and sigmaU without assuming attainment."
+      },
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_to_formal_correspondence": "SampledGaussianCalibratedStddev.lean defines feasibility over all NNReal, including zero, and calibrated noise as sInf. The adapter first uses the upper certificate to prove feasibility and nonemptiness. Its lower branch proves the lower candidate infeasible, then invokes le_sampledGaussianCalibratedStddev_of_not_feasible. That lemma uses upward closure from profile antitonicity and le_csInf, rather than inferring a lower bound from an isolated infeasible point alone. The antitonicity theorem uses a common residual Gaussian vector and includes zero variance. The final conjunction is non-strict at both interval endpoints.",
+      "assumptions_domains_quantifiers": "Source epsilon>=0 and delta in [0,1], arbitrary T, q in [0,1], real sensitivity; positive lower and upper NNReal candidates; three independent real thresholds. Formal theorem allows arbitrary real epsilon/delta through ENNReal.ofReal; restricting to the source domain gives its exact meaning. No extra admissibility/strict-rate/positive-sensitivity hypothesis is required.",
+      "argument_evidence": {
+        "primary_source": "INPUT/capsule/sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+        "primary_lean": "INPUT/capsule/lean/Mf/DP/SampledGaussianFiniteBracketCalibration.lean",
+        "additional_directly_inspected_lean": [
+          "Mf/DP/SampledGaussianCalibratedStddev.lean: sampledGaussianFeasibleStddevSet, sampledGaussianCalibratedStddev",
+          "Mf/DP/SampledGaussianCalibrationThresholds.lean: sampledGaussianFeasibleStddevSet_upward_closed, le_sampledGaussianCalibratedStddev_of_not_feasible",
+          "Mf/DP/SampledGaussianProductNoiseMonotonicity.lean: sampledGaussianProductProfileStddev_antitone"
+        ],
+        "bounded_check_artifacts": [
+          "evidence/registered_checks.command.txt",
+          "evidence/registered_checks.lean",
+          "evidence/registered_checks.output.txt",
+          "evidence/registered_checks.exit.txt"
+        ],
+        "check_result": "Exit 0. The six registered declarations resolve; their axiom lists contain only propext, Classical.choice, Quot.sound. Source bodies and definitions were inspected separately; #check alone is not treated as correspondence evidence."
+      },
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms the infimum interval exactly as stated, while preserving the distinction between a certified interval and an attained or executable optimum.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "The report treats this claim as a faithful control and does not allege a false or unsupported source result."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Source/formal correspondence for this registered claim; no whole-note or runtime certification."
+      },
+      "unresolved_questions": []
+    }
+  ],
+  "exploratory_ratings": [
+    {
+      "record_id": "X-E1",
+      "report": "X",
+      "report_locations": [
+        "Finding 2"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "P 135-193, 260-339; K 65-69",
+      "interpreted_assertion": "Direct scaling, product mixture laws, exact likelihood moments and standard-deviation/Euclidean-norm units match the notes.",
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_formal_evidence": "SampledGaussianOutputLaws.lean constructs Bernoulli-shift-plus-Gaussian coordinates and independent products; SparseGaussianProductLikelihoodRatio.lean transports source/reference by division by positive sigma with standardized shift Delta/sigma. SparseGaussianTruncatedLikelihoodMoments.lean has the displayed first, second and centered square identities with unrestricted real shift and coefficient. EuclideanVectorClipping.lean uses EuclideanSpace and FiniteGaussianDensity.lean uses sigma-squared variance. The parts needed by registered C1/C4 are rated there; this entry retains their other source spans only.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms the exact privacy reference and formulas, rather than a matched-source comparison or a variance/stddev substitution.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "X-E2",
+      "report": "X",
+      "report_locations": [
+        "Finding 3"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "P 407-434, 456-459; P 224-236",
+      "interpreted_assertion": "Real-valued reverse duality, min of reverse bounds and max of directed bounds support independent supplied thresholds.",
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_formal_evidence": "FiniteProfileCoefficientDuality.lean eventHockeyStickProfile_withDensity_reverse_duality evaluates 1-exp(epsilon)+exp(epsilon)*H(-epsilon).toReal in Real before ENNReal.ofReal. SparseGaussianProductReverseBounds.lean applies the capped forward bound at -epsilon and uses finiteness for toReal monotonicity. SampledGaussianProductFiniteProfileBounds.lean explicitly takes min for reverse and max for two directions with distinct forward/reverse threshold arguments; lower threshold is independent. All require only the original q domain and positive noise, with arbitrary real epsilon.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Rules out a signed truncated-subtraction error or an omitted privacy direction. This is a faithful control, not an observed defect.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "X-E3",
+      "report": "X",
+      "report_locations": [
+        "Finding 6"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "P 544-580",
+      "interpreted_assertion": "The diagnostic decimal substitution and reported relative width agree with the displayed formulas.",
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_formal_evidence": "Independent bounded 60-digit mpmath calculation: L=0.1000288274320298083766..., UF=0.0994524972372569846839..., reverse dual=0.0525939665411757068291..., reverse floor=0, relative width=6.4614544770271348825... percent. Exact command, script, output and exit 0 are preserved in evidence/coverage_numeric_check.*. This is approximate numerical evaluation, not outward rational certification.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms rounded arithmetic only. It supplies neither a formal rational certificate nor an independent PLD computation.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "The separate PLD diagnostic value is used as given, not validated."
+      ]
+    },
+    {
+      "record_id": "X-E4",
+      "report": "X",
+      "report_locations": [
+        "Finding 6"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "K 226-251, 379-400",
+      "interpreted_assertion": "Fallback arithmetic, finite-family versus global minimum, and k=0/delta>=1 degeneracies are correctly distinguished.",
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_formal_evidence": "Direct source arithmetic: (k+1)/delta>0 for natural k and delta>0, and k*delta/(2*(k+1))<=delta. With k=0 the aggregate is zero and the transcript is data independent; with delta>=1 probability-law hockey-stick profiles at epsilon>=0 are <=1. All positive scales can then be feasible while their infimum zero is not a positive minimum. IsGlobalSigmaThreshold explicitly requires positivity and feasibility at the endpoint. This does not verify the absent checker or its termination.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Prevents treating the finite-grid return value or a zero unattained infimum as an attained positive global threshold.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "X-E5",
+      "report": "X",
+      "report_locations": [
+        "Abstention 1"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "K 88-113, 191-251, 327-344; crosswalk 409-499",
+      "interpreted_assertion": "Full finite exact-rational accountant and universal add/remove endpoints cannot be certified from the provided capsule.",
+      "judgment": "ambiguous/underspecified (abstention warranted)",
+      "treatment": "warranted abstention",
+      "source_formal_evidence": "INPUT-only inventory check finds 63 local Lean files. Of 25 unique K cited Lean paths, only TrainingMechanism.lean is present; 24 named owners are absent. Local source searches for the named checker/bridge/reduction endpoints return no match, recorded in evidence/coverage_numeric_check.output.txt. The theorem in K quantifies over every record type with decidable equality, every dimension, every measurable adaptive oracle, and valid rational requests, and promises termination and accepted-family minimality. Mechanism definitions do not imply these conclusions. Source add/remove decoder and fallback explanation are coherent but not a complete supplied formal endpoint.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Makes the capsule coverage limit explicit without claiming a counterexample or absence from a larger project.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "Full checker termination, rational witness soundness, finite-family leastness and universal adaptive add/remove theorem remain unverified here."
+      ]
+    },
+    {
+      "record_id": "X-E6",
+      "report": "X",
+      "report_locations": [
+        "Abstention 2"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "K 253-284, 346-376",
+      "interpreted_assertion": "The local signed compensation argument is plausible; the complete adaptive replacement domination is unresolved in this capsule.",
+      "judgment": "ambiguous/underspecified (abstention warranted)",
+      "treatment": "warranted abstention",
+      "source_formal_evidence": "Source norm bound and common sign of W_h*a_h imply W_h*W_g*(a_h*a_g-<m_h,m_g>)>=0, including zero amplitudes; multiplying by positive constants preserves sign. This local algebra alone does not establish the integration-by-parts interpolation, smoothing limit or history-dependent backward path comparison. The crosswalk names DirectReplaceSignedGaussianInterpolation.lean and other replacement owners which the input inventory confirms absent. No failed tactic or counterexample is asserted.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Correctly preserves the unresolved sequential theorem instead of accepting local sign algebra as its proof or using missing declarations as refutation.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "A complete derivation handling history dependence and future likelihood factors remains unavailable; mathematical truth of the full statement is not decided."
+      ]
+    },
+    {
+      "record_id": "X-E7",
+      "report": "X",
+      "report_locations": [
+        "Abstention 3"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "K 286-323, 334-376",
+      "interpreted_assertion": "Training lower realizations and positive attained global thresholds are not established by the generic Poisson infimum theorem or generic threshold definition.",
+      "judgment": "ambiguous/underspecified (abstention warranted)",
+      "treatment": "warranted abstention",
+      "source_formal_evidence": "K requires universal-oracle privacy equivalent to exact fixed-cardinality profile feasibility, with projection realizations and attained positive upper rays when 0<k<=T and 0<delta<1. The source truncated closed-set infimum argument is valid conditional on continuity, degradation, nonempty feasibility and a positive separating scale. Training/Common/GlobalSigmaOptimality.lean contains the generic threshold definition, while input inventory lacks the KOutOfT profile/realization/threshold owners named in the crosswalk. The registered Poisson calibration adapter concludes only an infimum interval.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Avoids substituting a different sampling model or an unattained infimum for the source quantified attainment result.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "Exact projected law identities and domain-specific analytic prerequisites for the claimed thresholds remain unverified."
+      ]
+    },
+    {
+      "record_id": "X-E8",
+      "report": "X",
+      "report_locations": [
+        "Abstention 4"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "P 646-669, 673-716; K 402-407",
+      "interpreted_assertion": "The named concrete replay endpoint and historical replay/provenance assertions are not independently substantiated here.",
+      "judgment": "ambiguous/underspecified (abstention warranted)",
+      "treatment": "warranted abstention",
+      "source_formal_evidence": "The P source names sampledGaussian_calibration_interval_of_finiteBracket_replayCertificate, but the input-only local Lean source search has no match (evidence/coverage_numeric_check.output.txt). The mathematical interval recipe is conditional on proved transcendental containments and verified rational root bounds. No concrete certificate is supplied. Independent registered endpoint axiom checks pass with only the three standard listed axioms, but these do not substantiate historical full-note replay or claims about absent endpoints.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Separates abstract real-valued interval bounds, approximate decimals, concrete exact-rational replay, and historical provenance.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "Whether the named declaration exists elsewhere, and the historical replay assertions, cannot be determined within this blinded input."
+      ]
+    },
+    {
+      "record_id": "Y-E1",
+      "report": "Y",
+      "report_locations": [
+        "Finding 2; Finding 3"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "P 135-193, 260-339; K 65-69",
+      "interpreted_assertion": "Direct scaling, product mixture laws, exact likelihood moments and standard-deviation/Euclidean-norm units match the notes.",
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_formal_evidence": "SampledGaussianOutputLaws.lean constructs Bernoulli-shift-plus-Gaussian coordinates and independent products; SparseGaussianProductLikelihoodRatio.lean transports source/reference by division by positive sigma with standardized shift Delta/sigma. SparseGaussianTruncatedLikelihoodMoments.lean has the displayed first, second and centered square identities with unrestricted real shift and coefficient. EuclideanVectorClipping.lean uses EuclideanSpace and FiniteGaussianDensity.lean uses sigma-squared variance. The parts needed by registered C1/C4 are rated there; this entry retains their other source spans only.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms the exact privacy reference and formulas, rather than a matched-source comparison or a variance/stddev substitution.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "Y-E2",
+      "report": "Y",
+      "report_locations": [
+        "Finding 4"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "P 407-434, 456-459; P 224-236",
+      "interpreted_assertion": "Real-valued reverse duality, min of reverse bounds and max of directed bounds support independent supplied thresholds.",
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_formal_evidence": "FiniteProfileCoefficientDuality.lean eventHockeyStickProfile_withDensity_reverse_duality evaluates 1-exp(epsilon)+exp(epsilon)*H(-epsilon).toReal in Real before ENNReal.ofReal. SparseGaussianProductReverseBounds.lean applies the capped forward bound at -epsilon and uses finiteness for toReal monotonicity. SampledGaussianProductFiniteProfileBounds.lean explicitly takes min for reverse and max for two directions with distinct forward/reverse threshold arguments; lower threshold is independent. All require only the original q domain and positive noise, with arbitrary real epsilon.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Rules out a signed truncated-subtraction error or an omitted privacy direction. This is a faithful control, not an observed defect.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "Y-E3",
+      "report": "Y",
+      "report_locations": [
+        "Finding 6"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "P 544-580",
+      "interpreted_assertion": "The diagnostic decimal substitution and reported relative width agree with the displayed formulas.",
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_formal_evidence": "Independent bounded 60-digit mpmath calculation: L=0.1000288274320298083766..., UF=0.0994524972372569846839..., reverse dual=0.0525939665411757068291..., reverse floor=0, relative width=6.4614544770271348825... percent. Exact command, script, output and exit 0 are preserved in evidence/coverage_numeric_check.*. This is approximate numerical evaluation, not outward rational certification.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Confirms rounded arithmetic only. It supplies neither a formal rational certificate nor an independent PLD computation.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "The separate PLD diagnostic value is used as given, not validated."
+      ]
+    },
+    {
+      "record_id": "Y-E4",
+      "report": "Y",
+      "report_locations": [
+        "A3; source inventory D:226-251 and D:379-407"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "K 226-251, 379-400",
+      "interpreted_assertion": "Fallback arithmetic, finite-family versus global minimum, and k=0/delta>=1 degeneracies are correctly distinguished.",
+      "judgment": "supported/faithful correspondence",
+      "treatment": "correct correspondence/control",
+      "source_formal_evidence": "Direct source arithmetic: (k+1)/delta>0 for natural k and delta>0, and k*delta/(2*(k+1))<=delta. With k=0 the aggregate is zero and the transcript is data independent; with delta>=1 probability-law hockey-stick profiles at epsilon>=0 are <=1. All positive scales can then be feasible while their infimum zero is not a positive minimum. IsGlobalSigmaThreshold explicitly requires positivity and feasibility at the endpoint. This does not verify the absent checker or its termination.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Prevents treating the finite-grid return value or a zero unattained infimum as an attained positive global threshold.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": []
+    },
+    {
+      "record_id": "Y-E5",
+      "report": "Y",
+      "report_locations": [
+        "A1"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "K 88-113, 191-251, 327-344; crosswalk 409-499",
+      "interpreted_assertion": "Full finite exact-rational accountant and universal add/remove endpoints cannot be certified from the provided capsule.",
+      "judgment": "ambiguous/underspecified (abstention warranted)",
+      "treatment": "warranted abstention",
+      "source_formal_evidence": "INPUT-only inventory check finds 63 local Lean files. Of 25 unique K cited Lean paths, only TrainingMechanism.lean is present; 24 named owners are absent. Local source searches for the named checker/bridge/reduction endpoints return no match, recorded in evidence/coverage_numeric_check.output.txt. The theorem in K quantifies over every record type with decidable equality, every dimension, every measurable adaptive oracle, and valid rational requests, and promises termination and accepted-family minimality. Mechanism definitions do not imply these conclusions. Source add/remove decoder and fallback explanation are coherent but not a complete supplied formal endpoint.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Makes the capsule coverage limit explicit without claiming a counterexample or absence from a larger project.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "Full checker termination, rational witness soundness, finite-family leastness and universal adaptive add/remove theorem remain unverified here."
+      ]
+    },
+    {
+      "record_id": "Y-E6",
+      "report": "Y",
+      "report_locations": [
+        "A2"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "K 253-284, 346-376",
+      "interpreted_assertion": "The local signed compensation argument is plausible; the complete adaptive replacement domination is unresolved in this capsule.",
+      "judgment": "ambiguous/underspecified (abstention warranted)",
+      "treatment": "warranted abstention",
+      "source_formal_evidence": "Source norm bound and common sign of W_h*a_h imply W_h*W_g*(a_h*a_g-<m_h,m_g>)>=0, including zero amplitudes; multiplying by positive constants preserves sign. This local algebra alone does not establish the integration-by-parts interpolation, smoothing limit or history-dependent backward path comparison. The crosswalk names DirectReplaceSignedGaussianInterpolation.lean and other replacement owners which the input inventory confirms absent. No failed tactic or counterexample is asserted.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Correctly preserves the unresolved sequential theorem instead of accepting local sign algebra as its proof or using missing declarations as refutation.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "A complete derivation handling history dependence and future likelihood factors remains unavailable; mathematical truth of the full statement is not decided."
+      ]
+    },
+    {
+      "record_id": "Y-E7",
+      "report": "Y",
+      "report_locations": [
+        "A3"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "K 286-323, 334-376",
+      "interpreted_assertion": "Training lower realizations and positive attained global thresholds are not established by the generic Poisson infimum theorem or generic threshold definition.",
+      "judgment": "ambiguous/underspecified (abstention warranted)",
+      "treatment": "warranted abstention",
+      "source_formal_evidence": "K requires universal-oracle privacy equivalent to exact fixed-cardinality profile feasibility, with projection realizations and attained positive upper rays when 0<k<=T and 0<delta<1. The source truncated closed-set infimum argument is valid conditional on continuity, degradation, nonempty feasibility and a positive separating scale. Training/Common/GlobalSigmaOptimality.lean contains the generic threshold definition, while input inventory lacks the KOutOfT profile/realization/threshold owners named in the crosswalk. The registered Poisson calibration adapter concludes only an infimum interval.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Avoids substituting a different sampling model or an unattained infimum for the source quantified attainment result.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "Exact projected law identities and domain-specific analytic prerequisites for the claimed thresholds remain unverified."
+      ]
+    },
+    {
+      "record_id": "Y-E8",
+      "report": "Y",
+      "report_locations": [
+        "A4"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "P 646-669, 673-716; K 402-407",
+      "interpreted_assertion": "The named concrete replay endpoint and historical replay/provenance assertions are not independently substantiated here.",
+      "judgment": "ambiguous/underspecified (abstention warranted)",
+      "treatment": "warranted abstention",
+      "source_formal_evidence": "The P source names sampledGaussian_calibration_interval_of_finiteBracket_replayCertificate, but the input-only local Lean source search has no match (evidence/coverage_numeric_check.output.txt). The mathematical interval recipe is conditional on proved transcendental containments and verified rational root bounds. No concrete certificate is supplied. Independent registered endpoint axiom checks pass with only the three standard listed axioms, but these do not substantiate historical full-note replay or claims about absent endpoints.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Separates abstract real-valued interval bounds, approximate decimals, concrete exact-rational replay, and historical provenance.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "Whether the named declaration exists elsewhere, and the historical replay assertions, cannot be determined within this blinded input."
+      ]
+    },
+    {
+      "record_id": "Y-E9",
+      "report": "Y",
+      "report_locations": [
+        "A5"
+      ],
+      "population_status": "outside the registered six-unit population; exploratory only",
+      "source_span": "P bibliography and P 544-590; K 391-407",
+      "interpreted_assertion": "External literature, optimizer/runtime behavior and separately supplied PLD values are outside this verification.",
+      "judgment": "ambiguous/underspecified (abstention warranted)",
+      "treatment": "warranted abstention",
+      "source_formal_evidence": "Both sources delimit their mathematics to ideal laws and distinguish diagnostic decimals from theorem authority. No application implementation, finite-precision sampler or independent PLD computation is in the supplied source obligations being verified. No outside sources were accessed.",
+      "reader_usefulness": {
+        "useful": true,
+        "reason": "Prevents mathematical correspondence from being read as implementation or literature certification.",
+        "upheld_useful_discrepancy": false
+      },
+      "false_accusation_severity": {
+        "level": "none",
+        "reason": "No false mathematical accusation is made; coverage limits and conditional reasoning are explicitly separated from falsity."
+      },
+      "confidence": {
+        "level": "high",
+        "scope": "Limited to the correspondence, arithmetic, or warranted abstention described here."
+      },
+      "unresolved_questions": [
+        "External and runtime assertions remain unverified by design."
+      ]
+    }
+  ],
+  "summary_by_report": {
+    "X": {
+      "registered_claim_count": 6,
+      "correct_correspondence_controls": 6,
+      "warranted_abstentions_in_registered_population": 0,
+      "no_treatment_in_registered_population": 0,
+      "upheld_useful_discrepancies_in_registered_population": 0,
+      "unsupported_accusations_in_registered_population": 0,
+      "unresolved_registered_items": 0,
+      "false_accusation_severity": "none",
+      "note": "The report labels several faithful controls as Findings. They are not discrepancy findings. Its larger-note abstentions are exploratory relative to the six registered claims."
+    },
+    "Y": {
+      "registered_claim_count": 6,
+      "correct_correspondence_controls": 6,
+      "warranted_abstentions_in_registered_population": 0,
+      "no_treatment_in_registered_population": 0,
+      "upheld_useful_discrepancies_in_registered_population": 0,
+      "unsupported_accusations_in_registered_population": 0,
+      "unresolved_registered_items": 0,
+      "false_accusation_severity": "none",
+      "note": "The report labels several faithful controls as Findings. They are not discrepancy findings. Its larger-note abstentions are exploratory relative to the six registered claims."
+    }
+  },
+  "unresolved_internal_disagreements": [],
+  "limits": [
+    "This adjudication establishes neither whole-note certification nor runtime conformance.",
+    "Reports historical actions and withheld original command artifacts were not independently inspected; only bounded checks recorded here were run.",
+    "Unresolved exploratory full-training and replay claims receive no discrepancy or false-accusation credit.",
+    "No inferred arm/tool identity or comparison based on identity is included."
+  ],
+  "signature": {
+    "name": "pilot_blind_adjudicator_1",
+    "attestation": "I independently applied the supplied rubric to X/Y and submit these ratings as my signed blinded adjudication."
+  }
+}

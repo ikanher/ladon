@@ -1,0 +1,502 @@
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xurl}
+\usepackage{xcolor}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+\setlength{\emergencystretch}{4em}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\clip}{\operatorname{clip}_1}
+\newcommand{\decl}[1]{\path{#1}}
+
+\title{A Conventional Proof of the Deterministic\\
+$k$-out-of-$T$ Training Accountant}
+\author{}
+\date{26 July 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We give a conventional proof for an ideal adaptive training mechanism in
+which each user independently receives a hidden, uniform $k$-subset of the
+$T$ release positions.  The result has three parts: an executable
+exact-rational add/remove calibration, an attained least scale for privacy
+uniformly over all admissible adaptive oracles under add/remove adjacency, and
+an attained least scale for direct replace-one privacy.  The finite
+calibrator is add/remove only and is minimal only within its checked finite
+candidate family.  The two exact thresholds are noncomputable real numbers.
+Here ``deterministic'' describes the proof and calibration, not the randomized
+hidden schedules; neither Monte Carlo estimation nor EVR is used.
+The proof isolates the hidden-schedule mixture, the adaptive Gaussian channel,
+the signed interpolation required for direct replacement, the lower
+realizations, and the topology behind threshold attainment.
+\end{abstract}
+
+\section{Main theorem}
+
+\paragraph{Setup and notation.}
+Let $\mathcal X$ be a record type with decidable equality, so a dataset is a
+finite set $D\subseteq\mathcal X$.  Fix $T>0$, $0\leq k\leq T$, an output
+dimension $d$, and a measurable adaptive oracle.  From the previously released
+history $h_{<t}$ and a record $u$, the oracle returns
+$q_t(h_{<t},u)\in\R^d$.  Each user independently receives
+\[
+  S_u\sim\operatorname{Unif}
+  \{S\subseteq\{0,\ldots,T-1\}:|S|=k\}.
+\]
+Starting from the \emph{zero initial history}, the ideal mechanism releases
+\begin{equation}\label{eq:release}
+  Y_t=\sum_{u\in D}\mathbf1_{\{t\in S_u\}}
+       \clip\!\left(q_t(Y_{<t},u)\right)+\sigma Z_t,
+  \qquad 0\leq t<T,
+\end{equation}
+where $\|\clip(v)\|_2\leq1$ and the $Z_t$ are independent standard
+$d$-dimensional Gaussians.  Schedules are hidden and marginalized only after
+the complete conditional transcript law is formed.
+
+Add/remove adjacency inserts or removes one record.  Direct replace-one
+adjacency compares
+\[
+ D_L=C\cup\{u\},\qquad D_R=C\cup\{v\},
+ \qquad u\neq v,\quad u,v\notin C.
+\]
+For probability measures $P,Q$, write
+\[
+ H_\varepsilon(P,Q)
+ =\sup_{0\leq f\leq1}
+   \left(\int f\,dP-e^\varepsilon\int f\,dQ\right).
+\]
+Approximate differential privacy means that this quantity is at most
+$\delta$ in both directions for every adjacent pair.
+
+\begin{theorem}[Deterministic $k$-out-of-$T$ accountant]\label{thm:main}
+Let $T,k\in\N$ and $\varepsilon,\delta\in\Q$ satisfy
+\[
+ 0<T,\qquad k\leq T,\qquad 0\leq\varepsilon,\qquad 0<\delta.
+\]
+The following hold.
+\begin{enumerate}[label=\textup{(\roman*)},leftmargin=2.4em]
+\item A terminating exact-rational procedure returns
+  $\widehat\sigma\in\Q_{>0}$.  For every record type with decidable equality,
+  every $d$, and every measurable adaptive oracle, \eqref{eq:release} at
+  $\widehat\sigma$ is $(\varepsilon,\delta)$-private for add/remove adjacency.
+  The returned scale is the minimum among an independently checked total
+  fallback and the accepted members of a finite public rational grid generated
+  from the request.
+  This is an add/remove theorem and a grid-relative minimum, not a direct
+  replace-one calibration or a global minimum over $\R_{>0}$.
+
+\item If additionally $0<k$ and $\delta<1$, there is a noncomputable real
+  $\sigma_{\mathrm{AR}}^*>0$ such that, for every $\sigma>0$,
+  \[
+    \sigma_{\mathrm{AR}}^*\leq\sigma
+    \quad\Longleftrightarrow\quad
+    \eqref{eq:release}\text{ is add/remove private for every such }
+    \mathcal X,d,\text{ and oracle}.
+  \]
+  Privacy holds at $\sigma_{\mathrm{AR}}^*$.
+
+\item Under the same additional assumptions there is a noncomputable real
+  $\sigma_{\mathrm{RO}}^*>0$ such that, for every $\sigma>0$,
+  \[
+    \sigma_{\mathrm{RO}}^*\leq\sigma
+    \quad\Longleftrightarrow\quad
+    \eqref{eq:release}\text{ is direct replace-one private for every such }
+    \mathcal X,d,\text{ and oracle}.
+  \]
+  Privacy holds at $\sigma_{\mathrm{RO}}^*$.  This is a direct signed
+  replacement result, not a two-step add/remove composition.
+\end{enumerate}
+\end{theorem}
+
+\paragraph{Proof idea.}
+The add/remove comparison is obtained from one history-dependent but
+schedule-blind Gaussian decoder, so it preserves the exact hidden
+fixed-cardinality mixture.  The finite procedure verifies rational upper
+bounds for that mixture.  Conversely, a constant one-dimensional oracle
+recovers the formal mixture by measurable projection.  Direct replacement
+cannot use the same ordinary postprocessing argument: its positive and
+negative shifts are compared by a normalized signed Gaussian interpolation,
+then attained by a two-record constant oracle.  Continuity, Gaussian
+degradation, a feasible fallback, and a small-noise separating event turn both
+exact profile feasible sets into attained upper rays.
+
+\section{Six conventional lemmas}
+
+\begin{lemma}[Hockey-stick calculus]\label{lem:hs}
+For a Markov kernel $K$,
+\[
+ H_\varepsilon(PK,QK)\leq H_\varepsilon(P,Q).
+\]
+If $\alpha_h\geq0$ and $\sum_h\alpha_h=1$, then
+\[
+ H_\varepsilon\!\left(\sum_h\alpha_hP_h,\sum_h\alpha_hQ_h\right)
+ \leq\sum_h\alpha_hH_\varepsilon(P_h,Q_h).
+\]
+\end{lemma}
+
+\begin{proof}
+For an output test $0\leq f\leq1$, the function
+$Kf(x)=\int f(y)K(x,dy)$ is an input test in $[0,1]$, which proves data
+processing after taking the supremum over $f$.  For mixtures, expand the
+difference of expectations as the common-weight sum of the component
+differences, bound every summand by its hockey-stick divergence, and again
+take the supremum.
+\end{proof}
+
+\begin{lemma}[Adaptive bounded Gaussian channel]\label{lem:channel}
+If $\|v\|_2\leq1$ and $\sigma>0$, there is a channel, jointly measurable in
+$v$ and its input, that sends
+\[
+ N(1,\sigma^2)\mapsto N(v,\sigma^2I_d),
+ \qquad
+ N(0,\sigma^2)\mapsto N(0,\sigma^2I_d).
+\]
+Consequently, if $v_t$ is a measurable function of the already decoded
+history, these channels may be composed recursively into one common adaptive
+decoder.
+\end{lemma}
+
+\begin{proof}
+Pad $v$ to the unit vector
+\[
+ \widehat v=(\sqrt{1-\|v\|_2^2},v)\in\R^{d+1}.
+\]
+Apply a measurable Householder isometry carrying the first coordinate vector
+to $\widehat v$ to $(X,Z)$, where
+$Z\sim N(0,\sigma^2I_d)$ is independent, and discard coordinate zero.
+Rotational invariance gives covariance $\sigma^2I_d$ in either case; the
+retained mean is $v$ when $\mathbb EX=1$ and zero when $\mathbb EX=0$.
+Recursively, decoded releases determine the next history and hence the next
+$v_t$, so finite induction proves the asserted path-law identities.  The same
+decoder is used on both privacy sides.
+\end{proof}
+
+\begin{lemma}[Exact hidden-schedule add/remove reduction]\label{lem:ar-upper}
+Define
+\[
+ P_\sigma^+
+ =\binom Tk^{-1}\sum_{|S|=k}N(\mathbf1_S,\sigma^2I_T),
+ \qquad
+ P_\sigma^0=N(0,\sigma^2I_T),
+\]
+and let $\Pi_{\mathrm{AR}}(\sigma)$ be the maximum of the two directed
+hockey-stick divergences between them.  If
+$\Pi_{\mathrm{AR}}(\sigma)\leq\delta$, then \eqref{eq:release} is
+$(\varepsilon,\delta)$-private under add/remove adjacency for every admissible
+oracle.
+\end{lemma}
+
+\begin{proof}
+Write the adjacent datasets as $C$ and $C\cup\{u\}$, and condition on the
+schedules of the common users.  Their adaptive aggregate is then common to
+both sides.  Apply Lemma~\ref{lem:channel} at time $t$ with
+$v_t=\clip(q_t(h_{<t},u))$.  The resulting decoder depends on the common-user
+assignment and the decoded history, but neither on the privacy side nor on
+$u$'s hidden schedule.
+
+For a temporarily fixed $S$, induction over time shows that a scalar path with
+law $N(\mathbf1_S,\sigma^2I_T)$ decodes to the conditional transcript on
+$C\cup\{u\}$, whereas a centered scalar path decodes to the conditional
+transcript on $C$, independently of $S$.  Therefore the \emph{single}
+schedule-blind decoder maps the whole pair $(P_\sigma^+,P_\sigma^0)$ to the
+two conditional transcript laws.  Data processing applies before any
+componentwise privacy bound is taken.  Finally mix over the common-user
+schedules, whose weights agree on both sides, and repeat with the directions
+reversed.  In particular, we never average fixed-$S$ divergences; doing so
+would discard hidden-schedule amplification.
+\end{proof}
+
+\begin{lemma}[Finite verified calibration]\label{lem:finite}
+For every rational request in Theorem~\ref{thm:main}, a finite rational
+checker constructs a positive fallback, rechecks every generated candidate,
+and returns the least accepted scale among the fallback and a finite public
+grid generated from the request.  Its returned scale satisfies
+$\Pi_{\mathrm{AR}}(\widehat\sigma)\leq\delta$.
+\end{lemma}
+
+\begin{proof}
+At a candidate $\sigma>0$, the exact fixed-cardinality experiment is bounded
+by a two-sided scalar Gaussian profile at the conservative ratio
+$\mu=k/\sigma$.  The checker accepts only finite rational witnesses whose
+tail and exponential inequalities imply that this profile is at most
+$\delta$.  Independently of search success, it uses
+\[
+ \sigma_{\mathrm{fb}}=\frac{k+1}{\delta}>0,
+ \qquad
+ \frac12\,\frac{k}{\sigma_{\mathrm{fb}}}
+ =\frac{k\delta}{2(k+1)}\leq\delta,
+\]
+together with the verified Gaussian bound $\operatorname{GDP}(\mu,\varepsilon)
+\leq\mu/2$.  Thus the fallback is sound.  A finite fold starts from it,
+retains only rechecked candidates, and replaces the current candidate only by
+a smaller accepted one.  Induction proves soundness throughout, and complete
+enumeration proves minimum only within this accepted finite family.
+\end{proof}
+
+\begin{lemma}[Signed direct-replacement domination]\label{lem:signed}
+Let a finite hidden family have scalar amplitudes $a_h$, vector means $m_h$,
+and signed coefficients $c_h$, with
+\[
+ \|m_h\|_2\leq|a_h|\quad\text{for every }h.
+\]
+If all $c_ha_h$ are nonnegative, or all are nonpositive, then the Gaussian
+stop loss of the vector family is no larger than that of the aligned scalar
+family.  The comparison remains valid sequentially when positive conditional
+likelihood factors from future adaptive releases multiply the $c_h$.
+\end{lemma}
+
+\begin{proof}
+First normalize by the positive noise scale so the reference covariance is
+the identity.  Smooth $x\mapsto(x-r)_+$ and interpolate from the normalized
+vector means to scalar means on one Gaussian axis.  Gaussian integration by
+parts expresses the derivative as a nonnegative smoothing factor times
+\[
+ \sum_{h,g}W_hW_g
+ \bigl(a_ha_g-\langle m_h,m_g\rangle\bigr),
+\]
+where $W_h$ is $c_h$ multiplied by positive likelihood factors.  Hence the
+$W_ha_h$ retain one common sign.  Moreover,
+\[
+ |W_hW_g\langle m_h,m_g\rangle|
+ \leq |W_ha_h|\,|W_ga_g|,
+\]
+so every compensated contribution, and therefore the derivative, is
+nonnegative.  Let the smoothing vanish.  For an adaptive path, apply the
+one-step result backward from the terminal stop loss; future likelihood
+factors are positive and preserve alignment at each step.
+\end{proof}
+
+\begin{lemma}[Lower realization and attained upper ray]\label{lem:threshold}
+For both the add/remove and direct replace-one formal profiles:
+\begin{enumerate}[label=\textup{(\alph*)},leftmargin=2.2em]
+\item uniform privacy of all admissible oracles implies formal-profile
+  feasibility;
+\item on $0<k\leq T$ and $0<\delta<1$, the feasible positive scales form an
+  upper ray $[\sigma^*,\infty)$ with $\sigma^*>0$ and feasibility at
+  $\sigma^*$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+For add/remove, take $d=1$ and the constant contribution $+1$.  Measurably
+project the released scalar coordinate from the history-valued transcript.
+The singleton-dataset and empty-dataset pushforwards are exactly
+$P_\sigma^+$ and $P_\sigma^0$.  For replacement, use two distinct records
+with constant contributions $+1$ and $-1$; projection of their singleton
+transcripts gives the exact positive and negative formal laws.  Thus these
+formal experiments are recovered by measurable projection, rather than being
+identified with the raw history-valued transcript.
+
+For either exact profile $\Pi$, Gaussian degradation makes $\Pi$ nonincreasing
+in $\sigma$, and its finite Gaussian-mixture formula is continuous on
+$(0,\infty)$.  A finite upper bound supplies a feasible scale.  Since $k>0$,
+the source and reference means separate as $\sigma\downarrow0$; because
+$\delta<1$, choose $\sigma_0>0$ with
+$\Pi(\sigma_0)>\delta$.  Monotonicity makes every
+$0<\sigma\leq\sigma_0$ infeasible.  The \emph{truncated} set
+\[
+ F^0=\{\sigma\in\R:\sigma_0\leq\sigma,\ \Pi(\sigma)\leq\delta\}
+\]
+is nonempty, closed, and bounded below, so its infimum $\sigma^*$ belongs to
+$F^0$.  It is positive and feasible.  The definition of the infimum below
+$\sigma^*$ and degradation above it show, for every $\sigma>0$,
+\[
+ \Pi(\sigma)\leq\delta\quad\Longleftrightarrow\quad\sigma^*\leq\sigma.
+\]
+\end{proof}
+
+\section{Proof of Theorem~\ref{thm:main}}
+
+\paragraph{Clause (i).}
+Lemma~\ref{lem:finite} gives a checked positive rational scale with
+$\Pi_{\mathrm{AR}}(\widehat\sigma)\leq\delta$ and proves its stated
+finite-family leastness.  Lemma~\ref{lem:ar-upper} transports that exact
+formal guarantee to every adaptive clipped transcript, in both privacy
+directions.  This proves the finite add/remove clause.
+
+\paragraph{Clause (ii).}
+Lemma~\ref{lem:ar-upper} gives formal feasibility $\Rightarrow$ uniform
+add/remove privacy.  The constant-$+1$ projection in
+Lemma~\ref{lem:threshold} gives the converse, hence
+\[
+ \text{uniform add/remove privacy at }\sigma
+ \quad\Longleftrightarrow\quad
+ \sigma>0\ \text{and}\ \Pi_{\mathrm{AR}}(\sigma)\leq\delta.
+\]
+The upper-ray part of that lemma supplies the noncomputable attained least
+scale $\sigma_{\mathrm{AR}}^*$.
+
+\paragraph{Clause (iii).}
+For replacement, draw the removed and inserted users' schedules independently.
+After conditioning on common-user schedules and dividing each innovation by
+$\sigma$, source components have scalar amplitudes $+1/\sigma$ and reference
+components have amplitudes $-1/\sigma$; unselected components have amplitude
+zero.  Clipping gives the corresponding normalized vector bound
+$\|m_h\|_2\leq|a_h|$.
+
+In the forward hockey-stick expression, source coefficients are positive and
+reference coefficients are multiplied by $-e^\varepsilon$; hence
+$c_ha_h\geq0$.  In the reverse expression the signs swap and
+$c_ha_h\leq0$.  Lemma~\ref{lem:signed}, applied backward through the adaptive
+path, therefore bounds both actual directions by the exact scalar pair
+\[
+ P_{\sigma,\mathrm{RO}}^+
+ =\binom Tk^{-1}\sum_{|S|=k}N(\mathbf1_S,\sigma^2I_T),
+ \qquad
+ P_{\sigma,\mathrm{RO}}^-
+ =\binom Tk^{-1}\sum_{|S|=k}N(-\mathbf1_S,\sigma^2I_T).
+\]
+Only after this signed likelihood comparison do we decode the common
+normalized innovation path into the transcript.  That decoder receives the
+common-user assignment, public zero initial history, oracle, and $\sigma$, but
+not the privacy side or either hidden replacement schedule.  Integrating the
+unused schedule and mixing over common-user assignments preserves the bound.
+
+The two-record $+1/-1$ projection in Lemma~\ref{lem:threshold} proves the
+converse.  Thus uniform direct replace-one privacy is equivalent to feasibility
+of the exact two-sided profile of
+$(P_{\sigma,\mathrm{RO}}^+,P_{\sigma,\mathrm{RO}}^-)$.  Its attained-upper-ray
+conclusion yields the noncomputable least scale $\sigma_{\mathrm{RO}}^*$.
+\qed
+
+\section{Degenerate cases, scope, and provenance}
+
+The finite add/remove procedure deliberately allows $k=0$ and
+$\delta\geq1$.  If $k=0$, no user ever contributes, so every positive scale
+has a data-independent transcript.  If $\delta\geq1$, every hockey-stick
+divergence is at most $1\leq\delta$, so again every positive scale is feasible.
+In either case the feasible set is $(0,\infty)$ and has infimum zero but no
+least positive member.  The calibrator remains sound and returns a positive
+fallback; only the claim of an attained \emph{positive} global threshold
+would be false.  This is exactly why clauses (ii) and (iii) assume
+$k>0$ and $\delta<1$.  The case $\delta=0$ lies outside the total-calibrator
+domain: its fallback divides by $\delta$, and a nonzero Gaussian shift need
+not admit any finite pure-DP scale.
+
+The theorem concerns independent per-user uniform fixed-cardinality
+schedules, unit internal clipping, measurable adaptive queries, zero initial
+history, and ideal real Gaussian noise.  Measurable postprocessing of the
+transcript inherits the privacy guarantee.  It does not establish conformance
+of a sampler, finite-precision Gaussian generator, Python/PyTorch/Opacus
+implementation, distributed execution, or experiment.  The finite rational
+calibrator is add/remove only and grid-relative; the exact uniform thresholds
+are noncomputable and may exceed what a particular fixed oracle needs.
+
+This note is a \emph{closed-proof, source-reviewed} reconstruction.  The
+publication-facing sources and their focused audit modules were replayed
+successfully in the current working tree; this is not an independent
+clean-checkout or runtime replay.  The audited endpoints use only
+\texttt{propext}, \texttt{Classical.choice}, and \texttt{Quot.sound}.
+
+\appendix
+\section{Exact declaration-to-source crosswalk}
+
+\begingroup
+\scriptsize
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.35em}
+
+\textbf{Request, quantifiers, and mechanism.}
+\decl{Mf.DP.Training.KOutOfT.KOutOfTTrainingRequest.Valid},
+\decl{Mf.DP.Training.KOutOfT.KOutOfTTrainingRequest.check_eq_true_iff}, and
+\decl{Mf.DP.Training.KOutOfT.KOutOfTTrainingRequest.formalCfg} are in
+\decl{Mf/DP/Training/KOutOfT/GenericRequest.lean}.
+\decl{Mf.DP.Training.KOutOfT.GlobalSigmaNondegenerate} and
+\decl{Mf.DP.Training.KOutOfT.GloballyCalibratableKOutOfTTrainingRequest}
+are in \decl{Mf/DP/Training/KOutOfT/GlobalSigmaRequest.lean}.
+\decl{Mf.DP.Training.KOutOfT.uniformAddRemovePrivateAt} and
+\decl{Mf.DP.Training.KOutOfT.uniformReplaceOnePrivateAt}, including decidable equality and zero
+initial history, are in
+\decl{Mf/DP/Training/GlobalSigmaOptimalityTargets.lean}.
+\decl{Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass_sum_eq_one},
+\decl{Mf.DP.Training.KOutOfT.userScheduleAssignmentMass_sum_eq_one}, and
+\decl{Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript} are in
+\decl{Mf/DP/Training/KOutOfT/TrainingMechanism.lean}.
+
+\textbf{Add/remove upper theorem and finite calibration.}
+\decl{Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript_approxDP_of_formal} is in
+\decl{Mf/DP/Training/KOutOfT/TrainingReduction.lean}, and
+\decl{Mf.DP.Training.KOutOfT.trainingTranscript_approxDP_of_formal} is in
+\decl{Mf/DP/Training/KOutOfT/GenericTrainingBridge.lean}.
+\decl{Mf.DP.Training.KOutOfT.checkKOutOfTCandidate_sound} is in
+\decl{Mf/DP/Training/KOutOfT/CandidateChecker.lean};
+\decl{Mf.DP.Training.KOutOfT.Total.formal_approxDP} is in
+\decl{Mf/DP/Training/KOutOfT/TotalAccountant.lean}.
+\decl{Mf.DP.Training.KOutOfT.RequestOnlyUpperCalibration.requestOnlyCandidate_checked},
+\decl{Mf.DP.Training.KOutOfT.RequestOnlyUpperCalibration.requestOnlyCandidate_sigma_le_of_generated_mem},
+\decl{Mf.DP.Training.KOutOfT.RequestOnlyUpperCalibration.requestOnlyCandidate_fallback_or_generated},
+and
+\decl{Mf.DP.Training.KOutOfT.RequestOnlyUpperCalibration.trainingAccountant_sound}
+are in
+\decl{Mf/DP/Training/KOutOfT/RequestOnlyUpperCalibration.lean}.
+
+\textbf{Exact add/remove converse and threshold.}
+\decl{Mf.DP.Training.KOutOfT.exactAddRemoveProfile} is in
+\decl{Mf/DP/Training/KOutOfT/ExactSigmaProfile.lean}.
+\decl{Mf.DP.Training.KOutOfT.formalApproxDP_iff_exactAddRemoveProfile_le} is in
+\decl{Mf/DP/Training/KOutOfT/ExactFormalProfile.lean}.
+\decl{Mf.DP.Training.KOutOfT.map_projectScalarHistory_singletonTrainingTranscript_eq_formalSource},
+\decl{Mf.DP.Training.KOutOfT.map_projectScalarHistory_emptyTrainingTranscript_eq_formalReference},
+and
+\decl{Mf.DP.Training.KOutOfT.formalApproxDP_of_saturatingTrainingApproxDP} are in
+\decl{Mf/DP/Training/KOutOfT/LowerRealization.lean}.
+\decl{Mf.DP.Training.KOutOfT.kOutOfTGlobalSigma_isExactProfileThreshold} is in
+\decl{Mf/DP/Training/KOutOfT/ExactSigmaThreshold.lean};
+\decl{Mf.DP.Training.KOutOfT.uniformAddRemovePrivateAt_iff_exactProfile_le} and
+\decl{Mf.DP.Training.KOutOfT.kOutOfTGlobalSigma_isGlobalThreshold} are in
+\decl{Mf/DP/Training/KOutOfT/AddRemoveGlobalOptimality.lean}.
+
+\textbf{Direct replace-one.}
+\decl{Mf.DP.Training.KOutOfT.signedHiddenGaussianStopLossDomination} and
+\decl{Mf.DP.Training.KOutOfT.signedHiddenGaussianStopLossDomination_of_antialignment}
+are in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceSignedGaussianInterpolation.lean};
+\decl{Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript_replaceOne_approxDP_of_directFormal}
+is in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceUniformUpperTarget.lean}.
+\decl{Mf.DP.Training.KOutOfT.exactReplaceOneProfile} and
+\decl{Mf.DP.Training.KOutOfT.directFormalApproxDP_iff_exactReplaceOneProfile_le}
+are in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceSigmaProfile.lean}.
+\decl{Mf.DP.Training.KOutOfT.map_positiveSingletonDirectTrainingTranscript_eq_formalSource},
+\decl{Mf.DP.Training.KOutOfT.map_negativeSingletonDirectTrainingTranscript_eq_formalReference},
+and
+\decl{Mf.DP.Training.KOutOfT.directFormalApproxDP_of_signedTrainingReplaceOneApproxDP}
+are in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceLowerRealization.lean}.
+\decl{Mf.DP.Training.KOutOfT.kOutOfTDirectReplaceProfileSigma_isExactThreshold}
+is in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceSigmaThreshold.lean};
+\decl{Mf.DP.Training.KOutOfT.directReplaceFallback_profile_le} is in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceFallback.lean};
+\decl{Mf.DP.Training.KOutOfT.uniformReplaceOnePrivateAt_iff_exactReplaceOneProfile_le}
+and
+\decl{Mf.DP.Training.KOutOfT.kOutOfTDirectReplaceProfileSigma_isGlobalThreshold}
+are in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceGlobalOptimality.lean}.
+
+\textbf{Axiom audits.}
+\decl{Mf/DP/Training/KOutOfT/RequestOnlyUpperCalibrationAudit.lean},
+\decl{Mf/DP/Training/KOutOfT/AddRemoveGlobalOptimalityAudit.lean},
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceGlobalOptimalityAudit.lean}, and
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceProfileOptimalityAudit.lean}.
+\endgroup
+
+\end{document}

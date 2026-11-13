@@ -1,0 +1,251 @@
+$ python3 -c 'from pathlib import Path; parts={"capsule/lean/Mf/DP/FiniteProfileCoefficientDuality.lean":(228,300),"capsule/lean/Mf/DP/SparseGaussianProductLikelihoodRatio.lean":(90,137),"capsule/lean/Mf/DP/TruncatedGaussianExponentialMoments.lean":(1,240)}; [(print("FILE:",n),print("".join(f"{i}: {s}" for i,s in enumerate(Path(n).open(),1) if a<=i<=b))) for n,(a,b) in parts.items()]'
+CWD: /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/INPUT
+FILE: capsule/lean/Mf/DP/FiniteProfileCoefficientDuality.lean
+228:   have hforward := eventHockeyStickProfile_withDensity_forward_eq_ofReal_realProfile
+229:     reference ratio hRatio hRatioNonnegative hRatioIntegrable (-epsilon)
+230:   have hforward' :
+231:       eventHockeyStickProfile
+232:           ((reference : Measure X).withDensity
+233:             (fun sample => ENNReal.ofReal (ratio sample)))
+234:           (reference : Measure X) (-epsilon) =
+235:         ENNReal.ofReal
+236:           (realHockeyStickProfileWithDensity reference ratio reciprocalCoefficient) := by
+237:     simpa [reciprocalCoefficient] using hforward
+238:   have hreal := realHockeyStickProfileWithDensity_coefficient_duality reference ratio
+239:     hRatioIntegrable hRatioIntegral hreciprocalPositive
+240:   have hreciprocal : reciprocalCoefficient = (Real.exp epsilon)⁻¹ := by
+241:     simp [reciprocalCoefficient, Real.exp_neg]
+242:   have hsolve :
+243:       realHockeyStickReverseProfileWithDensity reference ratio reciprocalCoefficient =
+244:         1 - Real.exp epsilon + Real.exp epsilon *
+245:           realHockeyStickProfileWithDensity reference ratio reciprocalCoefficient := by
+246:     rw [hreciprocal] at hreal ⊢
+247:     have hexpNe : Real.exp epsilon ≠ 0 := ne_of_gt (Real.exp_pos epsilon)
+248:     field_simp [hexpNe] at hreal ⊢
+249:     linarith
+250:   rw [hreverse', hforward',
+251:     ENNReal.toReal_ofReal
+252:       (realHockeyStickProfileWithDensity_nonneg reference ratio reciprocalCoefficient)]
+253:   exact congrArg ENNReal.ofReal hsolve
+254: 
+255: end
+256: 
+257: end Mf.DP
+
+FILE: capsule/lean/Mf/DP/SparseGaussianProductLikelihoodRatio.lean
+90:       (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1))
+91:       (fun sample => sparseGaussianProductLikelihoodRatio horizon samplingRate
+92:         standardizedShift sample) = _
+93:   simp only [sparseGaussianProductLikelihoodRatio]
+94:   rw [hproduct]
+95:   congr 1
+96:   funext coordinate
+97:   exact (sparseGaussianMixtureLaw_eq_withDensity samplingRate hRate
+98:     standardizedShift).symm
+99: 
+100: theorem integrable_sparseGaussianProductLikelihoodRatio
+101:     (horizon : Nat) (samplingRate standardizedShift : Real) :
+102:     Integrable
+103:       (sparseGaussianProductLikelihoodRatio horizon samplingRate standardizedShift)
+104:       (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) :=
+105:   Integrable.fintype_prod (fun _ =>
+106:     integrable_sparseGaussianLikelihoodRatio samplingRate standardizedShift)
+107: 
+108: /-- Product-density normalization, including the empty horizon. -/
+109: theorem integral_sparseGaussianProductLikelihoodRatio
+110:     (horizon : Nat) (samplingRate standardizedShift : Real) :
+111:     (∫ sample,
+112:       sparseGaussianProductLikelihoodRatio horizon samplingRate standardizedShift sample
+113:       ∂Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) = 1 := by
+114:   rw [show (∫ sample,
+115:         sparseGaussianProductLikelihoodRatio horizon samplingRate standardizedShift sample
+116:         ∂Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) =
+117:       (∫ sample, sparseGaussianLikelihoodRatio samplingRate standardizedShift sample
+118:         ∂gaussianReal 0 1) ^ Fintype.card (Fin horizon) by
+119:     exact integral_fintype_prod_eq_pow
+120:       (sparseGaussianLikelihoodRatio samplingRate standardizedShift)]
+121:   rw [integral_sparseGaussianLikelihoodRatio]
+122:   simp
+123: 
+124: /-- The product log likelihood is the sum of coordinate log likelihoods. -/
+125: theorem log_sparseGaussianProductLikelihoodRatio_eq_sum
+126:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+127:     (standardizedShift : Real) (sample : Fin horizon → Real) :
+128:     Real.log (sparseGaussianProductLikelihoodRatio horizon samplingRate
+129:       standardizedShift sample) =
+130:       ∑ coordinate, Real.log (sparseGaussianLikelihoodRatio samplingRate
+131:         standardizedShift (sample coordinate)) := by
+132:   unfold sparseGaussianProductLikelihoodRatio
+133:   rw [Real.log_prod]
+134:   intro coordinate _
+135:   exact (sparseGaussianLikelihoodRatio_pos samplingRate hRate standardizedShift
+136:     (sample coordinate)).ne'
+137: 
+
+FILE: capsule/lean/Mf/DP/TruncatedGaussianExponentialMoments.lean
+1: import Mf.DP.StandardGaussianCore
+2: 
+3: /-!
+4: # Truncated Gaussian exponential moments
+5: 
+6: This module proves the two exact exponential-tilting identities used by sparse
+7: Gaussian likelihood analysis.  The tilt and threshold are arbitrary real
+8: numbers, and truncation is the closed event `sample ≤ threshold`.
+9: -/
+10: 
+11: open MeasureTheory ProbabilityTheory Set
+12: 
+13: namespace Mf.DP
+14: 
+15: noncomputable section
+16: 
+17: /-- Pointwise Gaussian completion of squares for exponential tilting. -/
+18: theorem standardGaussianPDF_mul_likelihoodTilt
+19:     (tilt sample : Real) :
+20:     gaussianPDFReal 0 (1 : NNReal) sample *
+21:         Real.exp (tilt * sample - tilt ^ 2 / 2) =
+22:       gaussianPDFReal tilt (1 : NNReal) sample := by
+23:   rw [gaussianPDFReal_def, gaussianPDFReal_def]
+24:   rw [mul_assoc, ← Real.exp_add]
+25:   congr 1
+26:   congr 1
+27:   norm_num
+28:   field_simp
+29:   ring
+30: 
+31: /-- A Gaussian likelihood tilt is integrable under the standard Gaussian. -/
+32: theorem integrable_gaussianLikelihoodTilt (tilt : Real) :
+33:     Integrable (fun sample : Real =>
+34:       Real.exp (tilt * sample - tilt ^ 2 / 2))
+35:       (gaussianReal 0 (1 : NNReal)) := by
+36:   have h := ProbabilityTheory.integrable_exp_mul_gaussianReal
+37:     (μ := (0 : Real)) (v := (1 : NNReal)) tilt
+38:   convert h.const_mul (Real.exp (-(tilt ^ 2 / 2))) using 1
+39:   funext sample
+40:   rw [← Real.exp_add]
+41:   congr 1
+42:   ring
+43: 
+44: theorem integrableOn_gaussianLikelihoodTilt_Iic
+45:     (tilt threshold : Real) :
+46:     IntegrableOn (fun sample : Real =>
+47:       Real.exp (tilt * sample - tilt ^ 2 / 2))
+48:       (Iic threshold) (gaussianReal 0 (1 : NNReal)) :=
+49:   (integrable_gaussianLikelihoodTilt tilt).integrableOn
+50: 
+51: private theorem integral_gaussianLikelihoodTilt_Iic_eq_shiftedGaussian
+52:     (tilt threshold : Real) :
+53:     (∫ sample in Iic threshold,
+54:       Real.exp (tilt * sample - tilt ^ 2 / 2)
+55:       ∂gaussianReal 0 (1 : NNReal)) =
+56:       (gaussianReal tilt (1 : NNReal)).real (Iic threshold) := by
+57:   let reference : Measure Real := gaussianReal 0 (1 : NNReal)
+58:   let shifted : Measure Real := gaussianReal tilt (1 : NNReal)
+59:   let density : Real → ENNReal := fun sample =>
+60:     ENNReal.ofReal (Real.exp (tilt * sample - tilt ^ 2 / 2))
+61:   let event : Set Real := Iic threshold
+62:   have hEvent : MeasurableSet event := measurableSet_Iic
+63:   have hDensity : Measurable density := Measurable.ennreal_ofReal (by fun_prop)
+64:   have hMeasure : shifted = reference.withDensity density := by
+65:     rw [show shifted = volume.withDensity (gaussianPDF tilt (1 : NNReal)) by
+66:       simp [shifted, gaussianReal_of_var_ne_zero, one_ne_zero]]
+67:     rw [show reference = volume.withDensity (gaussianPDF 0 (1 : NNReal)) by
+68:       simp [reference, gaussianReal_of_var_ne_zero, one_ne_zero]]
+69:     rw [← withDensity_mul volume (measurable_gaussianPDF 0 (1 : NNReal))]
+70:     · congr 1
+71:       funext sample
+72:       unfold gaussianPDF
+73:       rw [Pi.mul_apply, ← ENNReal.ofReal_mul (gaussianPDFReal_nonneg 0 1 sample)]
+74:       congr 1
+75:       exact (standardGaussianPDF_mul_likelihoodTilt tilt sample).symm
+76:     · exact hDensity
+77:   calc
+78:     (∫ sample in event, Real.exp (tilt * sample - tilt ^ 2 / 2) ∂reference) =
+79:         ∫ sample, event.indicator (fun value =>
+80:           Real.exp (tilt * value - tilt ^ 2 / 2)) sample ∂reference := by
+81:       rw [integral_indicator hEvent]
+82:     _ = ∫ sample, event.indicator (fun _ => (1 : Real)) sample
+83:           ∂(reference.withDensity density) := by
+84:       rw [integral_withDensity_eq_integral_toReal_smul hDensity]
+85:       · apply integral_congr_ae
+86:         filter_upwards with sample
+87:         by_cases hmem : sample ∈ event
+88:         · simp only [Set.indicator_of_mem hmem]
+89:           rw [ENNReal.toReal_ofReal (Real.exp_pos _).le]
+90:           simp [smul_eq_mul]
+91:         · simp [Set.indicator_of_notMem hmem]
+92:       · exact Filter.Eventually.of_forall fun sample => by simp [density]
+93:     _ = ∫ sample, event.indicator (fun _ => (1 : Real)) sample ∂shifted := by
+94:       rw [← hMeasure]
+95:     _ = shifted.real event := by
+96:       rw [integral_indicator hEvent]
+97:       simp [Measure.real]
+98: 
+99: /-- First exact truncated exponential moment. -/
+100: theorem integral_gaussianLikelihoodTilt_Iic
+101:     (tilt threshold : Real) :
+102:     (∫ sample in Iic threshold,
+103:       Real.exp (tilt * sample - tilt ^ 2 / 2)
+104:       ∂gaussianReal 0 (1 : NNReal)) =
+105:       stdNormalCDFReal (threshold - tilt) := by
+106:   rw [integral_gaussianLikelihoodTilt_Iic_eq_shiftedGaussian]
+107:   have hMeasure := gaussianReal_apply_Iic_eq_stdNormalMeasure_affine
+108:     tilt 1 threshold (by norm_num)
+109:   have hReal := congrArg ENNReal.toReal hMeasure
+110:   have hv : (⟨(1 : Real) ^ 2, sq_nonneg 1⟩ : NNReal) = 1 := by
+111:     exact Subtype.ext (by norm_num)
+112:   rw [hv] at hReal
+113:   norm_num at hReal
+114:   rw [stdNormalCDFReal_eq_real_measure_Iic]
+115:   change ((gaussianReal tilt (1 : NNReal)) (Iic threshold)).toReal =
+116:     (stdNormalMeasure (Iic (threshold - tilt))).toReal
+117:   exact hReal
+118: 
+119: theorem gaussianLikelihoodTiltSquare_reduction
+120:     (tilt sample : Real) :
+121:     Real.exp (2 * tilt * sample - tilt ^ 2) =
+122:       Real.exp (tilt ^ 2) *
+123:         Real.exp ((2 * tilt) * sample - (2 * tilt) ^ 2 / 2) := by
+124:   rw [← Real.exp_add]
+125:   congr 1
+126:   ring
+127: 
+128: theorem integrable_gaussianLikelihoodTiltSquare (tilt : Real) :
+129:     Integrable (fun sample : Real =>
+130:       Real.exp (2 * tilt * sample - tilt ^ 2))
+131:       (gaussianReal 0 (1 : NNReal)) := by
+132:   rw [show (fun sample : Real => Real.exp (2 * tilt * sample - tilt ^ 2)) =
+133:       fun sample => Real.exp (tilt ^ 2) *
+134:         Real.exp ((2 * tilt) * sample - (2 * tilt) ^ 2 / 2) by
+135:     funext sample
+136:     exact gaussianLikelihoodTiltSquare_reduction tilt sample]
+137:   exact (integrable_gaussianLikelihoodTilt (2 * tilt)).const_mul _
+138: 
+139: theorem integrableOn_gaussianLikelihoodTiltSquare_Iic
+140:     (tilt threshold : Real) :
+141:     IntegrableOn (fun sample : Real =>
+142:       Real.exp (2 * tilt * sample - tilt ^ 2))
+143:       (Iic threshold) (gaussianReal 0 (1 : NNReal)) :=
+144:   (integrable_gaussianLikelihoodTiltSquare tilt).integrableOn
+145: 
+146: /-- Second exact truncated exponential moment. -/
+147: theorem integral_gaussianLikelihoodTiltSquare_Iic
+148:     (tilt threshold : Real) :
+149:     (∫ sample in Iic threshold,
+150:       Real.exp (2 * tilt * sample - tilt ^ 2)
+151:       ∂gaussianReal 0 (1 : NNReal)) =
+152:       Real.exp (tilt ^ 2) * stdNormalCDFReal (threshold - 2 * tilt) := by
+153:   rw [show (fun sample : Real => Real.exp (2 * tilt * sample - tilt ^ 2)) =
+154:       fun sample => Real.exp (tilt ^ 2) *
+155:         Real.exp ((2 * tilt) * sample - (2 * tilt) ^ 2 / 2) by
+156:     funext sample
+157:     exact gaussianLikelihoodTiltSquare_reduction tilt sample]
+158:   rw [integral_const_mul]
+159:   rw [integral_gaussianLikelihoodTilt_Iic]
+160: 
+161: end
+162: 
+163: end Mf.DP
+
+
+EXIT: 0

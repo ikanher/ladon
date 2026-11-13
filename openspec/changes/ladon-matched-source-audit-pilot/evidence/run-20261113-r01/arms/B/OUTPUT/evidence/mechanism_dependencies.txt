@@ -1,0 +1,332 @@
+$ python3 -c 'from pathlib import Path; parts={"capsule/lean/Mf/Probability/FiniteGaussianDensity.lean":(418,446),"capsule/lean/Mf/DP/EuclideanVectorClipping.lean":(1,111),"capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean":(20,50),"capsule/lean/Mf/DP/Training/Common/DatasetAdjacency.lean":(1,160),"capsule/lean/Mf/DP/SparseGaussianProductLikelihoodRatio.lean":(137,211)}; [(print("FILE:",n),print("".join(f"{i}: {s}" for i,s in enumerate(Path(n).open(),1) if a<=i<=b))) for n,(a,b) in parts.items()]'
+CWD: /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/INPUT
+FILE: capsule/lean/Mf/Probability/FiniteGaussianDensity.lean
+418:       (density_centered_ratio_ge_iff (d := d) (y := y) (σ := σ) (ε := ε)).2 h
+419:     linarith
+420: 
+421: def densityENN
+422:     {n : ℕ} (σ : ℝ) (μ y : Vector n) : ENNReal :=
+423:   ENNReal.ofReal (density σ μ y)
+424: 
+425: def measure
+426:     {n : ℕ} (σ : ℝ) (μ : Vector n) :
+427:     MeasureTheory.Measure (Vector n) :=
+428:   FiniteProductGaussian.law μ (fun _ => σ)
+429: 
+430: /-- The isotropic law is exactly its coordinate Gaussian product at every real scale. -/
+431: theorem measure_eq_pi {n : ℕ} (σ : ℝ) (μ : Vector n) :
+432:     measure σ μ = MeasureTheory.Measure.pi (fun i =>
+433:       ProbabilityTheory.gaussianReal (μ i) (variance σ)) := rfl
+434: 
+435: lemma variance_ne_zero (σ : ℝ) (hσ : σ ≠ 0) :
+436:     variance σ ≠ 0 := by
+437:   intro h
+438:   apply hσ
+439:   have h' : (σ ^ 2 : ℝ) = 0 := by
+440:     exact congrArg (fun t : NNReal => (t : ℝ)) h
+441:   nlinarith
+442: 
+443: theorem measure_eq_pi_withDensity
+444:     {n : ℕ} (σ : ℝ) (μ : Vector n) (hσ : σ ≠ 0) :
+445:     measure σ μ
+446:       = MeasureTheory.Measure.pi (fun i : Fin n =>
+
+FILE: capsule/lean/Mf/DP/EuclideanVectorClipping.lean
+1: import Mf.DP.VectorClipping
+2: import Mathlib.Analysis.InnerProductSpace.PiL2
+3: 
+4: namespace Mf
+5: namespace DP
+6: 
+7: noncomputable section
+8: 
+9: open scoped BigOperators ENNReal
+10: 
+11: /-!
+12: # Explicit finite-coordinate Euclidean clipping
+13: 
+14: Raw function spaces carry Mathlib's Pi sup norm.  This module defines the
+15: privacy-facing `L2` norm through `EuclideanSpace` and never relies on that
+16: ambient Pi norm for clipping or sensitivity.
+17: -/
+18: 
+19: /-- Canonical Euclidean representation of a finite real coordinate vector. -/
+20: def toEuclidean {ι : Type*} [Fintype ι] (x : ι → ℝ) :
+21:     EuclideanSpace ℝ ι :=
+22:   WithLp.toLp 2 x
+23: 
+24: /-- Explicit Euclidean `L2` norm on a raw finite coordinate function. -/
+25: def l2Norm {ι : Type*} [Fintype ι] (x : ι → ℝ) : ℝ :=
+26:   ‖toEuclidean x‖
+27: 
+28: @[simp] theorem l2Norm_zero {ι : Type*} [Fintype ι] :
+29:     l2Norm (0 : ι → ℝ) = 0 := by
+30:   simp [l2Norm, toEuclidean]
+31: 
+32: theorem l2Norm_nonneg {ι : Type*} [Fintype ι] (x : ι → ℝ) :
+33:     0 ≤ l2Norm x :=
+34:   norm_nonneg _
+35: 
+36: theorem l2Norm_eq_zero {ι : Type*} [Fintype ι] (x : ι → ℝ) :
+37:     l2Norm x = 0 ↔ x = 0 := by
+38:   simp [l2Norm, toEuclidean]
+39: 
+40: @[simp] theorem l2Norm_neg {ι : Type*} [Fintype ι] (x : ι → ℝ) :
+41:     l2Norm (-x) = l2Norm x := by
+42:   simp [l2Norm, toEuclidean]
+43: 
+44: theorem l2Norm_smul {ι : Type*} [Fintype ι] (a : ℝ) (x : ι → ℝ) :
+45:     l2Norm (a • x) = |a| * l2Norm x := by
+46:   simp [l2Norm, toEuclidean, norm_smul, Real.norm_eq_abs]
+47: 
+48: theorem l2Norm_add_le {ι : Type*} [Fintype ι] (x y : ι → ℝ) :
+49:     l2Norm (x + y) ≤ l2Norm x + l2Norm y := by
+50:   simpa [l2Norm, toEuclidean] using
+51:     (norm_add_le (toEuclidean x) (toEuclidean y))
+52: 
+53: /-- Sum-of-squares formula for the explicit Euclidean norm. -/
+54: theorem l2Norm_sq {ι : Type*} [Fintype ι] (x : ι → ℝ) :
+55:     l2Norm x ^ 2 = ∑ i, x i ^ 2 := by
+56:   simpa [l2Norm, toEuclidean] using
+57:     (EuclideanSpace.real_norm_sq_eq (toEuclidean x))
+58: 
+59: theorem measurable_toEuclidean {ι : Type*} [Fintype ι] :
+60:     Measurable (toEuclidean : (ι → ℝ) → EuclideanSpace ℝ ι) :=
+61:   (MeasurableEquiv.toLp 2 (ι → ℝ)).measurable
+62: 
+63: theorem measurable_l2Norm {ι : Type*} [Fintype ι] :
+64:     Measurable (l2Norm : (ι → ℝ) → ℝ) :=
+65:   measurable_norm.comp measurable_toEuclidean
+66: 
+67: /-- Euclidean clipping on raw coordinates. -/
+68: def l2VectorClip {ι : Type*} [Fintype ι]
+69:     (C : ℝ) (x : ι → ℝ) : ι → ℝ :=
+70:   if l2Norm x ≤ C then x else (C / l2Norm x) • x
+71: 
+72: theorem measurable_l2VectorClip {ι : Type*} [Fintype ι] (C : ℝ) :
+73:     Measurable (l2VectorClip C : (ι → ℝ) → (ι → ℝ)) := by
+74:   have hs : MeasurableSet {x : ι → ℝ | l2Norm x ≤ C} :=
+75:     measurableSet_le measurable_l2Norm measurable_const
+76:   have hscaled : Measurable fun x : ι → ℝ => (C / l2Norm x) • x := by
+77:     refine measurable_pi_lambda _ fun i => ?_
+78:     exact (measurable_const.div measurable_l2Norm).mul (measurable_pi_apply i)
+79:   change Measurable
+80:     ({x : ι → ℝ | l2Norm x ≤ C}.piecewise id
+81:       (fun x => (C / l2Norm x) • x))
+82:   exact Measurable.piecewise hs measurable_id hscaled
+83: 
+84: @[simp] theorem l2VectorClip_zero {ι : Type*} [Fintype ι]
+85:     (C : ℝ) (hC : 0 ≤ C) :
+86:     l2VectorClip C (0 : ι → ℝ) = 0 := by
+87:   simp [l2VectorClip, hC]
+88: 
+89: @[simp] theorem l2VectorClip_neg {ι : Type*} [Fintype ι]
+90:     (C : ℝ) (x : ι → ℝ) :
+91:     l2VectorClip C (-x) = -l2VectorClip C x := by
+92:   unfold l2VectorClip
+93:   rw [l2Norm_neg]
+94:   split_ifs <;> simp [smul_neg]
+95: 
+96: theorem l2VectorClip_eq_self {ι : Type*} [Fintype ι]
+97:     (C : ℝ) (x : ι → ℝ) (hx : l2Norm x ≤ C) :
+98:     l2VectorClip C x = x := by
+99:   simp [l2VectorClip, hx]
+100: 
+101: theorem l2VectorClip_norm_le {ι : Type*} [Fintype ι]
+102:     (C : ℝ) (x : ι → ℝ) (hC : 0 ≤ C) :
+103:     l2Norm (l2VectorClip C x) ≤ C := by
+104:   by_cases h : l2Norm x ≤ C
+105:   · simpa [l2VectorClip, h]
+106:   · have hlt : C < l2Norm x := lt_of_not_ge h
+107:     have hxpos : 0 < l2Norm x := lt_of_le_of_lt hC hlt
+108:     rw [l2VectorClip, if_neg h, l2Norm_smul, abs_of_nonneg
+109:       (div_nonneg hC (l2Norm_nonneg x)), div_mul_cancel₀ C hxpos.ne']
+110: 
+111: /-- Finite sum of explicitly Euclidean-clipped contributions. -/
+
+FILE: capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean
+20: The first block below is mechanism semantics only.  Privacy composition is
+21: proved against these exact laws later in this module.
+22: -/
+23: 
+24: /-- A fixed ambient history stores the releases written before the current
+25: step.  Coordinates at or after the current step are ignored.  Using one ambient
+26: type avoids dependent measurable-space transports between successive finite
+27: prefixes. -/
+28: abbrev AdaptiveReleaseHistory (Release : Type*) := ℕ → Release
+29: 
+30: /-- Replace coordinate `step` of a release history. -/
+31: def writeRelease {Release : Type*} (step : ℕ)
+32:     (p : AdaptiveReleaseHistory Release × Release) :
+33:     AdaptiveReleaseHistory Release :=
+34:   fun i => if i = step then p.2 else p.1 i
+35: 
+36: theorem measurable_writeRelease
+37:     {Release : Type*} [MeasurableSpace Release] (step : ℕ) :
+38:     Measurable (writeRelease (Release := Release) step) := by
+39:   apply measurable_pi_lambda
+40:   intro i
+41:   by_cases h : i = step
+42:   · simpa [writeRelease, h] using
+43:       (measurable_snd : Measurable
+44:         (fun p : AdaptiveReleaseHistory Release × Release => p.2))
+45:   · have hfst : Measurable
+46:         (fun p : AdaptiveReleaseHistory Release × Release => p.1) :=
+47:       measurable_fst
+48:     simpa [writeRelease, h, Function.comp_def] using
+49:       (measurable_pi_apply i).comp hfst
+50: 
+
+FILE: capsule/lean/Mf/DP/Training/Common/DatasetAdjacency.lean
+1: import Mf.DP.VectorClipping
+2: 
+3: namespace Mf
+4: namespace DP
+5: namespace Training
+6: 
+7: /-- A user-level dataset is a finite set of user records. -/
+8: abbrev UserDataset (Record : Type*) [DecidableEq Record] := Finset Record
+9: 
+10: /-- Symmetric user add/remove adjacency used by the mathematical training mechanisms. -/
+11: def UserAddRemoveAdj
+12:     {Record : Type*} [DecidableEq Record] :
+13:     UserDataset Record → UserDataset Record → Prop :=
+14:   FinsetAddRemoveAdjacent
+15: 
+16: theorem userAddRemoveAdj_symm
+17:     {Record : Type*} [DecidableEq Record]
+18:     {left right : UserDataset Record}
+19:     (h : UserAddRemoveAdj left right) :
+20:     UserAddRemoveAdj right left :=
+21:   finsetAddRemoveAdjacent_symm h
+22: 
+23: /-- User replace-one adjacency through a shared dataset.  Distinct absent
+24: records are removed and added, so this relation excludes the diagonal. -/
+25: def UserReplaceOneAdj
+26:     {Record : Type*} [DecidableEq Record]
+27:     (left right : UserDataset Record) : Prop :=
+28:   ∃ common removed added,
+29:     removed ∉ common ∧
+30:     added ∉ common ∧
+31:     removed ≠ added ∧
+32:     left = insert removed common ∧
+33:     right = insert added common
+34: 
+35: theorem userReplaceOneAdj_symm
+36:     {Record : Type*} [DecidableEq Record]
+37:     {left right : UserDataset Record}
+38:     (h : UserReplaceOneAdj left right) :
+39:     UserReplaceOneAdj right left := by
+40:   rcases h with ⟨common, removed, added, hremoved, hadded, hne, hleft, hright⟩
+41:   exact ⟨common, added, removed, hadded, hremoved, hne.symm, hright, hleft⟩
+42: 
+43: theorem userReplaceOneAdj_card_eq
+44:     {Record : Type*} [DecidableEq Record]
+45:     {left right : UserDataset Record}
+46:     (h : UserReplaceOneAdj left right) :
+47:     left.card = right.card := by
+48:   rcases h with ⟨common, removed, added, hremoved, hadded, _, rfl, rfl⟩
+49:   simp [hremoved, hadded]
+50: 
+51: theorem userReplaceOneAdj_ne
+52:     {Record : Type*} [DecidableEq Record]
+53:     {left right : UserDataset Record}
+54:     (h : UserReplaceOneAdj left right) :
+55:     left ≠ right := by
+56:   rcases h with ⟨common, removed, added, hremoved, hadded, hne, rfl, rfl⟩
+57:   intro heq
+58:   have hmem : removed ∈ insert added common := by
+59:     rw [← heq]
+60:     simp
+61:   rcases Finset.mem_insert.mp hmem with heq' | hmem'
+62:   · exact hne heq'
+63:   · exact hremoved hmem'
+64: 
+65: /-- Every replacement is an ordered removal followed by an insertion through
+66: the common dataset supplied by the replacement witness. -/
+67: theorem userReplaceOneAdj_addRemove_hops
+68:     {Record : Type*} [DecidableEq Record]
+69:     {left right : UserDataset Record}
+70:     (h : UserReplaceOneAdj left right) :
+71:     ∃ middle,
+72:       UserAddRemoveAdj left middle ∧
+73:       UserAddRemoveAdj middle right := by
+74:   rcases h with ⟨common, removed, added, hremoved, hadded, _, hleft, hright⟩
+75:   refine ⟨common, ?_, ?_⟩
+76:   · exact Or.inr ⟨removed, hremoved, hleft⟩
+77:   · exact Or.inl ⟨added, hadded, hright⟩
+78: 
+79: end Training
+80: end DP
+81: end Mf
+
+FILE: capsule/lean/Mf/DP/SparseGaussianProductLikelihoodRatio.lean
+137: 
+138: /-- Apply direct positive scaling independently in each product coordinate. -/
+139: def positiveGaussianProductScaleEquiv
+140:     (horizon : Nat) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+141:     (Fin horizon → Real) ≃ᵐ (Fin horizon → Real) :=
+142:   MeasurableEquiv.piCongrRight (fun _ =>
+143:     positiveGaussianScaleEquiv noiseStddev hStddev)
+144: 
+145: /-- Coordinatewise scaling sends the reference product to the standard Gaussian product. -/
+146: theorem sampledGaussianReferenceProductLaw_map_positiveGaussianScale
+147:     (horizon : Nat) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+148:     Measure.map (positiveGaussianProductScaleEquiv horizon noiseStddev hStddev)
+149:         (sampledGaussianReferenceProductLaw horizon
+150:           (noiseStddev ^ 2) : Measure (Fin horizon → Real)) =
+151:       Measure.pi (fun _ : Fin horizon => gaussianReal 0 1) := by
+152:   change Measure.map
+153:       (fun sample coordinate => positiveGaussianScaleEquiv noiseStddev hStddev
+154:         (sample coordinate))
+155:       (Measure.pi fun _ : Fin horizon =>
+156:         (sampledGaussianOneStepReferenceLaw (noiseStddev ^ 2) : Measure Real)) = _
+157:   rw [Measure.pi_map_pi (hf := fun _ =>
+158:     (positiveGaussianScaleEquiv noiseStddev hStddev).measurable.aemeasurable)]
+159:   congr 1
+160:   funext coordinate
+161:   exact sampledGaussianOneStepReferenceLaw_map_positiveGaussianScale
+162:     noiseStddev hStddev
+163: 
+164: /-- Coordinatewise scaling sends the sampled source product to the direct mixture product. -/
+165: theorem sampledGaussianSourceProductLaw_map_positiveGaussianScale
+166:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+167:     (sensitivity : Real) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+168:     Measure.map (positiveGaussianProductScaleEquiv horizon noiseStddev hStddev)
+169:         (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+170:           (noiseStddev ^ 2) : Measure (Fin horizon → Real)) =
+171:       (sparseGaussianProductLaw horizon samplingRate hRate
+172:         (sensitivity / (noiseStddev : Real)) : Measure (Fin horizon → Real)) := by
+173:   change Measure.map
+174:       (fun sample coordinate => positiveGaussianScaleEquiv noiseStddev hStddev
+175:         (sample coordinate))
+176:       (Measure.pi fun _ : Fin horizon =>
+177:         (sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity
+178:           (noiseStddev ^ 2) : Measure Real)) = _
+179:   rw [Measure.pi_map_pi (hf := fun _ =>
+180:     (positiveGaussianScaleEquiv noiseStddev hStddev).measurable.aemeasurable)]
+181:   congr 1
+182:   funext coordinate
+183:   exact sampledGaussianOneStepSourceLaw_map_positiveGaussianScale samplingRate hRate
+184:     sensitivity noiseStddev hStddev
+185: 
+186: /-- The normalized sampled source product has the direct product likelihood density. -/
+187: theorem sampledGaussianSourceProductLaw_map_positiveGaussianScale_eq_withDensity
+188:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+189:     (sensitivity : Real) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+190:     Measure.map (positiveGaussianProductScaleEquiv horizon noiseStddev hStddev)
+191:         (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+192:           (noiseStddev ^ 2) : Measure (Fin horizon → Real)) =
+193:       (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)).withDensity
+194:         (fun sample => ENNReal.ofReal
+195:           (sparseGaussianProductLikelihoodRatio horizon samplingRate
+196:             (sensitivity / (noiseStddev : Real)) sample)) := by
+197:   rw [sampledGaussianSourceProductLaw_map_positiveGaussianScale]
+198:   exact sparseGaussianProductLaw_eq_withDensity horizon samplingRate hRate _
+199: 
+200: end
+201: 
+202: end Mf.DP
+
+
+EXIT: 0

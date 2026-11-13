@@ -1,0 +1,697 @@
+$ cat Mf/DP/SparseGaussianProductReverseBounds.lean; cat Mf/DP/FiniteProfileCoefficientDuality.lean; cat Mf/DP/SampledGaussianCalibrationThresholds.lean
+EXIT 0
+STDOUT
+import Mf.DP.FiniteProfileCoefficientDuality
+import Mf.DP.SparseGaussianProductForwardUpperBound
+
+/-!
+# Reverse sparse-Gaussian product profile bounds
+
+The direct mixture likelihood is bounded below by the probability that no
+coordinate participates.  This gives a simple finite reverse hockey-stick
+upper bound without any reciprocal-coefficient transport.
+-/
+
+open MeasureTheory ProbabilityTheory
+
+namespace Mf.DP
+
+noncomputable section
+
+set_option autoImplicit false
+
+def sparseGaussianProductReverseLikelihoodFloorUpperBound
+    (horizon : Nat) (samplingRate : NNReal) (epsilon : Real) : ENNReal :=
+  ENNReal.ofReal
+    (1 - Real.exp epsilon * (1 - (samplingRate : Real)) ^ horizon)
+
+def sparseGaussianProductReverseReciprocalUpperBound
+    (horizon : Nat) (samplingRate : NNReal)
+    (standardizedShift epsilon threshold : Real) : ENNReal :=
+  ENNReal.ofReal
+    (1 - Real.exp epsilon + Real.exp epsilon *
+      (sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBound horizon
+        samplingRate standardizedShift (-epsilon) threshold).toReal)
+
+def sparseGaussianProductReverseBestUpperBound
+    (horizon : Nat) (samplingRate : NNReal)
+    (standardizedShift epsilon threshold : Real) : ENNReal :=
+  min (sparseGaussianProductReverseReciprocalUpperBound horizon samplingRate
+      standardizedShift epsilon threshold)
+    (sparseGaussianProductReverseLikelihoodFloorUpperBound horizon samplingRate epsilon)
+
+/-- The reverse normalized product profile is controlled by the unsampled-mass
+likelihood floor. -/
+theorem sparseGaussianProductReverseProfile_le_likelihoodFloorUpperBound
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift epsilon : Real) :
+    eventHockeyStickProfile
+        (standardGaussianProductLaw horizon : Measure (Fin horizon → Real))
+        (sparseGaussianProductLaw horizon samplingRate hRate standardizedShift :
+          Measure (Fin horizon → Real)) epsilon ≤
+      sparseGaussianProductReverseLikelihoodFloorUpperBound horizon samplingRate epsilon := by
+  change eventHockeyStickProfile
+      (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1))
+      (Measure.pi (fun _ : Fin horizon =>
+        (sparseGaussianMixtureLaw samplingRate hRate standardizedShift : Measure Real)))
+      epsilon ≤ _
+  rw [sparseGaussianProductLaw_eq_withDensity horizon samplingRate hRate
+    standardizedShift]
+  let reference : ProbabilityMeasure (Fin horizon → Real) :=
+    ⟨Measure.pi (fun _ : Fin horizon => gaussianReal 0 1), by infer_instance⟩
+  have hreverse := eventHockeyStickProfile_withDensity_reverse reference
+    (sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real) standardizedShift)
+    (measurable_sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+      standardizedShift)
+    (fun sample => (sparseGaussianProductLikelihoodRatio_pos horizon samplingRate hRate
+      standardizedShift sample).le)
+    epsilon
+  have hreference : (reference : Measure (Fin horizon → Real)) =
+      Measure.pi (fun _ : Fin horizon => gaussianReal 0 1) := rfl
+  rw [hreference] at hreverse
+  rw [hreverse]
+  unfold sparseGaussianProductReverseLikelihoodFloorUpperBound
+  calc
+    (∫⁻ sample, ENNReal.ofReal
+        (1 - Real.exp epsilon *
+          sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+            standardizedShift sample)
+        ∂Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) ≤
+      ∫⁻ _sample : Fin horizon → Real, ENNReal.ofReal
+        (1 - Real.exp epsilon * (1 - (samplingRate : Real)) ^ horizon)
+        ∂Measure.pi (fun _ : Fin horizon => gaussianReal 0 1) := by
+      apply lintegral_mono
+      intro sample
+      apply ENNReal.ofReal_le_ofReal
+      have hfloor := sparseGaussianProductLikelihoodRatio_ge_floor horizon samplingRate hRate
+        standardizedShift sample
+      exact sub_le_sub_left
+        (mul_le_mul_of_nonneg_left hfloor (Real.exp_pos epsilon).le) 1
+    _ = ENNReal.ofReal
+        (1 - Real.exp epsilon * (1 - (samplingRate : Real)) ^ horizon) := by
+      simp
+
+/-- Reciprocal-coefficient reverse upper bound obtained from the forward bound
+through the safe real-valued duality theorem. -/
+theorem sparseGaussianProductReverseProfile_le_reciprocalUpperBound
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift epsilon threshold : Real) :
+    eventHockeyStickProfile
+        (standardGaussianProductLaw horizon : Measure (Fin horizon → Real))
+        (sparseGaussianProductLaw horizon samplingRate hRate standardizedShift :
+          Measure (Fin horizon → Real)) epsilon ≤
+      sparseGaussianProductReverseReciprocalUpperBound horizon samplingRate
+        standardizedShift epsilon threshold := by
+  change eventHockeyStickProfile
+      (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1))
+      (Measure.pi (fun _ : Fin horizon =>
+        (sparseGaussianMixtureLaw samplingRate hRate standardizedShift : Measure Real)))
+      epsilon ≤ _
+  rw [sparseGaussianProductLaw_eq_withDensity horizon samplingRate hRate
+    standardizedShift]
+  let reference : ProbabilityMeasure (Fin horizon → Real) :=
+    ⟨Measure.pi (fun _ : Fin horizon => gaussianReal 0 1), by infer_instance⟩
+  have hdual := eventHockeyStickProfile_withDensity_reverse_duality reference
+    (sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real) standardizedShift)
+    (measurable_sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+      standardizedShift)
+    (fun sample => (sparseGaussianProductLikelihoodRatio_pos horizon samplingRate hRate
+      standardizedShift sample).le)
+    (integrable_sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+      standardizedShift)
+    (integral_sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+      standardizedShift)
+    epsilon
+  have hreference : (reference : Measure (Fin horizon → Real)) =
+      Measure.pi (fun _ : Fin horizon => gaussianReal 0 1) := rfl
+  rw [hreference] at hdual
+  rw [hdual]
+  unfold sparseGaussianProductReverseReciprocalUpperBound
+  apply ENNReal.ofReal_le_ofReal
+  have hforwardBound :=
+    sparseGaussianProductForwardProfile_le_cappedRestrictedSecondMomentUpperBound
+      horizon samplingRate hRate standardizedShift (-epsilon) threshold
+  change eventHockeyStickProfile
+      (Measure.pi (fun _ : Fin horizon =>
+        (sparseGaussianMixtureLaw samplingRate hRate standardizedShift : Measure Real)))
+      (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) (-epsilon) ≤ _
+      at hforwardBound
+  rw [sparseGaussianProductLaw_eq_withDensity horizon samplingRate hRate
+    standardizedShift] at hforwardBound
+  have htoReal :
+      (eventHockeyStickProfile
+        ((Measure.pi fun _ : Fin horizon => gaussianReal 0 1).withDensity
+          fun sample => ENNReal.ofReal
+            (sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+              standardizedShift sample))
+        (Measure.pi fun _ : Fin horizon => gaussianReal 0 1) (-epsilon)).toReal ≤
+      (sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBound horizon
+        samplingRate standardizedShift (-epsilon) threshold).toReal := by
+    apply ENNReal.toReal_mono
+    · simp [sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBound]
+    · exact hforwardBound
+  nlinarith [mul_le_mul_of_nonneg_left htoReal (Real.exp_pos epsilon).le]
+
+/-- The selected reverse bound is the minimum of two independently verified
+upper bounds. -/
+theorem sparseGaussianProductReverseProfile_le_bestUpperBound
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift epsilon threshold : Real) :
+    eventHockeyStickProfile
+        (standardGaussianProductLaw horizon : Measure (Fin horizon → Real))
+        (sparseGaussianProductLaw horizon samplingRate hRate standardizedShift :
+          Measure (Fin horizon → Real)) epsilon ≤
+      sparseGaussianProductReverseBestUpperBound horizon samplingRate
+        standardizedShift epsilon threshold := by
+  apply le_min
+  · exact sparseGaussianProductReverseProfile_le_reciprocalUpperBound horizon
+      samplingRate hRate standardizedShift epsilon threshold
+  · exact sparseGaussianProductReverseProfile_le_likelihoodFloorUpperBound horizon
+      samplingRate hRate standardizedShift epsilon
+
+end
+
+end Mf.DP
+import Mf.DP.LikelihoodRatioHockeyStick
+
+/-!
+# Coefficient duality for density hockey-stick profiles
+
+The profile is represented in `ENNReal`, so the signed constant `1 - alpha`
+must be handled in a real-valued identity before re-embedding with
+`ENNReal.ofReal`.  Direct `ENNReal` subtraction would be incorrect when
+`alpha > 1`.
+-/
+
+open MeasureTheory Set
+
+namespace Mf.DP
+
+noncomputable section
+
+set_option autoImplicit false
+
+def realHockeyStickProfileWithDensity
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real) (coefficient : Real) : Real :=
+  ∫ sample, max (ratio sample - coefficient) 0 ∂(reference : Measure X)
+
+def realHockeyStickReverseProfileWithDensity
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real) (coefficient : Real) : Real :=
+  ∫ sample, max (1 - coefficient⁻¹ * ratio sample) 0 ∂(reference : Measure X)
+
+theorem realHockeyStickProfileWithDensity_nonneg
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real) (coefficient : Real) :
+    0 ≤ realHockeyStickProfileWithDensity reference ratio coefficient := by
+  unfold realHockeyStickProfileWithDensity
+  exact integral_nonneg fun sample => le_max_right _ _
+
+theorem realHockeyStickReverseProfileWithDensity_nonneg
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real) (coefficient : Real) :
+    0 ≤ realHockeyStickReverseProfileWithDensity reference ratio coefficient := by
+  unfold realHockeyStickReverseProfileWithDensity
+  exact integral_nonneg fun sample => le_max_right _ _
+
+theorem eventHockeyStickProfile_withDensity_forward_eq_ofReal_realProfile
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real)
+    (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+    (hRatioIntegrable : Integrable ratio (reference : Measure X))
+    (epsilon : Real) :
+    eventHockeyStickProfile
+        ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+        (reference : Measure X) epsilon =
+      ENNReal.ofReal
+        (realHockeyStickProfileWithDensity reference ratio (Real.exp epsilon)) := by
+  rw [eventHockeyStickProfile_withDensity_forward reference ratio hRatio
+    hRatioNonnegative epsilon]
+  change (∫⁻ sample, ENNReal.ofReal (ratio sample - Real.exp epsilon)
+      ∂(reference : Measure X)) =
+    ENNReal.ofReal (∫ sample, max (ratio sample - Real.exp epsilon) 0
+      ∂(reference : Measure X))
+  have hpositive : Integrable (fun sample => max (ratio sample - Real.exp epsilon) 0)
+      (reference : Measure X) :=
+    (hRatioIntegrable.sub (integrable_const _)).pos_part
+  rw [ofReal_integral_eq_lintegral_ofReal hpositive
+    (ae_of_all _ fun sample => le_max_right _ _)]
+  apply lintegral_congr
+  intro sample
+  rw [ENNReal.ofReal_max,
+    ENNReal.ofReal_sub (ratio sample) (Real.exp_pos epsilon).le]
+  simpa using (max_eq_left (bot_le : (0 : ENNReal) ≤ _)).symm
+
+theorem realHockeyStickProfileWithDensity_coefficient_duality
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real)
+    (hRatioIntegrable : Integrable ratio (reference : Measure X))
+    (hRatioIntegral : ∫ sample, ratio sample ∂(reference : Measure X) = 1)
+    {coefficient : Real} (hCoefficient : 0 < coefficient) :
+    realHockeyStickProfileWithDensity reference ratio coefficient =
+      1 - coefficient + coefficient *
+        realHockeyStickReverseProfileWithDensity reference ratio coefficient := by
+  let reverse : X → Real :=
+    fun sample => max (1 - coefficient⁻¹ * ratio sample) 0
+  have hreverse : Integrable reverse (reference : Measure X) :=
+    ((integrable_const 1).sub
+      (hRatioIntegrable.const_mul coefficient⁻¹)).pos_part
+  have hforward : Integrable (fun sample => max (ratio sample - coefficient) 0)
+      (reference : Measure X) :=
+    (hRatioIntegrable.sub (integrable_const _)).pos_part
+  have hpoint : ∀ sample, max (ratio sample - coefficient) 0 =
+      ratio sample - coefficient + coefficient * reverse sample := by
+    intro sample
+    dsimp [reverse]
+    by_cases hle : coefficient ≤ ratio sample
+    · rw [max_eq_left (sub_nonneg.mpr hle), max_eq_right]
+      · field_simp
+        ring
+      · have hscale : 1 ≤ coefficient⁻¹ * ratio sample := by
+          calc
+            1 = coefficient⁻¹ * coefficient := by field_simp
+            _ ≤ coefficient⁻¹ * ratio sample :=
+              mul_le_mul_of_nonneg_left hle (inv_nonneg.mpr hCoefficient.le)
+        exact sub_nonpos.mpr hscale
+    · rw [max_eq_right (sub_nonpos.mpr (le_of_not_ge hle))]
+      have hlt : ratio sample < coefficient := lt_of_not_ge hle
+      have hscaled : coefficient⁻¹ * ratio sample < 1 := by
+        rw [inv_mul_lt_iff₀ hCoefficient]
+        simpa using hlt
+      rw [max_eq_left (sub_nonneg.mpr hscaled.le)]
+      field_simp
+      ring
+  unfold realHockeyStickProfileWithDensity
+  unfold realHockeyStickReverseProfileWithDensity
+  calc
+    (∫ sample, max (ratio sample - coefficient) 0 ∂(reference : Measure X)) =
+        ∫ sample, ratio sample - coefficient + coefficient * reverse sample
+          ∂(reference : Measure X) :=
+      integral_congr_ae (ae_of_all _ hpoint)
+    _ = (∫ sample, ratio sample - coefficient ∂(reference : Measure X)) +
+        ∫ sample, coefficient * reverse sample ∂(reference : Measure X) :=
+      integral_add (hRatioIntegrable.sub (integrable_const coefficient))
+        (hreverse.const_mul coefficient)
+    _ = 1 - coefficient + coefficient *
+        ∫ sample, reverse sample ∂(reference : Measure X) := by
+      rw [integral_sub hRatioIntegrable (integrable_const _), integral_const,
+        integral_const_mul, hRatioIntegral]
+      simp [Measure.real, measure_univ]
+
+theorem eventHockeyStickProfile_withDensity_reverse_eq_ofReal_realProfile
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real)
+    (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+    (hRatioIntegrable : Integrable ratio (reference : Measure X))
+    {coefficient : Real} (hCoefficient : 0 < coefficient) :
+    eventHockeyStickProfile (reference : Measure X)
+        ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+        (-Real.log coefficient) =
+      ENNReal.ofReal
+        (realHockeyStickReverseProfileWithDensity reference ratio coefficient) := by
+  rw [eventHockeyStickProfile_withDensity_reverse reference ratio hRatio
+    hRatioNonnegative (-Real.log coefficient)]
+  have hexp : Real.exp (-Real.log coefficient) = coefficient⁻¹ := by
+    rw [Real.exp_neg, Real.exp_log hCoefficient]
+  rw [hexp]
+  let reverse : X → Real :=
+    fun sample => max (1 - coefficient⁻¹ * ratio sample) 0
+  have hreverse : Integrable reverse (reference : Measure X) :=
+    ((integrable_const 1).sub
+      (hRatioIntegrable.const_mul coefficient⁻¹)).pos_part
+  change (∫⁻ sample, ENNReal.ofReal (1 - coefficient⁻¹ * ratio sample)
+      ∂(reference : Measure X)) =
+    ENNReal.ofReal (∫ sample, reverse sample ∂(reference : Measure X))
+  rw [ofReal_integral_eq_lintegral_ofReal hreverse
+    (ae_of_all _ fun sample => le_max_right _ _)]
+  apply lintegral_congr
+  intro sample
+  rw [ENNReal.ofReal_max, ENNReal.ofReal_sub]
+  · simpa using (max_eq_left (bot_le : (0 : ENNReal) ≤ _)).symm
+  · exact mul_nonneg (inv_nonneg.mpr hCoefficient.le) (hRatioNonnegative sample)
+
+/-- Safe coefficient duality for an exact density profile. The signed constant
+is evaluated in `Real`, not by truncated `ENNReal` subtraction. -/
+theorem eventHockeyStickProfile_withDensity_coefficient_duality
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real)
+    (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+    (hRatioIntegrable : Integrable ratio (reference : Measure X))
+    (hRatioIntegral : ∫ sample, ratio sample ∂(reference : Measure X) = 1)
+    {coefficient : Real} (hCoefficient : 0 < coefficient) :
+    eventHockeyStickProfile
+        ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+        (reference : Measure X) (Real.log coefficient) =
+      ENNReal.ofReal
+        (1 - coefficient + coefficient *
+          (eventHockeyStickProfile (reference : Measure X)
+            ((reference : Measure X).withDensity
+              (fun sample => ENNReal.ofReal (ratio sample)))
+            (-Real.log coefficient)).toReal) := by
+  have hforward := eventHockeyStickProfile_withDensity_forward_eq_ofReal_realProfile
+    reference ratio hRatio hRatioNonnegative hRatioIntegrable (Real.log coefficient)
+  have hreverse := eventHockeyStickProfile_withDensity_reverse_eq_ofReal_realProfile
+    reference ratio hRatio hRatioNonnegative hRatioIntegrable hCoefficient
+  have hreal := realHockeyStickProfileWithDensity_coefficient_duality reference ratio
+    hRatioIntegrable hRatioIntegral hCoefficient
+  have hforward' :
+      eventHockeyStickProfile
+          ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+          (reference : Measure X) (Real.log coefficient) =
+        ENNReal.ofReal
+          (realHockeyStickProfileWithDensity reference ratio coefficient) := by
+    simpa [Real.exp_log hCoefficient] using hforward
+  rw [hforward', hreverse]
+  rw [ENNReal.toReal_ofReal
+    (realHockeyStickReverseProfileWithDensity_nonneg reference ratio coefficient)]
+  exact congrArg ENNReal.ofReal hreal
+
+/-- Epsilon-facing reverse duality. This is the form consumed by reciprocal
+forward upper bounds. -/
+theorem eventHockeyStickProfile_withDensity_reverse_duality
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real)
+    (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+    (hRatioIntegrable : Integrable ratio (reference : Measure X))
+    (hRatioIntegral : ∫ sample, ratio sample ∂(reference : Measure X) = 1)
+    (epsilon : Real) :
+    eventHockeyStickProfile (reference : Measure X)
+        ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+        epsilon =
+      ENNReal.ofReal
+        (1 - Real.exp epsilon + Real.exp epsilon *
+          (eventHockeyStickProfile
+            ((reference : Measure X).withDensity
+              (fun sample => ENNReal.ofReal (ratio sample)))
+            (reference : Measure X) (-epsilon)).toReal) := by
+  let reciprocalCoefficient : Real := Real.exp (-epsilon)
+  have hreciprocalPositive : 0 < reciprocalCoefficient := by
+    dsimp [reciprocalCoefficient]
+    positivity
+  have hreverse := eventHockeyStickProfile_withDensity_reverse_eq_ofReal_realProfile
+    reference ratio hRatio hRatioNonnegative hRatioIntegrable hreciprocalPositive
+  have hreverse' :
+      eventHockeyStickProfile (reference : Measure X)
+          ((reference : Measure X).withDensity
+            (fun sample => ENNReal.ofReal (ratio sample))) epsilon =
+        ENNReal.ofReal
+          (realHockeyStickReverseProfileWithDensity reference ratio
+            reciprocalCoefficient) := by
+    simpa [reciprocalCoefficient] using hreverse
+  have hforward := eventHockeyStickProfile_withDensity_forward_eq_ofReal_realProfile
+    reference ratio hRatio hRatioNonnegative hRatioIntegrable (-epsilon)
+  have hforward' :
+      eventHockeyStickProfile
+          ((reference : Measure X).withDensity
+            (fun sample => ENNReal.ofReal (ratio sample)))
+          (reference : Measure X) (-epsilon) =
+        ENNReal.ofReal
+          (realHockeyStickProfileWithDensity reference ratio reciprocalCoefficient) := by
+    simpa [reciprocalCoefficient] using hforward
+  have hreal := realHockeyStickProfileWithDensity_coefficient_duality reference ratio
+    hRatioIntegrable hRatioIntegral hreciprocalPositive
+  have hreciprocal : reciprocalCoefficient = (Real.exp epsilon)⁻¹ := by
+    simp [reciprocalCoefficient, Real.exp_neg]
+  have hsolve :
+      realHockeyStickReverseProfileWithDensity reference ratio reciprocalCoefficient =
+        1 - Real.exp epsilon + Real.exp epsilon *
+          realHockeyStickProfileWithDensity reference ratio reciprocalCoefficient := by
+    rw [hreciprocal] at hreal ⊢
+    have hexpNe : Real.exp epsilon ≠ 0 := ne_of_gt (Real.exp_pos epsilon)
+    field_simp [hexpNe] at hreal ⊢
+    linarith
+  rw [hreverse', hforward',
+    ENNReal.toReal_ofReal
+      (realHockeyStickProfileWithDensity_nonneg reference ratio reciprocalCoefficient)]
+  exact congrArg ENNReal.ofReal hsolve
+
+end
+
+end Mf.DP
+import Mf.DP.FullBatchGaussianAccounting
+import Mf.DP.SampledGaussianProductNoiseMonotonicity
+
+/-!
+# Threshold lemmas for sampled Gaussian calibration
+
+This module supplies the order-theoretic API for the calibrated standard-deviation
+infimum and the fixed-factor Gaussian comparison points used by the asymptotic
+bracketing argument.  It makes no sampled-profile continuity or attainment claim.
+-/
+
+open Set
+
+namespace Mf.DP
+
+noncomputable section
+
+/-- Exact profile of the matched Gaussian source against the unchanged reference. -/
+def matchedGaussianProductProfileStddev
+    (horizon : Nat) (samplingRate : NNReal) (sensitivity : Real)
+    (noiseStddev : NNReal) (epsilon : Real) : ENNReal :=
+  binaryAccountingProfile
+    (matchedGaussianSourceProductLaw horizon samplingRate sensitivity (noiseStddev ^ 2))
+    (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon
+
+/-- The matched product profile is the scalar Gaussian profile with signal `q Δ √T`. -/
+theorem matchedGaussianProductProfileStddev_eq_scalar
+    (horizon : Nat) (samplingRate : NNReal) (sensitivity : Real)
+    (noiseStddev : NNReal) (epsilon : Real)
+    (horizon_pos : 0 < horizon) (rate_pos : 0 < samplingRate)
+    (sensitivity_pos : 0 < sensitivity) (noise_pos : 0 < noiseStddev) :
+    matchedGaussianProductProfileStddev horizon samplingRate sensitivity
+        noiseStddev epsilon =
+      ENNReal.ofReal (Training.scalarGaussianSigmaProfile
+        ((samplingRate : Real) * fullBatchGaussianSignal horizon sensitivity)
+        epsilon noiseStddev) := by
+  unfold matchedGaussianProductProfileStddev matchedGaussianSourceProductLaw
+    matchedGaussianOneStepSourceLaw sampledGaussianReferenceProductLaw
+  change binaryAccountingProfile
+      ⟨bsrGaussianMeasure (noiseStddev : Real)
+        (fun _ : Fin horizon => (samplingRate : Real) * sensitivity), by infer_instance⟩
+      ⟨bsrGaussianMeasure (noiseStddev : Real)
+        (fun _ : Fin horizon => 0), by infer_instance⟩ epsilon = _
+  rw [bsrConstantGaussianBinaryProfile_eq_scalar horizon
+    ((samplingRate : Real) * sensitivity) noiseStddev epsilon horizon_pos
+    (mul_pos (by exact_mod_cast rate_pos) sensitivity_pos) (by exact_mod_cast noise_pos)]
+  simp only [fullBatchGaussianSignal]
+  ring_nf
+
+/-- Feasible standard deviations remain feasible when the noise is increased. -/
+theorem sampledGaussianFeasibleStddevSet_upward_closed
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon delta : Real) {small large : NNReal}
+    (hsmall : small ∈ sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+      sensitivity epsilon delta) (hStddev : small ≤ large) :
+    large ∈ sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+      sensitivity epsilon delta := by
+  exact (sampledGaussianProductProfileStddev_antitone horizon samplingRate hRate
+    sensitivity epsilon hStddev).trans hsmall
+
+/-- Every feasible candidate is an upper bound on the calibrated infimum. -/
+theorem sampledGaussianCalibratedStddev_le_of_feasible
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon delta : Real) (candidate : NNReal)
+    (hCandidate : candidate ∈ sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+      sensitivity epsilon delta) :
+    sampledGaussianCalibratedStddev horizon samplingRate hRate sensitivity epsilon delta ≤
+      candidate := by
+  apply csInf_le
+  · exact ⟨0, fun _ _ => bot_le⟩
+  · exact hCandidate
+
+/-- An infeasible candidate lies below the calibrated infimum once feasibility is nonempty. -/
+theorem le_sampledGaussianCalibratedStddev_of_not_feasible
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon delta : Real) (candidate : NNReal)
+    (hNonempty : (sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+      sensitivity epsilon delta).Nonempty)
+    (hCandidate : candidate ∉ sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+      sensitivity epsilon delta) :
+    candidate ≤ sampledGaussianCalibratedStddev horizon samplingRate hRate
+      sensitivity epsilon delta := by
+  unfold sampledGaussianCalibratedStddev
+  apply le_csInf hNonempty
+  intro feasible hFeasible
+  by_contra hnot
+  have hlt : feasible < candidate := lt_of_not_ge hnot
+  exact hCandidate (sampledGaussianFeasibleStddevSet_upward_closed horizon samplingRate hRate
+    sensitivity epsilon delta hFeasible hlt.le)
+
+/-- Lower fixed-factor candidate `(1-η) q g_T`, in standard-deviation units. -/
+def sampledGaussianLowerCalibrationCandidate
+    (horizon : Nat) (samplingRate eta : NNReal)
+    (sensitivity epsilon delta : Real)
+    (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon)
+    (delta_pos : 0 < delta) (delta_lt_one : delta < 1) : NNReal :=
+  (1 - eta) * samplingRate *
+    fullBatchGaussianCalibratedStddev horizon sensitivity epsilon delta
+      sensitivity_pos epsilon_nonneg delta_pos delta_lt_one
+
+/-- Upper fixed-factor candidate `(1+η) q g_T`, in standard-deviation units. -/
+def sampledGaussianUpperCalibrationCandidate
+    (horizon : Nat) (samplingRate eta : NNReal)
+    (sensitivity epsilon delta : Real)
+    (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon)
+    (delta_pos : 0 < delta) (delta_lt_one : delta < 1) : NNReal :=
+  (1 + eta) * samplingRate *
+    fullBatchGaussianCalibratedStddev horizon sensitivity epsilon delta
+      sensitivity_pos epsilon_nonneg delta_pos delta_lt_one
+
+/-- Reducing a positive calibrated Gaussian scale by a factor `1-η` creates a fixed gap
+above the target profile. -/
+theorem scalarGaussianProfile_lowerCandidate_strictGap
+    {signal epsilon delta eta kappa : Real}
+    (signal_pos : 0 < signal) (eta_pos : 0 < eta) (eta_lt_one : eta < 1)
+    (kappa_pos : 0 < kappa)
+    (kappa_spec : Training.scalarGaussianSigmaProfile signal epsilon kappa = delta) :
+    delta < Training.scalarGaussianSigmaProfile signal epsilon ((1 - eta) * kappa) := by
+  have hScaled : 0 < (1 - eta) * kappa := mul_pos (sub_pos.mpr eta_lt_one) kappa_pos
+  have hLess : (1 - eta) * kappa < kappa := by nlinarith
+  have hStrict := Training.strictAntiOn_scalarGaussianSigmaProfile_pos
+    signal_pos epsilon hScaled kappa_pos hLess
+  simpa [kappa_spec] using hStrict
+
+/-- Increasing a positive calibrated Gaussian scale by a factor `1+η` creates a fixed gap
+below the target profile. -/
+theorem scalarGaussianProfile_upperCandidate_strictGap
+    {signal epsilon delta eta kappa : Real}
+    (signal_pos : 0 < signal) (eta_pos : 0 < eta) (kappa_pos : 0 < kappa)
+    (kappa_spec : Training.scalarGaussianSigmaProfile signal epsilon kappa = delta) :
+    Training.scalarGaussianSigmaProfile signal epsilon ((1 + eta) * kappa) < delta := by
+  have hScaled : 0 < (1 + eta) * kappa := mul_pos (by linarith) kappa_pos
+  have hLess : kappa < (1 + eta) * kappa := by nlinarith
+  have hStrict := Training.strictAntiOn_scalarGaussianSigmaProfile_pos
+    signal_pos epsilon kappa_pos hScaled hLess
+  simpa [kappa_spec] using hStrict
+
+/-- The lower matched-Gaussian candidate has a horizon-independent scalar profile. -/
+theorem matchedGaussianProductProfile_lowerCandidate_eq_fixed
+    (horizon : Nat) (samplingRate eta : NNReal)
+    (sensitivity epsilon delta : Real)
+    (horizon_pos : 0 < horizon) (rate_pos : 0 < samplingRate)
+    (eta_lt_one : eta < 1) (sensitivity_pos : 0 < sensitivity)
+    (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta)
+    (delta_lt_one : delta < 1) :
+    matchedGaussianProductProfileStddev horizon samplingRate sensitivity
+        (sampledGaussianLowerCalibrationCandidate horizon samplingRate eta
+          sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one)
+        epsilon =
+      ENNReal.ofReal (Training.scalarGaussianSigmaProfile sensitivity epsilon
+        ((1 - (eta : Real)) * fullBatchGaussianBaseStddev sensitivity epsilon delta
+          sensitivity_pos epsilon_nonneg delta_pos delta_lt_one)) := by
+  let base := fullBatchGaussianBaseStddev sensitivity epsilon delta sensitivity_pos
+    epsilon_nonneg delta_pos delta_lt_one
+  have hbase : 0 < base :=
+    (Training.scalarGaussianOptimalSigma_spec sensitivity_pos epsilon_nonneg
+      delta_pos delta_lt_one).1
+  have hsqrt : 0 < Real.sqrt (horizon : Real) :=
+    Real.sqrt_pos.2 (by exact_mod_cast horizon_pos)
+  have hetaReal : (eta : Real) < 1 := by exact_mod_cast eta_lt_one
+  have hnoise : 0 < sampledGaussianLowerCalibrationCandidate horizon samplingRate eta
+      sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one := by
+    apply mul_pos
+    · exact mul_pos (tsub_pos_iff_lt.mpr eta_lt_one) rate_pos
+    · exact_mod_cast mul_pos hbase hsqrt
+  rw [matchedGaussianProductProfileStddev_eq_scalar horizon samplingRate sensitivity _
+    epsilon horizon_pos rate_pos sensitivity_pos hnoise]
+  apply congrArg ENNReal.ofReal
+  unfold Training.scalarGaussianSigmaProfile
+  apply congrArg (fun ratio => gdpProfile ratio epsilon)
+  simp only [sampledGaussianLowerCalibrationCandidate,
+    fullBatchGaussianCalibratedStddev_coe, NNReal.coe_mul,
+    NNReal.coe_sub eta_lt_one.le]
+  simp only [fullBatchGaussianSignal]
+  field_simp [ne_of_gt (by exact_mod_cast rate_pos : (0 : Real) < samplingRate),
+    ne_of_gt hsqrt, ne_of_gt hbase, ne_of_gt (sub_pos.mpr hetaReal)]
+  <;> norm_num <;> ring
+
+/-- The upper matched-Gaussian candidate has a horizon-independent scalar profile. -/
+theorem matchedGaussianProductProfile_upperCandidate_eq_fixed
+    (horizon : Nat) (samplingRate eta : NNReal)
+    (sensitivity epsilon delta : Real)
+    (horizon_pos : 0 < horizon) (rate_pos : 0 < samplingRate)
+    (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon)
+    (delta_pos : 0 < delta) (delta_lt_one : delta < 1) :
+    matchedGaussianProductProfileStddev horizon samplingRate sensitivity
+        (sampledGaussianUpperCalibrationCandidate horizon samplingRate eta
+          sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one)
+        epsilon =
+      ENNReal.ofReal (Training.scalarGaussianSigmaProfile sensitivity epsilon
+        ((1 + (eta : Real)) * fullBatchGaussianBaseStddev sensitivity epsilon delta
+          sensitivity_pos epsilon_nonneg delta_pos delta_lt_one)) := by
+  let base := fullBatchGaussianBaseStddev sensitivity epsilon delta sensitivity_pos
+    epsilon_nonneg delta_pos delta_lt_one
+  have hbase : 0 < base :=
+    (Training.scalarGaussianOptimalSigma_spec sensitivity_pos epsilon_nonneg
+      delta_pos delta_lt_one).1
+  have hsqrt : 0 < Real.sqrt (horizon : Real) :=
+    Real.sqrt_pos.2 (by exact_mod_cast horizon_pos)
+  have hnoise : 0 < sampledGaussianUpperCalibrationCandidate horizon samplingRate eta
+      sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one := by
+    apply mul_pos
+    · exact mul_pos (by positivity) rate_pos
+    · exact_mod_cast mul_pos hbase hsqrt
+  rw [matchedGaussianProductProfileStddev_eq_scalar horizon samplingRate sensitivity _
+    epsilon horizon_pos rate_pos sensitivity_pos hnoise]
+  apply congrArg ENNReal.ofReal
+  unfold Training.scalarGaussianSigmaProfile
+  apply congrArg (fun ratio => gdpProfile ratio epsilon)
+  simp only [sampledGaussianUpperCalibrationCandidate,
+    fullBatchGaussianCalibratedStddev_coe, NNReal.coe_mul, NNReal.coe_add]
+  simp only [fullBatchGaussianSignal]
+  field_simp [ne_of_gt (by exact_mod_cast rate_pos : (0 : Real) < samplingRate),
+    ne_of_gt hsqrt, ne_of_gt hbase]
+  <;> norm_num
+
+/-- The lower matched candidate is separated from the target by a strict fixed gap. -/
+theorem matchedGaussianProductProfile_lowerCandidate_gt_delta
+    (horizon : Nat) (samplingRate eta : NNReal)
+    (sensitivity epsilon delta : Real)
+    (horizon_pos : 0 < horizon) (rate_pos : 0 < samplingRate)
+    (eta_pos : 0 < eta) (eta_lt_one : eta < 1)
+    (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon)
+    (delta_pos : 0 < delta) (delta_lt_one : delta < 1) :
+    ENNReal.ofReal delta <
+      matchedGaussianProductProfileStddev horizon samplingRate sensitivity
+        (sampledGaussianLowerCalibrationCandidate horizon samplingRate eta
+          sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one)
+        epsilon := by
+  rw [matchedGaussianProductProfile_lowerCandidate_eq_fixed horizon samplingRate eta
+    sensitivity epsilon delta horizon_pos rate_pos eta_lt_one sensitivity_pos
+    epsilon_nonneg delta_pos delta_lt_one]
+  let base := fullBatchGaussianBaseStddev sensitivity epsilon delta sensitivity_pos
+    epsilon_nonneg delta_pos delta_lt_one
+  have hspec := Training.scalarGaussianOptimalSigma_spec sensitivity_pos epsilon_nonneg
+    delta_pos delta_lt_one
+  have hgap := scalarGaussianProfile_lowerCandidate_strictGap sensitivity_pos
+    (by exact_mod_cast eta_pos) (by exact_mod_cast eta_lt_one) hspec.1 hspec.2
+  exact (ENNReal.ofReal_lt_ofReal_iff (delta_pos.trans hgap)).2 hgap
+
+/-- The upper matched candidate is separated from the target by a strict fixed gap. -/
+theorem matchedGaussianProductProfile_upperCandidate_lt_delta
+    (horizon : Nat) (samplingRate eta : NNReal)
+    (sensitivity epsilon delta : Real)
+    (horizon_pos : 0 < horizon) (rate_pos : 0 < samplingRate)
+    (eta_pos : 0 < eta) (sensitivity_pos : 0 < sensitivity)
+    (epsilon_nonneg : 0 ≤ epsilon) (delta_pos : 0 < delta)
+    (delta_lt_one : delta < 1) :
+    matchedGaussianProductProfileStddev horizon samplingRate sensitivity
+        (sampledGaussianUpperCalibrationCandidate horizon samplingRate eta
+          sensitivity epsilon delta sensitivity_pos epsilon_nonneg delta_pos delta_lt_one)
+        epsilon < ENNReal.ofReal delta := by
+  rw [matchedGaussianProductProfile_upperCandidate_eq_fixed horizon samplingRate eta
+    sensitivity epsilon delta horizon_pos rate_pos sensitivity_pos epsilon_nonneg
+    delta_pos delta_lt_one]
+  have hspec := Training.scalarGaussianOptimalSigma_spec sensitivity_pos epsilon_nonneg
+    delta_pos delta_lt_one
+  have hgap := scalarGaussianProfile_upperCandidate_strictGap sensitivity_pos
+    (by exact_mod_cast eta_pos) hspec.1 hspec.2
+  exact (ENNReal.ofReal_lt_ofReal_iff delta_pos).2 hgap
+
+end
+
+end Mf.DP
+
+STDERR

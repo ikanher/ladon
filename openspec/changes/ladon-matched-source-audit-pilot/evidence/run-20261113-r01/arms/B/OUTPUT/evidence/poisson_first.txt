@@ -1,0 +1,263 @@
+$ sed -n 1,259p capsule/sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex
+CWD: /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/INPUT
+\documentclass[11pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[margin=0.95in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,calc,positioning}
+\usepackage[colorlinks=true,linkcolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{0.45em}
+\setlength{\parindent}{0pt}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb R}
+\newcommand{\N}{\mathbb N}
+\newcommand{\E}{\mathbb E}
+\newcommand{\Prob}{\mathbb P}
+\newcommand{\Normal}{\mathcal N}
+\newcommand{\Profile}{\Pi_{\varepsilon}}
+\newcommand{\pos}[1]{\left[#1\right]_{+}}
+
+\title{Finite Noise Certification for Poisson-Sampled Gaussian Products}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We prove finite lower and upper bounds for the exact two-sided privacy
+profile of a product of independent Poisson-sampled Gaussian releases.  The
+lower bound evaluates one maximum-coordinate event.  The upper bound separates
+the same product space into a below-threshold box and its complement.  The
+box contribution is controlled by exact first and second moments of the
+likelihood ratio, while the complement is charged by its source probability.
+The reverse privacy direction follows from an exact likelihood identity and
+a pointwise likelihood floor.  Every threshold is supplied rather than
+optimized, so the result is finite, explicit, and directly suitable for
+certified numerical evaluation.  A strict lower certificate and a non-strict
+upper certificate then enclose the minimally calibrated noise standard
+deviation.  The result turns a high-dimensional privacy calculation into a
+finite collection of one-dimensional Gaussian evaluations while keeping both
+privacy directions explicit.
+\end{abstract}
+
+\section{Why a finite bracket is useful}
+
+Noise calibration asks a concrete question: for fixed
+$(T,q,\Delta,\varepsilon,\delta)$, how large must the Gaussian standard
+deviation be?  The exact answer is defined by a privacy profile on
+$\R^T$.  Ordinary floating-point accountant outputs approximate this
+profile, while asymptotic formulas describe its limiting scale; without a
+directed error analysis, neither alone certifies that one particular finite
+noise level is sufficient or insufficient.  Rigorous FFT and saddle-point
+accountants show that such error control is possible
+\cite{KoskelaEtAl2021,AlghamdiEtAl2023}.  Our aim here is a simpler finite
+certificate built from supplied thresholds and one-dimensional Gaussian
+quantities.
+
+The bounds below provide precisely those two certificates.  A lower witness
+larger than $\delta$ proves that a candidate standard deviation is too small.
+An upper bound no larger than $\delta$ proves that another candidate is large
+enough.  Together they enclose the minimum calibrated noise:
+\[
+  \boxed{
+  \begin{array}{c}
+    \text{lower profile certificate}>\delta
+      \quad\Longrightarrow\quad
+      \text{candidate noise is insufficient},\\[1mm]
+    \text{upper profile certificate}\leq\delta
+      \quad\Longrightarrow\quad
+      \text{candidate noise is sufficient}.
+  \end{array}}
+\]
+
+Both certificates come from one geometric split.  For a threshold $a$, let
+\[
+  B_a=\{x:x_i\leq a\text{ for every }i\},
+  \qquad
+  A_a=B_a^c=\{x:\max_i x_i>a\}.
+\]
+The rare-event region $A_a$ supplies the lower witness.  For the upper bound,
+the same region is charged by its exact source probability, while the
+complementary box $B_a$ is controlled by exact likelihood moments.  Figure
+\ref{fig:box-split} summarizes the split.
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  region/.style={draw=black!65, minimum height=1.55cm, align=center},
+  note/.style={align=center, text width=4.7cm},
+  flow/.style={-{Latex[length=2mm]}, thick, draw=black!65}
+]
+  \node[region, fill=blue!9, minimum width=7.2cm] (box)
+    {\textbf{Below-threshold box $B_a$}\\every coordinate is at most $a$};
+  \node[region, fill=red!9, minimum width=4.3cm, right=0pt of box] (event)
+    {\textbf{Complement $A_a$}\\at least one coordinate exceeds $a$};
+  \node[note, below=0.72cm of box] (moments)
+    {exact first and second\\likelihood moments};
+  \node[note, below=0.72cm of event] (witness)
+    {exact event probabilities\\under $P$ and $Q$};
+  \draw[flow] (box.south) -- (moments.north);
+  \draw[flow] (event.south) -- (witness.north);
+  \node[draw=black!55, fill=gray!5, rounded corners=2pt, align=center,
+    text width=11cm, below=0.65cm of $(moments.south)!0.5!(witness.south)$] (result)
+    {\textbf{Lower:} evaluate $A_a$ alone.\qquad
+     \textbf{Upper:} add source mass on $A_a$ to moment control on $B_a$.};
+  \draw[flow] (moments.south) -- (result.north west);
+  \draw[flow] (witness.south) -- (result.north east);
+\end{tikzpicture}
+\caption{The common partition behind both sides of the finite bracket.  The
+lower bound uses the complement event as a witness; the upper bound controls
+both parts of the partition.}
+\label{fig:box-split}
+\end{figure}
+
+This is the central idea of the theorem.  Threshold search may be performed
+externally, but correctness of the resulting bracket depends only on the
+finite formulas proved below.
+
+\section{Setup and main result}
+
+Fix a horizon $T\in\N$, a sampling rate $q\in[0,1]$, a shift
+$\Delta\in\R$, a profile parameter $\varepsilon\in\R$, and a noise standard
+deviation $\sigma>0$.  The algebraic bracket is valid for every real
+$\varepsilon$; the privacy-calibration corollary later assumes
+$\varepsilon\geq0$.  In one coordinate, the reference and source laws are
+respectively
+\[
+  Q_{\sigma,1}=\Normal(0,\sigma^2),
+  \qquad
+  P_{\sigma,1}=(1-q)\Normal(0,\sigma^2)
+       +q\Normal(\Delta,\sigma^2).
+\]
+Across the $T$ coordinates, all draws are independent:
+\[
+  Q_\sigma=Q_{\sigma,1}^{\otimes T},
+  \qquad
+  P_\sigma=P_{\sigma,1}^{\otimes T}.
+\]
+
+For probability measures $P,Q$ and a real number $\xi$, define the directed
+hockey-stick profile
+\[
+  H_\xi(P\Vert Q)
+  =\sup_A\pos{P(A)-e^\xi Q(A)},
+\]
+where the supremum is over measurable events.  The exact two-sided profile is
+\[
+  \Pi_\varepsilon(P,Q)
+  =\max\{H_\varepsilon(P\Vert Q),H_\varepsilon(Q\Vert P)\}.
+\]
+For the sampled Gaussian product, write
+\[
+  \Pi_\varepsilon(\sigma)=\Pi_\varepsilon(P_\sigma,Q_\sigma).
+\]
+At $\sigma=0$, this notation means the same product construction with
+degenerate Gaussians of variance zero.  Thus the exact profile is defined on
+all $\sigma\geq0$, although the closed formulas below require $\sigma>0$
+because they use the standardized shift $\Delta/\sigma$.
+
+The positive rescaling $x\mapsto x/\sigma$ preserves every event probability
+and hence preserves the profile.  We may therefore work with
+\[
+  \mu=\frac{\Delta}{\sigma},
+  \qquad
+  Q=\Normal(0,1)^{\otimes T},
+  \qquad
+  P=\bigl[(1-q)\Normal(0,1)+q\Normal(\mu,1)\bigr]^{\otimes T}.
+\]
+Let $\Phi$ denote the standard normal distribution function.  For a threshold
+$a\in\R$, set
+\begin{align}
+  p_P(a)&=\bigl[(1-q)\Phi(a)+q\Phi(a-\mu)\bigr]^T,\label{eq:source-box-mass}\\
+  p_Q(a)&=\Phi(a)^T,\label{eq:reference-box-mass}\\
+  m_2(a)&=\Bigl[(1-q)^2\Phi(a)
+      +2q(1-q)\Phi(a-\mu)
+      +q^2e^{\mu^2}\Phi(a-2\mu)\Bigr]^T.\label{eq:second-moment}
+\end{align}
+Thus $p_P(a)$ and $p_Q(a)$ will be the source and reference probabilities of the
+below-threshold box, while $m_2(a)$ will be a truncated second moment.
+
+For any real $\xi$, define
+\begin{align}
+  v_\xi(a)
+    &=m_2(a)-2e^\xi p_P(a)+e^{2\xi}p_Q(a),\label{eq:centered-moment}\\
+  R_\xi(a)
+    &=\frac{\sqrt{p_Q(a)v_\xi(a)}+p_P(a)-e^\xi p_Q(a)}{2},\label{eq:residual-bound}\\
+  U_{\mathrm F}(\xi,a)
+    &=1-p_P(a)+\min\{p_P(a),R_\xi(a)\}.\label{eq:forward-upper}
+\end{align}
+The proof below shows in particular that $v_\xi(a)\geq0$ and that the
+right-hand side of~\eqref{eq:forward-upper} is nonnegative.
+
+For the reverse direction, define
+\begin{align}
+  U_{\mathrm R}^{\mathrm{dual}}(\varepsilon,a)
+    &=\pos{1-e^\varepsilon
+        +e^\varepsilon U_{\mathrm F}(-\varepsilon,a)},\label{eq:reverse-dual}\\
+  U_{\mathrm R}^{\mathrm{floor}}(\varepsilon)
+    &=\pos{1-e^\varepsilon(1-q)^T},\label{eq:reverse-floor}\\
+  U_{\mathrm R}(\varepsilon,a)
+    &=\min\bigl\{U_{\mathrm R}^{\mathrm{dual}}(\varepsilon,a),
+                  U_{\mathrm R}^{\mathrm{floor}}(\varepsilon)\bigr\}.
+\end{align}
+Finally, define the maximum-event lower expression
+\begin{equation}\label{eq:lower-expression}
+  L(\varepsilon,a)
+  =\pos{1-p_P(a)-e^\varepsilon\bigl(1-p_Q(a)\bigr)}.
+\end{equation}
+
+\begin{theorem}[Finite supplied-threshold bracket]\label{thm:finite-bracket}
+For every three thresholds $a_{\mathrm L},a_{\mathrm F},a_{\mathrm R}\in\R$,
+\begin{equation}\label{eq:main-bracket}
+  L(\varepsilon,a_{\mathrm L})
+  \leq \Pi_\varepsilon(\sigma)
+  \leq
+  \max\bigl\{
+    U_{\mathrm F}(\varepsilon,a_{\mathrm F}),
+    U_{\mathrm R}(\varepsilon,a_{\mathrm R})
+  \bigr\}.
+\end{equation}
+The thresholds are arbitrary and need not be equal.  The conclusion includes
+$T=0$ and the endpoint rates $q=0$ and $q=1$.
+\end{theorem}
+
+\paragraph{How to read the three thresholds.}
+The lower threshold $a_{\mathrm L}$ chooses one event whose privacy loss is
+evaluated exactly.  The forward threshold $a_{\mathrm F}$ balances the exact
+source mass outside the box against the moment estimate inside it.  The
+reverse threshold $a_{\mathrm R}$ performs the same balance for the
+reciprocal forward profile used in the reverse direction.  The second reverse
+bound, based on the likelihood floor, has no threshold and can be preferable
+when its pointwise information is already decisive.  The theorem permits all
+three supplied thresholds to differ but makes no claim that any of them is
+optimal.
+
+\paragraph{Proof idea.}
+The lower bound evaluates the profile at the event that at least one
+coordinate exceeds a threshold.  For the forward upper bound, we split the
+likelihood-ratio integral into the below-threshold box and its complement.
+The complement costs at most its source probability.  On the box, exact
+first and second moments and Cauchy--Schwarz give the displayed residual.
+The reverse direction is bounded in two independent ways: by an exact
+identity relating it to the forward profile at $-\varepsilon$, and by the
+fact that the likelihood ratio is never smaller than $(1-q)^T$.
+
+
+EXIT: 0

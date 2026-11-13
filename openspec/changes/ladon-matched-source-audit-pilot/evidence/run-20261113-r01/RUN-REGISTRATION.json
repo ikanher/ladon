@@ -1,0 +1,38 @@
+{
+  "run_id": "20261113-r01",
+  "registered_at_utc": "2026-11-12T22:49:18+00:00",
+  "pilot_change": "ladon-matched-source-audit-pilot",
+  "source_registration": "../registration/units.json",
+  "input_capsule": "../registration/capsule",
+  "capsule_manifest_sha256": "2d061772a45f56794b27dee4f73ea956b456094b557b70e744d0a638cfc0e736",
+  "arms": {
+    "ordinary": {
+      "label": "B",
+      "prompt_sha256": "3a07beb52bb2722e32fd7b8da5aaea44b6072c19b714ea9d3630b59a2d40f6bf",
+      "capsule_copy_manifest_sha256": "c23d280ad0def25eb04c0a1c4de082340024d8491cdb2405ae646c0bd22ddab5"
+    },
+    "ladon": {
+      "label": "A",
+      "prompt_sha256": "0c930e103d85f68c807e4bbc35e52a4cf398f01ddad69e861a0ca66d4494d4c2",
+      "capsule_copy_manifest_sha256": "af6ab62a3e1decdf5c9f35306a6abe6c3c01f0ad08d9a6dd20ff124bca82db55"
+    }
+  },
+  "model": {
+    "id": "gpt-6.1-sol",
+    "reasoning_effort": "high",
+    "same_for_both_arms": true
+  },
+  "budgets": {
+    "wall_clock_minutes_per_arm": 90,
+    "lean_lake_top_level_invocations_per_arm": 30,
+    "token_ceiling": null,
+    "token_measurement": "record only if runtime exposes; otherwise unavailable"
+  },
+  "primary_gate": "At least one additional independently upheld reader-useful finding among the six preregistered source claims for Ladon vs Ordinary, with no new serious false accusation.",
+  "score_scope": "six frozen source claims in two source-note clusters; findings elsewhere in the two notes are exploratory",
+  "limits": [
+    "No pre-labeled faithful/control or ambiguity case; categories will be determined by blinded adjudication.",
+    "Filesystem isolation is procedural, not OS-enforced.",
+    "Agent runtime may not expose exact token usage or full hidden tool transcript."
+  ]
+}

@@ -1,0 +1,725 @@
+$ nl -ba ../sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex
+EXIT 0
+STDOUT
+     1	\documentclass[11pt]{article}
+     2	
+     3	\usepackage[T1]{fontenc}
+     4	\usepackage[utf8]{inputenc}
+     5	\usepackage{lmodern}
+     6	\usepackage{microtype}
+     7	\usepackage[margin=0.95in]{geometry}
+     8	\usepackage{amsmath,amssymb,amsthm,mathtools}
+     9	\usepackage{booktabs}
+    10	\usepackage{xcolor}
+    11	\usepackage{tikz}
+    12	\usetikzlibrary{arrows.meta,calc,positioning}
+    13	\usepackage[colorlinks=true,linkcolor=blue!55!black,urlcolor=blue!55!black]{hyperref}
+    14	
+    15	\setlength{\emergencystretch}{3em}
+    16	\setlength{\parskip}{0.45em}
+    17	\setlength{\parindent}{0pt}
+    18	
+    19	\newtheorem{theorem}{Theorem}[section]
+    20	\newtheorem{lemma}[theorem]{Lemma}
+    21	\newtheorem{corollary}[theorem]{Corollary}
+    22	\theoremstyle{remark}
+    23	\newtheorem{remark}[theorem]{Remark}
+    24	
+    25	\newcommand{\R}{\mathbb R}
+    26	\newcommand{\N}{\mathbb N}
+    27	\newcommand{\E}{\mathbb E}
+    28	\newcommand{\Prob}{\mathbb P}
+    29	\newcommand{\Normal}{\mathcal N}
+    30	\newcommand{\Profile}{\Pi_{\varepsilon}}
+    31	\newcommand{\pos}[1]{\left[#1\right]_{+}}
+    32	
+    33	\title{Finite Noise Certification for Poisson-Sampled Gaussian Products}
+    34	\author{}
+    35	\date{}
+    36	
+    37	\begin{document}
+    38	\maketitle
+    39	
+    40	\begin{abstract}
+    41	We prove finite lower and upper bounds for the exact two-sided privacy
+    42	profile of a product of independent Poisson-sampled Gaussian releases.  The
+    43	lower bound evaluates one maximum-coordinate event.  The upper bound separates
+    44	the same product space into a below-threshold box and its complement.  The
+    45	box contribution is controlled by exact first and second moments of the
+    46	likelihood ratio, while the complement is charged by its source probability.
+    47	The reverse privacy direction follows from an exact likelihood identity and
+    48	a pointwise likelihood floor.  Every threshold is supplied rather than
+    49	optimized, so the result is finite, explicit, and directly suitable for
+    50	certified numerical evaluation.  A strict lower certificate and a non-strict
+    51	upper certificate then enclose the minimally calibrated noise standard
+    52	deviation.  The result turns a high-dimensional privacy calculation into a
+    53	finite collection of one-dimensional Gaussian evaluations while keeping both
+    54	privacy directions explicit.
+    55	\end{abstract}
+    56	
+    57	\section{Why a finite bracket is useful}
+    58	
+    59	Noise calibration asks a concrete question: for fixed
+    60	$(T,q,\Delta,\varepsilon,\delta)$, how large must the Gaussian standard
+    61	deviation be?  The exact answer is defined by a privacy profile on
+    62	$\R^T$.  Ordinary floating-point accountant outputs approximate this
+    63	profile, while asymptotic formulas describe its limiting scale; without a
+    64	directed error analysis, neither alone certifies that one particular finite
+    65	noise level is sufficient or insufficient.  Rigorous FFT and saddle-point
+    66	accountants show that such error control is possible
+    67	\cite{KoskelaEtAl2021,AlghamdiEtAl2023}.  Our aim here is a simpler finite
+    68	certificate built from supplied thresholds and one-dimensional Gaussian
+    69	quantities.
+    70	
+    71	The bounds below provide precisely those two certificates.  A lower witness
+    72	larger than $\delta$ proves that a candidate standard deviation is too small.
+    73	An upper bound no larger than $\delta$ proves that another candidate is large
+    74	enough.  Together they enclose the minimum calibrated noise:
+    75	\[
+    76	  \boxed{
+    77	  \begin{array}{c}
+    78	    \text{lower profile certificate}>\delta
+    79	      \quad\Longrightarrow\quad
+    80	      \text{candidate noise is insufficient},\\[1mm]
+    81	    \text{upper profile certificate}\leq\delta
+    82	      \quad\Longrightarrow\quad
+    83	      \text{candidate noise is sufficient}.
+    84	  \end{array}}
+    85	\]
+    86	
+    87	Both certificates come from one geometric split.  For a threshold $a$, let
+    88	\[
+    89	  B_a=\{x:x_i\leq a\text{ for every }i\},
+    90	  \qquad
+    91	  A_a=B_a^c=\{x:\max_i x_i>a\}.
+    92	\]
+    93	The rare-event region $A_a$ supplies the lower witness.  For the upper bound,
+    94	the same region is charged by its exact source probability, while the
+    95	complementary box $B_a$ is controlled by exact likelihood moments.  Figure
+    96	\ref{fig:box-split} summarizes the split.
+    97	
+    98	\begin{figure}[htbp]
+    99	\centering
+   100	\begin{tikzpicture}[
+   101	  font=\small,
+   102	  region/.style={draw=black!65, minimum height=1.55cm, align=center},
+   103	  note/.style={align=center, text width=4.7cm},
+   104	  flow/.style={-{Latex[length=2mm]}, thick, draw=black!65}
+   105	]
+   106	  \node[region, fill=blue!9, minimum width=7.2cm] (box)
+   107	    {\textbf{Below-threshold box $B_a$}\\every coordinate is at most $a$};
+   108	  \node[region, fill=red!9, minimum width=4.3cm, right=0pt of box] (event)
+   109	    {\textbf{Complement $A_a$}\\at least one coordinate exceeds $a$};
+   110	  \node[note, below=0.72cm of box] (moments)
+   111	    {exact first and second\\likelihood moments};
+   112	  \node[note, below=0.72cm of event] (witness)
+   113	    {exact event probabilities\\under $P$ and $Q$};
+   114	  \draw[flow] (box.south) -- (moments.north);
+   115	  \draw[flow] (event.south) -- (witness.north);
+   116	  \node[draw=black!55, fill=gray!5, rounded corners=2pt, align=center,
+   117	    text width=11cm, below=0.65cm of $(moments.south)!0.5!(witness.south)$] (result)
+   118	    {\textbf{Lower:} evaluate $A_a$ alone.\qquad
+   119	     \textbf{Upper:} add source mass on $A_a$ to moment control on $B_a$.};
+   120	  \draw[flow] (moments.south) -- (result.north west);
+   121	  \draw[flow] (witness.south) -- (result.north east);
+   122	\end{tikzpicture}
+   123	\caption{The common partition behind both sides of the finite bracket.  The
+   124	lower bound uses the complement event as a witness; the upper bound controls
+   125	both parts of the partition.}
+   126	\label{fig:box-split}
+   127	\end{figure}
+   128	
+   129	This is the central idea of the theorem.  Threshold search may be performed
+   130	externally, but correctness of the resulting bracket depends only on the
+   131	finite formulas proved below.
+   132	
+   133	\section{Setup and main result}
+   134	
+   135	Fix a horizon $T\in\N$, a sampling rate $q\in[0,1]$, a shift
+   136	$\Delta\in\R$, a profile parameter $\varepsilon\in\R$, and a noise standard
+   137	deviation $\sigma>0$.  The algebraic bracket is valid for every real
+   138	$\varepsilon$; the privacy-calibration corollary later assumes
+   139	$\varepsilon\geq0$.  In one coordinate, the reference and source laws are
+   140	respectively
+   141	\[
+   142	  Q_{\sigma,1}=\Normal(0,\sigma^2),
+   143	  \qquad
+   144	  P_{\sigma,1}=(1-q)\Normal(0,\sigma^2)
+   145	       +q\Normal(\Delta,\sigma^2).
+   146	\]
+   147	Across the $T$ coordinates, all draws are independent:
+   148	\[
+   149	  Q_\sigma=Q_{\sigma,1}^{\otimes T},
+   150	  \qquad
+   151	  P_\sigma=P_{\sigma,1}^{\otimes T}.
+   152	\]
+   153	
+   154	For probability measures $P,Q$ and a real number $\xi$, define the directed
+   155	hockey-stick profile
+   156	\[
+   157	  H_\xi(P\Vert Q)
+   158	  =\sup_A\pos{P(A)-e^\xi Q(A)},
+   159	\]
+   160	where the supremum is over measurable events.  The exact two-sided profile is
+   161	\[
+   162	  \Pi_\varepsilon(P,Q)
+   163	  =\max\{H_\varepsilon(P\Vert Q),H_\varepsilon(Q\Vert P)\}.
+   164	\]
+   165	For the sampled Gaussian product, write
+   166	\[
+   167	  \Pi_\varepsilon(\sigma)=\Pi_\varepsilon(P_\sigma,Q_\sigma).
+   168	\]
+   169	At $\sigma=0$, this notation means the same product construction with
+   170	degenerate Gaussians of variance zero.  Thus the exact profile is defined on
+   171	all $\sigma\geq0$, although the closed formulas below require $\sigma>0$
+   172	because they use the standardized shift $\Delta/\sigma$.
+   173	
+   174	The positive rescaling $x\mapsto x/\sigma$ preserves every event probability
+   175	and hence preserves the profile.  We may therefore work with
+   176	\[
+   177	  \mu=\frac{\Delta}{\sigma},
+   178	  \qquad
+   179	  Q=\Normal(0,1)^{\otimes T},
+   180	  \qquad
+   181	  P=\bigl[(1-q)\Normal(0,1)+q\Normal(\mu,1)\bigr]^{\otimes T}.
+   182	\]
+   183	Let $\Phi$ denote the standard normal distribution function.  For a threshold
+   184	$a\in\R$, set
+   185	\begin{align}
+   186	  p_P(a)&=\bigl[(1-q)\Phi(a)+q\Phi(a-\mu)\bigr]^T,\label{eq:source-box-mass}\\
+   187	  p_Q(a)&=\Phi(a)^T,\label{eq:reference-box-mass}\\
+   188	  m_2(a)&=\Bigl[(1-q)^2\Phi(a)
+   189	      +2q(1-q)\Phi(a-\mu)
+   190	      +q^2e^{\mu^2}\Phi(a-2\mu)\Bigr]^T.\label{eq:second-moment}
+   191	\end{align}
+   192	Thus $p_P(a)$ and $p_Q(a)$ will be the source and reference probabilities of the
+   193	below-threshold box, while $m_2(a)$ will be a truncated second moment.
+   194	
+   195	For any real $\xi$, define
+   196	\begin{align}
+   197	  v_\xi(a)
+   198	    &=m_2(a)-2e^\xi p_P(a)+e^{2\xi}p_Q(a),\label{eq:centered-moment}\\
+   199	  R_\xi(a)
+   200	    &=\frac{\sqrt{p_Q(a)v_\xi(a)}+p_P(a)-e^\xi p_Q(a)}{2},\label{eq:residual-bound}\\
+   201	  U_{\mathrm F}(\xi,a)
+   202	    &=1-p_P(a)+\min\{p_P(a),R_\xi(a)\}.\label{eq:forward-upper}
+   203	\end{align}
+   204	The proof below shows in particular that $v_\xi(a)\geq0$ and that the
+   205	right-hand side of~\eqref{eq:forward-upper} is nonnegative.
+   206	
+   207	For the reverse direction, define
+   208	\begin{align}
+   209	  U_{\mathrm R}^{\mathrm{dual}}(\varepsilon,a)
+   210	    &=\pos{1-e^\varepsilon
+   211	        +e^\varepsilon U_{\mathrm F}(-\varepsilon,a)},\label{eq:reverse-dual}\\
+   212	  U_{\mathrm R}^{\mathrm{floor}}(\varepsilon)
+   213	    &=\pos{1-e^\varepsilon(1-q)^T},\label{eq:reverse-floor}\\
+   214	  U_{\mathrm R}(\varepsilon,a)
+   215	    &=\min\bigl\{U_{\mathrm R}^{\mathrm{dual}}(\varepsilon,a),
+   216	                  U_{\mathrm R}^{\mathrm{floor}}(\varepsilon)\bigr\}.
+   217	\end{align}
+   218	Finally, define the maximum-event lower expression
+   219	\begin{equation}\label{eq:lower-expression}
+   220	  L(\varepsilon,a)
+   221	  =\pos{1-p_P(a)-e^\varepsilon\bigl(1-p_Q(a)\bigr)}.
+   222	\end{equation}
+   223	
+   224	\begin{theorem}[Finite supplied-threshold bracket]\label{thm:finite-bracket}
+   225	For every three thresholds $a_{\mathrm L},a_{\mathrm F},a_{\mathrm R}\in\R$,
+   226	\begin{equation}\label{eq:main-bracket}
+   227	  L(\varepsilon,a_{\mathrm L})
+   228	  \leq \Pi_\varepsilon(\sigma)
+   229	  \leq
+   230	  \max\bigl\{
+   231	    U_{\mathrm F}(\varepsilon,a_{\mathrm F}),
+   232	    U_{\mathrm R}(\varepsilon,a_{\mathrm R})
+   233	  \bigr\}.
+   234	\end{equation}
+   235	The thresholds are arbitrary and need not be equal.  The conclusion includes
+   236	$T=0$ and the endpoint rates $q=0$ and $q=1$.
+   237	\end{theorem}
+   238	
+   239	\paragraph{How to read the three thresholds.}
+   240	The lower threshold $a_{\mathrm L}$ chooses one event whose privacy loss is
+   241	evaluated exactly.  The forward threshold $a_{\mathrm F}$ balances the exact
+   242	source mass outside the box against the moment estimate inside it.  The
+   243	reverse threshold $a_{\mathrm R}$ performs the same balance for the
+   244	reciprocal forward profile used in the reverse direction.  The second reverse
+   245	bound, based on the likelihood floor, has no threshold and can be preferable
+   246	when its pointwise information is already decisive.  The theorem permits all
+   247	three supplied thresholds to differ but makes no claim that any of them is
+   248	optimal.
+   249	
+   250	\paragraph{Proof idea.}
+   251	The lower bound evaluates the profile at the event that at least one
+   252	coordinate exceeds a threshold.  For the forward upper bound, we split the
+   253	likelihood-ratio integral into the below-threshold box and its complement.
+   254	The complement costs at most its source probability.  On the box, exact
+   255	first and second moments and Cauchy--Schwarz give the displayed residual.
+   256	The reverse direction is bounded in two independent ways: by an exact
+   257	identity relating it to the forward profile at $-\varepsilon$, and by the
+   258	fact that the likelihood ratio is never smaller than $(1-q)^T$.
+   259	
+   260	\section{Likelihood and truncated moments}
+   261	
+   262	Let $Z\sim\Normal(0,1)$.  The one-coordinate likelihood ratio of the
+   263	normalized source with respect to the normalized reference is
+   264	\begin{equation}\label{eq:one-likelihood}
+   265	  \ell(z)
+   266	  =(1-q)+q\exp\!\left(\mu z-\frac{\mu^2}{2}\right).
+   267	\end{equation}
+   268	Indeed, the density ratio of $\Normal(\mu,1)$ against $\Normal(0,1)$ is the
+   269	exponential factor in~\eqref{eq:one-likelihood}.  Hence the product
+   270	likelihood ratio is
+   271	\begin{equation}\label{eq:product-likelihood}
+   272	  \Lambda(x)=\prod_{i=1}^{T}\ell(x_i),
+   273	  \qquad x\in\R^T.
+   274	\end{equation}
+   275	It is positive, integrable under $Q$, and $\E_Q\Lambda=1$.
+   276	
+   277	For a threshold $a$, introduce the box
+   278	\[
+   279	  B_a=\{x\in\R^T:x_i\leq a\text{ for every }i\}
+   280	\]
+   281	and its complement
+   282	\[
+   283	  A_a=B_a^c=\{x\in\R^T:\max_i x_i>a\}.
+   284	\]
+   285	
+   286	\begin{lemma}[Exact truncated moments]\label{lem:truncated-moments}
+   287	For every $a\in\R$,
+   288	\begin{align}
+   289	  Q(B_a)&=p_Q(a),\\
+   290	  \E_Q[\Lambda\mathbf 1_{B_a}]&=p_P(a),\\
+   291	  \E_Q[\Lambda^2\mathbf 1_{B_a}]&=m_2(a),\\
+   292	  \E_Q[(\Lambda-e^\xi)^2\mathbf 1_{B_a}]&=v_\xi(a).
+   293	\end{align}
+   294	In particular, $v_\xi(a)\geq0$.
+   295	\end{lemma}
+   296	
+   297	\begin{proof}
+   298	Independence gives $Q(B_a)=\Phi(a)^T=p_Q(a)$.  The standard Gaussian tilt
+   299	identity
+   300	\begin{equation}\label{eq:tilt}
+   301	  \E\left[e^{tZ-t^2/2}\mathbf 1_{\{Z\leq a\}}\right]
+   302	  =\Phi(a-t)
+   303	\end{equation}
+   304	implies
+   305	\[
+   306	  \E[\ell(Z)\mathbf 1_{\{Z\leq a\}}]
+   307	  =(1-q)\Phi(a)+q\Phi(a-\mu).
+   308	\]
+   309	Taking the $T$-fold product gives the second displayed identity and
+   310	formula~\eqref{eq:source-box-mass}.
+   311	
+   312	Squaring~\eqref{eq:one-likelihood} yields
+   313	\[
+   314	  \ell(z)^2
+   315	  =(1-q)^2
+   316	   +2q(1-q)e^{\mu z-\mu^2/2}
+   317	   +q^2e^{2\mu z-\mu^2}.
+   318	\]
+   319	The first tilted term is handled by~\eqref{eq:tilt} with $t=\mu$.  For the
+   320	last term, write
+   321	\[
+   322	  e^{2\mu z-\mu^2}
+   323	  =e^{\mu^2}e^{2\mu z-(2\mu)^2/2}
+   324	\]
+   325	and use~\eqref{eq:tilt} with $t=2\mu$.  This gives the one-coordinate second
+   326	moment
+   327	\[
+   328	  (1-q)^2\Phi(a)
+   329	  +2q(1-q)\Phi(a-\mu)
+   330	  +q^2e^{\mu^2}\Phi(a-2\mu).
+   331	\]
+   332	Independence gives~\eqref{eq:second-moment}.  Finally, expanding the square
+   333	inside the integral gives
+   334	\[
+   335	  \E_Q[(\Lambda-e^\xi)^2\mathbf 1_{B_a}]
+   336	  =m_2(a)-2e^\xi p_P(a)+e^{2\xi}p_Q(a)=v_\xi(a).
+   337	\]
+   338	It is nonnegative because it is the expectation of a square.
+   339	\end{proof}
+   340	
+   341	\section{Proof of the finite bracket}
+   342	
+   343	\subsection{Maximum-event lower bound}
+   344	
+   345	Under the reference law,
+   346	\[
+   347	  Q(A_a)=1-p_Q(a).
+   348	\]
+   349	Under the source law, one coordinate lies below $a$ with probability
+   350	$(1-q)\Phi(a)+q\Phi(a-\mu)$, and therefore
+   351	\[
+   352	  P(A_a)=1-p_P(a).
+   353	\]
+   354	Evaluating the supremum defining the forward profile at $A_a$ gives
+   355	\[
+   356	  H_\varepsilon(P\Vert Q)
+   357	  \geq
+   358	  \pos{P(A_a)-e^\varepsilon Q(A_a)}
+   359	  =L(\varepsilon,a).
+   360	\]
+   361	Since $\Pi_\varepsilon(\sigma)$ is at least its forward direction, this proves the lower
+   362	bound in~\eqref{eq:main-bracket} at $a=a_{\mathrm L}$.
+   363	
+   364	\subsection{Forward upper bound}
+   365	
+   366	Put $\alpha=e^\xi$.  Since $P$ has likelihood ratio $\Lambda$ with respect
+   367	to $Q$,
+   368	\[
+   369	  H_\xi(P\Vert Q)=\E_Q[(\Lambda-\alpha)_+].
+   370	\]
+   371	Split this expectation over $B_a$ and $A_a$.  On $A_a$,
+   372	\[
+   373	  (\Lambda-\alpha)_+\leq\Lambda,
+   374	\]
+   375	so
+   376	\begin{equation}\label{eq:outside-bound}
+   377	  \E_Q[(\Lambda-\alpha)_+\mathbf 1_{A_a}]
+   378	  \leq \E_Q[\Lambda\mathbf 1_{A_a}]
+   379	  =1-p_P(a).
+   380	\end{equation}
+   381	
+   382	On $B_a$, use $x_+=(|x|+x)/2$ and Cauchy--Schwarz:
+   383	\begin{align*}
+   384	  \E_Q[(\Lambda-\alpha)_+\mathbf 1_{B_a}]
+   385	  &=\frac12\left(
+   386	      \E_Q[|\Lambda-\alpha|\mathbf 1_{B_a}]
+   387	      +p_P(a)-\alpha p_Q(a)
+   388	    \right)\\
+   389	  &\leq\frac12\left(
+   390	      \sqrt{Q(B_a)\E_Q[(\Lambda-\alpha)^2\mathbf 1_{B_a}]}
+   391	      +p_P(a)-\alpha p_Q(a)
+   392	    \right)\\
+   393	  &=R_\xi(a).
+   394	\end{align*}
+   395	There is also the simpler bound
+   396	\[
+   397	  \E_Q[(\Lambda-\alpha)_+\mathbf 1_{B_a}]
+   398	  \leq\E_Q[\Lambda\mathbf 1_{B_a}]=p_P(a).
+   399	\]
+   400	Adding~\eqref{eq:outside-bound} and taking the smaller of the two box bounds
+   401	gives
+   402	\begin{equation}\label{eq:forward-result}
+   403	  H_\xi(P\Vert Q)\leq U_{\mathrm F}(\xi,a).
+   404	\end{equation}
+   405	This also shows directly that the right-hand side is nonnegative.
+   406	
+   407	\subsection{Reverse upper bounds}
+   408	
+   409	For any nonnegative likelihood ratio $\Lambda$ with $\E_Q\Lambda=1$ and any
+   410	$\alpha>0$, one has the exact identity
+   411	\begin{equation}\label{eq:duality}
+   412	  \E_Q[(1-\alpha\Lambda)_+]
+   413	  =1-\alpha+\alpha\E_Q[(\Lambda-\alpha^{-1})_+].
+   414	\end{equation}
+   415	To verify it, apply
+   416	\[
+   417	  x_+-(-x)_+=x
+   418	\]
+   419	to $x=\alpha\Lambda-1$ and then take expectations.  With
+   420	$\alpha=e^\varepsilon$, identity~\eqref{eq:duality} becomes
+   421	\begin{equation}\label{eq:profile-duality}
+   422	  H_\varepsilon(Q\Vert P)
+   423	  =1-e^\varepsilon
+   424	    +e^\varepsilon H_{-\varepsilon}(P\Vert Q).
+   425	\end{equation}
+   426	Applying~\eqref{eq:forward-result} at $-\varepsilon$ proves
+   427	\[
+   428	  H_\varepsilon(Q\Vert P)
+   429	  \leq U_{\mathrm R}^{\mathrm{dual}}(\varepsilon,a).
+   430	\]
+   431	Since the untruncated expression upper-bounds the nonnegative reverse profile,
+   432	it is itself nonnegative.  The positive-part operation therefore leaves it
+   433	unchanged.
+   434	
+   435	There is a second reverse bound.  From~\eqref{eq:one-likelihood},
+   436	\[
+   437	  \ell(z)\geq1-q,
+   438	\]
+   439	and hence~\eqref{eq:product-likelihood} gives
+   440	\[
+   441	  \Lambda(x)\geq(1-q)^T
+   442	  \qquad\text{for every }x.
+   443	\]
+   444	Therefore
+   445	\begin{align*}
+   446	  H_\varepsilon(Q\Vert P)
+   447	  &=\E_Q[(1-e^\varepsilon\Lambda)_+]\\
+   448	  &\leq\pos{1-e^\varepsilon(1-q)^T}
+   449	   =U_{\mathrm R}^{\mathrm{floor}}(\varepsilon).
+   450	\end{align*}
+   451	Taking the smaller of the two valid reverse bounds gives
+   452	\[
+   453	  H_\varepsilon(Q\Vert P)
+   454	  \leq U_{\mathrm R}(\varepsilon,a).
+   455	\]
+   456	Combining this with~\eqref{eq:forward-result} at $\xi=\varepsilon$ and taking
+   457	the maximum of the two directed profiles proves the upper bound
+   458	in~\eqref{eq:main-bracket}.  This completes the proof of
+   459	Theorem~\ref{thm:finite-bracket}.
+   460	
+   461	\subsection{Degenerate finite cases}
+   462	
+   463	If $T=0$, all product likelihoods and below-box masses equal one.  The source
+   464	and reference are the same law on the one-point zero-dimensional space, and
+   465	the displayed formulas reduce to the corresponding profile of two identical
+   466	laws.  If $q=0$, the source and reference again coincide.  If $q=1$, the
+   467	source is an ordinary shifted Gaussian product.  None of the preceding
+   468	arguments divides by $q$, by $T$, or by $1-q$, so all three cases are included.
+   469	The only required division is by the noise standard deviation in
+   470	$\mu=\Delta/\sigma$, and this is why the theorem assumes $\sigma>0$.
+   471	
+   472	\section{Calibrated-noise consequence}
+   473	
+   474	For the privacy interpretation, now assume $\varepsilon\geq0$ and fix a target
+   475	$\delta\in[0,1]$.  Define the feasible set
+   476	\[
+   477	  \mathcal S
+   478	  =\{\sigma\geq0:\Pi_\varepsilon(\sigma)\leq\delta\}.
+   479	\]
+   480	Let
+   481	\[
+   482	  \sigma_\star=\inf\mathcal S,
+   483	\]
+   484	whenever the feasible set is nonempty.  The upper certificate below proves
+   485	this nonemptiness as part of its conclusion.
+   486	
+   487	\begin{corollary}[Certified calibration interval]\label{cor:calibration}
+   488	Let $\sigma_{\mathrm L},\sigma_{\mathrm U}>0$.  Choose a lower threshold
+   489	$a_{\mathrm L}$ for $\sigma_{\mathrm L}$ and forward and reverse upper
+   490	thresholds $a_{\mathrm F},a_{\mathrm R}$ for $\sigma_{\mathrm U}$.  In each
+   491	formula, use the corresponding standardized shift $\mu=\Delta/\sigma$.
+   492	If
+   493	\begin{equation}\label{eq:lower-certificate}
+   494	  \delta<L_{\sigma_{\mathrm L}}(\varepsilon,a_{\mathrm L})
+   495	\end{equation}
+   496	and
+   497	\begin{equation}\label{eq:upper-certificate}
+   498	  \max\bigl\{
+   499	    U_{\mathrm F,\sigma_{\mathrm U}}(\varepsilon,a_{\mathrm F}),
+   500	    U_{\mathrm R,\sigma_{\mathrm U}}(\varepsilon,a_{\mathrm R})
+   501	  \bigr\}
+   502	  \leq\delta,
+   503	\end{equation}
+   504	then
+   505	\[
+   506	  \boxed{\sigma_{\mathrm L}\leq\sigma_\star\leq\sigma_{\mathrm U}.}
+   507	\]
+   508	No attainment assumption on $\sigma_\star$ is needed.
+   509	\end{corollary}
+   510	
+   511	\begin{proof}
+   512	By Theorem~\ref{thm:finite-bracket}, condition~\eqref{eq:lower-certificate}
+   513	implies
+   514	\[
+   515	  \Pi_\varepsilon(\sigma_{\mathrm L})>\delta,
+   516	\]
+   517	so $\sigma_{\mathrm L}\notin\mathcal S$.  Condition~\eqref{eq:upper-certificate}
+   518	implies
+   519	\[
+   520	  \Pi_\varepsilon(\sigma_{\mathrm U})\leq\delta,
+   521	\]
+   522	so $\sigma_{\mathrm U}\in\mathcal S$.  In particular, $\mathcal S$ is
+   523	nonempty and $\sigma_\star\leq\sigma_{\mathrm U}$.
+   524	
+   525	It remains to justify the lower endpoint.  The exact profile is nonincreasing
+   526	in $\sigma$: if $0\leq\sigma_1\leq\sigma_2$, one obtains both laws at noise
+   527	level $\sigma_2$ from the corresponding laws at level $\sigma_1$ by adding
+   528	the same independent centered Gaussian noise of variance
+   529	$\sigma_2^2-\sigma_1^2$.  Applying a common random transformation cannot
+   530	increase either directed privacy profile.  Thus $\mathcal S$ is upward
+   531	closed.  If some feasible $\sigma$ were smaller than
+   532	$\sigma_{\mathrm L}$, upward closure would make $\sigma_{\mathrm L}$ feasible,
+   533	contrary to the strict lower certificate.  Hence
+   534	$\sigma_{\mathrm L}\leq\sigma$ for every $\sigma\in\mathcal S$, and therefore
+   535	$\sigma_{\mathrm L}\leq\inf\mathcal S=\sigma_\star$.
+   536	\end{proof}
+   537	
+   538	The formulas use finitely many Gaussian CDF values, exponentials, rational
+   539	operations, natural powers, and two square roots.  Directed rational
+   540	enclosures of these quantities therefore turn the bracket into a finite,
+   541	machine-checkable calibration certificate.  Appendix~\ref{sec:certified-evaluation}
+   542	gives the details.
+   543	
+   544	\section{A finite numerical illustration}
+   545	
+   546	To show the scale of the construction, consider the maintained diagnostic
+   547	row
+   548	\[
+   549	  T=100,\qquad q=0.0025,\qquad \Delta=1,
+   550	  \qquad \varepsilon=1,\qquad \delta=0.1.
+   551	\]
+   552	A direct threshold search in the finite formulas gives
+   553	\[
+   554	\begin{array}{c|c|c}
+   555	\text{candidate} & \text{supplied threshold} & \text{profile expression}\\
+   556	\hline
+   557	\sigma_{\mathrm L}=0.268600 & a_{\mathrm L}=3.669486
+   558	  & L(\varepsilon,a_{\mathrm L})\approx0.1000288274\\
+   559	\sigma_{\mathrm U}=0.286000 & a_{\mathrm F}=4.020051
+   560	  & U_{\mathrm F}(\varepsilon,a_{\mathrm F})\approx0.0994524972
+   561	\end{array}
+   562	\]
+   563	with reverse threshold $a_{\mathrm R}=3.454911$; on this row the forward
+   564	upper bound is the active direction.  The separately supplied PLD diagnostic
+   565	value is
+   566	\[
+   567	  \sigma_{\mathrm{PLD}}=0.2692892144.
+   568	\]
+   569	Using that diagnostic only as a scale, the displayed interval has relative
+   570	width
+   571	\[
+   572	  \frac{\sigma_{\mathrm U}-\sigma_{\mathrm L}}
+   573	       {\sigma_{\mathrm{PLD}}}
+   574	  \approx 6.46\%.
+   575	\]
+   576	
+   577	These decimals illustrate the formulas and are not theorem authority.  A
+   578	formal certificate replaces them by outward rational intervals for every
+   579	Gaussian CDF, exponential, and square root, then checks the strict lower and
+   580	non-strict upper comparisons from Corollary~\ref{cor:calibration}.
+   581	
+   582	\paragraph{Scope and limitations.}
+   583	The theorem gives a rigorous finite bracket for every supplied threshold.  It
+   584	does not assert that the maximum event is optimal, that either upper bound is
+   585	tight, or that a supplied threshold minimizes the formula.  It analyzes the
+   586	ideal independent Poisson-sampled Gaussian product laws, not shuffled
+   587	sampling, exact-size sampling, adaptive transcript privacy, or finite-precision
+   588	Gaussian generation.  The present benchmark shows that the lower bound is
+   589	often close while the upper bound can be loose; practical tightness is a
+   590	separate problem from correctness of the bracket.
+   591	
+   592	\begin{thebibliography}{9}
+   593	
+   594	\bibitem{AlghamdiEtAl2023}
+   595	W.~Alghamdi, S.~Asoodeh, F.~P.~Calmon, J.~F.~Gomez, O.~Kosut, L.~Sankar,
+   596	and F.~Wei.
+   597	\newblock The saddle-point accountant for differential privacy.
+   598	\newblock In \emph{Proceedings of the 40th International Conference on
+   599	Machine Learning}, 2023.
+   600	
+   601	\bibitem{KoskelaEtAl2021}
+   602	A.~Koskela, J.~J\"alk\"o, L.~Prediger, and A.~Honkela.
+   603	\newblock Tight differential privacy for discrete-valued mechanisms and for
+   604	the subsampled Gaussian mechanism using FFT.
+   605	\newblock In \emph{Proceedings of the 24th International Conference on
+   606	Artificial Intelligence and Statistics}, 2021.
+   607	
+   608	\end{thebibliography}
+   609	
+   610	\appendix
+   611	\section{Notation}
+   612	
+   613	\begin{center}
+   614	\begin{tabular}{@{}ll@{}}
+   615	\toprule
+   616	Symbol & Meaning\\
+   617	\midrule
+   618	$T$ & number of independent releases\\
+   619	$q$ & Poisson participation probability in one release\\
+   620	$\Delta$ & mean shift when participation occurs\\
+   621	$\sigma$ & Gaussian noise standard deviation\\
+   622	$\mu=\Delta/\sigma$ & standardized mean shift\\
+   623	$\varepsilon,\xi$ & privacy parameters; $\xi$ is used for a generic direction\\
+   624	$P_\sigma,Q_\sigma$ & source and reference product laws before normalization\\
+   625	$P,Q$ & normalized source and reference product laws\\
+   626	$H_\xi(P\Vert Q)$ & directed hockey-stick profile\\
+   627	$\Pi_\varepsilon(\sigma)$ & exact two-sided profile at noise level $\sigma$\\
+   628	$\Phi$ & standard normal distribution function\\
+   629	$a,a_{\mathrm L},a_{\mathrm F},a_{\mathrm R}$ & supplied normalized thresholds\\
+   630	$p_P(a),p_Q(a)$ & source and reference probabilities of the below-threshold box\\
+   631	$m_2(a)$ & truncated likelihood-ratio second moment\\
+   632	$v_\xi(a)$ & truncated centered second moment\\
+   633	$R_\xi(a)$ & Cauchy--Schwarz bound for the retained residual\\
+   634	$U_{\mathrm F}$ & forward profile upper bound\\
+   635	$U_{\mathrm R}^{\mathrm{dual}}$ & reverse upper bound obtained by profile duality\\
+   636	$U_{\mathrm R}^{\mathrm{floor}}$ & reverse upper bound obtained from a likelihood floor\\
+   637	$U_{\mathrm R}$ & smaller of the two reverse upper bounds\\
+   638	$L$ & maximum-event lower bound\\
+   639	$\delta$ & target profile tolerance\\
+   640	$\mathcal S$ & set of feasible noise standard deviations\\
+   641	$\sigma_\star$ & infimum of the feasible set\\
+   642	\bottomrule
+   643	\end{tabular}
+   644	\end{center}
+   645	
+   646	\section{Certified evaluation}\label{sec:certified-evaluation}
+   647	
+   648	For each occurrence of $\Phi(x)$ and $e^x$, supply a rational interval known
+   649	to contain the exact value.  Propagate these intervals outward through
+   650	addition, subtraction, multiplication of nonnegative quantities, and
+   651	natural-number powers.  For a square root, supply nonnegative rationals
+   652	$\ell,u$ and verify
+   653	\[
+   654	  \ell^2\leq z\leq u^2.
+   655	\]
+   656	Monotonicity of the square root then gives
+   657	\[
+   658	  \ell\leq\sqrt z\leq u.
+   659	\]
+   660	The resulting rational lower endpoint for~\eqref{eq:lower-expression} and
+   661	rational upper endpoint for the right-hand side of~\eqref{eq:main-bracket}
+   662	are genuine bounds on the exact profile.  If they satisfy the strict and
+   663	non-strict comparisons in~\eqref{eq:lower-certificate} and
+   664	\eqref{eq:upper-certificate}, Corollary~\ref{cor:calibration} applies.
+   665	
+   666	An external threshold optimizer or floating-point accountant may propose
+   667	thresholds and rational intervals, but it is not part of the proof.  The
+   668	mathematical conclusion follows only after the displayed containments and
+   669	inequalities have been verified.
+   670	
+   671	\section{Formal theorem crosswalk}
+   672	
+   673	The mathematical result above is reconstructed from Lean sources that were
+   674	independently replayed at the final facade and concrete-instance audits.
+   675	The load-bearing declarations are listed below.  The descriptive phrase is
+   676	the mathematical role played in this note; the monospaced text is the exact
+   677	Lean declaration.
+   678	
+   679	\begingroup
+   680	\footnotesize
+   681	\setlength{\parskip}{0.12em}
+   682	
+   683	\textbf{Exact maximum-event probabilities.}\par
+   684	\nolinkurl{standardGaussianProductLaw_maximumEvent_probability}.\par
+   685	\nolinkurl{sparseGaussianProductLaw_maximumEvent_probability}.
+   686	
+   687	\textbf{Maximum-event lower witness.}\par
+   688	\nolinkurl{sparseGaussianProductMaximumEventForwardLowerBound_le_profile}.
+   689	
+   690	\textbf{Exact truncated first and second moments.}\par
+   691	\nolinkurl{integral_sparseGaussianProductLikelihoodRatio_belowBox}.\par
+   692	\nolinkurl{integral_sparseGaussianProductLikelihoodRatio_sq_belowBox}.
+   693	
+   694	\textbf{Restricted positive-part inequality.}\par
+   695	\nolinkurl{integral_positivePart_le_of_integrable_sq}.
+   696	
+   697	\textbf{Forward upper bound.}\par
+   698	\nolinkurl{sparseGaussianProductForwardProfile_le_cappedRestrictedSecondMomentUpperBound}.
+   699	
+   700	\textbf{Reverse coefficient identity.}\par
+   701	\nolinkurl{eventHockeyStickProfile_withDensity_reverse_duality}.
+   702	
+   703	\textbf{Likelihood-floor reverse bound.}\par
+   704	\nolinkurl{sparseGaussianProductReverseProfile_le_likelihoodFloorUpperBound}.
+   705	
+   706	\textbf{Positive-noise transport and two-sided upper bound.}\par
+   707	\nolinkurl{sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds}.
+   708	
+   709	\textbf{Two-sided lower bound.}\par
+   710	\nolinkurl{sampledGaussianProductMaximumEventLowerBound_le_binaryProfile}.
+   711	
+   712	\textbf{Calibration interval.}\par
+   713	\nolinkurl{sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates}.
+   714	
+   715	\textbf{Finite interval replay.}\par
+   716	\nolinkurl{sampledGaussian_calibration_interval_of_finiteBracket_replayCertificate}.
+   717	
+   718	\endgroup
+   719	
+   720	\end{document}
+
+STDERR

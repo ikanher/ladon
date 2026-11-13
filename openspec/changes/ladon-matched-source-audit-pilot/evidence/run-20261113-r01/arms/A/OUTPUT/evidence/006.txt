@@ -1,0 +1,342 @@
+$ /home/codex/projects/ladon/.venv/bin/ladon theorem lineage --help; /home/codex/projects/ladon/.venv/bin/ladon -h --verbose
+EXIT 0
+STDOUT
+usage: ladon theorem lineage [-h] [--repo-root REPO_ROOT] [--index INDEX]
+                             [--history HISTORY]
+                             [--view {summary,graph,routes,spines,tree,bottlenecks,closure}]
+                             [--from {trust,project,external,package,declaration}]
+                             [--root ROOTS] [--edge-kind {all,type,value}]
+                             [--include-generated] [--exclude-generated]
+                             [--max-depth MAX_DEPTH] [--max-nodes MAX_NODES]
+                             [--max-edges MAX_EDGES] [--max-routes MAX_ROUTES]
+                             [--max-traversal-edges MAX_TRAVERSAL_EDGES]
+                             [--direction {ancestry,dependencies}]
+                             [--max-dominators MAX_DOMINATORS]
+                             [--refresh {missing,stale,always,never}]
+                             [--max-output-bytes MAX_OUTPUT_BYTES]
+                             [--max-database-mib MAX_DATABASE_MIB]
+                             [--format {text,json}] [--output OUTPUT]
+                             [--timeout TIMEOUT] [--max-rss-mib MAX_RSS_MIB]
+                             theorem
+
+positional arguments:
+  theorem               Fully qualified Lean theorem name.
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Lean repository containing the theorem.
+  --index INDEX         Override the project-local proof-search SQLite index.
+  --history HISTORY     Inspect an exact registered snapshot offline; requires
+                        --refresh never.
+  --view {summary,graph,routes,spines,tree,bottlenecks,closure}
+                        Projection to return; defaults to summary. Closure
+                        returns the selected stored typed graph; graph remains
+                        route-oriented. Routes may be empty when bounded.
+                        Bottlenecks requires a returned route.
+  --from {trust,project,external,package,declaration}
+  --root ROOTS          Exact lineage boundary declaration; repeatable.
+                        Required with --from package/declaration and useful
+                        for narrowing routes or bottlenecks.
+  --edge-kind {all,type,value}
+  --include-generated
+  --exclude-generated
+  --max-depth MAX_DEPTH
+  --max-nodes MAX_NODES
+  --max-edges MAX_EDGES
+  --max-routes MAX_ROUTES
+  --max-traversal-edges MAX_TRAVERSAL_EDGES
+                        Maximum typed adjacency rows examined during route
+                        reachability; defaults to 100000.
+  --direction {ancestry,dependencies}
+                        Route traversal direction; unavailable for the whole-
+                        closure view.
+  --max-dominators MAX_DOMINATORS
+                        Maximum compact dominator-summary rows; defaults to
+                        100.
+  --refresh {missing,stale,always,never}
+  --max-output-bytes MAX_OUTPUT_BYTES
+  --max-database-mib MAX_DATABASE_MIB
+                        Complete project-local SQLite database ceiling during
+                        lineage refresh; defaults to 1536 MiB.
+  --format {text,json}  Result representation.
+  --output OUTPUT       Result path, or - for standard output.
+  --timeout TIMEOUT     Finite deadline for each target Lean/Lake process.
+  --max-rss-mib MAX_RSS_MIB
+                        Supported process-tree resident-memory limit in MiB
+                        (default: 12288).
+usage: ladon COMMAND [OPTIONS]
+       ladon --repo-root REPO --root MODULE [OPTIONS]
+
+All commands (append --help to a command path for its options):
+  version [--json]  Report installed version and source identity.
+  doctor [--json] [--repo-root PATH] [--require-isolation]
+    Check installation and repository readiness without running Lean.
+  proof-search  Build and query local Lean proof-navigation evidence.
+  proof-search proof  Extract source-bound elaborated proof applications.
+  proof-search proof slice  Use 'proof slice --help' for the bounded extraction contract.
+  proof-search index  Build, inspect, or query the persistent local index.
+  proof-search index build  Atomically build or replace the index.
+  proof-search index update  Explicitly refresh changed lexical modules.
+  proof-search index migrate  Preserve evidence while adding historical schema.
+  proof-search index ideas-sync  Synchronize the authored ladon-ideas.json catalogue.
+  proof-search index ideas  Read historical ideas, attributions and prerequisite edges.
+  proof-search index history  List preserved evidence snapshots.
+  proof-search index status  Inspect index identity and freshness.
+  proof-search index list  Inventory local index files and protected state.
+  proof-search index prune  Preview or apply selected private-index cleanup.
+  proof-search index query  Run a bounded declaration query.
+  proof-search evidence  Query stored ProofIR evidence.
+  proof-search search  Run the versioned name-search contract.
+  proof-search search name  Search declarations by normalized name.
+  proof-search search type-text  Search declaration type text (lexical shortlist).
+  proof-search explain  Compare one indexed candidate type with a goal (structural evidence only).
+  proof-search discover  Check a bounded candidate set against one exact goal.
+  proof-search consumers  Find bounded declaration consumers.
+  proof-search constructor  Inspect bounded constructor field coverage.
+  proof-search goal  Capture a source goal or query compiler text.
+  proof-search goal capture  Observe a goal at an exact source position.
+  proof-search goal diagnostic  Query a saved plain Lean diagnostic.
+  proof-search goal complete  Check a full term against a captured source goal and replay it.
+  proof-search check  Run an explicit bounded Lean checker operation.
+  proof-search check candidate  Check one closed candidate against one exact goal.
+  proof-search check source  Associate a fresh source observation with one exact compiled owner.
+  theorem  Plan, materialize, and independently replay Lean theorem capsules.
+  theorem plan  Resolve a theorem exactly and write a complete extraction plan.
+  theorem materialize  Materialize a validated plan outside its target repository.
+  theorem replay  Verify a capsule with Lean in a fresh replay directory.
+  theorem extract  Plan and materialize one theorem, optionally verifying it.
+  theorem lineage  Query exact compiled theorem dependencies from the project-local SQLite index.
+  result  Validate manifests or resolve explicitly supplied evidence without execution.
+  result validate  Check manifest integrity; does not check Lean or correspondence.
+  result resolve  Bind targets to explicitly supplied local canonical evidence.
+  result inspect  Inspect supplied result evidence offline without running checks.
+  result guide  Read attributed explanations and citations alongside stored evidence.
+  result export  Export explicitly disclosed files into a portable core bundle.
+  result verify  Verify bundle integrity only; does not replay proofs.
+  proofir  Validate and inspect ProofIR v3 artifacts
+  proofir validate
+  proofir canonicalize
+  proofir inspect
+  investigation
+  investigation observe  Capture an immutable source-bound observation
+  investigation inspect-observations  Inspect recorded observations
+  investigation report  Report compatible supplementary plans without merging them
+  investigation contract  Produce and inspect source-bound mathematical contracts
+  investigation contract plan-prefix-admission  Plan or freshly check generic prefix laws; no contract admission
+  investigation contract check-prefix-laws  Plan or freshly check generic prefix laws; no contract admission
+  investigation contract plan-bound-prefix  Bind prefix laws to the exact observed predicate; no contract activation
+  investigation contract check-bound-prefix  Bind prefix laws to the exact observed predicate; no contract activation
+  investigation contract plan-derivative-prefix  Bind prefix laws to the exact observed predicate; no contract activation
+  investigation contract check-derivative-prefix  Bind prefix laws to the exact observed predicate; no contract activation
+  investigation contract plan-real-bound  Source-bound Real contracts; saved evidence remains historical
+  investigation contract admit-real-bound  Source-bound Real contracts; saved evidence remains historical
+  investigation contract inspect-real-bound  Source-bound Real contracts; saved evidence remains historical
+  investigation contract report-real-bound  Source-bound Real contracts; saved evidence remains historical
+  investigation contract replay-real-bound  Source-bound Real contracts; saved evidence remains historical
+  investigation contract compare-real-bounds  Source-bound Real contracts; saved evidence remains historical
+  investigation contract propagate-real-bound-identity  Source-bound Real contracts; saved evidence remains historical
+  investigation contract compare-real-bounds-proofir  Source-bound Real contracts; saved evidence remains historical
+  investigation contract inspect-real-comparison  Source-bound Real contracts; saved evidence remains historical
+  investigation contract replay-real-comparison  Source-bound Real contracts; saved evidence remains historical
+  investigation contract check-real-bound-prefix  Source-bound Real contracts; saved evidence remains historical
+  investigation contract check-real-bound-prefix-proofir  Source-bound Real contracts; saved evidence remains historical
+  investigation contract inspect-real-prefix  Source-bound Real contracts; saved evidence remains historical
+  investigation contract replay-real-prefix  Source-bound Real contracts; saved evidence remains historical
+  investigation contract check-real-bound-coefficient  Source-bound Real contracts; saved evidence remains historical
+  investigation contract check-real-bound-coefficient-proofir  Source-bound Real contracts; saved evidence remains historical
+  investigation contract inspect-real-coefficient  Source-bound Real contracts; saved evidence remains historical
+  investigation contract replay-real-coefficient  Source-bound Real contracts; saved evidence remains historical
+  investigation contract compose-real-bounds  Source-bound Real contracts; saved evidence remains historical
+  investigation contract compose-real-bounds-proofir  Source-bound Real contracts; saved evidence remains historical
+  investigation contract inspect-real-transfer  Source-bound Real contracts; saved evidence remains historical
+  investigation contract replay-real-transfer  Source-bound Real contracts; saved evidence remains historical
+  investigation contract propagate-real-bounds-proofir  Source-bound Real contracts; saved evidence remains historical
+  investigation contract inspect-real-chain  Source-bound Real contracts; saved evidence remains historical
+  investigation contract replay-real-chain  Source-bound Real contracts; saved evidence remains historical
+  investigation contract audit  Run a bounded resumable contract audit
+  investigation contract obligations  Plan ordered conditional route obligations
+  investigation contract check-obligations  Check all retained source demands under one shared budget
+  investigation contract expand-provider  Observe a native demand provider application without discharging its goal
+  investigation contract context-obligations  Regenerate exact original-context obligations
+  investigation contract check-context-bridge  Regenerate exact original-context obligations
+  investigation contract route-context-obligations  Check original readings against one native route requirement
+  investigation contract check-route-context-bridge  Check original readings against one native route requirement
+  investigation contract probe-calibration-profile  Describe the finite separating-family calibration
+  investigation contract probe-calibration  Compare or check Fin 5 → Bool calibration objects
+  investigation contract probe-profile  Describe supported application-probe families
+  investigation contract probe  Plan or check source-bound application probes
+  investigation contract check-probe  Plan or check source-bound application probes
+  investigation contract review-probe  Export source and checker attempts without Ladon conclusions
+  investigation contract produce-real-prose-bound  Attribute a native Real reading without semantic admission
+  investigation contract replay-real-prose-bound  Attribute a native Real reading without semantic admission
+  investigation contract report-real-prose-bound  Attribute a native Real reading without semantic admission
+  investigation contract connect-real-prose-bound  Check or inspect an exact conditional Real prose connection
+  investigation contract report-real-prose-connection  Check or inspect an exact conditional Real prose connection
+  investigation contract replay-real-prose-connection  Check or inspect an exact conditional Real prose connection
+  investigation contract observe-prose-bound  Observe an authored proposition with no proof authority
+  investigation contract replay-prose-bound  Observe an authored proposition with no proof authority
+  investigation contract recognize-prose-bound  Observe an authored proposition with no proof authority
+  investigation contract produce  Snapshot an attributed source contract
+  investigation contract observe-bound  Observe typed bound syntax; admission remains unresolved
+  investigation contract inspect  Inspect a snapshot and verify its source binding
+  investigation contract refine  Check a cited refinement and proposed repair
+  investigation contract propagate  Propagate conditional contracts on a native graph
+  investigation contract fidelity-record  Prepare independent source review
+  investigation contract expand  Extract a selected application for a named obligation
+  investigation interpret  Structured correspondence authoring and evidence inspection
+  investigation align  Structured correspondence authoring and evidence inspection
+  investigation check  Structured correspondence authoring and evidence inspection
+  investigation inspect  Structured correspondence authoring and evidence inspection
+  investigation init  Create a new source-bound plan without overwriting
+  investigation attach  Publish an immutable version-three review transition
+  investigation ingest  Publish an immutable version-three review transition
+  investigation reconcile  Publish an immutable version-three review transition
+  investigation challenge
+  investigation witness
+  investigation checkpoint  Save a freshly bound immutable progress receipt
+  investigation finalize  Save a freshly bound immutable progress receipt
+  investigation status
+  investigation next
+  investigation finish
+  runset  Run a versioned set of ordinary Ladon analyses.
+  atlas  Build an atlas from reports.
+  query  Run a canned atlas query.
+  diff  Diff two explicit atlas files.
+  cards  Render reviewer cards.
+  workflow  Build workflow summaries.
+  findings  Inspect findings from one existing report without rerunning analysis.
+  inspect  Inspect canonical rows from one existing report or source index.
+  preview  Resolve an analysis scope without running analysis, Lake, or Lean.
+
+Global help: -h / --help (compact), -h --verbose (this catalog).
+Version shortcut: --version. Use 'ladon -h' for the common workflows.
+
+Analyzer options:
+usage: ladon [-h] [--repo-root REPO_ROOT] [--root ANALYSIS_ROOTS]
+             [--scope {changed-set,closure,inventory,multi-root,namespace,owner}]
+             [--changed-path CHANGED_PATH]
+             [--changed-manifest CHANGED_MANIFEST] [--max-modules MAX_MODULES]
+             [--max-context-modules MAX_CONTEXT_MODULES]
+             [--cache-dir CACHE_DIR] [--no-cache] [--build]
+             [--build-timeout BUILD_TIMEOUT]
+             [--extraction-backend {text,lean}]
+             [--lean-extraction-scope {root,inventory}]
+             [--lean-cache-dir LEAN_CACHE_DIR]
+             [--lean-batch-size LEAN_BATCH_SIZE] [--lean-timeout LEAN_TIMEOUT]
+             [--lean-strict] [--progress {auto,plain,json,off}]
+             [--overall-timeout OVERALL_TIMEOUT] [--max-rss-mib MAX_RSS_MIB]
+             [--max-report-bytes MAX_REPORT_BYTES] [--format {text,json}]
+             [--output OUTPUT] [--emit FORMAT=PATH]
+             [--report-version {v3,v2,v1}]
+             [--projection {summary,review,full}] [--output-json LEGACY_JSON]
+             [--output-text LEGACY_TEXT] [--fail-on FAIL_ON]
+             [--generated-at-utc GENERATED_AT_UTC] [--doc-file DOC_FILE]
+             [--packet-dir PACKET_DIR]
+             [--architecture-policy ARCHITECTURE_POLICY]
+             [--source-pattern-policy SOURCE_PATTERN_POLICY]
+             [--generated-family-policy GENERATED_FAMILY_POLICY]
+             [--generated-family-candidate-profile GENERATED_FAMILY_CANDIDATE_PROFILE]
+             [--module-system-witness MODULE_SYSTEM_WITNESS]
+             [--import-diet-witness IMPORT_DIET_WITNESS]
+             [--proof-xray PROOF_XRAY]
+             [--packet-profile {generic,review_packet,witness_bundle,release_bundle}]
+             [--certificate-artifact CERTIFICATE_ARTIFACT]
+             [target]
+
+Ladon clean-core Lean analyzer
+
+positional arguments:
+  target                Optional analysis root alias
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Repository root to analyze
+  --root ANALYSIS_ROOTS
+                        Lean root file or module; repeat for multi-root scope.
+  --scope {changed-set,closure,inventory,multi-root,namespace,owner}
+                        Primary/context population contract; owner is the
+                        ordinary default.
+  --changed-path CHANGED_PATH
+  --changed-manifest CHANGED_MANIFEST
+  --max-modules MAX_MODULES
+  --max-context-modules MAX_CONTEXT_MODULES
+  --cache-dir CACHE_DIR
+                        Source-index cache directory; defaults to the platform
+                        user cache.
+  --no-cache            Bypass source-index reads and writes for this
+                        analysis.
+  --build               Run the target repository's lake build before
+                        dependent analysis.
+  --build-timeout BUILD_TIMEOUT
+                        Finite Lake build deadline in seconds.
+  --extraction-backend {text,lean}
+                        Select text-only discovery or Lean-backed extraction.
+                        The Lean backend loads target environments and is
+                        unsafe for untrusted repositories.
+  --lean-extraction-scope {root,inventory}
+  --lean-cache-dir LEAN_CACHE_DIR
+                        Optional cache directory for Lean helper JSON payloads
+  --lean-batch-size LEAN_BATCH_SIZE
+                        Modules per bounded Lean inventory helper invocation
+                        (minimum 2).
+  --lean-timeout LEAN_TIMEOUT
+                        Finite deadline in seconds for each Lean helper batch.
+  --lean-strict         Reject partial Lean batches while preserving their
+                        rows and diagnostics.
+  --progress {auto,plain,json,off}
+                        Emit long-run progress on stderr; auto is interactive-
+                        only.
+  --overall-timeout OVERALL_TIMEOUT
+                        Optional finite deadline for the complete analysis in
+                        seconds.
+  --max-rss-mib MAX_RSS_MIB
+                        Supported process-tree resident-memory limit in MiB
+                        (default: 12288).
+  --max-report-bytes MAX_REPORT_BYTES
+                        Optional maximum bytes for each selected report
+                        representation.
+  --format {text,json}
+  --output OUTPUT       Report path, or - for standard output.
+  --emit FORMAT=PATH    Add an output destination; repeat for multiple report
+                        formats.
+  --report-version {v3,v2,v1}
+                        JSON report major. Canonical output defaults to v3;
+                        deprecated --json/--text output retains v2 unless
+                        selected explicitly.
+  --projection {summary,review,full}
+                        Report-v3 projection; review is the ordinary default.
+  --output-json LEGACY_JSON, --json LEGACY_JSON
+  --output-text LEGACY_TEXT, --text LEGACY_TEXT
+  --fail-on FAIL_ON     Repeatable kind:<kind>, severity:<minimum>, or
+                        phase:<name>:<skipped|partial> selector.
+  --generated-at-utc GENERATED_AT_UTC
+  --doc-file DOC_FILE
+  --packet-dir PACKET_DIR
+  --architecture-policy ARCHITECTURE_POLICY
+                        Optional JSON policy defining project-specific module
+                        groups and forbidden imports.
+  --source-pattern-policy SOURCE_PATTERN_POLICY
+                        Optional JSON policy defining project-specific source
+                        text patterns to report.
+  --generated-family-policy GENERATED_FAMILY_POLICY
+                        Optional versioned JSON policy defining project-
+                        generated source families and quoted provenance.
+  --generated-family-candidate-profile GENERATED_FAMILY_CANDIDATE_PROFILE
+                        Optional strict versioned profile for advisory
+                        generated-family candidate detection.
+  --module-system-witness MODULE_SYSTEM_WITNESS
+                        Optional JSON witness quoting Lean module-system
+                        boundary evidence.
+  --import-diet-witness IMPORT_DIET_WITNESS
+                        Optional JSON witness quoting Lean/Lake import
+                        minimization evidence.
+  --proof-xray PROOF_XRAY
+                        Optional JSON witness quoting elaborated proof-shape
+                        evidence.
+  --packet-profile {generic,review_packet,witness_bundle,release_bundle}
+                        Evidence profile used for --packet-dir summaries.
+  --certificate-artifact CERTIFICATE_ARTIFACT
+
+STDERR

@@ -1,0 +1,514 @@
+$ python3 - <<'PY'
+import math,json
+cdf=lambda x:math.erfc(-x/math.sqrt(2))/2
+T=100;q=0.0025;eps=1.
+def f(sigma,a,xi):
+ mu=1/sigma
+ pQ=cdf(a)**T
+ pP=((1-q)*cdf(a)+q*cdf(a-mu))**T
+ m2=((1-q)**2*cdf(a)+2*q*(1-q)*cdf(a-mu)+q*q*math.exp(mu*mu)*cdf(a-2*mu))**T
+ v=m2-2*math.exp(xi)*pP+math.exp(2*xi)*pQ
+ r=(math.sqrt(max(0,pQ*v))+pP-math.exp(xi)*pQ)/2
+ return {"mu":mu,"pQ":pQ,"pP":pP,"m2":m2,"v":v,"R":r,"UF":1-pP+min(pP,r),"L":max(0,1-pP-math.exp(xi)*(1-pQ))}
+l=f(.268600,3.669486,eps)
+u=f(.286000,4.020051,eps)
+r=f(.286000,3.454911,-eps)
+reverseDual=max(0,1-math.exp(eps)+math.exp(eps)*r["UF"])
+reverseFloor=max(0,1-math.exp(eps)*(1-q)**T)
+print(json.dumps({"warning":"ordinary binary floating-point diagnostic only; no certified enclosures", "lower_row":l,"forward_upper_row":u,"reverse_forward_at_minus_epsilon":r,"reverse_dual":reverseDual,"reverse_floor":reverseFloor,"reverse_best":min(reverseDual,reverseFloor),"relative_width_percent":100*(.286-.2686)/.2692892144},indent=2))
+PY
+sed -n "1,115p" Mf/DP/LawAccountingOracle.lean; sed -n "1530,1614p" Mf/DP/OptimalSubsamplingBISLR.lean; sed -n "15,50p" Mf/Probability/FiniteGaussianDensity.lean; sed -n "15,40p" Mf/DP/ProfileAdaptiveKernelComposition.lean; sed -n "180,380p" Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean
+EXIT 0
+STDOUT
+{
+  "warning": "ordinary binary floating-point diagnostic only; no certified enclosures",
+  "lower_row": {
+    "mu": 3.7230081906180192,
+    "pQ": 0.9879208747317538,
+    "pP": 0.867136705847622,
+    "m2": 0.8017316347222334,
+    "v": 3.387290498828948,
+    "R": 0.0054996606394583925,
+    "UF": 0.13836295479183636,
+    "L": 0.1000288274320239
+  },
+  "forward_upper_row": {
+    "mu": 3.4965034965034967,
+    "pQ": 0.997094908445257,
+    "pP": 0.924958336538519,
+    "m2": 1.035274056631976,
+    "v": 3.3742693945033766,
+    "R": 0.02441083377577513,
+    "UF": 0.09945249723725613,
+    "L": 0.06714480587821342
+  },
+  "reverse_forward_at_minus_epsilon": {
+    "mu": 3.4965034965034967,
+    "pQ": 0.9728479156898934,
+    "pP": 0.8549393737602635,
+    "m2": 0.7708094161888835,
+    "v": 0.2734408262961464,
+    "R": 0.5064081716089818,
+    "UF": 0.6514687978487183,
+    "L": 0.13507193263709458
+  },
+  "reverse_dual": 0.052593966541184756,
+  "reverse_floor": 0,
+  "reverse_best": 0,
+  "relative_width_percent": 6.461454477027124
+}
+import Mf.DP.ApproxDPWeakLimit
+
+/-!
+# Exact law-level binary accounting
+
+This module defines the paper-facing binary accounting profile directly as a
+supremum over measurable events.  It proves that profile thresholds are
+exactly the two ordered approximate-DP law inequalities, and records the
+measurable-bijection and event-distance transport facts used later in the
+paper.  No numerical accountant or divergence upper bound is involved.
+-/
+
+open MeasureTheory Set
+
+namespace Mf.DP
+
+noncomputable section
+
+/-- The exact ordered hockey-stick profile of two laws, expressed in `ENNReal`. -/
+def eventHockeyStickProfile
+    {Y : Type*} [MeasurableSpace Y]
+    (mu nu : Measure Y) (epsilon : Real) : ENNReal :=
+  ⨆ s : {s : Set Y // MeasurableSet s},
+    mu s.1 - ENNReal.ofReal (Real.exp epsilon) * nu s.1
+
+/-- An ordered event inequality with an `ENNReal` coefficient and slack. -/
+def OrderedENNRealLawPair
+    {Y : Type*} [MeasurableSpace Y]
+    (mu nu : Measure Y) (coefficient slack : ENNReal) : Prop :=
+  ∀ s, MeasurableSet s → mu s ≤ coefficient * nu s + slack
+
+/-- The event supremum has the expected threshold characterization in `ENNReal`. -/
+theorem eventHockeyStickProfile_le_iff_orderedENNRealLawPair
+    {Y : Type*} [MeasurableSpace Y]
+    (mu nu : Measure Y) (epsilon : Real) (slack : ENNReal) :
+    eventHockeyStickProfile mu nu epsilon ≤ slack ↔
+      OrderedENNRealLawPair mu nu (ENNReal.ofReal (Real.exp epsilon)) slack := by
+  rw [eventHockeyStickProfile, iSup_le_iff]
+  constructor
+  · intro h s hs
+    have h' := h ⟨s, hs⟩
+    rw [tsub_le_iff_right] at h'
+    simpa [add_comm] using h'
+  · intro h s
+    rw [tsub_le_iff_right]
+    simpa [OrderedENNRealLawPair, add_comm] using h s.1 s.2
+
+/-- Thresholding the event supremum is exactly the ordered approximate-DP law inequality. -/
+theorem eventHockeyStickProfile_le_iff_orderedApproxDPLawPair
+    {Y : Type*} [MeasurableSpace Y]
+    (mu nu : ProbabilityMeasure Y) (epsilon delta : Real) :
+    eventHockeyStickProfile (mu : Measure Y) (nu : Measure Y) epsilon ≤
+        ENNReal.ofReal delta ↔
+      OrderedApproxDPLawPair mu nu epsilon delta := by
+  rw [eventHockeyStickProfile, iSup_le_iff]
+  constructor
+  · intro h s hs
+    have h' := h ⟨s, hs⟩
+    rw [tsub_le_iff_right] at h'
+    simpa [add_comm] using h'
+  · intro h s
+    rw [tsub_le_iff_right]
+    simpa [add_comm] using h s.1 s.2
+
+/-- Exact two-sided accounting oracle for a binary pair of probability laws. -/
+def binaryAccountingProfile
+    {Y : Type*} [MeasurableSpace Y]
+    (mu nu : ProbabilityMeasure Y) (epsilon : Real) : ENNReal :=
+  max
+    (eventHockeyStickProfile (mu : Measure Y) (nu : Measure Y) epsilon)
+    (eventHockeyStickProfile (nu : Measure Y) (mu : Measure Y) epsilon)
+
+/-- A law compared with itself has zero profile at nonnegative privacy budget. -/
+theorem binaryAccountingProfile_self_eq_zero
+    {Y : Type*} [MeasurableSpace Y] (mu : ProbabilityMeasure Y)
+    (epsilon : Real) (hepsilon : 0 ≤ epsilon) :
+    binaryAccountingProfile mu mu epsilon = 0 := by
+  have hordered : OrderedENNRealLawPair (mu : Measure Y) (mu : Measure Y)
+      (ENNReal.ofReal (Real.exp epsilon)) 0 := by
+    intro s hs
+    simp only [add_zero]
+    have hcoefficient : 1 ≤ ENNReal.ofReal (Real.exp epsilon) := by
+      simpa using ENNReal.ofReal_le_ofReal (Real.one_le_exp hepsilon)
+    calc
+      (mu : Measure Y) s = 1 * (mu : Measure Y) s := by simp
+      _ ≤ ENNReal.ofReal (Real.exp epsilon) * (mu : Measure Y) s :=
+        mul_le_mul_of_nonneg_right hcoefficient (by exact bot_le)
+  have hprofile : eventHockeyStickProfile (mu : Measure Y) (mu : Measure Y)
+      epsilon = 0 := by
+    apply le_antisymm
+    · exact
+        (eventHockeyStickProfile_le_iff_orderedENNRealLawPair _ _ _ _).2 hordered
+    · exact bot_le
+  simp [binaryAccountingProfile, hprofile]
+
+/-- A binary profile threshold is exactly the pair of ordered event inequalities. -/
+theorem binaryAccountingProfile_le_iff
+    {Y : Type*} [MeasurableSpace Y]
+    (mu nu : ProbabilityMeasure Y) (epsilon delta : Real) :
+    binaryAccountingProfile mu nu epsilon ≤ ENNReal.ofReal delta ↔
+      OrderedApproxDPLawPair mu nu epsilon delta ∧
+        OrderedApproxDPLawPair nu mu epsilon delta := by
+  simp only [binaryAccountingProfile, max_le_iff,
+    eventHockeyStickProfile_le_iff_orderedApproxDPLawPair]
+
+/-- The exact event profile is invariant under a measurable equivalence. -/
+theorem eventHockeyStickProfile_map_measurableEquiv
+    {Y Z : Type*} [MeasurableSpace Y] [MeasurableSpace Z]
+    (e : Y ≃ᵐ Z) (mu nu : Measure Y) (epsilon : Real) :
+    eventHockeyStickProfile (Measure.map e mu) (Measure.map e nu) epsilon =
+      eventHockeyStickProfile mu nu epsilon := by
+  apply le_antisymm
+  · rw [eventHockeyStickProfile, iSup_le_iff]
+    intro s
+    rw [Measure.map_apply e.measurable s.2,
+  refine Finset.sum_eq_zero ?_
+  intro u hu
+  have hcard : u.card = k := (Finset.mem_powersetCard.mp hu).2
+  simp [hcard]
+
+/--
+Uniform theorem-facing mass on the fixed-cardinality BIS support.
+
+The mass is intentionally defined on all subsets, but is nonzero only on
+`base.powersetCard k`.
+-/
+def bisFixedCardUniformMass {α : Type} [DecidableEq α]
+    (base : Finset α) (k : ℕ) (u : Finset α) : ℝ :=
+  if u ∈ base.powersetCard k then ((Nat.choose base.card k : ℝ)⁻¹) else 0
+
+/-- Coordinate marginal induced by the uniform fixed-cardinality BIS mass. -/
+def bisFixedCardUniformMarginal {α : Type} [DecidableEq α]
+    (base : Finset α) (k : ℕ) (a : α) : ℝ :=
+  Finset.sum (base.powersetCard k)
+    (fun u : Finset α =>
+      bisFixedCardUniformMass base k u * if a ∈ u then (1 : ℝ) else 0)
+
+/-- Joint coordinate marginal induced by the uniform fixed-cardinality BIS mass. -/
+def bisFixedCardUniformPairMarginal {α : Type} [DecidableEq α]
+    (base : Finset α) (k : ℕ) (a b : α) : ℝ :=
+  Finset.sum (base.powersetCard k)
+    (fun u : Finset α =>
+      bisFixedCardUniformMass base k u * if a ∈ u ∧ b ∈ u then (1 : ℝ) else 0)
+
+/-- Covariance entry induced by the uniform fixed-cardinality BIS mass. -/
+def bisFixedCardUniformCovarianceEntry {α : Type} [DecidableEq α]
+    (base : Finset α) (k : ℕ) (a b : α) : ℝ :=
+  bisFixedCardUniformPairMarginal base k a b
+    - bisFixedCardUniformMarginal base k a * bisFixedCardUniformMarginal base k b
+
+/-- Uniform fixed-cardinality mass is nonnegative. -/
+theorem bisFixedCardUniformMass_nonneg
+    {α : Type} [DecidableEq α]
+    (base : Finset α) (k : ℕ) (u : Finset α) :
+    0 ≤ bisFixedCardUniformMass base k u := by
+  unfold bisFixedCardUniformMass
+  by_cases h : u ∈ base.powersetCard k
+  · simp [h, inv_nonneg]
+  · simp [h]
+
+/-- Uniform fixed-cardinality mass normalizes on its support. -/
+theorem bisFixedCardUniformMass_sum_support_eq_one
+    {α : Type} [DecidableEq α]
+    (base : Finset α) (k : ℕ) (hk : k ≤ base.card) :
+    Finset.sum (base.powersetCard k) (bisFixedCardUniformMass base k) = 1 := by
+  unfold bisFixedCardUniformMass
+  have hchoose_pos : (0 : ℝ) < (Nat.choose base.card k : ℝ) := by
+    exact_mod_cast Nat.choose_pos hk
+  calc
+    Finset.sum (base.powersetCard k)
+        (fun u => if u ∈ base.powersetCard k then ((Nat.choose base.card k : ℝ)⁻¹) else 0)
+        = Finset.sum (base.powersetCard k)
+            (fun _u => ((Nat.choose base.card k : ℝ)⁻¹)) := by
+          refine Finset.sum_congr rfl ?_
+          intro u hu
+          simp [hu]
+    _ = (Nat.choose base.card k : ℝ) * (Nat.choose base.card k : ℝ)⁻¹ := by
+          simp [Finset.card_powersetCard, nsmul_eq_mul]
+    _ = 1 := by
+          exact mul_inv_cancel₀ hchoose_pos.ne'
+
+/-- Uniform fixed-cardinality mass normalizes as a full finite-type sum. -/
+theorem bisFixedCardUniformMass_sum_univ_eq_one
+    {α : Type} [Fintype α] [DecidableEq α]
+    (base : Finset α) (k : ℕ) (hk : k ≤ base.card) :
+    Finset.sum Finset.univ (bisFixedCardUniformMass base k) = 1 := by
+  calc
+    Finset.sum Finset.univ (bisFixedCardUniformMass base k)
+      = Finset.sum (base.powersetCard k) (bisFixedCardUniformMass base k) := by
+          symm
+          refine Finset.sum_subset (by intro u hu; simp) ?_
+          intro u _hu hnot
+          unfold bisFixedCardUniformMass
+          simp [hnot]
+    _ = 1 := by
+          rw [bisFixedCardUniformMass_sum_support_eq_one base k hk]
+
+/-- Uniform fixed-cardinality mass has mean participation count `k`. -/
+theorem bisFixedCardUniformMass_mean_count_eq
+    {α : Type} [DecidableEq α]
+open scoped BigOperators
+noncomputable section
+
+abbrev Vector (n : ℕ) := Fin n → ℝ
+
+def dot {n : ℕ} (u v : Vector n) : ℝ :=
+  ∑ i : Fin n, u i * v i
+
+lemma measurable_dot_left {n : ℕ} (u : Vector n) :
+    Measurable (fun v : Vector n => dot u v) := by
+  have hcont : Continuous (fun v : Vector n => dot u v) := by
+    unfold dot
+    continuity
+  exact hcont.measurable
+
+lemma dot_add_right {n : ℕ} (u v w : Vector n) :
+    dot u (fun i => v i + w i) = dot u v + dot u w := by
+  unfold dot
+  simp [mul_add, Finset.sum_add_distrib]
+
+lemma dot_sub_right {n : ℕ} (u v w : Vector n) :
+    dot u (fun i => v i - w i) = dot u v - dot u w := by
+  unfold dot
+  simp [sub_eq_add_neg, Finset.sum_add_distrib, mul_add]
+
+lemma dot_neg_right {n : ℕ} (u v : Vector n) :
+    dot u (fun i => -v i) = -dot u v := by
+  unfold dot
+  simp
+
+lemma dot_neg_left {n : ℕ} (u v : Vector n) :
+    dot (fun i => -u i) v = -dot u v := by
+  unfold dot
+  simp
+
+lemma dot_self_eq_sum_sq {n : ℕ} (u : Vector n) :
+This module constructs transcript laws for release kernels whose next row may
+depend measurably on all prior releases.  It is the measure-level foundation
+needed by finite-horizon private optimizers.  In particular, these laws are
+`Measure.bind` chains, not products of fixed one-step mechanisms.
+
+The first block below is mechanism semantics only.  Privacy composition is
+proved against these exact laws later in this module.
+-/
+
+/-- A fixed ambient history stores the releases written before the current
+step.  Coordinates at or after the current step are ignored.  Using one ambient
+type avoids dependent measurable-space transports between successive finite
+prefixes. -/
+abbrev AdaptiveReleaseHistory (Release : Type*) := ℕ → Release
+
+/-- Replace coordinate `step` of a release history. -/
+def writeRelease {Release : Type*} (step : ℕ)
+    (p : AdaptiveReleaseHistory Release × Release) :
+    AdaptiveReleaseHistory Release :=
+  fun i => if i = step then p.2 else p.1 i
+
+theorem measurable_writeRelease
+    {Release : Type*} [MeasurableSpace Release] (step : ℕ) :
+    Measurable (writeRelease (Release := Release) step) := by
+  apply measurable_pi_lambda
+  intro i
+        q ^ 2 * tiltSquare sample := by
+    funext sample
+    dsimp [sparseGaussianLikelihoodRatio, tilt, tiltSquare]
+    rw [show Real.exp (2 * standardizedShift * sample - standardizedShift ^ 2) =
+        (Real.exp (standardizedShift * sample - standardizedShift ^ 2 / 2)) ^ 2 by
+      calc
+        Real.exp (2 * standardizedShift * sample - standardizedShift ^ 2) =
+            Real.exp ((standardizedShift * sample - standardizedShift ^ 2 / 2) +
+              (standardizedShift * sample - standardizedShift ^ 2 / 2)) := by
+                congr 1
+                ring
+        _ = Real.exp (standardizedShift * sample - standardizedShift ^ 2 / 2) *
+              Real.exp (standardizedShift * sample - standardizedShift ^ 2 / 2) := by
+                rw [Real.exp_add]
+        _ = (Real.exp (standardizedShift * sample - standardizedShift ^ 2 / 2)) ^ 2 := by
+                ring]
+    ring
+  rw [hdecomp]
+  change (∫ sample,
+      ((1 - q) ^ 2 + 2 * q * (1 - q) * tilt sample) +
+        q ^ 2 * tiltSquare sample ∂(gaussianReal 0 1).restrict (Set.Iic threshold)) = _
+  have hsplit :
+      (∫ sample in Set.Iic threshold,
+        ((1 - q) ^ 2 + 2 * q * (1 - q) * tilt sample) +
+          q ^ 2 * tiltSquare sample ∂gaussianReal 0 1) =
+        (∫ sample in Set.Iic threshold,
+          (1 - q) ^ 2 + 2 * q * (1 - q) * tilt sample ∂gaussianReal 0 1) +
+          (∫ sample in Set.Iic threshold,
+            q ^ 2 * tiltSquare sample ∂gaussianReal 0 1) := by
+    simpa [add_assoc] using
+      (integral_add (μ := (gaussianReal 0 1).restrict (Set.Iic threshold))
+        (hconst.add htilt) htiltSquare)
+  rw [hsplit, integral_add hconst htilt, integral_const, integral_const_mul,
+    integral_const_mul]
+  rw [integral_gaussianLikelihoodTilt_Iic,
+    integral_gaussianLikelihoodTiltSquare_Iic]
+  have hzero := gaussianReal_unitVar_apply_Iic_eq_stdNormalMeasure_shift 0 threshold
+  have hzero' : gaussianReal 0 1 (Set.Iic threshold) =
+      stdNormalMeasure (Set.Iic threshold) := by simpa using hzero
+  simp [q, Measure.real, Measure.restrict_apply measurableSet_Iic, hzero',
+    stdNormalCDFReal_eq_real_measure_Iic]
+  ring
+
+theorem integral_sparseGaussianProductLikelihoodRatio_belowBox
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift threshold : Real) :
+    (∫ sample in sparseGaussianProductBelowBox horizon threshold,
+      sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+        standardizedShift sample
+      ∂Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) =
+      ((1 - (samplingRate : Real)) * stdNormalCDFReal threshold +
+        (samplingRate : Real) *
+          stdNormalCDFReal (threshold - standardizedShift)) ^ horizon := by
+  change (∫ sample in Set.pi Set.univ (fun _ : Fin horizon => Set.Iic threshold),
+      sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+        standardizedShift sample
+      ∂Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) = _
+  rw [Measure.restrict_pi_pi]
+  change (∫ sample,
+      ∏ coordinate,
+        sparseGaussianLikelihoodRatio (samplingRate : Real) standardizedShift
+          (sample coordinate)
+      ∂Measure.pi (fun _ : Fin horizon =>
+        (gaussianReal 0 1).restrict (Set.Iic threshold))) = _
+  rw [integral_fintype_prod_eq_prod]
+  simp_rw [integral_sparseGaussianLikelihoodRatio_Iic samplingRate hRate
+    standardizedShift threshold]
+  simp [Finset.prod_const]
+
+theorem integral_sparseGaussianProductLikelihoodRatio_sq_belowBox
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift threshold : Real) :
+    (∫ sample in sparseGaussianProductBelowBox horizon threshold,
+      (sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+        standardizedShift sample) ^ 2
+      ∂Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) =
+      ((1 - (samplingRate : Real)) ^ 2 * stdNormalCDFReal threshold +
+        2 * (samplingRate : Real) * (1 - (samplingRate : Real)) *
+          stdNormalCDFReal (threshold - standardizedShift) +
+        (samplingRate : Real) ^ 2 * Real.exp (standardizedShift ^ 2) *
+          stdNormalCDFReal (threshold - 2 * standardizedShift)) ^ horizon := by
+  change (∫ sample in Set.pi Set.univ (fun _ : Fin horizon => Set.Iic threshold),
+      (sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+        standardizedShift sample) ^ 2
+      ∂Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) = _
+  rw [Measure.restrict_pi_pi]
+  change (∫ sample,
+      (∏ coordinate,
+        sparseGaussianLikelihoodRatio (samplingRate : Real) standardizedShift
+          (sample coordinate)) ^ 2
+      ∂Measure.pi (fun _ : Fin horizon =>
+        (gaussianReal 0 1).restrict (Set.Iic threshold))) = _
+  rw [show (fun sample : Fin horizon → Real =>
+      (∏ coordinate,
+        sparseGaussianLikelihoodRatio (samplingRate : Real) standardizedShift
+          (sample coordinate)) ^ 2) =
+      fun sample => ∏ coordinate,
+        (sparseGaussianLikelihoodRatio (samplingRate : Real) standardizedShift
+          (sample coordinate)) ^ 2 by
+    funext sample
+    rw [← Finset.prod_pow]]
+  rw [integral_fintype_prod_eq_prod
+    (f := fun _ (x : Real) =>
+      (sparseGaussianLikelihoodRatio (samplingRate : Real) standardizedShift x) ^ 2)]
+  simp_rw [integral_sparseGaussianLikelihoodRatio_sq_Iic samplingRate hRate
+    standardizedShift threshold]
+  simp [Finset.prod_const]
+
+theorem sparseGaussianProductBelowBoxReferenceMeasure_real_univ
+    (horizon : Nat) (threshold : Real) :
+    (sparseGaussianProductBelowBoxReferenceMeasure horizon threshold).real Set.univ =
+      (stdNormalCDFReal threshold) ^ horizon := by
+  unfold sparseGaussianProductBelowBoxReferenceMeasure
+  rw [measureReal_def, Measure.restrict_apply MeasurableSet.univ]
+  simp only [Set.univ_inter]
+  change ((Measure.pi (fun _ : Fin horizon => gaussianReal 0 1))
+    (Set.pi Set.univ (fun _ : Fin horizon => Set.Iic threshold))).toReal = _
+  rw [Measure.pi_pi]
+  have hcoordinate : gaussianReal 0 1 (Set.Iic threshold) =
+      ENNReal.ofReal (stdNormalCDFReal threshold) := by
+    rw [show gaussianReal 0 1 (Set.Iic threshold) =
+        stdNormalMeasure (Set.Iic threshold) by
+      simpa using gaussianReal_unitVar_apply_Iic_eq_stdNormalMeasure_shift 0 threshold]
+    rw [stdNormalCDFReal_eq_real_measure_Iic]
+    exact (ofReal_measureReal (μ := stdNormalMeasure) (s := Set.Iic threshold)
+      (by finiteness)).symm
+  simp [hcoordinate, ENNReal.toReal_ofReal (stdNormalCDFReal_nonneg threshold)]
+
+theorem integral_sparseGaussianProductLikelihoodRatio_sub_const_sq_belowBox_eq
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift threshold coefficient : Real) :
+    (∫ sample,
+      (sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+        standardizedShift sample - coefficient) ^ 2
+      ∂sparseGaussianProductBelowBoxReferenceMeasure horizon threshold) =
+      ((1 - (samplingRate : Real)) ^ 2 * stdNormalCDFReal threshold +
+          2 * (samplingRate : Real) * (1 - (samplingRate : Real)) *
+            stdNormalCDFReal (threshold - standardizedShift) +
+          (samplingRate : Real) ^ 2 * Real.exp (standardizedShift ^ 2) *
+            stdNormalCDFReal (threshold - 2 * standardizedShift)) ^ horizon -
+        2 * coefficient *
+          (((1 - (samplingRate : Real)) * stdNormalCDFReal threshold +
+            (samplingRate : Real) *
+              stdNormalCDFReal (threshold - standardizedShift)) ^ horizon) +
+        coefficient ^ 2 * (stdNormalCDFReal threshold) ^ horizon := by
+  letI : IsFiniteMeasure
+      (sparseGaussianProductBelowBoxReferenceMeasure horizon threshold) := by
+    unfold sparseGaussianProductBelowBoxReferenceMeasure
+    infer_instance
+  rw [integral_sub_const_sq_eq]
+  · have hsecond := integral_sparseGaussianProductLikelihoodRatio_sq_belowBox
+      horizon samplingRate hRate standardizedShift threshold
+    have hfirst := integral_sparseGaussianProductLikelihoodRatio_belowBox
+      horizon samplingRate hRate standardizedShift threshold
+    have hmass := sparseGaussianProductBelowBoxReferenceMeasure_real_univ
+      horizon threshold
+    change (∫ sample,
+      (sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+        standardizedShift sample) ^ 2
+      ∂sparseGaussianProductBelowBoxReferenceMeasure horizon threshold) = _ at hsecond
+    change (∫ sample,
+      sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+        standardizedShift sample
+      ∂sparseGaussianProductBelowBoxReferenceMeasure horizon threshold) = _ at hfirst
+    rw [hsecond, hfirst, hmass]
+  · exact integrableOn_sparseGaussianProductLikelihoodRatio_belowBox horizon
+      samplingRate standardizedShift threshold
+  · exact integrableOn_sparseGaussianProductLikelihoodRatio_sq_belowBox horizon
+      samplingRate standardizedShift threshold
+
+theorem sparseGaussianProductLikelihoodRatio_closedCenteredSquare_nonneg
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (standardizedShift threshold coefficient : Real) :
+    0 ≤
+      ((1 - (samplingRate : Real)) ^ 2 * stdNormalCDFReal threshold +
+          2 * (samplingRate : Real) * (1 - (samplingRate : Real)) *
+            stdNormalCDFReal (threshold - standardizedShift) +
+          (samplingRate : Real) ^ 2 * Real.exp (standardizedShift ^ 2) *
+            stdNormalCDFReal (threshold - 2 * standardizedShift)) ^ horizon -
+        2 * coefficient *
+          (((1 - (samplingRate : Real)) * stdNormalCDFReal threshold +
+            (samplingRate : Real) *
+              stdNormalCDFReal (threshold - standardizedShift)) ^ horizon) +
+        coefficient ^ 2 * (stdNormalCDFReal threshold) ^ horizon := by
+  rw [← integral_sparseGaussianProductLikelihoodRatio_sub_const_sq_belowBox_eq
+    horizon samplingRate hRate standardizedShift threshold coefficient]
+  exact integral_sub_const_sq_nonneg _ _ _
+
+end
+
+end Mf.DP
+
+STDERR

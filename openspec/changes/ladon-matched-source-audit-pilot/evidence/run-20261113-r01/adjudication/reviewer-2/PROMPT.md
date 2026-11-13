@@ -1,0 +1,7 @@
+# Independent blinded adjudication
+
+You are an independent mathematical adjudicator. Review both anonymized first-report dossiers in this input, applying `INPUT/RUBRIC.md` to the six registered claims in `INPUT/SCORE-POPULATION.json`. The dossiers are identified only as X and Y; do not infer or investigate which tool or arm produced either one. Do not inspect run directories, original first reports, registration/evaluation evidence, other adjudicators, project history, or external sources. Do not communicate with another agent or the user.
+
+Inspect the provided TeX notes and Lean capsule directly. For every reported finding, control, abstention, or unresolved claim, evaluate source-to-formal correspondence, assumptions, domains/quantifiers, argument evidence, reader usefulness, false-accusation severity, confidence, and unresolved questions. Failed tactics or absent local declarations are not refutations. Mark claims outside the six-claim scoring population as exploratory. If a judgment depends on a check, run only a bounded local check and record the exact command and output under `OUTPUT/evidence/`.
+
+Before reading the dossiers, save `OUTPUT/ROLE-ACK.json` confirming you are a fresh reviewer, did not participate in either audit arm or source selection, and have not seen an answer key or another reviewer’s findings. Then save a signed `OUTPUT/RATING.json` with one record for each report-claim pair. Preserve any disagreements within your own analysis as unresolved; do not guess the hidden arm identities.

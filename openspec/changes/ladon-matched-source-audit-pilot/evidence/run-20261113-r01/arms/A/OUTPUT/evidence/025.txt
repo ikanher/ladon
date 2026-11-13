@@ -1,0 +1,38 @@
+$ python3 - <<'PY'
+from pathlib import Path
+import json,hashlib,datetime
+out=Path("/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT")
+full={"Mf/DP/MatchedGaussianSourceNormalization.lean","Mf/DP/Training/KOutOfT/TrainingMechanism.lean","Mf/DP/Training/Common/AdaptiveTranscript.lean","Mf/DP/Training/Common/DatasetAdjacency.lean","Mf/DP/Training/Common/GlobalSigmaOptimality.lean","Mf/DP/VectorClipping.lean","Mf/DP/EuclideanVectorClipping.lean","Mf/DP/FiniteProfileRestrictedSecondMomentUpperBound.lean","Mf/DP/FiniteMeasurePositivePartSecondMoment.lean","Mf/DP/FiniteProfileCoefficientDuality.lean","Mf/DP/SampledGaussianFiniteBracketCalibration.lean","Mf/DP/SampledGaussianProductFiniteProfileBounds.lean","Mf/DP/SparseGaussianProductForwardUpperBound.lean","Mf/DP/SparseGaussianProductReverseBounds.lean","Mf/DP/SparseGaussianProductMaximumEventLowerBound.lean","Mf/DP/SparseGaussianProductLikelihoodRatio.lean","Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean","Mf/DP/SampledGaussianProductNoiseMonotonicity.lean","Mf/DP/SampledGaussianCalibrationThresholds.lean","Mf/DP/SampledGaussianCalibratedStddev.lean","Mf/DP/SparseGaussianLikelihoodRatio.lean","Mf/DP/TruncatedGaussianExponentialMoments.lean"}
+partial={"Mf/DP/SampledGaussianProductMaximumEvent.lean":"15–35,82–212 and declaration search; later public probability adapters not read fully","Mf/DP/LawAccountingOracle.lean":"1–115 and declaration search","Mf/DP/BSRGaussianCore.lean":"1–180 and declaration search including Gaussian measure alias","Mf/Probability/FiniteGaussianDensity.lean":"15–90,425–443 and declaration search","Mf/DP/OptimalSubsamplingBISLR.lean":"1530–1614 and declaration search","Mf/DP/ProfileAdaptiveKernelComposition.lean":"15–40 and declaration search","Mf/DP/SampledGaussianOutputLaws.lean":"1–115"}
+rows=json.loads((out/"evidence/source-inventory.json").read_text())
+for r in rows:
+ p=r["path"]
+ if p.startswith("sources/"):r["coverage"]="complete source read; claim groups inventoried in report"
+ else:
+  short=p.removeprefix("lean/")
+  r["coverage"]="complete file read; focused mathematical inspection" if short in full else "partial: "+partial[short] if short in partial else "inventory only; mathematical body unexamined"
+(out/"evidence/source-inventory-with-coverage.json").write_text(json.dumps(rows,indent=2)+"\n")
+print("Coverage counts:",len(full),"complete Lean files;",len(partial),"partial Lean files;",63-len(full)-len(partial),"inventory-only Lean files.")
+print("Current UTC:",datetime.datetime.now(datetime.timezone.utc).isoformat())
+print("Source hashes:",json.dumps([r for r in rows if r["path"].endswith(".tex")],indent=2))
+PY
+EXIT 0
+STDOUT
+Coverage counts: 22 complete Lean files; 7 partial Lean files; 34 inventory-only Lean files.
+Current UTC: 2026-11-12T22:55:59.714468+00:00
+Source hashes: [
+  {
+    "path": "sources/latex/natural-language/deterministic_koutoft_training_accountant_proof.tex",
+    "lines": 502,
+    "sha256": "c3481d0da86418b2c880b79b66abdbc4bf684e7a1b3edcdf03fc3014ba514602",
+    "coverage": "complete source read; claim groups inventoried in report"
+  },
+  {
+    "path": "sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex",
+    "lines": 720,
+    "sha256": "7c82e6719baf1857b6e71691b8257292c42c20b914f5d3f70fe9fc49412a364b",
+    "coverage": "complete source read; claim groups inventoried in report"
+  }
+]
+
+STDERR

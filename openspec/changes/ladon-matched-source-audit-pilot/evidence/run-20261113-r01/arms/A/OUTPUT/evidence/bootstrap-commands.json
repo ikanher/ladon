@@ -1,0 +1,25 @@
+[
+  {
+    "id": "bootstrap-1",
+    "command": "cat /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/PROMPT.md",
+    "exit_code": 0,
+    "stdout_artifact": "prompt-read.txt"
+  },
+  {
+    "id": "bootstrap-2",
+    "command": "mkdir -p /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT/evidence\npython3 - <<PY\nimport json, datetime\np=/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT/\nt=datetime.datetime.now(datetime.timezone.utc).isoformat()\nack={arm:A,understands_assigned_arm:True,will_not_inspect_other_run_or_registration_files:True,has_not_received_answer_or_another_arm_report:True,timestamp_utc:t}\nopen(p+ROLE-ACK.json,x).write(json.dumps(ack,indent=2)+\n)\nopen(p+evidence/start-time.txt,x).write(t+\n)\nPY\ncat /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/INPUT/RECIPE.md",
+    "exit_code": 0,
+    "stdout_artifact": "recipe-read.txt",
+    "side_effects": [
+      "ROLE-ACK.json",
+      "start-time.txt"
+    ]
+  },
+  {
+    "id": "bootstrap-3",
+    "command": "find /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/INPUT -type f | sort",
+    "exit_code": 0,
+    "stdout": "147 paths; tool UI truncated at 6000-token budget",
+    "reconstructed_complete_inventory": "input-file-inventory.txt"
+  }
+]

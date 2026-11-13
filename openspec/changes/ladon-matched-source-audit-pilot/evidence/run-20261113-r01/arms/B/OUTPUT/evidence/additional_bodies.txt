@@ -1,0 +1,639 @@
+$ python3 -c 'from pathlib import Path; parts={"capsule/lean/Mf/DP/FiniteMeasurePositivePartSecondMoment.lean":(1,280),"capsule/lean/Mf/DP/FiniteProfileCoefficientDuality.lean":(1,230),"capsule/lean/Mf/DP/SampledGaussianCalibrationThresholds.lean":(1,95),"capsule/lean/Mf/Probability/FiniteGaussianDensity.lean":(1,90),"capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean":(1535,1612)}; [(print("FILE:",n),print("".join(f"{i}: {s}" for i,s in enumerate(Path(n).open(),1) if a<=i<=b))) for n,(a,b) in parts.items()]'
+CWD: /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/INPUT
+FILE: capsule/lean/Mf/DP/FiniteMeasurePositivePartSecondMoment.lean
+1: import Mathlib.MeasureTheory.Function.L2Space
+2: import Mathlib.MeasureTheory.Integral.MeanInequalities
+3: 
+4: /-!
+5: # Positive-part bounds under a finite measure
+6: 
+7: This owner bounds the integral of a positive part by the zeroth, first, and
+8: second moments under the same finite measure.  Applying it to a restricted
+9: measure preserves the restricted mass instead of introducing a zero-extension
+10: penalty outside the retained event.
+11: -/
+12: 
+13: open MeasureTheory
+14: 
+15: namespace Mf.DP
+16: 
+17: noncomputable section
+18: 
+19: set_option autoImplicit false
+20: 
+21: /-- Finite-measure Cauchy--Schwarz in a form that keeps the total mass. -/
+22: theorem integral_abs_le_sqrt_measureReal_mul_integral_sq
+23:     {X : Type*} [MeasurableSpace X]
+24:     (measure : Measure X) [IsFiniteMeasure measure]
+25:     (value : X → Real)
+26:     (hvalue : AEStronglyMeasurable value measure)
+27:     (hsquare : Integrable (fun sample => value sample ^ 2) measure) :
+28:     (∫ sample, |value sample| ∂measure) ≤
+29:       Real.sqrt (measure.real Set.univ * ∫ sample, value sample ^ 2 ∂measure) := by
+30:   have hone : MemLp (fun _ : X => (1 : Real)) 2 measure :=
+31:     (memLp_two_iff_integrable_sq
+32:       stronglyMeasurable_const.aestronglyMeasurable).2 (integrable_const _)
+33:   have habs : MemLp (fun sample => |value sample|) 2 measure :=
+34:     (memLp_two_iff_integrable_sq hvalue.norm).2
+35:       (by simpa [sq_abs] using hsquare)
+36:   have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
+37:     (μ := measure) (p := (2 : Real)) (q := (2 : Real))
+38:     Real.HolderConjugate.two_two
+39:     (ae_of_all measure fun _ : X => show 0 ≤ (1 : Real) by norm_num)
+40:     (ae_of_all measure fun sample => abs_nonneg (value sample))
+41:     (by simpa using hone) (by simpa using habs)
+42:   rw [Real.sqrt_mul measureReal_nonneg]
+43:   simpa [Real.sqrt_eq_rpow, sq_abs] using hholder
+44: 
+45: /-- The coefficient-level positive-part second-moment bound under an arbitrary
+46: finite measure.  The square term is centered at the supplied coefficient. -/
+47: theorem integral_positivePart_le_of_integrable_sq
+48:     {X : Type*} [MeasurableSpace X]
+49:     (measure : Measure X) [IsFiniteMeasure measure]
+50:     (value : X → Real) (coefficient : Real)
+51:     (hvalue : AEStronglyMeasurable value measure)
+52:     (hsquare : Integrable (fun sample => (value sample - coefficient) ^ 2) measure) :
+53:     (∫ sample, max (value sample - coefficient) 0 ∂measure) ≤
+54:       (Real.sqrt (measure.real Set.univ *
+55:           ∫ sample, (value sample - coefficient) ^ 2 ∂measure) +
+56:         (∫ sample, value sample ∂measure) -
+57:           coefficient * measure.real Set.univ) / 2 := by
+58:   let residual : X → Real := fun sample => value sample - coefficient
+59:   have hresidual : AEStronglyMeasurable residual measure :=
+60:     hvalue.sub stronglyMeasurable_const.aestronglyMeasurable
+61:   have hresidualLp : MemLp residual 2 measure :=
+62:     (memLp_two_iff_integrable_sq hresidual).2 hsquare
+63:   have hresidualIntegrable : Integrable residual measure :=
+64:     hresidualLp.integrable (by norm_num)
+65:   have hvalueIntegrable : Integrable value measure := by
+66:     simpa [residual, sub_eq_add_neg] using
+67:       hresidualIntegrable.add (integrable_const coefficient)
+68:   have habs := integral_abs_le_sqrt_measureReal_mul_integral_sq
+69:     measure residual hresidual hsquare
+70:   have hpoint : (fun sample => max (value sample - coefficient) 0) =
+71:       fun sample => (|residual sample| + residual sample) / 2 := by
+72:     funext sample
+73:     by_cases hnonneg : 0 ≤ residual sample
+74:     · rw [max_eq_left]
+75:       · rw [abs_of_nonneg hnonneg]
+76:         ring
+77:       · exact hnonneg
+78:     · have hnonpos : residual sample ≤ 0 := le_of_not_ge hnonneg
+79:       rw [max_eq_right hnonpos, abs_of_nonpos hnonpos]
+80:       ring
+81:   have habsIntegrable : Integrable (fun sample => |residual sample|) measure := by
+82:     simpa [Real.norm_eq_abs] using hresidualIntegrable.norm
+83:   rw [hpoint, integral_div, integral_add habsIntegrable hresidualIntegrable]
+84:   rw [show (∫ sample, residual sample ∂measure) =
+85:       (∫ sample, value sample ∂measure) - coefficient * measure.real Set.univ by
+86:     dsimp [residual]
+87:     rw [integral_sub hvalueIntegrable (integrable_const coefficient), integral_const]
+88:     simp [smul_eq_mul, mul_comm]]
+89:   have habs' : (∫ sample, |residual sample| ∂measure) ≤
+90:       Real.sqrt (measure.real Set.univ *
+91:         ∫ sample, (value sample - coefficient) ^ 2 ∂measure) := by
+92:     simpa [residual] using habs
+93:   linarith
+94: 
+95: /-- Expanding a square under a finite measure retains the total mass in the
+96: constant term. -/
+97: theorem integral_sub_const_sq_eq
+98:     {X : Type*} [MeasurableSpace X]
+99:     (measure : Measure X) [IsFiniteMeasure measure]
+100:     (value : X → Real) (coefficient : Real)
+101:     (hvalue : Integrable value measure)
+102:     (hvalueSquare : Integrable (fun sample => value sample ^ 2) measure) :
+103:     (∫ sample, (value sample - coefficient) ^ 2 ∂measure) =
+104:     (∫ sample, value sample ^ 2 ∂measure) -
+105:         2 * coefficient * (∫ sample, value sample ∂measure) +
+106:         coefficient ^ 2 * measure.real Set.univ := by
+107:   have hlinear : Integrable (fun sample => 2 * coefficient * value sample) measure :=
+108:     hvalue.const_mul _
+109:   have hconstant : Integrable (fun _ : X => coefficient ^ 2) measure :=
+110:     integrable_const _
+111:   rw [show (fun sample => (value sample - coefficient) ^ 2) = fun sample =>
+112:       value sample ^ 2 - 2 * coefficient * value sample + coefficient ^ 2 by
+113:     funext sample
+114:     ring]
+115:   change (∫ sample,
+116:       ((fun x => value x ^ 2) - (fun x => 2 * coefficient * value x)) sample +
+117:         (fun _ : X => coefficient ^ 2) sample ∂measure) = _
+118:   rw [integral_add (hvalueSquare.sub hlinear) hconstant]
+119:   simp only [Pi.sub_apply]
+120:   rw [integral_sub hvalueSquare hlinear, integral_const_mul, integral_const]
+121:   simp [smul_eq_mul, mul_comm]
+122: 
+123: /-- The centered square integral is nonnegative. -/
+124: theorem integral_sub_const_sq_nonneg
+125:     {X : Type*} [MeasurableSpace X]
+126:     (measure : Measure X) (value : X → Real) (coefficient : Real) :
+127:     0 ≤ ∫ sample, (value sample - coefficient) ^ 2 ∂measure :=
+128:   integral_nonneg fun _ => sq_nonneg _
+129: 
+130: end
+131: 
+132: end Mf.DP
+
+FILE: capsule/lean/Mf/DP/FiniteProfileCoefficientDuality.lean
+1: import Mf.DP.LikelihoodRatioHockeyStick
+2: 
+3: /-!
+4: # Coefficient duality for density hockey-stick profiles
+5: 
+6: The profile is represented in `ENNReal`, so the signed constant `1 - alpha`
+7: must be handled in a real-valued identity before re-embedding with
+8: `ENNReal.ofReal`.  Direct `ENNReal` subtraction would be incorrect when
+9: `alpha > 1`.
+10: -/
+11: 
+12: open MeasureTheory Set
+13: 
+14: namespace Mf.DP
+15: 
+16: noncomputable section
+17: 
+18: set_option autoImplicit false
+19: 
+20: def realHockeyStickProfileWithDensity
+21:     {X : Type*} [MeasurableSpace X]
+22:     (reference : ProbabilityMeasure X) (ratio : X → Real) (coefficient : Real) : Real :=
+23:   ∫ sample, max (ratio sample - coefficient) 0 ∂(reference : Measure X)
+24: 
+25: def realHockeyStickReverseProfileWithDensity
+26:     {X : Type*} [MeasurableSpace X]
+27:     (reference : ProbabilityMeasure X) (ratio : X → Real) (coefficient : Real) : Real :=
+28:   ∫ sample, max (1 - coefficient⁻¹ * ratio sample) 0 ∂(reference : Measure X)
+29: 
+30: theorem realHockeyStickProfileWithDensity_nonneg
+31:     {X : Type*} [MeasurableSpace X]
+32:     (reference : ProbabilityMeasure X) (ratio : X → Real) (coefficient : Real) :
+33:     0 ≤ realHockeyStickProfileWithDensity reference ratio coefficient := by
+34:   unfold realHockeyStickProfileWithDensity
+35:   exact integral_nonneg fun sample => le_max_right _ _
+36: 
+37: theorem realHockeyStickReverseProfileWithDensity_nonneg
+38:     {X : Type*} [MeasurableSpace X]
+39:     (reference : ProbabilityMeasure X) (ratio : X → Real) (coefficient : Real) :
+40:     0 ≤ realHockeyStickReverseProfileWithDensity reference ratio coefficient := by
+41:   unfold realHockeyStickReverseProfileWithDensity
+42:   exact integral_nonneg fun sample => le_max_right _ _
+43: 
+44: theorem eventHockeyStickProfile_withDensity_forward_eq_ofReal_realProfile
+45:     {X : Type*} [MeasurableSpace X]
+46:     (reference : ProbabilityMeasure X) (ratio : X → Real)
+47:     (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+48:     (hRatioIntegrable : Integrable ratio (reference : Measure X))
+49:     (epsilon : Real) :
+50:     eventHockeyStickProfile
+51:         ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+52:         (reference : Measure X) epsilon =
+53:       ENNReal.ofReal
+54:         (realHockeyStickProfileWithDensity reference ratio (Real.exp epsilon)) := by
+55:   rw [eventHockeyStickProfile_withDensity_forward reference ratio hRatio
+56:     hRatioNonnegative epsilon]
+57:   change (∫⁻ sample, ENNReal.ofReal (ratio sample - Real.exp epsilon)
+58:       ∂(reference : Measure X)) =
+59:     ENNReal.ofReal (∫ sample, max (ratio sample - Real.exp epsilon) 0
+60:       ∂(reference : Measure X))
+61:   have hpositive : Integrable (fun sample => max (ratio sample - Real.exp epsilon) 0)
+62:       (reference : Measure X) :=
+63:     (hRatioIntegrable.sub (integrable_const _)).pos_part
+64:   rw [ofReal_integral_eq_lintegral_ofReal hpositive
+65:     (ae_of_all _ fun sample => le_max_right _ _)]
+66:   apply lintegral_congr
+67:   intro sample
+68:   rw [ENNReal.ofReal_max,
+69:     ENNReal.ofReal_sub (ratio sample) (Real.exp_pos epsilon).le]
+70:   simpa using (max_eq_left (bot_le : (0 : ENNReal) ≤ _)).symm
+71: 
+72: theorem realHockeyStickProfileWithDensity_coefficient_duality
+73:     {X : Type*} [MeasurableSpace X]
+74:     (reference : ProbabilityMeasure X) (ratio : X → Real)
+75:     (hRatioIntegrable : Integrable ratio (reference : Measure X))
+76:     (hRatioIntegral : ∫ sample, ratio sample ∂(reference : Measure X) = 1)
+77:     {coefficient : Real} (hCoefficient : 0 < coefficient) :
+78:     realHockeyStickProfileWithDensity reference ratio coefficient =
+79:       1 - coefficient + coefficient *
+80:         realHockeyStickReverseProfileWithDensity reference ratio coefficient := by
+81:   let reverse : X → Real :=
+82:     fun sample => max (1 - coefficient⁻¹ * ratio sample) 0
+83:   have hreverse : Integrable reverse (reference : Measure X) :=
+84:     ((integrable_const 1).sub
+85:       (hRatioIntegrable.const_mul coefficient⁻¹)).pos_part
+86:   have hforward : Integrable (fun sample => max (ratio sample - coefficient) 0)
+87:       (reference : Measure X) :=
+88:     (hRatioIntegrable.sub (integrable_const _)).pos_part
+89:   have hpoint : ∀ sample, max (ratio sample - coefficient) 0 =
+90:       ratio sample - coefficient + coefficient * reverse sample := by
+91:     intro sample
+92:     dsimp [reverse]
+93:     by_cases hle : coefficient ≤ ratio sample
+94:     · rw [max_eq_left (sub_nonneg.mpr hle), max_eq_right]
+95:       · field_simp
+96:         ring
+97:       · have hscale : 1 ≤ coefficient⁻¹ * ratio sample := by
+98:           calc
+99:             1 = coefficient⁻¹ * coefficient := by field_simp
+100:             _ ≤ coefficient⁻¹ * ratio sample :=
+101:               mul_le_mul_of_nonneg_left hle (inv_nonneg.mpr hCoefficient.le)
+102:         exact sub_nonpos.mpr hscale
+103:     · rw [max_eq_right (sub_nonpos.mpr (le_of_not_ge hle))]
+104:       have hlt : ratio sample < coefficient := lt_of_not_ge hle
+105:       have hscaled : coefficient⁻¹ * ratio sample < 1 := by
+106:         rw [inv_mul_lt_iff₀ hCoefficient]
+107:         simpa using hlt
+108:       rw [max_eq_left (sub_nonneg.mpr hscaled.le)]
+109:       field_simp
+110:       ring
+111:   unfold realHockeyStickProfileWithDensity
+112:   unfold realHockeyStickReverseProfileWithDensity
+113:   calc
+114:     (∫ sample, max (ratio sample - coefficient) 0 ∂(reference : Measure X)) =
+115:         ∫ sample, ratio sample - coefficient + coefficient * reverse sample
+116:           ∂(reference : Measure X) :=
+117:       integral_congr_ae (ae_of_all _ hpoint)
+118:     _ = (∫ sample, ratio sample - coefficient ∂(reference : Measure X)) +
+119:         ∫ sample, coefficient * reverse sample ∂(reference : Measure X) :=
+120:       integral_add (hRatioIntegrable.sub (integrable_const coefficient))
+121:         (hreverse.const_mul coefficient)
+122:     _ = 1 - coefficient + coefficient *
+123:         ∫ sample, reverse sample ∂(reference : Measure X) := by
+124:       rw [integral_sub hRatioIntegrable (integrable_const _), integral_const,
+125:         integral_const_mul, hRatioIntegral]
+126:       simp [Measure.real, measure_univ]
+127: 
+128: theorem eventHockeyStickProfile_withDensity_reverse_eq_ofReal_realProfile
+129:     {X : Type*} [MeasurableSpace X]
+130:     (reference : ProbabilityMeasure X) (ratio : X → Real)
+131:     (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+132:     (hRatioIntegrable : Integrable ratio (reference : Measure X))
+133:     {coefficient : Real} (hCoefficient : 0 < coefficient) :
+134:     eventHockeyStickProfile (reference : Measure X)
+135:         ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+136:         (-Real.log coefficient) =
+137:       ENNReal.ofReal
+138:         (realHockeyStickReverseProfileWithDensity reference ratio coefficient) := by
+139:   rw [eventHockeyStickProfile_withDensity_reverse reference ratio hRatio
+140:     hRatioNonnegative (-Real.log coefficient)]
+141:   have hexp : Real.exp (-Real.log coefficient) = coefficient⁻¹ := by
+142:     rw [Real.exp_neg, Real.exp_log hCoefficient]
+143:   rw [hexp]
+144:   let reverse : X → Real :=
+145:     fun sample => max (1 - coefficient⁻¹ * ratio sample) 0
+146:   have hreverse : Integrable reverse (reference : Measure X) :=
+147:     ((integrable_const 1).sub
+148:       (hRatioIntegrable.const_mul coefficient⁻¹)).pos_part
+149:   change (∫⁻ sample, ENNReal.ofReal (1 - coefficient⁻¹ * ratio sample)
+150:       ∂(reference : Measure X)) =
+151:     ENNReal.ofReal (∫ sample, reverse sample ∂(reference : Measure X))
+152:   rw [ofReal_integral_eq_lintegral_ofReal hreverse
+153:     (ae_of_all _ fun sample => le_max_right _ _)]
+154:   apply lintegral_congr
+155:   intro sample
+156:   rw [ENNReal.ofReal_max, ENNReal.ofReal_sub]
+157:   · simpa using (max_eq_left (bot_le : (0 : ENNReal) ≤ _)).symm
+158:   · exact mul_nonneg (inv_nonneg.mpr hCoefficient.le) (hRatioNonnegative sample)
+159: 
+160: /-- Safe coefficient duality for an exact density profile. The signed constant
+161: is evaluated in `Real`, not by truncated `ENNReal` subtraction. -/
+162: theorem eventHockeyStickProfile_withDensity_coefficient_duality
+163:     {X : Type*} [MeasurableSpace X]
+164:     (reference : ProbabilityMeasure X) (ratio : X → Real)
+165:     (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+166:     (hRatioIntegrable : Integrable ratio (reference : Measure X))
+167:     (hRatioIntegral : ∫ sample, ratio sample ∂(reference : Measure X) = 1)
+168:     {coefficient : Real} (hCoefficient : 0 < coefficient) :
+169:     eventHockeyStickProfile
+170:         ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+171:         (reference : Measure X) (Real.log coefficient) =
+172:       ENNReal.ofReal
+173:         (1 - coefficient + coefficient *
+174:           (eventHockeyStickProfile (reference : Measure X)
+175:             ((reference : Measure X).withDensity
+176:               (fun sample => ENNReal.ofReal (ratio sample)))
+177:             (-Real.log coefficient)).toReal) := by
+178:   have hforward := eventHockeyStickProfile_withDensity_forward_eq_ofReal_realProfile
+179:     reference ratio hRatio hRatioNonnegative hRatioIntegrable (Real.log coefficient)
+180:   have hreverse := eventHockeyStickProfile_withDensity_reverse_eq_ofReal_realProfile
+181:     reference ratio hRatio hRatioNonnegative hRatioIntegrable hCoefficient
+182:   have hreal := realHockeyStickProfileWithDensity_coefficient_duality reference ratio
+183:     hRatioIntegrable hRatioIntegral hCoefficient
+184:   have hforward' :
+185:       eventHockeyStickProfile
+186:           ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+187:           (reference : Measure X) (Real.log coefficient) =
+188:         ENNReal.ofReal
+189:           (realHockeyStickProfileWithDensity reference ratio coefficient) := by
+190:     simpa [Real.exp_log hCoefficient] using hforward
+191:   rw [hforward', hreverse]
+192:   rw [ENNReal.toReal_ofReal
+193:     (realHockeyStickReverseProfileWithDensity_nonneg reference ratio coefficient)]
+194:   exact congrArg ENNReal.ofReal hreal
+195: 
+196: /-- Epsilon-facing reverse duality. This is the form consumed by reciprocal
+197: forward upper bounds. -/
+198: theorem eventHockeyStickProfile_withDensity_reverse_duality
+199:     {X : Type*} [MeasurableSpace X]
+200:     (reference : ProbabilityMeasure X) (ratio : X → Real)
+201:     (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+202:     (hRatioIntegrable : Integrable ratio (reference : Measure X))
+203:     (hRatioIntegral : ∫ sample, ratio sample ∂(reference : Measure X) = 1)
+204:     (epsilon : Real) :
+205:     eventHockeyStickProfile (reference : Measure X)
+206:         ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+207:         epsilon =
+208:       ENNReal.ofReal
+209:         (1 - Real.exp epsilon + Real.exp epsilon *
+210:           (eventHockeyStickProfile
+211:             ((reference : Measure X).withDensity
+212:               (fun sample => ENNReal.ofReal (ratio sample)))
+213:             (reference : Measure X) (-epsilon)).toReal) := by
+214:   let reciprocalCoefficient : Real := Real.exp (-epsilon)
+215:   have hreciprocalPositive : 0 < reciprocalCoefficient := by
+216:     dsimp [reciprocalCoefficient]
+217:     positivity
+218:   have hreverse := eventHockeyStickProfile_withDensity_reverse_eq_ofReal_realProfile
+219:     reference ratio hRatio hRatioNonnegative hRatioIntegrable hreciprocalPositive
+220:   have hreverse' :
+221:       eventHockeyStickProfile (reference : Measure X)
+222:           ((reference : Measure X).withDensity
+223:             (fun sample => ENNReal.ofReal (ratio sample))) epsilon =
+224:         ENNReal.ofReal
+225:           (realHockeyStickReverseProfileWithDensity reference ratio
+226:             reciprocalCoefficient) := by
+227:     simpa [reciprocalCoefficient] using hreverse
+228:   have hforward := eventHockeyStickProfile_withDensity_forward_eq_ofReal_realProfile
+229:     reference ratio hRatio hRatioNonnegative hRatioIntegrable (-epsilon)
+230:   have hforward' :
+
+FILE: capsule/lean/Mf/DP/SampledGaussianCalibrationThresholds.lean
+1: import Mf.DP.FullBatchGaussianAccounting
+2: import Mf.DP.SampledGaussianProductNoiseMonotonicity
+3: 
+4: /-!
+5: # Threshold lemmas for sampled Gaussian calibration
+6: 
+7: This module supplies the order-theoretic API for the calibrated standard-deviation
+8: infimum and the fixed-factor Gaussian comparison points used by the asymptotic
+9: bracketing argument.  It makes no sampled-profile continuity or attainment claim.
+10: -/
+11: 
+12: open Set
+13: 
+14: namespace Mf.DP
+15: 
+16: noncomputable section
+17: 
+18: /-- Exact profile of the matched Gaussian source against the unchanged reference. -/
+19: def matchedGaussianProductProfileStddev
+20:     (horizon : Nat) (samplingRate : NNReal) (sensitivity : Real)
+21:     (noiseStddev : NNReal) (epsilon : Real) : ENNReal :=
+22:   binaryAccountingProfile
+23:     (matchedGaussianSourceProductLaw horizon samplingRate sensitivity (noiseStddev ^ 2))
+24:     (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon
+25: 
+26: /-- The matched product profile is the scalar Gaussian profile with signal `q Δ √T`. -/
+27: theorem matchedGaussianProductProfileStddev_eq_scalar
+28:     (horizon : Nat) (samplingRate : NNReal) (sensitivity : Real)
+29:     (noiseStddev : NNReal) (epsilon : Real)
+30:     (horizon_pos : 0 < horizon) (rate_pos : 0 < samplingRate)
+31:     (sensitivity_pos : 0 < sensitivity) (noise_pos : 0 < noiseStddev) :
+32:     matchedGaussianProductProfileStddev horizon samplingRate sensitivity
+33:         noiseStddev epsilon =
+34:       ENNReal.ofReal (Training.scalarGaussianSigmaProfile
+35:         ((samplingRate : Real) * fullBatchGaussianSignal horizon sensitivity)
+36:         epsilon noiseStddev) := by
+37:   unfold matchedGaussianProductProfileStddev matchedGaussianSourceProductLaw
+38:     matchedGaussianOneStepSourceLaw sampledGaussianReferenceProductLaw
+39:   change binaryAccountingProfile
+40:       ⟨bsrGaussianMeasure (noiseStddev : Real)
+41:         (fun _ : Fin horizon => (samplingRate : Real) * sensitivity), by infer_instance⟩
+42:       ⟨bsrGaussianMeasure (noiseStddev : Real)
+43:         (fun _ : Fin horizon => 0), by infer_instance⟩ epsilon = _
+44:   rw [bsrConstantGaussianBinaryProfile_eq_scalar horizon
+45:     ((samplingRate : Real) * sensitivity) noiseStddev epsilon horizon_pos
+46:     (mul_pos (by exact_mod_cast rate_pos) sensitivity_pos) (by exact_mod_cast noise_pos)]
+47:   simp only [fullBatchGaussianSignal]
+48:   ring_nf
+49: 
+50: /-- Feasible standard deviations remain feasible when the noise is increased. -/
+51: theorem sampledGaussianFeasibleStddevSet_upward_closed
+52:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+53:     (sensitivity epsilon delta : Real) {small large : NNReal}
+54:     (hsmall : small ∈ sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+55:       sensitivity epsilon delta) (hStddev : small ≤ large) :
+56:     large ∈ sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+57:       sensitivity epsilon delta := by
+58:   exact (sampledGaussianProductProfileStddev_antitone horizon samplingRate hRate
+59:     sensitivity epsilon hStddev).trans hsmall
+60: 
+61: /-- Every feasible candidate is an upper bound on the calibrated infimum. -/
+62: theorem sampledGaussianCalibratedStddev_le_of_feasible
+63:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+64:     (sensitivity epsilon delta : Real) (candidate : NNReal)
+65:     (hCandidate : candidate ∈ sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+66:       sensitivity epsilon delta) :
+67:     sampledGaussianCalibratedStddev horizon samplingRate hRate sensitivity epsilon delta ≤
+68:       candidate := by
+69:   apply csInf_le
+70:   · exact ⟨0, fun _ _ => bot_le⟩
+71:   · exact hCandidate
+72: 
+73: /-- An infeasible candidate lies below the calibrated infimum once feasibility is nonempty. -/
+74: theorem le_sampledGaussianCalibratedStddev_of_not_feasible
+75:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+76:     (sensitivity epsilon delta : Real) (candidate : NNReal)
+77:     (hNonempty : (sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+78:       sensitivity epsilon delta).Nonempty)
+79:     (hCandidate : candidate ∉ sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+80:       sensitivity epsilon delta) :
+81:     candidate ≤ sampledGaussianCalibratedStddev horizon samplingRate hRate
+82:       sensitivity epsilon delta := by
+83:   unfold sampledGaussianCalibratedStddev
+84:   apply le_csInf hNonempty
+85:   intro feasible hFeasible
+86:   by_contra hnot
+87:   have hlt : feasible < candidate := lt_of_not_ge hnot
+88:   exact hCandidate (sampledGaussianFeasibleStddevSet_upward_closed horizon samplingRate hRate
+89:     sensitivity epsilon delta hFeasible hlt.le)
+90: 
+91: /-- Lower fixed-factor candidate `(1-η) q g_T`, in standard-deviation units. -/
+92: def sampledGaussianLowerCalibrationCandidate
+93:     (horizon : Nat) (samplingRate eta : NNReal)
+94:     (sensitivity epsilon delta : Real)
+95:     (sensitivity_pos : 0 < sensitivity) (epsilon_nonneg : 0 ≤ epsilon)
+
+FILE: capsule/lean/Mf/Probability/FiniteGaussianDensity.lean
+1: import Mathlib
+2: import Mf.Probability.FiniteProductGaussian
+3: 
+4: /-!
+5: # Finite isotropic Gaussian geometry, densities and laws
+6: 
+7: The vector space is `Fin n → ℝ`. The law uses the existing finite product
+8: Gaussian with a constant coordinate scale, including zero and negative scales.
+9: Normalized PDFs are distinguished from the unnormalized exponential density.
+10: Translation, scalar projection and midpoint identities belong to this
+11: probability owner; privacy comparisons and application adapters are downstream.
+12: -/
+13: 
+14: namespace Mf.Probability.FiniteGaussian
+15: open scoped BigOperators
+16: noncomputable section
+17: 
+18: abbrev Vector (n : ℕ) := Fin n → ℝ
+19: 
+20: def dot {n : ℕ} (u v : Vector n) : ℝ :=
+21:   ∑ i : Fin n, u i * v i
+22: 
+23: lemma measurable_dot_left {n : ℕ} (u : Vector n) :
+24:     Measurable (fun v : Vector n => dot u v) := by
+25:   have hcont : Continuous (fun v : Vector n => dot u v) := by
+26:     unfold dot
+27:     continuity
+28:   exact hcont.measurable
+29: 
+30: lemma dot_add_right {n : ℕ} (u v w : Vector n) :
+31:     dot u (fun i => v i + w i) = dot u v + dot u w := by
+32:   unfold dot
+33:   simp [mul_add, Finset.sum_add_distrib]
+34: 
+35: lemma dot_sub_right {n : ℕ} (u v w : Vector n) :
+36:     dot u (fun i => v i - w i) = dot u v - dot u w := by
+37:   unfold dot
+38:   simp [sub_eq_add_neg, Finset.sum_add_distrib, mul_add]
+39: 
+40: lemma dot_neg_right {n : ℕ} (u v : Vector n) :
+41:     dot u (fun i => -v i) = -dot u v := by
+42:   unfold dot
+43:   simp
+44: 
+45: lemma dot_neg_left {n : ℕ} (u v : Vector n) :
+46:     dot (fun i => -u i) v = -dot u v := by
+47:   unfold dot
+48:   simp
+49: 
+50: lemma dot_self_eq_sum_sq {n : ℕ} (u : Vector n) :
+51:     dot u u = ∑ i : Fin n, (u i) ^ 2 := by
+52:   unfold dot
+53:   refine Finset.sum_congr rfl ?_
+54:   intro i hi
+55:   ring
+56: 
+57: lemma dot_self_nonneg {n : ℕ} (u : Vector n) :
+58:     0 ≤ dot u u := by
+59:   rw [dot_self_eq_sum_sq]
+60:   exact Finset.sum_nonneg (fun i _ => sq_nonneg (u i))
+61: 
+62: def density
+63:     {n : ℕ} (σ : ℝ) (μ y : Vector n) : ℝ :=
+64:   Real.exp (-(∑ i : Fin n, (y i - μ i) ^ 2) / (2 * σ ^ 2))
+65: 
+66: def normalization (σ : ℝ) : ℝ :=
+67:   (Real.sqrt (2 * Real.pi * σ ^ 2))⁻¹
+68: 
+69: def variance (σ : ℝ) : NNReal :=
+70:   ⟨σ ^ 2, sq_nonneg σ⟩
+71: 
+72: theorem variance_eq_mk (σ : ℝ) :
+73:     variance σ = ⟨σ ^ 2, sq_nonneg σ⟩ := rfl
+74: 
+75: theorem density_nonneg
+76:     {n : ℕ} (σ : ℝ) (μ y : Vector n) :
+77:     0 ≤ density σ μ y := by
+78:   unfold density
+79:   exact le_of_lt (Real.exp_pos _)
+80: 
+81: theorem density_le_one
+82:     {n : ℕ} {σ : ℝ} (hσ : σ ≠ 0) (μ y : Vector n) :
+83:     density σ μ y ≤ 1 := by
+84:   unfold density
+85:   have hsum_nonneg : 0 ≤ ∑ i : Fin n, (y i - μ i) ^ 2 :=
+86:     Finset.sum_nonneg fun i _ => sq_nonneg (y i - μ i)
+87:   have hden_pos : 0 < 2 * σ ^ 2 := by
+88:     positivity
+89:   have harg_nonpos :
+90:       -((∑ i : Fin n, (y i - μ i) ^ 2)) / (2 * σ ^ 2) ≤ 0 :=
+
+FILE: capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean
+1535: /--
+1536: Uniform theorem-facing mass on the fixed-cardinality BIS support.
+1537: 
+1538: The mass is intentionally defined on all subsets, but is nonzero only on
+1539: `base.powersetCard k`.
+1540: -/
+1541: def bisFixedCardUniformMass {α : Type} [DecidableEq α]
+1542:     (base : Finset α) (k : ℕ) (u : Finset α) : ℝ :=
+1543:   if u ∈ base.powersetCard k then ((Nat.choose base.card k : ℝ)⁻¹) else 0
+1544: 
+1545: /-- Coordinate marginal induced by the uniform fixed-cardinality BIS mass. -/
+1546: def bisFixedCardUniformMarginal {α : Type} [DecidableEq α]
+1547:     (base : Finset α) (k : ℕ) (a : α) : ℝ :=
+1548:   Finset.sum (base.powersetCard k)
+1549:     (fun u : Finset α =>
+1550:       bisFixedCardUniformMass base k u * if a ∈ u then (1 : ℝ) else 0)
+1551: 
+1552: /-- Joint coordinate marginal induced by the uniform fixed-cardinality BIS mass. -/
+1553: def bisFixedCardUniformPairMarginal {α : Type} [DecidableEq α]
+1554:     (base : Finset α) (k : ℕ) (a b : α) : ℝ :=
+1555:   Finset.sum (base.powersetCard k)
+1556:     (fun u : Finset α =>
+1557:       bisFixedCardUniformMass base k u * if a ∈ u ∧ b ∈ u then (1 : ℝ) else 0)
+1558: 
+1559: /-- Covariance entry induced by the uniform fixed-cardinality BIS mass. -/
+1560: def bisFixedCardUniformCovarianceEntry {α : Type} [DecidableEq α]
+1561:     (base : Finset α) (k : ℕ) (a b : α) : ℝ :=
+1562:   bisFixedCardUniformPairMarginal base k a b
+1563:     - bisFixedCardUniformMarginal base k a * bisFixedCardUniformMarginal base k b
+1564: 
+1565: /-- Uniform fixed-cardinality mass is nonnegative. -/
+1566: theorem bisFixedCardUniformMass_nonneg
+1567:     {α : Type} [DecidableEq α]
+1568:     (base : Finset α) (k : ℕ) (u : Finset α) :
+1569:     0 ≤ bisFixedCardUniformMass base k u := by
+1570:   unfold bisFixedCardUniformMass
+1571:   by_cases h : u ∈ base.powersetCard k
+1572:   · simp [h, inv_nonneg]
+1573:   · simp [h]
+1574: 
+1575: /-- Uniform fixed-cardinality mass normalizes on its support. -/
+1576: theorem bisFixedCardUniformMass_sum_support_eq_one
+1577:     {α : Type} [DecidableEq α]
+1578:     (base : Finset α) (k : ℕ) (hk : k ≤ base.card) :
+1579:     Finset.sum (base.powersetCard k) (bisFixedCardUniformMass base k) = 1 := by
+1580:   unfold bisFixedCardUniformMass
+1581:   have hchoose_pos : (0 : ℝ) < (Nat.choose base.card k : ℝ) := by
+1582:     exact_mod_cast Nat.choose_pos hk
+1583:   calc
+1584:     Finset.sum (base.powersetCard k)
+1585:         (fun u => if u ∈ base.powersetCard k then ((Nat.choose base.card k : ℝ)⁻¹) else 0)
+1586:         = Finset.sum (base.powersetCard k)
+1587:             (fun _u => ((Nat.choose base.card k : ℝ)⁻¹)) := by
+1588:           refine Finset.sum_congr rfl ?_
+1589:           intro u hu
+1590:           simp [hu]
+1591:     _ = (Nat.choose base.card k : ℝ) * (Nat.choose base.card k : ℝ)⁻¹ := by
+1592:           simp [Finset.card_powersetCard, nsmul_eq_mul]
+1593:     _ = 1 := by
+1594:           exact mul_inv_cancel₀ hchoose_pos.ne'
+1595: 
+1596: /-- Uniform fixed-cardinality mass normalizes as a full finite-type sum. -/
+1597: theorem bisFixedCardUniformMass_sum_univ_eq_one
+1598:     {α : Type} [Fintype α] [DecidableEq α]
+1599:     (base : Finset α) (k : ℕ) (hk : k ≤ base.card) :
+1600:     Finset.sum Finset.univ (bisFixedCardUniformMass base k) = 1 := by
+1601:   calc
+1602:     Finset.sum Finset.univ (bisFixedCardUniformMass base k)
+1603:       = Finset.sum (base.powersetCard k) (bisFixedCardUniformMass base k) := by
+1604:           symm
+1605:           refine Finset.sum_subset (by intro u hu; simp) ?_
+1606:           intro u _hu hnot
+1607:           unfold bisFixedCardUniformMass
+1608:           simp [hnot]
+1609:     _ = 1 := by
+1610:           rw [bisFixedCardUniformMass_sum_support_eq_one base k hk]
+1611: 
+1612: /-- Uniform fixed-cardinality mass has mean participation count `k`. -/
+
+
+EXIT: 0

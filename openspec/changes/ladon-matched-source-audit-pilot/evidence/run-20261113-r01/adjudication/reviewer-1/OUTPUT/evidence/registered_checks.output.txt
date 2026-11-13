@@ -1,0 +1,56 @@
+'Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript' depends on axioms: [propext, Classical.choice, Quot.sound]
+'Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass_sum_eq_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mf.DP.sampledGaussianProductMaximumEventLowerBound_le_binaryProfile' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mf.DP.sampledGaussianProductForwardProfile_le_cappedRestrictedSecondMomentUpperBound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mf.DP.sampledGaussianProductReverseProfile_le_likelihoodFloorUpperBound' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript.{u_1} {Record : Type u_1} [DecidableEq Record] {T d : ℕ}
+  (oracle : Mf.DP.Training.AdaptiveTrainingOracle Record T d) (k : ℕ) (clippingNorm sigma : ℝ)
+  (initialHistory : Mf.DP.AdaptiveReleaseHistory (Fin d → ℝ)) (dataset : Mf.DP.Training.UserDataset Record) :
+  MeasureTheory.Measure (Mf.DP.AdaptiveReleaseHistory (Fin d → ℝ))
+Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass_sum_eq_one (T k : ℕ) (hk : k ≤ T) :
+  ∑ schedule, Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass T k schedule = 1
+Mf.DP.sampledGaussianProductMaximumEventLowerBound_le_binaryProfile (horizon : ℕ) (samplingRate : NNReal)
+  (hRate : samplingRate ≤ 1) (sensitivity epsilon threshold : ℝ) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+  Mf.DP.sparseGaussianProductMaximumEventForwardLowerBound horizon samplingRate hRate (sensitivity / ↑noiseStddev)
+      epsilon threshold ≤
+    Mf.DP.binaryAccountingProfile
+      (Mf.DP.sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity (noiseStddev ^ 2))
+      (Mf.DP.sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon
+Mf.DP.sampledGaussianProductForwardProfile_le_cappedRestrictedSecondMomentUpperBound (horizon : ℕ)
+  (samplingRate : NNReal) (hRate : samplingRate ≤ 1) (sensitivity epsilon threshold : ℝ) (noiseStddev : NNReal)
+  (hStddev : 0 < noiseStddev) :
+  Mf.DP.eventHockeyStickProfile
+      (↑(Mf.DP.sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity (noiseStddev ^ 2)))
+      (↑(Mf.DP.sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2))) epsilon ≤
+    Mf.DP.sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBound horizon samplingRate
+      (sensitivity / ↑noiseStddev) epsilon threshold
+Mf.DP.sampledGaussianProductReverseProfile_le_likelihoodFloorUpperBound (horizon : ℕ) (samplingRate : NNReal)
+  (hRate : samplingRate ≤ 1) (sensitivity epsilon : ℝ) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+  Mf.DP.eventHockeyStickProfile (↑(Mf.DP.sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)))
+      (↑(Mf.DP.sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity (noiseStddev ^ 2))) epsilon ≤
+    Mf.DP.sparseGaussianProductReverseLikelihoodFloorUpperBound horizon samplingRate epsilon
+Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates (horizon : ℕ)
+  (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+  (sensitivity epsilon delta lowerThreshold forwardUpperThreshold reverseUpperThreshold : ℝ)
+  (lowerCandidate upperCandidate : NNReal) (hLowerCandidate : 0 < lowerCandidate) (hUpperCandidate : 0 < upperCandidate)
+  (hLower :
+    ENNReal.ofReal delta <
+      Mf.DP.sparseGaussianProductMaximumEventForwardLowerBound horizon samplingRate hRate
+        (sensitivity / ↑lowerCandidate) epsilon lowerThreshold)
+  (hUpper :
+    Mf.DP.sampledGaussianProductFiniteProfileUpperBoundWithThresholds horizon samplingRate sensitivity epsilon
+        forwardUpperThreshold reverseUpperThreshold upperCandidate ≤
+      ENNReal.ofReal delta) :
+  lowerCandidate ≤ Mf.DP.sampledGaussianCalibratedStddev horizon samplingRate hRate sensitivity epsilon delta ∧
+    Mf.DP.sampledGaussianCalibratedStddev horizon samplingRate hRate sensitivity epsilon delta ≤ upperCandidate

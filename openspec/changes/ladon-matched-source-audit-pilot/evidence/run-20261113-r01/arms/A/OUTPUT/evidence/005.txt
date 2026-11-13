@@ -1,0 +1,385 @@
+$ /home/codex/projects/ladon/.venv/bin/ladon --help; cat Mf/DP/Training/KOutOfT/TrainingMechanism.lean; cat Mf/DP/SampledGaussianProductFiniteProfileBounds.lean
+EXIT 0
+STDOUT
+usage: ladon COMMAND [OPTIONS]
+       ladon --repo-root REPO --root MODULE [OPTIONS]
+
+Find reusable Lean theorems, check applications, and inspect proof architecture.
+
+Common commands (append --help for exact options):
+  proof-search index status       Check index freshness and coverage.
+  proof-search index build        Create or replace the lexical index.
+  proof-search index update       Refresh changed lexical sources.
+  proof-search search name        Find declarations by name.
+  proof-search search type-text   Find declarations by proposition text.
+  proof-search discover           Check candidates against a goal and local hypotheses.
+  proof-search check candidate    Check one candidate against a closed goal.
+  proof-search goal capture       Capture the context of an actual source goal.
+  proof-search goal complete      Check a proof term against a captured goal.
+  theorem lineage                Inspect compiled proof dependencies.
+  preview                        Preview analysis scope and costs.
+  result inspect                 Inspect saved result evidence.
+  version                        Report installed version and source identity.
+  doctor                         Check installation and repository readiness.
+
+Type-text search is lexical; use explicit Lean checks to assess applications.
+Analyze module architecture: ladon --repo-root REPO --root MODULE
+
+  -h, --help                     Show this compact guide.
+  -h --verbose                   Show all commands and analyzer options.
+  --version                      Show a one-line version.
+
+For less common commands, run 'ladon -h --verbose'.
+For command options, run e.g. 'ladon proof-search discover --help'.
+import Mf.DP.Training.Common.AdaptiveTranscript
+import Mf.DP.BSRGaussianCore
+import Mf.DP.OptimalSubsamplingBISLR
+
+namespace Mf
+namespace DP
+namespace Training
+namespace KOutOfT
+
+noncomputable section
+
+/-- Exact fixed-cardinality schedule mass on subsets of `Fin T`. -/
+def fixedCardinalityScheduleMass (T k : ℕ) : Finset (Fin T) → ℝ :=
+  bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k
+
+theorem fixedCardinalityScheduleMass_nonneg
+    (T k : ℕ) (schedule : Finset (Fin T)) :
+    0 ≤ fixedCardinalityScheduleMass T k schedule := by
+  exact bisFixedCardUniformMass_nonneg _ _ _
+
+theorem fixedCardinalityScheduleMass_sum_eq_one
+    (T k : ℕ) (hk : k ≤ T) :
+    ∑ schedule : Finset (Fin T), fixedCardinalityScheduleMass T k schedule = 1 := by
+  simpa [fixedCardinalityScheduleMass] using
+    bisFixedCardUniformMass_sum_univ_eq_one
+      (Finset.univ : Finset (Fin T)) k (by simpa using hk)
+
+theorem fixedCardinalityScheduleMass_eq_zero_of_card_ne
+    (T k : ℕ) (schedule : Finset (Fin T))
+    (hcard : schedule.card ≠ k) :
+    fixedCardinalityScheduleMass T k schedule = 0 := by
+  unfold fixedCardinalityScheduleMass bisFixedCardUniformMass
+  rw [if_neg]
+  intro hmem
+  exact hcard (Finset.mem_powersetCard.mp hmem).2
+
+/-- One independently sampled fixed-cardinality schedule for every user. -/
+abbrev UserScheduleAssignment
+    {Record : Type*} [DecidableEq Record]
+    (dataset : UserDataset Record) (T : ℕ) :=
+  (record : {r // r ∈ dataset}) → Finset (Fin T)
+
+/-- Product mass of an independent per-user schedule assignment. -/
+def userScheduleAssignmentMass
+    {Record : Type*} [DecidableEq Record]
+    (dataset : UserDataset Record) (T k : ℕ)
+    (assignment : UserScheduleAssignment dataset T) : ℝ :=
+  ∏ record : {r // r ∈ dataset},
+    fixedCardinalityScheduleMass T k (assignment record)
+
+theorem userScheduleAssignmentMass_nonneg
+    {Record : Type*} [DecidableEq Record]
+    (dataset : UserDataset Record) (T k : ℕ)
+    (assignment : UserScheduleAssignment dataset T) :
+    0 ≤ userScheduleAssignmentMass dataset T k assignment := by
+  exact Finset.prod_nonneg fun _ _ => fixedCardinalityScheduleMass_nonneg T k _
+
+theorem userScheduleAssignmentMass_sum_eq_one
+    {Record : Type*} [DecidableEq Record]
+    (dataset : UserDataset Record) (T k : ℕ) (hk : k ≤ T) :
+    ∑ assignment : UserScheduleAssignment dataset T,
+      userScheduleAssignmentMass dataset T k assignment = 1 := by
+  unfold userScheduleAssignmentMass
+  rw [← Fintype.prod_sum]
+  simp [fixedCardinalityScheduleMass_sum_eq_one T k hk]
+
+/-- Clipped aggregate restricted to users whose retained schedule contains `step`. -/
+def scheduledClippedAggregate
+    {Record : Type*} [DecidableEq Record]
+    {T d : ℕ}
+    (oracle : AdaptiveTrainingOracle Record T d)
+    (clippingNorm : ℝ)
+    (dataset : UserDataset Record)
+    (assignment : UserScheduleAssignment dataset T)
+    (step : Fin T)
+    (history : AdaptiveReleaseHistory (Fin d → ℝ)) : Fin d → ℝ :=
+  ∑ record : {r // r ∈ dataset},
+    if step ∈ assignment record then
+      l2VectorClip clippingNorm (oracle.query step history record.1)
+    else 0
+
+/--
+Adaptive ideal-Gaussian transcript conditional on one hidden schedule assignment.
+
+The assignment is fixed for the entire bind chain. The branch at `n < T` is
+definitionally the public release step; calls beyond the horizon are inert.
+-/
+def transcriptGivenScheduleAssignment
+    {Record : Type*} [DecidableEq Record]
+    {T d : ℕ}
+    (oracle : AdaptiveTrainingOracle Record T d)
+    (clippingNorm sigma : ℝ)
+    (dataset : UserDataset Record)
+    (assignment : UserScheduleAssignment dataset T)
+    (initialHistory : AdaptiveReleaseHistory (Fin d → ℝ)) :
+    ℕ → MeasureTheory.Measure (AdaptiveReleaseHistory (Fin d → ℝ))
+  | 0 => MeasureTheory.Measure.dirac initialHistory
+  | n + 1 =>
+      if hn : n < T then
+        (transcriptGivenScheduleAssignment oracle clippingNorm sigma dataset
+          assignment initialHistory n).bind fun history =>
+            (bsrGaussianMeasure sigma
+              (scheduledClippedAggregate oracle clippingNorm dataset assignment
+                ⟨n, hn⟩ history)).map
+              (fun release => writeRelease n (history, release))
+      else
+        transcriptGivenScheduleAssignment oracle clippingNorm sigma dataset
+          assignment initialHistory n
+
+/--
+Dataset-level k-out-of-T training transcript.
+
+Each user receives one independent exact uniform `k`-subset schedule. The
+schedule is hidden and marginalized only after constructing the full adaptive
+Gaussian transcript conditional on that retained assignment.
+-/
+def kOutOfTTrainingTranscript
+    {Record : Type*} [DecidableEq Record]
+    {T d : ℕ}
+    (oracle : AdaptiveTrainingOracle Record T d)
+    (k : ℕ)
+    (clippingNorm sigma : ℝ)
+    (initialHistory : AdaptiveReleaseHistory (Fin d → ℝ))
+    (dataset : UserDataset Record) :
+    MeasureTheory.Measure (AdaptiveReleaseHistory (Fin d → ℝ)) :=
+  ∑ assignment : UserScheduleAssignment dataset T,
+    ENNReal.ofReal (userScheduleAssignmentMass dataset T k assignment) •
+      transcriptGivenScheduleAssignment oracle clippingNorm sigma dataset
+        assignment initialHistory T
+
+end
+
+end KOutOfT
+end Training
+end DP
+end Mf
+import Mf.DP.SparseGaussianProductForwardUpperBound
+import Mf.DP.SparseGaussianProductMaximumEventLowerBound
+import Mf.DP.SparseGaussianProductReverseBounds
+
+/-!
+# Finite sampled-Gaussian forward profile bounds
+
+Positive coordinatewise scaling transports the normalized sparse-mixture
+bounds to the public sensitivity and noise-standard-deviation parameters.
+-/
+
+open MeasureTheory ProbabilityTheory
+
+namespace Mf.DP
+
+noncomputable section
+
+set_option autoImplicit false
+
+/-- Public standard-deviation form of the maximum-event lower witness. -/
+theorem sampledGaussianProductForwardProfile_maxEvent_lowerBound
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon threshold : Real) (noiseStddev : NNReal)
+    (hStddev : 0 < noiseStddev) :
+    sparseGaussianProductMaximumEventForwardLowerBound horizon samplingRate hRate
+        (sensitivity / (noiseStddev : Real)) epsilon threshold ≤
+      eventHockeyStickProfile
+        (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+          (noiseStddev ^ 2) : Measure (Fin horizon → Real))
+        (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2) :
+          Measure (Fin horizon → Real)) epsilon := by
+  let scaleEquiv := positiveGaussianProductScaleEquiv horizon noiseStddev hStddev
+  have hinvariant := eventHockeyStickProfile_map_measurableEquiv scaleEquiv
+    (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+      (noiseStddev ^ 2) : Measure (Fin horizon → Real))
+    (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2) :
+      Measure (Fin horizon → Real)) epsilon
+  rw [sampledGaussianSourceProductLaw_map_positiveGaussianScale horizon samplingRate hRate
+    sensitivity noiseStddev hStddev,
+    sampledGaussianReferenceProductLaw_map_positiveGaussianScale horizon noiseStddev hStddev]
+      at hinvariant
+  exact (sparseGaussianProductMaximumEventForwardLowerBound_le_profile horizon
+    samplingRate hRate (sensitivity / (noiseStddev : Real)) epsilon threshold).trans_eq
+      hinvariant
+
+/-- Public standard-deviation form of the selected capped restricted
+second-moment forward upper bound. -/
+theorem sampledGaussianProductForwardProfile_le_cappedRestrictedSecondMomentUpperBound
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon threshold : Real) (noiseStddev : NNReal)
+    (hStddev : 0 < noiseStddev) :
+    eventHockeyStickProfile
+        (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+          (noiseStddev ^ 2) : Measure (Fin horizon → Real))
+        (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2) :
+          Measure (Fin horizon → Real)) epsilon ≤
+      sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBound horizon
+        samplingRate (sensitivity / (noiseStddev : Real)) epsilon threshold := by
+  let scaleEquiv := positiveGaussianProductScaleEquiv horizon noiseStddev hStddev
+  have hinvariant := eventHockeyStickProfile_map_measurableEquiv scaleEquiv
+    (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+      (noiseStddev ^ 2) : Measure (Fin horizon → Real))
+    (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2) :
+      Measure (Fin horizon → Real)) epsilon
+  rw [sampledGaussianSourceProductLaw_map_positiveGaussianScale horizon samplingRate hRate
+    sensitivity noiseStddev hStddev,
+    sampledGaussianReferenceProductLaw_map_positiveGaussianScale horizon noiseStddev hStddev]
+      at hinvariant
+  rw [← hinvariant]
+  exact sparseGaussianProductForwardProfile_le_cappedRestrictedSecondMomentUpperBound
+    horizon samplingRate hRate (sensitivity / (noiseStddev : Real)) epsilon threshold
+
+/-- Public standard-deviation form of the reverse likelihood-floor bound. -/
+theorem sampledGaussianProductReverseProfile_le_likelihoodFloorUpperBound
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon : Real) (noiseStddev : NNReal)
+    (hStddev : 0 < noiseStddev) :
+    eventHockeyStickProfile
+        (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2) :
+          Measure (Fin horizon → Real))
+        (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+          (noiseStddev ^ 2) : Measure (Fin horizon → Real)) epsilon ≤
+      sparseGaussianProductReverseLikelihoodFloorUpperBound horizon samplingRate epsilon := by
+  let scaleEquiv := positiveGaussianProductScaleEquiv horizon noiseStddev hStddev
+  have hinvariant := eventHockeyStickProfile_map_measurableEquiv scaleEquiv
+    (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2) :
+      Measure (Fin horizon → Real))
+    (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+      (noiseStddev ^ 2) : Measure (Fin horizon → Real)) epsilon
+  rw [sampledGaussianReferenceProductLaw_map_positiveGaussianScale horizon noiseStddev hStddev,
+    sampledGaussianSourceProductLaw_map_positiveGaussianScale horizon samplingRate hRate
+      sensitivity noiseStddev hStddev] at hinvariant
+  rw [← hinvariant]
+  exact sparseGaussianProductReverseProfile_le_likelihoodFloorUpperBound horizon
+    samplingRate hRate (sensitivity / (noiseStddev : Real)) epsilon
+
+theorem sampledGaussianProductReverseProfile_le_reciprocalUpperBound
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon threshold : Real) (noiseStddev : NNReal)
+    (hStddev : 0 < noiseStddev) :
+    eventHockeyStickProfile
+        (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2) :
+          Measure (Fin horizon → Real))
+        (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+          (noiseStddev ^ 2) : Measure (Fin horizon → Real)) epsilon ≤
+      sparseGaussianProductReverseReciprocalUpperBound horizon samplingRate
+        (sensitivity / (noiseStddev : Real)) epsilon threshold := by
+  let scaleEquiv := positiveGaussianProductScaleEquiv horizon noiseStddev hStddev
+  have hinvariant := eventHockeyStickProfile_map_measurableEquiv scaleEquiv
+    (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2) :
+      Measure (Fin horizon → Real))
+    (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+      (noiseStddev ^ 2) : Measure (Fin horizon → Real)) epsilon
+  rw [sampledGaussianReferenceProductLaw_map_positiveGaussianScale horizon noiseStddev hStddev,
+    sampledGaussianSourceProductLaw_map_positiveGaussianScale horizon samplingRate hRate
+      sensitivity noiseStddev hStddev] at hinvariant
+  rw [← hinvariant]
+  exact sparseGaussianProductReverseProfile_le_reciprocalUpperBound horizon samplingRate
+    hRate (sensitivity / (noiseStddev : Real)) epsilon threshold
+
+theorem sampledGaussianProductReverseProfile_le_bestUpperBound
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon threshold : Real) (noiseStddev : NNReal)
+    (hStddev : 0 < noiseStddev) :
+    eventHockeyStickProfile
+        (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2) :
+          Measure (Fin horizon → Real))
+        (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+          (noiseStddev ^ 2) : Measure (Fin horizon → Real)) epsilon ≤
+      sparseGaussianProductReverseBestUpperBound horizon samplingRate
+        (sensitivity / (noiseStddev : Real)) epsilon threshold := by
+  apply le_min
+  · exact sampledGaussianProductReverseProfile_le_reciprocalUpperBound horizon samplingRate
+      hRate sensitivity epsilon threshold noiseStddev hStddev
+  · exact sampledGaussianProductReverseProfile_le_likelihoodFloorUpperBound horizon samplingRate
+      hRate sensitivity epsilon noiseStddev hStddev
+
+def sampledGaussianProductFiniteProfileUpperBoundWithThresholds
+    (horizon : Nat) (samplingRate : NNReal)
+    (sensitivity epsilon forwardThreshold reverseThreshold : Real)
+    (noiseStddev : NNReal) : ENNReal :=
+  max
+    (sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBound horizon
+      samplingRate (sensitivity / (noiseStddev : Real)) epsilon forwardThreshold)
+    (sparseGaussianProductReverseBestUpperBound horizon samplingRate
+      (sensitivity / (noiseStddev : Real)) epsilon reverseThreshold)
+
+/-- Compatibility form using one threshold for both ordered profile bounds. -/
+def sampledGaussianProductFiniteProfileUpperBound
+    (horizon : Nat) (samplingRate : NNReal)
+    (sensitivity epsilon threshold : Real) (noiseStddev : NNReal) : ENNReal :=
+  sampledGaussianProductFiniteProfileUpperBoundWithThresholds horizon samplingRate
+    sensitivity epsilon threshold threshold noiseStddev
+
+/-- The maximum-event forward witness is also a lower bound for the two-sided
+binary profile. -/
+theorem sampledGaussianProductMaximumEventLowerBound_le_binaryProfile
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon threshold : Real) (noiseStddev : NNReal)
+    (hStddev : 0 < noiseStddev) :
+    sparseGaussianProductMaximumEventForwardLowerBound horizon samplingRate hRate
+        (sensitivity / (noiseStddev : Real)) epsilon threshold ≤
+      binaryAccountingProfile
+        (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+          (noiseStddev ^ 2))
+        (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon := by
+  exact (sampledGaussianProductForwardProfile_maxEvent_lowerBound horizon samplingRate hRate
+    sensitivity epsilon threshold noiseStddev hStddev).trans
+      (le_max_left _ _)
+
+/-- Exact finite two-sided sampled-Gaussian profile upper bound with separately
+chosen thresholds for the forward and reciprocal-reverse estimates. -/
+theorem sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon forwardThreshold reverseThreshold : Real)
+    (noiseStddev : NNReal)
+    (hStddev : 0 < noiseStddev) :
+    binaryAccountingProfile
+        (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+          (noiseStddev ^ 2))
+        (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon ≤
+      sampledGaussianProductFiniteProfileUpperBoundWithThresholds horizon samplingRate
+        sensitivity epsilon forwardThreshold reverseThreshold noiseStddev := by
+  unfold binaryAccountingProfile
+  unfold sampledGaussianProductFiniteProfileUpperBoundWithThresholds
+  apply max_le
+  · exact
+      (sampledGaussianProductForwardProfile_le_cappedRestrictedSecondMomentUpperBound
+        horizon samplingRate hRate sensitivity epsilon forwardThreshold noiseStddev
+          hStddev).trans
+        (le_max_left _ _)
+  · exact
+      (sampledGaussianProductReverseProfile_le_bestUpperBound horizon samplingRate hRate
+        sensitivity epsilon reverseThreshold noiseStddev hStddev).trans
+        (le_max_right _ _)
+
+/-- Compatibility form of the exact finite upper bound using one threshold in
+both ordered directions. -/
+theorem sampledGaussianProductBinaryProfile_le_finiteProfileUpperBound
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon threshold : Real) (noiseStddev : NNReal)
+    (hStddev : 0 < noiseStddev) :
+    binaryAccountingProfile
+        (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+          (noiseStddev ^ 2))
+        (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon ≤
+      sampledGaussianProductFiniteProfileUpperBound horizon samplingRate
+        sensitivity epsilon threshold noiseStddev := by
+  exact sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds
+    horizon samplingRate hRate sensitivity epsilon threshold threshold noiseStddev hStddev
+
+end
+
+end Mf.DP
+
+STDERR

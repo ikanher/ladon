@@ -1,0 +1,544 @@
+$ cat Mf/DP/Training/Common/AdaptiveTranscript.lean; cat Mf/DP/VectorClipping.lean; cat Mf/DP/EuclideanVectorClipping.lean; cat Mf/DP/FiniteProfileRestrictedSecondMomentUpperBound.lean
+EXIT 0
+STDOUT
+import Mf.DP.Training.Common.DatasetAdjacency
+import Mf.DP.EuclideanVectorClipping
+import Mf.DP.ProfileAdaptiveKernelComposition
+
+namespace Mf
+namespace DP
+namespace Training
+
+open MeasureTheory
+
+noncomputable section
+
+/--
+An adaptive per-user query used by the mathematical training transcript.
+
+The query may inspect the complete prior private-release history. Clipping is
+performed by `adaptiveClippedAggregate`; it is not an oracle premise.
+-/
+structure AdaptiveTrainingOracle
+    (Record : Type*) [DecidableEq Record]
+    (T d : ℕ) where
+  query :
+    Fin T → AdaptiveReleaseHistory (Fin d → ℝ) → Record → Fin d → ℝ
+  measurable_history :
+    ∀ t record, Measurable (fun history => query t history record)
+
+/-- Canonical public initial state for an adaptive release transcript. -/
+def zeroAdaptiveReleaseHistory
+    {Release : Type*} [Zero Release] : AdaptiveReleaseHistory Release :=
+  0
+
+/-- Sum of per-user contributions after explicit Euclidean clipping. -/
+def adaptiveClippedAggregate
+    {Record : Type*} [DecidableEq Record]
+    {T d : ℕ}
+    (oracle : AdaptiveTrainingOracle Record T d)
+    (clippingNorm : ℝ)
+    (step : Fin T)
+    (history : AdaptiveReleaseHistory (Fin d → ℝ))
+    (dataset : UserDataset Record) : Fin d → ℝ :=
+  l2ClippedFinsetSum clippingNorm (oracle.query step history) dataset
+
+/--
+At every fixed private history, add/remove adjacency changes the clipped
+aggregate by at most the clipping norm. This is the deterministic sensitivity
+bridge needed by each conditional Gaussian release.
+-/
+theorem adaptiveClippedAggregate_userAddRemove_sensitivity
+    {Record : Type*} [DecidableEq Record]
+    {T d : ℕ}
+    (oracle : AdaptiveTrainingOracle Record T d)
+    (clippingNorm : ℝ)
+    (hclipping : 0 ≤ clippingNorm)
+    (step : Fin T)
+    (history : AdaptiveReleaseHistory (Fin d → ℝ))
+    {left right : UserDataset Record}
+    (hAdj : UserAddRemoveAdj left right) :
+    l2Norm
+      (adaptiveClippedAggregate oracle clippingNorm step history left -
+        adaptiveClippedAggregate oracle clippingNorm step history right)
+      ≤ clippingNorm := by
+  exact l2ClippedFinsetSum_addRemove_sensitivity
+    clippingNorm hclipping (oracle.query step history) hAdj
+
+end
+
+end Training
+end DP
+end Mf
+import Mathlib
+
+namespace Mf
+namespace DP
+
+noncomputable section
+
+open scoped BigOperators
+
+/-!
+# Generic norm clipping and add/remove sensitivity
+
+This module owns optimizer-independent deterministic clipping facts.  It does
+not introduce sampling, Gaussian noise, or privacy accounting.  For a raw
+finite function type such as `Fin d → ℝ`, Mathlib's norm is the Pi sup norm.
+Consequently this generic owner is not authority for standard Euclidean `L2`
+clipping on that representation; use the dedicated Euclidean owner instead.
+-/
+
+/-- Deterministic clipping in the norm supplied by the ambient type. -/
+def vectorClip {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (C : ℝ) (x : E) : E :=
+  if ‖x‖ ≤ C then x else (C / ‖x‖) • x
+
+theorem vectorClip_norm_le
+    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (C : ℝ) (x : E) (hC : 0 ≤ C) :
+    ‖vectorClip C x‖ ≤ C := by
+  by_cases h : ‖x‖ ≤ C
+  · simp [vectorClip, h]
+  · have hlt : C < ‖x‖ := lt_of_not_ge h
+    have hxpos : 0 < ‖x‖ := lt_of_le_of_lt hC hlt
+    rw [vectorClip, if_neg h, norm_smul, Real.norm_eq_abs,
+      abs_of_nonneg (div_nonneg hC (norm_nonneg x)),
+      div_mul_cancel₀ C hxpos.ne']
+
+/-- Symmetric add/remove adjacency on finite datasets. -/
+def FinsetAddRemoveAdjacent
+    {Record : Type*} [DecidableEq Record]
+    (left right : Finset Record) : Prop :=
+  (∃ record, record ∉ left ∧ right = insert record left) ∨
+  (∃ record, record ∉ right ∧ left = insert record right)
+
+theorem finsetAddRemoveAdjacent_symm
+    {Record : Type*} [DecidableEq Record]
+    {left right : Finset Record}
+    (h : FinsetAddRemoveAdjacent left right) :
+    FinsetAddRemoveAdjacent right left := by
+  rcases h with h | h
+  · exact Or.inr h
+  · exact Or.inl h
+
+/-- Sum of clipped per-record contributions. -/
+def clippedFinsetSum
+    {Record E : Type*} [DecidableEq Record]
+    [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (C : ℝ) (gradient : Record → E) (dataset : Finset Record) : E :=
+  ∑ record ∈ dataset, vectorClip C (gradient record)
+
+theorem clippedFinsetSum_addRemove_sensitivity
+    {Record E : Type*} [DecidableEq Record]
+    [NormedAddCommGroup E] [NormedSpace ℝ E]
+    (C : ℝ) (hC : 0 ≤ C) (gradient : Record → E)
+    {left right : Finset Record}
+    (hAdj : FinsetAddRemoveAdjacent left right) :
+    ‖clippedFinsetSum C gradient left -
+        clippedFinsetSum C gradient right‖ ≤ C := by
+  rcases hAdj with ⟨record, hmem, rfl⟩ | ⟨record, hmem, rfl⟩
+  · rw [clippedFinsetSum, clippedFinsetSum,
+      Finset.sum_insert hmem]
+    have heq :
+        (∑ x ∈ left, vectorClip C (gradient x)) -
+            (vectorClip C (gradient record) +
+              ∑ x ∈ left, vectorClip C (gradient x)) =
+          -vectorClip C (gradient record) := by
+      abel
+    rw [heq, norm_neg]
+    exact vectorClip_norm_le C (gradient record) hC
+  · rw [clippedFinsetSum, clippedFinsetSum,
+      Finset.sum_insert hmem]
+    have heq :
+        (vectorClip C (gradient record) +
+            ∑ x ∈ right, vectorClip C (gradient x)) -
+          ∑ x ∈ right, vectorClip C (gradient x) =
+        vectorClip C (gradient record) := by
+      abel
+    rw [heq]
+    exact vectorClip_norm_le C (gradient record) hC
+
+end
+end DP
+end Mf
+import Mf.DP.VectorClipping
+import Mathlib.Analysis.InnerProductSpace.PiL2
+
+namespace Mf
+namespace DP
+
+noncomputable section
+
+open scoped BigOperators ENNReal
+
+/-!
+# Explicit finite-coordinate Euclidean clipping
+
+Raw function spaces carry Mathlib's Pi sup norm.  This module defines the
+privacy-facing `L2` norm through `EuclideanSpace` and never relies on that
+ambient Pi norm for clipping or sensitivity.
+-/
+
+/-- Canonical Euclidean representation of a finite real coordinate vector. -/
+def toEuclidean {ι : Type*} [Fintype ι] (x : ι → ℝ) :
+    EuclideanSpace ℝ ι :=
+  WithLp.toLp 2 x
+
+/-- Explicit Euclidean `L2` norm on a raw finite coordinate function. -/
+def l2Norm {ι : Type*} [Fintype ι] (x : ι → ℝ) : ℝ :=
+  ‖toEuclidean x‖
+
+@[simp] theorem l2Norm_zero {ι : Type*} [Fintype ι] :
+    l2Norm (0 : ι → ℝ) = 0 := by
+  simp [l2Norm, toEuclidean]
+
+theorem l2Norm_nonneg {ι : Type*} [Fintype ι] (x : ι → ℝ) :
+    0 ≤ l2Norm x :=
+  norm_nonneg _
+
+theorem l2Norm_eq_zero {ι : Type*} [Fintype ι] (x : ι → ℝ) :
+    l2Norm x = 0 ↔ x = 0 := by
+  simp [l2Norm, toEuclidean]
+
+@[simp] theorem l2Norm_neg {ι : Type*} [Fintype ι] (x : ι → ℝ) :
+    l2Norm (-x) = l2Norm x := by
+  simp [l2Norm, toEuclidean]
+
+theorem l2Norm_smul {ι : Type*} [Fintype ι] (a : ℝ) (x : ι → ℝ) :
+    l2Norm (a • x) = |a| * l2Norm x := by
+  simp [l2Norm, toEuclidean, norm_smul, Real.norm_eq_abs]
+
+theorem l2Norm_add_le {ι : Type*} [Fintype ι] (x y : ι → ℝ) :
+    l2Norm (x + y) ≤ l2Norm x + l2Norm y := by
+  simpa [l2Norm, toEuclidean] using
+    (norm_add_le (toEuclidean x) (toEuclidean y))
+
+/-- Sum-of-squares formula for the explicit Euclidean norm. -/
+theorem l2Norm_sq {ι : Type*} [Fintype ι] (x : ι → ℝ) :
+    l2Norm x ^ 2 = ∑ i, x i ^ 2 := by
+  simpa [l2Norm, toEuclidean] using
+    (EuclideanSpace.real_norm_sq_eq (toEuclidean x))
+
+theorem measurable_toEuclidean {ι : Type*} [Fintype ι] :
+    Measurable (toEuclidean : (ι → ℝ) → EuclideanSpace ℝ ι) :=
+  (MeasurableEquiv.toLp 2 (ι → ℝ)).measurable
+
+theorem measurable_l2Norm {ι : Type*} [Fintype ι] :
+    Measurable (l2Norm : (ι → ℝ) → ℝ) :=
+  measurable_norm.comp measurable_toEuclidean
+
+/-- Euclidean clipping on raw coordinates. -/
+def l2VectorClip {ι : Type*} [Fintype ι]
+    (C : ℝ) (x : ι → ℝ) : ι → ℝ :=
+  if l2Norm x ≤ C then x else (C / l2Norm x) • x
+
+theorem measurable_l2VectorClip {ι : Type*} [Fintype ι] (C : ℝ) :
+    Measurable (l2VectorClip C : (ι → ℝ) → (ι → ℝ)) := by
+  have hs : MeasurableSet {x : ι → ℝ | l2Norm x ≤ C} :=
+    measurableSet_le measurable_l2Norm measurable_const
+  have hscaled : Measurable fun x : ι → ℝ => (C / l2Norm x) • x := by
+    refine measurable_pi_lambda _ fun i => ?_
+    exact (measurable_const.div measurable_l2Norm).mul (measurable_pi_apply i)
+  change Measurable
+    ({x : ι → ℝ | l2Norm x ≤ C}.piecewise id
+      (fun x => (C / l2Norm x) • x))
+  exact Measurable.piecewise hs measurable_id hscaled
+
+@[simp] theorem l2VectorClip_zero {ι : Type*} [Fintype ι]
+    (C : ℝ) (hC : 0 ≤ C) :
+    l2VectorClip C (0 : ι → ℝ) = 0 := by
+  simp [l2VectorClip, hC]
+
+@[simp] theorem l2VectorClip_neg {ι : Type*} [Fintype ι]
+    (C : ℝ) (x : ι → ℝ) :
+    l2VectorClip C (-x) = -l2VectorClip C x := by
+  unfold l2VectorClip
+  rw [l2Norm_neg]
+  split_ifs <;> simp [smul_neg]
+
+theorem l2VectorClip_eq_self {ι : Type*} [Fintype ι]
+    (C : ℝ) (x : ι → ℝ) (hx : l2Norm x ≤ C) :
+    l2VectorClip C x = x := by
+  simp [l2VectorClip, hx]
+
+theorem l2VectorClip_norm_le {ι : Type*} [Fintype ι]
+    (C : ℝ) (x : ι → ℝ) (hC : 0 ≤ C) :
+    l2Norm (l2VectorClip C x) ≤ C := by
+  by_cases h : l2Norm x ≤ C
+  · simpa [l2VectorClip, h]
+  · have hlt : C < l2Norm x := lt_of_not_ge h
+    have hxpos : 0 < l2Norm x := lt_of_le_of_lt hC hlt
+    rw [l2VectorClip, if_neg h, l2Norm_smul, abs_of_nonneg
+      (div_nonneg hC (l2Norm_nonneg x)), div_mul_cancel₀ C hxpos.ne']
+
+/-- Finite sum of explicitly Euclidean-clipped contributions. -/
+def l2ClippedFinsetSum
+    {Record ι : Type*} [DecidableEq Record] [Fintype ι]
+    (C : ℝ) (gradient : Record → (ι → ℝ)) (dataset : Finset Record) : ι → ℝ :=
+  ∑ record ∈ dataset, l2VectorClip C (gradient record)
+
+theorem l2ClippedFinsetSum_addRemove_sensitivity
+    {Record ι : Type*} [DecidableEq Record] [Fintype ι]
+    (C : ℝ) (hC : 0 ≤ C) (gradient : Record → (ι → ℝ))
+    {left right : Finset Record}
+    (hAdj : FinsetAddRemoveAdjacent left right) :
+    l2Norm (l2ClippedFinsetSum C gradient left -
+      l2ClippedFinsetSum C gradient right) ≤ C := by
+  rcases hAdj with ⟨record, hmem, rfl⟩ | ⟨record, hmem, rfl⟩
+  · rw [l2ClippedFinsetSum, l2ClippedFinsetSum, Finset.sum_insert hmem]
+    have heq :
+        (∑ x ∈ left, l2VectorClip C (gradient x)) -
+            (l2VectorClip C (gradient record) +
+              ∑ x ∈ left, l2VectorClip C (gradient x)) =
+          -l2VectorClip C (gradient record) := by
+      abel
+    rw [heq, l2Norm_neg]
+    exact l2VectorClip_norm_le C (gradient record) hC
+  · rw [l2ClippedFinsetSum, l2ClippedFinsetSum, Finset.sum_insert hmem]
+    have heq :
+        (l2VectorClip C (gradient record) +
+            ∑ x ∈ right, l2VectorClip C (gradient x)) -
+          ∑ x ∈ right, l2VectorClip C (gradient x) =
+        l2VectorClip C (gradient record) := by
+      abel
+    rw [heq]
+    exact l2VectorClip_norm_le C (gradient record) hC
+
+/-- The generic Pi norm is not a Euclidean norm: `(1,1)` has sup norm one but
+Euclidean squared norm two. -/
+theorem piNorm_ne_l2Norm_finTwo :
+    ‖(fun _ : Fin 2 => (1 : ℝ))‖ ≠
+      l2Norm (fun _ : Fin 2 => (1 : ℝ)) := by
+  intro h
+  have hsup : ‖(fun _ : Fin 2 => (1 : ℝ))‖ = 1 := by simp
+  have hl2sq := l2Norm_sq (fun _ : Fin 2 => (1 : ℝ))
+  rw [hsup] at h
+  rw [← h] at hl2sq
+  norm_num at hl2sq
+
+end
+end DP
+end Mf
+import Mf.DP.FiniteMeasurePositivePartSecondMoment
+import Mf.DP.LikelihoodRatioHockeyStick
+
+/-!
+# Restricted second-moment bounds for a likelihood-ratio profile
+
+This module keeps the profile split generic.  Outside a measurable retained
+set, the positive likelihood residual is bounded by the likelihood itself.
+Inside the retained set, the finite-measure positive-part inequality preserves
+the retained reference mass in the Cauchy--Schwarz factor.
+-/
+
+open MeasureTheory Set
+
+namespace Mf.DP
+
+noncomputable section
+
+set_option autoImplicit false
+
+/-- A likelihood-ratio hockey-stick profile is the real positive-part integral,
+embedded into `ENNReal`. -/
+theorem eventHockeyStickProfile_withDensity_forward_eq_ofReal_integral_positivePart
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real)
+    (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+    (hRatioIntegrable : Integrable ratio (reference : Measure X))
+    (epsilon : Real) :
+    eventHockeyStickProfile
+        ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+        (reference : Measure X) epsilon =
+      ENNReal.ofReal
+        (∫ sample, max (ratio sample - Real.exp epsilon) 0
+          ∂(reference : Measure X)) := by
+  rw [eventHockeyStickProfile_withDensity_forward reference ratio hRatio
+    hRatioNonnegative epsilon]
+  have hpositiveIntegrable : Integrable
+      (fun sample => max (ratio sample - Real.exp epsilon) 0)
+      (reference : Measure X) :=
+    (hRatioIntegrable.sub (integrable_const _)).pos_part
+  have hnonnegative : ∀ᵐ sample ∂(reference : Measure X),
+      0 ≤ max (ratio sample - Real.exp epsilon) 0 :=
+    ae_of_all _ fun sample => le_max_right _ _
+  rw [ofReal_integral_eq_lintegral_ofReal hpositiveIntegrable hnonnegative]
+  apply lintegral_congr
+  intro sample
+  by_cases h : 0 ≤ ratio sample - Real.exp epsilon
+  · rw [max_eq_left h]
+  · have h' : ratio sample - Real.exp epsilon ≤ 0 := le_of_not_ge h
+    rw [max_eq_right h']
+    simp [ENNReal.ofReal_of_nonpos h']
+
+/-- Split a likelihood-ratio profile at a measurable retained set and control
+the retained residual by its centered second moment. -/
+theorem eventHockeyStickProfile_withDensity_forward_le_restrictedSecondMoment
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real)
+    (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+    (hRatioIntegrable : Integrable ratio (reference : Measure X))
+    (retained : Set X) (hRetained : MeasurableSet retained)
+    (epsilon : Real)
+    (hCenteredSquare : Integrable
+      (fun sample => (ratio sample - Real.exp epsilon) ^ 2)
+      ((reference : Measure X).restrict retained)) :
+    eventHockeyStickProfile
+        ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+        (reference : Measure X) epsilon ≤
+      ENNReal.ofReal
+        ((∫ sample in retainedᶜ, ratio sample ∂(reference : Measure X)) +
+          (Real.sqrt
+              (((reference : Measure X).restrict retained).real Set.univ *
+                ∫ sample in retained,
+                  (ratio sample - Real.exp epsilon) ^ 2
+                    ∂(reference : Measure X)) +
+            (∫ sample in retained, ratio sample ∂(reference : Measure X)) -
+              Real.exp epsilon *
+                ((reference : Measure X).restrict retained).real Set.univ) / 2) := by
+  rw [eventHockeyStickProfile_withDensity_forward_eq_ofReal_integral_positivePart
+    reference ratio hRatio hRatioNonnegative hRatioIntegrable epsilon]
+  apply ENNReal.ofReal_le_ofReal
+  have hpositiveIntegrable : Integrable
+      (fun sample => max (ratio sample - Real.exp epsilon) 0)
+      (reference : Measure X) :=
+    (hRatioIntegrable.sub (integrable_const _)).pos_part
+  have houtside :
+      (∫ sample in retainedᶜ, max (ratio sample - Real.exp epsilon) 0
+          ∂(reference : Measure X)) ≤
+        ∫ sample in retainedᶜ, ratio sample ∂(reference : Measure X) := by
+    apply integral_mono_ae
+    · exact hpositiveIntegrable.integrableOn
+    · exact hRatioIntegrable.integrableOn
+    · filter_upwards with sample
+      by_cases h : ratio sample - Real.exp epsilon ≤ 0
+      · simp [max_eq_right h, hRatioNonnegative sample]
+      · rw [max_eq_left (le_of_not_ge h)]
+        linarith [Real.exp_pos epsilon]
+  letI : IsFiniteMeasure ((reference : Measure X).restrict retained) := by
+    infer_instance
+  have hinside := integral_positivePart_le_of_integrable_sq
+    ((reference : Measure X).restrict retained) ratio (Real.exp epsilon)
+    hRatio.aestronglyMeasurable hCenteredSquare
+  calc
+    (∫ sample, max (ratio sample - Real.exp epsilon) 0
+        ∂(reference : Measure X)) =
+        (∫ sample in retained, max (ratio sample - Real.exp epsilon) 0
+          ∂(reference : Measure X)) +
+        ∫ sample in retainedᶜ, max (ratio sample - Real.exp epsilon) 0
+          ∂(reference : Measure X) :=
+      (MeasureTheory.integral_add_compl hRetained hpositiveIntegrable).symm
+    _ ≤ (Real.sqrt
+              (((reference : Measure X).restrict retained).real Set.univ *
+                ∫ sample in retained,
+                  (ratio sample - Real.exp epsilon) ^ 2
+                    ∂(reference : Measure X)) +
+            (∫ sample in retained, ratio sample ∂(reference : Measure X)) -
+              Real.exp epsilon *
+                ((reference : Measure X).restrict retained).real Set.univ) / 2 +
+          (∫ sample in retainedᶜ, ratio sample ∂(reference : Measure X)) :=
+      add_le_add hinside houtside
+    _ = (∫ sample in retainedᶜ, ratio sample ∂(reference : Measure X)) +
+        (Real.sqrt
+              (((reference : Measure X).restrict retained).real Set.univ *
+                ∫ sample in retained,
+                  (ratio sample - Real.exp epsilon) ^ 2
+                    ∂(reference : Measure X)) +
+            (∫ sample in retained, ratio sample ∂(reference : Measure X)) -
+              Real.exp epsilon *
+                ((reference : Measure X).restrict retained).real Set.univ) / 2 :=
+      add_comm _ _
+
+/-- The same restricted bound, capped by the retained likelihood mass. -/
+theorem eventHockeyStickProfile_withDensity_forward_le_restrictedSecondMomentCapped
+    {X : Type*} [MeasurableSpace X]
+    (reference : ProbabilityMeasure X) (ratio : X → Real)
+    (hRatio : Measurable ratio) (hRatioNonnegative : ∀ sample, 0 ≤ ratio sample)
+    (hRatioIntegrable : Integrable ratio (reference : Measure X))
+    (retained : Set X) (hRetained : MeasurableSet retained)
+    (epsilon : Real)
+    (hCenteredSquare : Integrable
+      (fun sample => (ratio sample - Real.exp epsilon) ^ 2)
+      ((reference : Measure X).restrict retained)) :
+    eventHockeyStickProfile
+        ((reference : Measure X).withDensity (fun sample => ENNReal.ofReal (ratio sample)))
+        (reference : Measure X) epsilon ≤
+      ENNReal.ofReal
+        ((∫ sample in retainedᶜ, ratio sample ∂(reference : Measure X)) +
+          min (∫ sample in retained, ratio sample ∂(reference : Measure X))
+            ((Real.sqrt
+                (((reference : Measure X).restrict retained).real Set.univ *
+                  ∫ sample in retained,
+                    (ratio sample - Real.exp epsilon) ^ 2
+                      ∂(reference : Measure X)) +
+              (∫ sample in retained, ratio sample ∂(reference : Measure X)) -
+                Real.exp epsilon *
+                  ((reference : Measure X).restrict retained).real Set.univ) / 2)) := by
+  rw [eventHockeyStickProfile_withDensity_forward_eq_ofReal_integral_positivePart
+    reference ratio hRatio hRatioNonnegative hRatioIntegrable epsilon]
+  apply ENNReal.ofReal_le_ofReal
+  have hpositiveIntegrable : Integrable
+      (fun sample => max (ratio sample - Real.exp epsilon) 0)
+      (reference : Measure X) :=
+    (hRatioIntegrable.sub (integrable_const _)).pos_part
+  have hresidualLeRatio : ∀ sample,
+      max (ratio sample - Real.exp epsilon) 0 ≤ ratio sample := by
+    intro sample
+    by_cases h : ratio sample - Real.exp epsilon ≤ 0
+    · simp [max_eq_right h, hRatioNonnegative sample]
+    · rw [max_eq_left (le_of_not_ge h)]
+      linarith [Real.exp_pos epsilon]
+  have houtside :
+      (∫ sample in retainedᶜ, max (ratio sample - Real.exp epsilon) 0
+          ∂(reference : Measure X)) ≤
+        ∫ sample in retainedᶜ, ratio sample ∂(reference : Measure X) := by
+    apply integral_mono_ae hpositiveIntegrable.integrableOn hRatioIntegrable.integrableOn
+    exact ae_of_all _ hresidualLeRatio
+  have hinsideMass :
+      (∫ sample in retained, max (ratio sample - Real.exp epsilon) 0
+          ∂(reference : Measure X)) ≤
+        ∫ sample in retained, ratio sample ∂(reference : Measure X) := by
+    apply integral_mono_ae hpositiveIntegrable.integrableOn hRatioIntegrable.integrableOn
+    exact ae_of_all _ hresidualLeRatio
+  letI : IsFiniteMeasure ((reference : Measure X).restrict retained) := by
+    infer_instance
+  have hinsideSecond := integral_positivePart_le_of_integrable_sq
+    ((reference : Measure X).restrict retained) ratio (Real.exp epsilon)
+    hRatio.aestronglyMeasurable hCenteredSquare
+  calc
+    (∫ sample, max (ratio sample - Real.exp epsilon) 0
+        ∂(reference : Measure X)) =
+        (∫ sample in retained, max (ratio sample - Real.exp epsilon) 0
+          ∂(reference : Measure X)) +
+        ∫ sample in retainedᶜ, max (ratio sample - Real.exp epsilon) 0
+          ∂(reference : Measure X) :=
+      (MeasureTheory.integral_add_compl hRetained hpositiveIntegrable).symm
+    _ ≤ min (∫ sample in retained, ratio sample ∂(reference : Measure X))
+          ((Real.sqrt
+              (((reference : Measure X).restrict retained).real Set.univ *
+                ∫ sample in retained,
+                  (ratio sample - Real.exp epsilon) ^ 2
+                    ∂(reference : Measure X)) +
+            (∫ sample in retained, ratio sample ∂(reference : Measure X)) -
+              Real.exp epsilon *
+                ((reference : Measure X).restrict retained).real Set.univ) / 2) +
+        (∫ sample in retainedᶜ, ratio sample ∂(reference : Measure X)) :=
+      add_le_add (le_min hinsideMass hinsideSecond) houtside
+    _ = (∫ sample in retainedᶜ, ratio sample ∂(reference : Measure X)) +
+        min (∫ sample in retained, ratio sample ∂(reference : Measure X))
+          ((Real.sqrt
+              (((reference : Measure X).restrict retained).real Set.univ *
+                ∫ sample in retained,
+                  (ratio sample - Real.exp epsilon) ^ 2
+                    ∂(reference : Measure X)) +
+            (∫ sample in retained, ratio sample ∂(reference : Measure X)) -
+              Real.exp epsilon *
+                ((reference : Measure X).restrict retained).real Set.univ) / 2) :=
+      add_comm _ _
+
+end
+
+end Mf.DP
+
+STDERR

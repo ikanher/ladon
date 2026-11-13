@@ -1,0 +1,8 @@
+$ python3 -c 'from pathlib import Path; import json,hashlib; out=Path("../OUTPUT"); inv=json.loads((out/"evidence/source-inventory.json").read_text()); changed=[r["path"] for r in inv if hashlib.sha256(Path(r["path"]).read_bytes()).hexdigest()!=r["sha256"]]; row=json.loads((out/"evidence/first-report-sha256.json").read_text()); actual=hashlib.sha256((out/row["path"]).read_bytes()).hexdigest(); print("input_sources_changed:",changed);print("first_report_hash_matches:",actual==row["sha256"]);print("first_report_mode:",oct((out/row["path"]).stat().st_mode & 0o777));print("first_report_bytes:",(out/row["path"]).stat().st_size);assert not changed and actual==row["sha256"]'
+CWD: /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/INPUT
+input_sources_changed: []
+first_report_hash_matches: True
+first_report_mode: 0o444
+first_report_bytes: 22907
+
+EXIT: 0

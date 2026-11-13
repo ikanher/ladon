@@ -1,0 +1,417 @@
+$ rg -n 'bsrGaussianMeasure|bisFixedCardUniformMass|l2VectorClip|writeRelease|AdaptiveReleaseHistory|def sampledGaussian|def sparseGaussian|def binaryAccounting|def eventHockeyStick|replayCertificate|signedHiddenGaussian|kOutOfTGlobalSigma|requestOnlyCandidate|sorry|axiom ' capsule/lean/Mf
+CWD: /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/INPUT
+capsule/lean/Mf/DP/SparseGaussianProductReverseBounds.lean:20:def sparseGaussianProductReverseLikelihoodFloorUpperBound
+capsule/lean/Mf/DP/SparseGaussianProductReverseBounds.lean:25:def sparseGaussianProductReverseReciprocalUpperBound
+capsule/lean/Mf/DP/SparseGaussianProductReverseBounds.lean:33:def sparseGaussianProductReverseBestUpperBound
+capsule/lean/Mf/DP/SparseGaussianLikelihoodRatio.lean:24:def sparseGaussianLikelihoodRatio
+capsule/lean/Mf/DP/SparseGaussianLikelihoodRatio.lean:39:def sparseGaussianMixtureLaw
+capsule/lean/Mf/DP/SparseGaussianProductForwardUpperBound.lean:20:def sparseGaussianProductBelowBoxReferenceMass
+capsule/lean/Mf/DP/SparseGaussianProductForwardUpperBound.lean:24:def sparseGaussianProductBelowBoxFirstMoment
+capsule/lean/Mf/DP/SparseGaussianProductForwardUpperBound.lean:31:def sparseGaussianProductBelowBoxSecondMoment
+capsule/lean/Mf/DP/SparseGaussianProductForwardUpperBound.lean:40:def sparseGaussianProductBelowBoxCenteredSecondMoment
+capsule/lean/Mf/DP/SparseGaussianProductForwardUpperBound.lean:48:def sparseGaussianProductRestrictedSecondMomentResidual
+capsule/lean/Mf/DP/SparseGaussianProductForwardUpperBound.lean:59:def sparseGaussianProductForwardRestrictedSecondMomentUpperBoundReal
+capsule/lean/Mf/DP/SparseGaussianProductForwardUpperBound.lean:67:def sparseGaussianProductForwardRestrictedSecondMomentUpperBound
+capsule/lean/Mf/DP/SparseGaussianProductForwardUpperBound.lean:76:def sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBoundReal
+capsule/lean/Mf/DP/SparseGaussianProductForwardUpperBound.lean:86:def sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBound
+capsule/lean/Mf/DP/BSRGaussianCore.lean:292:abbrev bsrGaussianMeasure := @Mf.Probability.FiniteGaussian.measure
+capsule/lean/Mf/DP/BSRGaussianCore.lean:299:theorem bsrGaussianMeasure_eq_pi_withDensity :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:301:    bsrGaussianMeasure σ μ
+capsule/lean/Mf/DP/BSRGaussianCore.lean:307:instance bsrGaussianMeasure_isProbability :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:309:    MeasureTheory.IsProbabilityMeasure (bsrGaussianMeasure σ μ) :=
+capsule/lean/Mf/DP/BSRGaussianCore.lean:312:theorem bsrGaussianMeasure_map_eval :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:314:    (bsrGaussianMeasure σ μ).map (Function.eval i)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:318:theorem bsrGaussianMeasure_map_piFinSuccAbove :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:322:    (bsrGaussianMeasure σ μ).map e
+capsule/lean/Mf/DP/BSRGaussianCore.lean:325:          (bsrGaussianMeasure σ (fun i : Fin n => μ i.succ)) :=
+capsule/lean/Mf/DP/BSRGaussianCore.lean:340:theorem bsrGaussianMeasure_eq_withDensity_pdf :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:342:    bsrGaussianMeasure σ μ = MeasureTheory.volume.withDensity (bsrGaussianPdf σ μ) :=
+capsule/lean/Mf/DP/BSRGaussianCore.lean:351:theorem bsrGaussianMeasure_apply_eval_preimage :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:354:    bsrGaussianMeasure σ μ (Function.eval i ⁻¹' s)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:358:theorem bsrGaussianMeasure_apply_eval_preimage_Iic :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:360:    bsrGaussianMeasure σ μ (Function.eval i ⁻¹' Set.Iic t)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:364:theorem bsrGaussianMeasure_apply_eval_preimage_Iic_eq_stdNormal :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:367:    bsrGaussianMeasure σ μ (Function.eval i ⁻¹' Set.Iic t)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:371:theorem bsrGaussianMeasure_apply_centered_privacyLoss_posRegion :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:373:    bsrGaussianMeasure σ d
+capsule/lean/Mf/DP/BSRGaussianCore.lean:379:        ((bsrGaussianMeasure σ d).map (fun y : BSROutput n => bsrDot d y))
+capsule/lean/Mf/DP/BSRGaussianCore.lean:393:theorem bsrGaussianMeasure_apply_centered_privacyLoss_posRegion_Iic :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:395:    bsrGaussianMeasure σ d
+capsule/lean/Mf/DP/BSRGaussianCore.lean:401:        ((bsrGaussianMeasure σ d).map (fun y : BSROutput n => -bsrDot d y))
+capsule/lean/Mf/DP/BSRGaussianCore.lean:405:theorem bsrGaussianMeasure_apply_centered_privacyLoss_posRegion_Iic_of_mean :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:407:    bsrGaussianMeasure σ μ
+capsule/lean/Mf/DP/BSRGaussianCore.lean:413:        ((bsrGaussianMeasure σ μ).map (fun y : BSROutput n => -bsrDot d y))
+capsule/lean/Mf/DP/BSRGaussianCore.lean:417:theorem bsrGaussianMeasure_map_add_const :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:419:    (bsrGaussianMeasure σ μ).map (fun x : BSROutput n => fun i => x i + c i)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:420:      = bsrGaussianMeasure σ (fun i => μ i + c i) :=
+capsule/lean/Mf/DP/BSRGaussianCore.lean:423:theorem bsrGaussianMeasure_map_sub_const :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:425:    (bsrGaussianMeasure σ μ).map (fun x : BSROutput n => fun i => x i - c i)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:426:      = bsrGaussianMeasure σ (fun i => μ i - c i) :=
+capsule/lean/Mf/DP/BSRGaussianCore.lean:429:theorem bsrGaussianMeasure_map_neg :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:431:    (bsrGaussianMeasure σ μ).map (fun x : BSROutput n => fun i => -x i)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:432:      = bsrGaussianMeasure σ (fun i => -μ i) :=
+capsule/lean/Mf/DP/BSRGaussianCore.lean:435:theorem bsrGaussianMeasure_map_bsrDot_add_const :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:437:    (bsrGaussianMeasure σ (fun i => μ i + c i)).map (fun y : BSROutput n => bsrDot d y)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:439:        ((bsrGaussianMeasure σ μ).map (fun y : BSROutput n => bsrDot d y)).map
+capsule/lean/Mf/DP/BSRGaussianCore.lean:443:theorem bsrGaussianMeasure_map_bsrDot_eq_centered_map_shift :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:445:    (bsrGaussianMeasure σ μ).map (fun y : BSROutput n => bsrDot d y)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:447:        ((bsrGaussianMeasure σ (fun _ => (0 : ℝ))).map (fun y : BSROutput n => bsrDot d y)).map
+capsule/lean/Mf/DP/BSRGaussianCore.lean:451:theorem bsrGaussianMeasure_map_neg_bsrDot_eq_centered_map_shift :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:453:    (bsrGaussianMeasure σ μ).map (fun y : BSROutput n => -bsrDot d y)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:455:        ((bsrGaussianMeasure σ (fun _ => (0 : ℝ))).map (fun y : BSROutput n => -bsrDot d y)).map
+capsule/lean/Mf/DP/BSRGaussianCore.lean:459:theorem bsrGaussianMeasure_map_neg_bsrDot_negMean_eq_centered_map_shift :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:461:    (bsrGaussianMeasure σ (fun i => -d i)).map (fun y : BSROutput n => -bsrDot d y)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:463:        ((bsrGaussianMeasure σ (fun _ => (0 : ℝ))).map (fun y : BSROutput n => -bsrDot d y)).map
+capsule/lean/Mf/DP/BSRGaussianCore.lean:467:theorem bsrGaussianMeasure_map_neg_bsrDot_centered_eq_gaussianReal_sumSq :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:469:    ((bsrGaussianMeasure σ (fun _ : Fin n => (0 : ℝ))).map (fun y : BSROutput n => -bsrDot d y))
+capsule/lean/Mf/DP/BSRGaussianCore.lean:475:theorem bsrGaussianMeasure_map_neg_bsrDot_centered_eq_gaussianReal :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:477:    ((bsrGaussianMeasure σ (fun _ : Fin n => (0 : ℝ))).map (fun y : BSROutput n => -bsrDot d y))
+capsule/lean/Mf/DP/BSRGaussianCore.lean:483:theorem bsrGaussianMeasure_map_neg_bsrDot_eq_gaussianReal :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:485:    (bsrGaussianMeasure σ μ).map (fun y : BSROutput n => -bsrDot d y)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:491:theorem bsrGaussianMeasure_map_neg_bsrDot_negMean_eq_gaussianReal :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:493:    (bsrGaussianMeasure σ (fun i => -d i)).map (fun y : BSROutput n => -bsrDot d y)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:499:theorem bsrGaussianMeasure_apply_centered_privacyLoss_posRegion_eq_gaussianReal_event :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:501:    bsrGaussianMeasure σ d
+capsule/lean/Mf/DP/BSRGaussianCore.lean:513:theorem bsrGaussianMeasure_apply_centered_privacyLoss_posRegion_negMean_eq_gaussianReal_event :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:515:    bsrGaussianMeasure σ (fun i => -d i)
+capsule/lean/Mf/DP/BSRGaussianCore.lean:533:        bsrGaussianMeasure σ μ s
+capsule/lean/Mf/DP/BSRGaussianCore.lean:534:          ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ μ' s + ENNReal.ofReal δ),
+capsule/lean/Mf/DP/BSRGaussianCore.lean:536:      bsrGaussianMeasure σ (fun i => μ i + c i) s
+capsule/lean/Mf/DP/BSRGaussianCore.lean:537:        ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => μ' i + c i) s
+capsule/lean/Mf/DP/BSRGaussianCore.lean:541:theorem analyticGaussianExpr_iff_bsrGaussianMeasure_eval_event_form :
+capsule/lean/Mf/DP/BSRGaussianCore.lean:546:      ↔ (bsrGaussianMeasure σ (fun _ : Fin n => Δ / 2)).real
+capsule/lean/Mf/DP/BSRGaussianCore.lean:549:              * (bsrGaussianMeasure σ (fun _ : Fin n => -Δ / 2)).real
+capsule/lean/Mf/DP/BSRGaussianCore.lean:623:        bsrGaussianMeasure σ d s
+capsule/lean/Mf/DP/BSRGaussianCore.lean:624:          ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => -d i) s
+capsule/lean/Mf/DP/BSRGaussianCore.lean:627:      bsrGaussianMeasure σ (fun i => bsrMidpoint d (fun j => -d j) i + d i) s
+capsule/lean/Mf/DP/BSRGaussianCore.lean:629:            * bsrGaussianMeasure σ (fun i => bsrMidpoint d (fun j => -d j) i - d i) s
+capsule/lean/Mf/DP/BSRGaussianCore.lean:651:  fun x => bsrGaussianMeasure σ (mean x)
+capsule/lean/Mf/DP/SparseGaussianProductMaximumEventLowerBound.lean:21:def sparseGaussianProductMaximumEventForwardLowerBoundReal
+capsule/lean/Mf/DP/SparseGaussianProductMaximumEventLowerBound.lean:31:def sparseGaussianProductMaximumEventForwardLowerBound
+capsule/lean/Mf/DP/SparseGaussianProductLikelihoodRatio.lean:21:def sparseGaussianProductLikelihoodRatio
+capsule/lean/Mf/DP/SparseGaussianProductLikelihoodRatio.lean:46:def sparseGaussianProductLaw
+capsule/lean/Mf/DP/MatchedGaussianSourceNormalization.lean:78:def sampledGaussianStandardizationEquiv
+capsule/lean/Mf/DP/MatchedGaussianSourceNormalization.lean:180:def sampledGaussianProductStandardizationEquiv
+capsule/lean/Mf/DP/SampledGaussianCalibratedStddev.lean:17:def sampledGaussianProductProfileStddev
+capsule/lean/Mf/DP/SampledGaussianCalibratedStddev.lean:32:def sampledGaussianFeasibleStddevSet
+capsule/lean/Mf/DP/SampledGaussianCalibratedStddev.lean:48:def sampledGaussianCalibratedStddev
+capsule/lean/Mf/DP/SampledGaussianCalibrationThresholds.lean:40:      ⟨bsrGaussianMeasure (noiseStddev : Real)
+capsule/lean/Mf/DP/SampledGaussianCalibrationThresholds.lean:42:      ⟨bsrGaussianMeasure (noiseStddev : Real)
+capsule/lean/Mf/DP/SampledGaussianCalibrationThresholds.lean:92:def sampledGaussianLowerCalibrationCandidate
+capsule/lean/Mf/DP/SampledGaussianCalibrationThresholds.lean:102:def sampledGaussianUpperCalibrationCandidate
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:68:def l2VectorClip {ι : Type*} [Fintype ι]
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:72:theorem measurable_l2VectorClip {ι : Type*} [Fintype ι] (C : ℝ) :
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:73:    Measurable (l2VectorClip C : (ι → ℝ) → (ι → ℝ)) := by
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:84:@[simp] theorem l2VectorClip_zero {ι : Type*} [Fintype ι]
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:86:    l2VectorClip C (0 : ι → ℝ) = 0 := by
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:87:  simp [l2VectorClip, hC]
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:89:@[simp] theorem l2VectorClip_neg {ι : Type*} [Fintype ι]
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:91:    l2VectorClip C (-x) = -l2VectorClip C x := by
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:92:  unfold l2VectorClip
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:96:theorem l2VectorClip_eq_self {ι : Type*} [Fintype ι]
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:98:    l2VectorClip C x = x := by
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:99:  simp [l2VectorClip, hx]
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:101:theorem l2VectorClip_norm_le {ι : Type*} [Fintype ι]
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:103:    l2Norm (l2VectorClip C x) ≤ C := by
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:105:  · simpa [l2VectorClip, h]
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:108:    rw [l2VectorClip, if_neg h, l2Norm_smul, abs_of_nonneg
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:115:  ∑ record ∈ dataset, l2VectorClip C (gradient record)
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:127:        (∑ x ∈ left, l2VectorClip C (gradient x)) -
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:128:            (l2VectorClip C (gradient record) +
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:129:              ∑ x ∈ left, l2VectorClip C (gradient x)) =
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:130:          -l2VectorClip C (gradient record) := by
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:133:    exact l2VectorClip_norm_le C (gradient record) hC
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:136:        (l2VectorClip C (gradient record) +
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:137:            ∑ x ∈ right, l2VectorClip C (gradient x)) -
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:138:          ∑ x ∈ right, l2VectorClip C (gradient x) =
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:139:        l2VectorClip C (gradient record) := by
+capsule/lean/Mf/DP/EuclideanVectorClipping.lean:142:    exact l2VectorClip_norm_le C (gradient record) hC
+capsule/lean/Mf/DP/LawAccountingOracle.lean:20:def eventHockeyStickProfile
+capsule/lean/Mf/DP/LawAccountingOracle.lean:66:def binaryAccountingProfile
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:28:abbrev AdaptiveReleaseHistory (Release : Type*) := ℕ → Release
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:31:def writeRelease {Release : Type*} (step : ℕ)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:32:    (p : AdaptiveReleaseHistory Release × Release) :
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:33:    AdaptiveReleaseHistory Release :=
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:36:theorem measurable_writeRelease
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:38:    Measurable (writeRelease (Release := Release) step) := by
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:42:  · simpa [writeRelease, h] using
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:44:        (fun p : AdaptiveReleaseHistory Release × Release => p.2))
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:46:        (fun p : AdaptiveReleaseHistory Release × Release => p.1) :=
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:48:    simpa [writeRelease, h, Function.comp_def] using
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:57:    Kernel (AdaptiveReleaseHistory Release) Release
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:70:    Kernel (AdaptiveReleaseHistory Release)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:71:      (AdaptiveReleaseHistory Release) :=
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:73:    (writeRelease (Release := Release) n))
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:83:      (Kernel.id : Kernel (AdaptiveReleaseHistory Release)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:84:        (AdaptiveReleaseHistory Release)) := inferInstance
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:87:  exact Kernel.IsMarkovKernel.map _ (measurable_writeRelease n)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:94:    (history : AdaptiveReleaseHistory Release) :
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:97:        (fun release => writeRelease n (history, release)) := by
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:100:  have hwrite : Measurable fun release => writeRelease n (history, release) :=
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:101:    (measurable_writeRelease n).comp
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:105:  rw [historyAdvanceKernel, Kernel.map_apply _ (measurable_writeRelease n),
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:106:    Measure.map_apply (measurable_writeRelease n) hs,
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:107:    Kernel.id_prod_apply' _ _ ((measurable_writeRelease n) hs),
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:114:    (initialHistory : AdaptiveReleaseHistory Release) :
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:115:    ℕ → Dataset → Measure (AdaptiveReleaseHistory Release)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:123:    (initialHistory : AdaptiveReleaseHistory Release)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:130:    (initialHistory : AdaptiveReleaseHistory Release)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:138:    (initialHistory : AdaptiveReleaseHistory Release)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:154:    (initialHistory : AdaptiveReleaseHistory Release)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:164:    (initialHistory : AdaptiveReleaseHistory Release)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:432:    (initialHistory : AdaptiveReleaseHistory Release)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:464:    (initialHistory : AdaptiveReleaseHistory Release)
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:486:def falseHistory : AdaptiveReleaseHistory Bool := fun _ => false
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:492:    Kernel (AdaptiveReleaseHistory Bool) Bool :=
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:508:    (n : ℕ) (history : AdaptiveReleaseHistory Bool) :
+capsule/lean/Mf/DP/ProfileAdaptiveKernelComposition.lean:545:def historyWithFirst (value : Bool) : AdaptiveReleaseHistory Bool :=
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:34:    eventHockeyStickProfile (bsrGaussianMeasure noiseStddev d)
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:35:        (bsrGaussianMeasure noiseStddev (fun i => -d i)) epsilon =
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:44:      (bsrGaussianMeasure noiseStddev d).real event -
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:46:            (bsrGaussianMeasure noiseStddev (fun i => -d i)).real event =
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:77:        ⟨bsrGaussianMeasure noiseStddev d, by infer_instance⟩
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:78:        ⟨bsrGaussianMeasure noiseStddev (fun i => -d i), by infer_instance⟩ epsilon =
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:84:      eventHockeyStickProfile (bsrGaussianMeasure noiseStddev (fun i => -d i))
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:85:        (bsrGaussianMeasure noiseStddev d) epsilon =
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:90:    have hmapD : Measure.map negEquiv (bsrGaussianMeasure noiseStddev d) =
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:91:        bsrGaussianMeasure noiseStddev (fun i => -d i) := by
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:92:      change Measure.map (fun x i => -x i) (bsrGaussianMeasure noiseStddev d) = _
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:93:      exact bsrGaussianMeasure_map_neg noiseStddev d
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:95:          (bsrGaussianMeasure noiseStddev (fun i => -d i)) =
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:96:        bsrGaussianMeasure noiseStddev d := by
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:98:        (bsrGaussianMeasure noiseStddev (fun i => -d i)) = _
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:100:        bsrGaussianMeasure_map_neg noiseStddev (fun i => -d i)
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:104:            (bsrGaussianMeasure noiseStddev (fun i => -d i)))
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:105:          (Measure.map negEquiv (bsrGaussianMeasure noiseStddev d)) epsilon := by
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:108:      _ = eventHockeyStickProfile (bsrGaussianMeasure noiseStddev d)
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:109:          (bsrGaussianMeasure noiseStddev (fun i => -d i)) epsilon := by
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:113:      (eventHockeyStickProfile (bsrGaussianMeasure noiseStddev d)
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:114:        (bsrGaussianMeasure noiseStddev (fun i => -d i)) epsilon)
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:115:      (eventHockeyStickProfile (bsrGaussianMeasure noiseStddev (fun i => -d i))
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:116:        (bsrGaussianMeasure noiseStddev d) epsilon) = _
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:155:        (bsrGaussianMeasure noiseStddev (fun _ : Fin horizon => sensitivity))
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:156:        (bsrGaussianMeasure noiseStddev (fun _ : Fin horizon => 0)) epsilon =
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:167:    bsrGaussianMeasure noiseStddev d
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:169:    bsrGaussianMeasure noiseStddev (fun i => -d i)
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:173:      bsrGaussianMeasure noiseStddev (fun _ : Fin horizon => sensitivity) := by
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:175:        (bsrGaussianMeasure noiseStddev d) = _
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:178:    rw [bsrGaussianMeasure_map_add_const]
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:183:      bsrGaussianMeasure noiseStddev (fun _ : Fin horizon => 0) := by
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:185:        (bsrGaussianMeasure noiseStddev (fun i => -d i)) = _
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:188:    rw [bsrGaussianMeasure_map_add_const]
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:231:    bsrGaussianMeasure noiseStddev (fun _ => sensitivity)
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:233:    bsrGaussianMeasure noiseStddev (fun _ => 0)
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:242:    convert bsrGaussianMeasure_map_eval
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:249:    convert bsrGaussianMeasure_map_eval
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:311:        ⟨bsrGaussianMeasure noiseStddev (fun _ : Fin horizon => sensitivity),
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:313:        ⟨bsrGaussianMeasure noiseStddev (fun _ : Fin horizon => 0),
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:325:    ⟨bsrGaussianMeasure noiseStddev d, by infer_instance⟩
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:327:    ⟨bsrGaussianMeasure noiseStddev (fun i => -d i), by infer_instance⟩
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:331:      ⟨bsrGaussianMeasure noiseStddev (fun _ : Fin horizon => sensitivity),
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:335:        (bsrGaussianMeasure noiseStddev d) = _
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:338:    rw [bsrGaussianMeasure_map_add_const]
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:343:      ⟨bsrGaussianMeasure noiseStddev (fun _ : Fin horizon => 0),
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:347:        (bsrGaussianMeasure noiseStddev (fun i => -d i)) = _
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:350:    rw [bsrGaussianMeasure_map_add_const]
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:391:      ⟨bsrGaussianMeasure (noiseStddev : Real)
+capsule/lean/Mf/DP/FullBatchGaussianAccounting.lean:393:      ⟨bsrGaussianMeasure (noiseStddev : Real)
+capsule/lean/Mf/DP/GaussianCore.lean:57:theorem analyticGaussianCondition_iff_bsrGaussianMeasure_eval_event_form :
+capsule/lean/Mf/DP/GaussianCore.lean:62:      ↔ (bsrGaussianMeasure σ (fun _ : Fin n => Δ / 2)).real
+capsule/lean/Mf/DP/GaussianCore.lean:65:              * (bsrGaussianMeasure σ (fun _ : Fin n => -Δ / 2)).real
+capsule/lean/Mf/DP/GaussianCore.lean:273:    (bsrGaussianMeasure σ d).real
+capsule/lean/Mf/DP/GaussianCore.lean:279:          * (bsrGaussianMeasure σ (fun i => -d i)).real
+capsule/lean/Mf/DP/GaussianCore.lean:323:    (bsrGaussianMeasure σ d).real
+capsule/lean/Mf/DP/GaussianCore.lean:329:          * (bsrGaussianMeasure σ (fun i => -d i)).real
+capsule/lean/Mf/DP/GaussianCore.lean:349:    (bsrGaussianMeasure σ d).real
+capsule/lean/Mf/DP/GaussianCore.lean:355:          * (bsrGaussianMeasure σ (fun i => -d i)).real
+capsule/lean/Mf/DP/GaussianCore.lean:375:    (bsrGaussianMeasure σ d).real
+capsule/lean/Mf/DP/GaussianCore.lean:381:          * (bsrGaussianMeasure σ (fun i => -d i)).real
+capsule/lean/Mf/DP/GaussianCore.lean:398:    (bsrGaussianMeasure σ d).real
+capsule/lean/Mf/DP/GaussianCore.lean:404:          * (bsrGaussianMeasure σ (fun i => -d i)).real
+capsule/lean/Mf/DP/GaussianCore.lean:444:    ((bsrGaussianMeasure σ d).toSignedMeasure
+capsule/lean/Mf/DP/GaussianCore.lean:445:      - ((c • bsrGaussianMeasure σ (fun i => -d i)).toSignedMeasure)) s
+capsule/lean/Mf/DP/GaussianCore.lean:447:    (bsrGaussianMeasure σ d).real s
+capsule/lean/Mf/DP/GaussianCore.lean:448:        - Real.exp ε * (bsrGaussianMeasure σ (fun i => -d i)).real s :=
+capsule/lean/Mf/DP/GaussianCore.lean:461:        0 ≤ (bsrGaussianMeasure σ d).real j
+capsule/lean/Mf/DP/GaussianCore.lean:462:          - Real.exp ε * (bsrGaussianMeasure σ (fun i => -d i)).real j)
+capsule/lean/Mf/DP/GaussianCore.lean:469:        (bsrGaussianMeasure σ d).real j
+capsule/lean/Mf/DP/GaussianCore.lean:470:          - Real.exp ε * (bsrGaussianMeasure σ (fun i => -d i)).real j ≤ 0)
+capsule/lean/Mf/DP/GaussianCore.lean:472:      (bsrGaussianMeasure σ d).real
+capsule/lean/Mf/DP/GaussianCore.lean:478:            * (bsrGaussianMeasure σ (fun i => -d i)).real
+capsule/lean/Mf/DP/GaussianCore.lean:485:      bsrGaussianMeasure σ d s
+capsule/lean/Mf/DP/GaussianCore.lean:486:        ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => -d i) s
+capsule/lean/Mf/DP/GaussianCore.lean:508:        0 ≤ (bsrGaussianMeasure σ d).real j
+capsule/lean/Mf/DP/GaussianCore.lean:509:          - Real.exp ε * (bsrGaussianMeasure σ (fun i => -d i)).real j)
+capsule/lean/Mf/DP/GaussianCore.lean:516:        (bsrGaussianMeasure σ d).real j
+capsule/lean/Mf/DP/GaussianCore.lean:517:          - Real.exp ε * (bsrGaussianMeasure σ (fun i => -d i)).real j ≤ 0),
+capsule/lean/Mf/DP/GaussianCore.lean:519:      bsrGaussianMeasure σ d s
+capsule/lean/Mf/DP/GaussianCore.lean:520:        ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => -d i) s
+capsule/lean/Mf/DP/GaussianCore.lean:541:        0 ≤ (bsrGaussianMeasure σ d).real j
+capsule/lean/Mf/DP/GaussianCore.lean:542:          - Real.exp ε * (bsrGaussianMeasure σ (fun i => -d i)).real j)
+capsule/lean/Mf/DP/GaussianCore.lean:549:        (bsrGaussianMeasure σ d).real j
+capsule/lean/Mf/DP/GaussianCore.lean:550:          - Real.exp ε * (bsrGaussianMeasure σ (fun i => -d i)).real j ≤ 0)
+capsule/lean/Mf/DP/GaussianCore.lean:554:        bsrGaussianMeasure σ d s
+capsule/lean/Mf/DP/GaussianCore.lean:555:          ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => -d i) s
+capsule/lean/Mf/DP/GaussianCore.lean:558:      bsrGaussianMeasure σ d s
+capsule/lean/Mf/DP/GaussianCore.lean:559:        ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => -d i) s
+capsule/lean/Mf/DP/GaussianCore.lean:573:      0 ≤ (bsrGaussianMeasure σ d).real j
+capsule/lean/Mf/DP/GaussianCore.lean:574:        - Real.exp ε * (bsrGaussianMeasure σ (fun i => -d i)).real j :=
+capsule/lean/Mf/DP/GaussianCore.lean:587:      (bsrGaussianMeasure σ d).real j
+capsule/lean/Mf/DP/GaussianCore.lean:588:        - Real.exp ε * (bsrGaussianMeasure σ (fun i => -d i)).real j ≤ 0 :=
+capsule/lean/Mf/DP/GaussianCore.lean:597:      (bsrGaussianMeasure σ d).real
+capsule/lean/Mf/DP/GaussianCore.lean:603:            * (bsrGaussianMeasure σ (fun i => -d i)).real
+capsule/lean/Mf/DP/GaussianCore.lean:610:      bsrGaussianMeasure σ d s
+capsule/lean/Mf/DP/GaussianCore.lean:611:        ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => -d i) s
+capsule/lean/Mf/DP/GaussianCore.lean:628:      bsrGaussianMeasure σ d s
+capsule/lean/Mf/DP/GaussianCore.lean:629:        ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => -d i) s
+capsule/lean/Mf/DP/GaussianCore.lean:646:      bsrGaussianMeasure σ d s
+capsule/lean/Mf/DP/GaussianCore.lean:648:          ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => -d i) s
+capsule/lean/Mf/DP/GaussianCore.lean:663:      bsrGaussianMeasure σ d s
+capsule/lean/Mf/DP/GaussianCore.lean:665:          ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => -d i) s
+capsule/lean/Mf/DP/GaussianCore.lean:680:      bsrGaussianMeasure σ d s
+capsule/lean/Mf/DP/GaussianCore.lean:682:          ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ (fun i => -d i) s
+capsule/lean/Mf/DP/GaussianCore.lean:697:      bsrGaussianMeasure σ μ s
+capsule/lean/Mf/DP/GaussianCore.lean:698:        ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ μ' s + ENNReal.ofReal δ :=
+capsule/lean/Mf/DP/GaussianCore.lean:712:      bsrGaussianMeasure σ μ s
+capsule/lean/Mf/DP/GaussianCore.lean:713:        ≤ ENNReal.ofReal (Real.exp ε) * bsrGaussianMeasure σ μ' s + ENNReal.ofReal δ :=
+capsule/lean/Mf/DP/GaussianCore.lean:768:      (bsrGaussianMeasure_isProbability (σ := σ) (μ := mean x))
+capsule/lean/Mf/DP/GaussianCore.lean:788:      (bsrGaussianMeasure_isProbability (σ := σ) (μ := mean x))
+capsule/lean/Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lean:25:def sparseGaussianProductBelowBoxReferenceMeasure
+capsule/lean/Mf/DP/SampledGaussianProductFiniteProfileBounds.lean:138:def sampledGaussianProductFiniteProfileUpperBoundWithThresholds
+capsule/lean/Mf/DP/SampledGaussianProductFiniteProfileBounds.lean:149:def sampledGaussianProductFiniteProfileUpperBound
+capsule/lean/Mf/DP/SampledGaussianOutputLaws.lean:28:def sampledGaussianOneStepSourceLaw
+capsule/lean/Mf/DP/SampledGaussianOutputLaws.lean:35:def sampledGaussianOneStepReferenceLaw
+capsule/lean/Mf/DP/SampledGaussianOutputLaws.lean:40:def sampledGaussianSourceProductLaw
+capsule/lean/Mf/DP/SampledGaussianOutputLaws.lean:48:def sampledGaussianReferenceProductLaw
+capsule/lean/Mf/DP/SampledGaussianOutputLaws.lean:65:def sampledGaussianOutputSumSourceLaw
+capsule/lean/Mf/DP/SampledGaussianOutputLaws.lean:73:def sampledGaussianOutputSumReferenceLaw
+capsule/lean/Mf/DP/SampledGaussianOutputLaws.lean:84:def sampledGaussianOutputThresholdEvent
+capsule/lean/Mf/DP/SampledGaussianProductMaximumEvent.lean:21:def sparseGaussianProductMaximumEvent
+capsule/lean/Mf/DP/SampledGaussianProductMaximumEvent.lean:25:def sparseGaussianProductBelowBox
+capsule/lean/Mf/DP/SampledGaussianProductMaximumEvent.lean:31:def sampledGaussianProductMaximumEvent
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:14:  bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:19:  exact bisFixedCardUniformMass_nonneg _ _ _
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:25:    bisFixedCardUniformMass_sum_univ_eq_one
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:32:  unfold fixedCardinalityScheduleMass bisFixedCardUniformMass
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:76:    (history : AdaptiveReleaseHistory (Fin d → ℝ)) : Fin d → ℝ :=
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:79:      l2VectorClip clippingNorm (oracle.query step history record.1)
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:95:    (initialHistory : AdaptiveReleaseHistory (Fin d → ℝ)) :
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:96:    ℕ → MeasureTheory.Measure (AdaptiveReleaseHistory (Fin d → ℝ))
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:102:            (bsrGaussianMeasure sigma
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:105:              (fun release => writeRelease n (history, release))
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:123:    (initialHistory : AdaptiveReleaseHistory (Fin d → ℝ))
+capsule/lean/Mf/DP/Training/KOutOfT/TrainingMechanism.lean:125:    MeasureTheory.Measure (AdaptiveReleaseHistory (Fin d → ℝ)) :=
+capsule/lean/Mf/DP/Training/Common/AdaptiveTranscript.lean:23:    Fin T → AdaptiveReleaseHistory (Fin d → ℝ) → Record → Fin d → ℝ
+capsule/lean/Mf/DP/Training/Common/AdaptiveTranscript.lean:28:def zeroAdaptiveReleaseHistory
+capsule/lean/Mf/DP/Training/Common/AdaptiveTranscript.lean:29:    {Release : Type*} [Zero Release] : AdaptiveReleaseHistory Release :=
+capsule/lean/Mf/DP/Training/Common/AdaptiveTranscript.lean:39:    (history : AdaptiveReleaseHistory (Fin d → ℝ))
+capsule/lean/Mf/DP/Training/Common/AdaptiveTranscript.lean:55:    (history : AdaptiveReleaseHistory (Fin d → ℝ))
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1541:def bisFixedCardUniformMass {α : Type} [DecidableEq α]
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1550:      bisFixedCardUniformMass base k u * if a ∈ u then (1 : ℝ) else 0)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1557:      bisFixedCardUniformMass base k u * if a ∈ u ∧ b ∈ u then (1 : ℝ) else 0)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1566:theorem bisFixedCardUniformMass_nonneg
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1569:    0 ≤ bisFixedCardUniformMass base k u := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1570:  unfold bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1576:theorem bisFixedCardUniformMass_sum_support_eq_one
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1579:    Finset.sum (base.powersetCard k) (bisFixedCardUniformMass base k) = 1 := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1580:  unfold bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1597:theorem bisFixedCardUniformMass_sum_univ_eq_one
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1600:    Finset.sum Finset.univ (bisFixedCardUniformMass base k) = 1 := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1602:    Finset.sum Finset.univ (bisFixedCardUniformMass base k)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1603:      = Finset.sum (base.powersetCard k) (bisFixedCardUniformMass base k) := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1607:          unfold bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1610:          rw [bisFixedCardUniformMass_sum_support_eq_one base k hk]
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1613:theorem bisFixedCardUniformMass_mean_count_eq
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1617:        (fun u => bisFixedCardUniformMass base k u * (u.card : ℝ))
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1619:  have hnorm := bisFixedCardUniformMass_sum_support_eq_one base k hk
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1622:        (fun u => bisFixedCardUniformMass base k u * (u.card : ℝ))
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1624:            (fun u => bisFixedCardUniformMass base k u * (k : ℝ)) := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1629:    _ = (Finset.sum (base.powersetCard k) (bisFixedCardUniformMass base k))
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1637:theorem bisFixedCardUniformMass_secondMoment_count_eq_sq
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1641:        (fun u : Finset α => bisFixedCardUniformMass base k u * (u.card : ℝ) ^ 2)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1645:        (fun u : Finset α => bisFixedCardUniformMass base k u * (u.card : ℝ) ^ 2)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1647:            (fun u : Finset α => bisFixedCardUniformMass base k u * (k : ℝ) ^ 2) := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1652:    _ = (Finset.sum (base.powersetCard k) (bisFixedCardUniformMass base k))
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1656:          rw [bisFixedCardUniformMass_sum_support_eq_one base k hk]
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1667:theorem bisFixedCardUniformMass_countVariance_zero
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1671:        (fun u : Finset α => bisFixedCardUniformMass base k u * (u.card : ℝ) ^ 2)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1673:  rw [bisFixedCardUniformMass_secondMoment_count_eq_sq base k hk]
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1677:theorem bisFixedCardUniformMass_countDeviation_zero
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1681:        (bisFixedCardUniformMass base k) (fun u : Finset α => u.card) (k : ℝ)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1684:    (bisFixedCardUniformMass base k) k
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1761:theorem bisFixedCardUniformMass_memberMarginal_succ
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1766:          bisFixedCardUniformMass base (k + 1) u
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1770:  unfold bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1806:`bisFixedCardUniformMass_memberMarginal_succ` simplifies to `(k+1)/|base|`.
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1808:theorem bisFixedCardUniformMass_memberMarginal_succ_eq_div_card
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1814:          bisFixedCardUniformMass base (k + 1) u
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1817:  rw [bisFixedCardUniformMass_memberMarginal_succ base a ha k]
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1844:      unfold bisFixedCardUniformMarginal bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:1849:        bisFixedCardUniformMass_memberMarginal_succ_eq_div_card base a ha k hk
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:2041:theorem bisFixedCardUniformMass_pairMarginal_succ_succ
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:2047:          bisFixedCardUniformMass base (k + 2) u
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:2051:  unfold bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:2081:`bisFixedCardUniformMass_pairMarginal_succ_succ` simplifies to
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:2084:theorem bisFixedCardUniformMass_pairMarginal_succ_succ_eq_div_card
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:2090:          bisFixedCardUniformMass base (k + 2) u
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:2094:  rw [bisFixedCardUniformMass_pairMarginal_succ_succ base a b ha hb hab k]
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:2137:      unfold bisFixedCardUniformPairMarginal bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:2162:          have hpair := bisFixedCardUniformMass_pairMarginal_succ_succ_eq_div_card
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3594:      (fun u : Finset (Fin T) => bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3601:  unfold bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3611:      (fun u : Finset (Fin T) => bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3616:    (∑ a, bisFixedCardUniformMass Finset.univ k a * (if i ∈ a then (1 : ℝ) else 0) *
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3619:            bisFixedCardUniformMass Finset.univ k u * (if i ∈ u then (1 : ℝ) else 0) *
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3624:          unfold bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3627:            bisFixedCardUniformMass Finset.univ k u *
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3640:      (fun u : Finset (Fin T) => bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3655:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u *
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3660:              bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3683:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u *
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3688:              bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3713:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u *
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3718:              bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3751:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u *
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3756:              bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3773:          bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3780:          bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3800:          bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3871:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3877:        bisFixedCardUniformMass Finset.univ k a *
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3881:            bisFixedCardUniformMass Finset.univ k a *
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3887:          unfold bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3891:            bisFixedCardUniformMass Finset.univ k a * (a.card : ℝ)) := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3896:          rw [bisFixedCardUniformMass_mean_count_eq
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3911:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3935:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:3953:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5304:              bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k s * Real.exp
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5315:      bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u) = 1 := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5316:    rw [bisFixedCardUniformMass_sum_univ_eq_one
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5319:    (fun u : Finset (Fin T) => bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5324:        (fun u : Finset (Fin T) => bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5398:          bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k s * Real.exp
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5414:            bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k s * Real.exp
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5440:          bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k s * Real.exp
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5453:      bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u) = 1 := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5454:    rw [bisFixedCardUniformMass_sum_univ_eq_one
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5458:      bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5463:          bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5532:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5538:              bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5542:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5548:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5552:            bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u * (u.card : ℝ) ^ 2) := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5561:            bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u * (u.card : ℝ) ^ 2) := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5565:          unfold bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5568:          rw [bisFixedCardUniformMass_secondMoment_count_eq_sq
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5573:              bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5577:        bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u)
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5581:          bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u *
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5585:            bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u * (u.card : ℝ)) := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5595:                bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u * (u.card : ℝ))
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5598:                    bisFixedCardUniformMass (Finset.univ : Finset (Fin T)) k u * (u.card : ℝ)) := by
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5602:                  unfold bisFixedCardUniformMass
+capsule/lean/Mf/DP/OptimalSubsamplingBISLR.lean:5605:                  rw [bisFixedCardUniformMass_mean_count_eq
+
+EXIT: 0

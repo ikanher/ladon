@@ -1,0 +1,509 @@
+$ python3 -c 'from pathlib import Path; parts={"capsule/lean/Mf/DP/SampledGaussianProductMaximumEvent.lean":(1,250),"capsule/lean/Mf/DP/SparseGaussianLikelihoodRatio.lean":(175,310),"capsule/lean/Mf/Probability/FiniteGaussianDensity.lean":(177,205),"capsule/lean/Mf/DP/SampledGaussianProductNoiseMonotonicity.lean":(1,240)}; [(print("FILE:",n),print("".join(f"{i}: {s}" for i,s in enumerate(Path(n).open(),1) if a<=i<=b))) for n,(a,b) in parts.items()]'
+CWD: /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/INPUT
+FILE: capsule/lean/Mf/DP/SampledGaussianProductMaximumEvent.lean
+1: import Mf.DP.GaussianPrivacyLoss
+2: import Mf.DP.SparseGaussianLikelihoodRatio
+3: import Mf.DP.SparseGaussianProductLikelihoodRatio
+4: 
+5: /-!
+6: # Maximum-coordinate events for normalized sampled-Gaussian products
+7: 
+8: This owner defines the finite threshold event used by the first
+9: nonasymptotic profile bracket.  It proves only exact event measurability and
+10: product probabilities; no optimality claim about the event is made here.
+11: -/
+12: 
+13: open MeasureTheory ProbabilityTheory Set
+14: open scoped BigOperators
+15: 
+16: namespace Mf.DP
+17: 
+18: noncomputable section
+19: 
+20: /-- At least one normalized product coordinate exceeds the supplied threshold. -/
+21: def sparseGaussianProductMaximumEvent
+22:     (horizon : Nat) (threshold : Real) : Set (Fin horizon → Real) :=
+23:   {sample | ∃ coordinate, threshold < sample coordinate}
+24: 
+25: def sparseGaussianProductBelowBox
+26:     (horizon : Nat) (threshold : Real) : Set (Fin horizon → Real) :=
+27:   Set.pi Set.univ (fun _ : Fin horizon => Set.Iic threshold)
+28: 
+29: /-- At least one product coordinate exceeds a threshold in the unnormalized
+30: sampled-Gaussian coordinates. -/
+31: def sampledGaussianProductMaximumEvent
+32:     (horizon : Nat) (threshold : Real) : Set (Fin horizon → Real) :=
+33:   {sample | ∃ coordinate, threshold < sample coordinate}
+34: 
+35: theorem measurableSet_sampledGaussianProductMaximumEvent
+36:     (horizon : Nat) (threshold : Real) :
+37:     MeasurableSet (sampledGaussianProductMaximumEvent horizon threshold) := by
+38:   unfold sampledGaussianProductMaximumEvent
+39:   rw [show {sample : Fin horizon → Real | ∃ coordinate, threshold < sample coordinate} =
+40:       ⋃ coordinate : Fin horizon, (fun sample : Fin horizon → Real => sample coordinate) ⁻¹'
+41:         Set.Ioi threshold by
+42:     ext sample
+43:     simp]
+44:   exact MeasurableSet.iUnion fun coordinate =>
+45:     measurableSet_Ioi.preimage (measurable_pi_apply coordinate)
+46: 
+47: theorem sampledGaussianProductMaximumEvent_preimage_positiveScale
+48:     (horizon : Nat) (threshold : Real) (noiseStddev : NNReal)
+49:     (hStddev : 0 < noiseStddev) :
+50:     (positiveGaussianProductScaleEquiv horizon noiseStddev hStddev) ⁻¹'
+51:         sparseGaussianProductMaximumEvent horizon threshold =
+52:       sampledGaussianProductMaximumEvent horizon
+53:         ((noiseStddev : Real) * threshold) := by
+54:   ext sample
+55:   simp only [Set.mem_preimage, sparseGaussianProductMaximumEvent,
+56:     sampledGaussianProductMaximumEvent]
+57:   have he : (positiveGaussianProductScaleEquiv horizon noiseStddev hStddev) sample =
+58:       fun coordinate => sample coordinate / (noiseStddev : Real) := by
+59:     ext coordinate
+60:     change positiveGaussianScaleEquiv noiseStddev hStddev (sample coordinate) = _
+61:     simp
+62:   rw [he]
+63:   change (∃ coordinate, threshold < sample coordinate / (noiseStddev : Real)) ↔ _
+64:   constructor
+65:   · rintro ⟨coordinate, hcoordinate⟩
+66:     exact ⟨coordinate, by
+67:       simpa [mul_comm] using
+68:         (lt_div_iff₀ (by exact_mod_cast hStddev : (0 : Real) < noiseStddev)).mp hcoordinate⟩
+69:   · rintro ⟨coordinate, hcoordinate⟩
+70:     refine ⟨coordinate, (lt_div_iff₀
+71:       (by exact_mod_cast hStddev : (0 : Real) < noiseStddev)).mpr ?_⟩
+72:     simpa [mul_comm] using hcoordinate
+73: 
+74: private theorem sparseGaussianProductMaximumEvent_eq_compl_belowBox
+75:     (horizon : Nat) (threshold : Real) :
+76:     sparseGaussianProductMaximumEvent horizon threshold =
+77:       (sparseGaussianProductBelowBox horizon threshold)ᶜ := by
+78:   ext sample
+79:   simp [sparseGaussianProductMaximumEvent, sparseGaussianProductBelowBox,
+80:     Pi.le_def]
+81: 
+82: theorem measurableSet_sparseGaussianProductMaximumEvent
+83:     (horizon : Nat) (threshold : Real) :
+84:     MeasurableSet (sparseGaussianProductMaximumEvent horizon threshold) := by
+85:   rw [sparseGaussianProductMaximumEvent_eq_compl_belowBox]
+86:   exact (MeasurableSet.univ_pi (fun _ => measurableSet_Iic)).compl
+87: 
+88: theorem measurableSet_sparseGaussianProductBelowBox
+89:     (horizon : Nat) (threshold : Real) :
+90:     MeasurableSet (sparseGaussianProductBelowBox horizon threshold) :=
+91:   MeasurableSet.univ_pi (fun _ => measurableSet_Iic)
+92: 
+93: private theorem standardGaussianProductLaw_belowBox
+94:     (horizon : Nat) (threshold : Real) :
+95:   (ProbabilityMeasure.pi (fun _ : Fin horizon => standardGaussianProbabilityMeasure))
+96:         (sparseGaussianProductBelowBox horizon threshold) =
+97:       ∏ _ : Fin horizon, standardGaussianProbabilityMeasure (Set.Iic threshold) := by
+98:   change (ProbabilityMeasure.pi (fun _ : Fin horizon => standardGaussianProbabilityMeasure))
+99:       (Set.pi Set.univ (fun _ : Fin horizon => Set.Iic threshold)) = _
+100:   rw [ProbabilityMeasure.pi_pi]
+101: 
+102: theorem standardGaussianProductLaw_maximumEvent_probability
+103:     (horizon : Nat) (threshold : Real) :
+104:     (ProbabilityMeasure.pi (fun _ : Fin horizon => standardGaussianProbabilityMeasure))
+105:         (sparseGaussianProductMaximumEvent horizon threshold) =
+106:       1 - (ENNReal.ofReal (stdNormalCDFReal threshold)) ^ horizon := by
+107:   let below : Set (Fin horizon → Real) := sparseGaussianProductBelowBox horizon threshold
+108:   have hbelow : MeasurableSet below := measurableSet_sparseGaussianProductBelowBox horizon threshold
+109:   rw [sparseGaussianProductMaximumEvent_eq_compl_belowBox]
+110:   simp only [ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure]
+111:   rw [MeasureTheory.measure_compl hbelow]
+112:   dsimp [below]
+113:   rw [Measure.pi_univ]
+114:   simp only [measure_univ, Finset.prod_const_one]
+115:   change 1 -
+116:       (Measure.pi (fun _ : Fin horizon =>
+117:         (standardGaussianProbabilityMeasure : Measure Real)))
+118:         (Set.pi Set.univ (fun _ : Fin horizon => Set.Iic threshold)) = _
+119:   rw [Measure.pi_pi]
+120:   have hprob2 :
+121:       (∏ _ : Fin horizon,
+122:         (standardGaussianProbabilityMeasure : Measure Real) (Set.Iic threshold)) =
+123:         ENNReal.ofReal (stdNormalCDFReal threshold) ^ horizon := by
+124:     have hstd :
+125:         (standardGaussianProbabilityMeasure : Measure Real) (Set.Iic threshold) =
+126:           ENNReal.ofReal (stdNormalCDFReal threshold) := by
+127:       change gaussianReal 0 1 (Set.Iic threshold) = _
+128:       rw [show gaussianReal 0 1 (Set.Iic threshold) =
+129:         stdNormalMeasure (Set.Iic threshold) by
+130:           simpa using gaussianReal_unitVar_apply_Iic_eq_stdNormalMeasure_shift 0 threshold]
+131:       rw [stdNormalCDFReal_eq_real_measure_Iic]
+132:       exact (MeasureTheory.ofReal_measureReal (μ := stdNormalMeasure)
+133:         (s := Set.Iic threshold) (by finiteness)).symm
+134:     simpa [hstd]
+135:   rw [hprob2]
+136:   simp [stdNormalCDFReal_eq_real_measure_Iic]
+137: 
+138: private theorem sparseGaussianMixtureLaw_below_probability
+139:     (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+140:     (standardizedShift threshold : Real) :
+141:     (sparseGaussianMixtureLaw samplingRate hRate standardizedShift : Measure Real)
+142:         (Set.Iic threshold) =
+143:       (1 - (samplingRate : ENNReal)) * ENNReal.ofReal (stdNormalCDFReal threshold) +
+144:         (samplingRate : ENNReal) *
+145:           ENNReal.ofReal (stdNormalCDFReal (threshold - standardizedShift)) := by
+146:   change (((1 - samplingRate : NNReal) : ENNReal) • gaussianReal 0 1 +
+147:       (samplingRate : ENNReal) • gaussianReal standardizedShift 1) (Set.Iic threshold) = _
+148:   rw [Measure.add_apply, Measure.smul_apply, Measure.smul_apply]
+149:   have hzero := gaussianReal_unitVar_apply_Iic_eq_stdNormalMeasure_shift
+150:     0 threshold
+151:   have hshift := gaussianReal_unitVar_apply_Iic_eq_stdNormalMeasure_shift
+152:     standardizedShift threshold
+153:   have hzero' : gaussianReal 0 1 (Set.Iic threshold) =
+154:       stdNormalMeasure (Set.Iic threshold) := by simpa using hzero
+155:   have hshift' : gaussianReal standardizedShift 1 (Set.Iic threshold) =
+156:       stdNormalMeasure (Set.Iic (threshold - standardizedShift)) := by
+157:     simpa using hshift
+158:   rw [hzero', hshift', stdNormalCDFReal_eq_real_measure_Iic]
+159:   have hshiftMeasure :
+160:       stdNormalMeasure (Set.Iic (threshold - standardizedShift)) =
+161:         ENNReal.ofReal (stdNormalMeasure.real (Set.Iic (threshold - standardizedShift))) :=
+162:       (MeasureTheory.ofReal_measureReal (μ := stdNormalMeasure)
+163:       (s := Set.Iic (threshold - standardizedShift))).symm
+164:   have hzeroMeasure :
+165:       stdNormalMeasure (Set.Iic threshold) =
+166:         ENNReal.ofReal (stdNormalMeasure.real (Set.Iic threshold)) :=
+167:     (MeasureTheory.ofReal_measureReal (μ := stdNormalMeasure)
+168:       (s := Set.Iic threshold)).symm
+169:   rw [hzeroMeasure, hshiftMeasure]
+170:   simp only [smul_eq_mul, ENNReal.coe_nnreal_eq, ENNReal.coe_sub]
+171:   rw [stdNormalCDFReal_eq_real_measure_Iic (threshold - standardizedShift)]
+172:   have hsub : (↑(1 - samplingRate) : Real) = 1 - (↑samplingRate : Real) := by
+173:     rw [NNReal.coe_sub hRate]
+174:     norm_num
+175:   rw [hsub]
+176:   have hcoeff : ENNReal.ofReal (1 - (↑samplingRate : Real)) =
+177:       1 - ENNReal.ofReal (↑samplingRate : Real) := by
+178:     rw [ENNReal.ofReal_sub (1 : Real) (NNReal.coe_nonneg samplingRate),
+179:       ENNReal.ofReal_one]
+180:   rw [hcoeff]
+181: 
+182: theorem sparseGaussianProductLaw_maximumEvent_probability
+183:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+184:     (standardizedShift threshold : Real) :
+185:     (sparseGaussianProductLaw horizon samplingRate hRate standardizedShift : Measure
+186:         (Fin horizon → Real))
+187:         (sparseGaussianProductMaximumEvent horizon threshold) =
+188:       1 -
+189:         ((1 - (samplingRate : ENNReal)) *
+190:             ENNReal.ofReal (stdNormalCDFReal threshold) +
+191:           (samplingRate : ENNReal) *
+192:             ENNReal.ofReal (stdNormalCDFReal (threshold - standardizedShift))) ^ horizon := by
+193:   let below : Set (Fin horizon → Real) := sparseGaussianProductBelowBox horizon threshold
+194:   have hbelow : MeasurableSet below := measurableSet_sparseGaussianProductBelowBox horizon threshold
+195:   rw [sparseGaussianProductMaximumEvent_eq_compl_belowBox]
+196:   rw [MeasureTheory.measure_compl hbelow (by finiteness)]
+197:   simp only [sparseGaussianProductLaw]
+198:   dsimp [below]
+199:   rw [Measure.pi_univ]
+200:   simp only [measure_univ, Finset.prod_const_one]
+201:   change 1 -
+202:       (Measure.pi (fun _ : Fin horizon =>
+203:         (sparseGaussianMixtureLaw samplingRate hRate standardizedShift : Measure Real)))
+204:         (Set.pi Set.univ (fun _ : Fin horizon => Set.Iic threshold)) = _
+205:   rw [Measure.pi_pi]
+206:   simp_rw [sparseGaussianMixtureLaw_below_probability samplingRate hRate
+207:     standardizedShift threshold]
+208:   simp [Finset.prod_const]
+209: 
+210: /-- Exact source maximum-event probability in public standard-deviation
+211: coordinates. The raw threshold is `noiseStddev * normalizedThreshold`. -/
+212: theorem sampledGaussianProductMaximumEvent_source_probability
+213:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+214:     (sensitivity normalizedThreshold : Real) (noiseStddev : NNReal)
+215:     (hStddev : 0 < noiseStddev) :
+216:     (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+217:         (noiseStddev ^ 2) : Measure (Fin horizon → Real))
+218:         (sampledGaussianProductMaximumEvent horizon
+219:           ((noiseStddev : Real) * normalizedThreshold)) =
+220:       1 -
+221:         ((1 - (samplingRate : ENNReal)) *
+222:             ENNReal.ofReal (stdNormalCDFReal normalizedThreshold) +
+223:           (samplingRate : ENNReal) *
+224:             ENNReal.ofReal (stdNormalCDFReal
+225:               (normalizedThreshold - sensitivity / (noiseStddev : Real)))) ^ horizon := by
+226:   let scaleEquiv := positiveGaussianProductScaleEquiv horizon noiseStddev hStddev
+227:   have hmap := sampledGaussianSourceProductLaw_map_positiveGaussianScale
+228:     horizon samplingRate hRate sensitivity noiseStddev hStddev
+229:   have hnormalized := sparseGaussianProductLaw_maximumEvent_probability horizon samplingRate
+230:     hRate (sensitivity / (noiseStddev : Real)) normalizedThreshold
+231:   rw [← hmap] at hnormalized
+232:   rw [Measure.map_apply scaleEquiv.measurable
+233:     (measurableSet_sparseGaussianProductMaximumEvent horizon normalizedThreshold)] at hnormalized
+234:   rw [sampledGaussianProductMaximumEvent_preimage_positiveScale] at hnormalized
+235:   exact hnormalized
+236: 
+237: /-- Exact reference maximum-event probability in public standard-deviation
+238: coordinates. -/
+239: theorem sampledGaussianProductMaximumEvent_reference_probability
+240:     (horizon : Nat) (normalizedThreshold : Real) (noiseStddev : NNReal)
+241:     (hStddev : 0 < noiseStddev) :
+242:     (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2) :
+243:         Measure (Fin horizon → Real))
+244:         (sampledGaussianProductMaximumEvent horizon
+245:           ((noiseStddev : Real) * normalizedThreshold)) =
+246:       1 - (ENNReal.ofReal (stdNormalCDFReal normalizedThreshold)) ^ horizon := by
+247:   let scaleEquiv := positiveGaussianProductScaleEquiv horizon noiseStddev hStddev
+248:   have hmap := sampledGaussianReferenceProductLaw_map_positiveGaussianScale
+249:     horizon noiseStddev hStddev
+250:   have hnormalized := standardGaussianProductLaw_maximumEvent_probability horizon
+
+FILE: capsule/lean/Mf/DP/SparseGaussianLikelihoodRatio.lean
+175:       (mul_nonneg hRateNonneg (Real.exp_pos _).le)]
+176:     congr 1)
+177: 
+178: /-- Divide a real output by a positive Gaussian noise standard deviation. -/
+179: def positiveGaussianScaleEquiv
+180:     (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) : Real ≃ᵐ Real :=
+181:   (Homeomorph.mulLeft₀ (noiseStddev : Real)⁻¹
+182:     (inv_ne_zero (by exact_mod_cast ne_of_gt hStddev))).toMeasurableEquiv
+183: 
+184: @[simp] theorem positiveGaussianScaleEquiv_apply
+185:     (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) (sample : Real) :
+186:     positiveGaussianScaleEquiv noiseStddev hStddev sample =
+187:       sample / (noiseStddev : Real) := by
+188:   simp [positiveGaussianScaleEquiv, div_eq_mul_inv, mul_comm]
+189: 
+190: theorem gaussianReal_map_positiveGaussianScaleEquiv
+191:     (mean : Real) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+192:     Measure.map (positiveGaussianScaleEquiv noiseStddev hStddev)
+193:         (gaussianReal mean (noiseStddev ^ 2)) =
+194:       gaussianReal (mean / (noiseStddev : Real)) 1 := by
+195:   rw [Measure.map_congr (ae_of_all _ fun sample =>
+196:     positiveGaussianScaleEquiv_apply noiseStddev hStddev sample)]
+197:   rw [gaussianReal_map_div_const]
+198:   congr 2
+199:   ext
+200:   simp [hStddev.ne']
+201: 
+202: /-- Direct scaling sends the privacy reference to the standard Gaussian. -/
+203: theorem sampledGaussianOneStepReferenceLaw_map_positiveGaussianScale
+204:     (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+205:     Measure.map (positiveGaussianScaleEquiv noiseStddev hStddev)
+206:         (sampledGaussianOneStepReferenceLaw (noiseStddev ^ 2) : Measure Real) =
+207:       gaussianReal 0 1 := by
+208:   change Measure.map (positiveGaussianScaleEquiv noiseStddev hStddev)
+209:       (gaussianReal 0 (noiseStddev ^ 2)) = _
+210:   rw [gaussianReal_map_positiveGaussianScaleEquiv]
+211:   simp
+212: 
+213: /-- Direct scaling sends the sampled source to the uncentered standardized mixture. -/
+214: theorem sampledGaussianOneStepSourceLaw_map_positiveGaussianScale
+215:     (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+216:     (sensitivity : Real) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+217:     Measure.map (positiveGaussianScaleEquiv noiseStddev hStddev)
+218:         (sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity
+219:           (noiseStddev ^ 2) : Measure Real) =
+220:       (sparseGaussianMixtureLaw samplingRate hRate
+221:         (sensitivity / (noiseStddev : Real)) : Measure Real) := by
+222:   rw [sampledGaussianOneStepSourceLaw_eq_gaussianMixture]
+223:   rw [Measure.map_add _ _ (positiveGaussianScaleEquiv noiseStddev hStddev).measurable,
+224:     Measure.map_smul, Measure.map_smul]
+225:   rw [gaussianReal_map_positiveGaussianScaleEquiv,
+226:     gaussianReal_map_positiveGaussianScaleEquiv]
+227:   simp [sparseGaussianMixtureLaw]
+228: 
+229: /-- Directly normalized sampled source, expressed against its normalized reference. -/
+230: theorem sampledGaussianOneStepSourceLaw_map_positiveGaussianScale_eq_withDensity
+231:     (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+232:     (sensitivity : Real) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+233:     Measure.map (positiveGaussianScaleEquiv noiseStddev hStddev)
+234:         (sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity
+235:           (noiseStddev ^ 2) : Measure Real) =
+236:       (gaussianReal 0 1).withDensity (fun sample => ENNReal.ofReal
+237:         (sparseGaussianLikelihoodRatio samplingRate
+238:           (sensitivity / (noiseStddev : Real)) sample)) := by
+239:   rw [sampledGaussianOneStepSourceLaw_map_positiveGaussianScale]
+240:   exact sparseGaussianMixtureLaw_eq_withDensity samplingRate hRate _
+241: 
+242: end
+243: 
+244: end Mf.DP
+
+FILE: capsule/lean/Mf/Probability/FiniteGaussianDensity.lean
+177:     density_le_one hσ μ y
+178:   calc
+179:     (normalization σ) ^ n * density σ μ y
+180:         ≤ (normalization σ) ^ n * 1 :=
+181:           mul_le_mul_of_nonneg_left hdens hc_nonneg
+182:     _ = (normalization σ) ^ n := by ring
+183: 
+184: lemma pdfReal_le_normConst_pow_mul_exp_neg_sqLower
+185:     {n : ℕ} {σ sqLower : ℝ} (hσ : σ ≠ 0) (μ y : Vector n)
+186:     (hLower : sqLower ≤ ∑ i : Fin n, (y i - μ i) ^ 2) :
+187:     pdfReal σ μ y
+188:       ≤ (normalization σ) ^ n * Real.exp (-sqLower / (2 * σ ^ 2)) := by
+189:   rw [pdfReal_eq_posConst_mul_density]
+190:   have hc_nonneg : 0 ≤ (normalization σ) ^ n :=
+191:     le_of_lt (normalization_pow_pos (n := n) hσ)
+192:   have hdens :
+193:       density σ μ y
+194:         ≤ Real.exp (-sqLower / (2 * σ ^ 2)) :=
+195:     density_le_exp_neg_sqLower hσ μ y hLower
+196:   exact mul_le_mul_of_nonneg_left hdens hc_nonneg
+197: 
+198: lemma centered_pdf_gap_eq_posConst_mul_centered_density_gap
+199:     {n : ℕ} (d y : Vector n) (σ ε : ℝ) :
+200:     pdfReal σ d y
+201:       - Real.exp ε * pdfReal σ (-d) y
+202:     =
+203:     (normalization σ) ^ n *
+204:       (density σ d y
+205:         - Real.exp ε * density σ (-d) y) := by
+
+FILE: capsule/lean/Mf/DP/SampledGaussianProductNoiseMonotonicity.lean
+1: import Mf.DP.SampledGaussianCalibratedStddev
+2: import Mathlib.MeasureTheory.Constructions.Pi
+3: 
+4: /-!
+5: # Product sampled-Gaussian noise monotonicity
+6: 
+7: Larger coordinatewise Gaussian variance is realized by adding one independent
+8: residual Gaussian vector to both neighboring product laws.  Common randomized
+9: postprocessing therefore makes the exact binary profile antitone in variance
+10: and in the public standard-deviation parameter.
+11: -/
+12: 
+13: open MeasureTheory ProbabilityTheory
+14: 
+15: namespace Mf.DP
+16: 
+17: noncomputable section
+18: 
+19: /-- Independent centered Gaussian coordinates with a common variance. -/
+20: def centeredGaussianProductLaw (horizon : Nat) (variance : NNReal) :
+21:     ProbabilityMeasure (Fin horizon → Real) :=
+22:   ProbabilityMeasure.pi (fun _ => ⟨gaussianReal 0 variance, by infer_instance⟩)
+23: 
+24: /-- Add two finite real vectors coordinatewise. -/
+25: def coordinatewiseAdd (horizon : Nat) :
+26:     (Fin horizon → Real) × (Fin horizon → Real) → (Fin horizon → Real) :=
+27:   fun pair coordinate => pair.1 coordinate + pair.2 coordinate
+28: 
+29: theorem measurable_coordinatewiseAdd (horizon : Nat) :
+30:     Measurable (coordinatewiseAdd horizon) := by
+31:   unfold coordinatewiseAdd
+32:   fun_prop
+33: 
+34: /-- Reassociate two finite product measures and apply the same map coordinatewise. -/
+35: theorem map_productMeasures_coordinatewise
+36:     {ι X Z Y : Type*} [Fintype ι]
+37:     [MeasurableSpace X] [MeasurableSpace Z] [MeasurableSpace Y]
+38:     (f : X × Z → Y) (hf : Measurable f)
+39:     (mu : ι → Measure X) (rho : ι → Measure Z)
+40:     [∀ i, IsFiniteMeasure (mu i)] [∀ i, IsFiniteMeasure (rho i)]
+41:     [∀ i, SigmaFinite (mu i)] [∀ i, SigmaFinite (rho i)] :
+42:     Measure.map (fun pair : (ι → X) × (ι → Z) =>
+43:         fun i => f (pair.1 i, pair.2 i))
+44:         ((Measure.pi mu).prod (Measure.pi rho)) =
+45:       Measure.pi (fun i => Measure.map f ((mu i).prod (rho i))) := by
+46:   let e : (ι → X × Z) ≃ᵐ (ι → X) × (ι → Z) :=
+47:     MeasurableEquiv.arrowProdEquivProdArrow X Z ι
+48:   have he : Measure.map e (Measure.pi (fun i => (mu i).prod (rho i))) =
+49:       (Measure.pi mu).prod (Measure.pi rho) :=
+50:     measurePreserving_arrowProdEquivProdArrow X Z ι mu rho |>.map_eq
+51:   rw [← he, Measure.map_map (by fun_prop) e.measurable]
+52:   have hfun :
+53:       (fun pair : (ι → X) × (ι → Z) => fun i => f (pair.1 i, pair.2 i)) ∘ e =
+54:         (fun sample : ι → X × Z => fun i => f (sample i)) := by
+55:     funext sample i
+56:     rfl
+57:   rw [hfun, Measure.pi_map_pi (fun _ => hf.aemeasurable)]
+58: 
+59: /-- Adding a residual Gaussian vector realizes the larger-variance sampled source product. -/
+60: theorem sampledGaussianSourceProductLaw_add_residual
+61:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+62:     (sensitivity : Real) (small large residual : NNReal)
+63:     (hvariance : large = small + residual) :
+64:     Measure.map (coordinatewiseAdd horizon)
+65:       ((sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity small).prod
+66:         (centeredGaussianProductLaw horizon residual) :
+67:         Measure ((Fin horizon → Real) × (Fin horizon → Real))) =
+68:       (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity large :
+69:         Measure (Fin horizon → Real)) := by
+70:   let mu : Fin horizon → Measure Real := fun _ =>
+71:     (sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity small : Measure Real)
+72:   let rho : Fin horizon → Measure Real := fun _ => gaussianReal 0 residual
+73:   change Measure.map (coordinatewiseAdd horizon)
+74:       ((Measure.pi mu).prod (Measure.pi rho)) = _
+75:   unfold coordinatewiseAdd
+76:   rw [map_productMeasures_coordinatewise
+77:     (fun pair : Real × Real => pair.1 + pair.2)
+78:     (measurable_fst.add measurable_snd) mu rho]
+79:   congr 1
+80:   funext coordinate
+81:   change (sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity small :
+82:       Measure Real) ∗ gaussianReal 0 residual = _
+83:   simp [sampledGaussianOneStepSourceLaw, gaussianNoiseLaw, hvariance,
+84:     Measure.conv_assoc, gaussianReal_conv_gaussianReal]
+85: 
+86: /-- Adding the same residual vector realizes the larger-variance reference product. -/
+87: theorem sampledGaussianReferenceProductLaw_add_residual
+88:     (horizon : Nat) (small large residual : NNReal)
+89:     (hvariance : large = small + residual) :
+90:     Measure.map (coordinatewiseAdd horizon)
+91:       ((sampledGaussianReferenceProductLaw horizon small).prod
+92:         (centeredGaussianProductLaw horizon residual) :
+93:         Measure ((Fin horizon → Real) × (Fin horizon → Real))) =
+94:       (sampledGaussianReferenceProductLaw horizon large :
+95:         Measure (Fin horizon → Real)) := by
+96:   simpa [sampledGaussianReferenceProductLaw, sampledGaussianSourceProductLaw,
+97:     sampledGaussianOneStepSourceLaw_zeroSamplingRate] using
+98:     (sampledGaussianSourceProductLaw_add_residual horizon 0 (by norm_num) 0
+99:       small large residual hvariance)
+100: 
+101: /-- The exact sampled product profile is antitone in per-coordinate variance. -/
+102: theorem sampledGaussianProductProfile_variance_antitone
+103:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+104:     (sensitivity epsilon : Real) {small large : NNReal} (hvariance : small ≤ large) :
+105:     binaryAccountingProfile
+106:         (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity large)
+107:         (sampledGaussianReferenceProductLaw horizon large) epsilon ≤
+108:       binaryAccountingProfile
+109:         (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity small)
+110:         (sampledGaussianReferenceProductLaw horizon small) epsilon := by
+111:   let residual : NNReal := large - small
+112:   have hsum : large = small + residual := (add_tsub_cancel_of_le hvariance).symm
+113:   have hcontract := binaryAccountingProfile_common_randomized_map_le
+114:     (coordinatewiseAdd horizon) (measurable_coordinatewiseAdd horizon)
+115:     (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity small)
+116:     (sampledGaussianReferenceProductLaw horizon small)
+117:     (centeredGaussianProductLaw horizon residual) epsilon
+118:   have hsource :
+119:       ((sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity small).prod
+120:           (centeredGaussianProductLaw horizon residual)).map
+121:             (measurable_coordinatewiseAdd horizon).aemeasurable =
+122:         sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity large := by
+123:     apply Subtype.ext
+124:     exact sampledGaussianSourceProductLaw_add_residual horizon samplingRate hRate sensitivity
+125:       small large residual hsum
+126:   have hreference :
+127:       ((sampledGaussianReferenceProductLaw horizon small).prod
+128:           (centeredGaussianProductLaw horizon residual)).map
+129:             (measurable_coordinatewiseAdd horizon).aemeasurable =
+130:         sampledGaussianReferenceProductLaw horizon large := by
+131:     apply Subtype.ext
+132:     exact sampledGaussianReferenceProductLaw_add_residual horizon small large residual hsum
+133:   rw [hsource, hreference] at hcontract
+134:   exact hcontract
+135: 
+136: /-- The public standard-deviation profile is antitone in noise standard deviation. -/
+137: theorem sampledGaussianProductProfileStddev_antitone
+138:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+139:     (sensitivity epsilon : Real) {small large : NNReal} (hStddev : small ≤ large) :
+140:     sampledGaussianProductProfileStddev horizon samplingRate hRate sensitivity large epsilon ≤
+141:       sampledGaussianProductProfileStddev horizon samplingRate hRate sensitivity small epsilon := by
+142:   unfold sampledGaussianProductProfileStddev
+143:   exact sampledGaussianProductProfile_variance_antitone horizon samplingRate hRate
+144:     sensitivity epsilon (pow_le_pow_left' hStddev 2)
+145: 
+146: end
+147: 
+148: end Mf.DP
+
+
+EXIT: 0

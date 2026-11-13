@@ -1,0 +1,169 @@
+$ nl -ba Mf/DP/SampledGaussianOutputLaws.lean | sed -n "1,115p"; rg -n "replayCertificate" Mf || true; python3 - <<'PY'
+from pathlib import Path
+import re,json,hashlib
+out=Path("/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT")
+root=out.parent/"INPUT/capsule"
+files=sorted((root/"lean/Mf").rglob("*.lean"))+sorted((root/"sources/latex/natural-language").glob("*.tex"))
+rows=[]
+for p in files:
+ b=p.read_bytes();rows.append({"path":str(p.relative_to(root)),"lines":len(b.splitlines()),"sha256":hashlib.sha256(b).hexdigest()})
+(out/"evidence/source-inventory.json").write_text(json.dumps(rows,indent=2)+"\n")
+note=(root/"sources/latex/natural-language/deterministic_koutoft_training_accountant_proof.tex").read_text()
+paths=sorted(set(re.findall(r"Mf/[^{}\n]+?\.lean",note)))
+missing=[p for p in paths if not (root/"lean"/p).is_file()]
+print(json.dumps({"lean_files":sum(r["path"].endswith(".lean") for r in rows),"tex_files":sum(r["path"].endswith(".tex") for r in rows),"KOutOfT_crosswalk_paths":len(paths),"available_cited_paths":[p for p in paths if p not in missing],"missing_cited_paths":missing},indent=2))
+(out/"evidence/koutoft-crosswalk-availability.json").write_text(json.dumps({"available":[p for p in paths if p not in missing],"missing":missing},indent=2)+"\n")
+PY
+EXIT 0
+STDOUT
+     1	import Mf.DP.GaussianNoiseMonotonicity
+     2	import Mathlib.Probability.ProbabilityMassFunction.Constructions
+     3	import Mathlib.Probability.ProductMeasure
+     4	
+     5	/-!
+     6	# Exact sampled-Gaussian output laws
+     7	
+     8	This module defines the one-step neighboring laws, their finite products, the
+     9	released coordinate sum, and its strict half-source-mean threshold event.  It
+    10	is a law-construction layer only; moment identities are proved separately.
+    11	-/
+    12	
+    13	open MeasureTheory Set
+    14	open scoped BigOperators
+    15	
+    16	namespace Mf.DP
+    17	
+    18	noncomputable section
+    19	
+    20	/-- A Bernoulli shift that is zero off-sample and `sensitivity` on-sample. -/
+    21	def bernoulliShiftLaw
+    22	    (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    23	    (sensitivity : Real) : ProbabilityMeasure Real :=
+    24	  ⟨(PMF.map (fun selected : Bool => if selected then sensitivity else 0)
+    25	      (PMF.bernoulli samplingRate hRate)).toMeasure, by infer_instance⟩
+    26	
+    27	/-- One sampled neighboring step: a Bernoulli shift plus centered Gaussian noise. -/
+    28	def sampledGaussianOneStepSourceLaw
+    29	    (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    30	    (sensitivity : Real) (noiseVariance : NNReal) : ProbabilityMeasure Real :=
+    31	  gaussianNoiseLaw
+    32	    (bernoulliShiftLaw samplingRate hRate sensitivity) noiseVariance
+    33	
+    34	/-- One reference step: centered Gaussian noise with the same variance. -/
+    35	def sampledGaussianOneStepReferenceLaw
+    36	    (noiseVariance : NNReal) : ProbabilityMeasure Real :=
+    37	  ⟨ProbabilityTheory.gaussianReal 0 noiseVariance, by infer_instance⟩
+    38	
+    39	/-- Independent finite product of the sampled neighboring one-step law. -/
+    40	def sampledGaussianSourceProductLaw
+    41	    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    42	    (sensitivity : Real) (noiseVariance : NNReal) :
+    43	    ProbabilityMeasure (Fin horizon → Real) :=
+    44	  ProbabilityMeasure.pi (fun _ =>
+    45	    sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity noiseVariance)
+    46	
+    47	/-- Independent finite product of the reference one-step law. -/
+    48	def sampledGaussianReferenceProductLaw
+    49	    (horizon : Nat) (noiseVariance : NNReal) :
+    50	    ProbabilityMeasure (Fin horizon → Real) :=
+    51	  ProbabilityMeasure.pi (fun _ =>
+    52	    sampledGaussianOneStepReferenceLaw noiseVariance)
+    53	
+    54	/-- Push a finite-vector law forward by coordinate summation. -/
+    55	def finiteSumOutputLaw
+    56	    (horizon : Nat) (mu : ProbabilityMeasure (Fin horizon → Real)) :
+    57	    ProbabilityMeasure Real :=
+    58	  let sumFn : (Fin horizon → Real) → Real := fun x => ∑ i, x i
+    59	  mu.map (by
+    60	    change AEMeasurable sumFn (mu : Measure (Fin horizon → Real))
+    61	    have hsum : Measurable sumFn := by fun_prop
+    62	    exact hsum.aemeasurable)
+    63	
+    64	/-- Law of the released sum under the sampled neighboring product law. -/
+    65	def sampledGaussianOutputSumSourceLaw
+    66	    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    67	    (sensitivity : Real) (noiseVariance : NNReal) : ProbabilityMeasure Real :=
+    68	  finiteSumOutputLaw horizon
+    69	    (sampledGaussianSourceProductLaw horizon samplingRate hRate
+    70	      sensitivity noiseVariance)
+    71	
+    72	/-- Law of the released sum under the reference product law. -/
+    73	def sampledGaussianOutputSumReferenceLaw
+    74	    (horizon : Nat) (noiseVariance : NNReal) : ProbabilityMeasure Real :=
+    75	  finiteSumOutputLaw horizon
+    76	    (sampledGaussianReferenceProductLaw horizon noiseVariance)
+    77	
+    78	/-- Half of the source-law output mean used by the direct distinguishing test. -/
+    79	def halfSourceMeanThreshold
+    80	    (horizon : Nat) (samplingRate : NNReal) (sensitivity : Real) : Real :=
+    81	  (samplingRate : Real) * sensitivity * (horizon : Real) / 2
+    82	
+    83	/-- The released sum is strictly greater than half of its source-law mean. -/
+    84	def sampledGaussianOutputThresholdEvent
+    85	    (horizon : Nat) (samplingRate : NNReal) (sensitivity : Real) : Set Real :=
+    86	  Ioi (halfSourceMeanThreshold horizon samplingRate sensitivity)
+    87	
+    88	theorem measurableSet_sampledGaussianOutputThresholdEvent
+    89	    (horizon : Nat) (samplingRate : NNReal) (sensitivity : Real) :
+    90	    MeasurableSet
+    91	      (sampledGaussianOutputThresholdEvent horizon samplingRate sensitivity) :=
+    92	  measurableSet_Ioi
+    93	
+    94	/-! ## Degenerate parameter boundaries -/
+    95	
+    96	/-- Zero sensitivity erases the Bernoulli shift, so the neighboring one-step laws coincide. -/
+    97	theorem sampledGaussianOneStepSourceLaw_zeroSensitivity
+    98	    (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    99	    (noiseVariance : NNReal) :
+   100	    sampledGaussianOneStepSourceLaw samplingRate hRate 0 noiseVariance =
+   101	      sampledGaussianOneStepReferenceLaw noiseVariance := by
+   102	  have hmap : PMF.map (fun _ : Bool => (0 : Real))
+   103	      (PMF.bernoulli samplingRate hRate) = PMF.pure 0 := by
+   104	    convert PMF.map_const (p := PMF.bernoulli samplingRate hRate)
+   105	      (b := (0 : Real)) using 1
+   106	    congr 1
+   107	  apply Subtype.ext
+   108	  simp [sampledGaussianOneStepSourceLaw, sampledGaussianOneStepReferenceLaw,
+   109	    bernoulliShiftLaw, gaussianNoiseLaw, hmap, PMF.toMeasure_pure]
+   110	
+   111	/-- Zero sampling rate erases the Bernoulli shift, so the neighboring one-step laws coincide. -/
+   112	theorem sampledGaussianOneStepSourceLaw_zeroSamplingRate
+   113	    (hRate : (0 : NNReal) ≤ 1) (sensitivity : Real)
+   114	    (noiseVariance : NNReal) :
+   115	    sampledGaussianOneStepSourceLaw 0 hRate sensitivity noiseVariance =
+{
+  "lean_files": 63,
+  "tex_files": 2,
+  "KOutOfT_crosswalk_paths": 25,
+  "available_cited_paths": [
+    "Mf/DP/Training/KOutOfT/TrainingMechanism.lean"
+  ],
+  "missing_cited_paths": [
+    "Mf/DP/Training/GlobalSigmaOptimalityTargets.lean",
+    "Mf/DP/Training/KOutOfT/AddRemoveGlobalOptimality.lean",
+    "Mf/DP/Training/KOutOfT/AddRemoveGlobalOptimalityAudit.lean",
+    "Mf/DP/Training/KOutOfT/CandidateChecker.lean",
+    "Mf/DP/Training/KOutOfT/DirectReplaceFallback.lean",
+    "Mf/DP/Training/KOutOfT/DirectReplaceGlobalOptimality.lean",
+    "Mf/DP/Training/KOutOfT/DirectReplaceGlobalOptimalityAudit.lean",
+    "Mf/DP/Training/KOutOfT/DirectReplaceLowerRealization.lean",
+    "Mf/DP/Training/KOutOfT/DirectReplaceProfileOptimalityAudit.lean",
+    "Mf/DP/Training/KOutOfT/DirectReplaceSigmaProfile.lean",
+    "Mf/DP/Training/KOutOfT/DirectReplaceSigmaThreshold.lean",
+    "Mf/DP/Training/KOutOfT/DirectReplaceSignedGaussianInterpolation.lean",
+    "Mf/DP/Training/KOutOfT/DirectReplaceUniformUpperTarget.lean",
+    "Mf/DP/Training/KOutOfT/ExactFormalProfile.lean",
+    "Mf/DP/Training/KOutOfT/ExactSigmaProfile.lean",
+    "Mf/DP/Training/KOutOfT/ExactSigmaThreshold.lean",
+    "Mf/DP/Training/KOutOfT/GenericRequest.lean",
+    "Mf/DP/Training/KOutOfT/GenericTrainingBridge.lean",
+    "Mf/DP/Training/KOutOfT/GlobalSigmaRequest.lean",
+    "Mf/DP/Training/KOutOfT/LowerRealization.lean",
+    "Mf/DP/Training/KOutOfT/RequestOnlyUpperCalibration.lean",
+    "Mf/DP/Training/KOutOfT/RequestOnlyUpperCalibrationAudit.lean",
+    "Mf/DP/Training/KOutOfT/TotalAccountant.lean",
+    "Mf/DP/Training/KOutOfT/TrainingReduction.lean"
+  ]
+}
+
+STDERR

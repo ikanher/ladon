@@ -1,0 +1,262 @@
+import Mf.DP.SampledGaussianOutputLaws
+import Mf.DP.CenteredBernoulliGaussianDensity
+import Mf.DP.CenteredBernoulliGaussianProductChiSquare
+
+/-!
+# Matched Gaussian source normalization
+
+The exact sampled source is compared with the Gaussian having the same mean
+and noise variance.  For positive noise standard deviation, subtracting the
+common mean `q * sensitivity` and dividing by that standard deviation sends
+the exact source to the centered Bernoulli--Gaussian mixture and the matched
+source to the standard Gaussian.  The privacy reference is recorded
+separately: it becomes a shifted Gaussian, not the standard Gaussian.
+-/
+
+open MeasureTheory ProbabilityTheory Set
+
+namespace Mf.DP
+
+noncomputable section
+
+/-- The Gaussian source matched to the sampled source mean and noise variance. -/
+def matchedGaussianOneStepSourceLaw
+    (samplingRate : NNReal) (sensitivity : Real) (noiseVariance : NNReal) :
+    ProbabilityMeasure Real :=
+  ⟨gaussianReal ((samplingRate : Real) * sensitivity) noiseVariance,
+    by infer_instance⟩
+
+/-- Independent finite product of the matched Gaussian source law. -/
+def matchedGaussianSourceProductLaw
+    (horizon : Nat) (samplingRate : NNReal) (sensitivity : Real)
+    (noiseVariance : NNReal) : ProbabilityMeasure (Fin horizon → Real) :=
+  ProbabilityMeasure.pi (fun _ =>
+    matchedGaussianOneStepSourceLaw samplingRate sensitivity noiseVariance)
+
+/-- The Bernoulli shift is the convex combination of its two point masses. -/
+theorem bernoulliShiftLaw_eq_twoPointMixture
+    (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity : Real) :
+    (bernoulliShiftLaw samplingRate hRate sensitivity : Measure Real) =
+      ((1 - samplingRate : NNReal) : ENNReal) • Measure.dirac 0 +
+        (samplingRate : ENNReal) • Measure.dirac sensitivity := by
+  have hbernoulli : (PMF.bernoulli samplingRate hRate).toMeasure =
+      ((1 - samplingRate : NNReal) : ENNReal) • Measure.dirac false +
+        (samplingRate : ENNReal) • Measure.dirac true := by
+    ext s hs
+    by_cases hf : false ∈ s <;> by_cases ht : true ∈ s <;>
+      simp [PMF.bernoulli_apply, hf, ht, ENNReal.coe_sub, hRate, add_comm]
+  change (PMF.map (fun selected : Bool => if selected then sensitivity else 0)
+    (PMF.bernoulli samplingRate hRate)).toMeasure = _
+  rw [← PMF.toMeasure_map (PMF.bernoulli samplingRate hRate)
+    (f := fun selected : Bool => if selected then sensitivity else 0) (by fun_prop),
+    hbernoulli]
+  rw [Measure.map_add _ _ (by fun_prop), Measure.map_smul, Measure.map_smul]
+  simp
+
+/-- The sampled one-step source is its explicit two-component Gaussian mixture. -/
+theorem sampledGaussianOneStepSourceLaw_eq_gaussianMixture
+    (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity : Real) (noiseVariance : NNReal) :
+    (sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity noiseVariance :
+        Measure Real) =
+      ((1 - samplingRate : NNReal) : ENNReal) • gaussianReal 0 noiseVariance +
+        (samplingRate : ENNReal) • gaussianReal sensitivity noiseVariance := by
+  change (bernoulliShiftLaw samplingRate hRate sensitivity : Measure Real) ∗
+    gaussianReal 0 noiseVariance = _
+  rw [bernoulliShiftLaw_eq_twoPointMixture]
+  rw [Measure.add_conv, Measure.conv_smul_left, Measure.conv_smul_left]
+  rw [Measure.dirac_conv, Measure.dirac_conv]
+  have hshift : Measure.map (fun y : Real => sensitivity + y)
+      (gaussianReal 0 noiseVariance) = gaussianReal sensitivity noiseVariance := by
+    simpa using gaussianReal_map_const_add
+      (μ := (0 : Real)) (v := noiseVariance) sensitivity
+  rw [hshift]
+  simp
+
+/-- Subtract the sampled-source mean and divide by a positive noise standard deviation. -/
+def sampledGaussianStandardizationEquiv
+    (samplingRate : NNReal) (sensitivity : Real)
+    (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) : Real ≃ᵐ Real :=
+  ((Homeomorph.addRight (-((samplingRate : Real) * sensitivity))).trans
+    (Homeomorph.mulLeft₀ (noiseStddev : Real)⁻¹
+      (inv_ne_zero (by exact_mod_cast ne_of_gt hStddev)))).toMeasurableEquiv
+
+@[simp] theorem sampledGaussianStandardizationEquiv_apply
+    (samplingRate : NNReal) (sensitivity : Real)
+    (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) (sample : Real) :
+    sampledGaussianStandardizationEquiv samplingRate sensitivity noiseStddev hStddev sample =
+      (sample - (samplingRate : Real) * sensitivity) / (noiseStddev : Real) := by
+  simp [sampledGaussianStandardizationEquiv, div_eq_mul_inv]
+  ring
+
+/-- Standardizing an arbitrary Gaussian component gives the corresponding unit-variance law. -/
+theorem gaussianReal_map_sampledGaussianStandardizationEquiv
+    (samplingRate : NNReal) (sensitivity mean : Real)
+    (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+    Measure.map
+        (sampledGaussianStandardizationEquiv samplingRate sensitivity
+          noiseStddev hStddev)
+        (gaussianReal mean (noiseStddev ^ 2)) =
+      gaussianReal
+        ((mean - (samplingRate : Real) * sensitivity) / (noiseStddev : Real)) 1 := by
+  rw [Measure.map_congr (ae_of_all _ fun sample =>
+    sampledGaussianStandardizationEquiv_apply samplingRate sensitivity
+      noiseStddev hStddev sample)]
+  rw [Measure.map_congr (ae_of_all _ fun sample => by
+    change (sample - (samplingRate : Real) * sensitivity) / (noiseStddev : Real) =
+      ((fun y : Real => y / (noiseStddev : Real)) ∘
+        (fun y : Real => y - (samplingRate : Real) * sensitivity)) sample
+    rfl)]
+  rw [← Measure.map_map (by fun_prop) (by fun_prop)]
+  rw [gaussianReal_map_sub_const, gaussianReal_map_div_const]
+  congr 2
+  ext
+  simp [hStddev.ne']
+
+/-- The exact sampled source standardizes to the centered Bernoulli--Gaussian mixture. -/
+theorem sampledGaussianOneStepSourceLaw_map_standardization
+    (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity : Real) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+    Measure.map
+        (sampledGaussianStandardizationEquiv samplingRate sensitivity
+          noiseStddev hStddev)
+        (sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity
+          (noiseStddev ^ 2) : Measure Real) =
+      (centeredBernoulliGaussianMixtureLaw samplingRate hRate
+        (sensitivity / (noiseStddev : Real)) : Measure Real) := by
+  rw [sampledGaussianOneStepSourceLaw_eq_gaussianMixture]
+  rw [Measure.map_add _ _
+      (sampledGaussianStandardizationEquiv samplingRate sensitivity
+        noiseStddev hStddev).measurable,
+    Measure.map_smul, Measure.map_smul]
+  rw [gaussianReal_map_sampledGaussianStandardizationEquiv,
+    gaussianReal_map_sampledGaussianStandardizationEquiv]
+  change _ = ((1 - samplingRate : NNReal) : ENNReal) •
+      gaussianReal (-((samplingRate : Real)) *
+        (sensitivity / (noiseStddev : Real))) 1 +
+    (samplingRate : ENNReal) •
+      gaussianReal ((1 - (samplingRate : Real)) *
+        (sensitivity / (noiseStddev : Real))) 1
+  congr 3 <;> ring
+
+/-- The matched Gaussian source standardizes to the standard Gaussian. -/
+theorem matchedGaussianOneStepSourceLaw_map_standardization
+    (samplingRate : NNReal) (sensitivity : Real)
+    (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+    Measure.map
+        (sampledGaussianStandardizationEquiv samplingRate sensitivity
+          noiseStddev hStddev)
+        (matchedGaussianOneStepSourceLaw samplingRate sensitivity
+          (noiseStddev ^ 2) : Measure Real) =
+      gaussianReal 0 1 := by
+  change Measure.map
+      (sampledGaussianStandardizationEquiv samplingRate sensitivity
+        noiseStddev hStddev)
+      (gaussianReal ((samplingRate : Real) * sensitivity) (noiseStddev ^ 2)) = _
+  rw [gaussianReal_map_sampledGaussianStandardizationEquiv]
+  congr 2
+  ring
+
+/-- The same normalization sends the privacy reference to a shifted unit Gaussian. -/
+theorem sampledGaussianOneStepReferenceLaw_map_standardization
+    (samplingRate : NNReal) (sensitivity : Real)
+    (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+    Measure.map
+        (sampledGaussianStandardizationEquiv samplingRate sensitivity
+          noiseStddev hStddev)
+        (sampledGaussianOneStepReferenceLaw (noiseStddev ^ 2) : Measure Real) =
+      gaussianReal
+        (-((samplingRate : Real) * (sensitivity / (noiseStddev : Real)))) 1 := by
+  change Measure.map
+      (sampledGaussianStandardizationEquiv samplingRate sensitivity
+        noiseStddev hStddev)
+      (gaussianReal 0 (noiseStddev ^ 2)) = _
+  rw [gaussianReal_map_sampledGaussianStandardizationEquiv]
+  congr 2
+  ring
+
+/-- Apply the one-step sampled-Gaussian normalization in every product coordinate. -/
+def sampledGaussianProductStandardizationEquiv
+    (horizon : Nat) (samplingRate : NNReal) (sensitivity : Real)
+    (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+    (Fin horizon → Real) ≃ᵐ (Fin horizon → Real) :=
+  MeasurableEquiv.piCongrRight (fun _ =>
+    sampledGaussianStandardizationEquiv samplingRate sensitivity noiseStddev hStddev)
+
+/-- Coordinatewise normalization sends the exact source product to the centered product. -/
+theorem sampledGaussianSourceProductLaw_map_standardization
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity : Real) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+    Measure.map
+      (sampledGaussianProductStandardizationEquiv horizon samplingRate sensitivity
+        noiseStddev hStddev)
+      (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+        (noiseStddev ^ 2) : Measure (Fin horizon → Real)) =
+      (centeredBernoulliGaussianProductLaw horizon samplingRate hRate
+        (sensitivity / (noiseStddev : Real)) : Measure (Fin horizon → Real)) := by
+  change Measure.map (fun sample coordinate =>
+      sampledGaussianStandardizationEquiv samplingRate sensitivity noiseStddev hStddev
+        (sample coordinate))
+      (Measure.pi fun _ : Fin horizon =>
+        (sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity
+          (noiseStddev ^ 2) : Measure Real)) = _
+  rw [Measure.pi_map_pi (hf := fun _ =>
+    (sampledGaussianStandardizationEquiv samplingRate sensitivity noiseStddev
+      hStddev).measurable.aemeasurable)]
+  congr 1
+  funext coordinate
+  exact sampledGaussianOneStepSourceLaw_map_standardization samplingRate hRate
+    sensitivity noiseStddev hStddev
+
+/-- Coordinatewise normalization sends the matched source product to the standard product. -/
+theorem matchedGaussianSourceProductLaw_map_standardization
+    (horizon : Nat) (samplingRate : NNReal) (sensitivity : Real)
+    (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+    Measure.map
+      (sampledGaussianProductStandardizationEquiv horizon samplingRate sensitivity
+        noiseStddev hStddev)
+      (matchedGaussianSourceProductLaw horizon samplingRate sensitivity
+        (noiseStddev ^ 2) : Measure (Fin horizon → Real)) =
+      (standardGaussianProductLaw horizon : Measure (Fin horizon → Real)) := by
+  change Measure.map (fun sample coordinate =>
+      sampledGaussianStandardizationEquiv samplingRate sensitivity noiseStddev hStddev
+        (sample coordinate))
+      (Measure.pi fun _ : Fin horizon =>
+        (matchedGaussianOneStepSourceLaw samplingRate sensitivity
+          (noiseStddev ^ 2) : Measure Real)) = _
+  rw [Measure.pi_map_pi (hf := fun _ =>
+    (sampledGaussianStandardizationEquiv samplingRate sensitivity noiseStddev
+      hStddev).measurable.aemeasurable)]
+  congr 1
+  funext coordinate
+  exact matchedGaussianOneStepSourceLaw_map_standardization samplingRate sensitivity
+    noiseStddev hStddev
+
+/-- Centered product event distance transports exactly to the original source laws. -/
+theorem sampledGaussianSourceProduct_uniformEventDistance_of_standardized
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity : Real) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev)
+    (distance : ENNReal)
+    (hCentered : UniformEventDistance
+      (centeredBernoulliGaussianProductLaw horizon samplingRate hRate
+        (sensitivity / (noiseStddev : Real)) : Measure (Fin horizon → Real))
+      (standardGaussianProductLaw horizon : Measure (Fin horizon → Real)) distance) :
+    UniformEventDistance
+      (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+        (noiseStddev ^ 2) : Measure (Fin horizon → Real))
+      (matchedGaussianSourceProductLaw horizon samplingRate sensitivity
+        (noiseStddev ^ 2) : Measure (Fin horizon → Real)) distance := by
+  let e := sampledGaussianProductStandardizationEquiv horizon samplingRate sensitivity
+    noiseStddev hStddev
+  apply (UniformEventDistance.map_measurableEquiv_iff e
+    (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+      (noiseStddev ^ 2))
+    (matchedGaussianSourceProductLaw horizon samplingRate sensitivity
+      (noiseStddev ^ 2)) distance).mp
+  simpa [e, sampledGaussianSourceProductLaw_map_standardization,
+    matchedGaussianSourceProductLaw_map_standardization] using hCentered
+
+end
+
+end Mf.DP

@@ -1,0 +1,49 @@
+$ lake env lean /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/OUTPUT/evidence/Controls.lean
+CWD: /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/INPUT/capsule/lean
+theorem Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates : ∀ (horizon : ℕ)
+  (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+  (sensitivity epsilon delta lowerThreshold forwardUpperThreshold reverseUpperThreshold : ℝ)
+  (lowerCandidate upperCandidate : NNReal),
+  0 < lowerCandidate →
+    0 < upperCandidate →
+      ENNReal.ofReal delta <
+          sparseGaussianProductMaximumEventForwardLowerBound horizon samplingRate hRate (sensitivity / ↑lowerCandidate)
+            epsilon lowerThreshold →
+        sampledGaussianProductFiniteProfileUpperBoundWithThresholds horizon samplingRate sensitivity epsilon
+              forwardUpperThreshold reverseUpperThreshold upperCandidate ≤
+            ENNReal.ofReal delta →
+          lowerCandidate ≤ sampledGaussianCalibratedStddev horizon samplingRate hRate sensitivity epsilon delta ∧
+            sampledGaussianCalibratedStddev horizon samplingRate hRate sensitivity epsilon delta ≤ upperCandidate :=
+fun horizon samplingRate hRate sensitivity epsilon delta lowerThreshold forwardUpperThreshold reverseUpperThreshold
+    lowerCandidate upperCandidate hLowerCandidate hUpperCandidate hLower hUpper =>
+  have hUpperProfile :=
+    id
+      (sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds horizon samplingRate hRate
+        sensitivity epsilon forwardUpperThreshold reverseUpperThreshold upperCandidate hUpperCandidate);
+  have hNonempty :=
+    sampledGaussian_feasibleSet_nonempty_of_upper_profile_certificate horizon samplingRate hRate sensitivity epsilon
+      delta upperCandidate
+      (sampledGaussianProductFiniteProfileUpperBoundWithThresholds horizon samplingRate sensitivity epsilon
+        forwardUpperThreshold reverseUpperThreshold upperCandidate)
+      hUpperProfile hUpper;
+  ⟨le_sampledGaussianCalibratedStddev_of_not_feasible horizon samplingRate hRate sensitivity epsilon delta
+      lowerCandidate hNonempty
+      (sampledGaussian_candidate_infeasible_of_maximumEvent_certificate horizon samplingRate hRate sensitivity epsilon
+        delta lowerThreshold lowerCandidate hLowerCandidate hLower),
+    sampledGaussian_calibratedStddev_le_of_finiteBracketWithThresholds_upper_certificate horizon samplingRate hRate
+      sensitivity epsilon delta forwardUpperThreshold reverseUpperThreshold upperCandidate hUpperCandidate hUpper⟩
+def Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript.{u_1} : {Record : Type u_1} →
+  [inst : DecidableEq Record] →
+    {T d : ℕ} →
+      Training.AdaptiveTrainingOracle Record T d →
+        ℕ →
+          ℝ →
+            ℝ →
+              AdaptiveReleaseHistory (Fin d → ℝ) →
+                Training.UserDataset Record → MeasureTheory.Measure (AdaptiveReleaseHistory (Fin d → ℝ)) :=
+fun {Record} [DecidableEq Record] {T d} oracle k clippingNorm sigma initialHistory dataset =>
+  ∑ assignment,
+    ENNReal.ofReal (userScheduleAssignmentMass dataset T k assignment) •
+      transcriptGivenScheduleAssignment oracle clippingNorm sigma dataset assignment initialHistory T
+
+EXIT: 0

@@ -1,0 +1,137 @@
+$ /home/codex/projects/ladon/.venv/bin/ladon proof-search index build --help; python3 - <<'PY'
+import json,pathlib
+p=pathlib.Path("/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT")
+d=json.loads((p/"evidence/ladon-bracket.json").read_text())
+print("Findings:",json.dumps(d["sections"]["findings"],indent=2))
+print("Diagnostics:",json.dumps(d["diagnostics"],indent=2))
+PY
+EXIT 0
+STDOUT
+usage: ladon proof-search index build [-h] [--repo-root REPO_ROOT]
+                                      [--index INDEX_PATH]
+                                      [--format {text,json}] [--output OUTPUT]
+                                      [--progress]
+                                      [--max-index-mib MAX_INDEX_MIB]
+
+options:
+  -h, --help            show this help message and exit
+  --repo-root REPO_ROOT
+                        Lean repository owning the index.
+  --index INDEX_PATH    Override the default <repo>/.ladon/index/proof-
+                        search.sqlite path.
+  --format {text,json}  Result representation.
+  --output OUTPUT       Result path, or - for standard output.
+  --progress            Write bounded JSON progress records to standard error.
+  --max-index-mib MAX_INDEX_MIB
+                        Maximum database size in MiB; defaults to 1024.
+Findings: [
+  {
+    "authority": "architecture_policy",
+    "confidence": "derived",
+    "count": 1,
+    "evidenceRefs": [
+      {
+        "authority": "architecture_policy",
+        "collection": "findings",
+        "identity": {
+          "kind": "architecture_policy.skipped_no_policy",
+          "subject": "architecture_policy"
+        },
+        "index": 0,
+        "pointer": "#/sections/architecture_policy/findings/0",
+        "section": "architecture_policy",
+        "type": "canonical-row"
+      }
+    ],
+    "evidence_count": 1,
+    "id": "ladon.finding.345338e041da016a2465",
+    "kind": "architecture_policy.skipped_no_policy",
+    "message": "No architecture policy was supplied or discovered; Ladon did not enforce project-specific module boundary rules.",
+    "nextCommand": null,
+    "ownerRelevance": {
+      "directOwnerSubject": false,
+      "score": 0,
+      "sourceLocatable": false
+    },
+    "priority": 100,
+    "scope": {
+      "analysisRootModule": "Mf.DP.SampledGaussianFiniteBracketCalibration",
+      "analysisScopeRef": "#/sections/module_dag/analysis_scope",
+      "fingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511",
+      "inventoryRoot": "Mf",
+      "kind": "owner",
+      "resolvedRoots": [
+        "Mf.DP.SampledGaussianFiniteBracketCalibration"
+      ]
+    },
+    "searchedPaths": [
+      "/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/INPUT/capsule/lean/.ladon/architecture-policy.json",
+      "/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/INPUT/capsule/lean/ladon.architecture.json",
+      "/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/INPUT/capsule/lean/ladon-architecture-policy.json"
+    ],
+    "severity": "info",
+    "stable_key": "architecture_policy.skipped_no_policy:architecture_policy::",
+    "subject": "architecture_policy",
+    "suggestedPolicyCount": 0
+  }
+]
+Diagnostics: [
+  {
+    "data": {
+      "id": "lean.layout.unsupported",
+      "message": "Could not use Lake layout from ./witnesses/optimal_subsampling/formal/pilot_pair0/sources: declared source root is absent",
+      "severity": "warning",
+      "subject": "./witnesses/optimal_subsampling/formal/pilot_pair0/sources"
+    },
+    "id": "lean.layout.unsupported",
+    "message": "Could not use Lake layout from ./witnesses/optimal_subsampling/formal/pilot_pair0/sources: declared source root is absent",
+    "phase": "discover",
+    "ref": "diagnostic:2edee6717b45395609061c3a",
+    "severity": "warning",
+    "subject": "./witnesses/optimal_subsampling/formal/pilot_pair0/sources"
+  },
+  {
+    "data": {
+      "id": "lean.layout.unsupported",
+      "message": "Could not use Lake layout from ./witnesses/optimal_subsampling/formal/forward_pilot/sources: declared source root is absent",
+      "severity": "warning",
+      "subject": "./witnesses/optimal_subsampling/formal/forward_pilot/sources"
+    },
+    "id": "lean.layout.unsupported",
+    "message": "Could not use Lake layout from ./witnesses/optimal_subsampling/formal/forward_pilot/sources: declared source root is absent",
+    "phase": "discover",
+    "ref": "diagnostic:5da5d1defc9309bedd93e7c2",
+    "severity": "warning",
+    "subject": "./witnesses/optimal_subsampling/formal/forward_pilot/sources"
+  },
+  {
+    "data": {
+      "id": "lean.layout.unsupported",
+      "message": "Could not use Lake layout from ./witnesses/optimal_subsampling/formal/sharp_law6246/sources: declared source root is absent",
+      "severity": "warning",
+      "subject": "./witnesses/optimal_subsampling/formal/sharp_law6246/sources"
+    },
+    "id": "lean.layout.unsupported",
+    "message": "Could not use Lake layout from ./witnesses/optimal_subsampling/formal/sharp_law6246/sources: declared source root is absent",
+    "phase": "discover",
+    "ref": "diagnostic:b73e424da5557a4c9b7867a8",
+    "severity": "warning",
+    "subject": "./witnesses/optimal_subsampling/formal/sharp_law6246/sources"
+  },
+  {
+    "data": {
+      "id": "lean.layout.unsupported",
+      "message": "Could not use Lake layout from ./witnesses/optimal_subsampling/formal/selected_policy/sources: declared source root is absent",
+      "severity": "warning",
+      "subject": "./witnesses/optimal_subsampling/formal/selected_policy/sources"
+    },
+    "id": "lean.layout.unsupported",
+    "message": "Could not use Lake layout from ./witnesses/optimal_subsampling/formal/selected_policy/sources: declared source root is absent",
+    "phase": "discover",
+    "ref": "diagnostic:fba0e11724dc7b260883de4a",
+    "severity": "warning",
+    "subject": "./witnesses/optimal_subsampling/formal/selected_policy/sources"
+  }
+]
+
+STDERR

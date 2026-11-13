@@ -1,0 +1,361 @@
+$ python3 - <<'PY'
+import json,pathlib,datetime
+p=pathlib.Path("/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT")
+d=json.loads((p/"evidence/ladon-bracket.json").read_text())
+print("Ladon artifact keys:",list(d))
+for k in ("status","scope","coverage","findings","phases","summary","warnings","analysis"):
+ if k in d: print(k,json.dumps(d[k])[:14000])
+print("UTC now:",datetime.datetime.now(datetime.timezone.utc).isoformat())
+print("Start:",(p/"evidence/start-time.txt").read_text())
+PY
+rg -n "replayCertificate|directReplace|signedHiddenGaussian|uniformAddRemovePrivateAt|GlobalSigma_isGlobalThreshold|requestOnlyCandidate" Mf || true
+cat Mf/DP/FiniteMeasurePositivePartSecondMoment.lean
+cat Mf/DP/SampledGaussianProductNoiseMonotonicity.lean
+cat Mf/DP/SampledGaussianCalibratedStddev.lean
+EXIT 0
+STDOUT
+Ladon artifact keys: ['coverage', 'diagnostics', 'extensions', 'metadata', 'phases', 'pipeline', 'projection', 'sections', 'snapshot', 'warnings']
+coverage {"collections": {"declaration_graph.declarations": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "declaration_graph", "causes": [{"controllingCap": null, "detail": "declaration_graph did not expose the expected canonical collection for declaration_graph.declarations", "id": "declaration_graph.invalid_collection", "kind": "analysis"}, {"controllingCap": null, "detail": "declaration_graph phase status is skipped: no declaration IR available", "id": "declaration_graph.phase_skipped", "kind": "analysis"}], "completeness": "unavailable", "id": "declaration_graph.declarations", "observedLowerBound": 0, "omitted": null, "pointer": "#/sections/declaration_graph/declarations", "population": "analyzed_declarations", "scope": "owner:Mf.DP.SampledGaussianFiniteBracketCalibration", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": null, "totalKnown": false, "visible": 0}, "declaration_integrity.co_reachable_collisions": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_text_and_module_import_graph", "causes": [], "completeness": "complete", "id": "declaration_integrity.co_reachable_collisions", "observedLowerBound": 0, "omitted": 0, "pointer": "#/sections/module_dag/declaration_integrity/producerRegistrations/producers", "population": "selected_context_collision_registrations", "scope": "selected_module_graph", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 0, "totalKnown": true, "visible": 0}, "declaration_integrity.collision_candidates": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_text", "causes": [], "completeness": "complete", "id": "declaration_integrity.collision_candidates", "observedLowerBound": 0, "omitted": 0, "pointer": "#/sections/module_dag/declaration_integrity/collisionCandidates", "population": "public_global_lexical_candidate_name_partitions", "scope": "source_index_inventory", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 0, "totalKnown": true, "visible": 0}, "declaration_integrity.exact_block_duplicates": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_declaration_block_hash", "causes": [], "completeness": "complete", "id": "declaration_integrity.exact_block_duplicates", "observedLowerBound": 0, "omitted": 0, "pointer": "#/sections/module_dag/declaration_integrity/exactBlockDuplicateCandidates", "population": "normalized_lexical_declaration_block_partitions", "scope": "source_index_inventory", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 0, "totalKnown": true, "visible": 0}, "declaration_integrity.exact_file_duplicates": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "source_index_content_hash", "causes": [], "completeness": "complete", "id": "declaration_integrity.exact_file_duplicates", "observedLowerBound": 0, "omitted": 0, "pointer": "#/sections/module_dag/declaration_integrity/exactFileDuplicateCandidates", "population": "source_index_content_hash_partitions", "scope": "source_index_inventory", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 0, "totalKnown": true, "visible": 0}, "declaration_integrity.source_shape_similarities": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_declaration_source_shape", "causes": [], "completeness": "complete", "id": "declaration_integrity.source_shape_similarities", "observedLowerBound": 6, "omitted": 0, "pointer": "#/sections/module_dag/declaration_integrity/sourceShapeSimilarityCandidates", "population": "lexical_declaration_source_shape_partitions", "scope": "source_index_inventory", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 6, "totalKnown": true, "visible": 6}, "generated_family.candidates": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "ladon_derived_heuristic", "causes": [], "completeness": "complete", "id": "generated_family.candidates", "observedLowerBound": 0, "omitted": 0, "pointer": "#/sections/module_dag/generated_family_candidates/candidates", "population": "exact_profile_matches", "scope": "selected_analysis_scope", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 0, "totalKnown": true, "visible": 0}, "generated_family.numeric_partitions": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "source_index_path", "causes": [], "completeness": "complete", "id": "generated_family.numeric_partitions", "observedLowerBound": 0, "omitted": 0, "pointer": "#/sections/module_dag/generated_family_candidates/partitions", "population": "numeric_structural_partitions", "scope": "selected_analysis_scope", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 0, "totalKnown": true, "visible": 0}, "module_dag.architecture_joined_evidence": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "ladon_derived_structural_join", "causes": [], "completeness": "complete", "id": "module_dag.architecture_joined_evidence", "observedLowerBound": 0, "omitted": 0, "pointer": "#/sections/module_dag/architectureProducerRegistrations/producers", "population": "structurally_joined_architecture_findings", "scope": "selected_analysis_graphs", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 0, "totalKnown": true, "visible": 0}, "module_dag.audit_commands": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_text", "causes": [], "completeness": "complete", "id": "module_dag.audit_commands", "observedLowerBound": 0, "omitted": 0, "pointer": "#/sections/module_dag/audit_surfaces", "population": "lexical_audit_commands", "scope": "selected_module_graph", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 0, "totalKnown": true, "visible": 0}, "module_dag.import_boundaries": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_text_and_source_index_membership", "causes": [], "completeness": "complete", "id": "module_dag.import_boundaries", "observedLowerBound": 7, "omitted": 0, "pointer": "#/sections/module_dag/import_boundaries", "population": "selected_lexical_import_occurrences", "scope": "selected_module_population", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 7, "totalKnown": true, "visible": 7}, "module_dag.inspection_options": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_text", "causes": [], "completeness": "complete", "id": "module_dag.inspection_options", "observedLowerBound": 2, "omitted": 0, "pointer": "#/sections/module_dag/inspection_navigation/options", "population": "lexical_option_commands", "scope": "selected_module_graph", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 2, "totalKnown": true, "visible": 2}, "module_dag.inspection_proof_mechanisms": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_text", "causes": [], "completeness": "complete", "id": "module_dag.inspection_proof_mechanisms", "observedLowerBound": 85, "omitted": 0, "pointer": "#/sections/module_dag/inspection_navigation/proofMechanisms", "population": "lexical_proof_mechanism_occurrences", "scope": "selected_module_graph", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 85, "totalKnown": true, "visible": 85}, "module_dag.modules": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "module_import_graph", "causes": [], "completeness": "complete", "id": "module_dag.modules", "observedLowerBound": 3, "omitted": 0, "pointer": "#/sections/module_dag/module_metadata", "population": "analyzed_modules", "scope": "owner:Mf.DP.SampledGaussianFiniteBracketCalibration", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 3, "totalKnown": true, "visible": 3}, "module_dag.resource_directives": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_text", "causes": [], "completeness": "complete", "id": "module_dag.resource_directives", "observedLowerBound": 0, "omitted": 0, "pointer": "#/sections/module_dag/audit_surfaces", "population": "lexical_resource_settings", "scope": "selected_module_graph", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 0, "totalKnown": true, "visible": 0}, "module_dag.resource_review_inputs": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_text", "causes": [], "completeness": "complete", "id": "module_dag.resource_review_inputs", "observedLowerBound": 0, "omitted": 0, "pointer": "#/sections/module_dag/resourceProducerRegistrations/producers", "population": "normalized_unlimited_or_policy_backed_resource_settings", "scope": "selected_module_graph", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 0, "totalKnown": true, "visible": 0}, "module_dag.text_declarations": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "lexical_text", "causes": [], "completeness": "complete", "id": "module_dag.text_declarations", "observedLowerBound": 33, "omitted": 0, "pointer": "#/sections/module_dag/module_metadata", "population": "lexical_declaration_evidence", "scope": "selected_module_graph", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 33, "totalKnown": true, "visible": 33}, "proof_xray.rows": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "proof_xray_staging", "causes": [{"controllingCap": null, "detail": "proof_xray did not expose the expected canonical collection for proof_xray.rows", "id": "proof_xray.invalid_collection", "kind": "analysis"}, {"controllingCap": null, "detail": "proof_xray phase status is skipped: no proof-xray witness supplied", "id": "proof_xray.phase_skipped", "kind": "analysis"}], "completeness": "unavailable", "id": "proof_xray.rows", "observedLowerBound": 0, "omitted": null, "pointer": "#/sections/proof_xray/rows", "population": "classified_quoted_proof_xray_rows", "scope": "owner:Mf.DP.SampledGaussianFiniteBracketCalibration", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": null, "totalKnown": false, "visible": 0}, "report.findings": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "finding_selection", "causes": [], "completeness": "complete", "id": "report.findings", "observedLowerBound": 1, "omitted": 0, "pointer": "#/sections/findings", "population": "promoted_findings", "scope": "owner:Mf.DP.SampledGaussianFiniteBracketCalibration", "scopeFingerprint": "32725a597791ad2cbc12c184b5efff9d90a824aca7d24e0580f8a9b5f63a9511", "sourceFingerprint": "8846044b851b5517f5c49534efcc0cfb2d784e80641c4c988acd12e17aa38a31", "total": 1, "totalKnown": true, "visible": 1}, "report.packet_evidence": {"analysisFingerprint": "sha256:4896b99eaa98af09e64fdd959918986342b4ef48b1a068b7339fc4482122c648", "authority": "packet_evidence_summary", "causes": [{"controllingCap": null, "detail": "packet_evidence phase status is skipped: no packet directories requested", "id": "packet_evidence.phase_skipped", "kind": "analysis"}], "completeness":
+phases {"architecture_policy": {"counters": {"findings": 1}, "diagnosticRefs": [], "disposition": "complete", "elapsed_seconds": 0.017575677949935198, "name": "architecture_policy", "payloadRef": "#/sections/architecture_policy", "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:architecture_policy", "version": null}], "reason": null, "required": false, "status": "complete"}, "build": {"counters": {}, "diagnosticRefs": [], "disposition": "skipped", "elapsed_seconds": 0.0, "name": "build", "payloadRef": null, "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:build", "version": null}], "reason": "build phase was not requested", "required": false, "status": "skipped"}, "declaration_graph": {"counters": {}, "diagnosticRefs": [], "disposition": "skipped", "elapsed_seconds": 0.0, "name": "declaration_graph", "payloadRef": null, "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:declaration_graph", "version": null}], "reason": "no declaration IR available", "required": false, "status": "skipped"}, "discover": {"counters": {"context_modules": 2, "indexed_modules": 63, "inventory_modules": 63, "modules": 3, "primary_modules": 1, "source_cache_failed": 0, "source_cache_hits": 0, "source_cache_rebuilt": 63}, "diagnosticRefs": ["diagnostic:5da5d1defc9309bedd93e7c2", "diagnostic:2edee6717b45395609061c3a", "diagnostic:fba0e11724dc7b260883de4a", "diagnostic:b73e424da5557a4c9b7867a8"], "disposition": "complete", "elapsed_seconds": 1.066597705008462, "name": "discover", "payloadRef": "#/sections/discover", "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:discover", "version": null}], "reason": null, "required": true, "status": "complete"}, "findings": {"counters": {"findings": 1}, "diagnosticRefs": [], "disposition": "complete", "elapsed_seconds": 0.019190846011042595, "name": "findings", "payloadRef": "#/sections/findings", "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:findings", "version": null}], "reason": null, "required": true, "status": "complete"}, "import_diet": {"counters": {}, "diagnosticRefs": [], "disposition": "skipped", "elapsed_seconds": 0.0, "name": "import_diet", "payloadRef": null, "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:import_diet", "version": null}], "reason": "no import-diet witness supplied", "required": false, "status": "skipped"}, "indexing": {"counters": {"modules": 3}, "diagnosticRefs": [], "disposition": "complete", "elapsed_seconds": 0.01577139995060861, "name": "indexing", "payloadRef": null, "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:indexing", "version": null}], "reason": null, "required": true, "status": "complete"}, "lean_extraction": {"counters": {}, "diagnosticRefs": [], "disposition": "skipped", "elapsed_seconds": 0.0, "name": "lean_extraction", "payloadRef": null, "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:lean_extraction", "version": null}], "reason": "text backend selected", "required": false, "status": "skipped"}, "module_dag": {"counters": {"edges": 2}, "diagnosticRefs": [], "disposition": "complete", "elapsed_seconds": 0.022177038015797734, "name": "module_dag", "payloadRef": "#/sections/module_dag", "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:module_dag", "version": null}], "reason": null, "required": true, "status": "complete"}, "module_readiness": {"counters": {"findings": 0, "rows": 0}, "diagnosticRefs": [], "disposition": "complete", "elapsed_seconds": 0.017989929066970944, "name": "module_readiness", "payloadRef": "#/sections/module_readiness", "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:module_readiness", "version": null}], "reason": null, "required": false, "status": "complete"}, "packet_evidence": {"counters": {}, "diagnosticRefs": [], "disposition": "skipped", "elapsed_seconds": 0.0, "name": "packet_evidence", "payloadRef": "#/sections/packet_evidence", "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:packet_evidence", "version": null}], "reason": "no packet directories requested", "required": false, "status": "skipped"}, "proof_xray": {"counters": {}, "diagnosticRefs": [], "disposition": "skipped", "elapsed_seconds": 0.0, "name": "proof_xray", "payloadRef": null, "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:proof_xray", "version": null}], "reason": "no proof-xray witness supplied", "required": false, "status": "skipped"}, "quality_baseline": {"counters": {"metrics": 4}, "diagnosticRefs": [], "disposition": "complete", "elapsed_seconds": 0.0179376311134547, "name": "quality_baseline", "payloadRef": "#/sections/quality_baseline", "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:quality_baseline", "version": null}], "reason": null, "required": false, "status": "complete"}, "refactoring_prescriptions": {"counters": {"prescriptions": 0}, "diagnosticRefs": [], "disposition": "complete", "elapsed_seconds": 0.019010510994121432, "name": "refactoring_prescriptions", "payloadRef": "#/sections/refactoring_prescriptions", "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:refactoring_prescriptions", "version": null}], "reason": null, "required": false, "status": "complete"}, "rendering": {"counters": {"payloads": 1}, "diagnosticRefs": [], "disposition": "complete", "elapsed_seconds": 0.01930490997619927, "name": "rendering", "payloadRef": null, "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:rendering", "version": null}], "reason": null, "required": true, "status": "complete"}, "review_regions": {"counters": {"regions": 1}, "diagnosticRefs": [], "disposition": "complete", "elapsed_seconds": 0.019391322042793036, "name": "review_regions", "payloadRef": "#/sections/review_regions", "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:review_regions", "version": null}], "reason": null, "required": false, "status": "complete"}, "source_patterns": {"counters": {}, "diagnosticRefs": [], "disposition": "skipped", "elapsed_seconds": 0.0, "name": "source_patterns", "payloadRef": null, "provenance": [{"authority": "ladon-analysis", "backend": null, "source": "ladon.pipeline:source_patterns", "version": null}], "reason": "no source-pattern policy supplied", "required": false, "status": "skipped"}}
+warnings []
+UTC now: 2026-11-12T22:52:33.325416+00:00
+Start: 2026-11-12T22:50:10.272027+00:00
+
+import Mathlib.MeasureTheory.Function.L2Space
+import Mathlib.MeasureTheory.Integral.MeanInequalities
+
+/-!
+# Positive-part bounds under a finite measure
+
+This owner bounds the integral of a positive part by the zeroth, first, and
+second moments under the same finite measure.  Applying it to a restricted
+measure preserves the restricted mass instead of introducing a zero-extension
+penalty outside the retained event.
+-/
+
+open MeasureTheory
+
+namespace Mf.DP
+
+noncomputable section
+
+set_option autoImplicit false
+
+/-- Finite-measure Cauchy--Schwarz in a form that keeps the total mass. -/
+theorem integral_abs_le_sqrt_measureReal_mul_integral_sq
+    {X : Type*} [MeasurableSpace X]
+    (measure : Measure X) [IsFiniteMeasure measure]
+    (value : X → Real)
+    (hvalue : AEStronglyMeasurable value measure)
+    (hsquare : Integrable (fun sample => value sample ^ 2) measure) :
+    (∫ sample, |value sample| ∂measure) ≤
+      Real.sqrt (measure.real Set.univ * ∫ sample, value sample ^ 2 ∂measure) := by
+  have hone : MemLp (fun _ : X => (1 : Real)) 2 measure :=
+    (memLp_two_iff_integrable_sq
+      stronglyMeasurable_const.aestronglyMeasurable).2 (integrable_const _)
+  have habs : MemLp (fun sample => |value sample|) 2 measure :=
+    (memLp_two_iff_integrable_sq hvalue.norm).2
+      (by simpa [sq_abs] using hsquare)
+  have hholder := integral_mul_le_Lp_mul_Lq_of_nonneg
+    (μ := measure) (p := (2 : Real)) (q := (2 : Real))
+    Real.HolderConjugate.two_two
+    (ae_of_all measure fun _ : X => show 0 ≤ (1 : Real) by norm_num)
+    (ae_of_all measure fun sample => abs_nonneg (value sample))
+    (by simpa using hone) (by simpa using habs)
+  rw [Real.sqrt_mul measureReal_nonneg]
+  simpa [Real.sqrt_eq_rpow, sq_abs] using hholder
+
+/-- The coefficient-level positive-part second-moment bound under an arbitrary
+finite measure.  The square term is centered at the supplied coefficient. -/
+theorem integral_positivePart_le_of_integrable_sq
+    {X : Type*} [MeasurableSpace X]
+    (measure : Measure X) [IsFiniteMeasure measure]
+    (value : X → Real) (coefficient : Real)
+    (hvalue : AEStronglyMeasurable value measure)
+    (hsquare : Integrable (fun sample => (value sample - coefficient) ^ 2) measure) :
+    (∫ sample, max (value sample - coefficient) 0 ∂measure) ≤
+      (Real.sqrt (measure.real Set.univ *
+          ∫ sample, (value sample - coefficient) ^ 2 ∂measure) +
+        (∫ sample, value sample ∂measure) -
+          coefficient * measure.real Set.univ) / 2 := by
+  let residual : X → Real := fun sample => value sample - coefficient
+  have hresidual : AEStronglyMeasurable residual measure :=
+    hvalue.sub stronglyMeasurable_const.aestronglyMeasurable
+  have hresidualLp : MemLp residual 2 measure :=
+    (memLp_two_iff_integrable_sq hresidual).2 hsquare
+  have hresidualIntegrable : Integrable residual measure :=
+    hresidualLp.integrable (by norm_num)
+  have hvalueIntegrable : Integrable value measure := by
+    simpa [residual, sub_eq_add_neg] using
+      hresidualIntegrable.add (integrable_const coefficient)
+  have habs := integral_abs_le_sqrt_measureReal_mul_integral_sq
+    measure residual hresidual hsquare
+  have hpoint : (fun sample => max (value sample - coefficient) 0) =
+      fun sample => (|residual sample| + residual sample) / 2 := by
+    funext sample
+    by_cases hnonneg : 0 ≤ residual sample
+    · rw [max_eq_left]
+      · rw [abs_of_nonneg hnonneg]
+        ring
+      · exact hnonneg
+    · have hnonpos : residual sample ≤ 0 := le_of_not_ge hnonneg
+      rw [max_eq_right hnonpos, abs_of_nonpos hnonpos]
+      ring
+  have habsIntegrable : Integrable (fun sample => |residual sample|) measure := by
+    simpa [Real.norm_eq_abs] using hresidualIntegrable.norm
+  rw [hpoint, integral_div, integral_add habsIntegrable hresidualIntegrable]
+  rw [show (∫ sample, residual sample ∂measure) =
+      (∫ sample, value sample ∂measure) - coefficient * measure.real Set.univ by
+    dsimp [residual]
+    rw [integral_sub hvalueIntegrable (integrable_const coefficient), integral_const]
+    simp [smul_eq_mul, mul_comm]]
+  have habs' : (∫ sample, |residual sample| ∂measure) ≤
+      Real.sqrt (measure.real Set.univ *
+        ∫ sample, (value sample - coefficient) ^ 2 ∂measure) := by
+    simpa [residual] using habs
+  linarith
+
+/-- Expanding a square under a finite measure retains the total mass in the
+constant term. -/
+theorem integral_sub_const_sq_eq
+    {X : Type*} [MeasurableSpace X]
+    (measure : Measure X) [IsFiniteMeasure measure]
+    (value : X → Real) (coefficient : Real)
+    (hvalue : Integrable value measure)
+    (hvalueSquare : Integrable (fun sample => value sample ^ 2) measure) :
+    (∫ sample, (value sample - coefficient) ^ 2 ∂measure) =
+    (∫ sample, value sample ^ 2 ∂measure) -
+        2 * coefficient * (∫ sample, value sample ∂measure) +
+        coefficient ^ 2 * measure.real Set.univ := by
+  have hlinear : Integrable (fun sample => 2 * coefficient * value sample) measure :=
+    hvalue.const_mul _
+  have hconstant : Integrable (fun _ : X => coefficient ^ 2) measure :=
+    integrable_const _
+  rw [show (fun sample => (value sample - coefficient) ^ 2) = fun sample =>
+      value sample ^ 2 - 2 * coefficient * value sample + coefficient ^ 2 by
+    funext sample
+    ring]
+  change (∫ sample,
+      ((fun x => value x ^ 2) - (fun x => 2 * coefficient * value x)) sample +
+        (fun _ : X => coefficient ^ 2) sample ∂measure) = _
+  rw [integral_add (hvalueSquare.sub hlinear) hconstant]
+  simp only [Pi.sub_apply]
+  rw [integral_sub hvalueSquare hlinear, integral_const_mul, integral_const]
+  simp [smul_eq_mul, mul_comm]
+
+/-- The centered square integral is nonnegative. -/
+theorem integral_sub_const_sq_nonneg
+    {X : Type*} [MeasurableSpace X]
+    (measure : Measure X) (value : X → Real) (coefficient : Real) :
+    0 ≤ ∫ sample, (value sample - coefficient) ^ 2 ∂measure :=
+  integral_nonneg fun _ => sq_nonneg _
+
+end
+
+end Mf.DP
+import Mf.DP.SampledGaussianCalibratedStddev
+import Mathlib.MeasureTheory.Constructions.Pi
+
+/-!
+# Product sampled-Gaussian noise monotonicity
+
+Larger coordinatewise Gaussian variance is realized by adding one independent
+residual Gaussian vector to both neighboring product laws.  Common randomized
+postprocessing therefore makes the exact binary profile antitone in variance
+and in the public standard-deviation parameter.
+-/
+
+open MeasureTheory ProbabilityTheory
+
+namespace Mf.DP
+
+noncomputable section
+
+/-- Independent centered Gaussian coordinates with a common variance. -/
+def centeredGaussianProductLaw (horizon : Nat) (variance : NNReal) :
+    ProbabilityMeasure (Fin horizon → Real) :=
+  ProbabilityMeasure.pi (fun _ => ⟨gaussianReal 0 variance, by infer_instance⟩)
+
+/-- Add two finite real vectors coordinatewise. -/
+def coordinatewiseAdd (horizon : Nat) :
+    (Fin horizon → Real) × (Fin horizon → Real) → (Fin horizon → Real) :=
+  fun pair coordinate => pair.1 coordinate + pair.2 coordinate
+
+theorem measurable_coordinatewiseAdd (horizon : Nat) :
+    Measurable (coordinatewiseAdd horizon) := by
+  unfold coordinatewiseAdd
+  fun_prop
+
+/-- Reassociate two finite product measures and apply the same map coordinatewise. -/
+theorem map_productMeasures_coordinatewise
+    {ι X Z Y : Type*} [Fintype ι]
+    [MeasurableSpace X] [MeasurableSpace Z] [MeasurableSpace Y]
+    (f : X × Z → Y) (hf : Measurable f)
+    (mu : ι → Measure X) (rho : ι → Measure Z)
+    [∀ i, IsFiniteMeasure (mu i)] [∀ i, IsFiniteMeasure (rho i)]
+    [∀ i, SigmaFinite (mu i)] [∀ i, SigmaFinite (rho i)] :
+    Measure.map (fun pair : (ι → X) × (ι → Z) =>
+        fun i => f (pair.1 i, pair.2 i))
+        ((Measure.pi mu).prod (Measure.pi rho)) =
+      Measure.pi (fun i => Measure.map f ((mu i).prod (rho i))) := by
+  let e : (ι → X × Z) ≃ᵐ (ι → X) × (ι → Z) :=
+    MeasurableEquiv.arrowProdEquivProdArrow X Z ι
+  have he : Measure.map e (Measure.pi (fun i => (mu i).prod (rho i))) =
+      (Measure.pi mu).prod (Measure.pi rho) :=
+    measurePreserving_arrowProdEquivProdArrow X Z ι mu rho |>.map_eq
+  rw [← he, Measure.map_map (by fun_prop) e.measurable]
+  have hfun :
+      (fun pair : (ι → X) × (ι → Z) => fun i => f (pair.1 i, pair.2 i)) ∘ e =
+        (fun sample : ι → X × Z => fun i => f (sample i)) := by
+    funext sample i
+    rfl
+  rw [hfun, Measure.pi_map_pi (fun _ => hf.aemeasurable)]
+
+/-- Adding a residual Gaussian vector realizes the larger-variance sampled source product. -/
+theorem sampledGaussianSourceProductLaw_add_residual
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity : Real) (small large residual : NNReal)
+    (hvariance : large = small + residual) :
+    Measure.map (coordinatewiseAdd horizon)
+      ((sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity small).prod
+        (centeredGaussianProductLaw horizon residual) :
+        Measure ((Fin horizon → Real) × (Fin horizon → Real))) =
+      (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity large :
+        Measure (Fin horizon → Real)) := by
+  let mu : Fin horizon → Measure Real := fun _ =>
+    (sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity small : Measure Real)
+  let rho : Fin horizon → Measure Real := fun _ => gaussianReal 0 residual
+  change Measure.map (coordinatewiseAdd horizon)
+      ((Measure.pi mu).prod (Measure.pi rho)) = _
+  unfold coordinatewiseAdd
+  rw [map_productMeasures_coordinatewise
+    (fun pair : Real × Real => pair.1 + pair.2)
+    (measurable_fst.add measurable_snd) mu rho]
+  congr 1
+  funext coordinate
+  change (sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity small :
+      Measure Real) ∗ gaussianReal 0 residual = _
+  simp [sampledGaussianOneStepSourceLaw, gaussianNoiseLaw, hvariance,
+    Measure.conv_assoc, gaussianReal_conv_gaussianReal]
+
+/-- Adding the same residual vector realizes the larger-variance reference product. -/
+theorem sampledGaussianReferenceProductLaw_add_residual
+    (horizon : Nat) (small large residual : NNReal)
+    (hvariance : large = small + residual) :
+    Measure.map (coordinatewiseAdd horizon)
+      ((sampledGaussianReferenceProductLaw horizon small).prod
+        (centeredGaussianProductLaw horizon residual) :
+        Measure ((Fin horizon → Real) × (Fin horizon → Real))) =
+      (sampledGaussianReferenceProductLaw horizon large :
+        Measure (Fin horizon → Real)) := by
+  simpa [sampledGaussianReferenceProductLaw, sampledGaussianSourceProductLaw,
+    sampledGaussianOneStepSourceLaw_zeroSamplingRate] using
+    (sampledGaussianSourceProductLaw_add_residual horizon 0 (by norm_num) 0
+      small large residual hvariance)
+
+/-- The exact sampled product profile is antitone in per-coordinate variance. -/
+theorem sampledGaussianProductProfile_variance_antitone
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon : Real) {small large : NNReal} (hvariance : small ≤ large) :
+    binaryAccountingProfile
+        (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity large)
+        (sampledGaussianReferenceProductLaw horizon large) epsilon ≤
+      binaryAccountingProfile
+        (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity small)
+        (sampledGaussianReferenceProductLaw horizon small) epsilon := by
+  let residual : NNReal := large - small
+  have hsum : large = small + residual := (add_tsub_cancel_of_le hvariance).symm
+  have hcontract := binaryAccountingProfile_common_randomized_map_le
+    (coordinatewiseAdd horizon) (measurable_coordinatewiseAdd horizon)
+    (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity small)
+    (sampledGaussianReferenceProductLaw horizon small)
+    (centeredGaussianProductLaw horizon residual) epsilon
+  have hsource :
+      ((sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity small).prod
+          (centeredGaussianProductLaw horizon residual)).map
+            (measurable_coordinatewiseAdd horizon).aemeasurable =
+        sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity large := by
+    apply Subtype.ext
+    exact sampledGaussianSourceProductLaw_add_residual horizon samplingRate hRate sensitivity
+      small large residual hsum
+  have hreference :
+      ((sampledGaussianReferenceProductLaw horizon small).prod
+          (centeredGaussianProductLaw horizon residual)).map
+            (measurable_coordinatewiseAdd horizon).aemeasurable =
+        sampledGaussianReferenceProductLaw horizon large := by
+    apply Subtype.ext
+    exact sampledGaussianReferenceProductLaw_add_residual horizon small large residual hsum
+  rw [hsource, hreference] at hcontract
+  exact hcontract
+
+/-- The public standard-deviation profile is antitone in noise standard deviation. -/
+theorem sampledGaussianProductProfileStddev_antitone
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon : Real) {small large : NNReal} (hStddev : small ≤ large) :
+    sampledGaussianProductProfileStddev horizon samplingRate hRate sensitivity large epsilon ≤
+      sampledGaussianProductProfileStddev horizon samplingRate hRate sensitivity small epsilon := by
+  unfold sampledGaussianProductProfileStddev
+  exact sampledGaussianProductProfile_variance_antitone horizon samplingRate hRate
+    sensitivity epsilon (pow_le_pow_left' hStddev 2)
+
+end
+
+end Mf.DP
+import Mf.DP.SampledGaussianOracleConvergence
+
+/-!
+# Calibrated standard deviation for sampled Gaussian products
+
+Calibration is exposed in standard-deviation units.  The underlying law
+constructors continue to receive variance, so the wrapper passes the square of
+the public parameter.  The infimum is total and makes no finite-horizon
+attainment or positivity claim.
+-/
+
+namespace Mf.DP
+
+noncomputable section
+
+/-- Exact sampled-Gaussian product profile parameterized by noise standard deviation. -/
+def sampledGaussianProductProfileStddev
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity : Real) (noiseStddev : NNReal) (epsilon : Real) : ENNReal :=
+  binaryAccountingProfile
+    (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+      (noiseStddev ^ 2))
+    (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon
+
+/-- Corrected public domain for sampled-Gaussian calibration. -/
+def SampledGaussianCalibrationAdmissible
+    (samplingRate : NNReal) (sensitivity epsilon delta : Real) : Prop :=
+  0 < samplingRate ∧ samplingRate ≤ 1 ∧ 0 < sensitivity ∧
+    0 ≤ epsilon ∧ 0 < delta ∧ delta < 1
+
+/-- Standard deviations whose exact product accounting profile meets the target slack. -/
+def sampledGaussianFeasibleStddevSet
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon delta : Real) : Set NNReal :=
+  {noiseStddev | sampledGaussianProductProfileStddev horizon samplingRate hRate
+    sensitivity noiseStddev epsilon ≤ ENNReal.ofReal delta}
+
+@[simp] theorem mem_sampledGaussianFeasibleStddevSet_iff
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon delta : Real) (noiseStddev : NNReal) :
+    noiseStddev ∈ sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+        sensitivity epsilon delta ↔
+      sampledGaussianProductProfileStddev horizon samplingRate hRate sensitivity
+        noiseStddev epsilon ≤ ENNReal.ofReal delta :=
+  Iff.rfl
+
+/-- Nonnegative infimum of feasible sampled-Gaussian noise standard deviations. -/
+def sampledGaussianCalibratedStddev
+    (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+    (sensitivity epsilon delta : Real) : NNReal :=
+  sInf (sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+    sensitivity epsilon delta)
+
+end
+
+end Mf.DP
+
+STDERR

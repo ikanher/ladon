@@ -1,0 +1,128 @@
+$ sed -n 379,650p capsule/sources/latex/natural-language/deterministic_koutoft_training_accountant_proof.tex
+CWD: /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/INPUT
+\section{Degenerate cases, scope, and provenance}
+
+The finite add/remove procedure deliberately allows $k=0$ and
+$\delta\geq1$.  If $k=0$, no user ever contributes, so every positive scale
+has a data-independent transcript.  If $\delta\geq1$, every hockey-stick
+divergence is at most $1\leq\delta$, so again every positive scale is feasible.
+In either case the feasible set is $(0,\infty)$ and has infimum zero but no
+least positive member.  The calibrator remains sound and returns a positive
+fallback; only the claim of an attained \emph{positive} global threshold
+would be false.  This is exactly why clauses (ii) and (iii) assume
+$k>0$ and $\delta<1$.  The case $\delta=0$ lies outside the total-calibrator
+domain: its fallback divides by $\delta$, and a nonzero Gaussian shift need
+not admit any finite pure-DP scale.
+
+The theorem concerns independent per-user uniform fixed-cardinality
+schedules, unit internal clipping, measurable adaptive queries, zero initial
+history, and ideal real Gaussian noise.  Measurable postprocessing of the
+transcript inherits the privacy guarantee.  It does not establish conformance
+of a sampler, finite-precision Gaussian generator, Python/PyTorch/Opacus
+implementation, distributed execution, or experiment.  The finite rational
+calibrator is add/remove only and grid-relative; the exact uniform thresholds
+are noncomputable and may exceed what a particular fixed oracle needs.
+
+This note is a \emph{closed-proof, source-reviewed} reconstruction.  The
+publication-facing sources and their focused audit modules were replayed
+successfully in the current working tree; this is not an independent
+clean-checkout or runtime replay.  The audited endpoints use only
+\texttt{propext}, \texttt{Classical.choice}, and \texttt{Quot.sound}.
+
+\appendix
+\section{Exact declaration-to-source crosswalk}
+
+\begingroup
+\scriptsize
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.35em}
+
+\textbf{Request, quantifiers, and mechanism.}
+\decl{Mf.DP.Training.KOutOfT.KOutOfTTrainingRequest.Valid},
+\decl{Mf.DP.Training.KOutOfT.KOutOfTTrainingRequest.check_eq_true_iff}, and
+\decl{Mf.DP.Training.KOutOfT.KOutOfTTrainingRequest.formalCfg} are in
+\decl{Mf/DP/Training/KOutOfT/GenericRequest.lean}.
+\decl{Mf.DP.Training.KOutOfT.GlobalSigmaNondegenerate} and
+\decl{Mf.DP.Training.KOutOfT.GloballyCalibratableKOutOfTTrainingRequest}
+are in \decl{Mf/DP/Training/KOutOfT/GlobalSigmaRequest.lean}.
+\decl{Mf.DP.Training.KOutOfT.uniformAddRemovePrivateAt} and
+\decl{Mf.DP.Training.KOutOfT.uniformReplaceOnePrivateAt}, including decidable equality and zero
+initial history, are in
+\decl{Mf/DP/Training/GlobalSigmaOptimalityTargets.lean}.
+\decl{Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass_sum_eq_one},
+\decl{Mf.DP.Training.KOutOfT.userScheduleAssignmentMass_sum_eq_one}, and
+\decl{Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript} are in
+\decl{Mf/DP/Training/KOutOfT/TrainingMechanism.lean}.
+
+\textbf{Add/remove upper theorem and finite calibration.}
+\decl{Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript_approxDP_of_formal} is in
+\decl{Mf/DP/Training/KOutOfT/TrainingReduction.lean}, and
+\decl{Mf.DP.Training.KOutOfT.trainingTranscript_approxDP_of_formal} is in
+\decl{Mf/DP/Training/KOutOfT/GenericTrainingBridge.lean}.
+\decl{Mf.DP.Training.KOutOfT.checkKOutOfTCandidate_sound} is in
+\decl{Mf/DP/Training/KOutOfT/CandidateChecker.lean};
+\decl{Mf.DP.Training.KOutOfT.Total.formal_approxDP} is in
+\decl{Mf/DP/Training/KOutOfT/TotalAccountant.lean}.
+\decl{Mf.DP.Training.KOutOfT.RequestOnlyUpperCalibration.requestOnlyCandidate_checked},
+\decl{Mf.DP.Training.KOutOfT.RequestOnlyUpperCalibration.requestOnlyCandidate_sigma_le_of_generated_mem},
+\decl{Mf.DP.Training.KOutOfT.RequestOnlyUpperCalibration.requestOnlyCandidate_fallback_or_generated},
+and
+\decl{Mf.DP.Training.KOutOfT.RequestOnlyUpperCalibration.trainingAccountant_sound}
+are in
+\decl{Mf/DP/Training/KOutOfT/RequestOnlyUpperCalibration.lean}.
+
+\textbf{Exact add/remove converse and threshold.}
+\decl{Mf.DP.Training.KOutOfT.exactAddRemoveProfile} is in
+\decl{Mf/DP/Training/KOutOfT/ExactSigmaProfile.lean}.
+\decl{Mf.DP.Training.KOutOfT.formalApproxDP_iff_exactAddRemoveProfile_le} is in
+\decl{Mf/DP/Training/KOutOfT/ExactFormalProfile.lean}.
+\decl{Mf.DP.Training.KOutOfT.map_projectScalarHistory_singletonTrainingTranscript_eq_formalSource},
+\decl{Mf.DP.Training.KOutOfT.map_projectScalarHistory_emptyTrainingTranscript_eq_formalReference},
+and
+\decl{Mf.DP.Training.KOutOfT.formalApproxDP_of_saturatingTrainingApproxDP} are in
+\decl{Mf/DP/Training/KOutOfT/LowerRealization.lean}.
+\decl{Mf.DP.Training.KOutOfT.kOutOfTGlobalSigma_isExactProfileThreshold} is in
+\decl{Mf/DP/Training/KOutOfT/ExactSigmaThreshold.lean};
+\decl{Mf.DP.Training.KOutOfT.uniformAddRemovePrivateAt_iff_exactProfile_le} and
+\decl{Mf.DP.Training.KOutOfT.kOutOfTGlobalSigma_isGlobalThreshold} are in
+\decl{Mf/DP/Training/KOutOfT/AddRemoveGlobalOptimality.lean}.
+
+\textbf{Direct replace-one.}
+\decl{Mf.DP.Training.KOutOfT.signedHiddenGaussianStopLossDomination} and
+\decl{Mf.DP.Training.KOutOfT.signedHiddenGaussianStopLossDomination_of_antialignment}
+are in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceSignedGaussianInterpolation.lean};
+\decl{Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript_replaceOne_approxDP_of_directFormal}
+is in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceUniformUpperTarget.lean}.
+\decl{Mf.DP.Training.KOutOfT.exactReplaceOneProfile} and
+\decl{Mf.DP.Training.KOutOfT.directFormalApproxDP_iff_exactReplaceOneProfile_le}
+are in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceSigmaProfile.lean}.
+\decl{Mf.DP.Training.KOutOfT.map_positiveSingletonDirectTrainingTranscript_eq_formalSource},
+\decl{Mf.DP.Training.KOutOfT.map_negativeSingletonDirectTrainingTranscript_eq_formalReference},
+and
+\decl{Mf.DP.Training.KOutOfT.directFormalApproxDP_of_signedTrainingReplaceOneApproxDP}
+are in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceLowerRealization.lean}.
+\decl{Mf.DP.Training.KOutOfT.kOutOfTDirectReplaceProfileSigma_isExactThreshold}
+is in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceSigmaThreshold.lean};
+\decl{Mf.DP.Training.KOutOfT.directReplaceFallback_profile_le} is in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceFallback.lean};
+\decl{Mf.DP.Training.KOutOfT.uniformReplaceOnePrivateAt_iff_exactReplaceOneProfile_le}
+and
+\decl{Mf.DP.Training.KOutOfT.kOutOfTDirectReplaceProfileSigma_isGlobalThreshold}
+are in
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceGlobalOptimality.lean}.
+
+\textbf{Axiom audits.}
+\decl{Mf/DP/Training/KOutOfT/RequestOnlyUpperCalibrationAudit.lean},
+\decl{Mf/DP/Training/KOutOfT/AddRemoveGlobalOptimalityAudit.lean},
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceGlobalOptimalityAudit.lean}, and
+\decl{Mf/DP/Training/KOutOfT/DirectReplaceProfileOptimalityAudit.lean}.
+\endgroup
+
+\end{document}
+
+EXIT: 0

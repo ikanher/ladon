@@ -1,0 +1,145 @@
+$ python3 - <<'PY'
+from pathlib import Path
+import hashlib,datetime,json
+out=Path("/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT")
+a=out/"evidence/ladon-bracket.json"
+incident={"timestamp_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),"mistaken_original_path":str(out.parent.parent/"OUTPUT/evidence/ladon-bracket.json"),"preserved_artifact":str(a),"sha256":hashlib.sha256(a.read_bytes()).hexdigest(),"analysis_target":"assigned INPUT/capsule/lean only","resolution":"Moved exact self-generated artifact to assigned OUTPUT/evidence and removed its two newly created empty directories; no other external content was inspected.","classification":"minor output-boundary procedural deviation"}
+(out/"evidence/output-path-incident.json").write_text(json.dumps(incident,indent=2)+"\n")
+(out/"evidence/EndpointChecks.lean").write_text("""import Mf.DP.SampledGaussianFiniteBracketCalibration
+import Mf.DP.Training.KOutOfT.TrainingMechanism
+open MeasureTheory ProbabilityTheory Set
+open Mf.DP
+#check sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds
+#check sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates
+#print axioms sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds
+#print axioms sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates
+#check sparseGaussianProductBelowBoxCenteredSecondMoment_nonneg
+#check eventHockeyStickProfile_withDensity_reverse_duality
+#check Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass_sum_eq_one
+#check Mf.DP.Training.KOutOfT.userScheduleAssignmentMass_sum_eq_one
+#print axioms Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass_sum_eq_one
+#print axioms Mf.DP.Training.KOutOfT.userScheduleAssignmentMass_sum_eq_one
+#print Mf.DP.Training.KOutOfT.scheduledClippedAggregate
+#print Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript
+#check sampledGaussianSourceProductLaw_map_positiveGaussianScale
+#check sampledGaussianReferenceProductLaw_map_positiveGaussianScale
+#check integral_sparseGaussianProductLikelihoodRatio_sq_belowBox
+#check integral_positivePart_le_of_integrable_sq
+""")
+print(json.dumps(incident,indent=2))
+PY
+lake env lean /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT/evidence/EndpointChecks.lean
+EXIT 0
+STDOUT
+{
+  "timestamp_utc": "2026-11-12T22:52:19.524293+00:00",
+  "mistaken_original_path": "/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/OUTPUT/evidence/ladon-bracket.json",
+  "preserved_artifact": "/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT/evidence/ladon-bracket.json",
+  "sha256": "e543526440473bb88e537397b56f36bd42bd3669c386dfb115122a3b23ad2285",
+  "analysis_target": "assigned INPUT/capsule/lean only",
+  "resolution": "Moved exact self-generated artifact to assigned OUTPUT/evidence and removed its two newly created empty directories; no other external content was inspected.",
+  "classification": "minor output-boundary procedural deviation"
+}
+Mf.DP.sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds (horizon : ℕ) (samplingRate : NNReal)
+  (hRate : samplingRate ≤ 1) (sensitivity epsilon forwardThreshold reverseThreshold : ℝ) (noiseStddev : NNReal)
+  (hStddev : 0 < noiseStddev) :
+  binaryAccountingProfile (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity (noiseStddev ^ 2))
+      (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon ≤
+    sampledGaussianProductFiniteProfileUpperBoundWithThresholds horizon samplingRate sensitivity epsilon
+      forwardThreshold reverseThreshold noiseStddev
+Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates (horizon : ℕ)
+  (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+  (sensitivity epsilon delta lowerThreshold forwardUpperThreshold reverseUpperThreshold : ℝ)
+  (lowerCandidate upperCandidate : NNReal) (hLowerCandidate : 0 < lowerCandidate) (hUpperCandidate : 0 < upperCandidate)
+  (hLower :
+    ENNReal.ofReal delta <
+      sparseGaussianProductMaximumEventForwardLowerBound horizon samplingRate hRate (sensitivity / ↑lowerCandidate)
+        epsilon lowerThreshold)
+  (hUpper :
+    sampledGaussianProductFiniteProfileUpperBoundWithThresholds horizon samplingRate sensitivity epsilon
+        forwardUpperThreshold reverseUpperThreshold upperCandidate ≤
+      ENNReal.ofReal delta) :
+  lowerCandidate ≤ sampledGaussianCalibratedStddev horizon samplingRate hRate sensitivity epsilon delta ∧
+    sampledGaussianCalibratedStddev horizon samplingRate hRate sensitivity epsilon delta ≤ upperCandidate
+'Mf.DP.sampledGaussianProductBinaryProfile_le_finiteProfileUpperBoundWithThresholds' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mf.DP.sampledGaussian_calibration_interval_of_finiteBracketWithThresholds_certificates' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+Mf.DP.sparseGaussianProductBelowBoxCenteredSecondMoment_nonneg (horizon : ℕ) (samplingRate : NNReal)
+  (hRate : samplingRate ≤ 1) (standardizedShift threshold coefficient : ℝ) :
+  0 ≤ sparseGaussianProductBelowBoxCenteredSecondMoment horizon samplingRate standardizedShift threshold coefficient
+Mf.DP.eventHockeyStickProfile_withDensity_reverse_duality.{u_1} {X : Type u_1} [MeasurableSpace X]
+  (reference : ProbabilityMeasure X) (ratio : X → ℝ) (hRatio : Measurable ratio)
+  (hRatioNonnegative : ∀ (sample : X), 0 ≤ ratio sample) (hRatioIntegrable : Integrable ratio ↑reference)
+  (hRatioIntegral : ∫ (sample : X), ratio sample ∂↑reference = 1) (epsilon : ℝ) :
+  eventHockeyStickProfile (↑reference) ((↑reference).withDensity fun sample => ENNReal.ofReal (ratio sample)) epsilon =
+    ENNReal.ofReal
+      (1 - Real.exp epsilon +
+        Real.exp epsilon *
+          (eventHockeyStickProfile ((↑reference).withDensity fun sample => ENNReal.ofReal (ratio sample)) (↑reference)
+              (-epsilon)).toReal)
+Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass_sum_eq_one (T k : ℕ) (hk : k ≤ T) :
+  ∑ schedule, Training.KOutOfT.fixedCardinalityScheduleMass T k schedule = 1
+Mf.DP.Training.KOutOfT.userScheduleAssignmentMass_sum_eq_one.{u_1} {Record : Type u_1} [DecidableEq Record]
+  (dataset : Training.UserDataset Record) (T k : ℕ) (hk : k ≤ T) :
+  ∑ assignment, Training.KOutOfT.userScheduleAssignmentMass dataset T k assignment = 1
+'Mf.DP.Training.KOutOfT.fixedCardinalityScheduleMass_sum_eq_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+'Mf.DP.Training.KOutOfT.userScheduleAssignmentMass_sum_eq_one' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+def Mf.DP.Training.KOutOfT.scheduledClippedAggregate.{u_1} : {Record : Type u_1} →
+  [inst : DecidableEq Record] →
+    {T d : ℕ} →
+      Training.AdaptiveTrainingOracle Record T d →
+        ℝ →
+          (dataset : Training.UserDataset Record) →
+            Training.KOutOfT.UserScheduleAssignment dataset T →
+              Fin T → AdaptiveReleaseHistory (Fin d → ℝ) → Fin d → ℝ :=
+fun {Record} [DecidableEq Record] {T d} oracle clippingNorm dataset assignment step history =>
+  ∑ record, if step ∈ assignment record then l2VectorClip clippingNorm (oracle.query step history ↑record) else 0
+def Mf.DP.Training.KOutOfT.kOutOfTTrainingTranscript.{u_1} : {Record : Type u_1} →
+  [inst : DecidableEq Record] →
+    {T d : ℕ} →
+      Training.AdaptiveTrainingOracle Record T d →
+        ℕ →
+          ℝ →
+            ℝ →
+              AdaptiveReleaseHistory (Fin d → ℝ) →
+                Training.UserDataset Record → Measure (AdaptiveReleaseHistory (Fin d → ℝ)) :=
+fun {Record} [DecidableEq Record] {T d} oracle k clippingNorm sigma initialHistory dataset =>
+  ∑ assignment,
+    ENNReal.ofReal (Training.KOutOfT.userScheduleAssignmentMass dataset T k assignment) •
+      Training.KOutOfT.transcriptGivenScheduleAssignment oracle clippingNorm sigma dataset assignment initialHistory T
+Mf.DP.sampledGaussianSourceProductLaw_map_positiveGaussianScale (horizon : ℕ) (samplingRate : NNReal)
+  (hRate : samplingRate ≤ 1) (sensitivity : ℝ) (noiseStddev : NNReal) (hStddev : 0 < noiseStddev) :
+  Measure.map ⇑(positiveGaussianProductScaleEquiv horizon noiseStddev hStddev)
+      ↑(sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity (noiseStddev ^ 2)) =
+    ↑(sparseGaussianProductLaw horizon samplingRate hRate (sensitivity / ↑noiseStddev))
+Mf.DP.sampledGaussianReferenceProductLaw_map_positiveGaussianScale (horizon : ℕ) (noiseStddev : NNReal)
+  (hStddev : 0 < noiseStddev) :
+  Measure.map ⇑(positiveGaussianProductScaleEquiv horizon noiseStddev hStddev)
+      ↑(sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) =
+    Measure.pi fun x => gaussianReal 0 1
+Mf.DP.integral_sparseGaussianProductLikelihoodRatio_sq_belowBox (horizon : ℕ) (samplingRate : NNReal)
+  (hRate : samplingRate ≤ 1) (standardizedShift threshold : ℝ) :
+  (∫ (sample : Fin horizon → ℝ) in sparseGaussianProductBelowBox horizon threshold,
+      sparseGaussianProductLikelihoodRatio horizon (↑samplingRate) standardizedShift sample ^
+        2 ∂Measure.pi fun x => gaussianReal 0 1) =
+    ((1 - ↑samplingRate) ^ 2 * stdNormalCDFReal threshold +
+          2 * ↑samplingRate * (1 - ↑samplingRate) * stdNormalCDFReal (threshold - standardizedShift) +
+        ↑samplingRate ^ 2 * Real.exp (standardizedShift ^ 2) * stdNormalCDFReal (threshold - 2 * standardizedShift)) ^
+      horizon
+Mf.DP.integral_positivePart_le_of_integrable_sq.{u_1} {X : Type u_1} [MeasurableSpace X] (measure : Measure X)
+  [IsFiniteMeasure measure] (value : X → ℝ) (coefficient : ℝ) (hvalue : AEStronglyMeasurable value measure)
+  (hsquare : Integrable (fun sample => (value sample - coefficient) ^ 2) measure) :
+  ∫ (sample : X), max (value sample - coefficient) 0 ∂measure ≤
+    (√(measure.real univ * ∫ (sample : X), (value sample - coefficient) ^ 2 ∂measure) +
+          ∫ (sample : X), value sample ∂measure -
+        coefficient * measure.real univ) /
+      2
+
+STDERR

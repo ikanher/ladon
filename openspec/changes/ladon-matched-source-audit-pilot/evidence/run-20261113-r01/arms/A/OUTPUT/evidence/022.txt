@@ -1,0 +1,32 @@
+$ python3 - <<'PY'
+import json,pathlib
+p=pathlib.Path("/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT")
+for row in (p/"evidence/commands.jsonl").read_text().splitlines():
+ d=json.loads(row)
+ print(d["id"],d["exit_code"],round(d["seconds"],2),d["command"][:180].replace("\n"," "))
+PY
+EXIT 0
+STDOUT
+1 0 0.01 wc -l ../sources/latex/natural-language/*.tex; cat ../README.txt; cat lakefile.toml; cat lean-toolchain
+2 0 0.0 nl -ba ../sources/latex/natural-language/deterministic_koutoft_training_accountant_proof.tex
+3 0 0.0 nl -ba ../sources/latex/natural-language/poisson_fixed_participation_finite_bracket_proof.tex
+4 0 0.01 find Mf -name "*.lean" | sort; wc -l Mf/DP/{MatchedGaussianSourceNormalization,SampledGaussianFiniteBracketCalibration,SampledGaussianProductFiniteProfileBounds,SparseGaussianProdu
+5 0 0.04 /home/codex/projects/ladon/.venv/bin/ladon --help; cat Mf/DP/Training/KOutOfT/TrainingMechanism.lean; cat Mf/DP/SampledGaussianProductFiniteProfileBounds.lean
+6 0 0.39 /home/codex/projects/ladon/.venv/bin/ladon theorem lineage --help; /home/codex/projects/ladon/.venv/bin/ladon -h --verbose
+7 0 0.01 cat Mf/DP/Training/Common/AdaptiveTranscript.lean; cat Mf/DP/VectorClipping.lean; cat Mf/DP/EuclideanVectorClipping.lean; cat Mf/DP/FiniteProfileRestrictedSecondMomentUpperBound.le
+8 0 1.43 /home/codex/projects/ladon/.venv/bin/ladon --repo-root "$PWD" --root Mf.DP.SampledGaussianFiniteBracketCalibration --scope owner --no-cache --extraction-backend text --progress off
+9 0 0.02 python3 - <<'PY' from pathlib import Path import shutil out=Path("/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTP
+10 0 0.01 cat Mf/DP/SparseGaussianProductReverseBounds.lean; cat Mf/DP/FiniteProfileCoefficientDuality.lean; cat Mf/DP/SampledGaussianCalibrationThresholds.lean
+11 0 0.01 cat Mf/DP/SparseGaussianProductMaximumEventLowerBound.lean; rg -n "^(def|theorem|structure) |replayCertificate|sorry|axiom|admit" Mf/DP/SparseGaussianTruncatedLikelihoodMoments.lea
+12 0 2.8 python3 - <<'PY' from pathlib import Path import hashlib,datetime,json out=Path("/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-
+13 0 0.03 python3 - <<'PY' import json,pathlib,datetime p=pathlib.Path("/home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/A/OUTPUT")
+14 0 0.13 /home/codex/projects/ladon/.venv/bin/ladon proof-search index build --help; python3 - <<'PY' import json,pathlib p=pathlib.Path("/home/codex/projects/ladon/openspec/changes/ladon-m
+15 0 0.01 rg -n "^(def|theorem|abbrev) (bsrGaussianMeasure|bisFixedCardUniformMass|bisFixedCardFamily|eventHockeyStickProfile|binaryAccountingProfile)|writeRelease|AdaptiveReleaseHistory" Mf
+16 0 8.38 lake env lean Mf/DP/SampledGaussianProductFiniteProfileBounds.lean; lake env lean Mf/DP/SampledGaussianFiniteBracketCalibration.lean; lake env lean Mf/DP/Training/KOutOfT/TrainingM
+17 0 0.02 python3 - <<'PY' import math,json cdf=lambda x:math.erfc(-x/math.sqrt(2))/2 T=100;q=0.0025;eps=1. def f(sigma,a,xi):  mu=1/sigma  pQ=cdf(a)**T  pP=((1-q)*cdf(a)+q*cdf(a-mu))**T  m2
+18 0 0.01 rg -n "^def (variance|measure)|^lemma measure|^theorem .*sigma|^def (gaussianShiftLikelihoodRatio|sparseGaussianLikelihoodRatio|sparseGaussianMixtureLaw|positiveGaussianScaleEquiv)
+19 0 2.8 lake env lean Mf/DP/SampledGaussianProductFiniteProfileBounds.lean
+20 0 2.78 lake env lean Mf/DP/SampledGaussianFiniteBracketCalibration.lean
+21 0 2.82 lake env lean Mf/DP/Training/KOutOfT/TrainingMechanism.lean
+
+STDERR

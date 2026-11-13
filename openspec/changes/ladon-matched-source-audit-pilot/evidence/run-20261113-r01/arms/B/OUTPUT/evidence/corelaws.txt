@@ -1,0 +1,593 @@
+$ python3 -c 'from pathlib import Path; pieces={"SampledGaussianOutputLaws.lean":(1,65),"SparseGaussianLikelihoodRatio.lean":(1,95),"SparseGaussianProductLikelihoodRatio.lean":(1,90),"LawAccountingOracle.lean":(1,100),"SparseGaussianProductReverseBounds.lean":(1,240),"SampledGaussianCalibratedStddev.lean":(1,220)}; [(print("FILE:",n),print("".join(f"{i}: {s}" for i,s in enumerate((Path("capsule/lean/Mf/DP")/n).open(),1) if a<=i<=b))) for n,(a,b) in pieces.items()]'
+CWD: /home/codex/projects/ladon/openspec/changes/ladon-matched-source-audit-pilot/evidence/run-20261113-r01/arms/B/INPUT
+FILE: SampledGaussianOutputLaws.lean
+1: import Mf.DP.GaussianNoiseMonotonicity
+2: import Mathlib.Probability.ProbabilityMassFunction.Constructions
+3: import Mathlib.Probability.ProductMeasure
+4: 
+5: /-!
+6: # Exact sampled-Gaussian output laws
+7: 
+8: This module defines the one-step neighboring laws, their finite products, the
+9: released coordinate sum, and its strict half-source-mean threshold event.  It
+10: is a law-construction layer only; moment identities are proved separately.
+11: -/
+12: 
+13: open MeasureTheory Set
+14: open scoped BigOperators
+15: 
+16: namespace Mf.DP
+17: 
+18: noncomputable section
+19: 
+20: /-- A Bernoulli shift that is zero off-sample and `sensitivity` on-sample. -/
+21: def bernoulliShiftLaw
+22:     (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+23:     (sensitivity : Real) : ProbabilityMeasure Real :=
+24:   ⟨(PMF.map (fun selected : Bool => if selected then sensitivity else 0)
+25:       (PMF.bernoulli samplingRate hRate)).toMeasure, by infer_instance⟩
+26: 
+27: /-- One sampled neighboring step: a Bernoulli shift plus centered Gaussian noise. -/
+28: def sampledGaussianOneStepSourceLaw
+29:     (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+30:     (sensitivity : Real) (noiseVariance : NNReal) : ProbabilityMeasure Real :=
+31:   gaussianNoiseLaw
+32:     (bernoulliShiftLaw samplingRate hRate sensitivity) noiseVariance
+33: 
+34: /-- One reference step: centered Gaussian noise with the same variance. -/
+35: def sampledGaussianOneStepReferenceLaw
+36:     (noiseVariance : NNReal) : ProbabilityMeasure Real :=
+37:   ⟨ProbabilityTheory.gaussianReal 0 noiseVariance, by infer_instance⟩
+38: 
+39: /-- Independent finite product of the sampled neighboring one-step law. -/
+40: def sampledGaussianSourceProductLaw
+41:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+42:     (sensitivity : Real) (noiseVariance : NNReal) :
+43:     ProbabilityMeasure (Fin horizon → Real) :=
+44:   ProbabilityMeasure.pi (fun _ =>
+45:     sampledGaussianOneStepSourceLaw samplingRate hRate sensitivity noiseVariance)
+46: 
+47: /-- Independent finite product of the reference one-step law. -/
+48: def sampledGaussianReferenceProductLaw
+49:     (horizon : Nat) (noiseVariance : NNReal) :
+50:     ProbabilityMeasure (Fin horizon → Real) :=
+51:   ProbabilityMeasure.pi (fun _ =>
+52:     sampledGaussianOneStepReferenceLaw noiseVariance)
+53: 
+54: /-- Push a finite-vector law forward by coordinate summation. -/
+55: def finiteSumOutputLaw
+56:     (horizon : Nat) (mu : ProbabilityMeasure (Fin horizon → Real)) :
+57:     ProbabilityMeasure Real :=
+58:   let sumFn : (Fin horizon → Real) → Real := fun x => ∑ i, x i
+59:   mu.map (by
+60:     change AEMeasurable sumFn (mu : Measure (Fin horizon → Real))
+61:     have hsum : Measurable sumFn := by fun_prop
+62:     exact hsum.aemeasurable)
+63: 
+64: /-- Law of the released sum under the sampled neighboring product law. -/
+65: def sampledGaussianOutputSumSourceLaw
+
+FILE: SparseGaussianLikelihoodRatio.lean
+1: import Mf.DP.CenteredBernoulliGaussianChiSquare
+2: import Mf.DP.MatchedGaussianSourceNormalization
+3: 
+4: /-!
+5: # Direct sparse Gaussian likelihood ratios
+6: 
+7: This module keeps the privacy reference, rather than the matched Gaussian
+8: source, at the origin.  Dividing a sampled Gaussian step by a positive noise
+9: standard deviation sends the reference to `N(0,1)` and gives the sampled
+10: source the density
+11: 
+12: `1 - q + q * exp (mu * z - mu^2 / 2)`
+13: 
+14: with respect to that standard Gaussian, where `mu` is the standardized shift.
+15: -/
+16: 
+17: open MeasureTheory ProbabilityTheory
+18: 
+19: namespace Mf.DP
+20: 
+21: noncomputable section
+22: 
+23: /-- Likelihood ratio of `(1-q) N(0,1) + q N(mu,1)` against `N(0,1)`. -/
+24: def sparseGaussianLikelihoodRatio
+25:     (samplingRate standardizedShift sample : Real) : Real :=
+26:   1 - samplingRate + samplingRate *
+27:     Real.exp (standardizedShift * sample - standardizedShift ^ 2 / 2)
+28: 
+29: /-- The unsampled mixture mass is a pointwise likelihood-ratio floor. -/
+30: theorem sparseGaussianLikelihoodRatio_ge_one_sub_rate
+31:     (samplingRate : NNReal) (standardizedShift sample : Real) :
+32:     1 - (samplingRate : Real) ≤
+33:       sparseGaussianLikelihoodRatio (samplingRate : Real) standardizedShift sample := by
+34:   unfold sparseGaussianLikelihoodRatio
+35:   exact le_add_of_nonneg_right
+36:     (mul_nonneg (NNReal.coe_nonneg samplingRate) (Real.exp_pos _).le)
+37: 
+38: /-- The direct, uncentered standardized Bernoulli--Gaussian mixture. -/
+39: def sparseGaussianMixtureLaw
+40:     (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+41:     (standardizedShift : Real) : ProbabilityMeasure Real := by
+42:   let mixture : Measure Real :=
+43:     ((1 - samplingRate : NNReal) : ENNReal) • gaussianReal 0 1 +
+44:       (samplingRate : ENNReal) • gaussianReal standardizedShift 1
+45:   refine ⟨mixture, ?_⟩
+46:   constructor
+47:   simp [mixture, ENNReal.coe_sub]
+48:   exact tsub_add_cancel_of_le (by exact_mod_cast hRate)
+49: 
+50: theorem measurable_sparseGaussianLikelihoodRatio
+51:     (samplingRate standardizedShift : Real) :
+52:     Measurable (sparseGaussianLikelihoodRatio samplingRate standardizedShift) := by
+53:   unfold sparseGaussianLikelihoodRatio
+54:   fun_prop
+55: 
+56: theorem sparseGaussianLikelihoodRatio_pos
+57:     (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+58:     (standardizedShift sample : Real) :
+59:     0 < sparseGaussianLikelihoodRatio samplingRate standardizedShift sample := by
+60:   unfold sparseGaussianLikelihoodRatio
+61:   have hRateNonneg : 0 ≤ (samplingRate : Real) := NNReal.coe_nonneg samplingRate
+62:   have hRateOne : (samplingRate : Real) ≤ 1 := by exact_mod_cast hRate
+63:   by_cases hZero : (samplingRate : Real) = 0
+64:   · simp [hZero]
+65:   · exact add_pos_of_nonneg_of_pos (sub_nonneg.mpr hRateOne)
+66:       (mul_pos (lt_of_le_of_ne hRateNonneg (Ne.symm hZero)) (Real.exp_pos _))
+67: 
+68: theorem integrable_sparseGaussianLikelihoodRatio
+69:     (samplingRate standardizedShift : Real) :
+70:     Integrable (sparseGaussianLikelihoodRatio samplingRate standardizedShift)
+71:       (gaussianReal 0 1) := by
+72:   have hconst : Integrable (fun _ : Real => 1 - samplingRate) (gaussianReal 0 1) :=
+73:     integrable_const _
+74:   have hshift : Integrable
+75:       (fun sample : Real => samplingRate *
+76:         gaussianShiftLikelihoodRatio standardizedShift sample)
+77:     (gaussianReal 0 1) :=
+78:     (integrable_gaussianShiftLikelihoodRatio standardizedShift).const_mul samplingRate
+79:   exact (hconst.add hshift).congr
+80:     (Filter.Eventually.of_forall fun sample => by
+81:       unfold sparseGaussianLikelihoodRatio gaussianShiftLikelihoodRatio
+82:       change 1 - samplingRate + samplingRate *
+83:         Real.exp (standardizedShift * sample - standardizedShift ^ 2 / 2) = _
+84:       rfl)
+85: 
+86: /-- The direct one-step likelihood ratio has unit mass under `N(0,1)`. -/
+87: theorem integral_sparseGaussianLikelihoodRatio
+88:     (samplingRate standardizedShift : Real) :
+89:     (∫ sample, sparseGaussianLikelihoodRatio samplingRate standardizedShift sample
+90:       ∂gaussianReal 0 1) = 1 := by
+91:   have hconst : Integrable (fun _ : Real => 1 - samplingRate) (gaussianReal 0 1) :=
+92:     integrable_const _
+93:   have hshift : Integrable
+94:       (fun sample : Real => samplingRate *
+95:         gaussianShiftLikelihoodRatio standardizedShift sample)
+
+FILE: SparseGaussianProductLikelihoodRatio.lean
+1: import Mf.DP.SparseGaussianLikelihoodRatio
+2: import Mf.DP.FiniteProductDensityMeasure
+3: import Mathlib.MeasureTheory.Integral.Pi
+4: 
+5: /-!
+6: # Finite products of direct sparse Gaussian likelihood ratios
+7: 
+8: The finite product is taken against the product of the exact normalized
+9: privacy references.  The statements include the empty horizon, where the
+10: density is one and the log likelihood is zero.
+11: -/
+12: 
+13: open MeasureTheory ProbabilityTheory
+14: open scoped BigOperators
+15: 
+16: namespace Mf.DP
+17: 
+18: noncomputable section
+19: 
+20: /-- Coordinate product of the direct one-step sparse Gaussian likelihood ratio. -/
+21: def sparseGaussianProductLikelihoodRatio
+22:     (horizon : Nat) (samplingRate standardizedShift : Real)
+23:     (sample : Fin horizon → Real) : Real :=
+24:   ∏ i, sparseGaussianLikelihoodRatio samplingRate standardizedShift (sample i)
+25: 
+26: /-- The finite product inherits the unsampled-mass likelihood floor, including
+27: the empty-horizon case. -/
+28: theorem sparseGaussianProductLikelihoodRatio_ge_floor
+29:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+30:     (standardizedShift : Real) (sample : Fin horizon → Real) :
+31:     (1 - (samplingRate : Real)) ^ horizon ≤
+32:       sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+33:         standardizedShift sample := by
+34:   unfold sparseGaussianProductLikelihoodRatio
+35:   simpa [Fintype.card_fin] using (Finset.prod_le_prod
+36:     (s := (Finset.univ : Finset (Fin horizon)))
+37:     (f := fun _ : Fin horizon => (1 - (samplingRate : Real)))
+38:     (g := fun coordinate : Fin horizon =>
+39:       sparseGaussianLikelihoodRatio (samplingRate : Real) standardizedShift
+40:         (sample coordinate))
+41:     (fun _ _ => sub_nonneg.mpr (by exact_mod_cast hRate))
+42:     (fun coordinate _ => sparseGaussianLikelihoodRatio_ge_one_sub_rate samplingRate
+43:       standardizedShift (sample coordinate)))
+44: 
+45: /-- Finite product of the direct standardized sparse Gaussian mixture. -/
+46: def sparseGaussianProductLaw
+47:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+48:     (standardizedShift : Real) : ProbabilityMeasure (Fin horizon → Real) :=
+49:   ProbabilityMeasure.pi (fun _ =>
+50:     sparseGaussianMixtureLaw samplingRate hRate standardizedShift)
+51: 
+52: theorem measurable_sparseGaussianProductLikelihoodRatio
+53:     (horizon : Nat) (samplingRate standardizedShift : Real) :
+54:     Measurable
+55:       (sparseGaussianProductLikelihoodRatio horizon samplingRate standardizedShift) := by
+56:   unfold sparseGaussianProductLikelihoodRatio
+57:   apply Finset.univ.measurable_fun_prod
+58:   intro coordinate _
+59:   exact (measurable_sparseGaussianLikelihoodRatio samplingRate standardizedShift).comp
+60:     (measurable_pi_apply coordinate)
+61: 
+62: theorem sparseGaussianProductLikelihoodRatio_pos
+63:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+64:     (standardizedShift : Real) (sample : Fin horizon → Real) :
+65:     0 < sparseGaussianProductLikelihoodRatio horizon samplingRate
+66:       standardizedShift sample := by
+67:   unfold sparseGaussianProductLikelihoodRatio
+68:   exact Finset.prod_pos fun coordinate _ =>
+69:     sparseGaussianLikelihoodRatio_pos samplingRate hRate standardizedShift
+70:       (sample coordinate)
+71: 
+72: /-- The product of direct sparse mixtures has the coordinate-product density. -/
+73: theorem sparseGaussianProductLaw_eq_withDensity
+74:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+75:     (standardizedShift : Real) :
+76:     Measure.pi (fun _ : Fin horizon =>
+77:         (sparseGaussianMixtureLaw samplingRate hRate standardizedShift : Measure Real)) =
+78:       (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)).withDensity
+79:         (fun sample => ENNReal.ofReal
+80:           (sparseGaussianProductLikelihoodRatio horizon samplingRate
+81:             standardizedShift sample)) := by
+82:   have hproduct := finiteProductDensityMeasure_eq
+83:     (n := horizon) (gaussianReal 0 1)
+84:     (fun _ : Fin horizon => sparseGaussianLikelihoodRatio samplingRate standardizedShift)
+85:     (fun _ => measurable_sparseGaussianLikelihoodRatio samplingRate standardizedShift)
+86:     (fun _ sample => (sparseGaussianLikelihoodRatio_pos samplingRate hRate
+87:       standardizedShift sample).le)
+88:   symm
+89:   change densityMeasure
+90:       (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1))
+
+FILE: LawAccountingOracle.lean
+1: import Mf.DP.ApproxDPWeakLimit
+2: 
+3: /-!
+4: # Exact law-level binary accounting
+5: 
+6: This module defines the paper-facing binary accounting profile directly as a
+7: supremum over measurable events.  It proves that profile thresholds are
+8: exactly the two ordered approximate-DP law inequalities, and records the
+9: measurable-bijection and event-distance transport facts used later in the
+10: paper.  No numerical accountant or divergence upper bound is involved.
+11: -/
+12: 
+13: open MeasureTheory Set
+14: 
+15: namespace Mf.DP
+16: 
+17: noncomputable section
+18: 
+19: /-- The exact ordered hockey-stick profile of two laws, expressed in `ENNReal`. -/
+20: def eventHockeyStickProfile
+21:     {Y : Type*} [MeasurableSpace Y]
+22:     (mu nu : Measure Y) (epsilon : Real) : ENNReal :=
+23:   ⨆ s : {s : Set Y // MeasurableSet s},
+24:     mu s.1 - ENNReal.ofReal (Real.exp epsilon) * nu s.1
+25: 
+26: /-- An ordered event inequality with an `ENNReal` coefficient and slack. -/
+27: def OrderedENNRealLawPair
+28:     {Y : Type*} [MeasurableSpace Y]
+29:     (mu nu : Measure Y) (coefficient slack : ENNReal) : Prop :=
+30:   ∀ s, MeasurableSet s → mu s ≤ coefficient * nu s + slack
+31: 
+32: /-- The event supremum has the expected threshold characterization in `ENNReal`. -/
+33: theorem eventHockeyStickProfile_le_iff_orderedENNRealLawPair
+34:     {Y : Type*} [MeasurableSpace Y]
+35:     (mu nu : Measure Y) (epsilon : Real) (slack : ENNReal) :
+36:     eventHockeyStickProfile mu nu epsilon ≤ slack ↔
+37:       OrderedENNRealLawPair mu nu (ENNReal.ofReal (Real.exp epsilon)) slack := by
+38:   rw [eventHockeyStickProfile, iSup_le_iff]
+39:   constructor
+40:   · intro h s hs
+41:     have h' := h ⟨s, hs⟩
+42:     rw [tsub_le_iff_right] at h'
+43:     simpa [add_comm] using h'
+44:   · intro h s
+45:     rw [tsub_le_iff_right]
+46:     simpa [OrderedENNRealLawPair, add_comm] using h s.1 s.2
+47: 
+48: /-- Thresholding the event supremum is exactly the ordered approximate-DP law inequality. -/
+49: theorem eventHockeyStickProfile_le_iff_orderedApproxDPLawPair
+50:     {Y : Type*} [MeasurableSpace Y]
+51:     (mu nu : ProbabilityMeasure Y) (epsilon delta : Real) :
+52:     eventHockeyStickProfile (mu : Measure Y) (nu : Measure Y) epsilon ≤
+53:         ENNReal.ofReal delta ↔
+54:       OrderedApproxDPLawPair mu nu epsilon delta := by
+55:   rw [eventHockeyStickProfile, iSup_le_iff]
+56:   constructor
+57:   · intro h s hs
+58:     have h' := h ⟨s, hs⟩
+59:     rw [tsub_le_iff_right] at h'
+60:     simpa [add_comm] using h'
+61:   · intro h s
+62:     rw [tsub_le_iff_right]
+63:     simpa [add_comm] using h s.1 s.2
+64: 
+65: /-- Exact two-sided accounting oracle for a binary pair of probability laws. -/
+66: def binaryAccountingProfile
+67:     {Y : Type*} [MeasurableSpace Y]
+68:     (mu nu : ProbabilityMeasure Y) (epsilon : Real) : ENNReal :=
+69:   max
+70:     (eventHockeyStickProfile (mu : Measure Y) (nu : Measure Y) epsilon)
+71:     (eventHockeyStickProfile (nu : Measure Y) (mu : Measure Y) epsilon)
+72: 
+73: /-- A law compared with itself has zero profile at nonnegative privacy budget. -/
+74: theorem binaryAccountingProfile_self_eq_zero
+75:     {Y : Type*} [MeasurableSpace Y] (mu : ProbabilityMeasure Y)
+76:     (epsilon : Real) (hepsilon : 0 ≤ epsilon) :
+77:     binaryAccountingProfile mu mu epsilon = 0 := by
+78:   have hordered : OrderedENNRealLawPair (mu : Measure Y) (mu : Measure Y)
+79:       (ENNReal.ofReal (Real.exp epsilon)) 0 := by
+80:     intro s hs
+81:     simp only [add_zero]
+82:     have hcoefficient : 1 ≤ ENNReal.ofReal (Real.exp epsilon) := by
+83:       simpa using ENNReal.ofReal_le_ofReal (Real.one_le_exp hepsilon)
+84:     calc
+85:       (mu : Measure Y) s = 1 * (mu : Measure Y) s := by simp
+86:       _ ≤ ENNReal.ofReal (Real.exp epsilon) * (mu : Measure Y) s :=
+87:         mul_le_mul_of_nonneg_right hcoefficient (by exact bot_le)
+88:   have hprofile : eventHockeyStickProfile (mu : Measure Y) (mu : Measure Y)
+89:       epsilon = 0 := by
+90:     apply le_antisymm
+91:     · exact
+92:         (eventHockeyStickProfile_le_iff_orderedENNRealLawPair _ _ _ _).2 hordered
+93:     · exact bot_le
+94:   simp [binaryAccountingProfile, hprofile]
+95: 
+96: /-- A binary profile threshold is exactly the pair of ordered event inequalities. -/
+97: theorem binaryAccountingProfile_le_iff
+98:     {Y : Type*} [MeasurableSpace Y]
+99:     (mu nu : ProbabilityMeasure Y) (epsilon delta : Real) :
+100:     binaryAccountingProfile mu nu epsilon ≤ ENNReal.ofReal delta ↔
+
+FILE: SparseGaussianProductReverseBounds.lean
+1: import Mf.DP.FiniteProfileCoefficientDuality
+2: import Mf.DP.SparseGaussianProductForwardUpperBound
+3: 
+4: /-!
+5: # Reverse sparse-Gaussian product profile bounds
+6: 
+7: The direct mixture likelihood is bounded below by the probability that no
+8: coordinate participates.  This gives a simple finite reverse hockey-stick
+9: upper bound without any reciprocal-coefficient transport.
+10: -/
+11: 
+12: open MeasureTheory ProbabilityTheory
+13: 
+14: namespace Mf.DP
+15: 
+16: noncomputable section
+17: 
+18: set_option autoImplicit false
+19: 
+20: def sparseGaussianProductReverseLikelihoodFloorUpperBound
+21:     (horizon : Nat) (samplingRate : NNReal) (epsilon : Real) : ENNReal :=
+22:   ENNReal.ofReal
+23:     (1 - Real.exp epsilon * (1 - (samplingRate : Real)) ^ horizon)
+24: 
+25: def sparseGaussianProductReverseReciprocalUpperBound
+26:     (horizon : Nat) (samplingRate : NNReal)
+27:     (standardizedShift epsilon threshold : Real) : ENNReal :=
+28:   ENNReal.ofReal
+29:     (1 - Real.exp epsilon + Real.exp epsilon *
+30:       (sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBound horizon
+31:         samplingRate standardizedShift (-epsilon) threshold).toReal)
+32: 
+33: def sparseGaussianProductReverseBestUpperBound
+34:     (horizon : Nat) (samplingRate : NNReal)
+35:     (standardizedShift epsilon threshold : Real) : ENNReal :=
+36:   min (sparseGaussianProductReverseReciprocalUpperBound horizon samplingRate
+37:       standardizedShift epsilon threshold)
+38:     (sparseGaussianProductReverseLikelihoodFloorUpperBound horizon samplingRate epsilon)
+39: 
+40: /-- The reverse normalized product profile is controlled by the unsampled-mass
+41: likelihood floor. -/
+42: theorem sparseGaussianProductReverseProfile_le_likelihoodFloorUpperBound
+43:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+44:     (standardizedShift epsilon : Real) :
+45:     eventHockeyStickProfile
+46:         (standardGaussianProductLaw horizon : Measure (Fin horizon → Real))
+47:         (sparseGaussianProductLaw horizon samplingRate hRate standardizedShift :
+48:           Measure (Fin horizon → Real)) epsilon ≤
+49:       sparseGaussianProductReverseLikelihoodFloorUpperBound horizon samplingRate epsilon := by
+50:   change eventHockeyStickProfile
+51:       (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1))
+52:       (Measure.pi (fun _ : Fin horizon =>
+53:         (sparseGaussianMixtureLaw samplingRate hRate standardizedShift : Measure Real)))
+54:       epsilon ≤ _
+55:   rw [sparseGaussianProductLaw_eq_withDensity horizon samplingRate hRate
+56:     standardizedShift]
+57:   let reference : ProbabilityMeasure (Fin horizon → Real) :=
+58:     ⟨Measure.pi (fun _ : Fin horizon => gaussianReal 0 1), by infer_instance⟩
+59:   have hreverse := eventHockeyStickProfile_withDensity_reverse reference
+60:     (sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real) standardizedShift)
+61:     (measurable_sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+62:       standardizedShift)
+63:     (fun sample => (sparseGaussianProductLikelihoodRatio_pos horizon samplingRate hRate
+64:       standardizedShift sample).le)
+65:     epsilon
+66:   have hreference : (reference : Measure (Fin horizon → Real)) =
+67:       Measure.pi (fun _ : Fin horizon => gaussianReal 0 1) := rfl
+68:   rw [hreference] at hreverse
+69:   rw [hreverse]
+70:   unfold sparseGaussianProductReverseLikelihoodFloorUpperBound
+71:   calc
+72:     (∫⁻ sample, ENNReal.ofReal
+73:         (1 - Real.exp epsilon *
+74:           sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+75:             standardizedShift sample)
+76:         ∂Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) ≤
+77:       ∫⁻ _sample : Fin horizon → Real, ENNReal.ofReal
+78:         (1 - Real.exp epsilon * (1 - (samplingRate : Real)) ^ horizon)
+79:         ∂Measure.pi (fun _ : Fin horizon => gaussianReal 0 1) := by
+80:       apply lintegral_mono
+81:       intro sample
+82:       apply ENNReal.ofReal_le_ofReal
+83:       have hfloor := sparseGaussianProductLikelihoodRatio_ge_floor horizon samplingRate hRate
+84:         standardizedShift sample
+85:       exact sub_le_sub_left
+86:         (mul_le_mul_of_nonneg_left hfloor (Real.exp_pos epsilon).le) 1
+87:     _ = ENNReal.ofReal
+88:         (1 - Real.exp epsilon * (1 - (samplingRate : Real)) ^ horizon) := by
+89:       simp
+90: 
+91: /-- Reciprocal-coefficient reverse upper bound obtained from the forward bound
+92: through the safe real-valued duality theorem. -/
+93: theorem sparseGaussianProductReverseProfile_le_reciprocalUpperBound
+94:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+95:     (standardizedShift epsilon threshold : Real) :
+96:     eventHockeyStickProfile
+97:         (standardGaussianProductLaw horizon : Measure (Fin horizon → Real))
+98:         (sparseGaussianProductLaw horizon samplingRate hRate standardizedShift :
+99:           Measure (Fin horizon → Real)) epsilon ≤
+100:       sparseGaussianProductReverseReciprocalUpperBound horizon samplingRate
+101:         standardizedShift epsilon threshold := by
+102:   change eventHockeyStickProfile
+103:       (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1))
+104:       (Measure.pi (fun _ : Fin horizon =>
+105:         (sparseGaussianMixtureLaw samplingRate hRate standardizedShift : Measure Real)))
+106:       epsilon ≤ _
+107:   rw [sparseGaussianProductLaw_eq_withDensity horizon samplingRate hRate
+108:     standardizedShift]
+109:   let reference : ProbabilityMeasure (Fin horizon → Real) :=
+110:     ⟨Measure.pi (fun _ : Fin horizon => gaussianReal 0 1), by infer_instance⟩
+111:   have hdual := eventHockeyStickProfile_withDensity_reverse_duality reference
+112:     (sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real) standardizedShift)
+113:     (measurable_sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+114:       standardizedShift)
+115:     (fun sample => (sparseGaussianProductLikelihoodRatio_pos horizon samplingRate hRate
+116:       standardizedShift sample).le)
+117:     (integrable_sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+118:       standardizedShift)
+119:     (integral_sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+120:       standardizedShift)
+121:     epsilon
+122:   have hreference : (reference : Measure (Fin horizon → Real)) =
+123:       Measure.pi (fun _ : Fin horizon => gaussianReal 0 1) := rfl
+124:   rw [hreference] at hdual
+125:   rw [hdual]
+126:   unfold sparseGaussianProductReverseReciprocalUpperBound
+127:   apply ENNReal.ofReal_le_ofReal
+128:   have hforwardBound :=
+129:     sparseGaussianProductForwardProfile_le_cappedRestrictedSecondMomentUpperBound
+130:       horizon samplingRate hRate standardizedShift (-epsilon) threshold
+131:   change eventHockeyStickProfile
+132:       (Measure.pi (fun _ : Fin horizon =>
+133:         (sparseGaussianMixtureLaw samplingRate hRate standardizedShift : Measure Real)))
+134:       (Measure.pi (fun _ : Fin horizon => gaussianReal 0 1)) (-epsilon) ≤ _
+135:       at hforwardBound
+136:   rw [sparseGaussianProductLaw_eq_withDensity horizon samplingRate hRate
+137:     standardizedShift] at hforwardBound
+138:   have htoReal :
+139:       (eventHockeyStickProfile
+140:         ((Measure.pi fun _ : Fin horizon => gaussianReal 0 1).withDensity
+141:           fun sample => ENNReal.ofReal
+142:             (sparseGaussianProductLikelihoodRatio horizon (samplingRate : Real)
+143:               standardizedShift sample))
+144:         (Measure.pi fun _ : Fin horizon => gaussianReal 0 1) (-epsilon)).toReal ≤
+145:       (sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBound horizon
+146:         samplingRate standardizedShift (-epsilon) threshold).toReal := by
+147:     apply ENNReal.toReal_mono
+148:     · simp [sparseGaussianProductForwardCappedRestrictedSecondMomentUpperBound]
+149:     · exact hforwardBound
+150:   nlinarith [mul_le_mul_of_nonneg_left htoReal (Real.exp_pos epsilon).le]
+151: 
+152: /-- The selected reverse bound is the minimum of two independently verified
+153: upper bounds. -/
+154: theorem sparseGaussianProductReverseProfile_le_bestUpperBound
+155:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+156:     (standardizedShift epsilon threshold : Real) :
+157:     eventHockeyStickProfile
+158:         (standardGaussianProductLaw horizon : Measure (Fin horizon → Real))
+159:         (sparseGaussianProductLaw horizon samplingRate hRate standardizedShift :
+160:           Measure (Fin horizon → Real)) epsilon ≤
+161:       sparseGaussianProductReverseBestUpperBound horizon samplingRate
+162:         standardizedShift epsilon threshold := by
+163:   apply le_min
+164:   · exact sparseGaussianProductReverseProfile_le_reciprocalUpperBound horizon
+165:       samplingRate hRate standardizedShift epsilon threshold
+166:   · exact sparseGaussianProductReverseProfile_le_likelihoodFloorUpperBound horizon
+167:       samplingRate hRate standardizedShift epsilon
+168: 
+169: end
+170: 
+171: end Mf.DP
+
+FILE: SampledGaussianCalibratedStddev.lean
+1: import Mf.DP.SampledGaussianOracleConvergence
+2: 
+3: /-!
+4: # Calibrated standard deviation for sampled Gaussian products
+5: 
+6: Calibration is exposed in standard-deviation units.  The underlying law
+7: constructors continue to receive variance, so the wrapper passes the square of
+8: the public parameter.  The infimum is total and makes no finite-horizon
+9: attainment or positivity claim.
+10: -/
+11: 
+12: namespace Mf.DP
+13: 
+14: noncomputable section
+15: 
+16: /-- Exact sampled-Gaussian product profile parameterized by noise standard deviation. -/
+17: def sampledGaussianProductProfileStddev
+18:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+19:     (sensitivity : Real) (noiseStddev : NNReal) (epsilon : Real) : ENNReal :=
+20:   binaryAccountingProfile
+21:     (sampledGaussianSourceProductLaw horizon samplingRate hRate sensitivity
+22:       (noiseStddev ^ 2))
+23:     (sampledGaussianReferenceProductLaw horizon (noiseStddev ^ 2)) epsilon
+24: 
+25: /-- Corrected public domain for sampled-Gaussian calibration. -/
+26: def SampledGaussianCalibrationAdmissible
+27:     (samplingRate : NNReal) (sensitivity epsilon delta : Real) : Prop :=
+28:   0 < samplingRate ∧ samplingRate ≤ 1 ∧ 0 < sensitivity ∧
+29:     0 ≤ epsilon ∧ 0 < delta ∧ delta < 1
+30: 
+31: /-- Standard deviations whose exact product accounting profile meets the target slack. -/
+32: def sampledGaussianFeasibleStddevSet
+33:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+34:     (sensitivity epsilon delta : Real) : Set NNReal :=
+35:   {noiseStddev | sampledGaussianProductProfileStddev horizon samplingRate hRate
+36:     sensitivity noiseStddev epsilon ≤ ENNReal.ofReal delta}
+37: 
+38: @[simp] theorem mem_sampledGaussianFeasibleStddevSet_iff
+39:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+40:     (sensitivity epsilon delta : Real) (noiseStddev : NNReal) :
+41:     noiseStddev ∈ sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+42:         sensitivity epsilon delta ↔
+43:       sampledGaussianProductProfileStddev horizon samplingRate hRate sensitivity
+44:         noiseStddev epsilon ≤ ENNReal.ofReal delta :=
+45:   Iff.rfl
+46: 
+47: /-- Nonnegative infimum of feasible sampled-Gaussian noise standard deviations. -/
+48: def sampledGaussianCalibratedStddev
+49:     (horizon : Nat) (samplingRate : NNReal) (hRate : samplingRate ≤ 1)
+50:     (sensitivity epsilon delta : Real) : NNReal :=
+51:   sInf (sampledGaussianFeasibleStddevSet horizon samplingRate hRate
+52:     sensitivity epsilon delta)
+53: 
+54: end
+55: 
+56: end Mf.DP
+
+
+EXIT: 0
