@@ -32,11 +32,16 @@ for 0.4.2.
 
 The full strict quality command currently fails on ten complexity findings in
 pre-existing real-bound modules and tests, outside this release's code diff.
-Installed-distribution and pinned Lean integration gates stopped at candidate
-preflight because this shared worktree contains many untracked research
-artifacts. Those gates did not exercise the package or Lean integration. The
-complete release gate and both supported Python-version CI jobs therefore
-remain unverified for this candidate.
+A clean checkout of commit `c0d3cfa` subsequently built and installed the package,
+passed all 41 installed CLI contracts, and passed the pinned real-Lean
+integration gate. Temporary files were placed on the main disk after `/tmp`
+user-quota failures during the initial archive extraction attempts.
+The optional full candidate suite was intentionally stopped after 561 passing
+tests in 263.41 seconds; this is a partial result, not a full-suite pass.
+[Verification receipt and logs](releases/0.4.2/verification.json) identify the
+candidate. Follow-up edits correct the handoff path and record these results;
+the tested production code is unchanged. Both supported Python-version CI jobs
+and a complete strict release gate remain unverified.
 
 ## Distribution and limits
 

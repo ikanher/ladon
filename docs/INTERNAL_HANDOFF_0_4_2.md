@@ -1,14 +1,14 @@
 # Internal Ladon handoff for matrix-factorization audits
 
-Use the Ladon source checkout at `../ladon` from the `matrix-factorization`
+Use the Ladon source checkout at `../../ladon` from the `matrix-factorization`
 repository. Do not rely on a globally installed `ladon` command: the commands
 below run the selected checkout directly.
 
 From the matrix-factorization root:
 
 ```bash
-uv run --project ../ladon --locked python -m ladon.entrypoint --version
-uv run --project ../ladon --locked python -m ladon.entrypoint \
+uv run --project ../../ladon --locked python -m ladon.entrypoint --version
+uv run --project ../../ladon --locked python -m ladon.entrypoint \
   proof-search index status --repo-root "$PWD" --changed
 ```
 
@@ -16,7 +16,7 @@ Before reporting evidence, record the Ladon checkout identity and target
 revision:
 
 ```bash
-git -C ../ladon rev-parse HEAD
+git -C ../../ladon rev-parse HEAD
 git rev-parse HEAD
 git status --short
 ```
@@ -41,7 +41,17 @@ correctly. Report unresolved interpretation or provider frontiers explicitly.
 Ladon 0.4.2 provides bounded proof extraction (default depth 128, configurable
 with `--max-depth`) and a closed-proof printer budget of 200,000 steps. Large
 expressions may receive an explicit bounded failure. The printer regression and
-focused completion tests passed; the full strict quality gate and isolated
-distribution gates have not passed on this shared research worktree. This
+focused completion tests, 41 isolated installed-CLI contracts, and pinned Lean
+integration passed.
+The full strict quality gate remains open due to existing complexity findings. This
 handoff is for internal use and makes no claim of autonomous exposition-error
 detection or measured incremental detection benefit.
+
+## Feedback from internal use
+
+Save the exact command, Ladon revision and version, target revision, selected
+source/theorem, resource limits, expected result, and actual result. Retain the
+JSON response and stderr. Distinguish a mathematical discrepancy, an incorrect
+source interpretation, a missing formal bridge, and a tool failure. A small
+reproducible example is more useful than only a final verdict. Record any
+manual workaround so the next release can address the failed operation.
