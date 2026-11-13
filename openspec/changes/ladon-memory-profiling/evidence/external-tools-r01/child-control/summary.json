@@ -1,0 +1,46 @@
+{
+  "command": [
+    "/home/codex/projects/ladon/.venv/bin/python",
+    "-c",
+    "import subprocess,sys; data=bytearray(16*1024**2); child=subprocess.Popen([sys.executable, \"-c\", 'import time; data=bytearray(64*1024**2); time.sleep(0.8)']); child.wait()"
+  ],
+  "cwd": "/home/codex/projects/lean/matrix-factorization",
+  "mode": "child-control",
+  "targetReturncode": 0,
+  "elapsedSeconds": 0.8701945468783379,
+  "sampleCount": 9,
+  "samplingSeconds": 0.04509088513441384,
+  "requestedIntervalSeconds": 0.1,
+  "peakSampledBytes": {
+    "root": {
+      "rss": 28176384,
+      "pss": 22849536,
+      "uss": 21856256
+    },
+    "descendants": {
+      "rss": 76132352,
+      "pss": 70960128,
+      "uss": 70033408
+    },
+    "tree": {
+      "rss": 104308736,
+      "pss": 93809664,
+      "uss": 91889664
+    }
+  },
+  "maximumObservedDescendants": 1,
+  "unavailableReadings": {},
+  "versions": {
+    "ladon": "0.4.2",
+    "psutil": "7.2.2",
+    "memray": "1.20.0"
+  },
+  "limitations": [
+    "One local run; no cold/warm classification or benchmark inference.",
+    "Sequential sampled readings can miss peaks, transient or reparented children.",
+    "RSS sums may double-count shared pages; PSS includes only observed processes.",
+    "Profiler and sampling overhead is included; sampler itself is outside measured tree.",
+    "Memray covers its Python interpreter and native extensions, not Lean executables.",
+    "Sampled zero descendants does not establish that no child ever ran."
+  ]
+}

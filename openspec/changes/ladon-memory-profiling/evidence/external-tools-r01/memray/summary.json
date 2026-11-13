@@ -1,0 +1,67 @@
+{
+  "command": [
+    "/home/codex/projects/ladon/.venv/bin/python",
+    "-m",
+    "memray",
+    "run",
+    "--quiet",
+    "--aggregate",
+    "--native",
+    "-o",
+    "/home/codex/projects/ladon/temp/memory-profiling-r01/memray/allocations.bin",
+    "-m",
+    "ladon.entrypoint",
+    "theorem",
+    "lineage",
+    "Mf.DP.pSamplingOperator_ofDPEventBound_le_classicalSubsamplingEventBoundWitness",
+    "--repo-root",
+    "/home/codex/projects/lean/matrix-factorization",
+    "--refresh",
+    "never",
+    "--view",
+    "summary",
+    "--format",
+    "json",
+    "--output",
+    "-"
+  ],
+  "cwd": "/home/codex/projects/lean/matrix-factorization",
+  "mode": "memray",
+  "targetReturncode": 0,
+  "elapsedSeconds": 11.951000555884093,
+  "sampleCount": 120,
+  "samplingSeconds": 0.6755332632455975,
+  "requestedIntervalSeconds": 0.1,
+  "peakSampledBytes": {
+    "root": {
+      "rss": 174239744,
+      "pss": 164388864,
+      "uss": 160432128
+    },
+    "descendants": {
+      "rss": 0,
+      "pss": 0,
+      "uss": 0
+    },
+    "tree": {
+      "rss": 174239744,
+      "pss": 164388864,
+      "uss": 160432128
+    }
+  },
+  "maximumObservedDescendants": 0,
+  "unavailableReadings": {},
+  "versions": {
+    "ladon": "0.4.2",
+    "psutil": "7.2.2",
+    "memray": "1.20.0"
+  },
+  "limitations": [
+    "One local run; no cold/warm classification or benchmark inference.",
+    "Sequential sampled readings can miss peaks, transient or reparented children.",
+    "RSS sums may double-count shared pages; PSS includes only observed processes.",
+    "Profiler and sampling overhead is included; sampler itself is outside measured tree.",
+    "Memray covers its Python interpreter and native extensions, not Lean executables.",
+    "Sampled zero descendants does not establish that no child ever ran."
+  ]
+}

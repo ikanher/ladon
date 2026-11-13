@@ -24,6 +24,12 @@ Use `ladon COMMAND --help` for exact subcommand arguments, for example
 `ladon proof-search discover --help`. `--verbose` is a standalone root-help
 modifier, not an analysis or subcommand verbosity setting.
 
+## Developer memory diagnostics
+
+Use the [external memory profiling recipe](MEMORY_PROFILING.md) for optional
+Memray allocation reports and psutil parent/child memory observations. No new
+Ladon command or runtime dependency is required.
+
 ## Analyzer command
 
 Default analysis does not execute Lake, Lean, or target initializers. It writes
