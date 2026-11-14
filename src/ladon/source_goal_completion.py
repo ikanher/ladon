@@ -23,7 +23,11 @@ from ladon.lean_toolchain import (
 )
 from ladon.process_supervisor import run_bounded_target_process
 from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
-from ladon.semantic_candidate_limits import validate_semantic_bounds
+from ladon.semantic_candidate_limits import (
+    DEFAULT_COMPLETION_MAX_HEARTBEATS,
+    validate_completion_heartbeats,
+    validate_semantic_bounds,
+)
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
 from ladon.source_association_io import _AssociationError, _digest, _read_regular
 from ladon.source_goal_capture import (
@@ -55,6 +59,7 @@ class SourceGoalCompletionRequest:
     max_output_bytes: int = 8 * 1024**2
     max_rss_bytes: int = DEFAULT_MAX_RSS_BYTES
     require_isolation: bool = False
+    max_heartbeats: int = DEFAULT_COMPLETION_MAX_HEARTBEATS
 
     def __post_init__(self) -> None:
         require_target_execution_policy(require_isolation=self.require_isolation)
@@ -63,6 +68,7 @@ class SourceGoalCompletionRequest:
         if not isinstance(self.capture, Mapping) or not isinstance(self.term, str) or not self.term.strip():
             raise ValueError("completion requires a source capture and nonempty full term")
         validate_semantic_bounds(self.timeout_seconds, self.max_output_bytes, self.max_rss_bytes)
+        validate_completion_heartbeats(self.max_heartbeats)
 
 
 def complete_source_goal(
@@ -89,6 +95,7 @@ def complete_source_goal(
     result["resourceAccounting"] = {
         **_accounting(started, receipts), "elapsedScope": "complete-original-goal-operation",
         "peakRssScope": "supervised-lean-process-tree",
+        "maxHeartbeats": request.max_heartbeats,
     }
     return result
 
@@ -122,7 +129,7 @@ def _complete(request, captured_request, capture, runner, result, *, workspace_p
         helper, helper_digest = stage_helper(original_helper, Path(directory))
         snapshot = Path(directory) / source_path.name
         snapshot.write_bytes(source)
-        body = _helper_request(capture, snapshot, request.term)
+        body = _helper_request(capture, snapshot, request.term, request.max_heartbeats)
         payload = ("LADON_COMPLETION_REQUEST " + json.dumps(body, sort_keys=True) + "\n").encode()
         process = _run(request, execution, runner, ["--run", str(helper)], payload, result)
         _require_process(process, "application", request.max_rss_bytes)
@@ -148,10 +155,11 @@ def _complete(request, captured_request, capture, runner, result, *, workspace_p
         verify_toolchain_identities(request.toolchain)
 
 
-def _helper_request(capture, snapshot, term):
+def _helper_request(capture, snapshot, term, max_heartbeats=DEFAULT_COMPLETION_MAX_HEARTBEATS):
     source = capture["source"]
     return {
         "protocolVersion": "ladon-lean-source-completion-v1/check",
+        "maxHeartbeats": max_heartbeats,
         "contextRef": capture["environment"]["executionContextRef"],
         "module": source["module"], "filename": source["path"],
         "sourceDigest": source["digest"], "snapshotPath": str(snapshot),

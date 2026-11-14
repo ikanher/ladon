@@ -14,7 +14,11 @@ from ladon.lean_toolchain import LeanToolchainError, resolve_toolchain_context
 from ladon.proof_search_index import ProofSearchIndexError
 from ladon.proof_search_semantic_cli import enforce_semantic_execution_policy
 from ladon.resource_limits import DEFAULT_MAX_RSS_MIB
-from ladon.semantic_candidate_limits import validate_semantic_bounds
+from ladon.semantic_candidate_limits import (
+    DEFAULT_COMPLETION_MAX_HEARTBEATS,
+    validate_completion_heartbeats,
+    validate_semantic_bounds,
+)
 from ladon.source_association_io import _MODULE, _AssociationError, _read_regular, _source_path
 from ladon.source_goal_capture import SourceGoalCaptureRequest, capture_source_goal
 from ladon.source_goal_completion_cli import dispatch_completion
@@ -48,6 +52,8 @@ def register_goal_parser(operations: Any, add_repository_options, add_output_opt
     _base(complete, add_repository_options, add_output_options)
     complete.add_argument("--capture-file", type=Path, required=True)
     complete.add_argument("--term", required=True)
+    complete.add_argument("--max-heartbeats", type=int, default=DEFAULT_COMPLETION_MAX_HEARTBEATS,
+                          help="Finite Lean completion/replay heartbeat budget (default: 800000).")
     _toolchain(complete)
 
 
@@ -110,6 +116,8 @@ def _validate_common_args(args) -> None:
 
 def _validate_bounds(args) -> None:
     try:
+        if args.goal_operation == "complete":
+            validate_completion_heartbeats(args.max_heartbeats)
         validate_semantic_bounds(
             args.timeout_seconds, args.max_output_mib * 1024**2, args.max_rss_mib * 1024**2,
         )

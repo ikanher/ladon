@@ -18,6 +18,7 @@ def replay_source(frame: Mapping[str, Any], request: Mapping[str, Any], context_
     if not _MODULE.fullmatch(context_module) or context_module in imports:
         raise _AssociationError("unavailable", "replay-context", "private replay context module is malformed or ambiguous")
     body += f"import {context_module}\n"
+    body += _replay_budget(request)
     body += f"\ndef {declaration} : {frame['closedTargetText']} :=\n{frame['closedProofText']}\n"
     expected = {
         "frame": "LADON_COMPLETION_REPLAY",
@@ -43,3 +44,12 @@ run_cmd do
   Lean.Elab.Command.liftIO <| IO.println ("LADON_COMPLETION_REPLAY " ++ Lean.Json.compress value)
 """
     return (body + observer).encode(), expected
+
+
+def _replay_budget(request: Mapping[str, Any]) -> str:
+    if "maxHeartbeats" not in request:
+        return ""
+    from ladon.semantic_candidate_limits import validate_completion_heartbeats
+
+    validate_completion_heartbeats(request["maxHeartbeats"])
+    return f"\nset_option maxHeartbeats {request['maxHeartbeats']}\n"

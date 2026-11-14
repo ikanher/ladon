@@ -25,6 +25,7 @@ def dispatch_completion(args, repo_root):
             repo_root=repo_root, capture=capture, term=args.term, toolchain=context,
             timeout_seconds=args.timeout_seconds, max_output_bytes=args.max_output_mib * 1024**2,
             max_rss_bytes=args.max_rss_mib * 1024**2, require_isolation=args.require_isolation,
+            max_heartbeats=args.max_heartbeats,
         )
     except (LeanToolchainError, OSError, TypeError, ValueError) as error:
         raise ProofSearchIndexError(str(error), code="completion-input-or-toolchain") from error

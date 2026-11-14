@@ -78,10 +78,17 @@ def _validate_capture_selection(helper, goal):
 
 def _validate_request_shape(request):
     fields = {"protocolVersion", "contextRef", "module", "filename", "sourceDigest", "snapshotPath", "line", "column", "requestId", "captureId", "term", "termDigest", "goalOrdinal"}
-    if not isinstance(request, Mapping) or set(request) != fields or request.get("protocolVersion") != PROTOCOL:
+    if not isinstance(request, Mapping) or set(request) not in (fields, fields | {"maxHeartbeats"}) or request.get("protocolVersion") != PROTOCOL:
         _fail("completion request fields do not match the closed request protocol")
     if any(not isinstance(request.get(k), str) or not request[k] for k in ("protocolVersion", "contextRef", "module", "filename", "sourceDigest", "snapshotPath", "requestId", "captureId", "termDigest")) or not isinstance(request.get("term"), str):
         _fail("completion request identity contains an empty string")
+    if "maxHeartbeats" in request:
+        from ladon.semantic_candidate_limits import validate_completion_heartbeats
+
+        try:
+            validate_completion_heartbeats(request["maxHeartbeats"])
+        except (TypeError, ValueError) as error:
+            _fail(str(error))
     _validate_request_position(request)
 
 

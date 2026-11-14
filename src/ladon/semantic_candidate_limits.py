@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import math
 
+DEFAULT_COMPLETION_MAX_HEARTBEATS = 800_000
+MAX_COMPLETION_HEARTBEATS = (2**64 - 1) // 1000
 MAX_SEMANTIC_TIMEOUT_SECONDS = 600.0
 MAX_COMPILED_ENVIRONMENT_BYTES = 16 * 1024 * 1024 * 1024
 MAX_SEMANTIC_OUTPUT_BYTES = 64 * 1024 * 1024
@@ -56,8 +58,15 @@ def validate_transport_text(module: str, goal: str, candidate: str | None = None
         raise ValueError("semantic check candidate exceeds the supported transport byte cap")
 
 
+def validate_completion_heartbeats(value: int) -> None:
+    """Reject zero and requests outside the finite heartbeat tick range."""
+    _validate_integer_bound("heartbeat", value, maximum=MAX_COMPLETION_HEARTBEATS)
+
+
 __all__ = [
+    "DEFAULT_COMPLETION_MAX_HEARTBEATS",
     "MAX_COMPILED_ENVIRONMENT_BYTES",
+    "MAX_COMPLETION_HEARTBEATS",
     "MAX_DISCOVERY_BATCH_SIZE",
     "MAX_DISCOVERY_CANDIDATES",
     "MAX_DISCOVERY_PROCESS_SECONDS",
@@ -70,6 +79,7 @@ __all__ = [
     "MAX_SEMANTIC_RSS_BYTES",
     "MAX_SEMANTIC_TERM_BYTES",
     "MAX_SEMANTIC_TIMEOUT_SECONDS",
+    "validate_completion_heartbeats",
     "validate_semantic_bounds",
     "validate_transport_text",
 ]

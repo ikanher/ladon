@@ -221,7 +221,7 @@ unsafe def main (_args : List String) : IO UInt32 := do
   let .ok request := Json.parse requestText | throw <| IO.userError "malformed completion request JSON"
   let .ok fields := request.getObj? | throw <| IO.userError "completion request must be an object"
   let expectedKeys := ["captureId", "column", "contextRef", "filename", "goalOrdinal", "line", "module", "protocolVersion", "requestId", "snapshotPath", "sourceDigest", "term", "termDigest"]
-  let fieldNames := fields.toList.map Prod.fst
+  let fieldNames := (fields.toList.map Prod.fst).filter (· != "maxHeartbeats")
   if fieldNames.length != expectedKeys.length || expectedKeys.any (!fieldNames.contains ·) then
     throw <| IO.userError "completion request fields are not closed"
   let getString (key : String) := ((request.getObjValAs? String key).toOption.getD "")
@@ -235,6 +235,9 @@ unsafe def main (_args : List String) : IO UInt32 := do
   let sourceDigest := getString "sourceDigest"
   let termDigest := getString "termDigest"
   let termText := getString "term"
+  let maxHeartbeats := if fields.contains "maxHeartbeats" then getNat "maxHeartbeats" else 800000
+  if maxHeartbeats == 0 then
+    throw <| IO.userError "completion heartbeat limit must be positive"
   let line := getNat "line"
   let column := getNat "column"
   let goalOrdinal := getNat "goalOrdinal"
@@ -293,69 +296,74 @@ unsafe def main (_args : List String) : IO UInt32 := do
     else min sourceEnd (rangeEndByte + max 1 trailingSize - 1)
   let startByte := (ti.stx.getPos?).map (fun p => p.byteIdx) |>.getD 0
   let selectedGoal := goalRows[goalOrdinal]?
+  let replayEnv ← IO.mkRef ctxInfo.env
   let checkResult ← match activeGoals[goalOrdinal]? with
     | none => pure (rejected "goal-ordinal" "requested goal ordinal is unavailable")
     | some goal => do
       let activeCtx := { ctxInfo with mctx := if useAfter then ti.mctxAfter else ti.mctxBefore }
       activeCtx.runMetaM {} do
-        if ← hasOriginalContextMVars goal then
-          pure { status := "unsupported", diagnostic := some { code := "original-context-mvar", message := "captured goal or local declarations contain unresolved expression/universe metavariables" } }
-        else
-          match Parser.runParserCategory (← getEnv) `term termText with
-          | .error message => pure (rejected "term-parse" message)
-          | .ok termSyntax =>
-            try
-              let target ← goal.withContext do instantiateMVars (← goal.getType)
-              let levelNames ← goal.withContext (originalLevelNames target)
-              let (term, termState) ← goal.withContext do
-                Lean.Elab.Term.TermElabM.run
-                  (Lean.Elab.Term.elabTermEnsuringType termSyntax (some target) (catchExPostpone := false))
-                  { errToSorry := false, mayPostpone := false } { levelNames }
-              let (_, termState) ← goal.withContext do
-                Lean.Elab.Term.TermElabM.run
-                  Lean.Elab.Term.synthesizeSyntheticMVarsNoPostponing
-                  { errToSorry := false, mayPostpone := false } termState
-              let term ← instantiateMVars term
-              let (display, structural) ← goal.withContext do
-                pure ((← ppExpr term).pretty, structuralText term)
-              let mut residualIds := termState.pendingMVars.toArray
-              for id in ← getMVars term do
-                if !(← id.isAssigned) && !residualIds.contains id then
-                  residualIds := residualIds.push id
-              residualIds ← residualIds.filterM fun id => not <$> id.isAssigned
-              if !residualIds.isEmpty then
-                let residual ← residualIds.mapM goalRow
-                pure {
-                  status := "incomplete"
-                  termDisplay := display
-                  termStructural := structural
-                  residualGoals := residual
-                  diagnostic := some { code := "residual-goals", message := "term elaboration left actual unresolved expression metavariables" }
-                }
-              else if term.hasExprMVar || term.hasLevelMVar then
-                pure (rejected "term-mvar" "elaborated term retains expression or universe metavariables")
-              else
+        withTheReader Lean.Core.Context (fun ctx =>
+            { ctx with options := ctx.options.set `maxHeartbeats maxHeartbeats,
+                       maxHeartbeats := maxHeartbeats * 1000 }) do
+          if ← hasOriginalContextMVars goal then
+            pure { status := "unsupported", diagnostic := some { code := "original-context-mvar", message := "captured goal or local declarations contain unresolved expression/universe metavariables" } }
+          else
+            match Parser.runParserCategory (← getEnv) `term termText with
+            | .error message => pure (rejected "term-parse" message)
+            | .ok termSyntax =>
+              try
                 let target ← goal.withContext do instantiateMVars (← goal.getType)
-                if target.hasExprMVar || target.hasLevelMVar then
-                  pure (rejected "target-mvar" "captured target retains unresolved expression/universe metavariables")
-                else do
-                  let (closedTarget, closedProof, _) ← closeChecked goal target term
-                  let (closedTargetText, closedProofText) ← emptyContextRoundtrip closedTarget closedProof
+                let levelNames ← goal.withContext (originalLevelNames target)
+                let (term, termState) ← goal.withContext do
+                  Lean.Elab.Term.TermElabM.run
+                    (Lean.Elab.Term.elabTermEnsuringType termSyntax (some target) (catchExPostpone := false))
+                    { errToSorry := false, mayPostpone := false } { levelNames }
+                let (_, termState) ← goal.withContext do
+                  Lean.Elab.Term.TermElabM.run
+                    Lean.Elab.Term.synthesizeSyntheticMVarsNoPostponing
+                    { errToSorry := false, mayPostpone := false } termState
+                let term ← instantiateMVars term
+                let (display, structural) ← goal.withContext do
+                  pure ((← ppExpr term).pretty, structuralText term)
+                let mut residualIds := termState.pendingMVars.toArray
+                for id in ← getMVars term do
+                  if !(← id.isAssigned) && !residualIds.contains id then
+                    residualIds := residualIds.push id
+                residualIds ← residualIds.filterM fun id => not <$> id.isAssigned
+                if !residualIds.isEmpty then
+                  let residual ← residualIds.mapM goalRow
                   pure {
-                    status := "accepted"
+                    status := "incomplete"
                     termDisplay := display
                     termStructural := structural
-                    closedTargetText
-                    closedProofText
+                    residualGoals := residual
+                    diagnostic := some { code := "residual-goals", message := "term elaboration left actual unresolved expression metavariables" }
                   }
-            catch ex => do
-              let message ← ex.toMessageData.toString
-              pure (rejected "typecheck-or-closure" message)
+                else if term.hasExprMVar || term.hasLevelMVar then
+                  pure (rejected "term-mvar" "elaborated term retains expression or universe metavariables")
+                else
+                  let target ← goal.withContext do instantiateMVars (← goal.getType)
+                  if target.hasExprMVar || target.hasLevelMVar then
+                    pure (rejected "target-mvar" "captured target retains unresolved expression/universe metavariables")
+                  else do
+                    let (closedTarget, closedProof, _) ← closeChecked goal target term
+                    let (closedTargetText, closedProofText) ← emptyContextRoundtrip closedTarget closedProof
+                    replayEnv.set (← getEnv)
+                    pure {
+                      status := "accepted"
+                      termDisplay := display
+                      termStructural := structural
+                      closedTargetText
+                      closedProofText
+                    }
+              catch ex => do
+                let message ← ex.toMessageData.toString
+                pure (rejected "typecheck-or-closure" message)
   let sourceContextModule := if checkResult.status == "accepted" then
     "LadonCompletionContext_" ++ requestId else ""
   if !sourceContextModule.isEmpty then
     let contextPath := ((System.FilePath.mk snapshotPath).parent.getD ".") / (sourceContextModule ++ ".olean")
-    Lean.writeModule (ctxInfo.env.setMainModule sourceContextModule.toName) contextPath (writeIR := false)
+    Lean.writeModule ((← replayEnv.get).setMainModule sourceContextModule.toName) contextPath (writeIR := false)
   let directImports := ((HeaderSyntax.imports header false).map (fun imp => imp.module.toString)).toList.eraseDups.toArray
   let output : CompletionFrame := {
     frame := "LADON_COMPLETION_FRAME"

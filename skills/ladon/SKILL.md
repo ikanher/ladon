@@ -222,6 +222,8 @@ conditional goals are not identity/prefix chain edges or new admitted estimates.
 Old Nat consumers remain unsupported. Preserve the complete telescope,
 instances, quantified domains, scalar guards and actual numerical loss.
 
+Source-goal completion defaults to 800,000 heartbeats; use `goal complete --max-heartbeats N` to control the whole completion and replay budget. Term-local Lean options do not configure surrounding helper checks.
+
 Process-tree RSS defaults to 12 GiB. On `Stop progress and report back to user:`,
 preserve the failure and report the configured cap, available measured peak and
 command. Stop dependent work; do not automatically increase memory or reset the
