@@ -1,0 +1,19 @@
+by
+  have hq0 : 0 < q := by exact_mod_cast (show (0:ℝ) < q by linarith [hqr.1])
+  have hV0 := releaseVariance_nonneg 50000 100000 q.coe_nonneg hqr.2 σ θ ρ (1001/1000)
+  have hV := releaseVariance_safe (G := 1001/1000) hqr hθ hρ (by norm_num)
+    (physical_noise_window_scaled hσ)
+  have checkedChain :
+      (expectedUpdateEnergy (T := T) F data η (1/100000000) x0 q hq σ ≤
+        63*(73/10:ℝ)^2/(T:ℝ)+1011*(26/(T:ℝ)+1/999)) ∧
+      (63*(73/10:ℝ)^2/(T:ℝ)+1011*(26/(T:ℝ)+1/999) ≤ 29/10) := by
+    constructor
+    · exact (model_expected_update_energy_le (T := T) F data (by norm_num) (by norm_num)
+        hθ hρ (by norm_num) η (1/100000000) x0 hη (by norm_num) q hq hq0 σ
+        (r := 64) (by norm_num)).trans (logEnergyBound_envelope (by omega) hV0 hV)
+    · have hTR : (16384:ℝ) ≤ T := by exact_mod_cast hT
+      have h1 : 63*(73/10:ℝ)^2/(T:ℝ) ≤ 63*(73/10:ℝ)^2/16384 := by gcongr
+      have h2 : (26:ℝ)/(T:ℝ) ≤ 26/16384 := by gcongr
+      norm_num at h1 h2 ⊢
+      linarith
+  exact checkedChain.1.trans checkedChain.2

@@ -2,13 +2,18 @@
 
 ## Current program state — 2026-11-14
 
-Internal 0.4.2 feedback: the [initialized Adam energy exercise](evidence/internal-0.4.2-adam-energy-r01/REPORT.md)
-completed a native source-goal application to the `2.9` ceiling with accepted replay
-and trust. Source interpretation needed an attributed root correction; the stronger
-intermediate bound was inspected, not separately completed. Capture/completion sampled
-peaks were about 8.39/8.51 GiB within the 12 GiB cap. No source fault or new product
-operation was established. Continue internal use and collect concrete blockers; this
-exercise does not close historical detection gates or the three production diagnostics.
+Internal 0.4.2 feedback: [r01](evidence/internal-0.4.2-adam-energy-r01/REPORT.md)
+completed a native source-goal application to the Adam `2.9` ceiling with accepted
+replay and trust. [r02](evidence/internal-0.4.2-adam-energy-r02/REPORT.md) checked the
+full displayed two-inequality chain in ordinary pinned Lean, including at default
+heartbeats. Three native completions failed at the helper's 200,000-heartbeat limit;
+a term-local increase did not cover the failing surrounding checks. Source mapping
+remains inspected and included an attributed root correction. No source fault was
+established. The next concrete product task is to isolate that native heartbeat boundary
+and qualify its remedy, retaining replay/trust safeguards. Broad diagnostic integration
+and historical detection gates remain deferred.
+
+- [ ] U.1 Diagnose the [retained Adam full-chain native heartbeat failure](evidence/internal-0.4.2-adam-energy-r02/REPORT.md) with an isolated helper experiment identifying the failing phase/accounting boundary. Qualify the smallest finite resource-control remedy through the existing public completion route, with default compatibility, invalid-option, exhaustion, replay/trust and stale-context checks as applicable. Recheck this exact term; standalone Lean success does not close native acceptance. Preserve all prior failed/successful records.
 
 The objective remains useful mathematical detection: determine whether a source claim is supported under its actual assumptions, identify a concrete discrepancy when there is one, and explain the evidence to a reader. This ledger owns the umbrella's current sequencing; child ledgers own their detailed acceptance. Completed audit packets do not close the three planned production diagnostics.
 
