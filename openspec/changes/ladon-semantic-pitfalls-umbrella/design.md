@@ -275,3 +275,26 @@ Do not launch a broad comparison or resume the three deferred production stages 
 ### C05 printer follow-up result
 
 The subsequent [production fix evidence](evidence/c05-printer-fix-r01/REPORT.md) resolves the specific C05 serialization failure identified in the diagnostic session. A finite explicit printer step budget replaces inherited/default limits for closed expression printing, and parsed omission nodes are rejected with a direct diagnostic before elaboration can treat them as holes. The same C05 term completes through compiler replay and the original axiom policy. The earlier N.3c rejection remains historical evidence. The printer budget remains a finite resource boundary; exceeding it yields an explicit rejection, not automatic escalation. This repair establishes compatibility for this term, not any gain in selecting or interpreting prose obligations.
+
+### Internal-use completion heartbeat remedy (U.1)
+
+The retained Adam full-chain completion reaches proof re-elaboration during the closed
+round-trip and then exhausts 200,000 heartbeats. An isolated instrumented helper traced
+successful term elaboration and closure before the failure. Production completion will
+use a finite default of 800,000 heartbeats, configurable with `goal complete
+--max-heartbeats`. Apply the requested options and cached Core context budget throughout
+candidate checking, closure and explicit round-trip; emit the same setting for the replay
+compiler. Preserve original source observation/options and capture identity. Record the
+requested budget in resource accounting. Reject noninteger, zero, negative and tick-overflow
+budgets before toolchain work. Heartbeats are not wall time; existing deadlines, RSS limits,
+placeholder rejection, independent replay and transitive trust checks remain in force.
+The implementation must pass the retained exact Adam term with no budget override, plus
+low-budget exhaustion, stale-context and trust regressions. This does not add a new
+semantic diagnostic or certify prose interpretation.
+
+After increasing the checking budget, the same retained term reached replay and exposed
+missing candidate-generated auxiliary declarations (`_proof_1`). U.1 also preserves the
+accepted checking environment when exporting the private replay context. Qualification
+must show that a newly generated legitimate theorem replays and that a newly generated
+axiom remains visible to, and rejected by, the independent transitive trust policy.
+Neither a missing auxiliary nor an exhausted budget permits accepting without replay.

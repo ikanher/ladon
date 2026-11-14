@@ -1,0 +1,38 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________ test_generated_theorem_is_exported_for_replay _________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-448/test_generated_theorem_is_expo0')
+
+    def test_generated_theorem_is_exported_for_replay(tmp_path):
+        source='import Lean\nexample : True := by\n  skip\n'
+        _source,context,capture=_capture(tmp_path,source,3,6)
+        term='''by
+      run_tac
+        Lean.addDecl (.thmDecl {
+          name := `CompletionAux
+          levelParams := []
+          type := Lean.mkConst ``True
+          value := Lean.mkConst ``True.intro })
+      exact CompletionAux'''
+        result=complete_source_goal(_request(tmp_path,context,capture,term))
+>       _assert_completed(result,capture)
+
+tests/test_source_goal_completion_generated_aux.py:19:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+result = {'application': {'goalId': '_uniq.3', 'goalTypeStructural': 'ladon-expr-dag-v1:{"nodes":[["const","`True","[]"]],"root...],\\"protocolVersion\\":\\"ladon-lean-source-completion-replay-v2\\",\\"re'}, 'operation': 'complete-source-goal', ...}
+capture = {'captureId': 'sha256:6de3b03ae06330586de4ba367a5682fbf08099cfed07a4e2d78da4315a6e7d7b', 'environment': {'bindingBasis...ource-goal-helper-v1', 'observation': {'useAfter': True}, 'protocolVersion': 'ladon-lean-source-goal-v1/capture'}, ...}
+
+    def _assert_completed(result, capture):
+>       assert result["status"] == "completed", result
+E       AssertionError: {'application': {'goalId': '_uniq.3', 'goalTypeStructural': 'ladon-expr-dag-v1:{"nodes":[["const","`True","[]"]],"root...],\\"protocolVersion\\":\\"ladon-lean-source-completion-replay-v2\\",\\"re'}, 'operation': 'complete-source-goal', ...}
+E       assert 'process-failed' == 'completed'
+E
+E         - completed
+E         + process-failed
+
+tests/test_source_goal_completion_lean.py:58: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_source_goal_completion_generated_aux.py::test_generated_theorem_is_exported_for_replay
+1 failed in 26.24s

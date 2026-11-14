@@ -1,0 +1,46 @@
+F.....FF                                                                 [100%]
+=================================== FAILURES ===================================
+_______________ test_cli_default_and_explicit_completion_budget ________________
+
+    def test_cli_default_and_explicit_completion_budget():
+        parser=build_proof_search_parser()
+        argv=['goal','complete','--capture-file','capture.json','--term','True.intro',
+              '--lean-path','/lean','--lake-path','/lake']
+>       assert parser.parse_args(argv).max_heartbeats == 800000
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'Namespace' object has no attribute 'max_heartbeats'
+
+tests/test_source_goal_completion_heartbeats.py:16: AttributeError
+_________ test_request_budget_reaches_helper_without_altering_capture __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-441/test_request_budget_reaches_he0')
+
+    def test_request_budget_reaches_helper_without_altering_capture(tmp_path):
+        from test_source_goal_completion_api_contract import _capture
+        repo,source,toolchain=_toolchain(tmp_path)
+        capture=_capture(toolchain,source)
+        req=SourceGoalCompletionRequest(repo,capture,'True.intro',toolchain)
+>       assert req.max_heartbeats == 800000
+               ^^^^^^^^^^^^^^^^^^
+E       AttributeError: 'SourceGoalCompletionRequest' object has no attribute 'max_heartbeats'
+
+tests/test_source_goal_completion_heartbeats.py:32: AttributeError
+______________ test_replay_budget_covers_the_independent_compiler ______________
+
+    def test_replay_budget_covers_the_independent_compiler():
+        from ladon._source_goal_completion_replay import replay_source
+        frame={'directImports':[],'sourceContextModule':'PrivateContext',
+               'closedTargetText':'True','closedProofText':'True.intro'}
+        req={'requestId':'abc','captureId':'cap','termDigest':'term','maxHeartbeats':12345}
+        source,_=replay_source(frame,req,'context')
+>       assert 'set_option maxHeartbeats 12345\n' in source.decode()
+E       assert 'set_option maxHeartbeats 12345\n' in 'import Lean\nimport PrivateContext\n\ndef ladonCompletion_abc : True :=\nTrue.intro\n\n-- LADON_COMPLETION_REPLAY_REQ...lete" : String))]\n  Lean.Elab.Command.liftIO <| IO.println ("LADON_COMPLETION_REPLAY " ++ Lean.Json.compress value)\n'
+E        +  where 'import Lean\nimport PrivateContext\n\ndef ladonCompletion_abc : True :=\nTrue.intro\n\n-- LADON_COMPLETION_REPLAY_REQ...lete" : String))]\n  Lean.Elab.Command.liftIO <| IO.println ("LADON_COMPLETION_REPLAY " ++ Lean.Json.compress value)\n' = <built-in method decode of bytes object at 0x61301284eaa0>()
+E        +    where <built-in method decode of bytes object at 0x61301284eaa0> = b'import Lean\nimport PrivateContext\n\ndef ladonCompletion_abc : True :=\nTrue.intro\n\n-- LADON_COMPLETION_REPLAY_RE...lete" : String))]\n  Lean.Elab.Command.liftIO <| IO.println ("LADON_COMPLETION_REPLAY " ++ Lean.Json.compress value)\n'.decode
+
+tests/test_source_goal_completion_heartbeats.py:45: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_source_goal_completion_heartbeats.py::test_cli_default_and_explicit_completion_budget
+FAILED tests/test_source_goal_completion_heartbeats.py::test_request_budget_reaches_helper_without_altering_capture
+FAILED tests/test_source_goal_completion_heartbeats.py::test_replay_budget_covers_the_independent_compiler
+3 failed, 5 passed in 0.18s
