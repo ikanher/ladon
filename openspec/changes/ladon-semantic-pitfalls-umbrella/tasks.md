@@ -2,6 +2,15 @@
 
 ## Current status and next steps
 
+**Internal 0.4.4 release qualified — 2026-11-17.** The local versioned candidate
+`78b2fc8` passes isolated distribution and pinned-Lean checks. The complete
+selected integration suite, repository static quality, OpenSpec and skills pass.
+[Release notes](../../../docs/RELEASE_0_4_4.md) and
+[verification receipt](../../../docs/releases/0.4.4/verification.json) own exact
+counts, identity and remaining qualification limits. F.1–F.4, H.1–H.3, V.1a
+and V.2 are delivered. Persistent cross-process V.1 and compact inspection remain
+open. No push or publication; historical mathematical acceptance stays intact.
+
 **Explicit cleanup applied — 2026-11-17.** At the owner's request, the public
 history-cleanup command removed MF's 50 stale catalog entries. A fresh preview
 observed no remaining archive files; the operation deleted zero file bytes.

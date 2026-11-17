@@ -1,0 +1,66 @@
+{
+  "version": "0.4.4",
+  "scope": "internal release; local commits; no push or publication",
+  "installedCandidate": "78b2fc8bd11ab209c1a1f6645ad86771927ac28b",
+  "productionTree": "3ff973c7dd0ad63a3528c427a08e7ed716c8b6aa",
+  "testTree": "a43be96e38ffff8046a8b8b125dfd4d99c601e91",
+  "lockIdentity": "c8cfc5f7c0d547c8862be3110a7ba27d073b27a5",
+  "sharedSkillCommit": "630dc93dcad17a261c976076457abcd581bad484",
+  "python": "3.11.15",
+  "integration": {
+    "passed": 171,
+    "seconds": 189.97,
+    "failures": 0,
+    "scope": "batch/freshness/update/history/cleanup, proof-search CLI invocation/operational/progress, slice resource/node/depth/replay and memory tests",
+    "log": "integration.txt"
+  },
+  "installedDistribution": {
+    "status": "passed",
+    "installedCliTests": 41,
+    "seconds": 23.58,
+    "command": "TMPDIR=<outside-checkout> .venv/bin/python scripts/installed_distribution_smoke.py --candidate 78b2fc8bd11ab209c1a1f6645ad86771927ac28b --package-resource ladon:proof_search_batch.py --package-resource ladon:proof_search_history_cleanup.py --package-resource ladon:proof_search_timing.py",
+    "log": "installed-smoke.txt"
+  },
+  "installedLean": {
+    "status": "passed",
+    "toolchain": "Lean 4.32.1",
+    "command": "TMPDIR=<outside-checkout> .venv/bin/python scripts/lean_integration_gate.py --candidate 78b2fc8bd11ab209c1a1f6645ad86771927ac28b --required",
+    "log": "installed-lean.txt"
+  },
+  "quality": {
+    "ruff": "passed repository-wide",
+    "strictStatic": "passed repository-wide",
+    "openSpecItemsPassed": 94,
+    "bundledSkillValidation": "passed",
+    "sharedSkillValidation": "passed",
+    "lockCheck": "passed offline"
+  },
+  "historyPolicy": "current-cache-only by default; explicit archive opt-in; cleanup preview/apply",
+  "mfCleanup": {
+    "catalogRowsRemoved": 50,
+    "fileBytesRemoved": 0,
+    "activeGenerationUnchanged": true,
+    "authority": "owner explicitly authorized catalog cleanup after personally deleting snapshot files"
+  },
+  "qualificationLimits": [
+    "No new full-repository pytest run; the complete selected integration suite was run.",
+    "Python 3.12 qualification and the historical large-capsule memory workload were not rerun.",
+    "Persistent cross-process freshness tokens and compact slice inspection remain open.",
+    "Batch validation describes its observation window, not later filesystem state or proof correctness.",
+    "Field timing observations do not establish general speedups or mathematical discovery benefit."
+  ],
+  "commitBatches": {
+    "1880a76": "1880a76d5e33fce456af238644a2886df2ec0121",
+    "fa9cc5d": "fa9cc5d99863f4fdb07b7cd65a79f14df5b1a6cb",
+    "107bae4": "107bae40cc2995e1d307c1cf44eaa4a832abf198",
+    "78b2fc8": "78b2fc8bd11ab209c1a1f6645ad86771927ac28b"
+  },
+  "logHashes": {
+    "integration.txt": "6dcd6d397dcd969d4aabeaa3572a3a83de3e1ec37224cea1d20ad16429521be4",
+    "static-quality.txt": "39a3100c7f9b63db79fefbb1ea81e17aed8319757d25b90a2103c6116384bbb1",
+    "openspec.txt": "4d60a374be5181d9f31689c2ecba69f523a068d921dd5b233673516655efd4d0",
+    "ruff.txt": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+    "installed-smoke.txt": "32595485d3c12fd1b006537c25c50f7c6e7cf650c7f7ebfb3fcacb939ea62e02",
+    "installed-lean.txt": "e5f39a5d4d65f0658b81bc8137e6fa862c085927076eb086799ab0fcfdb6db7a"
+  }
+}

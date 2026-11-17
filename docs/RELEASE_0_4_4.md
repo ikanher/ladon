@@ -35,10 +35,19 @@ Historical artifacts and evaluation conclusions retain their original scope.
 
 ## Verification
 
-Release-candidate qualification is pending. The final receipt will identify the
-candidate, checks, outcomes and limitations before this release is handed off.
-The implementation evidence includes 127 passing search/update/history tests,
-separate Lean slice/replay checks, repository lint and strict static quality.
+Candidate `78b2fc8` built and installed successfully, passed all **41 installed
+CLI contracts**, and passed the pinned **Lean 4.32.1** integration gate outside
+the checkout. All **171 selected integration tests** pass in 189.97 seconds,
+covering batch/freshness, default/explicit history, cleanup, public CLI contracts,
+real Lean slice extraction/replay, and memory controls. Repository Ruff and
+strict static quality are clean. All 94 OpenSpec validations, both skills and
+the offline lock check pass.
+
+[The verification receipt](releases/0.4.4/verification.json) binds the candidate,
+production/test/lock identities, shared skill commit and exact logs. Later
+release-record commits change documentation only. No full-repository pytest run,
+Python 3.12 qualification, or old large-capsule memory rerun was performed for
+this release. These limits do not inherit a green result from prior versions.
 
 A single sequential MF exercise took 5.658/5.749 seconds for two standalone
 verified queries and 5.834 seconds for the equivalent batch, with identical rows
