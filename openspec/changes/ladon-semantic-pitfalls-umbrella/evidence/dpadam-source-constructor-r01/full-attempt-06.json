@@ -1,0 +1,47 @@
+{
+  "command": [
+    "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+    "/home/codex/projects/ladon/temp/dpadam-source-constructor-r01/Full.lean"
+  ],
+  "returncode": 1,
+  "stdout": "'LadonGeneralBridge.withInitial' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonGeneralBridge.initial_coherence' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonGeneralBridge.fixed_query_local_mean' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonGeneralBridge.withPublicInitial' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonGeneralBridge.public_initial_coherence' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonGeneralBridge.public_initial_clock' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonGeneralBridge.fixed_query_public_initial_limit' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSourceConstructor.objective_field_irrelevant' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSourceConstructor.sourceData' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSourceConstructor.source_batch' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSourceConstructor.generic_kernel' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSourceConstructor.source_clipped_measurable' depends on axioms: [propext, Classical.choice, Quot.sound]\n/home/codex/projects/ladon/temp/dpadam-source-constructor-r01/Full.lean:400:0: warning: automatically included section variable(s) unused in theorem `LadonSourceConstructor.noise_limit`:\n  [Nonempty (Fin d)]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [Nonempty (Fin d)] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`\n/home/codex/projects/ladon/temp/dpadam-source-constructor-r01/Full.lean:404:0: warning: automatically included section variable(s) unused in theorem `LadonSourceConstructor.step_limit`:\n  [Nonempty (Fin d)]\nconsider restructuring your `variable` declarations so that the variables are not in scope or explicitly omit them:\n  omit [Nonempty (Fin d)] in theorem ...\n\nNote: This linter can be disabled with `set_option linter.unusedSectionVars false`\n'LadonSourceConstructor.source_convergence' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSourceConstructor.paired_source_convergence' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSourceConstructor.clipped_measurable_of_one_release' depends on axioms: [propext, Classical.choice, Quot.sound]\n/home/codex/projects/ladon/temp/dpadam-source-constructor-r01/Full.lean:523:73: error: unsolved goals\nm d : \u2115\ninst\u271d : Nonempty (Fin d)\np : Primitives m d\ntheta : Fin d \u2192 \u211d\ni : Fin d\n\u22a2 \u2211 c \u2208 p.dataset.attach, Mf.DP.l2VectorClip p.C (p.query theta \u2191c) i =\n      \u2211 x \u2208 p.dataset, Mf.DP.l2VectorClip p.C (p.query theta x) i \u2228\n    p.dataset = \u2205\n'LadonSourceConstructor.mean_bridge' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]\n/home/codex/projects/ladon/temp/dpadam-source-constructor-r01/Full.lean:562:8: error: Type mismatch: After simplification, term\n  hmean\n has type\n  \u2200 (radius : \u211d),\n    0 \u2264 radius \u2192\n      \u2203 meanError,\n        (\u2200 (n : \u2115), 0 \u2264 meanError n) \u2227\n          Tendsto meanError atTop (\ud835\udcdd 0) \u2227\n            \u2200 (n : \u2115) (theta : Fin d \u2192 \u211d),\n              \u2016theta\u2016 \u2264 radius \u2192\n                \u2016clippedGradientMean (data.family n) theta -\n                      DPAdamFixedBetaConcreteClippingAlignment.empiricalMean\n                        (fun record => Mf.DP.l2VectorClip p.C (p.query theta record)) data.base.dataset\u2016 \u2264\n                  meanError n\nbut is expected to have type\n  \u2200 (radius : \u211d),\n    0 \u2264 radius \u2192\n      \u2203 meanError,\n        (\u2200 (n : \u2115), 0 \u2264 meanError n) \u2227\n          Tendsto meanError atTop (\ud835\udcdd 0) \u2227\n            \u2200 (n : \u2115) (theta : Fin d \u2192 \u211d),\n              \u2016theta\u2016 \u2264 radius \u2192\n                \u2016clippedGradientMean (data.family n) theta -\n                      DPAdamFixedBetaConcreteClippingAlignment.empiricalMean\n                        (fun r => Mf.DP.l2VectorClip p.C (p.query theta r)) p.dataset\u2016 \u2264\n                  meanError n\n'LadonSourceConstructor.source_finite_rate' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]\n'LadonSourceConstructor.source_privacy' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+  "stderr": "",
+  "elapsed_seconds": 3.6719379890710115,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 7481073664,
+  "resource_observations": {
+    "version": 1,
+    "status": "sampled",
+    "samples": 53,
+    "unavailableSamples": 0,
+    "unidentifiedProcessNames": 0,
+    "leanMeasurement": "sampled",
+    "maxDescendantProcesses": 0,
+    "maxLeanProcesses": 1,
+    "largestLeanRssBytes": 7481073664,
+    "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+    "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+  },
+  "startedAt": "2026-11-14T09:43:19.676709+00:00",
+  "finishedAt": "2026-11-14T09:43:23.348914+00:00",
+  "source": "/home/codex/projects/ladon/temp/dpadam-source-constructor-r01/Full.lean",
+  "sourceSha256": "4948dbe82f9d2345d5e113d34d04c816ab729853fea83fe00970f642cda4b635",
+  "sourceUnchanged": true,
+  "cwd": "/home/codex/projects/lean/matrix-factorization",
+  "libraryRoots": [
+    "/home/codex/projects/lean/matrix-factorization/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/BrownianMotion/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/LeanSearchClient/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/MathFin/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/Qq/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/aesop/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/batteries/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/importGraph/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/kolmogorov_extension4/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/mathlib/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/plausible/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/proofwidgets/.lake/build/lib/lean"
+  ]
+}

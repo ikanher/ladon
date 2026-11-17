@@ -1,0 +1,41 @@
+{
+  "command": [
+    "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+    "/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean"
+  ],
+  "returncode": 1,
+  "stdout": "/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:120:4: error: Type mismatch\n  original.batch_eq\nhas type\n  \u2200 (n : \u2115), (original.family n).effectiveBatch = original.base.effectiveBatch\nbut is expected to have type\n  \u2200 (n : \u2115),\n    (sampledFamily q hq hq1 (original.family n).physicalHorizon (original.family n).normalizedNoise\n          (original.family n).noiseFloor \u22ef \u22ef \u22ef).effectiveBatch =\n      (sampledFamily q hq hq1 original.base.physicalHorizon original.base.normalizedNoise original.base.noiseFloor \u22ef \u22ef\n          \u22ef).effectiveBatch\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:137:77: error: unsolved goals\nq : \u211d\nhq : 0 < q\nhq1 : q \u2264 1\ngamma c : \u211d\nhg : 0 < gamma\nhc : 0 < c\nT : \u2115 \u2192 \u2115\nhT : \u2200 (n : \u2115), 0 < T n\n\u22a2 (sorry ()).base.effectiveBatch = (sorry ()).base.samplingRate * \u2191(sorry ()).base.dataset.card\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:138:8: warning: declaration uses `sorry`\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:138:21: warning: This simp argument is unused:\n  sampledFamily\n\nHint: Omit it from the simp argument list.\n  [apply] simp [sampledData, quadraticData, positiveFloorQuadraticFamily]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:138:36: warning: This simp argument is unused:\n  quadraticData\n\nHint: Omit it from the simp argument list.\n  [apply] simp [sampledData, sampledFamily, positiveFloorQuadraticFamily]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:138:51: warning: This simp argument is unused:\n  positiveFloorQuadraticFamily\n\nHint: Omit it from the simp argument list.\n  [apply] simp [sampledData, sampledFamily, quadraticData]\n\nNote: This linter can be disabled with `set_option linter.unusedSimpArgs false`\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:144:2: error: Type mismatch\n  quadraticData_eta_eq gamma c hg hc T hT n\nhas type\n  (quadraticData gamma c hg hc T hT).eta n = step c \u2191(T n)\nbut is expected to have type\n  (sampledData q hq hq1 gamma c hg hc T hT).eta n = c / \u221a\u2191(T n)\n'LadonSampledFamilyAudit.sampledData' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]\n'LadonSampledFamilyAudit.sampledData_batch' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]\n'LadonSampledFamilyAudit.sampledData_eta' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]\n",
+  "stderr": "",
+  "elapsed_seconds": 3.484834847971797,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 7421747200,
+  "resource_observations": {
+    "version": 1,
+    "status": "sampled",
+    "samples": 49,
+    "unavailableSamples": 0,
+    "unidentifiedProcessNames": 0,
+    "leanMeasurement": "sampled",
+    "maxDescendantProcesses": 0,
+    "maxLeanProcesses": 1,
+    "largestLeanRssBytes": 7430320128,
+    "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+    "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+  },
+  "libraryRoots": [
+    "/home/codex/projects/lean/matrix-factorization/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/BrownianMotion/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/LeanSearchClient/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/MathFin/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/Qq/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/aesop/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/batteries/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/importGraph/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/kolmogorov_extension4/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/mathlib/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/plausible/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/proofwidgets/.lake/build/lib/lean"
+  ]
+}

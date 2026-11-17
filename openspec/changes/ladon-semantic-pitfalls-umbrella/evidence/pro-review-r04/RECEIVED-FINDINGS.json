@@ -1,0 +1,224 @@
+{
+  "format_version": 1,
+  "review": "REVIEW.md",
+  "scope": "Review of the supplied r04 packet; recommendations only, with no repository implementation or fresh Lean replay.",
+  "findings": [
+    {
+      "id": "F01",
+      "title": "Large inventories can prevent serialization of unresolved diagnostic records",
+      "priority": "P2",
+      "status": "verified-conditional-code-behavior",
+      "scope": "Failure-recording reliability for two early _check_goal returns retaining captured inventories above 10000 modules; no false proof acceptance demonstrated.",
+      "evidence": [
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/correspondence_check.py",
+          "definitions": [
+            "_check_goal",
+            "_check_supplied_terms"
+          ],
+          "details": "prepared-goal-subject-mismatch and unexpected-generated-goal-context returns omit goalOrigin."
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/proofir_v3.py",
+          "definitions": [
+            "_receipt_module_paths",
+            "canonical_bytes"
+          ],
+          "details": "The larger receipt inventory size profile requires the exact generated-obligation origin marker."
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/correspondence_evidence.py",
+          "definitions": [
+            "_row_artifacts",
+            "completion_artifacts"
+          ],
+          "details": "The receipt is hashed before diagnostic artifact construction."
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/correspondence_cli.py",
+          "definitions": [
+            "_check"
+          ]
+        },
+        {
+          "path": "verification/code-checks/verify_capacity.py"
+        },
+        {
+          "path": "verification/code-checks/verification-results.json"
+        }
+      ],
+      "recommendation": "Preserve the generated-obligation origin across diagnostic outcomes, or pass an explicit narrow capacity profile at the trusted call site. Add regression coverage for both unresolved paths above 10000 modules and rejection beyond 32768 without relaxing unrelated collections.",
+      "verification_limitations": [
+        "The diagnostic states were deliberately constructed from exact return expressions; neither occurred in the two retained successful native runs.",
+        "The hash failure was verified with synthetic 10001-module rows and the unchanged retained Adam capture containing 12221 modules; no fresh Lean diagnostic was triggered.",
+        "The 79 isolated Python assertions are separate from the packet-reported 184-test suite, which was not rerun.",
+        "Shared r03/r04 source files are unchanged; the review does not establish when this gap was introduced."
+      ]
+    },
+    {
+      "id": "F02",
+      "title": "Packaged hypotheses can be overread as a completed premise audit",
+      "priority": null,
+      "risk": "high reader risk; not a kernel bug",
+      "status": "observed-selected-boundary-and-reader-risk",
+      "scope": "The Adam wrapper exposes one Inputs argument and zero direct premise rows; both native MF plans have zero premise-supply obligations while premiseEstablishment is supported.",
+      "evidence": [
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/AdamCase.lean",
+          "definitions": [
+            "AdamNative.Inputs",
+            "AdamNative.commonLaw",
+            "AdamNative.bridge",
+            "AdamNative.selected",
+            "LadonSourceConstructor.paired_source_convergence"
+          ]
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-slice.json",
+          "details": "The original selected source_convergence application has 20 local declarations and six direct proposition premises."
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam/aligned.json"
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam/inspection.json"
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/fdp/inspection.json"
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/correspondence_check.py",
+          "definitions": [
+            "_summarize_premises"
+          ]
+        }
+      ],
+      "recommendation": "Distinguish no direct premise-supply obligations at the selected boundary from a source-assumption audit. Expose relevant Inputs and Primitives fields and preserve the original scoped application as a separate observation, without labeling every field necessary automatically.",
+      "verification_limitations": [
+        "The hypotheses remain in the formal argument types; zero premise rows do not establish semantic erasure or a soundness defect.",
+        "The original scoped observation covers one application rather than the whole proof.",
+        "This review does not measure whether a fresh reader is actually misled by the displayed dimension."
+      ]
+    },
+    {
+      "id": "F03",
+      "title": "The Adam source anchor alone does not state the attributed common-law claim",
+      "priority": null,
+      "risk": "source-attribution context gap",
+      "status": "verified-anchor-scope-gap",
+      "scope": "The checked source span covers adam-source.tex lines 425-465 on privacy calibration and the explicit schedule, ending mid-sentence; common-law support also depends on surrounding clock, initialization, query and diffusion/uniqueness context.",
+      "evidence": [
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam/interpretation.json"
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/adam-source.tex",
+          "details": "Recorded span 425-465 and surrounding assumptions and diffusion theorem."
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/correspondence_interpretation.py",
+          "definitions": [
+            "validate_interpretation"
+          ]
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/proofir_correspondence.py",
+          "definitions": [
+            "interpretation_artifacts"
+          ]
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/proofir_correspondence_payloads.py",
+          "definitions": [
+            "_has_exact_anchor"
+          ]
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/proofir_v3_payloads.py",
+          "details": "Generic source-map payload supports multiple anchors."
+        }
+      ],
+      "recommendation": "Explain the attributed common-law consequence using linked contextual passages and definitions. Reuse source maps or attachments where possible; verify authoring support before adding a narrow contextual view.",
+      "verification_limitations": [
+        "The source hash and quote bind bytes, not the correctness of the prose-to-formula interpretation.",
+        "The context gap is not a refutation of the formal common-law consequence.",
+        "The current single-span authoring interface is not assumed to support composition merely because generic source maps support multiple anchors."
+      ]
+    },
+    {
+      "id": "F04",
+      "title": "substantiveCheckCount includes an object-map typing obligation",
+      "priority": "P3",
+      "status": "verified-telemetry-classification-issue",
+      "scope": "Both r04 cases report one typing probe and three substantive checks although each has interpretation typing, object-map typing, conditional replay and conclusion transfer.",
+      "evidence": [
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/correspondence_check.py",
+          "definitions": [
+            "_make_obligations",
+            "check_correspondence"
+          ],
+          "details": "object-map ends in True; substantiveCheckCount excludes only interpretation."
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/fdp/checked-1800-r02.json",
+          "details": "executionAccounting and checks"
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam/checked-1800-r02.json",
+          "details": "executionAccounting and checks"
+        }
+      ],
+      "recommendation": "Report obligation roles separately, including map elaboration, conditional replay, premise supply and conclusion transfer; do not use replay counts as discovery or source-fidelity metrics.",
+      "verification_limitations": [
+        "This is a metric-label issue rather than a mathematical soundness defect.",
+        "The counter definition is unchanged from r03.",
+        "A corrected semantic-role count would still not measure reader benefit or comparative value."
+      ]
+    },
+    {
+      "id": "F05",
+      "title": "Stored inspection and checking labels retain qualified authority boundaries",
+      "priority": null,
+      "risk": "consumer overinterpretation; optional robustness work",
+      "status": "verified-contract-boundaries-no-native-false-support-demonstrated",
+      "scope": "Matched records concern selected target consistency; complete coverage concerns stored retrieval; typing obligations do not certify proposition truth or map semantics. Inspection does not reconcile every result, guarantee and trust field in separately authored or damaged records.",
+      "evidence": [
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/proofir_v3_queries.py",
+          "definitions": [
+            "query_v3_correspondence",
+            "_compare_stored_binding",
+            "_attach_check_evidence"
+          ]
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/correspondence_evidence.py",
+          "definitions": [
+            "_accepted",
+            "_row_artifacts"
+          ]
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/src/ladon/correspondence_check.py",
+          "definitions": [
+            "_make_obligations",
+            "_summarize_parent_support"
+          ]
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/fdp/inspection.json"
+        },
+        {
+          "path": "ladon-semantic-strategy-review-data-r04/sources/openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam/inspection.json"
+        }
+      ],
+      "recommendation": "Preserve distinct retrieval, typing, replay, correspondence and source-fidelity labels. Add contradiction diagnostics only if imported or damaged records become a demonstrated use case; do not claim authentication of self-consistent fabricated records.",
+      "verification_limitations": [
+        "The normal native producer derives result and guarantee fields consistently and requires accepted completion, replay and trust before emitting support.",
+        "No ordinary native false-support path was demonstrated.",
+        "Neither complete inspection nor matched stored records establishes fresh replay, source fidelity, whole-source coverage or source falsity from a refuted link."
+      ]
+    }
+  ]
+}

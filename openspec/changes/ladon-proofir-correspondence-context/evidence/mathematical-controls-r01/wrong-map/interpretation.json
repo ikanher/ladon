@@ -1,0 +1,45 @@
+{
+  "id": "fin-bound",
+  "source": {
+    "path": "source.txt",
+    "startLine": 1,
+    "endLine": 1,
+    "quote": "Every index in Fin 5 has a natural value less than five.",
+    "sha256": "920d7dac845e9905d892ffe2025b8c32a5b9243ecc7eed648759a7d8a1f37ede"
+  },
+  "formula": {
+    "tag": "forall",
+    "binder": {
+      "id": "i",
+      "name": "index",
+      "domain": "Fin 5"
+    },
+    "body": {
+      "tag": "lt",
+      "left": {
+        "tag": "app",
+        "symbol": "val",
+        "args": [
+          {
+            "tag": "var",
+            "id": "i"
+          }
+        ]
+      },
+      "right": {
+        "tag": "const",
+        "name": "5"
+      }
+    }
+  },
+  "symbols": {
+    "val": {
+      "leanName": "Fin.val",
+      "leanType": "Fin 5 → Nat"
+    },
+    "shifted": {
+      "leanName": "ContextFixture.shifted",
+      "leanType": "Fin 5 → Nat"
+    }
+  }
+}

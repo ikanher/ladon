@@ -1,0 +1,12 @@
+{
+  "command": [
+    "rg",
+    "-n",
+    "neighbor|neighbour|differ.*one",
+    "/home/codex/projects/lean/matrix-factorization/paper/theory/mu-dp/fDP/fDP.tex"
+  ],
+  "returncode": 0,
+  "stdout": "21:%%As a central idea, differential privacy requires that neighboring datasets should be almost indistinguishable.\n23:%%a neighboring dataset of $\\vec{x}$ is a matrix $\\vec{x}'$ that differs $\\vec{x}$ by one row. For example, $\\vec{x}' = (x_1',\\ldots, x_n)$ is a neighbor of $\\vec{x}$ as %long as $x_1'\\neq x_1$. What we just described is replace-one neighboring. There is also add-one/remove-one neighboring.\n32:{\\bf Dataset.} A dataset $S$ is a collection of $n$ records, each corresponding to an individual. Formally, we write the dataset as $S = (x_1,\\ldots, x_n)$, and an individual $x_i \\in X$ for some abstract space $X$. Two datasets $S' = (x'_1,\\ldots, x'_n)$ and $S$ are said to be \\textit{neighbors} if they differ in exactly one record, that is, there exists an index $j$ such that $x_i = x_i'$ for all $i \\ne j$ and $x_j \\ne x_j'$.\n36:% Replace-$k$ neighboring corresponds to group privacy (see \\Cref{sub:group_privacy}). In order to minimize such detail, it is helpful to make the following abstraction:\n43:%%$X$ is a collection of possible instances of datasets. The neighboring relation is encoded in $\\sim$. Note that a transitive $\\sim$ typically does not lead to a meaningful privacy notion. \\djs{More should be said on this in intro.}\n52:% More precisely, when $M:X\\to Y$ is fed with two neighboring datasets $x\\sim x'$, the results $M(x)$ and $M(x')$ are distributions on $Y$. For example, $M:\\R^{n\\times d}\\to\\R^d$ may take the average of each column and add Gaussian noise to the average vector. $M(x)$ and $M(x')$ will be two $d$-dimensional Gaussian with different means in this case.\n",
+  "stderr": "",
+  "elapsedSeconds": 0.0018825230654329062
+}

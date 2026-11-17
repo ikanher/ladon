@@ -2,7 +2,7 @@
 
 ## Current disposition — 2026-11-13
 
-This pilot is complete; its frozen registration, reports, and negative primary-gate result remain unchanged. All six adjudicated claims were faithful. The Ladon arm used optional text analysis, so this run does not evaluate native semantic evidence or sensitivity to an exposition fault. The common recipe also did not explicitly transfer all of the definition-substitution, object-map, and premise-realizability steps qualified in the parent S.1–S.3 work. The next decision belongs to [umbrella N.1–N.2](../ladon-semantic-pitfalls-umbrella/tasks.md): first qualify one useful existing evidence workflow, then prepare a separately registered challenge only if warranted. No additional run is opened by this completed checklist.
+This pilot is complete; its frozen registration, reports, and negative primary-gate result remain unchanged. All six adjudicated claims were faithful. The Ladon arm used optional text analysis, so this run does not evaluate native semantic evidence or sensitivity to an exposition fault. The common recipe also did not explicitly transfer all of the definition-substitution, object-map, and premise-realizability steps qualified in the parent S.1–S.3 work. The subsequent workflow qualification, synthetic comparison and internal field exercises are now complete in their bounded scopes. The [current umbrella ledger](../ladon-semantic-pitfalls-umbrella/tasks.md#current-status-and-next-steps) owns further decisions; this historical pilot is not a pending launch. No additional run is opened by this completed checklist.
 
 ## 1. Freeze a fresh, checkable comparison set
 

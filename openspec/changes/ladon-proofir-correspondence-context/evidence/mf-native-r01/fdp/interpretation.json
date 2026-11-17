@@ -1,0 +1,83 @@
+{
+  "id": "fdp-inherited-order-selected-event",
+  "source": {
+    "path": "fdp-source.tex",
+    "startLine": 100,
+    "endLine": 106,
+    "quote": "\\begin{corollary}\\label{cor:ep_d}\nIf $M$ is $(\\epsilon, \\delta)$-DP on $X^m$, then the subsampled mechanism $M\\circ\\Sample_m$ is $C_p(f_{\\epsilon, \\delta})$-DP on $X^n$, where\n\\begin{equation}\\label{eq:ep_d_sump_for}\nC_p(f_{\\epsilon, \\delta})(\\alpha) = \\max\\left\\{f_{\\epsilon', \\delta'}(\\alpha), 1 - p\\delta - p \\, \\frac{\\e^{\\ep} - 1}{\\e^{\\ep} + 1} - \\alpha \\right\\}.\n\\end{equation}\nAbove, $\\epsilon'= \\log(1-p + p \\e^\\ep), \\delta' = p\\delta$, and $p = \\frac{m}{n}$.\n\\end{corollary}",
+    "sha256": "11223a25e22c97b4c57dd08fd231d53da8c1664430c40cecb97a8c0e6eb561bb"
+  },
+  "symbols": {
+    "sample": {
+      "leanName": "InheritedOrderCountermodel.sampledTrue",
+      "leanType": "(Fin 3 \u2192 Fin 4) \u2192 Rat"
+    },
+    "dataset": {
+      "leanName": "InheritedOrderCountermodel.D",
+      "leanType": "Fin 3 \u2192 Fin 4"
+    },
+    "neighbor": {
+      "leanName": "FdpNative.neighbor",
+      "leanType": "Fin 3 \u2192 Fin 4"
+    },
+    "mul": {
+      "leanName": "HMul.hMul",
+      "leanType": "Rat \u2192 Rat \u2192 Rat"
+    },
+    "div": {
+      "leanName": "HDiv.hDiv",
+      "leanType": "Rat \u2192 Rat \u2192 Rat"
+    }
+  },
+  "formula": {
+    "tag": "forall",
+    "binder": {
+      "id": "d",
+      "name": "unused application index",
+      "domain": "Nat"
+    },
+    "body": {
+      "tag": "le",
+      "left": {
+        "tag": "app",
+        "symbol": "sample",
+        "args": [
+          {
+            "tag": "const",
+            "name": "dataset"
+          }
+        ]
+      },
+      "right": {
+        "tag": "app",
+        "symbol": "mul",
+        "args": [
+          {
+            "tag": "app",
+            "symbol": "div",
+            "args": [
+              {
+                "tag": "const",
+                "name": "5"
+              },
+              {
+                "tag": "const",
+                "name": "3"
+              }
+            ]
+          },
+          {
+            "tag": "app",
+            "symbol": "sample",
+            "args": [
+              {
+                "tag": "const",
+                "name": "neighbor"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

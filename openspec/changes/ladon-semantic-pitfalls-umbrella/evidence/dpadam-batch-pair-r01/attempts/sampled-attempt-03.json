@@ -1,0 +1,41 @@
+{
+  "command": [
+    "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+    "/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean"
+  ],
+  "returncode": 1,
+  "stdout": "'LadonSampledFamilyAudit.sampledData' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSampledFamilyAudit.sampledData_batch' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSampledFamilyAudit.sampledData_eta' depends on axioms: [propext, Classical.choice, Quot.sound]\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:164:49: error(lean.unknownIdentifier): Unknown identifier `hlim`\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:185:2: warning: try 'simp' instead of 'simpa'\n\nNote: This linter can be disabled with `set_option linter.unnecessarySimpa false`\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:194:6: error: Application type mismatch: The argument\n  sampled_noise q hq hq1 gamma c hg hc T hT ?m.59\nhas type\n  ?m.58 \u2208 map (sampledData q hq hq1 gamma c hg hc T hT).clock atTop\nbut is expected to have type\n  Tendsto data.clock atTop atTop\nin the application\n  GrowingClockData.calibratedSlowDrift_lipschitz_of_clippedMean data (sampled_noise q hq hq1 gamma c hg hc T hT ?m.59)\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:207:44: error: Application type mismatch: The argument\n  hlim\nhas type\n  Tendsto T atTop atTop\nof sort `Prop` but is expected to have type\n  FiniteHorizonLinearOUSolutionMap.Path (sampledData q hq hq1 gamma c hg hc T hT).base.physicalHorizon\nof sort `Type` in the application\n  (sampledMap q hq hq1 gamma c hg hc T hT) hlim\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:211:28: error: Application type mismatch: The argument\n  hq\nhas type\n  0 < q\nof sort `Prop` but is expected to have type\n  \u211d\nof sort `Type` in the application\n  sampledLimitLaw q hq\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:212:49: error: Invalid field notation: Identifier or numeral expected\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:223:48: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  LE Type\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:223:48: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  LE Type\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:223:50: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  OfNat Type 0\nnumerals are polymorphic in Lean, but the numeral `0` cannot be used in a context where the expected type is\n  Type\ndue to the absence of the instance above\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:223:50: error(lean.synthInstanceFailed): failed to synthesize instance of type class\n  OfNat Type 0\nnumerals are polymorphic in Lean, but the numeral `0` cannot be used in a context where the expected type is\n  Type\ndue to the absence of the instance above\n\nHint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:234:43: error: Application type mismatch: The argument\n  hlim\nhas type\n  Tendsto T atTop atTop\nof sort `Prop` but is expected to have type\n  FiniteHorizonLinearOUSolutionMap.Path (sampledData q hq hq1 gamma c hg hc T hT).base.physicalHorizon\nof sort `Type` in the application\n  (sampledMap q hq hq1 gamma c hg hc T hT) hlim\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:235:50: error: Application type mismatch: The argument\n  hlim'\nhas type\n  Tendsto T' atTop atTop\nof sort `Prop` but is expected to have type\n  FiniteHorizonLinearOUSolutionMap.Path (sampledData q' hq' hq1' gamma c hg hc T' hT').base.physicalHorizon\nof sort `Type` in the application\n  (sampledMap q' hq' hq1' gamma c hg hc T' hT') hlim'\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:240:22: error: Application type mismatch: The argument\n  hq\nhas type\n  0 < q\nof sort `Prop` but is expected to have type\n  \u211d\nof sort `Type` in the application\n  sampledLimitLaw q hq\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:241:25: error: Application type mismatch: The argument\n  hq'\nhas type\n  0 < q'\nof sort `Prop` but is expected to have type\n  \u211d\nof sort `Type` in the application\n  sampledLimitLaw q' hq'\n'LadonSampledFamilyAudit.sampled_convergence' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:246:14: error(lean.unknownIdentifier): Unknown constant `sampledLimitLaw_eq`\n",
+  "stderr": "",
+  "elapsed_seconds": 3.027429918991402,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 7439138816,
+  "resource_observations": {
+    "version": 1,
+    "status": "sampled",
+    "samples": 44,
+    "unavailableSamples": 0,
+    "unidentifiedProcessNames": 0,
+    "leanMeasurement": "sampled",
+    "maxDescendantProcesses": 0,
+    "maxLeanProcesses": 1,
+    "largestLeanRssBytes": 7438733312,
+    "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+    "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+  },
+  "libraryRoots": [
+    "/home/codex/projects/lean/matrix-factorization/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/BrownianMotion/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/LeanSearchClient/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/MathFin/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/Qq/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/aesop/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/batteries/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/importGraph/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/kolmogorov_extension4/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/mathlib/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/plausible/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/proofwidgets/.lake/build/lib/lean"
+  ]
+}

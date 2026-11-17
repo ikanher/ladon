@@ -1,0 +1,123 @@
+{
+  "faithful": {
+    "planId": "7f5cab7bf923bfbdcd5c45d2702c440822657b6a0dd16af487d311ae39f712a2",
+    "objectMap": {
+      "n": {
+        "args": [
+          "i"
+        ],
+        "symbol": "val"
+      }
+    },
+    "obligations": [
+      {
+        "goal": "((∀ (v0 : Fin 5), (((_root_.Fin.val : Fin 5 → Nat) v0) < 5))) → ((∀ (v0 : Fin 5), (((_root_.Fin.val : Fin 5 → Nat) v0) < 5)))",
+        "id": "interpretation",
+        "kind": "welltypedness",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (n : Nat) (h : @LT.lt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5)))),\n  @LT.lt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5)))",
+        "id": "conditional",
+        "kind": "conditional-validity",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (ladonNL0 : Fin 5), let n : Nat := ((_root_.Fin.val : Fin 5 → Nat) ladonNL0); True",
+        "id": "object-map",
+        "kind": "representation-transport",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (ladonNL0 : Fin 5), let n : Nat := ((_root_.Fin.val : Fin 5 → Nat) ladonNL0); (True) → (@LT.lt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5))))",
+        "id": "premise-1",
+        "kind": "premise-supply",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (ladonNL0 : Fin 5), let n : Nat := ((_root_.Fin.val : Fin 5 → Nat) ladonNL0); (True) → (@LT.lt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5)))) → ((((_root_.Fin.val : Fin 5 → Nat) ladonNL0) < 5))",
+        "id": "conclusion",
+        "kind": "conclusion-transfer",
+        "status": "open"
+      }
+    ],
+    "residuals": []
+  },
+  "wrong-map": {
+    "planId": "e746418eec01d4224d412e7f53a603db2a5efecf957b40f95cd090d51b589d40",
+    "objectMap": {
+      "n": {
+        "args": [
+          "i"
+        ],
+        "symbol": "shifted"
+      }
+    },
+    "obligations": [
+      {
+        "goal": "((∀ (v0 : Fin 5), (((_root_.Fin.val : Fin 5 → Nat) v0) < 5))) → ((∀ (v0 : Fin 5), (((_root_.Fin.val : Fin 5 → Nat) v0) < 5)))",
+        "id": "interpretation",
+        "kind": "welltypedness",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (n : Nat) (h : @LT.lt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5)))),\n  @LT.lt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5)))",
+        "id": "conditional",
+        "kind": "conditional-validity",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (ladonNL0 : Fin 5), let n : Nat := ((_root_.ContextFixture.shifted : Fin 5 → Nat) ladonNL0); True",
+        "id": "object-map",
+        "kind": "representation-transport",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (ladonNL0 : Fin 5), let n : Nat := ((_root_.ContextFixture.shifted : Fin 5 → Nat) ladonNL0); (True) → (@LT.lt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5))))",
+        "id": "premise-1",
+        "kind": "premise-supply",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (ladonNL0 : Fin 5), let n : Nat := ((_root_.ContextFixture.shifted : Fin 5 → Nat) ladonNL0); (True) → (@LT.lt.{0} Nat instLTNat n (@OfNat.ofNat.{0} Nat (nat_lit 5) (instOfNatNat (nat_lit 5)))) → ((((_root_.Fin.val : Fin 5 → Nat) ladonNL0) < 5))",
+        "id": "conclusion",
+        "kind": "conclusion-transfer",
+        "status": "open"
+      }
+    ],
+    "residuals": []
+  },
+  "uniform": {
+    "planId": "49eadf75f4ae1d9b2704507ee1c010cf337af19f29832079ac8d52ee51684540",
+    "objectMap": {
+      "d": "d"
+    },
+    "obligations": [
+      {
+        "goal": "((∀ (v0 : Nat), (∃ (v1 : Nat), (∀ (v2 : Nat), (v2 < v1))))) → ((∀ (v0 : Nat), (∃ (v1 : Nat), (∀ (v2 : Nat), (v2 < v1)))))",
+        "id": "interpretation",
+        "kind": "welltypedness",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (d n : Nat), @Exists.{1} Nat fun (k : Nat) => @LT.lt.{0} Nat instLTNat n k",
+        "id": "conditional",
+        "kind": "conditional-validity",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (ladonNL0 : Nat), let d : Nat := ladonNL0; True",
+        "id": "object-map",
+        "kind": "representation-transport",
+        "status": "open"
+      },
+      {
+        "goal": "∀ (ladonNL0 : Nat), let d : Nat := ladonNL0; (True) → (∀ (n : Nat), @Exists.{1} Nat fun (k : Nat) => @LT.lt.{0} Nat instLTNat n k) → ((∃ (v1 : Nat), (∀ (v2 : Nat), (v2 < v1))))",
+        "id": "conclusion",
+        "kind": "conclusion-transfer",
+        "status": "open"
+      }
+    ],
+    "residuals": []
+  }
+}

@@ -1,8 +1,23 @@
 # Tasks
 
+**0.4.3 disposition (2026-11-17):** The parent has superseded the broad
+three-diagnostic/full-scorer sequence as an investment plan. This child's
+unfinished acceptance tasks and frozen evidence remain preserved and unmet;
+they are not automatic release work. A new implementation commitment requires
+a demonstrated internal-use need and explicitly scoped follow-up. See the
+[parent decision](../ladon-semantic-pitfalls-umbrella/tasks.md#current-status-and-next-steps).
+
 Current development state (2026-11-13): M.1–M.3 are complete for the four-case development comparison; see the [final adjudication](evidence/premise-comparison-m2-r01/ADJUDICATION.md). Independent review upheld one constructed discrepancy under the stipulated standalone interpretation and three controls, retaining A's ambiguity caveat and D's unreplayed-provider limits. Existing tools suffice for these cases; no new operation or comparative benefit was established. The recipe/evidence is consolidated; see the [post-acceptance note](evidence/premise-comparison-m2-r01/CONSOLIDATION.md).
 
-The separate matched source-audit pilot is now complete, but its Ladon arm used text analysis only and did not evaluate native premise routes. Its result cannot accept or reject this child's usefulness. Current sequencing is owned by [umbrella N.2a–N.2c](../ladon-semantic-pitfalls-umbrella/tasks.md#next-bounded-milestone--select-a-challenge-and-qualify-its-evidence-route): prepare the user-authorized synthetic challenge through local capsule qualification (N.2p), a frozen development workflow (N.2b), independent evaluation-mutation validation (N.2m), then comparison registration (N.2c). Matrix-factorization is a read-only donor; local capsules and scoped evidence belong in Ladon. The existing scoped premise route is the leading candidate when premise supply matters; its comparative benefit remains unmeasured. Use exposed material for workflow qualification and preserve separate authority for original-proof observations and independent provider replay. Q.1–Q.3 and broad semantic implementation remain deferred unless that selected question exposes a concrete missing operation; candidate selection alone does not activate them.
+The matched pilot, synthetic challenge and later checked-application diagnostic
+are complete; their distinct outcomes and current sequencing are owned by the
+[umbrella ledger](../ladon-semantic-pitfalls-umbrella/tasks.md#current-status-and-next-steps).
+They establish no incremental detection or measured effort benefit. M.1–M.3 remain
+accepted bounded development evidence. Actual proof-use observations and checked
+provider terms retain separate authority; provider replay limits remain visible.
+Q.1–Q.3 and broad semantic implementation stay deferred until a selected consumer
+question demonstrates a concrete missing operation. No challenge launch is pending
+in this child.
 
 Historical baseline state: the four-case provenance baseline is independently accepted in the [family acceptance index](../ladon-pitfall-baselines/evidence/family-baseline-acceptance-index-v1.json); the [batch review](../ladon-pitfall-baselines/evidence/qualification-runs/premise-provenance-v3-family-20261112b/INDEPENDENT-REVIEW.md) records one supported fault judgment, two justified controls and one unsupported local-binder selector. The unsupported case remains in the denominator with no detection/control credit. The baseline prerequisite is satisfied; semantic implementation still requires the umbrella shared evidence contract and this child's red tests. Baseline Task 1.3e corrects two other families and does not require this batch to rerun. Full scoring and matched evaluation remain final gates.
 

@@ -1,0 +1,41 @@
+{
+  "command": [
+    "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+    "/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean"
+  ],
+  "returncode": 1,
+  "stdout": "'LadonSampledFamilyAudit.sampledData' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSampledFamilyAudit.sampledData_batch' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSampledFamilyAudit.sampledData_eta' depends on axioms: [propext, Classical.choice, Quot.sound]\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:188:2: warning: try 'simp' instead of 'simpa'\n\nNote: This linter can be disabled with `set_option linter.unnecessarySimpa false`\n'LadonSampledFamilyAudit.sampled_convergence' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSampledFamilyAudit.sampledLimitLaw_eq' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSampledFamilyAudit.paired_convergence' depends on axioms: [propext, Classical.choice, Quot.sound]\n'LadonSampledFamilyAudit.sampled_privacy' depends on axioms: [propext, Classical.choice, Quot.sound]\n/home/codex/projects/ladon/temp/dpadam-batch-pair-r01/SampledFamily.lean:366:12: error: Type mismatch: After simplification, term\n  result.right.right.right.right.right\n has type\n  \u2200 (\u03b5 : \u211d),\n    0 < \u03b5 \u2192\n      @Filter.Eventually \u2115\n        (fun n =>\n          \u222b (history : Mf.DP.AdaptiveReleaseHistory (Fin 1 \u2192 \u211d)),\n              data.retainedNodeAverage n (fun x => clippedGradientPenalty data.base.clipping x)\n                history \u2202(data.family n).transcriptMeasureAtMesh (data.mesh n) \u2264\n            2 * ((FiniteDimensionalQuadraticObjective.quadratic fun x => 2) - 0) /\n                    (zeroResponseCoefficient (data.base.firstPrinciplesAtMesh 0).betaSeparation / data.base.clipping *\n                      data.base.physicalHorizon) +\n                  0 ^ 2 +\n                1 *\n                    ((c * \u221agamma) \u2022\n                        DPAdamFixedBetaGaussianResampling.covariance\n                          (data.base.firstPrinciplesAtMesh 0).betaSeparation).trace /\n                  (zeroResponseCoefficient (data.base.firstPrinciplesAtMesh 0).betaSeparation / data.base.clipping) +\n              \u03b5)\n        atTop\nbut is expected to have type\n  \u2200 (tolerance : \u211d),\n    0 < tolerance \u2192\n      @Filter.Eventually \u2115\n        (fun n =>\n          \u222b (history : Mf.DP.AdaptiveReleaseHistory (Fin 1 \u2192 \u211d)),\n              (sampledData q hq hq1 gamma c hg hc T hT).retainedNodeAverage n (fun x => clippedGradientPenalty 1 x)\n                history \u2202((sampledData q hq hq1 gamma c hg hc T hT).family n).transcriptMeasureAtMesh\n                ((sampledData q hq hq1 gamma c hg hc T hT).mesh n) \u2264\n            sampledRate q hq hq1 gamma c hg hc T hT + tolerance)\n        atTop\n'LadonSampledFamilyAudit.sampled_finite_rate' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound]\n'LadonSampledFamilyAudit.sampledRate_eq' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+  "stderr": "",
+  "elapsed_seconds": 3.413873840821907,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 7456563200,
+  "resource_observations": {
+    "version": 1,
+    "status": "sampled",
+    "samples": 49,
+    "unavailableSamples": 0,
+    "unidentifiedProcessNames": 0,
+    "leanMeasurement": "sampled",
+    "maxDescendantProcesses": 0,
+    "maxLeanProcesses": 1,
+    "largestLeanRssBytes": 7454466048,
+    "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+    "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+  },
+  "libraryRoots": [
+    "/home/codex/projects/lean/matrix-factorization/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/BrownianMotion/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/LeanSearchClient/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/MathFin/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/Qq/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/aesop/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/batteries/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/importGraph/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/kolmogorov_extension4/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/mathlib/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/plausible/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/proofwidgets/.lake/build/lib/lean"
+  ]
+}

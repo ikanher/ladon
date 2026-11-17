@@ -1,0 +1,36 @@
+........................................................................ [ 39%]
+...........................................F............................ [ 79%]
+.....................................                                    [100%]
+=================================== FAILURES ===================================
+_____ test_real_pressure_application_slice_preserves_actual_provider_chain _____
+
+    def test_real_pressure_application_slice_preserves_actual_provider_chain():
+        from ladon.proof_slice import extract_proof_slice
+    
+>       result = extract_proof_slice(
+            PRESSURE_ROOT, PRESSURE_FILE, "NavierStokes.PressureDatum",
+            "NavierStokes.PressureDatum.deriv_pressure_pos_of_active",
+            "deriv_pressure_pos", occurrence=0,
+        )
+
+tests/test_correspondence_real_application.py:10: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proof_slice.py:66: in extract_proof_slice
+    root = Path(repo_root).resolve(strict=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+../../miniconda3/lib/python3.11/pathlib.py:993: in resolve
+    s = os.path.realpath(self, strict=strict)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen posixpath>:413: in realpath
+    ???
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = '/home/codex/projects', rest = 'formalization', strict = True, seen = {}
+
+>   ???
+E   FileNotFoundError: [Errno 2] No such file or directory: '/home/codex/projects/navier-stokes-retest-4'
+
+<frozen posixpath>:457: FileNotFoundError
+=========================== short test summary info ============================
+FAILED tests/test_correspondence_real_application.py::test_real_pressure_application_slice_preserves_actual_provider_chain
+1 failed, 180 passed in 1764.63s (0:29:24)

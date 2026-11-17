@@ -1,0 +1,482 @@
+% root = ../paper.tex
+\section{Omitted Details in \Cref{sec:subsampling}}
+\label{app:property}
+We begin this appendix with a small example showing our subsampling theorem is generically unimprovable.
+\paragraph{Tightness} % (fold)
+\label{par:example_and_tightness}
+
+
+Consider the mechanism $\tm$ that randomly releases one individual's private information in the dataset. The privacy analysis is easy: without loss of generality we can assume two neighboring datasets differ in the first individual.  Effectively we are trying to distinguish uniform distributions over $\{1,2,\ldots, n\}$ and $\{1',2,\ldots, n\}$. It's not hard to see that the trade-off function of these two uniform distributions is $f_{0,1/n}$, i.e. $(\ep,\delta)$-DP with $\ep=0, \delta=1/n$. This is exact --- the adversary has tests that achieve every point on the curve.
+ % So this $\tm$ is $(0,1/n)$-DP.
+
+Our \cref{thm:subsample} yields the same result, showing its tightness. To see this, let $M$ be the identity map that takes in one individual and outputs his/her entire private information. Then $\tm = M\circ\Sample_{\frac{1}{n}}$. Privacy of $M$ is described by $f\equiv 0$. By \Cref{thm:subsample}, $\tm$ is $C_{1/n}(f)$-DP. \Cref{fig:subsample} shows that $C_{1/n}(f)=f_{0,1/n}$.
+
+
+
+% paragraph example_and_tightness (end)
+Next we show the following two equations:
+	\begin{align*}
+		\ep'&=\log(1-p + pe^\ep),\\
+		\delta'&=p\big(1+f^*(-e^{\ep})\big)
+	\end{align*}
+	can be re-parameterized into 
+	\begin{equation}
+		\delta'=1+f_p^*(-e^{\ep'})\tag{\ref{eq:fp}}
+	\end{equation}
+	where $f_p = pf+(1-p)\Id$.
+\begin{proof}[Proof of \Cref{eq:fp}]
+	
+	Since $\ep\mapsto\log(1-p + pe^\ep)$ maps $[0,+\infty)$ to $[0,+\infty)$ monotonically, we can solve $\ep$ from $\ep'$ and plug into $\delta'$. We have
+	\begin{align*}
+		\frac{1}{p}(1-e^{\ep'}) = 1-e^{\ep} \quad\text{ and }\quad
+		\delta'=p\big(1+f^*(-e^{\ep})\big)
+		&=p\big(1+f^*(\tfrac{1}{p}(1-e^{\ep'})-1)\big).
+	\end{align*}
+	Let $y = -e^{\ep'}$ and it suffices to show for any $y\leqslant-1$,
+	\begin{equation}\label{eqn:ning}
+		1+f_p^*(y) = p\big(1+f^*(\tfrac{1}{p}(1+y)-1)\big).
+	\end{equation}
+	To see this, expand $f_p^*$ as follows
+	\begin{align*}
+		f_p^*(y) &= \sup_{x} yx-f_p(x)\\
+		&=\sup_{x} yx-pf(x)-(1-p)(1-x)\\
+		&=p-1  + \sup_{x} (y+1-p)x -pf(x)\\
+		&=p-1  + p\cdot\sup_{x} (\tfrac{1}{p}(1+y)-1)x -f(x)\\
+		&=p-1 +pf^*(\tfrac{1}{p}(1+y)-1)
+	\end{align*}
+	\eqref{eqn:ning} follows directly.
+\end{proof}
+
+	% So we have that $\tm$ is $\big(\ep', 1+f_p^*(-e^{\ep'})\big)$-DP.
+	% $f_p$ is a generically asymmetric trade-off function. As it is the convex combination of $f$ and $f_\mathrm{id}$, we have $-1\in\partial f_p(x)$ if and only if $-1\in\partial f(x)$
+	% Now we have that $\tilde{M}$ is $\big(\ep',\delta'(\ep')\big)$-DP with $\delta'(\ep') = 1+f_p^*(-e^{\ep'})$ for all $\ep'\geqslant 0$. The prepared tool \Cref{prop:asymm_env} simply implies that $\tm$ is $\Symm(f_p)$-DP.
+	% The rest is to verify that $C_p(f) = \Symm(f_p)$.
+	% We claim that $f_p$ is in the overlapping case. To see this, let $x^*$ be the fixed point of $f$. We know $-1\in\partial f(x^*)$, so $-1\in\partial f_p(x^*)$. It suffices to show $x^*\leqslant f_p(x^*)$. $f$ lies below $f_\mathrm{id}$, so $x^* = f(x^*)\leqslant 1-x^*$. $f_p(x^*) = pf(x^*)+(1-p)(1-x^*) = px^*+(1-p)(1-x^*)\geqslant px^*+(1-p)x^* = x^*$.
+
+% If we had a complete family of envelope, the enclosed function would also be the average of $f$ and $f_\mathrm{id}$. However, because of symmetry, we only have linear envelopes with slope $\leqslant -1$. This is exactly why \Cref{prop:asymm_env} comes into play.
+
+% Although \Cref{prop:DPtof} is the official tool \ar{What does this mean?} for conversion from dual to primal, it turns out the ``if and only if'' in \Cref{prop:ftoDP} is a better tool for subsampling.
+
+% Recall that \Cref{prop:ftoDP} says the collection $(\ep,\delta(\ep))$-DP for all $\ep\geqslant0$ with $\delta(\ep) = 1+f^*(-e^{\ep})$ is equivalent to $f$-DP when $f$ is symmetric. In subsampling we are given the same collection of $(\ep,1+f^*(-e^{\ep}))$-DP, but with an asymmetric $f$. The collection should be converted to a symmetric trade-off function, so $f$ has to be somehow symmetrized. We first state the result and then explain how to symmetrize.
+
+Next we provide the general tool mentioned in \Cref{sub:proof_of_subsample_theorems} that convert collections of $(\ep,\delta)$-DP guarantee in the form of \eqref{eq:fp} to some $f$-DP.
+
+The symmetrization operator $\Symm:\T\to\T^S$ maps a general trade-off function to a symmetric trade-off function.  It's defined as follows:
+\begin{definition} \label{def:symm}
+	For $f\in\T$, let $\bar{x} = \inf\{x\in[0,1]:-1\in\partial f(x)\}$. The symmetrization operator $\Symm:\T\to\T^S$ is defined as
+	\[\Symm(f):= \left\{
+	\begin{array}{ll}
+	\min\{f,f^{-1}\}^{**}, &\text{ if }\,\, \bar{x}\leqslant f(\bar{x}),\\
+	\max\{f,f^{-1}\}, &\text{ if }\,\, \bar{x}>f(\bar{x}).
+	\end{array}
+	\right.\]
+\end{definition}
+
+\begin{proposition}\label{prop:asymm_env}
+	Let $f\in\T$, not necessarily symmetric. Suppose a mechanism is $(\ep,1+f^*(-e^{\ep}))$-DP for all $\ep\geqslant 0$, then it is $\Symm(f)$-DP.
+\end{proposition}
+
+% Although asymmetric, $f$ is still assumed to be a trade-off function and hence non-increasing. So it makes sense to define $\bar{x}$ as the first point with subgradient $-1$. Typically $\bar{x}$ is the unique point such that $f'(\bar{x})=-1$.
+
+Recall from basic convex analysis that double convex conjugate $f^{**}$ is the greatest convex lower bound of $f$. If $f$ itself is convex then $f^{**}=f$. For $f$ symmetric , $f=f^{-1}$. By convexity of $f$, we have $\Symm(f)=f$ in both cases. So \Cref{prop:ftoDP} is a special case of \Cref{prop:asymm_env}. The first half of \Cref{prop:asymm_env} is \Cref{prop:asymm_for_proof}, the part we used in the proof of our subsampling theorem.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.7\linewidth]
+{./figures/Symm.pdf}
+  \captionof{figure}{Action of Symm. Left panel: $\bar{x}\leqslant f(\bar{x})$. Right panel: $\bar{x} > f(\bar{x})$. For both panels the effective parts (red bars on $x$-axes) are $[0,\bar{x}]$ of $f$ and $[f(\bar{x}),1]$ of $f^{-1}$. No overlap in the left panel since $\bar{x} < f(\bar{x})$, so interpolate with straight line; overlap in the right panel so the max is taken.}
+  \label{fig:symm}
+\end{figure}
+
+From \Cref{fig:symm} it's not hard to see that
+\begin{align*}
+	\min\{f,f^{-1}\}^{**}(x) =
+	\left\{
+	\begin{array}{ll}
+	f(x),&x\in[0,\bar{x}], \\
+	\bar{x}+f(\bar{x})-x, & x\in[\bar{x},f(\bar{x})], \\
+	f^{-1}, & x\in[f(\bar{x}),1].
+	\end{array}
+	\right.
+\end{align*}
+
+
+% The reason for the extra complicacy is that $\ep$ is always non-negative, so the slopes of the enveloping lines are not arbitrary. The effective part is exactly the part with slope at most $-1$, which is where the function can be recovered by the supporting $f_{\ep,\delta}$'s. For $f$ it is $[0,\bar{x}]$ and it . By symmetry the effective part of $f^{-1}$, i.e. $[f(\bar{x}),1]$ is also recovered. , both are effective and the max is taken (second case, right panel).
+% \djs{Seems this amount of argument is enough. Should we still provide a proof?}
+
+\begin{proof}[Proof of \Cref{prop:asymm_env}]
+	$M$ being $\big(\ep,\delta(\ep)\big)$-DP means that for any neighboring datasets $S$ and $S'$,
+	\[T\big(M(S),M(S')\big)(x)\geqslant-e^\ep x+1-\delta(\ep).\]
+	Fix $x\in[0,1]$. Since the DP condition holds for all $\ep\geqslant 0$, the lower bound still holds when we take the supremum over $\ep\geqslant 0$. In other words, $M$ is ${f}_\mathrm{env}$-DP with
+	$${f}_\mathrm{env}(x) = \max\{0,\,\,\sup_{\ep\geqslant0}1-\delta(\ep)-e^\ep x\}.$$
+	By \Cref{prop:symmetry} $M$ is also $\max\{{f}_\mathrm{env},{f}_\mathrm{env}^{-1}\}$-DP. The proof will be complete if we can show $\max\{{f}_\mathrm{env},{f}_\mathrm{env}^{-1}\} = \Symm(f)$.
+
+	\begin{figure}[h]
+	  \centering
+	  \includegraphics[width=0.7\linewidth]
+	{./figures/Symm2.pdf}
+	  \captionof{figure}{Symm explained. Left panel: $\bar{x}\leqslant f(\bar{x})$. Right panel: $\bar{x} > f(\bar{x})$. }
+	  \label{fig:symm2}
+	\end{figure}
+
+	We achieve this by first showing:
+	\[{f}_\mathrm{env}(x) =
+	\left\{
+	\begin{array}{ll}
+	f(x),&x\in[0,\bar{x}], \\
+	\bar{x}+f(\bar{x})-x, & x\in[\bar{x},\bar{x}+f(\bar{x})], \\
+	0, & x\in[\bar{x}+f(\bar{x}),1].
+	\end{array}
+	\right.\]
+	From \Cref{fig:symm2} it is almost obvious. We still provide the argument below.
+
+	Plug in $\delta(\ep) = 1+f^*(-e^{\ep})$ and change the variable $y=-e^\ep$:
+	\begin{align*}
+		\sup_{\ep\geqslant0}[-e^\ep x+1-\delta(\ep)]
+		&=\sup_{\ep\geqslant0}[-e^\ep x-f^*(-e^{\ep})]\\
+		&=\sup_{y\leqslant-1}[y x-f^*(y)]
+	\end{align*}
+	From convex analysis we know if $y\in\partial f(x)$ then $yx = f(x)+f^*(y)$. By definition of $\bar{x}$, if $x\leqslant\bar{x}$, then at least one subgradient $y\in\partial f(x)$ is no greater than $-1$. So this specific $y x-f^*(y) = f(x)$ is involved in the supremum, i.e. $\sup_{y\leqslant-1}[y x-f^*(y)] = f(x)$. This justifies the expression for the first segment.
+
+	When $x>\bar{x}$, the supremum is always attained at $y=-1$. In fact, if we let $l_y(x) = y x-f^*(y)$, then
+	\begin{lemma} \label{lem:ning}
+	 	$l_y(x)\leqslant l_{-1}(x)$ when $y\leqslant -1$ and $x>\bar{x}$.
+	\end{lemma}
+	\begin{proof}[Proof of \Cref{lem:ning}]
+	$l_y$ is the supporting linear function of $f$ with slope $y$. It suffices to show that $l_y(x)$ is monotone increasing in $y$. To see this, change the variable from the slope $y$ to the supporting location $u$. As $f$ is convex, $y=f'(u)$ is increasing in $u$. In terms of $u$, $l_y(x) = f(u) + f'(u)(x-u)$. Taking derivative with respect to $u$:
+	\[\frac{\partial}{\partial u }\, l_y(x) = f'(u) + f''(u)(x-u) + f'(u)\cdot(-1) = f''(u)(x-u).\]
+	$y\leqslant -1$ corresponds to location $u\leqslant \bar{x}$ and hence $u<x$. So we see that $\frac{\partial}{\partial u }\, l_y(x)= f''(u)(x-u) \geqslant 0$. $l_y(x)$ is increasing in $u$, and hence increasing in $y$, completing the proof of the lemma.
+	\end{proof}
+	So the supremum is attained at $y=-1$. The value is $\sup_{y\leqslant -1}\big[yx-f^*(y)\big] = l_{-1}(x)$. Support function with slope $-1$ must support $f$ at $\bar{x}$.
+	The location yields expression $l_{-1}(x) = f(\bar{x}) - (x-\bar{x})$. This justifies the expression for the second segment. The third one is simply the result of thresholding at 0.
+
+	It's straightforward to verify that
+	\[
+		f_\mathrm{env}^{-1}(x) =
+		\left\{
+		\begin{array}{ll}
+		\bar{x}+f(\bar{x})-x,&x\in[0,f(\bar{x})], \\
+		f^{-1}(x), & x\in[f(\bar{x}),1].
+		\end{array}
+		\right.
+	\]
+	Obviously $\max\{{f}_\mathrm{env},{f}_\mathrm{env}^{-1}\}=\Symm(f)$. When the intervals $[0,\bar{x}]$ and $[f(\bar{x}),1]$ are disjoint, $f$ and $f^{-1}$ are effective separately, and the linear interpolation fills the blank. On the other hand when they intersect, max is taken and the linear function is never effective.
+\end{proof}
+
+
+% The following proposition can be very useful when one wants to convert a family of $(\ep,\delta)$-DP guarantee to $f$-DP. \djs{Examine.}
+
+
+% \djs{Figure no longer necessary? Merge with equal heights?}
+% \begin{figure}[h]
+% \centering
+% \begin{minipage}{.45\textwidth}
+%   \centering
+%   \includegraphics[width=\linewidth]
+% {./figures/Cp1.pdf}
+%   \captionof{figure}{}
+%   \label{fig:Cp1}
+% \end{minipage}%
+% \hspace{-1cm}
+% \begin{minipage}{.55\textwidth}
+%   \centering
+%   \includegraphics[width=\linewidth]
+% {./figures/Cp2.pdf}
+%   \captionof{figure}{}
+%   \label{fig:Cp2}
+% \end{minipage}
+% \end{figure}
+% \input{properties/subsampledGDP}
+
+% \subsubsection{Proof} % (fold)
+% \label{ssub:proof_of_previous_section}
+
+% subsection subsampling (end)
+
+
+
+% A unified way is through the ``effective parts''. The punchline is that $f$ is effective in $[0,\bar{x}]$, and $f^{-1}$ is effective in $[f(\bar{x}),1]$. In fact, $f$ maps $[0,\bar{x}]$ to $[f(\bar{x}),1]$ and $f^{-1}$ reversely. So the two effective parts are symmetric in terms of the graphs of the functions.
+
+% If $\bar{x}\leqslant f(\bar{x})$ then the two effective intervals do not overlap, so $\Symm$ takes them both and does a first order interpolation, i.e. a straight line with slope $-1$ in $[\bar{x},f(\bar{x})]$. If $\bar{x}> f(\bar{x})$, then the two intervals overlap and effective parts contradicts. Within the contradictory interval, Symm picks the greater one. See \Cref{fig:symm} for a graphic illustration for both cases. 
+
+
+
+
+
+
+
+
+% In the following lemmas, the $f$ used in the notion of $f$-DP may lie outside of $\T$. However, the meaning should be clear: $\F(M(z),M(z'))\geqslant f$ for any neighboring datasets $z$ and $z'$. \djs{Prelim or here?}
+% \begin{lemma} \label{lem:samplem}
+% 	If $M$ is $f$-DP with $f(x) = yx+b,y\leqslant -1,b\in[0,1]$ on $(X^m,\sim)$, then $\tilde{M} = M\circ\Sample(m)$ is $\frac{m}{n}f+(1-\frac{m}{n})f_{\mathrm{id}}$-DP on $(X^n,\sim)$.
+% \end{lemma}
+% \begin{remark}
+% 	Assuming $M$ is $f$-DP, it is also $f^{-1}$-DP by symmetry. However, $\tm$ is not $pf^{-1}+(1-p)f_{\mathrm{id}}$-DP.
+% \end{remark}
+% \begin{lemma} \label{lem:samplep}
+% 	If $M$ is $f$-DP with $f(x) = yx+b,y\leqslant -1,b\in[0,1]$ on $(X^{\leqslant n},\sim)$, then $\tilde{M}= M\circ\Sample(p)$ is $pf+(1-p)f_{\mathrm{id}}$-DP on $(X^n,\sim)$.
+% \end{lemma}
+% \djs{State it or just prove by Jensen?}
+% \begin{remark}
+% 	\Cref{lem:samplep} has a more direct proof via Jensen's inequality while \Cref{lem:samplem} does not obviously admit such a proof.
+% \end{remark}
+% In fact, these are exactly the classical subsampling theorem for $(\ep,\delta)$-DP. It is stated in a slightly unusally way in that $f$ and $pf+(1-p)f_{\mathrm{id}}$ are not symmetric. As we shall see, the current form emphasizes the connection with convex analysis and hence conceptually helps the proof.\djs{Revise the form and remove the sentence.}
+We conclude this appendix with the proof of the classical privacy amplification by subsampling theorem. It primarily follows \cite{jon}, but is written so that potential generalization and improvement are in reach.
+\DPsubsamplerep*
+\begin{proof}[Proof of \Cref{lem:DPsubsample}]
+	% In order to remind the readers that we are using the folklore proof, let $b=1-\delta, y = -e^\ep$. We state the theorem in $y,b$ instead of $\ep,\delta$ in the hope that the connection with dual view theorem is smoother. Note that the equivalent condition on $\ep$ is $\ep\geqslant0$.
+	Let $\xv$ and $\xv'$ be neighboring datasets, each with $n$ individuals. Without loss of generality, assume $\xv$ and $\xv'$ differ in the first individual. We are ultimately interested in $\tm(\xv)$ and $\tm(\xv')$. They are generated as follows.
+
+	Let $I\subseteq[n]$ be any size $m$ subset of the index set $[n]=\{1,2,\ldots, n\}$. $\xv_I$ and $\xv_I'$ denote the $m$ individuals indexed by $I$ in corresponding datasets, both of which can be the input of $M$. When $I$ is uniformly sampled from the $n\choose m$ subsets of $[n]$ of cardinality $m$, $M(\xv_I)$ is $\tm(\xv)$.
+
+	% In order to analyze the testing problem $\tm(\xv)$ vs $\tm(\xv')$, we are going to condition on $S$ and analyze each ``micro'' testing problem $M(\xv_I)$ vs $M(\xv'_I)$.
+
+	Let $\phi$ be an arbitrary rejection rule. For a fixed $I\subseteq [n]$, when $\phi$ is used for the problem $M(\xv_I)$ vs $M(\xv'_I)$, the corresponding type I and type II errors are
+	\begin{equation}\label{eq:defS}
+		\alpha_I:=\E[\phi(M(\xv_I))]\quad\text{ and }\quad\beta_I:=1-\E[\phi(M(\xv'_I))]
+	\end{equation}
+	respectively. The expectations are over the randomness of $M$.
+
+	When $\phi$ is used for $\tm(\xv)$ vs $\tm(\xv')$, the type I error $\alpha$ and type II error $\beta$ satisfy
+	\[
+		\alpha=\E[\phi(\tm(\xv))]= \E_I\,\E[\phi(M(\xv_I))] = \E_I[\alpha_I] %= {n \choose m}^{-1}\cdot\Big(\sum_{S\subseteq [n]} \alpha_I\Big)
+	\]
+	and
+	\begin{align*}
+		\beta=1-\E[\phi(\tm(\xv'))]= \E_I\big[1-\E[\phi(M(\xv'_I))]\big] = \E_I[\beta_I]. %= {\binom{n} {m}}^{-1}\cdot\Big(\sum_{S\subseteq [n]} \beta_I\Big)
+	\end{align*}
+	Ultimately we are going to show that $\beta$ has a lower bound in terms of $\alpha$.
+	% This lower bound should involve the sampling ratio $m/n$ and the privacy parameters $\ep,\delta$.
+	This is possible because for each $I$, $\beta_I$ has a lower bounded in terms of $\alpha_I$, whose form depends on whether the ``difference'' individual 1 is sampled.
+
+	When $1\not\in I$, $\xv_I = \xv'_I$. By definition \eqref{eq:defS}, $\alpha_I+\beta_I = 1$.
+	When $1\in I$, $\xv_{I}$ and $\xv'_{I}$ are neighbors in $X^m$, so $(\ep,\delta)$ privacy of $M$ becomes effective here. Let $k = -e^\ep, b = 1-\delta$. From \Cref{thm:privacy_testing} we know $\beta_I\geqslant k\alpha_I+b$.
+
+	So we should separate these cases $1\in I$ and $1\notin I$ and average them respectively.
+	Define
+	\begin{align*}
+		A&=\E[\alpha_I|I\ni 1], %=\tfrac{n}{m}\cdot\big(\textstyle\sum_{I\ni 1} \alpha_I\big)\cdot \tbinom{n}{m}^{-1}
+		\quad
+		B=\E[\beta_I|I\ni 1] %=\tfrac{n}{m}\cdot\big(\textstyle\sum_{I\ni 1} \beta_I\big)\cdot \tbinom{n}{m}^{-1}
+	\end{align*}
+	and
+	\begin{align*}
+		\bar{A}&=\E[\alpha_I|I\not\ni 1] ,%=\tfrac{n-m}{m}\cdot\big(\textstyle\sum_{I\not\ni 1} \alpha_I\big)\cdot \tbinom{n}{m}^{-1}
+		\quad
+		\bar{B}=\E[\beta_I|I\not\ni 1].%=\tfrac{n-m}{m}\cdot\big(\textstyle\sum_{I\not\ni 1} \beta_I\big)\cdot \tbinom{n}{m}^{-1}
+	\end{align*}
+	Let $p=m/n$. Then $P[I\ni 1]=p, P[I\not\ni 1]=1-p$. Further averages of these quantities give us $\alpha$ and $\beta$:
+	$$\alpha = pA+(1-p)\bar{A}, \quad \beta = pB+(1-p)\bar{B}.$$
+	Linearity passes through expectations, so we have $\bar{A}+\bar{B} = 1$ and
+	\[B = \E[\beta_I|I\ni 1] \geqslant \E[k\alpha_I+b|I\ni 1] = k\E[\alpha_I|I\ni 1]+b = kA+b.\]
+	
+	% Only $m/n$ fraction of the possible subsets contain the special individual 1. That is, $P[I\ni 1]=\frac{m}{n}, P[I\not\ni 1]=\frac{n-m}{n}$. 
+
+	% If there is nothing else we can make use of, then the best lower bound of $\beta$ we can show is the minimum of the following optimization problem:
+
+	% \begin{align*}
+	% 	\min_{A,B,\bar{A},\bar{B}} \quad & pB+(1-p)\bar{B}\\
+	% 	\textrm{s.t.}\quad
+	% 	& pA+(1-p)\bar{A}=\alpha\\
+	% 	& \bar{A}+\bar{B} = 1 \\
+	% 	& B\geqslant kA+b\\
+	% 	& A,B,\bar{A},\bar{B}\in [0,1]
+	% \end{align*}
+
+	This inequality $B\geqslant kA+b$ comes from the difference between $\xv$ and $\xv'$. The smart observation is, there are a lot more neighboring datasets we can exploit. For example $S_I$ and $S_{\tilde{I}}'$ when $I = \{1,2,\ldots, m\}, \tilde{I} = \{2,3,\ldots, m+1\}$. They share individuals $2,3,\ldots, m$ and differ in the one left. This yields another inequality $B\geqslant k\bar{A}+b$. We fill in the details Jon Ullman omits in his lecture note.
+	
+	For $I\ni1$, we can replace 1 with any of the $n-m$ indices not in $I$ and obtain $n-m$ different subsets $I^{(1)},\ldots, I^{(n-m)}$. Note that none of these contains 1. In another word, we have the following correspondence:
+	\[
+		\begin{array}{ccc}
+			\ni 1 &  & \not\ni1 \\
+			I & \longleftrightarrow & I^{(1)} \\
+			& \vdots &\\
+			I & \longleftrightarrow & I^{(n-m)}
+		\end{array}
+	\]
+	Each $\xv_{I^{(j)}}$ is a neighbor of $\xv'_I$, so by the privacy of $M$, we have $\beta_I\geqslant k\alpha_{I^{(j)}}+b$. Sum these up for each $I\ni1$ and the $n-m$ replacements of $I$, we have
+	\[(n-m)\cdot\sum_{I\ni 1} \beta_I\geqslant m\cdot\sum_{I\not\ni 1} k\alpha_I+b.\]
+	The right hand side factor $m$ comes from a different counting: if $I\not\ni1$ then each of the $m$ items in $I$ could have been 1 before the replacement. So each $I\not\ni1$ appears $m$ times in the summation.
+
+	Multiply by $\frac{n}{m(n-m)}\cdot\binom{n}{m}^{-1}$,
+	\[\frac{n}{m}\cdot\bigg(\sum_{I\ni 1} \beta_I\bigg)\cdot \binom{n}{m}^{-1}\geqslant b+ k \cdot \frac{n}{n-m}\cdot\bigg(\sum_{I\not\ni 1} \alpha_I\bigg)\cdot \binom{n}{m}^{-1}.\]
+	By the simple Bayes' rule, this is $B\geqslant k\bar{A}+b$.
+
+	Remember we want a lower bound of $\beta$. The best possible lower bound we can ge t via these relations is the minimum of the following linear program:
+	\begin{align*}
+		\min_{A,B,\bar{A},\bar{B}} \quad & \beta\\
+		\textrm{s.t.}\quad
+		& pB+(1-p)\bar{B}=\beta\\
+		& pA+(1-p)\bar{A}=\alpha\\
+		& \bar{A}+\bar{B} = 1 \\
+		& B\geqslant kA+b\\
+		& B\geqslant k\bar{A}+b \\
+		& A,B,\bar{A},\bar{B}\in [0,1]
+	\end{align*}
+	\begin{lemma} \label{lem:LP}
+		The minimum of the above linear program is no less than $p(k\alpha+b)+(1-p)(1-\alpha)$.
+	\end{lemma}
+	\begin{proof}[Proof of \Cref{lem:LP}]
+		We are going to remove the $A,B,\bar{A},\bar{B}\in [0,1]$ constraint and find the exact minimum of the relaxation, which is a lower bound of the original minimum.
+
+		We have $\beta+\alpha = p(A+B)+(1-p)(\bar{A}+\bar{B})=p(A+B)+(1-p)$. So equivalently we can try to solve
+		\begin{align*}
+			\min_{A,B,\bar{A}} \quad & A+B\\
+			\textrm{s.t.}\quad
+			& pA+(1-p)\bar{A}=\alpha\\
+			& B\geqslant kA+b\\
+			& B\geqslant k\bar{A}+b
+		\end{align*}
+		When $A=\bar{A}=\alpha$, the lower bound they impose on $B$ is $k\alpha+b$. Notice that $k=-\e^\ep\leqslant -1$. The two consequences are:
+		\begin{enumerate}
+			\setlength\itemsep{-0.3em}
+			\item $A>\alpha$ is worse than $A=\alpha$, because the convex combination equality requires $\bar{A}<\alpha$. $B$ has to increase anyway. Both $A$ and $B$ increase, so the objective $A+B$ also increases.
+			\item If $A$ is decreased from $\alpha$ by some amount, $B$ has to increase by $\e^\ep$ times that amount, which is not worth it.
+		\end{enumerate}
+		So the minimum of the relaxed linear program is achieved at $A=\bar{A}=\alpha, B=k\alpha+b,\bar{B} = 1-\alpha$, thereby inducing the claimed lower bound.
+	\end{proof}
+
+	So $\beta\geqslant p(k\alpha+b)+(1-p)(1-\alpha)$. Changing back to $\ep,\delta$, we have
+	\[\beta\geqslant p(-e^\ep\alpha+1-\delta)+(1-p)(1-\alpha) = -[p\e^\ep+1-p]\alpha+1-p\delta = -\e^{\ep'}\alpha+1-\delta'.\]
+	By \Cref{thm:privacy_testing}, $\tm$ is $(\ep',\delta')$-DP.
+	% It's not hard to solve by hand. The conclusion is that when $y\leqslant-1$, the maximum is attained when $C=D=\alpha$. Note that $y\leqslant-1$ is crucial here --- if $y=0$ then the $C$ and $D$ attaining maximum should be as separated as possible since the $\min\{C,D\}$ term is no longer in the objective. Continuing with the bound on $\beta$:
+	% \begin{align*}
+	% 	\beta&\geqslant p\max\{f(C),f(D)\}+(1-p)(1-D) = pf(\alpha)+(1-p)(1-\alpha).
+	% \end{align*}
+\end{proof}
+% \begin{remark}
+% 	In the step $\beta\geqslant p\max\{f(C),f(D)\}+(1-p)(1-D)$ we can add the constraint that $f(C)\geqslant0$ and $f(D)\geqslant0$. The resulting bound is tighter but too complicated to use.
+% 	% \input{properties/subsample_tighter}
+% \end{remark}
+% The proofs of these lemmas are standard in differential privacy literature. They rely heavily on the fact that $(X^m,\sim)$ and $(X^{\leqslant n},\sim)$ are symmetric, linearity of $f$ and maybe disappointingly, $\ep\geqslant 0$.
+
+% For $f\in\T$, consider its Legendre transform
+% $$f^*(y) = \sup_{x\in[0,1]} yx-f(x), y\in(-\infty,0].$$
+% The domain of $y$ is set to be $(-\infty,0]$ as any effective supporting linear function of a decreasing function must have negative slope.
+
+% It's easy to see that $-1\leqslant f^*(y) \leqslant 0$. The following intuitive proposition from standard convex analysis says that the collection of supporting linear functions $x\mapsto xy - f^*(y)$ is as informative as $f$:
+% \begin{proposition}\label{prop:duality}For all $x\in[0,1]$,
+% 	$$f(x) = \sup_{y\in(-\infty,0]} xy - f^*(y).$$
+% \end{proposition}
+% \begin{proof}
+% 	Extend $f$ to $\R$ by setting
+% 	$$
+% 	h(x) =
+% 	\left\{
+% 	\begin{array}{ll}
+% 	+\infty, 		& x <0, \\
+% 	f(x), & x\in[0,1],\\
+% 	0, & x>1.
+% 	\end{array}
+% 	\right.
+% 	$$
+% 	By Theorem 7.1(b) on page 51 of Rockafellar, we know that $h$ is closed. Let $h^*$ be the standard convex conjugate of $h$. It's easy to see that
+% 	$$
+% 	h^*(y) =
+% 	\left\{
+% 	\begin{array}{ll}
+% 	f^*(y), & y\leqslant0,\\
+% 	+\infty, & y>0.
+% 	\end{array}
+% 	\right.
+% 	$$
+% 	By Theorem 12.2 on page 104 of the same book, we know $h^{**}=h$. So for $x\in[0,1]$,
+% 	$$
+% 	f(x) = h(x) = h^{**}(x) = \sup_{y\in\R} xy-h^*(y) = \sup_{y\leqslant0} xy-f^*(y).
+% 	$$
+% 	This completes the proof.
+% \end{proof}
+
+% \begin{proof}
+% By definition of $f^*$,  $f(x)\geqslant yx-f^*(y)$. So $M$ is also $(x\mapsto yx-f^*(y))$-DP for any $y\leqslant -1$. By \Cref{lem:samplem}, $\tilde{M}$ is $f_y$-DP with
+% $$f_y(x) = p(yx-f^*(y)) + (1-p)(1-x).$$
+% Hence $\tilde{M}$ is also $\tilde{f}$-DP with $\tilde{f}=\sup_{y\leqslant -1}f_y$.
+% \begin{align*}
+% 	\tilde{f}=\sup_{y\leqslant -1}f_y(x) &= \sup_{y\leqslant -1} \big[p(yx-f^*(y)) + (1-p)(1-x)\big]\\
+% 	&=p\cdot\sup_{y\leqslant -1}\big[yx-f^*(y)\big] + (1-p)(1-x)
+% 	% &=p f(x)+(1-p)(1-x) \\
+% 	% &= p f + (1-p)f_{\mathrm{id}} (x).
+% \end{align*}
+
+% \begin{figure}[h]
+% \centering
+% \begin{minipage}{.45\textwidth}
+%   \centering
+%   \includegraphics[width=\linewidth]
+% {./figures/Cp1.pdf}
+%   \captionof{figure}{}
+%   \label{fig:Cp1}
+% \end{minipage}%
+% \hspace{-1cm}
+% \begin{minipage}{.55\textwidth}
+%   \centering
+%   \includegraphics[width=\linewidth]
+% {./figures/Cp2.pdf}
+%   \captionof{figure}{}
+%   \label{fig:Cp2}
+% \end{minipage}
+% \end{figure}
+% \djs{TODO: Merge with equal height}
+% , but before that let's finish the proof of \Cref{thm:samplem}.
+
+% We have shown $\tm$ is $\tilde{f}$-DP. It's easy to check that $\tilde{f}_+$, the function obtained by clipping $\tilde{f}$ at 0, is a trade-off function. So we can talk about $\tilde{f}_+^{-1}$. Now that $\tm$ is $\tilde{f}_+$-DP, it must also be $\max\{\tilde{f}_+,\tilde{f}_+^{-1}\}$-DP. The rest is just to compute $\max\{\tilde{f}_+,\tilde{f}_+^{-1}\}$ using the expression of $\tilde{f}$ obtained in the lemma.
+
+% Again it's intuitive from \Cref{fig:Cp2}. We give a brief argument here. Let $l(x) = p(2x^*-x)+(1-p)(1-x) = 2px^*+1-p-x$. The slope is $-1$ so $l^{-1}(x) = l(x)$. With this notation,
+% \[\tilde{f}(x)=  
+% 	\left\{
+% 	\begin{array}{ll}
+% 	f_p(x),&x\in[0,x^*], \\
+% 	l(x), & x\in[x^*,1].
+% 	\end{array}
+% 	\right.\]
+
+% \[\tilde{f}_+^{-1}(x)=  
+% 	\left\{
+% 	\begin{array}{ll}
+% 	l^{-1}(x),&x\in[0,l(x^*)], \\
+% 	f_p^{-1}(x), & x\in[l(x^*),1].
+% 	\end{array}
+% 	\right.\]
+% In the interval $[x^*,l(x^*)]$, $\tilde{f}_+(x) = \tilde{f}_+^{-1}(x) = l(x)$. Compare the above two equations, it suffices to show $l(x)\leqslant f_p(x)$ and $l(x)\leqslant f_p^{-1}(x)$ for any $x\in[0,1]$.
+% Since $-1\in\partial f(x^*)$, it's also in $\partial f_p(x^*)$. Moreover, $l(x^*) = f_p(x^*)$. So $l$ is a supporting function of $f_p$ at $x^*$. Since $l^{-1}=l$, it is also a supporting function of $f_p^{-1}$ at $l(x^*)$.
+% The proof is now complete.
+% \end{proof}
+
+
+
+% \begin{proof}
+% Exactly the same as above.
+% \end{proof}
+% If we were to prove these general results with the primal view, then we need to delve far into details. At some point Jensen's inequality must come in and the analysis becomes extremely delicate. Hence these simple proofs can serve as a promising use of the dual view, beyond the apparent use of conversion between classical DP and $f$-DP \Cref{prop:ftoDP} and \Cref{prop:DPtof}.
+
+% subsubsection proof_of_previous_section (end)
+% We first set up the mathematical notations. In \Cref{ssub:dataset_space} we discussed two commonly accepted concepts of neighboring. Since subsampling a dataset of size $n$ can result in a dataset of any size less than $n$, our mechanism must be applicable to a dataset of any size. This suggests that the second concept considered in the discussion of \Cref{ssub:dataset_space} fit this problem better. So we will restrict our attention to the ``histogram'' datasets, which we now formalize.\\
+
+% Let $Z$ be a base set, with no specific restriction. A commonly used notion in mathematics, albeit often in disguise, is the multiset formed by the alphabet $Z$. For example in most factorization theorem (such as prime factorization, eigenvalue decomposition, structure theorem of finite Abelian groups) the uniqueness part is usually stated as ``up to permutation''. We will use $Z^*$ to denote the collection of all possible finite multisets whose elements are from $Z$. For example when $Z=\{0,1\}$, $Z^*=\{\varnothing, \{0\}, \{1\}, \{00\}, \{01\}, \{11\}, \{000\},\ldots\}$. The star is an abuse of Kleene star, which is commonly used to denote the finite strings formed by the alphabet. The only difference is in our use of $Z^*$ we ignore the order in the string. 
+% \begin{proposition} \label{prop:subsample}
+% 	\djs{Hard to even state the general theorem...}
+% \end{proposition}
+
+
+
+% \subsubsection{Add-one differential privacy} % (fold)
+% \label{ssub:add_one_differential_privacy}
+% Maybe this motivates why we need the convex hull operation.
+% Consider the following relation between datasets: $x \to x'$ if $x'$ is obtained by adding an individual into $x$. Keep in mind that $\to$ is a procedure that add one element. Then in principle we can describe the privacy of a mechanism in an asymmetric fashion:
+% \begin{itemize}
+% 	\item A mechanism $M$ is add-one-$f$-DP if for any $x\to x'$, $\F\big(M(x),M(x')\big)\geqslant f$;
+% 	\item A mechanism $M$ is remove-one-$f$-DP if for any $x\to x'$, $\F\big(M(x'),M(x)\big)\geqslant f$.
+% \end{itemize}
+% It is easy to see that $M$ is add-one-$f$-DP if and only if it is remove-one-$f^{-1}$-DP. When $f$ is asymmetric, there is inherent distinction between these two privacy notions. A natural question arises at once: why would $f$ be asymmetric at all? The following proposition shows that, asymmetric $f$ arises naturally when subsampling is involved, even when a mechanism with symmetric $f$ is applied after sampling.
+% \begin{proposition} \label{thm:subsample}
+% 	If $M$ is add-one-$f$-DP, then $\tilde{M}(x) = M\circ\Sample(x,p)$ is add-one-$f_p$-DP with $f_p:=pf+(1-p)f_{\mathrm{id}}$.
+% 	Here $f_{\mathrm{id}}(x) = 1-x$ is the diagonal.
+% \end{proposition}
+% \djs{Is it tight? Probably no because we used Jensen's inequality.\\}
+% \djs{Change a point instead of removing one? Group privacy.}
+
+% If we insist on giving a symmetric description of the privacy of $\tilde{M}$, then we will have to first define that $x\sim x'$ if $x\to x'$ or $x'\to x$. That is, $x$ and $x'$ and considered as neighbors if one can be obtained by adding an individual to the other. The symmetric description has to be able to lower bound both add-one trade-off functions and remove-one trade-off functions. Hence if $\tilde{M}$ is $\tilde{f}$-DP with respect to $\sim$, then $\tilde{f}$ must satisfies
+% $$\tilde{f}\leqslant \min\{f_p,f_p^{-1}\}.$$
+% For symmetric $f$ that is not $f_{\mathrm{id}}$ and $p\in(0,1)$, $f_p$ must be asymmetric. Hence $\min\{f_p,f_p^{-1}\}$ is non-convex. The optimal $\tilde{f}$ is the maximal convex lower bound of $\min\{f_p,f_p^{-1}\}$. One way to obtain $\tilde{f}$ is to take convex conjugate twice. We take a more direct approach and write down the explicit expression.
+% All these procedures we have performed on $f$ suggest we should treat them as a single blackbox, which leads to the definition of a family of operators acting on $\T^S$, the symmetric subclass of trade-off functions.
+% subsubsection add_one_diffrential_privacy (end)

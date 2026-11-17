@@ -27,6 +27,158 @@ Use existing [assessment and exposition mechanisms](RESULT_EXPOSITION.md) when a
 
 The governing motivation remains [precise exposition and honest informal/formal correlation](../openspec/changes/ladon-result-understanding-and-release-umbrella/sources.md), supporting mathematics that readers can understand, question and reuse. The r70 investigation closes with the existing tools and its explicit unresolved scope. Further interface expansion needs an actual missing operation or failure; another known example is not automatically the next milestone.
 
+## Inspect the stored source and application together
+
+For a native correspondence alignment or check bundle, use the existing command:
+
+```sh
+ladon investigation inspect --plan alignment.json --context-max-bytes 65536
+```
+
+The outer response retains `ladon-correspondence-inspection-v1`; its `native`
+section uses `ladon-native-correspondence-inspection-v2`. Alongside object maps,
+obligations, residuals and result dimensions, `native.context.interpretation`
+contains the exact stored record (source quote/digest, formula and symbols),
+lowered formula, fidelity and source reference. `native.context.formalSlice`
+contains the stored formal selection, local context and application observation.
+Resolve the two together before using a reported support label.
+
+Each component has its own UTF-8 stored-text allowance, default 65536 bytes;
+`--context-max-bytes` accepts 1 through 8388608. Oversized components are omitted
+whole with `reason: context-byte-limit` and `storedBytes`; raise the allowance to
+retrieve them. Missing referenced interpretations are explicitly unavailable.
+Either condition makes native inspection coverage incomplete. The allowance
+bounds these context components, not the whole report or plan loading. It applies
+to the native projection of alignment/check bundles; version-three investigation
+plans retain their separate assessment workflow.
+
+`native.checkEvidence` now resolves each exact check reference to its retained
+`ladon.correspondence-receipt/v1` extension. Each row shows the original goal
+digest, the actual `checkedGoal` (including negation for refutation), mode,
+obligation ID and stored completion metadata. Its `binding.status` is
+`matched-stored-records`, `mismatched` or `unavailable`. The comparison covers the
+plan identity, planned obligation/goal/status, polarity and check operation.
+`unboundObligations` lists displayed non-open obligations lacking a matching
+receipt. Mismatches and unavailable evidence make `checkEvidenceComplete` and
+overall native coverage false; original result dimensions remain visible.
+
+The check rows share the existing row limit, and receipt payloads share one
+`--context-max-bytes` allowance for the whole `checkEvidence` section. This is
+separate from the per-component interpretation/slice allowances. Oversized
+receipts are omitted whole. A `receipt-digest-only` result means the projection
+retained only a digest; raising the inspection allowance cannot recover that
+payload. Use the retained canonical bundle when available.
+
+A matched binding describes consistency between stored records. It does not
+rerun completion, authenticate a producer's claims, or establish that prose
+assumptions supplied a premise. The plan identity carries the object map and
+source/slice identity; inspection does not invent a per-obligation dependency
+graph from Lean text. Review the actual mapping and conclusion transfer along
+with these targets.
+
+This is stored-evidence inspection. Complete coverage means the selected stored
+context and child rows were delivered; it does not certify source fidelity,
+current filesystem freshness, or mathematical support. Canonical artifacts and
+stored result dimensions retain their authority. No Lean check runs on inspect.
+
+## Distinguish a refuted route from a false claim
+
+Start from `native.context.interpretation.value.loweredFormula`, then follow the
+object map into the exact premise-supply and conclusion-transfer goals. Resolve
+their receipt targets and polarity through `native.checkEvidence`. The
+welltypedness obligation `P → P` does not prove `P`; the map's
+`representation-transport` goal ending in `True` checks its declared type, not
+its intended meaning. Review the mapped mathematical obligations themselves.
+
+A proof of the negation of a correspondence link rejects that route. An alternative
+map or proof may still establish the source. Source falsity requires a separately
+justified refutation of the original source proposition under its assumptions.
+
+The [three exposed mathematical controls](../openspec/changes/ladon-proofir-correspondence-context/evidence/mathematical-controls-r01/REPORT.md)
+exercise this distinction with real Lean receipts: `Fin.val` supplies a valid
+bound, shifting the map by five refutes premise supply while the identical source
+claim stays true, and a pointwise upper-bound theorem fails to establish one
+uniform bound. The last source proposition is separately refuted. All nine native
+checks replayed, with the distinctions visible in the current inspection output.
+This is root qualification of the reading procedure; no reader-benefit or fresh
+detection score follows.
+
+## Read the native MF examples
+
+The [native MF qualification report](../openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/REPORT.md)
+provides one supported common-law claim and one refuted conclusion transfer.
+Use these exposed examples to learn the evidence path. The supplied
+interpretations and proofs were already known during qualification.
+
+From this checkout, inspect both retained bundles with the local Ladon executable.
+These commands create new scratch outputs and perform no Lean replay:
+
+```bash
+mf_evidence=openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01
+mf_inspection=$(mktemp -d /tmp/ladon-mf-inspection.XXXXXX)
+.venv/bin/ladon investigation inspect \
+  --plan "$mf_evidence/fdp/checked-1800-r02.json" \
+  --context-max-bytes 8388608 --output "$mf_inspection/fdp.json"
+.venv/bin/ladon investigation inspect \
+  --plan "$mf_evidence/adam/checked-1800-r02.json" \
+  --context-max-bytes 8388608 --output "$mf_inspection/adam.json"
+```
+
+1. Read the exact quoted passage and attributed formula under
+   `native.context.interpretation.value`. List uncertain readings before using
+   the support label. A typed symbol can name a large predicate whose definition
+   still needs review.
+2. Follow `native.objectMap` and the selected application in
+   `native.context.formalSlice.value`. Review the wrapper's preserved source and
+   its argument producers. In the DP-Adam case, `AdamNative.Inputs` packages
+   primitive data and hypotheses; `commonLaw` has **one** existential law outside
+   the conjunction of both limits. Its `bridge` applies the existing paired
+   convergence theorem. In the fDP case, the Nat argument is a dummy wrapper
+   index and `neighbor` aliases the original neighboring dataset.
+   Read `native.premiseScope`: zero direct premise obligations is compatible
+   with hypotheses packaged in `Inputs` and its nested `Primitives`. It does not
+   establish that the prose supplies those hypotheses. The common law may
+   depend on the input; it is not one uniform law for every input.
+3. Read each generated obligation and its `checkEvidence` target, mode and status.
+   `interpretation` proves `P → P`; `object-map` checks typing with a goal ending
+   in `True`. Neither establishes source fidelity. `conditional` checks the
+   selected formal result. `conclusion` checks its transfer to the attributed
+   source claim.
+4. Require matching stored bindings and complete inspection coverage before
+   saying all requested evidence was delivered. Then inspect the original
+   checked bundle's `completion.replay` and `completion.trust` receipts. A
+   matching inspection record is a consistency result; it does not rerun Lean.
+5. State the reader consequence. DP-Adam supports the selected common-law
+   interpretation under its packaged hypotheses. For fDP the reverse strict
+   inequality refutes the conclusion transfer; the original finite countermodel
+   separately establishes the failed event bound under inherited ordering.
+   Review its normalization, adjacency, base privacy and sampled law before
+   calling it a source counterexample. The manuscript's intended ordering
+   remains unresolved. Neither selected result completes a whole-paper audit.
+6. Record unexamined claims and costs. The successful checks took about 8.3 and
+   7.5 minutes at 8.99 and 9.46 GiB peak process-tree RSS. The 1800-second timeout
+   belonged to the qualification supervisor; it is not an `investigation check`
+   CLI option or a changed production default. Preserve earlier timeouts and
+   failed attempts when accounting for work.
+
+The Adam quote in the frozen interpretation is narrower than its attributed
+common-law consequence. Read the [append-only context clarification](../openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/r04-consolidation/ADAM-CONTEXT.md)
+for the surrounding clock, initialization, query and diffusion assumptions.
+It does not amend the old interpretation or certify prose fidelity.
+See [role accounting](NL_LEAN_CORRESPONDENCE.md#keep-the-outcomes-separate)
+before comparing old and new counts: object-map typing is now separated from
+substantive checking, and neither count measures reader benefit.
+
+For custody verification, run the retained `read_results.py` in the evidence
+root. It checks original-source prefixes, exact goals/polarities, accepted
+replay/trust fields and source/compiled-import hashes against the retained
+result. It requires the recorded local dependency paths to remain available;
+this evidence directory is not a standalone dependency capsule. Inspection of
+an existing bundle does not need those dependency paths. For a new claim, use
+new output paths and the ordinary extract/interpret/align/check workflow; the
+qualification's `run.py` has a historical fixed deadline and is not a reusable
+launch script.
+
 ## Check a formula against its definitions
 
 When a passage reconstructs an object, changes coordinates, or converts between
@@ -102,3 +254,121 @@ Keep pristine capsule payloads separate from working projects with packages/buil
 The [C05 printer repair](../openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/c05-printer-fix-r01/REPORT.md) now lets the previously rejected shifted-state proof complete through the native capture, replay and trust path. Proof printing uses a finite step budget and reports omitted terms directly. A longer future proof can still exceed the bound; preserve that rejection and use the separate ordinary Lean route when necessary. The original N.3c report remains the pre-fix result.
 
 The [exposed seven-case qualification](../openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/checked-application-n3c-r01/REPORT.md) retains faithful, omitted/derived/conditional, shifted-object, shared-parameter and quantifier cases. It exercises existing checks and ordinary Lean with supplied interpretations and proofs. It is not a fresh discovery comparison or evidence of incremental detection benefit.
+
+## Construct the objects behind a theorem application
+
+When the candidate theorem takes a structured family, law or mechanism, inspect
+the producers of that record. Assuming the record exists can hide the very
+connection the source asks the reader to believe.
+
+1. Map source objects to formal objects with their units and indexing intact.
+   Check normalization, reference population, public versus input-dependent
+   parameters, initialization, and which quantities vary along a limit.
+2. Construct the needed record from source assumptions or locate its existing
+   producer. Classify each field as primitive data, a checked consequence, or an
+   unresolved obligation. Do not store the desired conclusion as a premise.
+3. Derive properties for the transformed object actually used by the consumer.
+   Measurability or regularity at one parameter need not transfer automatically
+   to another. Changing a reference Finset to a finite type also needs a map.
+4. Before treating an auxiliary record field as a new mathematical assumption,
+   inspect whether the relevant observation depends on it. A checked
+   irrelevance equality can remove a packaging obligation. It does not permit
+   replacing the source objective in a utility theorem.
+5. Complete each claimed conclusion with the same objects and parameters.
+   Common limiting laws, eventual privacy, and finite-iterate utility are
+   different obligations. A bound holding eventually for every positive
+   tolerance supplies neither a computable threshold nor a finite-run rate.
+
+Unperformed review remains unfinished work. Calling it blocked requires a
+specific evidenced obstruction; a controller accepting authored blocker labels
+does not verify them. A selected application can be complete while the source's
+intermediate arguments remain unreviewed.
+
+### Worked example: DP-Adam batch-pair support
+
+Start with the retained [reader question](../openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpadam-batch-pair-r01/HANDOFF.md),
+then the [general construction report](../openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpadam-source-constructor-r01/REPORT.md)
+and [Full.lean](../openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpadam-source-constructor-r01/Full.lean).
+The report maps source requirements to the constructor, resampling/common-law,
+privacy and empirical-objective consumers. Its final receipt is
+`full-attempt-12.json`. The preliminary handoff's reproduction commands are
+historical; use fresh output paths when repeating any check.
+
+The pair has sampling rates `q` and `k*q`, counts `k*(j+1)` and `j+1`, fixed
+beta, and matching expected epochs at each `j`. Epoch budgets grow with `j`.
+The general proof constructs the families and derives the empirical gradient
+identity rather than assuming the desired family or objective connection.
+Its `objective_field_irrelevant` result concerns a stored path-law field only;
+the utility proof still uses the actual empirical objective.
+
+From this Ladon checkout, the following read-only check verifies the retained
+example's bytes and displays its historical compiler outcome:
+
+```bash
+PYTHONPATH=src .venv/bin/python - <<'PY'
+import hashlib
+import json
+from pathlib import Path
+
+root = Path("openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpadam-source-constructor-r01")
+entries = json.loads((root / "MANIFEST.json").read_text())
+for entry in entries:
+    assert hashlib.sha256((root / entry["path"]).read_bytes()).hexdigest() == entry["sha256"], entry["path"]
+receipt = json.loads((root / "full-attempt-12.json").read_text())
+assert hashlib.sha256((root / "Full.lean").read_bytes()).hexdigest() == receipt["sourceSha256"]
+print("Verified manifest entries:", len(entries))
+print({key: receipt[key] for key in ("returncode", "timed_out", "memory_limited", "peak_rss_bytes")})
+print(receipt["stdout"])
+PY
+```
+
+This is integrity inspection, not a fresh proof replay. A fresh ordinary Lean
+check is optional when needed: copy `Full.lean` and `check.py` from that directory
+into a new scratch directory and invoke the copied runner with arguments
+`fresh-check Full.lean`, using `PYTHONPATH` set to this checkout's absolute `src`
+path and its `.venv/bin/python`. Inspect the runner first: it binds the original
+local donor path and Lean 4.33.0, uses existing compiled imports, and caps execution
+at 60 seconds, 12 GiB RSS and 8 MiB output. Verify the recorded source/import
+identities before treating a repeat as reproduction. Missing or changed inputs
+require an explicitly new environment assessment. Never write a new receipt
+into the frozen evidence directory.
+
+The general composition has ordinary Lean compiler/axiom evidence, not native
+completion of the whole proof or a portable dependency closure. The earlier
+[native privacy-cancellation result](../openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpadam-batch-pair-r01/NATIVE-SUMMARY.json)
+checks a smaller subordinate goal. Neither result certifies the broader source
+method, transfers simultaneous beta changes, or demonstrates a detection gain.
+
+### Worked example: hidden fixed-size f-DP subsampling
+
+This exposed case shows why the source-to-formal object map must include the
+sampler's ordering and released law. In the read-only matrix-factorization source,
+`subsample.tex:37` chooses a uniform subset and passes its records to a mechanism
+on `X^m`; it does not say how that subset becomes an ordered tuple. The dataset
+is formally an ordered tuple with coordinate replace-one adjacency
+(`fDP/fDP.tex:32`). The appendix replaces one selected index and says the resulting
+mechanism inputs are neighbors (`appendices/property.tex:286-299`), which relies
+on a tuple representation. The source does not explicitly connect these steps.
+See the [source interpretation record](../openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/fdp-source-interpretation-r01/INTERPRETATION.md)
+for exact file hashes and scope.
+
+Under one explicit interpretation, order selected records by their original
+indices. A finite mechanism on `X={0,1,2,3}` releases a Bernoulli result and
+satisfies the original coordinate replace-one privacy bound with factor 2 for
+every input pair. For neighboring datasets `(0,1,2)` and `(3,1,2)`, uniform
+selection of two indices gives true-output probabilities `7/18` and `2/9`.
+The claimed classical amplification factor is `5/3`, but
+`7/18 - (5/3)(2/9) = 1/54 > 0`. Thus this interpreted hidden mechanism violates
+the claimed event bound. The [checked report](../openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/fdp-ordering-privacy-20261115T072023Z/REPORT.md)
+records all finite base-mechanism premises, the sampled law, randomized-test
+checks, exact proof receipt and a shuffled-order control for this pair.
+
+The verdict is conditional: the inherited-order claim is refuted, while the
+source's intended subset-to-tuple map remains unresolved. The shuffled control
+covers only this pair and is not a general repair. To audit another sampled
+mechanism, state its input representation, adjacency, sampling law, tuple order
+and observable before transferring a privacy bound. Prove a counterexample in
+the original premise domain; an LP or finite search can find a candidate, but the
+exact law and inequality still need checked justification. This example came
+from informed development work and is not a held-out Ladon discovery or evidence
+of detection advantage.

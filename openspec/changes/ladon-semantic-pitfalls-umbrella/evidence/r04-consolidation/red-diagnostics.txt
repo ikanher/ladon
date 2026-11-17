@@ -1,0 +1,411 @@
+FFFFFFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+_ test_large_diagnostic_retains_unresolved_evidence[10001-prepared-goal-subject-mismatch] _
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1012f560>
+code = 'prepared-goal-subject-mismatch', count = 10001
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    @pytest.mark.parametrize('count', [10001, 32768])
+    def test_large_diagnostic_retains_unresolved_evidence(diagnostic_run, code, count):
+        row = diagnostic_run(code, count)
+        assert row['status'] == 'unresolved'
+>       assert row['goalOrigin'] == 'generated-correspondence-obligation'
+               ^^^^^^^^^^^^^^^^^
+E       KeyError: 'goalOrigin'
+
+tests/test_correspondence_large_diagnostics.py:60: KeyError
+_ test_large_diagnostic_retains_unresolved_evidence[10001-unexpected-generated-goal-context] _
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015c360>
+code = 'unexpected-generated-goal-context', count = 10001
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    @pytest.mark.parametrize('count', [10001, 32768])
+    def test_large_diagnostic_retains_unresolved_evidence(diagnostic_run, code, count):
+        row = diagnostic_run(code, count)
+        assert row['status'] == 'unresolved'
+>       assert row['goalOrigin'] == 'generated-correspondence-obligation'
+               ^^^^^^^^^^^^^^^^^
+E       KeyError: 'goalOrigin'
+
+tests/test_correspondence_large_diagnostics.py:60: KeyError
+___ test_large_diagnostic_retains_unresolved_evidence[10001-capture-failure] ___
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1012f560>
+code = 'capture-failure', count = 10001
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    @pytest.mark.parametrize('count', [10001, 32768])
+    def test_large_diagnostic_retains_unresolved_evidence(diagnostic_run, code, count):
+        row = diagnostic_run(code, count)
+        assert row['status'] == 'unresolved'
+>       assert row['goalOrigin'] == 'generated-correspondence-obligation'
+               ^^^^^^^^^^^^^^^^^
+E       KeyError: 'goalOrigin'
+
+tests/test_correspondence_large_diagnostics.py:60: KeyError
+_ test_large_diagnostic_retains_unresolved_evidence[32768-prepared-goal-subject-mismatch] _
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015c860>
+code = 'prepared-goal-subject-mismatch', count = 32768
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    @pytest.mark.parametrize('count', [10001, 32768])
+    def test_large_diagnostic_retains_unresolved_evidence(diagnostic_run, code, count):
+        row = diagnostic_run(code, count)
+        assert row['status'] == 'unresolved'
+>       assert row['goalOrigin'] == 'generated-correspondence-obligation'
+               ^^^^^^^^^^^^^^^^^
+E       KeyError: 'goalOrigin'
+
+tests/test_correspondence_large_diagnostics.py:60: KeyError
+_ test_large_diagnostic_retains_unresolved_evidence[32768-unexpected-generated-goal-context] _
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015c900>
+code = 'unexpected-generated-goal-context', count = 32768
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    @pytest.mark.parametrize('count', [10001, 32768])
+    def test_large_diagnostic_retains_unresolved_evidence(diagnostic_run, code, count):
+        row = diagnostic_run(code, count)
+        assert row['status'] == 'unresolved'
+>       assert row['goalOrigin'] == 'generated-correspondence-obligation'
+               ^^^^^^^^^^^^^^^^^
+E       KeyError: 'goalOrigin'
+
+tests/test_correspondence_large_diagnostics.py:60: KeyError
+___ test_large_diagnostic_retains_unresolved_evidence[32768-capture-failure] ___
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015c7c0>
+code = 'capture-failure', count = 32768
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    @pytest.mark.parametrize('count', [10001, 32768])
+    def test_large_diagnostic_retains_unresolved_evidence(diagnostic_run, code, count):
+        row = diagnostic_run(code, count)
+        assert row['status'] == 'unresolved'
+>       assert row['goalOrigin'] == 'generated-correspondence-obligation'
+               ^^^^^^^^^^^^^^^^^
+E       KeyError: 'goalOrigin'
+
+tests/test_correspondence_large_diagnostics.py:60: KeyError
+_ test_large_diagnostic_still_obeys_inventory_cap[prepared-goal-subject-mismatch] _
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015c9a0>
+code = 'prepared-goal-subject-mismatch'
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    def test_large_diagnostic_still_obeys_inventory_cap(diagnostic_run, code):
+        with pytest.raises(ProofIRV3Error, match='32768'):
+>           artifacts(diagnostic_run(code, 32769))
+
+tests/test_correspondence_large_diagnostics.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_correspondence_large_diagnostics.py:50: in artifacts
+    return completion_artifacts(plan, {'checks': [row],
+src/ladon/correspondence_evidence.py:185: in completion_artifacts
+    check, attempt, ref = _row_artifacts(plan, row, implementation)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/correspondence_evidence.py:90: in _row_artifacts
+    identity = _hash({"planId": plan["planId"], "receipt": row})
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/correspondence_evidence.py:14: in _hash
+    return "sha256:" + hashlib.sha256(canonical_bytes(_as_exact_decimal_strings(value))).hexdigest()
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proofir_v3.py:165: in canonical_bytes
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:218: in _validate_bounds
+    _validate_list_bounds(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = [{'module': 'M0'}, {'module': 'M1'}, {'module': 'M2'}, {'module': 'M3'}, {'module': 'M4'}, {'module': 'M5'}, ...]
+depth = 6
+
+    def _validate_list_bounds(
+        value: list[Any], depth: int, *, max_items: int = MAX_COLLECTION_ITEMS
+    ) -> None:
+        if len(value) > max_items:
+>           raise ProofIRV3Error(f"collection exceeds item limit: {max_items}")
+E           ladon.proofir_v3.ProofIRV3Error: collection exceeds item limit: 10000
+
+src/ladon/proofir_v3.py:269: ProofIRV3Error
+
+During handling of the above exception, another exception occurred:
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015c9a0>
+code = 'prepared-goal-subject-mismatch'
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    def test_large_diagnostic_still_obeys_inventory_cap(diagnostic_run, code):
+>       with pytest.raises(ProofIRV3Error, match='32768'):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: '32768'
+E         Actual message: 'collection exceeds item limit: 10000'
+
+tests/test_correspondence_large_diagnostics.py:74: AssertionError
+_ test_large_diagnostic_still_obeys_inventory_cap[unexpected-generated-goal-context] _
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015dda0>
+code = 'unexpected-generated-goal-context'
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    def test_large_diagnostic_still_obeys_inventory_cap(diagnostic_run, code):
+        with pytest.raises(ProofIRV3Error, match='32768'):
+>           artifacts(diagnostic_run(code, 32769))
+
+tests/test_correspondence_large_diagnostics.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_correspondence_large_diagnostics.py:50: in artifacts
+    return completion_artifacts(plan, {'checks': [row],
+src/ladon/correspondence_evidence.py:185: in completion_artifacts
+    check, attempt, ref = _row_artifacts(plan, row, implementation)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/correspondence_evidence.py:90: in _row_artifacts
+    identity = _hash({"planId": plan["planId"], "receipt": row})
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/correspondence_evidence.py:14: in _hash
+    return "sha256:" + hashlib.sha256(canonical_bytes(_as_exact_decimal_strings(value))).hexdigest()
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proofir_v3.py:165: in canonical_bytes
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:218: in _validate_bounds
+    _validate_list_bounds(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = [{'module': 'M0'}, {'module': 'M1'}, {'module': 'M2'}, {'module': 'M3'}, {'module': 'M4'}, {'module': 'M5'}, ...]
+depth = 6
+
+    def _validate_list_bounds(
+        value: list[Any], depth: int, *, max_items: int = MAX_COLLECTION_ITEMS
+    ) -> None:
+        if len(value) > max_items:
+>           raise ProofIRV3Error(f"collection exceeds item limit: {max_items}")
+E           ladon.proofir_v3.ProofIRV3Error: collection exceeds item limit: 10000
+
+src/ladon/proofir_v3.py:269: ProofIRV3Error
+
+During handling of the above exception, another exception occurred:
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015dda0>
+code = 'unexpected-generated-goal-context'
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    def test_large_diagnostic_still_obeys_inventory_cap(diagnostic_run, code):
+>       with pytest.raises(ProofIRV3Error, match='32768'):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: '32768'
+E         Actual message: 'collection exceeds item limit: 10000'
+
+tests/test_correspondence_large_diagnostics.py:74: AssertionError
+_______ test_large_diagnostic_still_obeys_inventory_cap[capture-failure] _______
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015db20>
+code = 'capture-failure'
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    def test_large_diagnostic_still_obeys_inventory_cap(diagnostic_run, code):
+        with pytest.raises(ProofIRV3Error, match='32768'):
+>           artifacts(diagnostic_run(code, 32769))
+
+tests/test_correspondence_large_diagnostics.py:75: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_correspondence_large_diagnostics.py:50: in artifacts
+    return completion_artifacts(plan, {'checks': [row],
+src/ladon/correspondence_evidence.py:185: in completion_artifacts
+    check, attempt, ref = _row_artifacts(plan, row, implementation)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/correspondence_evidence.py:90: in _row_artifacts
+    identity = _hash({"planId": plan["planId"], "receipt": row})
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/correspondence_evidence.py:14: in _hash
+    return "sha256:" + hashlib.sha256(canonical_bytes(_as_exact_decimal_strings(value))).hexdigest()
+                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proofir_v3.py:165: in canonical_bytes
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:218: in _validate_bounds
+    _validate_list_bounds(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = [{'module': 'M0'}, {'module': 'M1'}, {'module': 'M2'}, {'module': 'M3'}, {'module': 'M4'}, {'module': 'M5'}, ...]
+depth = 6
+
+    def _validate_list_bounds(
+        value: list[Any], depth: int, *, max_items: int = MAX_COLLECTION_ITEMS
+    ) -> None:
+        if len(value) > max_items:
+>           raise ProofIRV3Error(f"collection exceeds item limit: {max_items}")
+E           ladon.proofir_v3.ProofIRV3Error: collection exceeds item limit: 10000
+
+src/ladon/proofir_v3.py:269: ProofIRV3Error
+
+During handling of the above exception, another exception occurred:
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015db20>
+code = 'capture-failure'
+
+    @pytest.mark.parametrize('code', ['prepared-goal-subject-mismatch',
+                                      'unexpected-generated-goal-context', 'capture-failure'])
+    def test_large_diagnostic_still_obeys_inventory_cap(diagnostic_run, code):
+>       with pytest.raises(ProofIRV3Error, match='32768'):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: '32768'
+E         Actual message: 'collection exceeds item limit: 10000'
+
+tests/test_correspondence_large_diagnostics.py:74: AssertionError
+____________ test_diagnostic_exception_does_not_relax_other_bounds _____________
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015da80>
+
+    def test_diagnostic_exception_does_not_relax_other_bounds(diagnostic_run):
+        row = diagnostic_run('unexpected-generated-goal-context', 10001)
+        with pytest.raises(ProofIRV3Error, match='byte'):
+>           canonical_bytes(row, max_bytes=100)
+
+tests/test_correspondence_large_diagnostics.py:81: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/proofir_v3.py:165: in canonical_bytes
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:225: in _validate_bounds
+    _validate_object_bounds(
+src/ladon/proofir_v3.py:299: in _validate_object_bounds
+    _validate_bounds(
+src/ladon/proofir_v3.py:218: in _validate_bounds
+    _validate_list_bounds(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+value = [{'module': 'M0'}, {'module': 'M1'}, {'module': 'M2'}, {'module': 'M3'}, {'module': 'M4'}, {'module': 'M5'}, ...]
+depth = 5
+
+    def _validate_list_bounds(
+        value: list[Any], depth: int, *, max_items: int = MAX_COLLECTION_ITEMS
+    ) -> None:
+        if len(value) > max_items:
+>           raise ProofIRV3Error(f"collection exceeds item limit: {max_items}")
+E           ladon.proofir_v3.ProofIRV3Error: collection exceeds item limit: 10000
+
+src/ladon/proofir_v3.py:269: ProofIRV3Error
+
+During handling of the above exception, another exception occurred:
+
+diagnostic_run = <function diagnostic_run.<locals>.run at 0x724c1015da80>
+
+    def test_diagnostic_exception_does_not_relax_other_bounds(diagnostic_run):
+        row = diagnostic_run('unexpected-generated-goal-context', 10001)
+>       with pytest.raises(ProofIRV3Error, match='byte'):
+E       AssertionError: Regex pattern did not match.
+E         Expected regex: 'byte'
+E         Actual message: 'collection exceeds item limit: 10000'
+
+tests/test_correspondence_large_diagnostics.py:80: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_correspondence_large_diagnostics.py::test_large_diagnostic_retains_unresolved_evidence[10001-prepared-goal-subject-mismatch]
+FAILED tests/test_correspondence_large_diagnostics.py::test_large_diagnostic_retains_unresolved_evidence[10001-unexpected-generated-goal-context]
+FAILED tests/test_correspondence_large_diagnostics.py::test_large_diagnostic_retains_unresolved_evidence[10001-capture-failure]
+FAILED tests/test_correspondence_large_diagnostics.py::test_large_diagnostic_retains_unresolved_evidence[32768-prepared-goal-subject-mismatch]
+FAILED tests/test_correspondence_large_diagnostics.py::test_large_diagnostic_retains_unresolved_evidence[32768-unexpected-generated-goal-context]
+FAILED tests/test_correspondence_large_diagnostics.py::test_large_diagnostic_retains_unresolved_evidence[32768-capture-failure]
+FAILED tests/test_correspondence_large_diagnostics.py::test_large_diagnostic_still_obeys_inventory_cap[prepared-goal-subject-mismatch]
+FAILED tests/test_correspondence_large_diagnostics.py::test_large_diagnostic_still_obeys_inventory_cap[unexpected-generated-goal-context]
+FAILED tests/test_correspondence_large_diagnostics.py::test_large_diagnostic_still_obeys_inventory_cap[capture-failure]
+FAILED tests/test_correspondence_large_diagnostics.py::test_diagnostic_exception_does_not_relax_other_bounds
+10 failed in 0.41s

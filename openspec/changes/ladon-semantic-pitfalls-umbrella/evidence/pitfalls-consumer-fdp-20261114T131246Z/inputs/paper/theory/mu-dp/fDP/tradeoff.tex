@@ -1,0 +1,211 @@
+% root = ../paper.tex
+\subsection{Trade-off Functions and $f$-DP}
+\label{sub:trade_off_function}
+
+%The essence of any existing differential privacy notion requires that it is fundamentally difficult to distinguish between two \textit{neighboring} datasets based on the releasing information of a private a mechanism $M$. As a consequence of this, differential privacy prevents from inferring any individual of the dataset using the releasing information, thus leading to the privacy of the mechanism. More precisely, for any two neighboring datasets $x$ and $x'$, $(\ep,\delta)$-DP formalizes the indistinguishability by requiring $M(x)$ and $M(x')$ be close in the sense of probability distribution, and the {\Renyi} DP uses the {\Renyi} divergence to measure the discrepancy between $M(x)$ and $M(x')$.
+% To introduce $f$-DP, it is helpful to formalize this notion of 
+
+All variants of differential privacy informally require that it be hard to \textit{distinguish} any pairs of neighboring datasets based on the information released by a private a mechanism $M$. From an attacker's perspective, it is natural to formalize this notion of  ``indistinguishability'' as a hypothesis testing problem for two neighboring datasets $S$ and $S'$:
+\[
+H_0: \text{the underlying dataset is } S \quad\text{ versus }\quad H_1: \text{the underlying dataset is } S'.
+\]
+The output of the mechanism $M$ serves as the basis for performing the hypothesis testing problem. Denote by $P$ and $Q$ the probability distributions of the mechanism applied to the two datasets, namely $M(S)$ and $M(S')$, respectively. The fundamental difficulty in distinguishing the two hypotheses is best delineated by the \textit{optimal} trade-off between the achievable type I and type II errors. More precisely, consider a rejection rule $0 \le \phi \le 1$, with type I and type II error rates defined as\footnote{A rejection rule takes as input the released results of the mechanism. We flip a coin and reject the null hypothesis with probability $\phi$.}
+\[
+\alpha_\phi = \E_{P}[\phi], \quad \beta_\phi = 1 - \E_{Q}[\phi],
+\]
+respectively. The two errors satisfy, for example, the constraint is well known to satisfy
+% \djs{Removed the claim that there is a proof in the appendix.}
+% (see its proof in \Cref{app:fDP}) \djs{Do we need a proof? Isnt' it well-known?}
+\begin{equation}\label{eq:tv_norm}
+\alpha_{\phi} + \beta_{\phi} \ge 1 - \TV(P, Q),
+\end{equation}
+where the total variation distance $\TV(P, Q)$ is the supremum of $|P(A) - Q(A)|$ over all measurable sets $A$. Instead of this rough constraint, we seek to characterize the fine-grained trade-off between the two errors. Explicitly, fixing the type I error at \textit{any} level, we consider the minimal achievable type II error. This motivates the following definition.
+\begin{definition}[trade-off function] \label{def:trade-off}
+For any two probability distributions $P$ and $Q$ on the same space, define the trade-off function $\F(P, Q): [0, 1] \rightarrow [0, 1]$ as
+\[
+\F(P, Q)(\alpha) = \inf \left\{ \beta_\phi: \alpha_\phi \leqslant \alpha \right\},
+\]
+where the infimum is taken over all (measurable) rejection rules.
+\end{definition}
+The trade-off function serves as a clear-cut boundary of the achievable and unachievable regions of type I and type II errors, rendering itself the \textit{complete} characterization of the fundamental difficulty in testing between the two hypotheses. In particular, the greater this function is, the harder it is to distinguish the two distributions. For completeness, we remark that the minimal $\beta_{\phi}$ can be achieved by the likelihood ratio test---a fundamental result known as the Neyman--Pearson lemma, which we state in the appendix as \Cref{thm:NPlemma}.
+
+
+
+
+A function is called a trade-off function if it is equal to $T(P, Q)$ for some distributions $P$ and $Q$. Below we give a necessary and sufficient condition for $f$ to be a trade-off function. This characterization reveals, for example, that $\max\{f, g\}$ is a trade-off function if both $f$ and $g$ are trade-off functions.
+\begin{restatable}{proposition}{tradeoffthm}\label{prop:trade-off}
+A function $f: [0, 1] \rightarrow [0, 1]$ is a trade-off function if and only if $f$ is convex, continuous\footnote{Convexity itself implies continuity in $(0,1)$ for $f$. In addition, $f(\alpha) \ge 0$ and $f(\alpha) \le 1-\alpha$ implies continuity at 1. Hence, the continuity condition only matters at $x = 0$.}, non-increasing, and $f(x) \leqslant 1-x$ for $x \in [0,1]$.
+\end{restatable}
+%Throughout the paper, $f$ is used to denote a trade-off function.
+
+%%In the case where $P = Q$, we use $\Id$ to denote\footnote{Identity function $\alpha\mapsto \alpha$ is the identity element for function composition. In contrast, our $\Id$ has a different expression, and works as the identity element in a different algebraic structure. See \Cref{sub:composition_theorem}.} the trade-off function $\F(P , P)(\alpha) = 1 - \alpha$.
+
+% Optimal tests achieve minimal type II error $\beta$ for a fixed level of type I error $\alpha$. This yields a correspondence $\alpha\mapsto \beta(\alpha)$ that characterizes the ``trade-off'' between type I and type II errors. We will call this the trade-off function of $P_0$ and $P_1$, and denote it by $\F(P_0,P_1)$, taking the initial of ``trade-off''.
+%\bigskip
+% The corresponding type I and type II error have expressions:
+% \[\beta_\phi = 1-\E_{P_1}[\phi],\quad\alpha_\phi = \E_{P_0}[\phi].\]
+% With these notations,
+% % That is, $\F(P_0,P_1)$ takes in a level $\alpha\in[0,1]$ and outputs the corresponding minimal type II error.
+% The infimum is taken over all rejection rules, i.e. over all measurable functions $\phi:\Omega\to[0,1]$. Neyman-Pearson lemma says for any $\alpha\in[0,1]$, there exists a likelihood ratio test that achieves type I error $\alpha$ and type II error $\F(P_0,P_1)(\alpha)$, so the infimum can be written as minimum.
+%Formally, if the sample space of $P_0$ and $P_1$ is $\Omega$, then statistical tests, or equivalently rejection rules, have the form: $\phi:\Omega\to[0, 1]$. Suppose the outcome is $\omega\in\Omega$. The interpretation is
+%Let $(X,\sim)$ be a dataset space and $Y$ an arbitrary set.
+
+%This function does characterize the indistinguishability of $P_0$ and $P_1$:
+%Roughly speaking,
+
+
+% %To better appreciate this trade-off, consider two distributions $\widetilde P$ and $\widetilde Q$ that have the same trade-off function as $P$ and $Q$, that is, $\F(\widetilde P, \widetilde Q)(\alpha) = \F(P, Q)(\alpha)$ for all $0 \le \alpha \le 1$. As is clear, distinguishing between $P$ and $Q$ is \textit{equally} difficult as distinguishing between $\widetilde P$ and $\widetilde Q$. As such, the trade-off function is \textit{complete} for characterizing the hardness of testing two distributions from an information-theoretic perspective. \ar{I don't understand this claim. Does
+%   it mean something formal? Otherwise I suggest removing.}\wjs{I will do it soon.}
+
+Now, we propose a new generalization of differential privacy built on top of trade-off functions. Below, we write $g \ge f$ for two functions defined on $[0, 1]$ if $g(x) \ge f(x)$ for all $0 \le x \le 1$, and we abuse notation by identifying $M(S)$ and $M(S')$ with their corresponding probability distributions. Note that if $T(P,Q) \ge T(\widetilde P, \widetilde Q)$, then in a very strong sense, $P$ and $Q$ are harder to distinguish than $\widetilde P$ and $\widetilde Q$ at \textit{any} level of type I error.
+
+%\djs{A better sentence for this?} In this spirit, our $f$-DP imposes a pointwise lower bound $f$ on $T\big(M(x),M(x')\big)$.
+%%$\geqslant$ is abused for pointwise relation here, and will be used this way through out this paper.
+%%A meaningful $f$ should have range in $[0,1]$, as the range of $T\big(M(x),M(x')\big)$ is always in $[0,1]$.
+% It's now an object on its own right, no longer associated with the pair $(P_0,P_1)$, which is not unique. For example, $N(0,1)$ and $N(\mu,1)$ obviously has the same trade-off function as $N(0,1)$ and $N(-\mu,1)$.
+\begin{definition}[$f$-differential privacy] \label{def:kstable}
+Let $f$ be a trade-off function. A mechanism $M$ is said to be $f$-differentially private if
+\[
+T\big(M(S), M(S')\big) \ge f
+\]
+for all neighboring datasets $S$ and $S'$.
+\end{definition}
+
+
+
+A graphical illustration of this definition is shown in Figure~\ref{fig:intro_def}. Letting $P$ and $Q$ be the distributions such that $f = \F(P, Q)$, this privacy definition amounts to saying that a mechanism is $f$-DP if distinguishing any two neighboring datasets based on the released information is at least as difficult as distinguishing $P$ and $Q$ based on a single draw. In contrast to existing definitions of differential privacy, our new definition is parameterized by a function, as opposed to several real valued parameters (e.g.~$\epsilon$ and $\delta$). This functional perspective offers a complete characterization of ``privacy'', thereby avoiding the pitfall of summarizing statistical information too early. This fact is crucial to the development of a composition theorem for $f$-DP in \Cref{sec:composition-theorems}. Although this completeness comes at the cost of increased complexity, as we will see in Section~\ref{sub:gaussian_differential_privacy}, a simple family of trade-off functions can often closely capture privacy loss in many scenarios.
+
+\begin{figure}[!htp]
+\centering
+\includegraphics[width=.6\linewidth]{./figures/nonfDP.pdf}
+\caption{Three different examples of $T\big(M(S),M(S')\big)$. Only the dashed line corresponds to a trade-off function satisfying $f$-DP.}
+\label{fig:intro_def}
+\end{figure}
+
+%It also provides flexibility the choice of the function $f$. This flexibility is particularly useful in the case where the indistinguishability between $M(x)$ and $M(x')$ can be well approximated by a small family of trade-off functions (see Section~\ref{sub:gaussian_differential_privacy}). In relation to the literature, we remark that \cite{KOV} uses testing regions instead of trade-off functions as a measure of the hardness of hypothesis testing (see \Cref{app:fDP} for the equivalence between the two perspectives). The perspective of trade-off functions brings much more convenience in the development of the composition
+%theory of $f$-DP in Section~\ref{sec:composition_theorem}. \wjs{Jinshuo: could you please check?}
+
+% Denote by $\tv(f)$ the total variation of the two distributions that realize $f$. From \eqref{eq:tv_norm}, we get the following implication of $f$-DP.
+% \begin{proposition}\label{prop:dTV}
+% Let $M$ be an $f$-DP mechanism. Then, the type I and type II errors for the hypothesis testing problem of distinguishing $M(S)$ from $M(S')$ for neighboring $S,S'$ sum to at least $1 - \tv(f)$.
+% \end{proposition}
+
+%As is clear, $M$ is $f$-DP implies that $M$ is $g$-DP for a trade-off function $g$ that satisfies $g \preceq f$.
+% However, it is much more convenient to develop the theory in terms of function, since at various stages we want to do differential and integral calculus, take (function) composition, etc.
+%\wjs{in hypotheis testing, null and non-null are not symmetric.}
+%A leftover question in the definition of $f$-DP is, the symmetry of the neighboring relation is not revealed in $f$. For example, if $M$ is $f$-DP, then we know both of the following are true:
+%It is fair to say that any reasonable privacy notion must have this ``robust under post-processing'' property, i.e., a mechanism only becomes more private when processed \textbf{independent of individuals' data}. Intuitively, any information extractable from the processed output must be extractable from the original output. This is a natural requirement, and it (almost) automatically holds for every version of differential privacy ever appeared, including our $f$-DP.
+% Since previous differential privacy  notions are all defined in terms of some divergence, the corresponding post-processing property follows naturally from the corresponding data processing inequality. \djs{What do I want to say...}
+%%Suppose we have a mechanism $M$ from a dataset space $X$ to some $Y$. When we apply a post-processing $\Proc :Y\to Z$ we get a new mechanism $\Proc \circ M:X\to Z$. Note that $\Proc $ only accepts a $y\in Y$ but not the dataset as input. Rigorously speaking, $M$ and $\Proc $ should be interpreted as Markov kernels and $\circ$ is Markov kernel composition.
+%%ntuitively, the processed output $\Proc \circ M(x)$ releases no more information than $M(x)$ about the dataset $x$ and, therefore, is more private.
+
+
+%Next, we present some simple properties of this new privacy definition.
+%\noindent{\bf Symmetric trade-off functions.}
+
+%Recognizing that the two hypotheses regarding the neighboring $S$ and $S'$, the trade-off function $f$ had better reflect a certain symmetry on its own. To put this point into perspective, note that the definition of $f$-DP also requires
+
+Naturally, the definition of $f$-DP is symmetric in the same sense as the neighboring relationship, which by definition is symmetric. Observe that this privacy notion also requires
+\[
+T\big(M(S'), M(S)\big) \ge f
+\]
+for any neighboring pair $S, S'$. Therefore, it is desirable to restrict our attention to ``symmetric'' trade-off functions. Proposition~\ref{prop:symmetry} shows that this restriction does not lead to any loss of generality.
+\begin{restatable}{proposition}{symmrep}\label{prop:symmetry}
+Let a mechanism $M$ be $f$-DP. Then, $M$ is $\Sf$-DP with $\Sf = \max\{f, f^{-1}\}$, where the inverse function is defined as\footnote{
+\Cref{eq:inver_f} is the standard definition of the left-continuous inverse of a decreasing function. When $f$ is strictly decreasing and $f(0)=1$ and hence bijective as a mapping, \eqref{eq:inver_f} corresponds to the inverse function in the ordinary sense, i.e. $f(f^{-1}(x)) = f^{-1}(f(x)) = x$. However, this is not true in general.}
+\begin{equation}\label{eq:inver_f}
+f^{-1}(\alpha):=\inf\{t \in [0,1]:f(t) \leqslant \alpha\}
+\end{equation}
+for $\alpha \in[0,1]$.
+\end{restatable}
+%\wjs{Now $f$ is not necessarily trade-off, is $f^{-1}$ still well-defined? Does $(f^{-1})^{-1} = f$ still hold? Does this proposition remain true?}
+%, which is the left continuous inverse of $f$.
+%. In addition, $\tilde{f}\in\T$ and $\tilde{f}^{-1} = \tilde{f}$.%justifies this intuition.
+% A trade-off function $f\in\T$ is not necessarily 1-1 onto, so it takes some care to properly define $f^{-1}$. It turns out the proper language is the left continuous inverse. Namely,
+% Note that in general $f^{-1}\big(f(x)\big) = x$ is not true.
+% \djs{$f^{-1}$ in $\T$?}
+% The class of symmetric trade-off function is defined to be
+% $$\T^S:=\{f\in\T: f^{-1} = f\}.$$
+
+Writing $f = \F(P,Q)$, we can express the inverse as $f^{-1} = \F(Q, P)$, which therefore is also a trade-off function. As a consequence of this, $\Sf$ continues to be a trade-off function by making use of \Cref{prop:trade-off} and, moreover, is \textit{symmetric} in the sense that 
+\[
+\Sf = (\Sf)^{-1}.
+\] 
+Importantly, this symmetrization gives a tighter bound in the privacy definition since $\Sf \geqslant f$. In the remainder of the paper, therefore, trade-off functions will always be assumed to be symmetric unless otherwise specified. We prove \Cref{{prop:symmetry}} in \Cref{app:fDP}.
+
+% In short, this proposition reveals that $f$ can always be assumed to be symmetric.%\\[0.2em]
+
+%\noindent{\bf $f$-DP is an extension of $(\epsilon, \delta)$-DP.}
+
+We conclude this subsection by showing that $f$-DP is a generalization of $(\ep,\delta)$-DP. This foreshadows a deeper connection between $f$-DP and $(\epsilon, \delta)$-DP that will be discussed in Section~\ref{sub:a_primal_dual_connection_with_}. Denote
+\begin{equation}\label{eq:fed}
+f_{\ep, \delta}(\alpha) = \max\left\{ 0,1 - \delta - \e^\ep \alpha, \e^{-\ep}(1-\delta-\alpha) \right\}
+\end{equation}
+for $0 \le \alpha \le 1$, which is a trade-off function. \Cref{fig:DPvsGDP} shows the graph of this function and its evident symmetry. The following result is adapted from \cite{wasserman_zhou}.
+%It must be truncated at 0 to obtain the residency in $\T$.
+\begin{proposition}[\cite{wasserman_zhou}] \label{thm:privacy_testing}
+A mechanism $M$ is $(\ep, \delta)$-DP if and only if $M$ is $f_{\ep, \delta}$-DP.
+\end{proposition}
+
+
+
+\begin{figure}[!htp]
+\centering
+  \includegraphics[width=.75\linewidth]
+{./figures/DPvsGDP.pdf}
+  \captionof{figure}{Left: $f_{\ep,\delta}$ is a piecewise linear function and is symmetric with respect to the line $y = x$. It has (nontrivial) slopes $-\e^{\pm\ep}$ and intercepts $1-\delta$. Right: Trade-off functions of  unit-variance Gaussian distributions with different means. The case of $\mu=0.5$ is reasonably private, $\mu=1$ is borderline private, and $\mu=3$ is basically non-private: an adversary can control type I and type II errors simultaneously at only 0.07. In the case of $\mu=6$ (almost coincides with the axes), the two errors both can be as small as 0.001.}
+  \label{fig:DPvsGDP}
+\end{figure}
+
+
+
+%For this reason, we will always assume a symmetric $f$ in the definition of $f$-DP.
+%this new definition provides privacy measure is accurate and faithful hardly loses any characterization gives a more comphrenensive of. Meanhwile, GDP does not lose
+%Apparently we should add more assumptions on $f$ to exclude pathological functions.
+%If $f$ satisfies them, we will simply say $f$ is a trade-off function. Now trade-off function is no longer just a companion of distributions but an object in its own right. The collection of trade-off functions is denoted by $\T$.
+%By the above proposition, $T\big(M(x),M(x')\big)$ is always convex and non-increasing, so focusing on lower bounds of the same type is not too restricted.
+% \djs{It would be more convincing if the following were true: if a trade-off function $g$ has a general lower bound $f$, then it has a trade-off lower bound $\tilde{f}$ with $\tilde{f}\geqslant f$.}
+% Although a theory for general $f$ would be preferable, the nature of the class $\T$ turns out to be important in subsampling and composition. The extra interpretability is another bonus.
+%The symmetry of the neighboring relation ``$x\sim x'$ if and only if $x'\sim x$'' should also be revealed in $f$. We put off the detail until \Cref{ssub:symmetric_trade_off_functions}.
+%The proof of \Cref{thm:trade-off} is not as important as its content,
+
+% \begin{definition}
+% 	A mechanism $M:X\to Y$ is $(\ep, \delta)$-DP if for any $x\sim x'$ and measurable $E\subseteq Y$,
+% 	$$P[M(x)\in E] \leqslant e^\ep P[M(x')\in E] + \delta.$$
+% \end{definition}
+% Now the question is, what kind of distributions generates the testing region that corresponds to $(\ep, \delta)$-indistinguishability? Consider the simple measurable space $\{a,b,c,d\}$ and two probability measures $P_U$ and $P_V$ given in Table 1 \djs{ref not work?}:
+% \begin{table}
+% \centering
+% \label{tab:PUPV}
+% \begin{tabular}{|c|c|c|}
+% \hline
+% outcome & $P_U$ & $P_V$ \\\hline
+% $a$ & $(1-\delta)\cdot\epover$ & $(1-\delta)\cdot\oneover$ \\\hline
+% $b$ & $(1-\delta)\cdot\oneover$ & $(1-\delta)\cdot\epover$ \\\hline
+% $c$ & $\delta$ & $0$ \\\hline
+% $d$ & $0$ & $\delta$\\\hline
+% \end{tabular}
+% \caption{$P_U$ and $P_V$}
+% \end{table}
+% \begin{lemma} \label{lem:epspower}
+% 	$K(P_U,P_V) = K(P_V,P_U)$ is the convex hull of the following five points: $(0,1), (1,0), (0,1-\delta), (1-\delta,0)$ and $ (,)$. It is (in general) a pentagon framed by the triangle $\triangle$ and two lines with slopes $-e^\ep$ and $-e^{-\ep}$.
+% \end{lemma}
+% \djs{Change when the plot is ready.}
+% $(\ep, \delta)$ fully determines $(P_U,P_V)$, so we will denote $K(P_U,P_V)$ by $K_{\ep, \delta}$.
+
+
+% \begin{proof}
+% %\djs{Necessary?}
+% \end{proof}
+% subsection indistinguishability_based_on_testing_regions (end)
+
+
+
+
+%%% symmetry as a subsubsection
+%\input{fDP/symmetry}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../paper"
+%%% End:

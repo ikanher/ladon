@@ -20,7 +20,7 @@ Current state (2026-11-12, r03): the reopened bounded audit is complete. [REPORT
 ## Workflow follow-up
 
 - The sibling [source repair and bounded impact review](../../../../lean/matrix-factorization/openspec/changes/fix-prv-density-reconstruction-sign/tasks.md) is now complete. It adds a local erratum/scalar Lean guard and reports no affected maintained runtime formula or false Lean theorem in the inspected routes. Runtime execution and wider consumer safety remain outside its acceptance. This later result does not rewrite this audit's frozen source or complete its broader probability-law/Lean correspondence.
-- The separate [matched pilot](../ladon-matched-source-audit-pilot/tasks.md) is complete; its six selected claims were judged faithful in both arms. Current next work is owned by the [pitfalls umbrella](../ladon-semantic-pitfalls-umbrella/tasks.md#current-program-state--2026-11-13).
+- The separate [matched pilot](../ladon-matched-source-audit-pilot/tasks.md) is complete; its six selected claims were judged faithful in both arms. Current next work is owned by the [pitfalls umbrella](../ladon-semantic-pitfalls-umbrella/tasks.md#current-status-and-next-steps).
 - Any discovered engineering need gets its own concrete requirement and applicable existing acceptance gates; this packet does not implement it automatically.
 - A comparison with ordinary Lean plus the same LLM/recipes needs separate frozen inputs, budgets, primary success criterion and practical threshold before launch.
 - Navier–Stokes remains a subsequent known-fault regression with fresh auditors, isolated inputs and no prior diagnosis. No rerun starts from completing this child.

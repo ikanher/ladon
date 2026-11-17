@@ -1,0 +1,558 @@
+\section{Preliminaries}
+
+\paragraph{Objective and clipping.}
+We analyze optimization at a fixed reference dataset $D_0$, with public
+size $n=|D_0|>0$, in dimension $d\geq1$. Record $a\in D_0$ has a differentiable
+loss $f_a:\R^d\to\R$ and gradient $g_a=\nabla f_a$. For $C>0$, define
+\[
+ f(x)=\frac1n\sum_{a\in D_0}f_a(x),\qquad
+ \bar g_C(x)=\frac1n\sum_{a\in D_0}\clip_C(g_a(x)),
+ \qquad
+ \clip_C(z)=
+ \begin{cases}
+ z,&\norm z\leq C,\\
+ Cz/\norm z,&\norm z>C.
+ \end{cases}
+\]
+The dataset size $n$ is distinct from the run-family index $j$.
+Clipping always uses the Euclidean norm.
+
+\paragraph{Private gradients.}
+Fix a finite public record universe $\mathcal U\supseteq D_0$. For every
+$a\in\mathcal U$, fix a query $g_a:\R^d\to\R^d$, agreeing with
+$\nabla f_a$ on $D_0$ and common across private inputs.
+Fix a Poisson sampling probability $0<q\leq1$ and a public denominator
+$B>0$. In run $j$, the private gradient on an input $D\subseteq\mathcal U$ is
+\begin{equation}\label{eq:private-gradient}
+ g^{\mathrm{priv}}_{j,k}
+ =\frac1B\sum_{a\in D}I_{j,k,a}
+       \clip_C(g_a(x_{j,k-1}))
+       +\frac{C\sigma_{\mathrm{DP},j}}B Z_{j,k},
+ \qquad k=1,\ldots,T_j.
+\end{equation}
+The Gaussian noise multiplier satisfies $\sigma_{\mathrm{DP},j}>0$.
+The masks are independent Bernoulli variables with parameter $q$, and the
+$Z_{j,k}$ are independent $N(0,I_d)$ vectors, independent of all masks.
+Each step uses fresh randomness; its query is evaluated at the parameter
+determined by the preceding releases. The denominator is fixed across
+privacy neighbors, not the realized batch size or a value recomputed from
+the supplied dataset size.
+
+Privacy uses add/remove adjacency on subsets of a finite public record
+universe $\mathcal U\supseteq D_0$. Queries are fixed across inputs, and
+initialization and algorithm parameters are public and common to
+neighbors. Measurability of the release kernels is included in
+Assumption~\ref{ass:queries}. The protected output is the
+entire interpolated parameter path; masks and Gaussian seeds are not
+released. Appendix~\ref{app:privacy} gives the precise mechanism setup,
+reconstruction, and accounting argument.
+
+\paragraph{DP-Adam.}
+Fix a stabilizer $a_{\mathrm{Adam}}>0$ and momentum parameters
+\begin{equation}\label{eq:betas}
+ 0<\beta_1<1,\qquad \beta_1^2<\beta_2<1.
+\end{equation}
+Starting both memories at zero, standard bias-corrected Adam in ordinary
+gradient units is
+\begin{align}
+ m^{\mathrm{priv}}_{j,k}
+ &=\beta_1m^{\mathrm{priv}}_{j,k-1}
+        +(1-\beta_1)g^{\mathrm{priv}}_{j,k},\nonumber\\
+ v^{\mathrm{priv}}_{j,k}
+ &=\beta_2v^{\mathrm{priv}}_{j,k-1}
+        +(1-\beta_2)(g^{\mathrm{priv}}_{j,k})^{\odot2},\label{eq:adam}\\
+ x_{j,k}
+ &=x_{j,k-1}-\eta_j
+ \frac{m^{\mathrm{priv}}_{j,k}/(1-\beta_1^k)}
+ {\sqrt{v^{\mathrm{priv}}_{j,k}/(1-\beta_2^k)}+a_{\mathrm{Adam}}}.
+ \nonumber
+\end{align}
+Squares, square roots, and quotients are coordinatewise. The learning
+rate $\eta_j$ is constant within a run; its dependence on $j$ compares
+complete runs of different lengths, not a decay schedule within one run.
+
+The proofs use the equivalent normalized variables
+\[
+ s_j=\frac{\sigma_{\mathrm{DP},j}}B,\qquad
+ a_A=\frac{a_{\mathrm{Adam}}}C,\qquad
+ m_{j,k}=\frac{m^{\mathrm{priv}}_{j,k}}C,\qquad
+ v_{j,k}=\frac{v^{\mathrm{priv}}_{j,k}}{C^2}.
+\]
+Their input and the direction used by the algorithm are
+\begin{align}
+ Y_{j,k}:=\frac{g^{\mathrm{priv}}_{j,k}}C
+ &=\frac1{CB}\sum_{a\in D}I_{j,k,a}
+       \clip_C(g_a(x_{j,k-1}))+s_jZ_{j,k},\label{eq:release}\\
+ \widehat A_{j,k}
+ &=\frac{m_{j,k}/(1-\beta_1^k)}
+ {\sqrt{v_{j,k}/(1-\beta_2^k)}+a_A},
+ \qquad x_{j,k}=x_{j,k-1}-\eta_j\widehat A_{j,k}.
+ \label{eq:normalized-direction}
+\end{align}
+The normalized memories obey the same recurrences with input $Y_{j,k}$.
+The condition $\beta_1^2<\beta_2$ makes the weighted Cauchy--Schwarz
+constant finite: in each coordinate the first moment is bounded by a
+fixed multiple of the square root of the second moment. Consequently,
+the normalized directions, including bias correction, are uniformly
+bounded; see Lemma~\ref{lem:bounded-directions}.
+
+\begin{assumption}[Time scaling and initialization]\label{ass:clock}
+Let $T_j\in\mathbb N_{>0}$ and $\eta_j>0$. There are fixed $H,\lambda>0$
+such that
+\begin{equation}\label{eq:clock}
+ T_j\eta_j=s_jH,\qquad s_j\longrightarrow\infty,
+ \qquad \eta_js_j\longrightarrow\lambda.
+\end{equation}
+The initial points $x_j=x_{j,0}$ are public, common across privacy
+neighbors, and satisfy $x_j\to x_0$.
+\end{assumption}
+
+Define the slow-time step $h_j=H/T_j=\eta_j/s_j$ and let $X_j$ affinely
+interpolate the iterates on $[0,H]$:
+\[
+ X_j((k+u)h_j)=(1-u)x_{j,k}+u x_{j,k+1},
+ \qquad 0\leq k<T_j,\quad 0\leq u\leq1.
+\]
+There are $T_j$ releases and $T_j+1$ nodes, including the terminal node.
+The assumption implies $\eta_j\to0$, $h_j\to0$, and
+\[
+ \frac{s_j}{\sqrt{T_j}}\longrightarrow c_s:=\sqrt{\frac{\lambda}{H}},
+ \qquad \eta_j\sqrt{T_j}\longrightarrow c_\eta:=\sqrt{H\lambda}.
+\]
+Consequently,
+\[
+ H=\frac{c_\eta}{c_s},\qquad\lambda=c_\eta c_s.
+\]
+The exact relation in \eqref{eq:clock} specifies the interpolation used
+in the proof. The horizon $H$ is fixed before $j\to\infty$. Per-release
+noise diverges, but the number of releases grows quadratically with it;
+this does not imply vanishing overall privacy loss.
+
+Throughout, $\norm{\cdot}$ is the Euclidean norm and $\snorm{\cdot}$
+the coordinate maximum norm. For a path $w$, write
+$\snorm w=\sup_{0\leq t\leq H}\snorm{w(t)}$.
+
+\section{Theoretical results}
+
+The main results identify the limiting dynamics, transfer a stationarity
+bound to finite iterates, and use privacy calibration to select the
+learning-rate coefficient that minimizes that bound. The dependence and
+approximation arguments appear in the appendices.
+
+\subsection{Limiting dynamics}
+
+\paragraph{The two memory coefficients.}
+It is enough to define them in one coordinate. Let $(Z_k)_{k\in\mathbb Z}$
+be independent standard Gaussians, and set
+\begin{equation}\label{eq:reference}
+ \begin{aligned}
+ p_\ell&=(1-\beta_1)\beta_1^\ell,
+ &w_\ell&=(1-\beta_2)\beta_2^\ell,\\
+ M_k&=\sum_{\ell\geq0}p_\ell Z_{k-\ell},
+ &V_k&=\sum_{\ell\geq0}w_\ell Z_{k-\ell}^2,
+ &U_k^G&=\frac{M_k}{\sqrt{V_k}}.
+ \end{aligned}
+\end{equation}
+This stationary direction has mean zero. Let $U_k^G(r)$ denote the same
+direction when every Gaussian input in its history is shifted by $r$.
+Define the response coefficient and long-run variance by
+\begin{equation}\label{eq:memory-coefficients}
+ \alpha_\beta=
+ \left.\frac{d}{dr}\E U_0^G(r)\right|_{r=0},\qquad
+ \sigma_\beta^2=
+ \operatorname{Var}(U_0^G)+2\sum_{\ell\geq1}
+             \operatorname{Cov}(U_0^G,U_\ell^G).
+\end{equation}
+Thus $\alpha_\beta$ measures the response to a small common gradient
+signal, including the change in the denominator. The coefficient
+$\sigma_\beta^2$ includes both the variance of one update and the
+covariance accumulated across iterations. Both are finite and strictly
+positive. Independent, identically distributed coordinates give isotropic
+long-run covariance $\sigma_\beta^2I_d$.
+Appendix~\ref{app:reference} proves these facts and gives an explicit
+expectation formula for $\alpha_\beta$.
+
+\begin{assumption}[Fixed record queries]\label{ass:queries}
+The public denominator satisfies $B=qn$, the expected minibatch size at
+$D_0$, and is fixed across neighbors. It is not the realized Poisson batch
+size. For each $a\in D_0$,
+$g_a=\nabla f_a$, where
+$f_a\in C^1(\R^d)$ and $g_a$ is globally Euclidean Lipschitz with constant
+$L_a$. For every private input $D\subseteq\mathcal U$ and every
+$j,k$, the release \eqref{eq:private-gradient} defines a measurable
+probability kernel in the current state. No Lipschitz assumption is imposed
+on queries for records outside $D_0$.
+\end{assumption}
+Put $L_C=n^{-1}\sum_{a\in D_0}L_a$. Nonexpansiveness of clipping gives
+\[
+ \|\bar g_C(x)\|_2\leq C,\qquad
+ \|\bar g_C(x)-\bar g_C(y)\|_2\leq L_C\|x-y\|_2.
+\]
+Thus the limiting drift $-(\alpha_\beta/C)\bar g_C$ is bounded and globally
+Lipschitz, independently of the objective bounds used below.
+
+\begin{theorem}[High-noise diffusion limit]\label{thm:diffusion}
+For the recursion \eqref{eq:adam}, suppose Assumptions~\ref{ass:clock}
+and~\ref{ass:queries} hold. Then the laws of $X_j$ at $D_0$ converge weakly in
+$C([0,H],\R^d)$ to the law of
+\begin{equation}\label{eq:sde}
+ dX_t=-\frac{\alpha_\beta}{C}\bar g_C(X_t)\,dt
+       +\sqrt{\lambda}\,\sigma_\beta\,dW_t,\qquad X_0=x_0.
+\end{equation}
+Here $W$ is standard $d$-dimensional Brownian motion.
+The drift is globally Lipschitz, so the additive equation has a unique
+solution for each continuous driving path.
+\end{theorem}
+
+The limit separates the response and variance effects of Adam's memory.
+The coefficient $\alpha_\beta$ controls how a small gradient signal changes
+the mean update, while $\sigma_\beta^2$ includes the covariance accumulated across
+correlated updates. Dominant Gaussian noise removes state-dependent
+coordinatewise preconditioning at leading order. Replacing $\sigma_\beta^2$ by a
+single-update variance would omit those temporal correlations. The
+momentum pair remains fixed throughout the limit. No uniformity is
+claimed as it approaches the boundary of the admissible region.
+
+The second-moment estimate nevertheless remains random at the iteration
+scale. In one coordinate of the Gaussian reference, independence and
+$\operatorname{Var}(Z_{\ell}^2)=2$ give
+\[
+ \E V_0=1,\qquad
+ \operatorname{Var}(V_0)=2\sum_{\ell\geq0}w_{\ell}^2
+ =\frac{2(1-\beta_2)}{1+\beta_2}>0.
+\]
+The limiting coefficients account for these fluctuations and their temporal
+dependence; the denominator is not replaced by its expectation.
+
+The scaling follows from the frozen stationary mean direction $\bar U_j(x)$.
+Lemma~\ref{lem:averaged-update} gives, uniformly in $x$ in the fixed-query setting,
+\[
+ \bar U_j(x)=\frac{\alpha_\beta}{Cs_j}\bar g_C(x)+O(s_j^{-2}).
+\]
+Since $h_j=\eta_j/s_j$, the drift and covariance scales are
+\[
+ \begin{aligned}
+ -\frac{\eta_j\bar U_j(x)}{h_j}
+ &=-s_j\bar U_j(x)\longrightarrow-\frac{\alpha_\beta}{C}\bar g_C(x),\\
+ \frac{\eta_j^2}{h_j}\sigma_\beta^2I_d
+ &=\eta_js_j\sigma_\beta^2I_d\longrightarrow\lambda\sigma_\beta^2I_d.
+ \end{aligned}
+\]
+Appendix~\ref{app:transfer} connects this frozen calculation to the
+adaptive trajectory.
+
+\paragraph{Proof idea.}
+The rescaled private release
+$Y_{j,k}/s_j=g^{\mathrm{priv}}_{j,k}/(Cs_j)$ is a standard Gaussian
+vector plus a uniformly bounded perturbation of order $s_j^{-1}$.
+Expanding the stationary mean update identifies the averaged drift
+$b_j=s_j\bar U_j$ and its response coefficient $\alpha_\beta$.
+
+To identify the accumulated noise, we assign each Gaussian input all of
+its future contributions to the reference updates. Their partial sums
+differ from a bounded-increment martingale by a uniformly bounded boundary
+term. A functional central limit theorem then gives the full long-run
+covariance $\sigma_\beta^2I_d$.
+
+The remaining step connects these stationary calculations to initialized,
+adaptive Adam. Over a short block we would like to hold the parameter fixed
+and use the corresponding stationary mean. A stationary copy, however,
+starts with a different history. Bounding that history mismatch separately
+on every block requires long blocks, while controlling parameter motion
+requires short ones. We instead compare each process with a Gaussian
+reference driven by the same noise. The signal and rescaled stabilizer
+change its direction by only $O(s_j^{-1})$ in mean, apart from the initial
+transient. Comparing these small corrections retains geometric forgetting
+of the histories and permits both errors to vanish. Appendix~\ref{app:transfer}
+explains the compatible block choice $L_{\mathrm{blk}}\asymp
+\sqrt{s_j\log s_j}$. Summable bias corrections complete the decomposition
+\[
+ X_j(t)=x_j+W_j(t)-\int_0^t b_j(X_j(u))\,du+R_j(t),
+ \qquad \E\snorm{R_j}\longrightarrow0.
+\]
+The reference functional limit, local uniform convergence
+$b_j\to(\alpha_\beta/C)\bar g_C$, and continuity of the additive integral
+equation identify the limiting diffusion.
+
+\paragraph{Time measured as a fraction of the run.}
+The same limit has a useful form on $[0,1]$. Set $\widetilde X_u=X_{Hu}$
+and $\widetilde W_u=H^{-1/2}W_{Hu}$. Brownian time scaling gives
+\begin{equation}\label{eq:run-time-sde}
+ d\widetilde X_u
+ =-\frac{\alpha_\beta c_\eta}{Cc_s}\bar g_C(\widetilde X_u)\,du
+       +c_\eta\sigma_\beta\,d\widetilde W_u,
+ \qquad \widetilde X_0=x_0.
+\end{equation}
+Here $\widetilde W$ is standard Brownian motion on $[0,1]$. At fixed
+$c_\eta$, increasing $c_s$ reduces the coefficient of the gradient-driven
+drift, while the Brownian coefficient remains unchanged.
+
+\subsection{Stationarity and finite-iterate transfer}
+
+Clipping bounds each record contribution but can change the direction of
+the average gradient. We quantify that discrepancy through per-example gradient
+disagreement. Nonexpansiveness of clipping then gives a descent inequality
+with three contributions: the initial objective gap, per-example gradient disagreement,
+and accumulated update noise.
+
+\begin{assumption}[Objective and per-example gradient disagreement]\label{ass:objective}
+The empirical objective $f\in C^2(\R^d)$ satisfies $f\geq\ell$.
+For a constant $0\leq\Delta\leq C/2$,
+\begin{equation}\label{eq:dispersion}
+ \frac1{n}\sum_{a\in D_0}\norm{g_a(x)-\nabla f(x)}
+ \leq\Delta\leq C/2\qquad\text{for all }x,
+\end{equation}
+and assume the one-sided Hessian bound
+\begin{equation}\label{eq:hessian}
+ D^2f(x)[z,z]\leq L_f\norm z^2
+ \qquad\text{for all }x,z,\qquad L_f\geq0.
+\end{equation}
+\end{assumption}
+In this fixed-query setting, $\nabla f$ is already globally Lipschitz,
+with constant at most $L_C$, because it averages the record gradients.
+
+The disagreement assumption is global and can be restrictive: for quadratic
+record losses on $\R^d$, all record Hessians must coincide. Equal-Hessian
+shifted quadratics can still have nonzero disagreement; Appendix~\ref{app:utility}
+explains the restriction.
+
+No convexity is required. Define the clipping-adapted stationarity measure
+\begin{equation}\label{eq:penalty}
+ P_C(x)=\min\{\norm{\nabla f(x)}^2,C\norm{\nabla f(x)}\}.
+\end{equation}
+It is quadratic when the gradient is below the clipping threshold and
+linear beyond it. Small values indicate approximate stationarity, but the
+bound gives weaker control of large gradients than a bound on the full
+squared gradient norm. Its role in descent follows from the radial identity
+\[
+ P_C(x)=\langle\nabla f(x),\clip_C(\nabla f(x))\rangle.
+\]
+Its relation to approximate stationarity is explicit: for any random
+vector $Z$ with $\E P_C(Z)<\infty$ and any $a>0$,
+\begin{equation}\label{eq:stationarity-probability}
+ \Prob(\norm{\nabla f(Z)}\geq a)
+ \leq\frac{\E P_C(Z)}{\min\{a^2,Ca\}}.
+\end{equation}
+This follows from the monotonicity of $r\mapsto\min\{r^2,Cr\}$ and
+Markov's inequality.
+
+The algorithm averages clipped record gradients. Nonexpansiveness of
+clipping and the disagreement assumption connect this average to the
+clipped full gradient:
+\[
+ \|\bar g_C(x)-\clip_C(\nabla f(x))\|_2\leq\Delta.
+\]
+Writing $r=\norm{\nabla f(x)}$, this gives
+$\langle\nabla f(x),\bar g_C(x)\rangle\geq\min\{r^2,Cr\}-\Delta r$.
+For $r\leq C$, completing the square bounds the disagreement term; for
+$r>C$, the condition $\Delta\leq C/2$ preserves half the clipped descent.
+Consequently,
+\[
+ \boxed{\langle\nabla f(x),\bar g_C(x)\rangle
+       \geq\tfrac12P_C(x)-\tfrac12\Delta^2.}
+\]
+Lemma~\ref{lem:alignment} gives the two-case calculation.
+
+\begin{theorem}[Asymptotic stationarity bound for DP-Adam iterates]\label{cor:finite}
+Under Assumptions~\ref{ass:clock}--\ref{ass:objective}, let $K_j$ be
+independent of training and uniform on $\{0,\ldots,T_j-1\}$. At $D_0$,
+\begin{equation}\label{eq:finite-rate}
+\begin{aligned}
+ \lim_{j\to\infty}\E P_C(x_{j,K_j})
+ &=\frac1H\E\int_0^H P_C(X_t)\,dt\\
+ &\leq
+ \underbrace{\frac{2C(f(x_0)-\ell)}{\alpha_\beta H}}
+ _{\text{initial objective gap}}
+ +\underbrace{\Delta^2}_{\text{per-example gradient disagreement}}\\
+ &+\underbrace{\frac{\lambda L_fCd\,\sigma_\beta^2}{\alpha_\beta}}
+ _{\text{accumulated update noise}}.
+\end{aligned}
+\end{equation}
+The expected stationarity measure is finite. Appendix~\ref{app:finite} proves the
+occupation and grid-average expectation limits in this statement.
+\end{theorem}
+
+\paragraph{Descent calculation.}
+For the generator $\mathcal L$ of the limiting diffusion, clipping
+alignment and the upper Hessian bound give
+\[
+ \mathcal Lf
+ \leq-\frac{\alpha_\beta}{2C}P_C
+       +\frac{\alpha_\beta\Delta^2}{2C}
+       +\frac{\lambda L_fd \sigma_\beta^2}{2}.
+\]
+Stopped It\^o calculus integrates this inequality; lower boundedness of
+$f$ and Fatou's lemma then bound the diffusion occupation average.
+Appendix~\ref{app:utility} supplies the localization and integrability
+details and the diffusion-only bound. The moment and grid-average
+arguments in Appendix~\ref{app:finite} then give the expectation equality above.
+
+The bound separates three contributions. The initial objective gap decays
+as $H^{-1}$. Per-example gradient disagreement contributes $\Delta^2$, through the
+possible misalignment introduced by clipping. Accumulated noise contributes
+$\lambda L_fCd\,\sigma_\beta^2/\alpha_\beta$, so Adam's memory affects both
+variance and response to the gradient signal.
+
+The proof in Appendix~\ref{app:finite} uses the
+moment estimates behind the diffusion limit; weak convergence alone would
+not suffice. Corollary~\ref{cor:objective-expectation} in Appendix~\ref{app:moments}
+also gives convergence of expected terminal objective values.
+
+\paragraph{A fixed-horizon clipped quadratic example.}
+To illustrate the limiting dynamics at $H=1$, take one record with query
+$g(x)=x$, objective $f(x)=x^2/2$, and initial
+parameter $x_0=2$. Set $q=B=C=a_A=H=1$ and
+$\beta_1=\beta_2=1/2$. The query is globally Lipschitz and the objective assumptions hold with
+$\Delta=0$, $L_f=1$, and $\ell=0$. Choose any fixed $\lambda>0$.
+Appendix~\ref{app:clock-examples} supplies a privacy-calibrated choice
+and checks its schedule and release mechanism. The limiting equation
+and its rate are
+\[
+ dX_t=-\alpha_\beta\clip_1(X_t)\,dt
+             +\sqrt{\lambda}\,\sigma_\beta\,dW_t,\qquad X_0=2,
+\]
+\begin{equation}\label{eq:example}
+ \frac1t\E\int_0^t\min\{X_u^2,|X_u|\}\,du
+       \leq\frac{4}{\alpha_\beta t}
+                     +\frac{\lambda\sigma_\beta^2}{\alpha_\beta},
+ \qquad 0<t\leq1.
+\end{equation}
+The restoring drift is linear inside $[-1,1]$ and has constant magnitude
+outside that interval. Clipping therefore remains nonlinear even though
+Adam's coordinatewise normalization has averaged out of the parameter
+equation. The long-run variance determines the noise intensity.
+
+\subsection{Privacy calibration and learning-rate tuning}
+
+Privacy accounting uses the same finite algorithms. Fix an integer order
+$r\geq2$ and $0<\delta<1$. Let $\rho_r(q,\sigma)$ be the
+sufficient sampled-Gaussian R\'enyi bound defined explicitly in
+\eqref{eq:rdp}, and put
+\[
+ c_\delta=\frac{\log(1/\delta)}{r-1}.
+\]
+
+Proposition~\ref{prop:privacy} gives the finite accountant
+$\varepsilon_j=T_j\rho_r(q,s_jB)+c_\delta$. Since
+$c_s^2=\lambda/H$ and $B=qn$, its limit is
+\[
+ \varepsilon_j\longrightarrow\frac{r}{2n^2c_s^2}+c_\delta.
+\]
+Thus the limiting sufficient privacy bound depends on the noise
+coefficient $c_s$. For a target $\varepsilon>c_\delta$ and public slack
+$\zeta>0$, choose
+\[
+ c_s=\sqrt{\gamma_\varepsilon},\qquad
+ \gamma_\varepsilon=\frac{(1+\zeta)r}{2n^2(\varepsilon-c_\delta)}.
+\]
+This calibration makes the limit strictly smaller than $\varepsilon$, so
+all sufficiently large members satisfy the target privacy guarantee.
+
+\paragraph{An explicit finite-run schedule.}
+For any sequence of positive integers $T_j\to\infty$ and any $c_\eta>0$, set
+\begin{equation}\label{eq:explicit-schedule}
+ \boxed{
+ s_j=\sqrt{\gamma_\varepsilon T_j},\qquad
+ \eta_j=\frac{c_\eta}{\sqrt{T_j}},\qquad
+ \sigma_{\mathrm{DP},j}=B\sqrt{\gamma_\varepsilon T_j}.}
+\end{equation}
+These choices satisfy the time-scaling relations in
+Assumption~\ref{ass:clock} exactly, with
+\[
+ H=\frac{c_\eta}{\sqrt{\gamma_\varepsilon}},\qquad
+ \lambda=c_\eta\sqrt{\gamma_\varepsilon}.
+\]
+This calibration sets the noise coefficient; $c_\eta$ is the remaining
+learning-rate coefficient. More general families satisfying
+Assumption~\ref{ass:clock} with these $H,\lambda$ are also covered.
+
+\paragraph{Minimizing the descent bound.}
+The nondegenerate diffusion regime imposes the $T_j^{-1/2}$ learning-rate
+scaling; we minimize the bound over its coefficient $c_\eta$.
+Fix public bounds $G,L>0$ such that $f(x_0)-\ell\leq G$ and $L_f\leq L$.
+Substituting $H$ and $\lambda$ into Theorem~\ref{cor:finite} gives
+\begin{equation}\label{eq:coefficient-bound}
+ \boxed{\lim_{j\to\infty}\E P_C(x_{j,K_j})
+ \leq\Delta^2+\frac{C\sqrt{\gamma_\varepsilon}}{\alpha_\beta}
+ \left(\frac{2G}{c_\eta}+Ld\,\sigma_\beta^2 c_\eta\right).}
+\end{equation}
+The expectation limit exists by Theorem~\ref{cor:finite}.
+The first term in parentheses decreases with $c_\eta$ and the second
+increases. Privacy multiplies both by the same positive factor, so it
+does not change the minimizing coefficient:
+\[
+ c_\eta^\star=\sqrt{\frac{2G}{Ld\,\sigma_\beta^2}},\qquad
+ \Delta^2+\frac{2C\sigma_\beta}{\alpha_\beta}
+          \sqrt{2GLd\,\gamma_\varepsilon}.
+\]
+The second expression is the minimized bound. After learning-rate tuning,
+Adam's memory enters through the ratio $\sigma_\beta/\alpha_\beta$:
+fluctuation relative to response. The corresponding diffusion
+horizon is $H_*=c_\eta^\star/\sqrt{\gamma_\varepsilon}$.
+The following theorem applies this choice to the finite algorithms.
+
+\begin{theorem}[Learning-rate tuning under privacy calibration]\label{cor:horizon-tuned}
+Fix $r\geq2$, $0<\delta<1$, $\varepsilon>c_\delta$, and
+$\zeta>0$, with $r$ an integer.
+Let $G,L>0$ be public bounds with $f(x_0)-\ell\leq G$ and $L_f\leq L$.
+Using $\gamma_\varepsilon$ above, set
+\[
+ c_\eta^\star=\sqrt{\frac{2G}{Ld\,\sigma_\beta^2}},\qquad
+ H_*=\frac{c_\eta^\star}{\sqrt{\gamma_\varepsilon}},\qquad
+\lambda_*=c_\eta^\star\sqrt{\gamma_\varepsilon}.
+\]
+Suppose the algorithm family satisfies
+Assumptions~\ref{ass:clock}--\ref{ass:objective} with $H=H_*$ and
+$\lambda=\lambda_*$. Let $K_j$ be independent of training
+and uniform on $\{0,\ldots,T_j-1\}$. For every tolerance $u>0$, all sufficiently
+large members are $(\varepsilon,\delta)$-DP and satisfy
+\[
+ \E P_C(x_{j,K_j})
+ \leq \Delta^2+\frac{2C\sigma_\beta}{\alpha_\beta}
+      \sqrt{2GLd\,\gamma_\varepsilon}+u.
+\]
+The privacy threshold is data-independent; the utility threshold may
+depend on $D_0$ and $u$. Every such family also satisfies
+\[
+ \eta_j\sqrt{T_j}\longrightarrow c_\eta^\star.
+\]
+In particular, \eqref{eq:explicit-schedule} with $c_\eta=c_\eta^\star$
+has $\eta_j=\sqrt{2G/(Ld\,\sigma_\beta^2T_j)}$ exactly.
+\end{theorem}
+\begin{proof}
+Under $B=qn$, the fixed-horizon calibration \eqref{eq:chosen} is
+$\lambda_H=\gamma_\varepsilon H$. Thus
+$\lambda_*=\lambda_H$ at $H=H_*$. Theorem~\ref{thm:main} gives eventual
+privacy and the stationarity bound at this horizon. Replacing the initial
+gap and Hessian coefficient by their public bounds $G,L$ gives
+\eqref{eq:coefficient-bound} with $c_\eta=c_\eta^\star$, whose minimized
+value is displayed above. The exact clock also gives
+$\eta_j\sqrt{T_j}\to H_*\sqrt{\gamma_\varepsilon}=c_\eta^\star$ for every
+family satisfying the stated assumptions.
+\end{proof}
+
+\paragraph{Interpretation and scope.}
+The theorem selects the bound-minimizing learning-rate coefficient with
+momentum, clipping, sampling, and public objective bounds fixed. The separate
+growth estimate can be smaller, so this minimization need not optimize actual
+stationarity or give a sharp privacy--utility rate; Appendix~\ref{sec:tuned-budget}
+compares the two bounds.
+
+Nor does a privacy-independent coefficient imply preserved descent.
+For the small-budget calibration of that appendix,
+$c_s=\sqrt{\gamma_\varepsilon}\to\infty$, while $c_\eta^\star$ stays fixed.
+Realize the budget-dependent solutions $\widetilde X^\varepsilon$ of
+\eqref{eq:run-time-sde} with the same Brownian driver $\widetilde W$.
+The equation has vanishing drift and fixed noise intensity. Using
+$\norm{\bar g_C}\leq C$ gives, almost surely,
+\begin{equation}\label{eq:brownian-comparison}
+ \sup_{0\leq u\leq1}
+ \norm{\widetilde X^\varepsilon_u-
+       \bigl(x_0+c_\eta^\star\sigma_\beta\widetilde W_u\bigr)}
+ \leq\frac{\alpha_\beta c_\eta^\star}{c_s}.
+\end{equation}
+The algorithm limit is taken separately at each fixed privacy target before
+this small-budget comparison. Utility concerns a uniformly sampled iterate
+at $D_0$, while privacy holds across neighbors. The vanishing utility error
+is unquantified: the adaptive-remainder estimate is not a rate for the full
+path-law approximation.

@@ -1,0 +1,616 @@
+{
+  "version": 1,
+  "startedAt": "2026-11-14T08:42:28.637110+00:00",
+  "budgetSeconds": 2400,
+  "scope": {
+    "path": "ladon/openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpadam-batch-pair-r01/exposition.tex",
+    "sha256": "795382682281c33decbd694a17c700999f1265e83bb3cd363ce0de733028434f",
+    "startLine": 1,
+    "endLine": 558
+  },
+  "units": [
+    {
+      "id": "unit-0001",
+      "startLine": 1,
+      "endLine": 100,
+      "inventory": "done",
+      "note": "Informed root inventory: grouped definitions, displayed assertions and proof sketches are recorded, including continuations across unit boundaries. Grouped blocked records explicitly retain unverified general/source-method scope; the concrete pair is detailed in REPORT.md and PREMISE-LEDGER.md."
+    },
+    {
+      "id": "unit-0002",
+      "startLine": 101,
+      "endLine": 200,
+      "inventory": "done",
+      "note": "Informed root inventory: grouped definitions, displayed assertions and proof sketches are recorded, including continuations across unit boundaries. Grouped blocked records explicitly retain unverified general/source-method scope; the concrete pair is detailed in REPORT.md and PREMISE-LEDGER.md."
+    },
+    {
+      "id": "unit-0003",
+      "startLine": 201,
+      "endLine": 300,
+      "inventory": "done",
+      "note": "Informed root inventory: grouped definitions, displayed assertions and proof sketches are recorded, including continuations across unit boundaries. Grouped blocked records explicitly retain unverified general/source-method scope; the concrete pair is detailed in REPORT.md and PREMISE-LEDGER.md."
+    },
+    {
+      "id": "unit-0004",
+      "startLine": 301,
+      "endLine": 400,
+      "inventory": "done",
+      "note": "Informed root inventory: grouped definitions, displayed assertions and proof sketches are recorded, including continuations across unit boundaries. Grouped blocked records explicitly retain unverified general/source-method scope; the concrete pair is detailed in REPORT.md and PREMISE-LEDGER.md."
+    },
+    {
+      "id": "unit-0005",
+      "startLine": 401,
+      "endLine": 500,
+      "inventory": "done",
+      "note": "Informed root inventory: grouped definitions, displayed assertions and proof sketches are recorded, including continuations across unit boundaries. Grouped blocked records explicitly retain unverified general/source-method scope; the concrete pair is detailed in REPORT.md and PREMISE-LEDGER.md."
+    },
+    {
+      "id": "unit-0006",
+      "startLine": 501,
+      "endLine": 558,
+      "inventory": "done",
+      "note": "Informed root inventory: grouped definitions, displayed assertions and proof sketches are recorded, including continuations across unit boundaries. Grouped blocked records explicitly retain unverified general/source-method scope; the concrete pair is detailed in REPORT.md and PREMISE-LEDGER.md."
+    }
+  ],
+  "claims": [
+    {
+      "id": "empirical-objects",
+      "unit": "unit-0001",
+      "startLine": 1,
+      "endLine": 19,
+      "quote": "\\section{Preliminaries}\n\n\\paragraph{Objective and clipping.}\nWe analyze optimization at a fixed reference dataset $D_0$, with public\nsize $n=|D_0|>0$, in dimension $d\\geq1$. Record $a\\in D_0$ has a differentiable\nloss $f_a:\\R^d\\to\\R$ and gradient $g_a=\\nabla f_a$. For $C>0$, define\n\\[\n f(x)=\\frac1n\\sum_{a\\in D_0}f_a(x),\\qquad\n \\bar g_C(x)=\\frac1n\\sum_{a\\in D_0}\\clip_C(g_a(x)),\n \\qquad\n \\clip_C(z)=\n \\begin{cases}\n z,&\\norm z\\leq C,\\\\\n Cz/\\norm z,&\\norm z>C.\n \\end{cases}\n\\]\nThe dataset size $n$ is distinct from the run-family index $j$.\nClipping always uses the Euclidean norm.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Empirical objective, clipping and mean clipped gradients",
+        "assumptions": "Fixed nonempty reference dataset and differentiable record losses",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Definitions of f, clipped mean, and Euclidean clipping",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Construct the same empirical objects for arbitrary source losses; the retained proof instantiates only one quadratic record."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Construct the same empirical objects for arbitrary source losses; the retained proof instantiates only one quadratic record. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "private-mechanism",
+      "unit": "unit-0001",
+      "startLine": 20,
+      "endLine": 49,
+      "quote": "\\paragraph{Private gradients.}\nFix a finite public record universe $\\mathcal U\\supseteq D_0$. For every\n$a\\in\\mathcal U$, fix a query $g_a:\\R^d\\to\\R^d$, agreeing with\n$\\nabla f_a$ on $D_0$ and common across private inputs.\nFix a Poisson sampling probability $0<q\\leq1$ and a public denominator\n$B>0$. In run $j$, the private gradient on an input $D\\subseteq\\mathcal U$ is\n\\begin{equation}\\label{eq:private-gradient}\n g^{\\mathrm{priv}}_{j,k}\n =\\frac1B\\sum_{a\\in D}I_{j,k,a}\n       \\clip_C(g_a(x_{j,k-1}))\n       +\\frac{C\\sigma_{\\mathrm{DP},j}}B Z_{j,k},\n \\qquad k=1,\\ldots,T_j.\n\\end{equation}\nThe Gaussian noise multiplier satisfies $\\sigma_{\\mathrm{DP},j}>0$.\nThe masks are independent Bernoulli variables with parameter $q$, and the\n$Z_{j,k}$ are independent $N(0,I_d)$ vectors, independent of all masks.\nEach step uses fresh randomness; its query is evaluated at the parameter\ndetermined by the preceding releases. The denominator is fixed across\nprivacy neighbors, not the realized batch size or a value recomputed from\nthe supplied dataset size.\n\nPrivacy uses add/remove adjacency on subsets of a finite public record\nuniverse $\\mathcal U\\supseteq D_0$. Queries are fixed across inputs, and\ninitialization and algorithm parameters are public and common to\nneighbors. Measurability of the release kernels is included in\nAssumption~\\ref{ass:queries}. The protected output is the\nentire interpolated parameter path; masks and Gaussian seeds are not\nreleased. Appendix~\\ref{app:privacy} gives the precise mechanism setup,\nreconstruction, and accounting argument.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Poisson Gaussian private releases and full-path output",
+        "assumptions": "Common public inputs and denominator; independent masks/noise; measurable release kernels",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Dataset-indexed mechanism with public normalization",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "General primitive-to-family release mapping is not constructed. The sampled quadratic kernel and actual privacy mechanism are checked."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "General primitive-to-family release mapping is not constructed. The sampled quadratic kernel and actual privacy mechanism are checked. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "adam-recursion",
+      "unit": "unit-0001",
+      "startLine": 50,
+      "endLine": 98,
+      "quote": "\\paragraph{DP-Adam.}\nFix a stabilizer $a_{\\mathrm{Adam}}>0$ and momentum parameters\n\\begin{equation}\\label{eq:betas}\n 0<\\beta_1<1,\\qquad \\beta_1^2<\\beta_2<1.\n\\end{equation}\nStarting both memories at zero, standard bias-corrected Adam in ordinary\ngradient units is\n\\begin{align}\n m^{\\mathrm{priv}}_{j,k}\n &=\\beta_1m^{\\mathrm{priv}}_{j,k-1}\n        +(1-\\beta_1)g^{\\mathrm{priv}}_{j,k},\\nonumber\\\\\n v^{\\mathrm{priv}}_{j,k}\n &=\\beta_2v^{\\mathrm{priv}}_{j,k-1}\n        +(1-\\beta_2)(g^{\\mathrm{priv}}_{j,k})^{\\odot2},\\label{eq:adam}\\\\\n x_{j,k}\n &=x_{j,k-1}-\\eta_j\n \\frac{m^{\\mathrm{priv}}_{j,k}/(1-\\beta_1^k)}\n {\\sqrt{v^{\\mathrm{priv}}_{j,k}/(1-\\beta_2^k)}+a_{\\mathrm{Adam}}}.\n \\nonumber\n\\end{align}\nSquares, square roots, and quotients are coordinatewise. The learning\nrate $\\eta_j$ is constant within a run; its dependence on $j$ compares\ncomplete runs of different lengths, not a decay schedule within one run.\n\nThe proofs use the equivalent normalized variables\n\\[\n s_j=\\frac{\\sigma_{\\mathrm{DP},j}}B,\\qquad\n a_A=\\frac{a_{\\mathrm{Adam}}}C,\\qquad\n m_{j,k}=\\frac{m^{\\mathrm{priv}}_{j,k}}C,\\qquad\n v_{j,k}=\\frac{v^{\\mathrm{priv}}_{j,k}}{C^2}.\n\\]\nTheir input and the direction used by the algorithm are\n\\begin{align}\n Y_{j,k}:=\\frac{g^{\\mathrm{priv}}_{j,k}}C\n &=\\frac1{CB}\\sum_{a\\in D}I_{j,k,a}\n       \\clip_C(g_a(x_{j,k-1}))+s_jZ_{j,k},\\label{eq:release}\\\\\n \\widehat A_{j,k}\n &=\\frac{m_{j,k}/(1-\\beta_1^k)}\n {\\sqrt{v_{j,k}/(1-\\beta_2^k)}+a_A},\n \\qquad x_{j,k}=x_{j,k-1}-\\eta_j\\widehat A_{j,k}.\n \\label{eq:normalized-direction}\n\\end{align}\nThe normalized memories obey the same recurrences with input $Y_{j,k}$.\nThe condition $\\beta_1^2<\\beta_2$ makes the weighted Cauchy--Schwarz\nconstant finite: in each coordinate the first moment is bounded by a\nfixed multiple of the square root of the second moment. Consequently,\nthe normalized directions, including bias correction, are uniformly\nbounded; see Lemma~\\ref{lem:bounded-directions}.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Bias-corrected Adam, normalized variables and bounded directions",
+        "assumptions": "Positive clipping/stabilizer, fixed beta with beta1²<beta2<1, zero memories",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Normalized recurrence represents the ordinary algorithm; directions bounded",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "The quadratic family uses the actual formal recursion; a general ordinary-unit normalization application and complete bounded-direction source-method review are not retained."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "The quadratic family uses the actual formal recursion; a general ordinary-unit normalization application and complete bounded-direction source-method review are not retained. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "clock-start",
+      "unit": "unit-0001",
+      "startLine": 99,
+      "endLine": 100,
+      "quote": "\\begin{assumption}[Time scaling and initialization]\\label{ass:clock}\nLet $T_j\\in\\mathbb N_{>0}$ and $\\eta_j>0$. There are fixed $H,\\lambda>0$",
+      "state": "blocked",
+      "contract": {
+        "objects": "Time scaling assumption (continued in unit 2)",
+        "assumptions": "Positive counts and steps",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Beginning of clock hypothesis",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Read with clock-continuation; general source-family constructor remains unverified."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Read with clock-continuation; general source-family constructor remains unverified. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "clock-continuation",
+      "unit": "unit-0002",
+      "startLine": 101,
+      "endLine": 141,
+      "quote": "such that\n\\begin{equation}\\label{eq:clock}\n T_j\\eta_j=s_jH,\\qquad s_j\\longrightarrow\\infty,\n \\qquad \\eta_js_j\\longrightarrow\\lambda.\n\\end{equation}\nThe initial points $x_j=x_{j,0}$ are public, common across privacy\nneighbors, and satisfy $x_j\\to x_0$.\n\\end{assumption}\n\nDefine the slow-time step $h_j=H/T_j=\\eta_j/s_j$ and let $X_j$ affinely\ninterpolate the iterates on $[0,H]$:\n\\[\n X_j((k+u)h_j)=(1-u)x_{j,k}+u x_{j,k+1},\n \\qquad 0\\leq k<T_j,\\quad 0\\leq u\\leq1.\n\\]\nThere are $T_j$ releases and $T_j+1$ nodes, including the terminal node.\nThe assumption implies $\\eta_j\\to0$, $h_j\\to0$, and\n\\[\n \\frac{s_j}{\\sqrt{T_j}}\\longrightarrow c_s:=\\sqrt{\\frac{\\lambda}{H}},\n \\qquad \\eta_j\\sqrt{T_j}\\longrightarrow c_\\eta:=\\sqrt{H\\lambda}.\n\\]\nConsequently,\n\\[\n H=\\frac{c_\\eta}{c_s},\\qquad\\lambda=c_\\eta c_s.\n\\]\nThe exact relation in \\eqref{eq:clock} specifies the interpolation used\nin the proof. The horizon $H$ is fixed before $j\\to\\infty$. Per-release\nnoise diverges, but the number of releases grows quadratically with it;\nthis does not imply vanishing overall privacy loss.\n\nThroughout, $\\norm{\\cdot}$ is the Euclidean norm and $\\snorm{\\cdot}$\nthe coordinate maximum norm. For a path $w$, write\n$\\snorm w=\\sup_{0\\leq t\\leq H}\\snorm{w(t)}$.\n\n\\section{Theoretical results}\n\nThe main results identify the limiting dynamics, transfer a stationarity\nbound to finite iterates, and use privacy calibration to select the\nlearning-rate coefficient that minimizes that bound. The dependence and\napproximation arguments appear in the appendices.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Clock, initial limit and interpolation",
+        "assumptions": "T eta=s H; s→infinity; eta s→lambda>0; public initial convergence",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Slow path and asymptotic square-root coefficients",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Exact schedule is checked below; arbitrary public initial sequences and general clock families still require a source-to-formal construction."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Exact schedule is checked below; arbitrary public initial sequences and general clock families still require a source-to-formal construction. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "memory-coefficients",
+      "unit": "unit-0002",
+      "startLine": 142,
+      "endLine": 174,
+      "quote": "\\subsection{Limiting dynamics}\n\n\\paragraph{The two memory coefficients.}\nIt is enough to define them in one coordinate. Let $(Z_k)_{k\\in\\mathbb Z}$\nbe independent standard Gaussians, and set\n\\begin{equation}\\label{eq:reference}\n \\begin{aligned}\n p_\\ell&=(1-\\beta_1)\\beta_1^\\ell,\n &w_\\ell&=(1-\\beta_2)\\beta_2^\\ell,\\\\\n M_k&=\\sum_{\\ell\\geq0}p_\\ell Z_{k-\\ell},\n &V_k&=\\sum_{\\ell\\geq0}w_\\ell Z_{k-\\ell}^2,\n &U_k^G&=\\frac{M_k}{\\sqrt{V_k}}.\n \\end{aligned}\n\\end{equation}\nThis stationary direction has mean zero. Let $U_k^G(r)$ denote the same\ndirection when every Gaussian input in its history is shifted by $r$.\nDefine the response coefficient and long-run variance by\n\\begin{equation}\\label{eq:memory-coefficients}\n \\alpha_\\beta=\n \\left.\\frac{d}{dr}\\E U_0^G(r)\\right|_{r=0},\\qquad\n \\sigma_\\beta^2=\n \\operatorname{Var}(U_0^G)+2\\sum_{\\ell\\geq1}\n             \\operatorname{Cov}(U_0^G,U_\\ell^G).\n\\end{equation}\nThus $\\alpha_\\beta$ measures the response to a small common gradient\nsignal, including the change in the denominator. The coefficient\n$\\sigma_\\beta^2$ includes both the variance of one update and the\ncovariance accumulated across iterations. Both are finite and strictly\npositive. Independent, identically distributed coordinates give isotropic\nlong-run covariance $\\sigma_\\beta^2I_d$.\nAppendix~\\ref{app:reference} proves these facts and gives an explicit\nexpectation formula for $\\alpha_\\beta$.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Stationary Gaussian moments, response, long-run variance",
+        "assumptions": "Admissible fixed beta and independent Gaussian coordinates",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Finite positive response and variance, isotropic covariance",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Imported endpoints supply these coefficients. Full source-level covariance-series/response-definition reconciliation was not rechecked; require that review before certifying this prose derivation."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Imported endpoints supply these coefficients. Full source-level covariance-series/response-definition reconciliation was not rechecked; require that review before certifying this prose derivation. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "query-regularity",
+      "unit": "unit-0002",
+      "startLine": 175,
+      "endLine": 193,
+      "quote": "\\begin{assumption}[Fixed record queries]\\label{ass:queries}\nThe public denominator satisfies $B=qn$, the expected minibatch size at\n$D_0$, and is fixed across neighbors. It is not the realized Poisson batch\nsize. For each $a\\in D_0$,\n$g_a=\\nabla f_a$, where\n$f_a\\in C^1(\\R^d)$ and $g_a$ is globally Euclidean Lipschitz with constant\n$L_a$. For every private input $D\\subseteq\\mathcal U$ and every\n$j,k$, the release \\eqref{eq:private-gradient} defines a measurable\nprobability kernel in the current state. No Lipschitz assumption is imposed\non queries for records outside $D_0$.\n\\end{assumption}\nPut $L_C=n^{-1}\\sum_{a\\in D_0}L_a$. Nonexpansiveness of clipping gives\n\\[\n \\|\\bar g_C(x)\\|_2\\leq C,\\qquad\n \\|\\bar g_C(x)-\\bar g_C(y)\\|_2\\leq L_C\\|x-y\\|_2.\n\\]\nThus the limiting drift $-(\\alpha_\\beta/C)\\bar g_C$ is bounded and globally\nLipschitz, independently of the objective bounds used below.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Fixed record queries and clipped mean Lipschitz properties",
+        "assumptions": "B=qN; record Lipschitz constants; measurable release kernels for all private subsets",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Bounded Lipschitz limiting drift",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Concrete identity query regularity is checked; arbitrary record loss gradients and the empirical mean adapter are not constructed."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Concrete identity query regularity is checked; arbitrary record loss gradients and the empirical mean adapter are not constructed. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "diffusion-start",
+      "unit": "unit-0002",
+      "startLine": 194,
+      "endLine": 200,
+      "quote": "\\begin{theorem}[High-noise diffusion limit]\\label{thm:diffusion}\nFor the recursion \\eqref{eq:adam}, suppose Assumptions~\\ref{ass:clock}\nand~\\ref{ass:queries} hold. Then the laws of $X_j$ at $D_0$ converge weakly in\n$C([0,H],\\R^d)$ to the law of\n\\begin{equation}\\label{eq:sde}\n dX_t=-\\frac{\\alpha_\\beta}{C}\\bar g_C(X_t)\\,dt\n       +\\sqrt{\\lambda}\\,\\sigma_\\beta\\,dW_t,\\qquad X_0=x_0.",
+      "state": "blocked",
+      "contract": {
+        "objects": "High-noise path-space limit (continued in unit 3)",
+        "assumptions": "Clock and fixed-query assumptions",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Weak convergence to displayed nonlinear diffusion",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Named-law consumer is applied to the actual quadratic families. A general source constructor and its same-object consumer application are still missing from this audit."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Named-law consumer is applied to the actual quadratic families. A general source constructor and its same-object consumer application are still missing from this audit. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "diffusion-continuation",
+      "unit": "unit-0003",
+      "startLine": 201,
+      "endLine": 243,
+      "quote": "\\end{equation}\nHere $W$ is standard $d$-dimensional Brownian motion.\nThe drift is globally Lipschitz, so the additive equation has a unique\nsolution for each continuous driving path.\n\\end{theorem}\n\nThe limit separates the response and variance effects of Adam's memory.\nThe coefficient $\\alpha_\\beta$ controls how a small gradient signal changes\nthe mean update, while $\\sigma_\\beta^2$ includes the covariance accumulated across\ncorrelated updates. Dominant Gaussian noise removes state-dependent\ncoordinatewise preconditioning at leading order. Replacing $\\sigma_\\beta^2$ by a\nsingle-update variance would omit those temporal correlations. The\nmomentum pair remains fixed throughout the limit. No uniformity is\nclaimed as it approaches the boundary of the admissible region.\n\nThe second-moment estimate nevertheless remains random at the iteration\nscale. In one coordinate of the Gaussian reference, independence and\n$\\operatorname{Var}(Z_{\\ell}^2)=2$ give\n\\[\n \\E V_0=1,\\qquad\n \\operatorname{Var}(V_0)=2\\sum_{\\ell\\geq0}w_{\\ell}^2\n =\\frac{2(1-\\beta_2)}{1+\\beta_2}>0.\n\\]\nThe limiting coefficients account for these fluctuations and their temporal\ndependence; the denominator is not replaced by its expectation.\n\nThe scaling follows from the frozen stationary mean direction $\\bar U_j(x)$.\nLemma~\\ref{lem:averaged-update} gives, uniformly in $x$ in the fixed-query setting,\n\\[\n \\bar U_j(x)=\\frac{\\alpha_\\beta}{Cs_j}\\bar g_C(x)+O(s_j^{-2}).\n\\]\nSince $h_j=\\eta_j/s_j$, the drift and covariance scales are\n\\[\n \\begin{aligned}\n -\\frac{\\eta_j\\bar U_j(x)}{h_j}\n &=-s_j\\bar U_j(x)\\longrightarrow-\\frac{\\alpha_\\beta}{C}\\bar g_C(x),\\\\\n \\frac{\\eta_j^2}{h_j}\\sigma_\\beta^2I_d\n &=\\eta_js_j\\sigma_\\beta^2I_d\\longrightarrow\\lambda\\sigma_\\beta^2I_d.\n \\end{aligned}\n\\]\nAppendix~\\ref{app:transfer} connects this frozen calculation to the\nadaptive trajectory.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Diffusion uniqueness, fixed-beta interpretation, reference variance and frozen scaling",
+        "assumptions": "Fixed admissible beta and source clock/query assumptions",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Unique additive solution, non-deterministic memory denominator and limiting drift/covariance",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Solution-map equality is checked for the control. Full source-method correspondence for variance/averaged-update expansion is not established by that check."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Solution-map equality is checked for the control. Full source-method correspondence for variance/averaged-update expansion is not established by that check. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "adaptive-transfer",
+      "unit": "unit-0003",
+      "startLine": 244,
+      "endLine": 276,
+      "quote": "\\paragraph{Proof idea.}\nThe rescaled private release\n$Y_{j,k}/s_j=g^{\\mathrm{priv}}_{j,k}/(Cs_j)$ is a standard Gaussian\nvector plus a uniformly bounded perturbation of order $s_j^{-1}$.\nExpanding the stationary mean update identifies the averaged drift\n$b_j=s_j\\bar U_j$ and its response coefficient $\\alpha_\\beta$.\n\nTo identify the accumulated noise, we assign each Gaussian input all of\nits future contributions to the reference updates. Their partial sums\ndiffer from a bounded-increment martingale by a uniformly bounded boundary\nterm. A functional central limit theorem then gives the full long-run\ncovariance $\\sigma_\\beta^2I_d$.\n\nThe remaining step connects these stationary calculations to initialized,\nadaptive Adam. Over a short block we would like to hold the parameter fixed\nand use the corresponding stationary mean. A stationary copy, however,\nstarts with a different history. Bounding that history mismatch separately\non every block requires long blocks, while controlling parameter motion\nrequires short ones. We instead compare each process with a Gaussian\nreference driven by the same noise. The signal and rescaled stabilizer\nchange its direction by only $O(s_j^{-1})$ in mean, apart from the initial\ntransient. Comparing these small corrections retains geometric forgetting\nof the histories and permits both errors to vanish. Appendix~\\ref{app:transfer}\nexplains the compatible block choice $L_{\\mathrm{blk}}\\asymp\n\\sqrt{s_j\\log s_j}$. Summable bias corrections complete the decomposition\n\\[\n X_j(t)=x_j+W_j(t)-\\int_0^t b_j(X_j(u))\\,du+R_j(t),\n \\qquad \\E\\snorm{R_j}\\longrightarrow0.\n\\]\nThe reference functional limit, local uniform convergence\n$b_j\\to(\\alpha_\\beta/C)\\bar g_C$, and continuity of the additive integral\nequation identify the limiting diffusion.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Martingale/reference argument and initialized adaptive remainder",
+        "assumptions": "Reference/memory hypotheses and compatible block/reset schedules",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Reference limit and vanishing adaptive error identify the path law",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "The public consumer is used with its proved dependencies, but this audit has no source-bound review of each block/remainder argument. A full appendix correspondence audit would be needed."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "The public consumer is used with its proved dependencies, but this audit has no source-bound review of each block/remainder argument. A full appendix correspondence audit would be needed. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "runtime-rescaling",
+      "unit": "unit-0003",
+      "startLine": 277,
+      "endLine": 297,
+      "quote": "\\paragraph{Time measured as a fraction of the run.}\nThe same limit has a useful form on $[0,1]$. Set $\\widetilde X_u=X_{Hu}$\nand $\\widetilde W_u=H^{-1/2}W_{Hu}$. Brownian time scaling gives\n\\begin{equation}\\label{eq:run-time-sde}\n d\\widetilde X_u\n =-\\frac{\\alpha_\\beta c_\\eta}{Cc_s}\\bar g_C(\\widetilde X_u)\\,du\n       +c_\\eta\\sigma_\\beta\\,d\\widetilde W_u,\n \\qquad \\widetilde X_0=x_0.\n\\end{equation}\nHere $\\widetilde W$ is standard Brownian motion on $[0,1]$. At fixed\n$c_\\eta$, increasing $c_s$ reduces the coefficient of the gradient-driven\ndrift, while the Brownian coefficient remains unchanged.\n\n\\subsection{Stationarity and finite-iterate transfer}\n\nClipping bounds each record contribution but can change the direction of\nthe average gradient. We quantify that discrepancy through per-example gradient\ndisagreement. Nonexpansiveness of clipping then gives a descent inequality\nwith three contributions: the initial objective gap, per-example gradient disagreement,\nand accumulated update noise.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Fraction-of-run SDE and stationarity motivation",
+        "assumptions": "Fixed positive horizon and Brownian scaling",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Drift coefficient alpha c/(C cs), Brownian coefficient c sigma",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "The pair uses equal slow horizon directly. No separately checked time-rescaling-to-unit-interval application was added."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "The pair uses equal slow horizon directly. No separately checked time-rescaling-to-unit-interval application was added. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "objective-start",
+      "unit": "unit-0003",
+      "startLine": 298,
+      "endLine": 300,
+      "quote": "\\begin{assumption}[Objective and per-example gradient disagreement]\\label{ass:objective}\nThe empirical objective $f\\in C^2(\\R^d)$ satisfies $f\\geq\\ell$.\nFor a constant $0\\leq\\Delta\\leq C/2$,",
+      "state": "blocked",
+      "contract": {
+        "objects": "Objective and disagreement assumption (continued in unit 4)",
+        "assumptions": "C² empirical objective bounded below",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Start of utility assumptions",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Read with utility-geometry; arbitrary empirical objective construction is unverified."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Read with utility-geometry; arbitrary empirical objective construction is unverified. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "utility-geometry",
+      "unit": "unit-0004",
+      "startLine": 301,
+      "endLine": 355,
+      "quote": "\\begin{equation}\\label{eq:dispersion}\n \\frac1{n}\\sum_{a\\in D_0}\\norm{g_a(x)-\\nabla f(x)}\n \\leq\\Delta\\leq C/2\\qquad\\text{for all }x,\n\\end{equation}\nand assume the one-sided Hessian bound\n\\begin{equation}\\label{eq:hessian}\n D^2f(x)[z,z]\\leq L_f\\norm z^2\n \\qquad\\text{for all }x,z,\\qquad L_f\\geq0.\n\\end{equation}\n\\end{assumption}\nIn this fixed-query setting, $\\nabla f$ is already globally Lipschitz,\nwith constant at most $L_C$, because it averages the record gradients.\n\nThe disagreement assumption is global and can be restrictive: for quadratic\nrecord losses on $\\R^d$, all record Hessians must coincide. Equal-Hessian\nshifted quadratics can still have nonzero disagreement; Appendix~\\ref{app:utility}\nexplains the restriction.\n\nNo convexity is required. Define the clipping-adapted stationarity measure\n\\begin{equation}\\label{eq:penalty}\n P_C(x)=\\min\\{\\norm{\\nabla f(x)}^2,C\\norm{\\nabla f(x)}\\}.\n\\end{equation}\nIt is quadratic when the gradient is below the clipping threshold and\nlinear beyond it. Small values indicate approximate stationarity, but the\nbound gives weaker control of large gradients than a bound on the full\nsquared gradient norm. Its role in descent follows from the radial identity\n\\[\n P_C(x)=\\langle\\nabla f(x),\\clip_C(\\nabla f(x))\\rangle.\n\\]\nIts relation to approximate stationarity is explicit: for any random\nvector $Z$ with $\\E P_C(Z)<\\infty$ and any $a>0$,\n\\begin{equation}\\label{eq:stationarity-probability}\n \\Prob(\\norm{\\nabla f(Z)}\\geq a)\n \\leq\\frac{\\E P_C(Z)}{\\min\\{a^2,Ca\\}}.\n\\end{equation}\nThis follows from the monotonicity of $r\\mapsto\\min\\{r^2,Cr\\}$ and\nMarkov's inequality.\n\nThe algorithm averages clipped record gradients. Nonexpansiveness of\nclipping and the disagreement assumption connect this average to the\nclipped full gradient:\n\\[\n \\|\\bar g_C(x)-\\clip_C(\\nabla f(x))\\|_2\\leq\\Delta.\n\\]\nWriting $r=\\norm{\\nabla f(x)}$, this gives\n$\\langle\\nabla f(x),\\bar g_C(x)\\rangle\\geq\\min\\{r^2,Cr\\}-\\Delta r$.\nFor $r\\leq C$, completing the square bounds the disagreement term; for\n$r>C$, the condition $\\Delta\\leq C/2$ preserves half the clipped descent.\nConsequently,\n\\[\n \\boxed{\\langle\\nabla f(x),\\bar g_C(x)\\rangle\n       \\geq\\tfrac12P_C(x)-\\tfrac12\\Delta^2.}\n\\]\nLemma~\\ref{lem:alignment} gives the two-case calculation.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Dispersion, Hessian, penalty, Markov estimate and clipping alignment",
+        "assumptions": "Global disagreement ≤C/2, Hessian upper bound and objective lower bound",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Clipped descent and penalty interpretation",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Quadratic premises and finite-utility consumer checked. General empirical-objective bridge, quadratic equal-Hessian observation and all displayed source derivations not separately checked."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Quadratic premises and finite-utility consumer checked. General empirical-objective bridge, quadratic equal-Hessian observation and all displayed source derivations not separately checked. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "finite-utility",
+      "unit": "unit-0004",
+      "startLine": 356,
+      "endLine": 400,
+      "quote": "\\begin{theorem}[Asymptotic stationarity bound for DP-Adam iterates]\\label{cor:finite}\nUnder Assumptions~\\ref{ass:clock}--\\ref{ass:objective}, let $K_j$ be\nindependent of training and uniform on $\\{0,\\ldots,T_j-1\\}$. At $D_0$,\n\\begin{equation}\\label{eq:finite-rate}\n\\begin{aligned}\n \\lim_{j\\to\\infty}\\E P_C(x_{j,K_j})\n &=\\frac1H\\E\\int_0^H P_C(X_t)\\,dt\\\\\n &\\leq\n \\underbrace{\\frac{2C(f(x_0)-\\ell)}{\\alpha_\\beta H}}\n _{\\text{initial objective gap}}\n +\\underbrace{\\Delta^2}_{\\text{per-example gradient disagreement}}\\\\\n &+\\underbrace{\\frac{\\lambda L_fCd\\,\\sigma_\\beta^2}{\\alpha_\\beta}}\n _{\\text{accumulated update noise}}.\n\\end{aligned}\n\\end{equation}\nThe expected stationarity measure is finite. Appendix~\\ref{app:finite} proves the\noccupation and grid-average expectation limits in this statement.\n\\end{theorem}\n\n\\paragraph{Descent calculation.}\nFor the generator $\\mathcal L$ of the limiting diffusion, clipping\nalignment and the upper Hessian bound give\n\\[\n \\mathcal Lf\n \\leq-\\frac{\\alpha_\\beta}{2C}P_C\n       +\\frac{\\alpha_\\beta\\Delta^2}{2C}\n       +\\frac{\\lambda L_fd \\sigma_\\beta^2}{2}.\n\\]\nStopped It\\^o calculus integrates this inequality; lower boundedness of\n$f$ and Fatou's lemma then bound the diffusion occupation average.\nAppendix~\\ref{app:utility} supplies the localization and integrability\ndetails and the diffusion-only bound. The moment and grid-average\narguments in Appendix~\\ref{app:finite} then give the expectation equality above.\n\nThe bound separates three contributions. The initial objective gap decays\nas $H^{-1}$. Per-example gradient disagreement contributes $\\Delta^2$, through the\npossible misalignment introduced by clipping. Accumulated noise contributes\n$\\lambda L_fCd\\,\\sigma_\\beta^2/\\alpha_\\beta$, so Adam's memory affects both\nvariance and response to the gradient signal.\n\nThe proof in Appendix~\\ref{app:finite} uses the\nmoment estimates behind the diffusion limit; weak convergence alone would\nnot suffice. Corollary~\\ref{cor:objective-expectation} in Appendix~\\ref{app:moments}\nalso gives convergence of expected terminal objective values.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Finite-iterate expectation transfer and stationarity bound",
+        "assumptions": "Clock/query/objective assumptions; independent uniform retained iterate",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Expectation limit and sufficient bound; weak convergence alone insufficient",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Actual quadratic retained-node bound checked. A general source-to-empirical-objective application and complete source method review remain outside the retained evidence."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Actual quadratic retained-node bound checked. A general source-to-empirical-objective application and complete source method review remain outside the retained evidence. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "quadratic-source-example",
+      "unit": "unit-0005",
+      "startLine": 401,
+      "endLine": 424,
+      "quote": "\\paragraph{A fixed-horizon clipped quadratic example.}\nTo illustrate the limiting dynamics at $H=1$, take one record with query\n$g(x)=x$, objective $f(x)=x^2/2$, and initial\nparameter $x_0=2$. Set $q=B=C=a_A=H=1$ and\n$\\beta_1=\\beta_2=1/2$. The query is globally Lipschitz and the objective assumptions hold with\n$\\Delta=0$, $L_f=1$, and $\\ell=0$. Choose any fixed $\\lambda>0$.\nAppendix~\\ref{app:clock-examples} supplies a privacy-calibrated choice\nand checks its schedule and release mechanism. The limiting equation\nand its rate are\n\\[\n dX_t=-\\alpha_\\beta\\clip_1(X_t)\\,dt\n             +\\sqrt{\\lambda}\\,\\sigma_\\beta\\,dW_t,\\qquad X_0=2,\n\\]\n\\begin{equation}\\label{eq:example}\n \\frac1t\\E\\int_0^t\\min\\{X_u^2,|X_u|\\}\\,du\n       \\leq\\frac{4}{\\alpha_\\beta t}\n                     +\\frac{\\lambda\\sigma_\\beta^2}{\\alpha_\\beta},\n \\qquad 0<t\\leq1.\n\\end{equation}\nThe restoring drift is linear inside $[-1,1]$ and has constant magnitude\noutside that interval. Clipping therefore remains nonlinear even though\nAdam's coordinatewise normalization has averaged out of the parameter\nequation. The long-run variance determines the noise intensity.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Fixed-horizon q=1 clipped quadratic example",
+        "assumptions": "C=q=B=H=1; beta1=beta2=1/2, initial point2",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Nonlinear clipped limiting equation and sufficient bound",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "The new control generalizes sampling for a chosen exact schedule but does not separately replay every fixed-H=1 source example statement. See imported calibrated_quadratic_privacy_convergence_and_rate for the next exact application."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "The new control generalizes sampling for a chosen exact schedule but does not separately replay every fixed-H=1 source example statement. See imported calibrated_quadratic_privacy_convergence_and_rate for the next exact application. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "privacy-accountant",
+      "unit": "unit-0005",
+      "startLine": 425,
+      "endLine": 440,
+      "quote": "\\subsection{Privacy calibration and learning-rate tuning}\n\nPrivacy accounting uses the same finite algorithms. Fix an integer order\n$r\\geq2$ and $0<\\delta<1$. Let $\\rho_r(q,\\sigma)$ be the\nsufficient sampled-Gaussian R\\'enyi bound defined explicitly in\n\\eqref{eq:rdp}, and put\n\\[\n c_\\delta=\\frac{\\log(1/\\delta)}{r-1}.\n\\]\n\nProposition~\\ref{prop:privacy} gives the finite accountant\n$\\varepsilon_j=T_j\\rho_r(q,s_jB)+c_\\delta$. Since\n$c_s^2=\\lambda/H$ and $B=qn$, its limit is\n\\[\n \\varepsilon_j\\longrightarrow\\frac{r}{2n^2c_s^2}+c_\\delta.\n\\]",
+      "state": "blocked",
+      "contract": {
+        "objects": "Finite sufficient RDP accountant and its limit",
+        "assumptions": "Integer order≥2, delta in (0,1), B=qN and clock assumptions",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Asymptotic sufficient privacy loss",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Native cancellation and concrete eventual mechanism privacy are checked. General primitive-to-mechanism mapping and the displayed accountant limit as a source judgment remain unverified."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Native cancellation and concrete eventual mechanism privacy are checked. General primitive-to-mechanism mapping and the displayed accountant limit as a source judgment remain unverified. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "privacy-slope",
+      "unit": "unit-0005",
+      "startLine": 441,
+      "endLine": 447,
+      "quote": "Thus the limiting sufficient privacy bound depends on the noise\ncoefficient $c_s$. For a target $\\varepsilon>c_\\delta$ and public slack\n$\\zeta>0$, choose\n\\[\n c_s=\\sqrt{\\gamma_\\varepsilon},\\qquad\n \\gamma_\\varepsilon=\\frac{(1+\\zeta)r}{2n^2(\\varepsilon-c_\\delta)}.\n\\]",
+      "state": "reviewed",
+      "contract": {
+        "objects": "Calibration coefficient gamma",
+        "assumptions": "B=qN; epsilon above conversion term; positive slack and admissible order/delta",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "gamma=(1+slack)r/(2 N²(epsilon-conversion))",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Check the exact original cancellation with no ambient conclusion supplied."
+      },
+      "formal": {
+        "path": "lean/matrix-factorization/Mf/Optimization/SDE/DPAdamFixedBetaFastSlowHorizonTuning.lean",
+        "sha256": "b33ae5c4a3dc335036b36e0f2058377eb9c2496b0e35cc8b87fc2333ce66d512",
+        "startLine": 72,
+        "endLine": 93,
+        "statement": "theorem privacySlope_eq_card_formula {m d : ℕ}\n    (data : GrowingClockData m d) (order : ℕ)\n    (privacyDelta epsilonTarget slack : ℝ)\n    (hbatch : data.base.effectiveBatch =\n      data.base.samplingRate * (data.base.dataset.card : ℝ))\n    (hgap : receiptConversion order privacyDelta < epsilonTarget) :\n    privacySlope data order privacyDelta epsilonTarget slack =\n      (1 + slack) * (order : ℝ) /\n        (2 * (data.base.dataset.card : ℝ) ^ 2 *\n          (epsilonTarget - receiptConversion order privacyDelta)) := by\n  have hq : (data.base.samplingRate : ℝ) ≠ 0 :=\n    data.base.samplingRate_pos.ne'\n  have hm : (data.base.dataset.card : ℝ) ≠ 0 := by\n    intro hzero\n    have hp := data.base.effectiveBatch_pos\n    rw [hbatch, hzero, mul_zero] at hp\n    exact (ne_of_gt hp) rfl\n  have he : epsilonTarget - receiptConversion order privacyDelta ≠ 0 :=\n    (sub_pos.mpr hgap).ne'\n  unfold privacySlope Mf.DP.sampledGaussianSharpSmallStepPrivacyRate\n  rw [hbatch]\n  field_simp",
+        "contract": {
+          "objects": "Calibration coefficient gamma",
+          "assumptions": "B=qN; epsilon above conversion term; positive slack and admissible order/delta",
+          "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+          "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+          "conclusion": "gamma=(1+slack)r/(2 N²(epsilon-conversion))",
+          "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+          "neededImplication": "Check the exact original cancellation with no ambient conclusion supplied."
+        }
+      },
+      "judgment": {
+        "statement": "aligned",
+        "method": "same",
+        "evidence": "Native source-goal completion/replay/trust accepted the cancellation in its original hbatch,hgap context; NATIVE-SUMMARY.json and compressed raw receipts."
+      }
+    },
+    {
+      "id": "eventual-privacy",
+      "unit": "unit-0005",
+      "startLine": 448,
+      "endLine": 450,
+      "quote": "This calibration makes the limit strictly smaller than $\\varepsilon$, so\nall sufficiently large members satisfy the target privacy guarantee.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "All sufficiently large finite members meet privacy target",
+        "assumptions": "Strict positive slack and calibrated coefficient",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Eventual epsilon,delta privacy",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Concrete sampled_privacy discharges this for every fixed q; general arbitrary-source family mapping remains unverified."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Concrete sampled_privacy discharges this for every fixed q; general arbitrary-source family mapping remains unverified. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "exact-schedule",
+      "unit": "unit-0005",
+      "startLine": 451,
+      "endLine": 464,
+      "quote": "\\paragraph{An explicit finite-run schedule.}\nFor any sequence of positive integers $T_j\\to\\infty$ and any $c_\\eta>0$, set\n\\begin{equation}\\label{eq:explicit-schedule}\n \\boxed{\n s_j=\\sqrt{\\gamma_\\varepsilon T_j},\\qquad\n \\eta_j=\\frac{c_\\eta}{\\sqrt{T_j}},\\qquad\n \\sigma_{\\mathrm{DP},j}=B\\sqrt{\\gamma_\\varepsilon T_j}.}\n\\end{equation}\nThese choices satisfy the time-scaling relations in\nAssumption~\\ref{ass:clock} exactly, with\n\\[\n H=\\frac{c_\\eta}{\\sqrt{\\gamma_\\varepsilon}},\\qquad\n \\lambda=c_\\eta\\sqrt{\\gamma_\\varepsilon}.\n\\]",
+      "state": "reviewed",
+      "contract": {
+        "objects": "s=sqrt(gamma T), eta=c/sqrt(T), sigma=B s",
+        "assumptions": "Positive gamma,c and positive diverging integer counts",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "T eta=s H and eta s=lambda at H=c/sqrt(gamma), lambda=c sqrt(gamma)",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Check scalar products; concrete actual-family construction is separate."
+      },
+      "formal": {
+        "path": "lean/matrix-factorization/Mf/Optimization/SDE/DPAdamFixedBetaFastSlowExactCountSchedule.lean",
+        "sha256": "2a5b9806039ef0bdc5e407e5b1ff7715bad10fc91e4b040941123ce8253eb568",
+        "startLine": 21,
+        "endLine": 54,
+        "statement": "def scale (T : ℝ) : ℝ := Real.sqrt T\n\n/-- The requested physical step for a positive retained count. -/\ndef step (c T : ℝ) : ℝ := c / Real.sqrt T\n\ntheorem scale_one_le {T : ℝ} (hT : 1 ≤ T) : 1 ≤ scale T := by\n  unfold scale\n  have hsq : (1 : ℝ) ≤ T := hT\n  nlinarith [Real.sq_sqrt (show 0 ≤ T by linarith),\n    Real.sqrt_nonneg T]\n\ntheorem scale_mul_baseNoise_eq_clock {γ T : ℝ}\n    (hγ : 0 < γ) (_hT : 0 < T) :\n    Real.sqrt γ * scale T = Real.sqrt (γ * T) := by\n  unfold scale\n  rw [← Real.sqrt_mul hγ.le]\n\ntheorem retainedCount_mul_step {γ c T : ℝ}\n    (hγ : 0 < γ) (hc : 0 < c) (hT : 0 < T) :\n    T * step c T = Real.sqrt (γ * T) * (c / Real.sqrt γ) := by\n  unfold step\n  rw [Real.sqrt_mul hγ.le]\n  have hrootT : Real.sqrt T ≠ 0 := (Real.sqrt_pos.2 hT).ne'\n  have hrootγ : Real.sqrt γ ≠ 0 := (Real.sqrt_pos.2 hγ).ne'\n  field_simp\n  rw [Real.sq_sqrt hT.le]\n\ntheorem step_mul_clock {γ c T : ℝ}\n    (hγ : 0 < γ) (hc : 0 < c) (hT : 0 < T) :\n    step c T * Real.sqrt (γ * T) = c * Real.sqrt γ := by\n  unfold step\n  rw [Real.sqrt_mul hγ.le]\n  have hrootT : Real.sqrt T ≠ 0 := (Real.sqrt_pos.2 hT).ne'\n  field_simp",
+        "contract": {
+          "objects": "s=sqrt(gamma T), eta=c/sqrt(T), sigma=B s",
+          "assumptions": "Positive gamma,c and positive diverging integer counts",
+          "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+          "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+          "conclusion": "T eta=s H and eta s=lambda at H=c/sqrt(gamma), lambda=c sqrt(gamma)",
+          "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+          "neededImplication": "Check scalar products; concrete actual-family construction is separate."
+        }
+      },
+      "judgment": {
+        "statement": "aligned",
+        "method": "same",
+        "evidence": "Scalar square-root multiplication/cancellation is the inspected formal proof. Actual exact schedule checked in SampledFamily.lean. This judgment is only the displayed time-scaling identities, not the entire family constructor."
+      }
+    },
+    {
+      "id": "coefficient-minimization",
+      "unit": "unit-0005",
+      "startLine": 465,
+      "endLine": 493,
+      "quote": "This calibration sets the noise coefficient; $c_\\eta$ is the remaining\nlearning-rate coefficient. More general families satisfying\nAssumption~\\ref{ass:clock} with these $H,\\lambda$ are also covered.\n\n\\paragraph{Minimizing the descent bound.}\nThe nondegenerate diffusion regime imposes the $T_j^{-1/2}$ learning-rate\nscaling; we minimize the bound over its coefficient $c_\\eta$.\nFix public bounds $G,L>0$ such that $f(x_0)-\\ell\\leq G$ and $L_f\\leq L$.\nSubstituting $H$ and $\\lambda$ into Theorem~\\ref{cor:finite} gives\n\\begin{equation}\\label{eq:coefficient-bound}\n \\boxed{\\lim_{j\\to\\infty}\\E P_C(x_{j,K_j})\n \\leq\\Delta^2+\\frac{C\\sqrt{\\gamma_\\varepsilon}}{\\alpha_\\beta}\n \\left(\\frac{2G}{c_\\eta}+Ld\\,\\sigma_\\beta^2 c_\\eta\\right).}\n\\end{equation}\nThe expectation limit exists by Theorem~\\ref{cor:finite}.\nThe first term in parentheses decreases with $c_\\eta$ and the second\nincreases. Privacy multiplies both by the same positive factor, so it\ndoes not change the minimizing coefficient:\n\\[\n c_\\eta^\\star=\\sqrt{\\frac{2G}{Ld\\,\\sigma_\\beta^2}},\\qquad\n \\Delta^2+\\frac{2C\\sigma_\\beta}{\\alpha_\\beta}\n          \\sqrt{2GLd\\,\\gamma_\\varepsilon}.\n\\]\nThe second expression is the minimized bound. After learning-rate tuning,\nAdam's memory enters through the ratio $\\sigma_\\beta/\\alpha_\\beta$:\nfluctuation relative to response. The corresponding diffusion\nhorizon is $H_*=c_\\eta^\\star/\\sqrt{\\gamma_\\varepsilon}$.\nThe following theorem applies this choice to the finite algorithms.\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "General families and bound-minimizing coefficient",
+        "assumptions": "Same fixed beta, clipping, public G,L,d and calibrated noise",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Bound coefficient c*=sqrt(2G/(Ld variance))",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Generic coefficient equality checked, but general tuned-horizon construction/application is not. No claim of optimal actual performance."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Generic coefficient equality checked, but general tuned-horizon construction/application is not. No claim of optimal actual performance. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "tuned-start",
+      "unit": "unit-0005",
+      "startLine": 494,
+      "endLine": 500,
+      "quote": "\\begin{theorem}[Learning-rate tuning under privacy calibration]\\label{cor:horizon-tuned}\nFix $r\\geq2$, $0<\\delta<1$, $\\varepsilon>c_\\delta$, and\n$\\zeta>0$, with $r$ an integer.\nLet $G,L>0$ be public bounds with $f(x_0)-\\ell\\leq G$ and $L_f\\leq L$.\nUsing $\\gamma_\\varepsilon$ above, set\n\\[\n c_\\eta^\\star=\\sqrt{\\frac{2G}{Ld\\,\\sigma_\\beta^2}},\\qquad",
+      "state": "blocked",
+      "contract": {
+        "objects": "Tuned theorem (continued in unit 6)",
+        "assumptions": "Public positive bounds and calibrated order/target/slack",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Definition of selected horizon and coefficient",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Read with tuned-continuation; same general mapping boundary."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Read with tuned-continuation; same general mapping boundary. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "tuned-continuation",
+      "unit": "unit-0006",
+      "startLine": 501,
+      "endLine": 533,
+      "quote": " H_*=\\frac{c_\\eta^\\star}{\\sqrt{\\gamma_\\varepsilon}},\\qquad\n\\lambda_*=c_\\eta^\\star\\sqrt{\\gamma_\\varepsilon}.\n\\]\nSuppose the algorithm family satisfies\nAssumptions~\\ref{ass:clock}--\\ref{ass:objective} with $H=H_*$ and\n$\\lambda=\\lambda_*$. Let $K_j$ be independent of training\nand uniform on $\\{0,\\ldots,T_j-1\\}$. For every tolerance $u>0$, all sufficiently\nlarge members are $(\\varepsilon,\\delta)$-DP and satisfy\n\\[\n \\E P_C(x_{j,K_j})\n \\leq \\Delta^2+\\frac{2C\\sigma_\\beta}{\\alpha_\\beta}\n      \\sqrt{2GLd\\,\\gamma_\\varepsilon}+u.\n\\]\nThe privacy threshold is data-independent; the utility threshold may\ndepend on $D_0$ and $u$. Every such family also satisfies\n\\[\n \\eta_j\\sqrt{T_j}\\longrightarrow c_\\eta^\\star.\n\\]\nIn particular, \\eqref{eq:explicit-schedule} with $c_\\eta=c_\\eta^\\star$\nhas $\\eta_j=\\sqrt{2G/(Ld\\,\\sigma_\\beta^2T_j)}$ exactly.\n\\end{theorem}\n\\begin{proof}\nUnder $B=qn$, the fixed-horizon calibration \\eqref{eq:chosen} is\n$\\lambda_H=\\gamma_\\varepsilon H$. Thus\n$\\lambda_*=\\lambda_H$ at $H=H_*$. Theorem~\\ref{thm:main} gives eventual\nprivacy and the stationarity bound at this horizon. Replacing the initial\ngap and Hessian coefficient by their public bounds $G,L$ gives\n\\eqref{eq:coefficient-bound} with $c_\\eta=c_\\eta^\\star$, whose minimized\nvalue is displayed above. The exact clock also gives\n$\\eta_j\\sqrt{T_j}\\to H_*\\sqrt{\\gamma_\\varepsilon}=c_\\eta^\\star$ for every\nfamily satisfying the stated assumptions.\n\\end{proof}\n",
+      "state": "blocked",
+      "contract": {
+        "objects": "Tuned eventual privacy/utility and learning-rate limit",
+        "assumptions": "Clock/query/objective source assumptions at selected horizon",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Eventual target and sufficient bound plus eta sqrt(T)→c*",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "Imported tuned consumers inspected and standard axioms printed; no new general tuned application instantiated from original source primitives."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "Imported tuned consumers inspected and standard axioms printed; no new general tuned application instantiated from original source primitives. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    },
+    {
+      "id": "scope-small-budget",
+      "unit": "unit-0006",
+      "startLine": 534,
+      "endLine": 558,
+      "quote": "\\paragraph{Interpretation and scope.}\nThe theorem selects the bound-minimizing learning-rate coefficient with\nmomentum, clipping, sampling, and public objective bounds fixed. The separate\ngrowth estimate can be smaller, so this minimization need not optimize actual\nstationarity or give a sharp privacy--utility rate; Appendix~\\ref{sec:tuned-budget}\ncompares the two bounds.\n\nNor does a privacy-independent coefficient imply preserved descent.\nFor the small-budget calibration of that appendix,\n$c_s=\\sqrt{\\gamma_\\varepsilon}\\to\\infty$, while $c_\\eta^\\star$ stays fixed.\nRealize the budget-dependent solutions $\\widetilde X^\\varepsilon$ of\n\\eqref{eq:run-time-sde} with the same Brownian driver $\\widetilde W$.\nThe equation has vanishing drift and fixed noise intensity. Using\n$\\norm{\\bar g_C}\\leq C$ gives, almost surely,\n\\begin{equation}\\label{eq:brownian-comparison}\n \\sup_{0\\leq u\\leq1}\n \\norm{\\widetilde X^\\varepsilon_u-\n       \\bigl(x_0+c_\\eta^\\star\\sigma_\\beta\\widetilde W_u\\bigr)}\n \\leq\\frac{\\alpha_\\beta c_\\eta^\\star}{c_s}.\n\\end{equation}\nThe algorithm limit is taken separately at each fixed privacy target before\nthis small-budget comparison. Utility concerns a uniformly sampled iterate\nat $D_0$, while privacy holds across neighbors. The vanishing utility error\nis unquantified: the adaptive-remainder estimate is not a rate for the full\npath-law approximation.",
+      "state": "blocked",
+      "contract": {
+        "objects": "Bound-only optimum, Brownian small-budget comparison and sequential limits",
+        "assumptions": "Fixed beta and coefficients, coupled driver, separate limits",
+        "domains": "Finite public record universe; real coordinate space Fin d → Real; positive integer counts; probability measures on continuous paths.",
+        "quantifiers": "Parameters fixed along each family; family index tends to infinity. Source-specific quantifiers and exceptions are in the exact quote and ledger.",
+        "conclusion": "Privacy independence does not imply unchanged descent; vanishing drift comparison",
+        "dependencies": "Exact source definitions and assumptions, formal family construction, and cited theorem consumers; see PREMISE-LEDGER.md.",
+        "neededImplication": "No new small-budget coupling proof or source-method certification. Pair at one fixed target does not establish this second limit."
+      },
+      "blocker": {
+        "kind": "missing-reviewed-support",
+        "evidence": "No new small-budget coupling proof or source-method certification. Pair at one fixed target does not establish this second limit. No falsity inferred. The control and generic comparison lemmas are narrower than the complete quoted group.",
+        "nextAction": "Supply the exact missing application or source-method review described in the evidence; preserve the original assumptions and object map.",
+        "unblockCondition": "A source-bound checked application or reviewed derivation covers this full claim group, with conclusion transfer and explicit coverage."
+      }
+    }
+  ]
+}

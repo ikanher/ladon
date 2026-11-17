@@ -1,0 +1,34 @@
+{
+  "id": "dpadam-constructed-common-law",
+  "source": {
+    "path": "adam-source.tex",
+    "startLine": 425,
+    "endLine": 465,
+    "quote": "\\subsection{Privacy calibration and learning-rate tuning}\n\nPrivacy accounting uses the same finite algorithms. Fix an integer order\n$r\\geq2$ and $0<\\delta<1$. Let $\\rho_r(q,\\sigma)$ be the\nsufficient sampled-Gaussian R\\'enyi bound defined explicitly in\n\\eqref{eq:rdp}, and put\n\\[\n c_\\delta=\\frac{\\log(1/\\delta)}{r-1}.\n\\]\n\nProposition~\\ref{prop:privacy} gives the finite accountant\n$\\varepsilon_j=T_j\\rho_r(q,s_jB)+c_\\delta$. Since\n$c_s^2=\\lambda/H$ and $B=qn$, its limit is\n\\[\n \\varepsilon_j\\longrightarrow\\frac{r}{2n^2c_s^2}+c_\\delta.\n\\]\nThus the limiting sufficient privacy bound depends on the noise\ncoefficient $c_s$. For a target $\\varepsilon>c_\\delta$ and public slack\n$\\zeta>0$, choose\n\\[\n c_s=\\sqrt{\\gamma_\\varepsilon},\\qquad\n \\gamma_\\varepsilon=\\frac{(1+\\zeta)r}{2n^2(\\varepsilon-c_\\delta)}.\n\\]\nThis calibration makes the limit strictly smaller than $\\varepsilon$, so\nall sufficiently large members satisfy the target privacy guarantee.\n\n\\paragraph{An explicit finite-run schedule.}\nFor any sequence of positive integers $T_j\\to\\infty$ and any $c_\\eta>0$, set\n\\begin{equation}\\label{eq:explicit-schedule}\n \\boxed{\n s_j=\\sqrt{\\gamma_\\varepsilon T_j},\\qquad\n \\eta_j=\\frac{c_\\eta}{\\sqrt{T_j}},\\qquad\n \\sigma_{\\mathrm{DP},j}=B\\sqrt{\\gamma_\\varepsilon T_j}.}\n\\end{equation}\nThese choices satisfy the time-scaling relations in\nAssumption~\\ref{ass:clock} exactly, with\n\\[\n H=\\frac{c_\\eta}{\\sqrt{\\gamma_\\varepsilon}},\\qquad\n \\lambda=c_\\eta\\sqrt{\\gamma_\\varepsilon}.\n\\]\nThis calibration sets the noise coefficient; $c_\\eta$ is the remaining",
+    "sha256": "795382682281c33decbd694a17c700999f1265e83bb3cd363ce0de733028434f"
+  },
+  "formula": {
+    "tag": "forall",
+    "binder": {
+      "id": "a",
+      "name": "original inputs and hypotheses",
+      "domain": "AdamNative.Inputs"
+    },
+    "body": {
+      "tag": "app",
+      "symbol": "commonLaw",
+      "args": [
+        {
+          "tag": "var",
+          "id": "a"
+        }
+      ]
+    }
+  },
+  "symbols": {
+    "commonLaw": {
+      "leanName": "AdamNative.commonLaw",
+      "leanType": "AdamNative.Inputs \u2192 Prop"
+    }
+  }
+}

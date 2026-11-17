@@ -1,0 +1,37 @@
+# General DP-Adam source-family construction and consumers
+
+U.5 continuation, informed root composition, 2026-11-14. Primary source: `latex/natural-language/dpadam_privacy_calibrated_diffusion.tex`, original definitions, clock, query and objective assumptions and calibration passage previously retained in r01. The original r01 investigation, stopping error and correction remain historical; this record makes no replacement terminal claim.
+
+## Outcome
+
+The general constructor and named-law comparison now compile, together with actual finite-mechanism privacy and finite-iterate utility applications. This goes beyond supplying a `GrowingClockData` input or another quadratic example. No mathematical source error was established, and no Ladon production change was needed.
+
+`Full.lean` retains the complete composition, including the earlier initialization/mean lemmas. Its final checked proof uses arbitrary finite reference datasets, arbitrary positive dimension, fixed record queries with their recordwise Euclidean Lipschitz bounds, valid fixed beta, positive stabilizer/clipping, arbitrary public initial points tending to x0, and positive diverging count sequences. The final compiler receipt is `full-attempt-12.json`: exit 0, 3.71 seconds, peak sampled RSS 7,482,220,544 bytes, permitted standard axioms only. The proof-valued `empirical_rate_application` has its full inferred proposition printed in that receipt. All compiler attempts used 60-second, 12-GiB and 8-MiB output bounds, existing pinned Lean 4.33.0 imports and the read-only donor. Failures are retained, not credited. New evidence is ordinary Lean, without new native completion/replay or a portable transitive dependency closure.
+
+## What supplies each premise
+
+| Original requirement | Checked producer/application |
+| --- | --- |
+| Actual family records rather than their assumed existence | `row`, `regularity`, `sourceData`: construct the complete records from primitive fields. Expected batch is q times the reference cardinality; denominators stay public across private inputs. |
+| Measurable releases for new q/noise choices | `generic_kernel` builds the actual finite Gaussian mixture kernel from recordwise clipped-query measurability. `clipped_measurable_of_one_release` derives that input from measurability of the source release at a single run, using singleton private inputs and their mean. It requires positive C, multiplier, denominator and q. No stronger all-noise kernel hypothesis is introduced. |
+| Same source queries and public initialization | The constructor stores the original fixed query at every row and the public row initial point x_j. Nested initialization/fluctuation limits hold identically; across-row convergence uses only x_j tending to x0. |
+| Exact schedule and growing-clock fields | `sourceData` constructs s=sqrt(gamma T), eta=c/sqrt(T), H=c/sqrt(gamma), lambda=c sqrt(gamma), using mesh=T-1 and the exact positive integer retained count T. `noise_limit`, `step_limit` discharge the consumer limits. |
+| Common path law for two sampling rates | `resample` changes only q and its validity proofs. `sourceMap_resample`, `sourceLaw_resample`, `paired_source_convergence` establish one common named solution law for the actual constructed families, with potentially different positive diverging counts. Common initial limit, drift, covariance and horizon are retained. Solution uniqueness removes dependence on different inherited Lipschitz bounds. |
+| Match source and utility record indexing | `mean_bridge` equates the reference Finset clipped mean with the utility theorem's finite-type mean over exactly the same retained records. No replacement by the full public universe. |
+| Match the empirical objective gradient | `empirical_gradient_identity` derives the derivative of the cardinality-normalized sum of record losses from differentiability and the record-gradient identities. `empirical_rate_application` composes this derived premise into one actual utility application for that explicit objective. |
+| Finite-iterate utility | `source_finite_rate` and `empirical_rate_application` use the actual transcript measure and retained-node average. C2 regularity, lower bound, upper Hessian bound and disagreement at most C/2 remain explicit source assumptions. The conclusion is the sufficient asymptotic bound plus any positive tolerance, not exact finite performance. |
+| Eventual privacy | `source_privacy` derives the selected scale from gamma=(1+slack)r/(2 N²(epsilon-conversion)) and applies the finite path-mechanism privacy theorem. Order≥2, delta in (0,1), positive target gap/slack and fixed public normalization remain explicit. |
+
+For the original pair, instantiate the second q as kq≤1 and counts as k(j+1), j+1 for fixed positive integer k. The prior checked count and scalar identities supply matched expected epochs, eta'=sqrt(k)eta and multiplier'=sqrt(k)multiplier; the new generic theorem supplies the common actual path limit. Instantiate `source_privacy` and `empirical_rate_application` on each constructed family with the same source losses, gamma,c and objective bounds. Their sufficient bound expressions involve the same C, beta, initial gap, H, lambda, dispersion and Hessian coefficient. There is no uniform threshold in q, equality of finite accountants, finite-run approximation rate, or import of Malladi's simultaneous beta changes.
+
+## A speculative prerequisite removed
+
+The stored `FixedNoiseFastSlowFamily.objective : SmoothObjective` field had looked like an additional construction obligation. `objective_field_irrelevant` proves by definitional equality that replacing this field leaves the actual path law unchanged. The general constructor therefore uses a neutral smooth objective solely for that field. It does not assert that the source objective is zero. The actual utility application explicitly uses the empirical source objective and derives its gradient identity. No source smoothness hypothesis is weakened, and no utility conclusion is obtained from the neutral field.
+
+## Authority and residual scope
+
+The source-to-formal object map is an attributed informed interpretation. The primitive record's beta, query/Lipschitz and measurability fields still need the corresponding proofs for any concrete user input; none asserts the desired law or utility conclusion. The empirical theorem uses differentiability and coordinate-gradient identities for each retained loss, matching the source's g_a=gradient f_a. Its source C1/Lipschitz wording is read through these standard finite-coordinate interfaces; no automated natural-language translation is claimed.
+
+The general construction/application frontier selected by U.5 has checked support. The old 558-line source-method audit remains incomplete, and this record does not retrospectively review its reference martingale, remainder or appendix arguments. Existing compiled imports, rather than a rebuilt transitive source closure, are the verification environment. No separate independent review was performed. No natural-error discovery, extra detection or effort advantage over the same recipe with ordinary Lean follows from this result.
+
+Disposition: close U.5's bounded construction/application task and consolidate the working mathematical recipe. Do not start broad runtime diagnostics or another evaluation campaign automatically. Further source-method coverage or native replay of the larger new composition would need its own selected scope and purpose.

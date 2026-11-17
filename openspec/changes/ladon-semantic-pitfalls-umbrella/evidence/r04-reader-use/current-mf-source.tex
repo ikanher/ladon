@@ -1,0 +1,1064 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[margin=24mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{microtype,booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,urlcolor=blue]{hyperref}
+\usepackage{bookmark}
+\emergencystretch=2em
+\allowdisplaybreaks[1]
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\E}{\mathbb E}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Pp}{\mathbb P}
+\newcommand{\norm}[1]{\lVert#1\rVert}
+\newcommand{\Ltwo}[1]{\lVert#1\rVert_{L^2}}
+\title{Finite Comparison of Initialized Private Adam\\under Batch Scaling}
+\author{}
+\date{16 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+We give an explicit finite comparison of expected squared-gradient risks for
+two initialized private Adam runs with different Poisson batch sizes. The
+learning rate is multiplied by the square root of the batch multiplier,
+the momentum coefficients use the linear transformation
+$\beta_i'=1-k(1-\beta_i)$, and the outside-root stabilizer is divided by
+$\sqrt{k}$. Both finite bias corrections and every original output age are
+retained. A direct coupling to a common stochastic differential equation gives
+an error of order $\sqrt h(1+\log(1/h))$ for fixed sampling rates and fixed scaling
+parameters. The proof controls the random denominator jointly with its
+numerator and accounts for the finite sampling fluctuations. Each run has a
+separate differential-privacy guarantee under an explicit public calibration.
+A finite example gives risk difference below $10^{-6}$, at an extremely large
+horizon. The conclusion is closeness, not an ordering or an optimal choice of
+learning rate. Uniformity at bounded epoch budgets is not asserted.
+An additional expected-memory estimate improves the linear-to-exponential
+memory-transfer contribution from order $\sqrt h$ to order $h$; it does not
+change the order of the complete comparison.
+\end{abstract}
+
+\section{Mechanisms and the finite batch comparison}
+\label{sec:main}
+
+Fix a public finite universe of records. Each record has a globally Lipschitz
+gradient $g_r:\R^p\to\R^p$ with $\norm{g_r(x)}\le1$ for all $x$.
+Datasets are subsets, with add/remove adjacency. Fix a positive public
+integer $N$ independently of the private input. The utility statement is
+evaluated on a reference dataset of size $N$, with objective gradient
+$\nabla f=N^{-1}\sum_{r=1}^N g_r$. Write $L_r$ for the record Lipschitz
+constants and take $L>0$ with $N^{-1}\sum_rL_r\le L$. In particular
+$\norm{\nabla f}\le1$ and $\nabla f$ is $L$-Lipschitz.
+The initial position $x_0$ and all algorithm parameters are public.
+
+At each age $j$ use independent Bernoulli$(q)$ record indicators $I_{j,r}$,
+with the same indicator in every coordinate of a record, and a fresh standard
+$p$-dimensional Gaussian $Z_j$, independent of all masks. For a public
+normalizer $B=qN$, the release and Adam recursion are
+\begin{align}
+ Y_j&=\frac1B\sum_{r\in D}I_{j,r}g_r(x_j)+\frac\sigma B Z_j,
+       \label{eq:release}\\
+ m_{j+1}&=\beta_1m_j+(1-\beta_1)Y_j,&
+ v_{j+1}&=\beta_2v_j+(1-\beta_2)Y_j^{\odot2},\notag\\
+ \widehat m_{j+1}&=\frac{m_{j+1}}{1-\beta_1^{j+1}},&
+ \widehat v_{j+1}&=\frac{v_{j+1}}{1-\beta_2^{j+1}},\notag\\
+ x_{j+1}&=x_j-\eta\frac{\widehat m_{j+1}}
+                         {\sqrt{\widehat v_{j+1}}+\zeta},&m_0&=v_0=0.
+       \label{eq:adam}
+\end{align}
+All vector norms are Euclidean. Roots, squares and division are coordinatewise. Unit clipping is inactive
+under the record bound. The normalizer $B$ is not recomputed on a neighboring
+dataset. The masks remain internal randomness.
+The privacy statement quantifies over all neighboring subsets of the public
+universe using this same fixed $N$ and the same public parameters; it does
+not disclose or recompute the input cardinality.
+
+For a run of $T$ updates, its risk is
+\begin{equation}\label{eq:risk}
+ R=\frac1T\sum_{j=0}^{T-1}\E\norm{\nabla f(x_j)}^2.
+\end{equation}
+This is the risk at an independent uniform original output age. Releasing
+that parameter is postprocessing; releasing an additional dataset-dependent
+gradient evaluation is not asserted to be postprocessing.
+
+\paragraph{Two exact clocks.}
+Fix $H,e_0,\lambda_1,\lambda_2>0$ with $\lambda_2<2\lambda_1$,
+integers $k,n\ge1$, and $0<q\le1/k$. Put $h=H/(kn)$ and
+\begin{equation}\label{eq:pair}
+\begin{array}{c|cc}
+ &\text{source}&\text{target}\\ \hline
+ T&kn&n\\
+ q_i&q&kq\\
+ B_i&qN&kqN\\
+ \eta_i&\sqrt h&\sqrt{kh}\\
+ \zeta_i&e_0/\sqrt h&e_0/\sqrt{kh}\\
+ \beta_{r,i}&e^{-\lambda_rh}&1-k(1-e^{-\lambda_rh})
+\end{array}
+\end{equation}
+The expected numbers of passes, $T_iq_i$, agree. The target momentum in
+\eqref{eq:pair} is linear in the source momentum, rather than its $k$th power.
+
+Fix $0<\epsilon\le1$, $0<\delta<1$, and the public order
+\begin{equation}\label{eq:privacy-cal}
+ a_{\rm priv}=\left\lceil\frac{2\log(1/\delta)}\epsilon\right\rceil+1,
+ \qquad \sigma_i^2=\frac{2T_i a_{\rm priv}q_i^2}{\epsilon}.
+\end{equation}
+Thus $\sigma_t=\sqrt{k}\sigma_s$. Define
+\begin{gather}
+ c=\frac{\sqrt{2Ha_{\rm priv}/\epsilon}}N,\qquad
+ K=e^{|\lambda_1-\lambda_2|H/2},\qquad
+ C_\beta=H(k-1)(\lambda_1^2+\lambda_2^2/2),\notag\\
+ L_q=\frac{\sum_rL_r}{kqN},\qquad
+ C_x=\frac{(1+K)L_q}{e_0},\qquad
+ A_{\rm mem}=H\sqrt p K C_\beta e^{C_\beta\bar h+HC_x}.
+ \label{eq:memory-constants}
+\end{gather}
+Here $\bar h>0$ is a fixed public upper bound for $h$.
+Section~\ref{sec:coupling} defines a completely explicit function
+$\mathcal E(\tau;M,L_0,L_\phi)$, with the other parameters
+$H,p,\lambda_1,\lambda_2,c,e_0$ fixed.
+
+\begin{theorem}[Finite private batch comparison]\label{thm:pair}
+Assume the definitions above and
+\begin{equation}\label{eq:guards}
+ 0<h\le\bar h\le\frac1{2k\max(\lambda_1,\lambda_2)},\qquad
+ h\le\min\left\{
+ \frac{2\lambda_1-\lambda_2}{2(k+1)\lambda_1^2},
+ \frac{4Hq^2}{\epsilon(a_{\rm priv}-1)}\right\}.
+\end{equation}
+The two runs in \eqref{eq:pair} are well-defined and each transcript and
+independent uniform-age parameter output is separately
+$(\epsilon,\delta)$-differentially private. Their actual risks satisfy
+\begin{equation}\label{eq:main-error}
+ |R_t-R_s|\le
+ 2L A_{\rm mem}\sqrt{h/k}
+ +\mathcal E(h;1/q,L,2L)
+ +\mathcal E(kh;1/(kq),L,2L).
+\end{equation}
+For fixed $H,p,N,q,k,e_0,\lambda_i,\epsilon,\delta$ and gradient bounds,
+the right side is $O(\sqrt h(1+\log(1/h)))$ as $n\to\infty$.
+\end{theorem}
+
+Appendix~\ref{app:expected-memory} further permits the smaller of the
+pathwise memory contribution in \eqref{eq:main-error} and an explicit
+expected-memory contribution of order $h$.
+
+The conclusion compares expected risks, rather than sufficient upper bounds
+on those risks. It does not determine their order or minimize either risk.
+Each finite pair has matching epochs, but the common epoch count grows with
+$n$. A numerical finite example appears in Section~\ref{sec:example}.
+
+\paragraph{Structure of the argument.}
+For exponential moment parameters, the second memory after multiplication
+by the mesh concentrates about $c^2$. Its fluctuation is used jointly with
+the first moment through Cauchy--Schwarz. Replacing the denominator in an
+auxiliary comparison, and paying the centered sampling sum, leaves a recursion
+with a deterministic denominator. Its corrected first moment is an exponential
+convolution. Coupling its Gaussian increments to Brownian increments gives
+an explicit comparison with an integrable, singular-at-zero convolution.
+Finally, normalized memory weights compare the linear target to the
+exponential target. The latter and the source have the same limiting law.
+
+\section{An explicit initialized coupling}\label{sec:coupling}
+
+Consider a single exponential run with mesh $\tau=H/n_\tau$,
+$\beta_i=e^{-\lambda_i\tau}$, $\eta=\sqrt\tau$,
+$\zeta=e_0/\sqrt\tau$, and release
+$Y_j=A_j(x_j)+cZ_j/\sqrt\tau$. Let $\mathcal F_j$ denote the history
+before the current sampling. More explicitly, take sigma fields
+$\mathcal F_j\subseteq\mathcal G_j\subseteq\mathcal F_{j+1}$ containing
+all earlier signals and Gaussian innovations, with $x_j$ measurable for
+$\mathcal F_j$, the sampled signal $A_j(x_j)$ measurable for
+$\mathcal G_j$, and $Z_j$ standard Gaussian independent of
+$\mathcal G_j$. All evaluated random variables are measurable. In the
+Poisson construction, $\mathcal G_j$ additionally reveals the current
+record mask. Assume globally
+\begin{equation}\label{eq:oracle-assumptions}
+ \norm{A_j(x)}\le M,\quad \norm{b(x)}\le M,\quad
+ \E[A_j(x_j)\mid\mathcal F_j]=b(x_j),\quad
+ \norm{b(x)-b(y)}\le L_0\norm{x-y}.
+\end{equation}
+The current signal is revealed before the independent Gaussian.
+The separate global bound on $b$ is needed because comparison paths can
+visit positions other than the sampled trajectory. For Poisson sampling
+on the reference dataset, $b=\nabla f$, $M=1/q$ and $L_0=L$ suffice.
+
+Write $D=c+e_0$, $E_i=e^{\lambda_iH}$, $a_i=\sqrt{E_i}$ and define
+\begin{align}
+ B_\tau&=a_2(\sqrt2c^2+2cM\sqrt\tau),\notag\\
+ F_\tau&=\frac p{ce_0D}\left[
+ 2MB_\tau\sqrt{H\tau}
+ +ca_1B_\tau\sqrt\tau(1+\log n_\tau)
+ +HM^3\tau+2ca_1M^2\tau\sqrt H\right],\notag\\
+ S_\tau&=\frac{2Ma_1\sqrt{H\tau}}D,\qquad
+ A_\tau=e^{L_0H/D}(F_\tau+S_\tau),\notag\\
+ Q_\tau&=2M\tau(1+E_1\log n_\tau)
+ +\sqrt p c\sqrt\tau\{E_1(3+\log n_\tau)+2E_1^2\}
+ +2\sqrt p c\lambda_1E_1\tau\sqrt H,\notag\\
+ \omega_\tau&=\frac{M\tau+2\sqrt p cE_1\sqrt\tau}D,
+ \qquad C_\tau=e^{L_0H/D}\left(\frac{Q_\tau}D+
+                              \frac{L_0H\omega_\tau}D\right),\notag\\
+ \mathcal E(\tau;M,L_0,L_\phi)&=L_\phi(A_\tau+C_\tau+\omega_\tau).
+ \label{eq:constants}
+\end{align}
+These formulas also apply when $n_\tau=1$, with $\log n_\tau=0$.
+
+Let $B_t$ be standard $p$-dimensional Brownian motion. Define the continuous
+process by
+\begin{align}
+ m(t)&=\lambda_1\int_0^t e^{-\lambda_1(t-s)}b(X_s)\,ds
+       +\lambda_1c\int_0^t e^{-\lambda_1(t-s)}\,dB_s,\notag\\
+ X_t&=x_0-\frac1D\int_0^t\frac{m(s)}{1-e^{-\lambda_1s}}\,ds.
+ \label{eq:limit}
+\end{align}
+The integrand's value at zero is immaterial.
+We use a completed filtration and a jointly measurable version of the
+Gaussian convolution whose unnormalized paths are continuous. All assertions
+about its absolute time integrability are almost sure assertions. The
+resulting continuous position process starts at the stated deterministic
+$x_0$.
+
+\begin{theorem}[Single-run quantitative comparison]\label{thm:coupling}
+Under \eqref{eq:oracle-assumptions}, \eqref{eq:limit} has a unique continuous
+adapted solution. There is a coupling of this solution with the initialized
+Adam run such that
+\begin{equation}\label{eq:grid-error}
+ \E\max_{0\le j\le n_\tau}\norm{x_j-X_{j\tau}}
+ \le A_\tau+C_\tau.
+\end{equation}
+For every $[0,1]$-valued $L_\phi$-Lipschitz function $\phi$,
+\begin{equation}\label{eq:observable-error}
+ \left|\frac1{n_\tau}\sum_{j<n_\tau}\E\phi(x_j)
+          -\frac1H\int_0^H\E\phi(X_t)\,dt\right|
+ \le\mathcal E(\tau;M,L_0,L_\phi).
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Appendix~\ref{app:moments} compares Adam to the mean recursion with constant
+denominator, at cost $A_\tau$. Appendix~\ref{app:sde} constructs the solution
+and compares that recursion to its grid values, at cost $C_\tau$.
+The same appendix proves
+$\E\norm{X_t-X_s}\le\omega_\tau$ whenever $0\le t-s\le\tau$.
+Apply the Lipschitz bound first at the coupled grid values, and then between
+$j\tau$ and $t\in[j\tau,(j+1)\tau]$, and integrate. This includes age zero
+and does not introduce $x_{n_\tau}$ into the risk average.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:pair}]
+Introduce a target exponential run, replacing only its momentum parameters
+by $e^{-\lambda_i kh}$. Its averaged noise is $c/\sqrt{kh}$, while the
+source averaged noise is $c/\sqrt h$, by \eqref{eq:privacy-cal}.
+Both mean gradients are $\nabla f$. They therefore have the same uniquely
+defined law \eqref{eq:limit}. One may realize this comparison directly on
+one Brownian motion and independent source and target mask arrays: use
+$h$-increments for the source, $kh$-increments for the target, and the same
+target masks and increments for its linear and exponential versions.
+Each run has its prescribed marginal law. Both exponential versions then
+compare to the same pathwise solution $X$. This mathematical coupling makes
+no assertion about privacy of a joint release.
+Apply Theorem~\ref{thm:coupling} to both,
+using $M_s=1/q$, $M_t=1/(kq)$ and
+$\phi(x)=\norm{\nabla f(x)}^2$. This function is $2L$-Lipschitz and
+bounded by one. Appendix~\ref{app:memory} compares the linear and exponential
+target positions at every age with error $A_{\rm mem}\sqrt{h/k}$.
+The triangle inequality through the exponential target and common limit
+proves \eqref{eq:main-error}.
+
+For positivity and separation, put $d_i=1-e^{-\lambda_i h}$ and
+$\Delta=2\lambda_1-\lambda_2>0$. The bounds
+$u-u^2/2\le1-e^{-u}\le u$ give
+\[
+ 1-kd_i\ge\tfrac12,\qquad
+ (1-kd_2)-(1-kd_1)^2
+ =k(2d_1-d_2-kd_1^2)
+ \ge k\{\Delta h-(k+1)\lambda_1^2h^2\}\ge k\Delta h/2.
+\]
+Also $1-kd_i<1$. Appendix~\ref{app:privacy} gives each separate privacy
+statement with exactly \eqref{eq:privacy-cal}. The prescribed guard is
+$\epsilon(a_{\rm priv}-1)h/(4Hq^2)\le1$ for the source, and $1/k$ times
+that quantity for the target. Finally, the explicit expressions in
+\eqref{eq:constants} have the stated order when the public parameters are
+fixed. The memory error is $O(\sqrt h)$.
+\end{proof}
+
+\paragraph{Limiting second memory.}
+For every fixed $t>0$, \eqref{eq:second-L2} with
+$l=\lfloor t/\tau\rfloor$ proves coordinatewise $L^2$ convergence of
+$W_l=\tau\widehat v_l$ to $c^2$ as $\tau\to0$.
+Thus the limiting denominator is the isotropic constant $c+e_0$.
+The parameter $\lambda_2$ affects the finite error but disappears from
+\eqref{eq:limit}. The result establishes a sufficient recipe in this
+specified noise regime, not its necessity or a general active-clipping theorem.
+
+\subsection{Sharper constants for the exponential memories}\label{sec:sharp}
+
+The factors $E_i=e^{\lambda_iH}$ in \eqref{eq:constants} can be avoided.
+Put $P_i=1+\lambda_iH/2$, $a=\sqrt{P_1}$, $b=\sqrt{P_2}$ and define
+\begin{align}
+ B_\tau^*&=b(\sqrt2c^2+2cM\sqrt\tau),\notag\\
+ F_\tau^*&=\frac p{ce_0D}\left[
+ 2MB_\tau^*\sqrt{H\tau}
+ +caB_\tau^*\sqrt\tau(1+\log n_\tau)
+ +HM^3\tau+2caM^2\tau\sqrt H\right],\notag\\
+ S_\tau^*&=\frac{2Ma\sqrt{H\tau}}D,\qquad
+ A_\tau^*=e^{L_0H/D}(F_\tau^*+S_\tau^*),\notag\\
+ Q_\tau^*&=2M\tau(1+\lambda_1H+\log n_\tau)
+ +\sqrt p c\sqrt\tau(\lambda_1H+\log n_\tau+5a)
+ +4\sqrt p c\lambda_1a\tau\sqrt H,\notag\\
+ \omega_\tau^*&=\frac{M\tau+2\sqrt p ca\sqrt\tau}D,\qquad
+ C_\tau^*=e^{L_0H/D}\left(\frac{Q_\tau^*}D+
+                                     \frac{L_0H\omega_\tau^*}D\right),\notag\\
+ \mathcal E^*(\tau;M,L_0,L_\phi)&=L_\phi(A_\tau^*+C_\tau^*+\omega_\tau^*).
+ \label{eq:sharp-constants}
+\end{align}
+
+\begin{proposition}\label{prop:sharp}
+Theorem~\ref{thm:coupling} remains true with the starred constants.
+Consequently either occurrence of $\mathcal E$ in \eqref{eq:main-error}
+may independently be replaced by $\mathcal E^*$, or by their minimum.
+For the Poisson oracle on a reference dataset of $N$ records, one may further
+replace $M$ in $S_\tau$ or $S_\tau^*$ only by
+$\nu_q=\sqrt{(1-q)/(qN)}$.
+\end{proposition}
+
+\begin{proof}
+The sharper weight, convolution and quadrature estimates are proved in
+Appendix~\ref{app:sharp}. They replace the corresponding estimates in
+Appendices~\ref{app:moments}--\ref{app:sde}; the dependence-preserving
+Cauchy--Schwarz and Gronwall steps are unchanged. For the final assertion,
+independence of the current record indicators, conditional on the past, gives
+\[
+ \E[\norm{A_j(x_j)-\nabla f(x_j)}^2\mid\mathcal F_j]
+ =\frac{1-q}{qN^2}\sum_{r=1}^N\norm{g_r(x_j)}^2
+ \le\frac{1-q}{qN}.
+\]
+Deterministic-weight orthogonality replaces the sampling estimate by
+$\nu_q a/\sqrt l$ (or $\nu_q a_1/\sqrt l$), proving precisely the claimed
+change in $S$. It does not change the signal bounds used elsewhere.
+At $q=1$ this sampling contribution vanishes exactly.
+\end{proof}
+
+\section{A finite example and the epoch boundary}\label{sec:example}
+
+Take four identical scalar records
+$f_r(x)=\sqrt{1+x^2}-1$, $x_0=1$, and
+\[
+ p=H=e_0=\lambda_1=\lambda_2=L=1,\quad k=2,\quad
+ q_s=\tfrac14,\quad q_t=\tfrac12,\quad
+ \epsilon=\tfrac12,\quad\delta=e^{-4},\quad n=10^{20}.
+\]
+Here $a_{\rm priv}=17$, $c=\sqrt{17}/2$, $h=1/(2n)$, and
+$\bar h=1/32$ satisfies all guards. The source and target privacy
+small-step quantities are $32h$ and $16h$. Each record gradient has norm
+at most one and Lipschitz constant one.
+
+For either mesh, $\tau\le10^{-6}$. Use $2<c<21/10$, $D>3$,
+$a=b=\sqrt{3/2}<5/4$, $\sqrt2<3/2$ and $M\le4$.
+The exponential series gives $e^{1/D}<e^{1/3}<3/2$, by comparison
+with the geometric series. Thus $B_\tau^*<25/3$.
+Substitute these bounds and $\sqrt\tau\le1/1000$ into
+\eqref{eq:sharp-constants}, retaining terms proportional to
+$\tau$ with their extra factor $\sqrt\tau$. Direct rational arithmetic gives
+\[
+ \frac{\mathcal E^*(\tau;M,1,2)}{\sqrt\tau}
+ <\frac{224551}{3000}+\frac{26091}{2000}\log n_\tau
+ <80+14\log n_\tau.
+\]
+No improved Poisson sampling variance is needed for this estimate.
+Since $e^3>10$ and $e>2$, $\log n<60$ and $\log(2n)<61$.
+The sum of the two exponential-run errors is below $1854/10^{10}$.
+For the target memory comparison, $K=1$, $C_\beta=3/2$, $C_x=4$,
+and $C_\beta\bar h+HC_x<5$. Using $e<3$ gives the risk error
+$729\sqrt{h/2}=729/(2\cdot10^{10})$. Consequently
+\begin{equation}\label{eq:finite-example}
+ |R_t-R_s|<\frac{4437}{2\cdot10^{10}}<10^{-6}.
+\end{equation}
+This extremely large finite example demonstrates nonempty quantitative
+scope; it is not a computational recommendation or a bound forcing either
+risk to be small.
+
+\paragraph{Fixed epochs.}
+The calibration used here requires
+$\epsilon(a_{\rm priv}-1)/(4Tq^2)\le1$.
+If the expected epoch count $E=Tq$ is fixed, this is equivalent to
+\[
+ q\ge\frac{\epsilon(a_{\rm priv}-1)}{4E},\qquad
+ T\le\frac{4E^2}{\epsilon(a_{\rm priv}-1)}.
+\]
+It cannot justify this noise schedule along $q\to0$ at fixed $E$.
+Moreover the error constants contain $M=1/q$, and the memory comparison
+contains $L_q$. Uniform limits with bounded epochs require new calibration
+and stability estimates. Neither the finite example nor the fixed-rate
+asymptotic statement supplies them. Releasing the two runs jointly requires
+privacy composition in addition to the separate conclusions above.
+
+\appendix
+\section{Same-release moments and the mean recursion}\label{app:moments}
+
+At age $l\ge1$, define the deterministic corrected weights
+\[
+ w_{i,l,r}=\frac{e^{-\lambda_i\tau r}}
+                  {\sum_{s=0}^{l-1}e^{-\lambda_i\tau s}},\quad 0\le r<l.
+\]
+They sum to one and satisfy
+\begin{equation}\label{eq:weight-squares}
+ \max_r w_{i,l,r}\le E_i/l,\qquad \sum_rw_{i,l,r}^2\le E_i/l,
+ \qquad l\tau\le H.
+\end{equation}
+The ratio of largest to smallest unnormalized weight is at most $E_i$,
+which proves both assertions. Let $W_l=\tau\widehat v_l$.
+Multiplying the denominator in \eqref{eq:adam} by $\sqrt\tau$ gives exactly
+\begin{equation}\label{eq:scaled-update}
+ x_l=x_{l-1}-\tau\frac{\widehat m_l}{\sqrt{W_l}+e_0}.
+\end{equation}
+In particular its coefficient is $\tau$, including at $l=1$.
+
+For a coordinate $i$, Minkowski's inequality gives
+\begin{equation}\label{eq:first-L2}
+ \Ltwo{\widehat m_{l,i}}\le M+\frac{ca_1}{\sqrt{l\tau}}.
+\end{equation}
+For its second memory, expand under the actual adapted law:
+\begin{align*}
+ W_{l,i}-c^2={}&c^2\sum_{j<l}w_{2,l,l-1-j}(Z_{j,i}^2-1)\\
+ &+2c\sqrt\tau\sum_{j<l}w_{2,l,l-1-j}A_{j,i}(x_j)Z_{j,i}
+ +\tau\sum_{j<l}w_{2,l,l-1-j}A_{j,i}(x_j)^2.
+\end{align*}
+The first sum has variance $2\sum w_2^2$. The middle summands are
+orthogonal martingale differences: their signal is known before the current
+Gaussian and may depend on earlier releases. The last sum is bounded by
+$\tau M^2$. Minkowski and \eqref{eq:weight-squares} therefore give
+\begin{equation}\label{eq:second-L2}
+ \Ltwo{W_{l,i}-c^2}\le B_\tau/\sqrt l+\tau M^2.
+\end{equation}
+No independence between the three sums is used.
+
+For every $W\ge0$,
+\[
+ \left|\frac1{\sqrt W+e_0}-\frac1D\right|
+ =\frac{|W-c^2|}{(\sqrt W+c)(\sqrt W+e_0)D}
+ \le\frac{|W-c^2|}{ce_0D}.
+\]
+Let $r_l=\widehat m_l/(\sqrt{W_l}+e_0)-\widehat m_l/D$.
+Cauchy--Schwarz on each coordinate, followed by the sum of coordinate
+absolute values, yields
+\begin{equation}\label{eq:den-error}
+ \E\norm{r_l}\le\frac p{ce_0D}
+ \left(M+\frac{ca_1}{\sqrt{l\tau}}\right)
+ \left(\frac{B_\tau}{\sqrt l}+\tau M^2\right).
+\end{equation}
+The first and second memories remain dependent throughout this calculation.
+Using $\sum_{l=1}^n l^{-1/2}\le2\sqrt n$ and
+$\sum_{l=1}^n l^{-1}\le1+\log n$ proves
+\begin{equation}\label{eq:den-sum}
+ \tau\sum_{l=1}^{n_\tau}\E\norm{r_l}\le F_\tau.
+\end{equation}
+
+Define an auxiliary sequence $z$ with the same Gaussian innovations,
+corrected first-memory weights and zero initialization, using releases
+$b(z_j)+cZ_j/\sqrt\tau$ and update
+$z_l=z_{l-1}-\tau\widehat m_l^z/D$.
+For the actual sequence, set $\varepsilon_j=A_j(x_j)-b(x_j)$.
+Conditional variance gives
+$\E[\norm{\varepsilon_j}^2\mid\mathcal F_j]\le M^2$.
+These are martingale differences at the actual positions, and deterministic
+weighted orthogonality implies
+\[
+ \E\norm{\sum_{j<l}w_{1,l,l-1-j}\varepsilon_j}\le Ma_1/\sqrt l.
+\]
+In the difference of the two first memories the Gaussian terms cancel.
+The remaining drift difference is at most
+$L_0\max_{j<l}\norm{x_j-z_j}$. Hence for
+$\mathfrak e_l=\max_{j\le l}\norm{x_j-z_j}$,
+\[
+ \mathfrak e_l\le(1+\tau L_0/D)\mathfrak e_{l-1}+\tau\norm{r_l}
+    +\frac\tau D\norm{\sum_{j<l}w_{1,l,l-1-j}\varepsilon_j}.
+\]
+Iteration, expectations and \eqref{eq:den-sum} prove
+$\E \mathfrak e_{n_\tau}\le A_\tau$. This stability estimate uses the mean
+Lipschitz constant, rather than the worst sampled Lipschitz constant.
+
+\section{Brownian comparison including the first interval}\label{app:sde}
+
+Write $\lambda=\lambda_1$, $E=E_1$ and couple
+$Z_j=(B_{(j+1)\tau}-B_{j\tau})/\sqrt\tau$. Independent Brownian bridges
+give such a coupling without changing the release law. For a bounded
+adapted input $a$ with $\norm a\le M$, put
+\begin{align*}
+ r_a(t)&=\frac\lambda{1-e^{-\lambda t}}
+              \int_0^te^{-\lambda(t-s)}a(s)\,ds,\\
+ \xi(t)&=\frac{\lambda c}{1-e^{-\lambda t}}
+              \int_0^te^{-\lambda(t-s)}\,dB_s.
+\end{align*}
+The first kernel has mass one. Since
+$1-e^{-\lambda t}\ge\lambda t/E$, It\^o isometry gives
+\begin{equation}\label{eq:noise-start}
+ \Ltwo{\xi(t)}\le\sqrt p cE/\sqrt t.
+\end{equation}
+In particular $\int_0^H\norm{\xi(t)}dt$ is integrable and finite almost
+surely, and its indefinite integral is continuous at zero.
+
+Take $a(s)=b(z_j)$ on $[j\tau,(j+1)\tau)$. At $t_l=l\tau$,
+$r_a(t_l)$ is exactly the corrected deterministic part of
+$\widehat m_l^z$. The unnormalized discrete Gaussian kernel on each
+interval is the interval average of
+$\lambda e^{-\lambda(t_l-s)}$. The derivative of this function in $s$
+is at most $\lambda^2$, so the pointwise difference from its average is
+at most $\lambda^2\tau$. After normalization and It\^o isometry,
+\begin{equation}\label{eq:gaussian-kernel-error}
+ \E\norm{\widehat m_l^z-r_a(t_l)-\xi(t_l)}
+ \le\sqrt p c\lambda E\tau/\sqrt{t_l}.
+\end{equation}
+The sum of these bounds times $\tau$ is at most
+$2\sqrt p c\lambda E\tau\sqrt H$.
+For clarity, the two exact cell identities behind this calculation are
+\[
+ \int_{j\tau}^{(j+1)\tau}\lambda e^{-\lambda(t_l-s)}ds
+  =(1-e^{-\lambda\tau})e^{-\lambda\tau(l-1-j)},\qquad
+ \frac{w_{1,l,l-1-j}}{\tau}
+  =\frac{1}{\tau(1-e^{-\lambda t_l})}
+       \int_{j\tau}^{(j+1)\tau}\lambda e^{-\lambda(t_l-s)}ds.
+\]
+Thus the Gaussian kernel is a cell average, while the drift cell integral
+equals the corrected weight. Neither identity discards the finite
+bias-correction factor.
+
+For $t>0$, the locally absolutely continuous deterministic convolution obeys
+$r_a'(t)=\lambda(a(t)-r_a(t))/(1-e^{-\lambda t})$ almost everywhere.
+Its derivative norm is at most $2ME/t$; it is also bounded by $M$.
+Its integrated right-endpoint quadrature error is therefore at most
+$2M\tau$ on the first interval and $2ME\tau\log n_\tau$ on the rest.
+
+For $0<s\le t\le H$, split the Gaussian integral at $s$. The multiplier
+of the old noise relative to $\xi(s)$ is
+\[
+ r=\frac{e^{\lambda s}-1}{e^{\lambda t}-1},\qquad
+ 0\le1-r\le E(t-s)/s.
+\]
+The fresh integral and \eqref{eq:noise-start} give
+\begin{equation}\label{eq:noise-modulus}
+ \E\norm{\xi(t)-\xi(s)}\le\sqrt p c
+ \left(\frac{E\sqrt{t-s}}s+\frac{E^2(t-s)}{s^{3/2}}\right).
+\end{equation}
+On the first interval \eqref{eq:noise-start} bounds the integrated
+right-endpoint error by $3\sqrt p cE\sqrt\tau$. Elsewhere set $t$ to
+the right endpoint, use $t-s\le\tau$, and integrate
+\eqref{eq:noise-modulus}. The resulting bound is
+$\sqrt p c\sqrt\tau\{E(3+\log n_\tau)+2E^2\}$.
+Together with \eqref{eq:gaussian-kernel-error} this proves
+\begin{equation}\label{eq:integral-residual}
+ \E\max_{l\le n_\tau}\left\|z_l-x_0+
+       D^{-1}\int_0^{l\tau}(r_a(s)+\xi(s))ds\right\|\le Q_\tau/D.
+\end{equation}
+Each endpoint discrepancy is a partial sum of interval errors. Bounding
+its maximum by the sum of absolute interval errors justifies the order
+of the maximum and expectation in this formula.
+
+For each path with integrable $\xi$, solve
+$X_t=x_0-D^{-1}\int_0^t(r_{b(X)}(s)+\xi(s))ds$ by Picard iteration.
+The normalized drift kernel satisfies
+\[
+ \norm{r_{b(X)}(s)-r_{b(Y)}(s)}
+       \le L_0\sup_{u\le s}\norm{X_u-Y_u}.
+\]
+Successive differences are bounded by the factorial series for
+$\exp(L_0H/D)$, since the first difference is bounded on $[0,H]$.
+This gives a continuous solution; Gronwall gives uniqueness. The iterations
+are causal, hence the solution is adapted. Defining $m$ by
+\eqref{eq:limit} proves that equation with zero initialization.
+In addition, the integral equation gives the useful domination
+\[
+ \E\sup_{0\le t\le H}\norm{X_t-x_0}
+ \le \frac{MH+2\sqrt p\,cE\sqrt H}{D}<\infty.
+\]
+This justifies the subsequent expectations and time-integral interchanges,
+together with the preceding nonnegative integral bounds.
+The bound $\norm{r_{b(X)}}\le M$ and \eqref{eq:noise-start} imply
+\begin{equation}\label{eq:X-modulus}
+ \E\norm{X_t-X_s}\le\omega_\tau\quad(0\le s\le t\le H,\ t-s\le\tau),
+\end{equation}
+using $\int_s^t u^{-1/2}du\le2\sqrt{t-s}$.
+
+Set $\mathfrak e_l=\max_{j\le l}\norm{z_j-X_{j\tau}}$. At time
+$u\in[j\tau,(j+1)\tau)$,
+$\norm{b(z_j)-b(X_u)}\le L_0(\mathfrak e_j+\norm{X_{j\tau}-X_u})$.
+Every earlier grid index is bounded by $\mathfrak e_j$. Positivity and mass one of
+the normalized kernel, \eqref{eq:X-modulus}, and
+\eqref{eq:integral-residual} thus give
+\[
+ \E \mathfrak e_l\le Q_\tau/D+L_0H\omega_\tau/D
+               +(\tau L_0/D)\sum_{j<l}\E \mathfrak e_j.
+\]
+Discrete Gronwall proves $\E \mathfrak e_{n_\tau}\le C_\tau$, completing the
+coupling argument. The within-interval bound was used inside expectation;
+no pathwise Lipschitz bound on Brownian paths was assumed.
+
+\section{Perturbing both corrected memory parameters}\label{app:memory}
+
+For $b\in(0,1)$ let $w_r(b)=b^r/\sum_{s<l}b^s$.
+If $a,b\in(0,1)$ and $R=(l-1)|\log a-\log b|$, then
+\begin{equation}\label{eq:relative-weights}
+ e^{-R}\le w_r(a)/w_r(b)\le e^R.
+\end{equation}
+Indeed the ratio of the largest and smallest unnormalized ratios $(a/b)^r$
+is $e^R$, and their $w(b)$-weighted average is the ratio of normalizers.
+For exponential parameters at a mesh $\tau$ with $l\tau\le H$,
+\[
+ \sum_r\frac{w_r(e^{-\lambda_1\tau})^2}
+                {w_r(e^{-\lambda_2\tau})}\le K^2.
+\]
+Weighted Cauchy--Schwarz therefore gives $|\widehat m_i|\le K\sqrt{\widehat v_i}$
+for every scalar release sequence, including zero second memory.
+
+Let $D_b(y)$ denote the scalar direction at a positive stabilizer $\zeta$.
+When both parameters are changed to $a_i$, put
+$R_i=(l-1)|\log a_i-\log b_i|$. Subtracting the two ratios, first
+changing the numerator, and applying \eqref{eq:relative-weights}, gives
+\begin{equation}\label{eq:beta-direction}
+ |D_a(y)-D_b(y)|\le K(e^{R_1+R_2/2}-1).
+\end{equation}
+In detail, the numerator difference is at most
+$K(e^{R_1}-1)\sqrt{\widehat v_b}$; the root-memory ratio lies in
+$[e^{-R_2/2},e^{R_2/2}]$. The two ratio differences are bounded by
+$Ke^{R_2/2}(e^{R_1}-1)$ and $K(e^{R_2/2}-1)$. If the original root
+memory vanishes, all releases vanish and the claim holds directly.
+
+At fixed exponential parameters, for two vector histories with
+$v=\max_{j<l}\norm{y_j-y'_j}$,
+\begin{equation}\label{eq:history-direction}
+ \norm{D_b(y)-D_b(y')}\le(1+K)v/\zeta.
+\end{equation}
+The first-memory difference is at most $v$. The reverse triangle
+inequality in each weighted Euclidean space bounds the vector of root-memory
+differences by $v$. In the ratio decomposition, each original normalized
+numerator is at most $K$ and each denominator at least $\zeta$.
+This proves \eqref{eq:history-direction} without independence assumptions.
+
+For the target pair put $a_i=1-k(1-e^{-\lambda_i h})$ and
+$b_i=e^{-\lambda_i kh}$. Taylor's theorem for $u\mapsto u^k$ on $[0,1]$
+gives
+\[
+ 0\le b_i-a_i\le\tfrac12k(k-1)\lambda_i^2h^2,
+ \qquad 0\le\log b_i-\log a_i\le k(k-1)\lambda_i^2h^2,
+\]
+using $a_i\ge1/2$. For $l\le n$, this implies
+$R_1+R_2/2\le C_\beta h$.
+Couple the two target runs by the same masks and Gaussians. Their releases
+differ by at most $L_q$ times their position difference; they need not be
+identical. Apply \eqref{eq:beta-direction} to the linear run's history,
+then \eqref{eq:history-direction} to change that history. For the running
+position maximum $\mathfrak e_j$, the target step and stabilizer give
+\[
+ \mathfrak e_{j+1}\le(1+khC_x)\mathfrak e_j
+       +\sqrt{kh}\,\sqrt p K C_\beta e^{C_\beta\bar h}h.
+\]
+Since $nkh=H$, iteration yields
+$\mathfrak e_n\le A_{\rm mem}\sqrt{h/k}$, pathwise. At the first update the
+normalized weights coincide exactly. At $k=1$ the entire error is zero.
+
+\section{Finite privacy for the adaptive transcripts}\label{app:privacy}
+
+We prove the particular sufficient calibration used above, for public
+algorithm parameters and normalizers fixed on all neighboring datasets.
+All record gradients are Borel and bounded by one. Every finite memory and
+position is a Borel function of preceding releases, because the stabilizer
+is positive and both correction factors are nonzero. The release kernels
+therefore have positive Borel densities.
+
+For an adjacent pair $E,E\cup\{r\}$, condition on an arbitrary common
+release history and the sampled mask of the common records. The state
+$x$ is the same deterministic function of that history on both sides.
+Let $b$ denote the density of the noisy common sum, and let $p$ denote its
+translate by $g_r(x)$. The two conditional densities are $b$ and
+$m=(1-q)b+qp$. The differing-record inclusion bit is not revealed.
+The common mask can be included as an auxiliary variable: its law is the
+same on both sides. Integrating it out and dividing sums by the fixed $B$
+gives the actual release law at each age, hence the entire law by induction.
+
+For integer $a\ge2$, Gaussian square completion gives
+\begin{equation}\label{eq:mixture-power}
+ \int m^a b^{1-a}=A_a(q,z):=
+ \sum_{j=0}^a\binom aj(1-q)^{a-j}q^j e^{j(j-1)z/2},
+ \qquad z=\norm{g_r(x)}^2/\sigma^2.
+\end{equation}
+The reverse power is no larger. Here is a proof including $q=1$.
+For $u>0$ put $y=1-q+qu$, $w=1-q+q/u$ and
+$F_a(u)=y^a+uw^a-y^{1-a}-uw^{1-a}$.
+For $u\ge1$, $yw\ge1$, $y\ge1\ge w$, $y-1=u(1-w)$,
+$F_1=0$, and
+\[
+ F_{a+1}-F_a=(y-1)\{y^a+y^{-a}-w^a-w^{-a}\}\ge0.
+\]
+The last inequality follows from $y\ge1/w$ and monotonicity of
+$s^a+s^{-a}$ on $s\ge1$. For $u<1$, use $F_a(u)=uF_a(1/u)$.
+Reflection about the midpoint of the two Gaussian means swaps $b,p$.
+Pairing reflected points with $u=p/b$ now gives
+$\int b^am^{1-a}\le\int m^ab^{1-a}$. All terms in
+\eqref{eq:mixture-power} are nondecreasing in $z$, so $z\le\sigma^{-2}$
+can be substituted.
+
+If $a(a-1)/(2\sigma^2)\le1$, use $e^v\le1+2v$ for $v\in[0,1]$.
+For $J\sim\operatorname{Binomial}(a,q)$ this gives
+\[
+ A_a(q,\sigma^{-2})
+ \le1+\E[J(J-1)]/\sigma^2
+ =1+a(a-1)q^2/\sigma^2.
+\]
+Thus each ordered row R\'enyi divergence is at most $aq^2/\sigma^2$.
+The bound holds at every history and can be averaged over the common mask.
+The marginalization step is an inequality, not an identification of the
+mixture divergence with the average conditional divergence. Explicitly,
+let a finite mask $z$ have common law $\pi_z$, and let $p_z,q_z$ be the
+positive conditional densities in either ordered neighboring direction.
+Set $\bar p=\sum_z\pi_zp_z$ and $\bar q=\sum_z\pi_zq_z$. At every output,
+Jensen's inequality for $u\mapsto u^a$ gives
+\begin{align*}
+ \bar p^{\,a}\bar q^{\,1-a}
+ &=\bar q\left(\sum_z\frac{\pi_zq_z}{\bar q}
+                         \frac{p_z}{q_z}\right)^a\\
+ &\le\sum_z\pi_zp_z^{\,a}q_z^{\,1-a}.
+\end{align*}
+Integration preserves the uniform conditional moment bound. Division by
+the same positive public $B$ preserves the power integral by change of
+variables. The differing-record inclusion bit is still unobserved; it was
+integrated into $m=(1-q)b+qp$ before this common-mask calculation.
+For two prefix densities $P_j,Q_j$ and conditional row densities $p_j,q_j$,
+Tonelli gives
+\[
+ \int(P_jp_j)^a(Q_jq_j)^{1-a}
+ \le e^{(a-1)\rho_j}\int P_j^aQ_j^{1-a},\qquad
+ \rho_j=aq^2/\sigma^2.
+\]
+Induction proves the ordered transcript bound with the sum of $\rho_j$;
+the same proof with the laws reversed covers the other orientation.
+Under \eqref{eq:privacy-cal} this sum is $\epsilon/2$.
+For the transcript log likelihood $L=\log(P/Q)$, Markov's inequality gives
+\[
+ P\left\{L>\epsilon/2+\frac{\log(1/\delta)}{a_{\rm priv}-1}\right\}
+ \le\delta.
+\]
+The threshold is at most $\epsilon$. Splitting any measurable event on
+this exceptional set proves $P(S)\le e^\epsilon Q(S)+\delta$;
+reverse the laws for the opposite inequality. The same deterministic
+projection or independent public randomization preserves these inequalities.
+This proves privacy for the actual initialized trajectories and selected
+parameters, separately for each run, with no independence assumption on
+successive adaptive releases.
+
+\section{Exact normalized-memory estimates}\label{app:sharp}
+
+For $x>0$, $\tanh x\le x$ and
+$\coth x=1+2/(e^{2x}-1)\le1+1/x$. The corrected exponential weights
+therefore obey the exact identity and bound
+\begin{equation}\label{eq:sharp-weights}
+ \sum_{r<l}w_{i,l,r}^2
+ =\tanh(\lambda_i\tau/2)\coth(\lambda_i l\tau/2)
+ \le\frac1l+\frac{\lambda_i\tau}2\le\frac{P_i}l.
+\end{equation}
+This bounds their squared sum; no corresponding replacement of the
+maximum-weight bound is needed. It proves the starred versions of
+\eqref{eq:first-L2}--\eqref{eq:den-sum} and the sampling estimate.
+
+Write $\lambda=\lambda_1$. Direct It\^o isometry gives
+\begin{equation}\label{eq:sharp-noise}
+ \E\norm{\xi(t)}^2
+ =pc^2\frac\lambda2\coth(\lambda t/2)
+ \le pc^2(1/t+\lambda/2)\le pc^2P_1/t.
+\end{equation}
+In particular the first interval and the solution's time modulus are
+controlled as before, now with $a$ in place of $E_1$.
+
+For a continuously differentiable function $g$ on an interval $I$ of length
+$\tau$, let $\bar g$ be its average. The variance identity and
+Cauchy--Schwarz show
+\[
+ \int_I|g-\bar g|^2
+ =\frac1{2\tau}\int_I\int_I|g(s)-g(r)|^2\,ds\,dr
+ \le\tau^2\int_I|g'|^2.
+\]
+At a grid time the discrete Gaussian kernel is the cellwise average of
+the continuous kernel $g(s)=\lambda e^{-\lambda(t_l-s)}/(1-e^{-\lambda t_l})$.
+Since $g'=\lambda g$, summing the displayed estimate over all cells
+and using \eqref{eq:sharp-noise} gives
+\[
+ \E\norm{\widehat m_l^z-r_a(t_l)-\xi(t_l)}
+ \le\sqrt p c\lambda a\tau/\sqrt{t_l}.
+\]
+The sum times $\tau$ is at most $2\sqrt p c\lambda a\tau\sqrt H$.
+
+The elementary bound
+$\lambda/(1-e^{-\lambda t})\le\lambda+1/t$
+implies $\norm{r_a'(t)}\le2M(\lambda+1/t)$.
+Its first-interval quadrature error is at most $2M\tau$; all later
+intervals together cost at most $2M\tau(\lambda H+\log n_\tau)$.
+
+For the Gaussian quadrature let $0<s\le t\le H$ and $\Delta=t-s$.
+The old-noise multiplier $r$ from Appendix~\ref{app:sde} satisfies
+\[
+ 1-r=\frac{1-e^{-\lambda\Delta}}{1-e^{-\lambda t}}
+ \le\Delta(\lambda+1/t)\le\Delta(\lambda+1/s).
+\]
+The fresh Gaussian integral has $L^2$ norm at most
+$\sqrt p c\sqrt\Delta(\lambda+1/s)$. Hence
+\[
+ \E\norm{\xi(t)-\xi(s)}
+ \le\sqrt p c\left[
+ \sqrt\Delta(\lambda+1/s)
+ +a\Delta\left(\frac\lambda{\sqrt s}+\frac1{s^{3/2}}\right)\right].
+\]
+On the first interval the integrated right-endpoint error is at most
+$3\sqrt p ca\sqrt\tau$. Integrating the last display over
+$s\in[\tau,H]$, with $t$ the right mesh endpoint and $\Delta\le\tau$,
+gives at most
+\[
+ \sqrt p c\sqrt\tau(\lambda H+\log n_\tau+2a)
+ +2\sqrt p c\lambda a\tau\sqrt H.
+\]
+Adding the first interval, the Gaussian-kernel comparison, and the
+deterministic quadrature proves $Q_\tau^*$ in \eqref{eq:sharp-constants}.
+The same summation of absolute interval errors controls the maximum over
+all grid endpoints. The remaining Volterra and observable comparisons
+are unchanged. When $n_\tau=1$, the later-interval integrals are empty;
+the displayed upper bounds remain valid.
+
+\section{A sharper expected memory-transfer estimate}\label{app:expected-memory}
+
+The pathwise estimate in Appendix~\ref{app:memory} applies to arbitrary
+release histories. For the actual bounded-signal Gaussian releases, keeping
+the stabilizer in the estimate gives an additional expected bound. This
+does not alter Theorem~\ref{thm:pair}, its hypotheses, or its finite witness.
+
+\begin{proposition}[Expected memory transfer]\label{prop:expected-memory}
+Under the assumptions of Theorem~\ref{thm:pair}, let $x^{\rm lin}$ and
+$x^{\rm exp}$ be the coupled linear and exponential target runs. Put
+$M_t=1/(kq)$ and $a_1=e^{\lambda_1H/2}$, and define
+\begin{equation}\label{eq:expected-memory-constant}
+ B_{\rm mem}=\frac{C_\beta}{e_0}
+       e^{C_\beta\bar h+HC_x}
+       \left(M_tH+2\sqrt p\,c a_1\sqrt H\right).
+\end{equation}
+Then
+\begin{equation}\label{eq:expected-memory}
+ \E\max_{0\le j\le n}\norm{x_j^{\rm lin}-x_j^{\rm exp}}
+ \le B_{\rm mem}h.
+\end{equation}
+Consequently the right side of \eqref{eq:main-error} may be strengthened to
+\begin{equation}\label{eq:sharper-pair}
+ 2L\min\{A_{\rm mem}\sqrt{h/k},B_{\rm mem}h\}
+ +\mathcal E(h;1/q,L,2L)+\mathcal E(kh;1/(kq),L,2L).
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+Write $\tau=kh$, $\zeta=e_0/\sqrt\tau$,
+$\alpha_i=1-k(1-e^{-\lambda_i h})$, and
+$\gamma_i=e^{-\lambda_i\tau}$. At age $l\ge1$, set
+$R_i=(l-1)|\log\alpha_i-\log\gamma_i|$ and
+\[
+ U_l=M_t+\frac{\sqrt p\,c a_1}{\sqrt{l\tau}}.
+\]
+All the weights below are deterministic. Work first on the one actual
+linear-run release history $Y_j=A_j+cZ_j/\sqrt\tau$, where
+$\norm{A_j}\le M_t$. The signals may depend on earlier Gaussian
+innovations. Denote by $m_\alpha,m_\gamma$ the corrected first moments
+computed with the two parameters on this same history. The exponential
+weights satisfy $\sum w(\gamma_1)^2\le a_1^2/l$, so Minkowski and the
+Gaussian second moment give
+\[
+ \E\norm{m_\gamma}\le U_l.
+\]
+For $d_j=w_{l,l-1-j}(\alpha_1)-w_{l,l-1-j}(\gamma_1)$,
+\eqref{eq:relative-weights} gives
+$|d_j|\le(e^{R_1}-1)w_{l,l-1-j}(\gamma_1)$. Therefore
+\begin{align*}
+ \E\norm{m_\alpha-m_\gamma}
+ &\le M_t\sum_j|d_j|
+    +\frac c{\sqrt\tau}\left(\E\norm{\sum_jd_jZ_j}^2\right)^{1/2}\\
+ &=M_t\sum_j|d_j|+\frac{\sqrt p\,c}{\sqrt\tau}
+                      \left(\sum_jd_j^2\right)^{1/2}
+ \le(e^{R_1}-1)U_l.
+\end{align*}
+This bounds the signed Gaussian weight difference directly. It does not
+assume independence between the adapted signal sum and the Gaussian sum.
+
+Let $r_\alpha,r_\gamma$ denote the coordinatewise root second moments.
+Their relative weight bounds imply, in each coordinate,
+\[
+ \frac{|r_\alpha-r_\gamma|}{r_\alpha+\zeta}
+ \le e^{R_2/2}-1.
+\]
+When $r_\gamma=0$, both roots and numerators vanish; otherwise use
+$e^{-R_2/2}r_\gamma\le r_\alpha\le e^{R_2/2}r_\gamma$ and split
+according to which root is larger. Decomposing the two directions as
+in Appendix~\ref{app:memory}, but retaining the lower denominator bound
+$\zeta$, gives the pointwise vector inequality
+\[
+ \norm{D_\alpha(Y)-D_\gamma(Y)}
+ \le\frac{\norm{m_\alpha-m_\gamma}
+             +(e^{R_2/2}-1)\norm{m_\gamma}}{\zeta}.
+\]
+Taking expectations and using
+$(e^u-1)+(e^v-1)\le e^{u+v}-1$ for $u,v\ge0$ yields
+\[
+ \E\norm{D_\alpha(Y)-D_\gamma(Y)}
+ \le\frac{e^{R_1+R_2/2}-1}{\zeta}U_l
+ \le\frac{C_\beta e^{C_\beta\bar h}h}{\zeta}U_l.
+\]
+There is no factorization of dependent random numerator and denominator
+terms.
+
+Let $\mathfrak e_l=\max_{j\le l}\norm{x_j^{\rm lin}-x_j^{\rm exp}}$.
+The pathwise history comparison \eqref{eq:history-direction} still gives
+\[
+ \mathfrak e_l\le(1+\tau C_x)\mathfrak e_{l-1}
+       +\sqrt\tau\,\norm{D_\alpha(Y^{\rm lin})
+                                -D_\gamma(Y^{\rm lin})}.
+\]
+Iterate from $\mathfrak e_0=0$, take expectations, and use
+$\sqrt\tau/\zeta=\tau/e_0$. Since
+\[
+ \sum_{l=1}^n\tau U_l
+ \le M_tH+2\sqrt p\,c a_1\sqrt H,
+\]
+the result is \eqref{eq:expected-memory}. The Lipschitz observable and the
+two already-proved memory bounds give \eqref{eq:sharper-pair}.
+\end{proof}
+
+\begin{remark}[Consequences and limitations]
+At $k=1$, $C_\beta=B_{\rm mem}=0$. At $n=1$ the corrected weights agree
+and both target first updates coincide. Legal full target sampling $kq=1$
+also satisfies the proof. For the witness in Section~\ref{sec:example},
+$M_t=2$, $c<3$, $a_1<2$ and
+$e^{C_\beta\bar h+HC_x}<3^5$ imply $B_{\rm mem}<5103$.
+At the current $n=10^{20}$ example its memory contribution is therefore
+below $5103/10^{20}$. Combining this with the sharper single-run bounds
+in Section~\ref{sec:sharp} gives the complete comparison
+\[
+ |R_t-R_s|<\frac{1854}{10^{10}}+\frac{5103}{10^{20}}<2\cdot10^{-7}.
+\]
+The earlier $n=10^{24}$ example with the original coupling constants
+instead gives $294000/10^{12}+5103/10^{24}$, also below $10^{-6}$.
+The complete rate remains $O(\sqrt h(1+\log(1/h)))$.
+The squared-weight estimate \eqref{eq:sharp-weights} also permits replacing
+$a_1$ in $B_{\rm mem}$ by $\sqrt{1+\lambda_1H/2}$: the proof uses
+$a_1$ only in the two deterministic-weight Gaussian second-moment estimates.
+All other factors remain unchanged.
+The factors $M_t$ and $C_x$ still depend on $1/q$, and the privacy guard
+is unchanged, so this strengthening supplies no bounded-epoch uniformity.
+\end{remark}
+
+\section{A constructive comparison of privacy laws}\label{app:canonical}
+
+This appendix supplies a reusable law comparison for the same adaptive
+release mechanism. It does not replace \eqref{eq:privacy-cal}, and no
+alternative calibration is applied to Theorem~\ref{thm:pair}.
+
+For probability measures $P,Q$, define the hockey-stick divergence
+\[
+ H_\epsilon(P\Vert Q)=\sup_{A\text{ measurable}}
+                       \{P(A)-e^\epsilon Q(A)\}.
+\]
+
+\begin{proposition}[One common kernel for an adaptive transcript]
+\label{prop:canonical-kernel}
+Fix an integer $T\ge1$, $0<q\le1$, $\sigma\ge0$, a sensitivity bound
+$\Delta>0$, and a positive public normalizer $B$. Suppose each adaptive
+state is the same Borel function of preceding releases and fixed public
+parameters on every dataset,
+and every record contribution is Borel and globally bounded in norm by
+$\Delta$. Define the scalar product laws
+\[
+ P_{\rm can}=\bigl[(1-q)\mathcal N(0,\sigma^2)
+                 +q\mathcal N(\Delta,\sigma^2)\bigr]^{\otimes T},
+ \qquad Q_{\rm can}=\mathcal N(0,\sigma^2)^{\otimes T},
+\]
+where a zero-variance normal law is a point mass. For each adjacent pair
+$(D_+=D_-\cup\{r\},D_-)$ there is one Borel Markov kernel $\mathsf K$
+such that their actual Poisson-sampled Gaussian transcript laws satisfy
+\[
+ \mathcal L_{D_+}=P_{\rm can}\mathsf K,
+ \qquad \mathcal L_{D_-}=Q_{\rm can}\mathsf K.
+\]
+Consequently each ordered actual hockey-stick divergence is no larger than
+the corresponding ordered canonical-product divergence. A two-sided
+$(\epsilon,\delta)$ guarantee for the canonical pair is therefore
+sufficient for the actual adaptive transcript.
+\end{proposition}
+
+\begin{proof}
+For a prefix $z$, let $x(z)$ be the state and put
+$u(z)=g_r(x(z))/\Delta$, so $\norm{u(z)}\le1$. Define on the closed unit
+ball
+\[
+ S(u)=I-\frac{uu^\top}{1+\sqrt{1-\norm u^2}}.
+\]
+This matrix-valued map is continuous, including at $u=0$ and $\norm u=1$.
+Its denominator is at least one. It is symmetric and satisfies
+\[
+ S(u)^2=I-uu^\top.
+\]
+Indeed, with $s=\sqrt{1-\norm u^2}$, the coefficient of $uu^\top$ in
+$S(u)^2-I$ is
+\[
+ -\frac{2}{1+s}+\frac{1-s^2}{(1+s)^2}=-1.
+\]
+Given a scalar input $U$ and independent $G\sim\mathcal N(0,I_p)$, set
+\[
+ V=u(z)U+\sigma S(u(z))G.
+\]
+If $U\sim\mathcal N(0,\sigma^2)$, the output has mean zero and covariance
+$\sigma^2\{uu^\top+S(u)S(u)^\top\}=\sigma^2I_p$. If instead
+$U\sim\mathcal N(\Delta,\sigma^2)$, its mean is $g_r(x(z))$ with the
+same covariance. These are Gaussian laws, by closure under independent
+linear combinations. The same channel consequently maps the scalar
+mixture to the vector mixture with the full record shift and one hidden
+inclusion bit.
+
+Independently sample Bernoulli$(q)$ indicators $J_s$ for the common records
+$s\in D_-$, form $C(z,J)=\sum_{s\in D_-}J_sg_s(x(z))$, and return
+$(C(z,J)+V)/B$. Under the centered canonical input this is the smaller
+dataset's conditional row law. Under the mixture input it is the larger
+dataset's conditional row law. The masks, fresh Gaussian, and all auxiliary
+randomness stay internal to the channel.
+
+Apply this construction recursively to the $T$ scalar input coordinates,
+using fresh auxiliary randomness at each age and computing the next state
+from the generated prefix. All maps are Borel and the recursion is finite,
+so it defines a Borel Markov kernel $\mathsf K$. Under either canonical
+product law, the next input coordinate is independent of the previously
+generated prefix. Induction therefore identifies the two output laws with
+the actual adaptive transcripts. The kernel can depend on the fixed
+neighboring pair, but the same kernel is used for both laws of that pair.
+This is a comparison of probability laws, not a change to the released
+mechanism.
+
+For an output event $A$, let $f(z)=\mathsf K(z,A)\in[0,1]$.
+Layer-cake integration gives, for any input laws $P,Q$,
+\begin{align*}
+ (P\mathsf K)(A)-e^\epsilon(Q\mathsf K)(A)
+ &=\int_0^1\bigl(P\{f>t\}-e^\epsilon Q\{f>t\}\bigr)dt\\
+ &\le H_\epsilon(P\Vert Q).
+\end{align*}
+Taking the supremum over $A$ and then reversing $P,Q$ proves both ordered
+contractions.
+\end{proof}
+
+\begin{remark}[Scope of the comparison]
+The construction preserves a common record mask across coordinates,
+adaptive states, public normalization, and the hidden differing-record
+bit. It includes $q=1$, zero shift, and maximal shift. A canonical-product
+calibration is sufficient; it need not be the exact privacy requirement
+of every adaptive transcript or of a selected parameter alone.
+The proposition does not prove a new finite calibration, a sparse-rate
+asymptotic, or a bounded-epoch utility comparison. Those require their own
+estimates. For the current theorem, Appendix~\ref{app:privacy} remains the
+complete proof of the prescribed guarded calibration.
+\end{remark}
+
+\end{document}

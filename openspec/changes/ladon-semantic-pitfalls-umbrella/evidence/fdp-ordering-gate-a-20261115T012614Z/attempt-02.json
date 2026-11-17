@@ -1,0 +1,47 @@
+{
+  "command": [
+    "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+    "/home/codex/projects/ladon/temp/fdp-ordering-gate-a-20261115T012614Z/Ordering.lean"
+  ],
+  "returncode": 0,
+  "stdout": "theorem SamplingOrdering.selected_agree_off : \u2200 {n m : \u2115} {X : Type} (D D' : Fin n \u2192 X) (special : Fin n),\n  AgreeOff D D' special \u2192\n    \u2200 (e : Fin m \u2192 Fin n),\n      Function.Injective e \u2192 \u2200 (j : Fin m), e j = special \u2192 AgreeOff (selected D e) (selected D' e) j :=\nfun {n m} {X} D D' special hD e he j hj i hij => hD (e i) fun h => hij (he (Eq.trans h (Eq.symm hj)))\ntheorem SamplingOrdering.selected_eq_of_excluded : \u2200 {n m : \u2115} {X : Type} (D D' : Fin n \u2192 X) (special : Fin n),\n  AgreeOff D D' special \u2192 \u2200 (e : Fin m \u2192 Fin n), (\u2200 (i : Fin m), e i \u2260 special) \u2192 selected D e = selected D' e :=\nfun {n m} {X} D D' special hD e excluded => funext fun i => hD (e i) (excluded i)\ntheorem SamplingOrdering.replacement_injective : \u2200 {n m : \u2115} (e : Fin m \u2192 Fin n),\n  Function.Injective e \u2192\n    \u2200 (j : Fin m) (outside : Fin n), (\u2200 (i : Fin m), e i \u2260 outside) \u2192 Function.Injective (replaceInPlace e j outside) :=\nfun {n m} e he j outside houtside \u2983a b\u2984 hab =>\n  if ha : a = j then\n    Eq.ndrec (motive := fun \u2983a\u2984 => replaceInPlace e j outside a = replaceInPlace e j outside b \u2192 a = b)\n      (fun hab =>\n        if hb : b = j then Eq.symm hb\n        else\n          False.elim\n            (houtside b\n              (Eq.symm\n                (Eq.mp\n                  (congr (congrArg Eq (ite_cond_eq_true outside (e j) (eq_self j)))\n                    (ite_cond_eq_false outside (e b) (eq_false hb)))\n                  hab))))\n      (Eq.symm ha) hab\n  else\n    if hb : b = j then\n      Eq.ndrec (motive := fun \u2983b\u2984 => replaceInPlace e j outside a = replaceInPlace e j outside b \u2192 a = b)\n        (fun hab =>\n          False.elim\n            (houtside a\n              (Eq.mp\n                (congr (congrArg Eq (ite_cond_eq_false outside (e a) (eq_false ha)))\n                  (ite_cond_eq_true outside (e j) (eq_self j)))\n                hab)))\n        (Eq.symm hb) hab\n    else\n      he\n        (Eq.mp\n          (congr (congrArg Eq (ite_cond_eq_false outside (e a) (eq_false ha)))\n            (ite_cond_eq_false outside (e b) (eq_false hb)))\n          hab)\ntheorem SamplingOrdering.replacement_agree_off : \u2200 {n m : \u2115} {X : Type} (D D' : Fin n \u2192 X) (special : Fin n),\n  AgreeOff D D' special \u2192\n    \u2200 (e : Fin m \u2192 Fin n),\n      Function.Injective e \u2192\n        \u2200 (j : Fin m),\n          e j = special \u2192 \u2200 (outside : Fin n), AgreeOff (selected D e) (selected D' (replaceInPlace e j outside)) j :=\nfun {n m} {X} D D' special hD e he j hj outside i hij =>\n  id\n    (Eq.mpr (id (congrArg (fun _a => D (e i) = D' _a) (if_neg hij)))\n      (hD (e i) fun h => hij (he (Eq.trans h (Eq.symm hj)))))\ntheorem SamplingOrdering.sorted_replacement_not_agree_off : \u00ac\u2203 j, AgreeOff before after j :=\nid (of_decide_eq_true (id (Eq.refl true)))\n'SamplingOrdering.selected_agree_off' does not depend on any axioms\n'SamplingOrdering.selected_eq_of_excluded' depends on axioms: [Quot.sound]\n'SamplingOrdering.replacement_injective' depends on axioms: [propext]\n'SamplingOrdering.replacement_agree_off' does not depend on any axioms\n'SamplingOrdering.sorted_replacement_not_agree_off' depends on axioms: [propext, Quot.sound]\n'SamplingOrdering.ordering_changes_output_law' depends on axioms: [propext, Classical.choice, Quot.sound]\n",
+  "stderr": "",
+  "elapsed_seconds": 2.455349586904049,
+  "timed_out": false,
+  "output_limited": false,
+  "memory_limited": false,
+  "peak_rss_bytes": 6959603712,
+  "resource_observations": {
+    "version": 1,
+    "status": "sampled",
+    "samples": 36,
+    "unavailableSamples": 0,
+    "unidentifiedProcessNames": 0,
+    "leanMeasurement": "sampled",
+    "maxDescendantProcesses": 0,
+    "maxLeanProcesses": 1,
+    "largestLeanRssBytes": 6959104000,
+    "scope": "sampled supervised process tree; Lean processes identified by kernel comm; transient processes may be missed",
+    "memoryMetric": "RSS per process; shared pages may be counted repeatedly"
+  },
+  "startedAt": "2026-11-15T01:27:17.079745+00:00",
+  "finishedAt": "2026-11-15T01:27:19.535273+00:00",
+  "source": "/home/codex/projects/ladon/temp/fdp-ordering-gate-a-20261115T012614Z/Ordering.lean",
+  "sourceSha256": "3935cd555b804dcba4d21d982d1dd135275d35c4de3f34decbdd7ce8f06383ea",
+  "sourceUnchanged": true,
+  "cwd": "/home/codex/projects/lean/matrix-factorization",
+  "libraryRoots": [
+    "/home/codex/projects/lean/matrix-factorization/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/BrownianMotion/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/LeanSearchClient/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/MathFin/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/Qq/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/aesop/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/batteries/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/importGraph/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/kolmogorov_extension4/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/mathlib/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/plausible/.lake/build/lib/lean",
+    "/home/codex/projects/lean/matrix-factorization/.lake/packages/proofwidgets/.lake/build/lib/lean"
+  ]
+}

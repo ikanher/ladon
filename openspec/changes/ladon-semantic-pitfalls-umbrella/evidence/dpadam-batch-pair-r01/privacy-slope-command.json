@@ -1,0 +1,28 @@
+{
+  "command": [
+    ".venv/bin/python",
+    "-m",
+    "ladon.entrypoint",
+    "proof-search",
+    "goal",
+    "complete",
+    "--repo-root",
+    "/home/codex/projects/lean/matrix-factorization",
+    "--capture-file",
+    "/home/codex/projects/ladon/openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpadam-batch-pair-r01/privacy-slope-capture.json",
+    "--term",
+    "by\n  have hq : (data.base.samplingRate : \u211d) \u2260 0 :=\n    data.base.samplingRate_pos.ne'\n  have hm : (data.base.dataset.card : \u211d) \u2260 0 := by\n    intro hzero\n    have hp := data.base.effectiveBatch_pos\n    rw [hbatch, hzero, mul_zero] at hp\n    exact (ne_of_gt hp) rfl\n  have he : epsilonTarget - receiptConversion order privacyDelta \u2260 0 :=\n    (sub_pos.mpr hgap).ne'\n  unfold privacySlope Mf.DP.sampledGaussianSharpSmallStepPrivacyRate\n  rw [hbatch]\n  field_simp\n",
+    "--lean-path",
+    "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lean",
+    "--lake-path",
+    "/home/codex/.elan/toolchains/leanprover--lean4---v4.33.0/bin/lake",
+    "--format",
+    "json",
+    "--output",
+    "/home/codex/projects/ladon/openspec/changes/ladon-semantic-pitfalls-umbrella/evidence/dpadam-batch-pair-r01/privacy-slope-completion.json"
+  ],
+  "elapsedSeconds": 96.35751566686668,
+  "returncode": 0,
+  "stdout": "",
+  "stderr": ""
+}

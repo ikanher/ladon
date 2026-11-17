@@ -1,0 +1,77 @@
+{
+  "authority": "attributed context selection; no new Lean replay or certified source translation",
+  "anchors": [
+    {
+      "path": "openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/adam-source.tex",
+      "sha256": "795382682281c33decbd694a17c700999f1265e83bb3cd363ce0de733028434f",
+      "startLine": 50,
+      "endLine": 73,
+      "selection": "algorithm and fixed momentum",
+      "quote": "\\paragraph{DP-Adam.}\nFix a stabilizer $a_{\\mathrm{Adam}}>0$ and momentum parameters\n\\begin{equation}\\label{eq:betas}\n 0<\\beta_1<1,\\qquad \\beta_1^2<\\beta_2<1.\n\\end{equation}\nStarting both memories at zero, standard bias-corrected Adam in ordinary\ngradient units is\n\\begin{align}\n m^{\\mathrm{priv}}_{j,k}\n &=\\beta_1m^{\\mathrm{priv}}_{j,k-1}\n        +(1-\\beta_1)g^{\\mathrm{priv}}_{j,k},\\nonumber\\\\\n v^{\\mathrm{priv}}_{j,k}\n &=\\beta_2v^{\\mathrm{priv}}_{j,k-1}\n        +(1-\\beta_2)(g^{\\mathrm{priv}}_{j,k})^{\\odot2},\\label{eq:adam}\\\\\n x_{j,k}\n &=x_{j,k-1}-\\eta_j\n \\frac{m^{\\mathrm{priv}}_{j,k}/(1-\\beta_1^k)}\n {\\sqrt{v^{\\mathrm{priv}}_{j,k}/(1-\\beta_2^k)}+a_{\\mathrm{Adam}}}.\n \\nonumber\n\\end{align}\nSquares, square roots, and quotients are coordinatewise. The learning\nrate $\\eta_j$ is constant within a run; its dependence on $j$ compares\ncomplete runs of different lengths, not a decay schedule within one run.\n"
+    },
+    {
+      "path": "openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/adam-source.tex",
+      "sha256": "795382682281c33decbd694a17c700999f1265e83bb3cd363ce0de733028434f",
+      "startLine": 99,
+      "endLine": 108,
+      "selection": "clock and initialization",
+      "quote": "\\begin{assumption}[Time scaling and initialization]\\label{ass:clock}\nLet $T_j\\in\\mathbb N_{>0}$ and $\\eta_j>0$. There are fixed $H,\\lambda>0$\nsuch that\n\\begin{equation}\\label{eq:clock}\n T_j\\eta_j=s_jH,\\qquad s_j\\longrightarrow\\infty,\n \\qquad \\eta_js_j\\longrightarrow\\lambda.\n\\end{equation}\nThe initial points $x_j=x_{j,0}$ are public, common across privacy\nneighbors, and satisfy $x_j\\to x_0$.\n\\end{assumption}"
+    },
+    {
+      "path": "openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/adam-source.tex",
+      "sha256": "795382682281c33decbd694a17c700999f1265e83bb3cd363ce0de733028434f",
+      "startLine": 174,
+      "endLine": 185,
+      "selection": "query and measurability",
+      "quote": "\n\\begin{assumption}[Fixed record queries]\\label{ass:queries}\nThe public denominator satisfies $B=qn$, the expected minibatch size at\n$D_0$, and is fixed across neighbors. It is not the realized Poisson batch\nsize. For each $a\\in D_0$,\n$g_a=\\nabla f_a$, where\n$f_a\\in C^1(\\R^d)$ and $g_a$ is globally Euclidean Lipschitz with constant\n$L_a$. For every private input $D\\subseteq\\mathcal U$ and every\n$j,k$, the release \\eqref{eq:private-gradient} defines a measurable\nprobability kernel in the current state. No Lipschitz assumption is imposed\non queries for records outside $D_0$.\n\\end{assumption}"
+    },
+    {
+      "path": "openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/adam-source.tex",
+      "sha256": "795382682281c33decbd694a17c700999f1265e83bb3cd363ce0de733028434f",
+      "startLine": 194,
+      "endLine": 205,
+      "selection": "diffusion and uniqueness",
+      "quote": "\\begin{theorem}[High-noise diffusion limit]\\label{thm:diffusion}\nFor the recursion \\eqref{eq:adam}, suppose Assumptions~\\ref{ass:clock}\nand~\\ref{ass:queries} hold. Then the laws of $X_j$ at $D_0$ converge weakly in\n$C([0,H],\\R^d)$ to the law of\n\\begin{equation}\\label{eq:sde}\n dX_t=-\\frac{\\alpha_\\beta}{C}\\bar g_C(X_t)\\,dt\n       +\\sqrt{\\lambda}\\,\\sigma_\\beta\\,dW_t,\\qquad X_0=x_0.\n\\end{equation}\nHere $W$ is standard $d$-dimensional Brownian motion.\nThe drift is globally Lipschitz, so the additive equation has a unique\nsolution for each continuous driving path.\n\\end{theorem}"
+    },
+    {
+      "path": "openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/adam-source.tex",
+      "sha256": "795382682281c33decbd694a17c700999f1265e83bb3cd363ce0de733028434f",
+      "startLine": 425,
+      "endLine": 467,
+      "selection": "calibration and complete schedule passage",
+      "quote": "\\subsection{Privacy calibration and learning-rate tuning}\n\nPrivacy accounting uses the same finite algorithms. Fix an integer order\n$r\\geq2$ and $0<\\delta<1$. Let $\\rho_r(q,\\sigma)$ be the\nsufficient sampled-Gaussian R\\'enyi bound defined explicitly in\n\\eqref{eq:rdp}, and put\n\\[\n c_\\delta=\\frac{\\log(1/\\delta)}{r-1}.\n\\]\n\nProposition~\\ref{prop:privacy} gives the finite accountant\n$\\varepsilon_j=T_j\\rho_r(q,s_jB)+c_\\delta$. Since\n$c_s^2=\\lambda/H$ and $B=qn$, its limit is\n\\[\n \\varepsilon_j\\longrightarrow\\frac{r}{2n^2c_s^2}+c_\\delta.\n\\]\nThus the limiting sufficient privacy bound depends on the noise\ncoefficient $c_s$. For a target $\\varepsilon>c_\\delta$ and public slack\n$\\zeta>0$, choose\n\\[\n c_s=\\sqrt{\\gamma_\\varepsilon},\\qquad\n \\gamma_\\varepsilon=\\frac{(1+\\zeta)r}{2n^2(\\varepsilon-c_\\delta)}.\n\\]\nThis calibration makes the limit strictly smaller than $\\varepsilon$, so\nall sufficiently large members satisfy the target privacy guarantee.\n\n\\paragraph{An explicit finite-run schedule.}\nFor any sequence of positive integers $T_j\\to\\infty$ and any $c_\\eta>0$, set\n\\begin{equation}\\label{eq:explicit-schedule}\n \\boxed{\n s_j=\\sqrt{\\gamma_\\varepsilon T_j},\\qquad\n \\eta_j=\\frac{c_\\eta}{\\sqrt{T_j}},\\qquad\n \\sigma_{\\mathrm{DP},j}=B\\sqrt{\\gamma_\\varepsilon T_j}.}\n\\end{equation}\nThese choices satisfy the time-scaling relations in\nAssumption~\\ref{ass:clock} exactly, with\n\\[\n H=\\frac{c_\\eta}{\\sqrt{\\gamma_\\varepsilon}},\\qquad\n \\lambda=c_\\eta\\sqrt{\\gamma_\\varepsilon}.\n\\]\nThis calibration sets the noise coefficient; $c_\\eta$ is the remaining\nlearning-rate coefficient. More general families satisfying\nAssumption~\\ref{ass:clock} with these $H,\\lambda$ are also covered."
+    },
+    {
+      "path": "openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/AdamCase.lean",
+      "sha256": "47a465dbf207e832c302f1bfe72bab5fe41c611834bde37dd433e790fa65b75b",
+      "startLine": 231,
+      "endLine": 252,
+      "selection": "Primitives",
+      "quote": "\nstructure Primitives (m d : \u2115) where\n  dimensionPos : 0 < d\n  beta : DPAdamMomentRatioInvariant.BetaSeparation\n  beta1_pos : 0 < beta.beta1\n  eps : \u211d\n  C : \u211d\n  q : \u211d\n  eps_pos : 0 < eps\n  C_pos : 0 < C\n  q_pos : 0 < q\n  q_le_one : q \u2264 1\n  dataset : Finset (Fin m)\n  dataset_nonempty : 0 < dataset.card\n  query : (Fin d \u2192 \u211d) \u2192 Fin m \u2192 (Fin d \u2192 \u211d)\n  recordConstant : Fin m \u2192 \u211d\n  recordConstant_nonneg : \u2200 r \u2208 dataset, 0 \u2264 recordConstant r\n  query_lipschitz : \u2200 theta theta' r, r \u2208 dataset \u2192\n    Mf.DP.l2Norm (query theta r - query theta' r) \u2264\n      recordConstant r * Mf.DP.l2Norm (theta-theta')\n  clipped_measurable : \u2200 record, Measurable fun state : PrivateAdamState (Fin d) =>\n    Mf.DP.l2VectorClip C (query state.1 record)"
+    },
+    {
+      "path": "openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/AdamCase.lean",
+      "sha256": "47a465dbf207e832c302f1bfe72bab5fe41c611834bde37dd433e790fa65b75b",
+      "startLine": 430,
+      "endLine": 439,
+      "selection": "source convergence",
+      "quote": "    Tendsto (sourceData p x x0 gamma c hg hc T hT).literalSlowClockPathLaw atTop\n      (\ud835\udcdd (sourceLaw p gamma c hg hc T hT hlim x x0)) := by\n  apply (sourceData p x x0 gamma c hg hc T hT).calibratedLiteralSlowClockPathLaw_tendsto_namedCovariance\n    (noise_limit p gamma c hg hc T hT x x0 hlim)\n    (step_limit p gamma c hg hc T hT x x0) rfl _ x0\n    (tendsto_iff_norm_sub_tendsto_zero.mp hx)\n    (fixed_query_local_mean _ p.query (by intro n; rfl))\n\n#print axioms source_convergence\n"
+    },
+    {
+      "path": "openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/AdamCase.lean",
+      "sha256": "47a465dbf207e832c302f1bfe72bab5fe41c611834bde37dd433e790fa65b75b",
+      "startLine": 441,
+      "endLine": 480,
+      "selection": "resampling and paired law",
+      "quote": "  { p with q := q', q_pos := hq', q_le_one := hq1' }\n\ntheorem solutionMap_independent_constant {E : Type*} [NormedAddCommGroup E]\n    [NormedSpace \u211d E] [CompleteSpace E] [FiniteDimensional \u211d E]\n    {H : \u211d} (hH : 0 \u2264 H) (drift : E \u2192 E) (L M : \u211d\u22650)\n    (hL : LipschitzWith L drift) (hM : LipschitzWith M drift) (initial : E) :\n    solutionMap hH drift L hL initial = solutionMap hH drift M hM initial := by\n  apply ContinuousMap.ext\n  intro driver\n  exact solutionPath_unique hH drift L hL initial driver _ _\n    (solutionMap_isAdditiveSolution hH drift L hL initial driver)\n    (solutionMap_isAdditiveSolution hH drift M hM initial driver)\n\ntheorem sourceMap_resample (q' : \u211d) (hq' : 0 < q') (hq1' : q' \u2264 1)\n    (T' : \u2115 \u2192 \u2115) (hT' : \u2200 n, 0 < T' n) (hlim' : Tendsto T' atTop atTop) :\n    sourceMap p gamma c hg hc T hT hlim x x0 =\n      sourceMap (resample p q' hq' hq1') gamma c hg hc T' hT' hlim' x x0 := by\n  apply solutionMap_independent_constant\n\ntheorem sourceLaw_resample (q' : \u211d) (hq' : 0 < q') (hq1' : q' \u2264 1)\n    (T' : \u2115 \u2192 \u2115) (hT' : \u2200 n, 0 < T' n) (hlim' : Tendsto T' atTop atTop) :\n    sourceLaw p gamma c hg hc T hT hlim x x0 =\n      sourceLaw (resample p q' hq' hq1') gamma c hg hc T' hT' hlim' x x0 := by\n  unfold sourceLaw\n  simp only [sourceMap_resample p gamma c hg hc T hT hlim x x0 q' hq' hq1' T' hT' hlim']\n  rfl\n\ninclude hx hlim in\ntheorem paired_source_convergence (q' : \u211d) (hq' : 0 < q') (hq1' : q' \u2264 1)\n    (T' : \u2115 \u2192 \u2115) (hT' : \u2200 n, 0 < T' n) (hlim' : Tendsto T' atTop atTop) :\n    \u2203 law : ProbabilityMeasure (ReferenceDriverPath d (c / Real.sqrt gamma)),\n      Tendsto (sourceData p x x0 gamma c hg hc T hT).literalSlowClockPathLaw atTop (\ud835\udcdd law) \u2227\n      Tendsto (sourceData (resample p q' hq' hq1') x x0 gamma c hg hc T' hT').literalSlowClockPathLaw\n        atTop (\ud835\udcdd law) := by\n  refine \u27e8_, source_convergence p gamma c hg hc T hT hlim x x0 hx, ?_\u27e9\n  rw [sourceLaw_resample p gamma c hg hc T hT hlim x x0 q' hq' hq1' T' hT' hlim']\n  exact source_convergence _ gamma c hg hc T' hT' hlim' x x0 hx\n\n#print axioms paired_source_convergence\n"
+    },
+    {
+      "path": "openspec/changes/ladon-proofir-correspondence-context/evidence/mf-native-r01/adam-project/AdamCase.lean",
+      "sha256": "47a465dbf207e832c302f1bfe72bab5fe41c611834bde37dd433e790fa65b75b",
+      "startLine": 646,
+      "endLine": 686,
+      "selection": "Inputs and commonLaw",
+      "quote": "open scoped Topology\nnoncomputable section\n-- Data and original hypotheses only: no convergence/law conclusion is a field.\nstructure Inputs where\n  m : Nat\n  d : Nat\n  p : LadonSourceConstructor.Primitives m d\n  gamma : Real\n  c : Real\n  hg : 0 < gamma\n  hc : 0 < c\n  T : Nat \u2192 Nat\n  Tnext : Nat \u2192 Nat\n  hT : \u2200 n, 0 < T n\n  hTnext : \u2200 n, 0 < Tnext n\n  hlim : Tendsto T atTop atTop\n  hlimnext : Tendsto Tnext atTop atTop\n  x : Nat \u2192 Fin d \u2192 Real\n  x0 : Fin d \u2192 Real\n  hx : Tendsto x atTop (\ud835\udcdd x0)\n  qnext : Real\n  hq : 0 < qnext\n  hq1 : qnext \u2264 1\n\ndef commonLaw (a : Inputs) : Prop :=\n  letI : Nonempty (Fin a.d) := \u27e8\u27e80, a.p.dimensionPos\u27e9\u27e9\n  \u2203 law : ProbabilityMeasure\n      (DPAdamGaussianReferenceFunctionalLimit.ReferenceDriverPath a.d (a.c / Real.sqrt a.gamma)),\n    Tendsto (LadonSourceConstructor.sourceData a.p a.x a.x0 a.gamma a.c a.hg a.hc a.T a.hT).literalSlowClockPathLaw\n      atTop (\ud835\udcdd law) \u2227\n    Tendsto (LadonSourceConstructor.sourceData\n      (LadonSourceConstructor.resample a.p a.qnext a.hq a.hq1) a.x a.x0 a.gamma a.c a.hg a.hc a.Tnext a.hTnext).literalSlowClockPathLaw\n      atTop (\ud835\udcdd law)\n\ntheorem bridge (a : Inputs) : commonLaw a := by\n  letI : Nonempty (Fin a.d) := \u27e8\u27e80, a.p.dimensionPos\u27e9\u27e9\n  exact LadonSourceConstructor.paired_source_convergence a.p a.gamma a.c a.hg a.hc\n    a.T a.hT a.hlim a.x a.x0 a.hx a.qnext a.hq a.hq1 a.Tnext a.hTnext a.hlimnext\n\ntheorem selected (a : Inputs) : commonLaw a := bridge a\n#print axioms selected"
+    }
+  ]
+}

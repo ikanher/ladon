@@ -1,0 +1,13 @@
+by
+  have hq : (data.base.samplingRate : ℝ) ≠ 0 :=
+    data.base.samplingRate_pos.ne'
+  have hm : (data.base.dataset.card : ℝ) ≠ 0 := by
+    intro hzero
+    have hp := data.base.effectiveBatch_pos
+    rw [hbatch, hzero, mul_zero] at hp
+    exact (ne_of_gt hp) rfl
+  have he : epsilonTarget - receiptConversion order privacyDelta ≠ 0 :=
+    (sub_pos.mpr hgap).ne'
+  unfold privacySlope Mf.DP.sampledGaussianSharpSmallStepPrivacyRate
+  rw [hbatch]
+  field_simp

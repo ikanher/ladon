@@ -2,17 +2,92 @@
 
 ## Context
 
+### Consolidation decision — 2026-11-17
+
+The R package is complete and the user adopted internal 0.4.3 consolidation.
+Its actual reader handoff required no new definition view. Retain the existing
+native capability and recipe, and collect feedback from ordinary use. The
+original three-stage integration and full-scorer sequence is superseded as an
+investment plan; it remains a preserved, unmet historical acceptance contract.
+The conditional designs below require fresh evidence and explicit scope before
+implementation. Current status and release evidence are owned by tasks.md.
+
+### R04 consolidation and reader decision
+
+The [r04 reconciliation](evidence/pro-review-r04/RECONCILIATION.md) owns finding
+dispositions; [R tasks](tasks.md#r-r04-consolidation-and-actual-reader-handoff)
+own execution. Preserve completed native qualification and its frozen receipts.
+
+Generated-obligation diagnostics must retain their origin whenever they retain
+captures. Exercise the real diagnostic branches and receipt producer with
+controlled captures, preserving unresolved status. Keep the 32,768-module
+exception restricted to recognized inventory paths; unrelated lists, nested
+rows, byte and depth limits remain unchanged. Inspect all capture-bearing exits
+so the same repair is not limited to the two reported examples.
+
+Reporting must separate interpretation typing, object-map elaboration,
+conditional replay, premise supply and conclusion transfer. Count actual checks
+without treating retries or wrapper typing as discoveries. For zero direct
+premise obligations, expose that selected-boundary fact and the source-assumption
+audit's separate scope. Prefer additive scope/count reporting over silently
+changing support semantics or rewriting historical artifacts. Check consumers
+before choosing the exact telemetry compatibility change.
+
+Append source-context clarification for Adam; do not amend frozen interpretations
+or native receipts. Link full clock/initialization, query/measurability and
+diffusion/uniqueness passages with identities. Explain why they support the
+attributed derived consequence and which reconciliation remains unchecked.
+`Inputs` and `Primitives` contain hypotheses; `commonLaw` binds one law per input.
+Neither the selected proof nor a matching source quote establishes finite-run
+equality, uniform rates or a complete source-method audit.
+
+The next value milestone is an actual reader resolving an actual question.
+Use the current guide and stored evidence first when their authority suffices;
+record retrieval and interpretation obstacles plus preparation/consumer/review
+costs separately. Definitions being absent from one view is not itself evidence
+that a new schema is needed. Prototype delivery only after a demonstrated lookup
+problem, reusing existing declaration navigation and source maps. Report exact
+owners, requested definitions, bounds and unexpanded frontiers. Context selection
+remains attributed; record fields are not automatically necessary premises.
+
+If a prototype earns evaluation, separately register the same-model/recipe/budget
+comparison proposed in the principal review: two known MF cases, four fresh
+sessions, identical declaration names and source-span identifiers, with only
+mechanical delivery differing. Count expert selection work if treatment changes
+selection too. Predeclare required judgments, serious errors, useful justified
+support, costs and repeat order (Adam then f-DP, first consequential difference
+in either direction). A benefit must survive that repeat; no repeated retries
+until favorable. The reviewer worked example contains answers and is excluded
+from fresh inputs. This design is conditional, not an experiment launch.
+
+Consolidate if navigation already suffices or no reliable advantage appears.
+Address interpretation if errors persist after retrieval. A new representation
+requires an exact needed relationship that existing evidence cannot retain or
+retrieve on a real task. Five engineering days is a suggested spending ceiling,
+not a measured estimate or authorized budget. The historical broad acceptance
+requirements remain unmet and are not the current investment plan.
+
 See proposal.md and [the inspection record](inspection.md). Current correspondence generates H → P and H → C → N, while source-goal completion independently replays proofs with the standard axiom policy. Selected provider extraction and typed operator observation already exist. Feasibility, source justification and intended operation properties are not implied by those guarantees.
 
 The main spec inventory contains probe, identity and orthogonal authority contracts; this umbrella adds a consumer without modifying them. Unarchived contract and Real-prose changes retain separate acceptance and discovery gates.
 
-Current execution order and delivered evidence are owned by [tasks.md](tasks.md#current-program-state--2026-11-13). The runtime architecture below is deferred scope. The completed matched pilot did not exercise the proposed semantic stages; its lack of added findings cannot establish that native context, provenance or typed-property checking is ineffective. See [the current decision](#decision-after-synthetic-comparison-r01) before selecting work from the historical backlog.
+Current execution order and delivered evidence are owned by [tasks.md](tasks.md#current-status-and-next-steps). The runtime architecture below is deferred scope. The completed matched pilot did not exercise the proposed semantic stages; its lack of added findings cannot establish that native context, provenance or typed-property checking is ineffective. The [program reflection and continuation criteria](tasks.md#reflection-and-continuation-criteria--2026-11-15) now govern work selection: reuse the consolidated recipe, pause semantic runtime expansion, and require a concrete reproduced failure or evidenced missing operation before proposing a narrow extension. Earlier decision sections retain the rationale for completed milestones.
 
 ## Goals / Non-Goals
 
 **Program goal:** improve useful mathematical detection or reduce review effort with source-linked evidence. **Deferred runtime goals:** make the three missing diagnostics usable through existing investigation commands, expose checkable evidence without overstating source fidelity, and measure incremental behavior on fixed cases. A new implementation needs a demonstrated mathematical use and its applicable child acceptance; completing three stages is not the immediate milestone.
 
 **Non-goals:** universal prose translation, arbitrary consistency deciding, theory-of-computation or philosophical verification, proof of kernel/hardware correctness, another paper-specific auditor, full-paper retest, search optimization or caching. No source text is automatically rewritten.
+
+The current evidence supports using a complete source-context application as the
+checking unit: interpretation, object construction, premise production and
+conclusion transfer must refer to the same claim. A symbolic countermodel can
+precede expensive proof inspection when it targets that claim and satisfies its
+original premises. Neither procedure removes interpretation review. ProofIR can
+retain exact observations and their identities; a richer representation alone
+does not validate a natural-language map or force an auditor to use decisive
+evidence correctly. Broader representation work needs a demonstrated loss of a
+relationship that the existing workflow cannot preserve.
 
 ## Decisions
 
@@ -154,7 +229,7 @@ N.1 is complete. The retained rational witness checks qualify the encoded propos
 
 ### Revised decision: synthetic challenge with a portable proof
 
-This section and the preparation rules below retain the completed N.2 design. Current follow-up is [N.3](#decision-after-synthetic-comparison-r01); these rules do not request a second launch.
+This section and the preparation rules below retain the completed N.2 design. N.3 subsequently completed; current follow-up is [internal-use feedback](#internal-use-feedback-after-u1); these rules do not request a second launch.
 
 N.2a's natural-source inventory ended with an eligibility gap. The user subsequently authorized a controlled synthetic challenge and local capsules/lineages. Preserve the inventory, first custodian judgments and all earlier registrations as historical evidence. The new track measures detection and explanation of deliberately introduced exposition faults; it cannot establish discovery of naturally occurring errors. Natural-source validation remains a later milestone rather than a prerequisite for this development experiment.
 
@@ -256,10 +331,12 @@ The review recommends superseding historical broad integration as an investment 
 
 ### N.3 qualification and consolidation outcome
 
-The [N.3c report](evidence/checked-application-n3c-r01/REPORT.md) owns the completed exposed qualification and explicit native limitation. Seven mathematical expectations were assessed using native completion and ordinary Lean; this is not seven native successes or fresh detection evidence. Verified guidance is consolidated in the audit guide and bundled/shared skill. The user waived separate independent review; worker implementation and root checking are not relabeled independent review. Recommend consolidating the recipe and retaining the valid shifted-term/native round-trip failure as a focused consumer-driven follow-up. Broad stage integration and historical gates remain deferred; retiring the automatic investment roadmap is recommended, not silently enacted.
+The [N.3c report](evidence/checked-application-n3c-r01/REPORT.md) owns the completed exposed qualification and explicit native limitation. Seven mathematical expectations were assessed using native completion and ordinary Lean; this is not seven native successes or fresh detection evidence. Verified guidance is consolidated in the audit guide and bundled/shared skill. The user waived separate independent review; worker implementation and root checking are not relabeled independent review. The recommendation was to consolidate the recipe and investigate the shifted-term/native round-trip failure; the printer follow-up below has now resolved that failure. Broad stage integration and historical gates remain deferred; retiring the automatic investment roadmap is recommended, not silently enacted.
 
 
 ### Conditional follow-up — C05 native round-trip
+
+Historical diagnosis recipe, now completed by the printer repair below. It is retained for traceability and is not an active task.
 
 This is a focused compatibility investigation of an existing consumer failure, not another pitfall detector. Preserve `N3C05.lean`, `N3C05-v2.term`, `N3C05-capture.json`, `N3C05-v2-complete.json` and `N3ShiftedFull.lean` in the N.3c evidence as the pre-change reproduction. The corrected term is the relevant input; the earlier rewrite-error draft is not evidence of a helper bug. The current diagnostic does not establish whether expression metavariables, universe metavariables or definitional equality cause rejection. Nor does it establish that this is the earlier auxiliary-declaration export failure.
 
@@ -278,10 +355,10 @@ The subsequent [production fix evidence](evidence/c05-printer-fix-r01/REPORT.md)
 
 ### Internal-use completion heartbeat remedy (U.1)
 
-The retained Adam full-chain completion reaches proof re-elaboration during the closed
-round-trip and then exhausts 200,000 heartbeats. An isolated instrumented helper traced
-successful term elaboration and closure before the failure. Production completion will
-use a finite default of 800,000 heartbeats, configurable with `goal complete
+Before U.1, the retained Adam full-chain completion reached proof re-elaboration during
+the closed round-trip and exhausted 200,000 heartbeats. An isolated instrumented helper traced
+successful term elaboration and closure before the failure. Production completion now
+uses a finite default of 800,000 heartbeats, configurable with `goal complete
 --max-heartbeats`. Apply the requested options and cached Core context budget throughout
 candidate checking, closure and explicit round-trip; emit the same setting for the replay
 compiler. Preserve original source observation/options and capture identity. Record the
@@ -298,3 +375,236 @@ accepted checking environment when exporting the private replay context. Qualifi
 must show that a newly generated legitimate theorem replays and that a newly generated
 axiom remains visible to, and rejected by, the independent transitive trust policy.
 Neither a missing auxiliary nor an exhausted budget permits accepting without replay.
+The [U.1 report](evidence/completion-heartbeats-r01/REPORT.md) records default-resource
+acceptance and the completed regressions; this remedy is delivered, not pending.
+
+
+### Internal-use feedback after U.1
+
+U.6 consolidates the completed general application into the existing [object-construction recipe and worked example](../../../docs/PROOF_CORRESPONDENCE_AUDIT.md#construct-the-objects-behind-a-theorem-application) and bundled/shared skill guidance. This changes no runtime or acceptance requirement. The task ledger owns its validation and next consumer selection; further DP-Adam theorem strengthening in matrix-factorization is separate mathematical work, not a dependency of this audit workflow.
+
+The field-use milestone is one bounded record from a matrix-factorization consumer using the corrected Ladon checkout. [U.2–U.4](tasks.md#completed-milestone--internal-use-feedback) completed preparation, evidence collection and disposition in the [DP-Adam batch-pair audit](evidence/dpadam-batch-pair-r01/REPORT.md). The root was the informed consumer. Its initial concrete sampled-family support did not close the general source-family mapping; U.5 subsequently supplied a checked general constructor and consumer composition. The successful native request supplies no comparative detection claim. The [current review correction and U.5 recipe](tasks.md#review-of-the-dp-adam-field-record) own the remaining work: the historical all-blocked stop is not accepted because several labels only describe unperformed review. U.1 already qualifies the retained Adam request; repeat it only if a new change or failure makes that useful. The field exercise tests practical use of the existing recipe, not a new semantic stage or a claim of comparative superiority.
+
+Before checking, record the reader's question and source-only interpretation where possible, including objects, assumptions, quantifiers and conclusion. Disclose any already-seen theorem, crosswalk or diagnosis instead of claiming blindness. Preserve the source bytes and attributed interpretation revisions. Use one consistent source context and require conclusion transfer as well as theorem application. An accepted theorem or an apparently complete premise ledger cannot substitute for the original source goal. Separate missing support, genuine refutation and conditional support.
+
+The handoff identifies the actual local Ladon source path/revision, pinned Lean environment, finite resource bounds and separate output directory. Use existing capture/completion/replay and ordinary Lean commands. A development field record may bind a live read-only donor snapshot, with source changes checked and disclosed; this does not claim portable capsule replay or relax the earlier synthetic challenge's donor-independent requirements. Create a capsule only if the selected claim needs portable inputs. No shared donor source, dependency or index mutation is part of this audit.
+
+Retain first interpretations, command failures, exact closed judgments, native replay/trust outcomes and separately checked ordinary Lean evidence. Record time to the first valid substantive query and to a correctly interpreted result, plus available setup, checking and review effort. Mark unavailable costs explicitly. A missing review is not by itself a blocking condition: retain actionable work, record a concrete preventing dependency or authorized scope boundary, or use the actual applicable stop condition. A terminal result reflects the supplied labels and is not independent evidence that they are justified. Completion is a readable supported/refuted/unresolved result with its exact coverage, what changed for the reader, and any reproducible tool blocker; it does not require finding an error.
+
+At disposition, distinguish source-interpretation difficulty and missing mathematics from software failure. An unresolved bridge is not by itself a Ladon implementation request. Consolidate when the current route suffices; fix only a demonstrated missing operation or failure with applicable correctness checks; pause expansion if no useful intervention emerges. A quantitative benefit claim requires a separately registered comparison with equivalent recipes and opportunities. U.2–U.4 neither pass nor cancel the old saturated gate or deferred child acceptance.
+
+The hidden fixed-size f-DP reserve was selected in U.7 and later yielded a counterexample under inherited ordering; see the current task ledger. The old unresolved map is a historical checkpoint. Reuse this case only with its conditional interpretation and known exposure; do not resume the refuted branch as a missing proof. The Gaussian mechanism screen lacks a complete matching bridge and cannot supply a validated control by name alone. Choose a current consumer claim first; neither reserve requires another paired campaign.
+
+### Interpretation-dependent mechanisms and countermodels
+
+Before applying an amplification or transformation theorem, bind the actual input
+representation, adjacency, sampling law, ordering and released observable. A
+set-to-tuple conversion can change both neighbor relationships and output laws.
+A matching scalar operator or a valid final conditional theorem does not establish
+that mapping. The current f-DP result and its authority limits live in the task
+ledger, rather than being duplicated as an unconditional source verdict here.
+
+For a countermodel, check every original premise on its stated domain, construct
+the actual released law, and verify failure of the original conclusion. Small
+finite models and rational search are reusable discovery recipes; numerical
+candidates need exact justification. A separately checked randomized-order or
+permutation-invariant variant is a control or repair, not evidence for the original
+mechanism. A single-pair control does not establish a universal repaired theorem.
+Source ambiguity remains visible even when one interpreted claim is refuted.
+These are applications of existing evidence boundaries, not new runtime stages.
+
+### Consumer-audit recipe U.7
+
+This is an execution recipe for one agent, not a new detector or comparison
+campaign. U.7 is complete; [the current ledger](tasks.md#current-status-and-next-steps)
+owns its outcome and any next selection. The following recipe is reusable historical guidance.
+Read only this recipe, the selected source/definitions, the relevant command
+guide and necessary owners initially; the full historical umbrella is background.
+
+#### 1. Select scope and create a fresh record
+
+Use the caller's one source question. If none is supplied, the caller can select
+an explicit continuation of the exposed f-DP question under the current ledger.
+The historical U.7 prompt is not a new launch instruction. If neither is selected,
+report that the recipe is ready and request the missing claim; do not choose a
+new mathematical program. The separate MF finite-horizon batch-scaling packet
+is not a prerequisite or an automatic target.
+
+At a selected launch, carry forward the existing field-exercise bounds:
+40 minutes total, 60 seconds per Lean process, 12 GiB process-tree RSS, 8 MiB
+process output, sequential checks. Record a new UTC start/deadline; never reuse
+or reset a historical audit clock. A caller can explicitly override the total
+budget. On a memory stop, report the limit and observed usage; do not silently
+raise it. Use an external bounded process supervisor for ordinary Lean too.
+
+From the Ladon root, create a unique `temp/pitfalls-consumer-<target>-<UTC>/`
+directory with exclusive creation. Keep all new proofs and raw outputs there.
+Before any final publication, create a new same-named directory under this
+change's `evidence/` with exclusive creation and copy only the selected durable
+record. A collision requires a new identifier, not overwrite or resume by guess.
+Do not write into an old evidence directory or the donor's sources, index,
+dependencies or build cache. No commit, push, dependency installation or shared
+Lake build is part of the audit.
+
+Verify the selected runtime with:
+
+```bash
+PYTHONPATH=src .venv/bin/python -m ladon.entrypoint --version
+git rev-parse HEAD
+git status --short
+```
+
+Record `INPUTS.json` with absolute Ladon/donor paths, revisions and dirty state,
+selected source paths and SHA-256 hashes, source ranges, toolchain path/version,
+relevant compiled-import identities, prior exposure, start/deadline, resource
+caps and output directory. Dirty state alone is not a blocker; identify the
+bytes actually used. Before final reporting verify those inputs again.
+
+#### 2. Freeze what the passage claims
+
+Write `INTERPRETATION.md` before selecting/checking an owner for a new claim:
+
+```text
+Reader question:
+Source file/hash and exact passage:
+Objects and representation/normalization:
+Assumptions and source attribution:
+Quantifier order and fixed/varying parameters:
+Conclusion and intended observation:
+Ambiguous readings:
+Prior exposure:
+```
+
+Do not add a familiar theorem's assumptions to the passage. Record later
+changes in a separate revision subsection. For an exposed case, reading the
+retained interpretation is permitted but must be disclosed; a fresh agent does
+not make the case blind. A formula copied from prose is an interpretation,
+not a Lean-certified translation.
+
+**Reserve inputs, if selected:**
+
+- Source: `../lean/matrix-factorization/paper/theory/mu-dp/subsample.tex`,
+  ranges 35–75 and 161–201 in the retained revision. Check live source identity
+  against `evidence/fdp-subsampling-map-r01/INPUTS.json`; if changed, freeze a
+  new version and relocate spans rather than applying old line numbers.
+- Retained baseline: `evidence/fdp-subsampling-map-r01/{SOURCE.tex,FIRST.md,REPORT.md,FORMAL_INPUTS.json}`.
+  These describe unresolved support, not a known mathematical fault.
+- Question: does the available formal development support arbitrary `M`
+  composed with a hidden uniform exactly-`m` subset of an `n`-slot dataset,
+  with trade-off bound `C_(m/n)(f)`? Exclude the separate Bernoulli extension.
+- Inspect surrounding source definitions for both size-`m` and size-`n`
+  adjacency conventions. Do not silently replace them by add/remove adjacency.
+  If genuinely ambiguous after inspection, preserve conditional readings and
+  report the exact needed definition.
+
+#### 3. Find one actual application route
+
+Use read-only navigation, inspect the current CLI help, then search distinctive
+definition names or type text. Example (replace the query and use a fresh output):
+
+```bash
+PYTHONPATH=src .venv/bin/python -m ladon.entrypoint proof-search search name \
+  --repo-root ../lean/matrix-factorization --text pSamplingOperator \
+  --freshness stored --limit 10 --format json --output -
+```
+
+Capture each invocation/stdout/stderr in the new run directory. Stored results
+are navigation with their reported freshness, not proof. Read the actual
+declaration and consumers with `rg`; an empty search or matching name proves
+neither absence nor applicability. Do not refresh the donor index.
+
+Write `APPLICATION.md`: exact source-context judgment `Gamma_source |- C_source`,
+candidate statement, consistent object map, theorem arguments and conclusion
+transfer. Use a table with columns `obligation | source basis | producer/check |
+status | residual`. Status is `checked`, `attributed`, `unresolved`, or
+`unexamined`; distinguish a source attribution from a proved implication.
+
+For the reserve, begin with these known source files, then inspect relevant
+consumers instead of repeating a whole-repository search:
+
+```text
+Mf/DP/FDPSubsampling.lean
+Mf/DP/ClassicalEventDPSubsampling.lean
+Mf/DP/FDPSubsamplingExactSurface.lean
+Mf/DP/FDPSubsamplingWithIdentityExactSurface.lean
+Mf/DP/OptimalSubsamplingLaw.lean
+Mf/DP/OptimalSubsamplingFixedCardinality.lean
+```
+
+The required chain is: adjacency -> uniform exact-cardinality sampler -> selected
+dataset -> arbitrary `M` kernel with its f-DP assumption -> marginal output law
+after hiding subset identity -> both required neighboring trade-off directions
+-> source `C_p` representation. A branch-tagged pair, Gaussian-only construction
+or operator inequality is a component, not this chain. The previous missing
+`.olean` is historical: inspect current availability without rebuilding the
+donor or treating that old failure as current evidence.
+
+#### 4. Check the decisive connection
+
+Prioritize the first unproved source-to-object or conclusion-transfer bridge.
+Use existing constructors and small ordinary Lean compositions where possible.
+Do not assume the desired law/bound in a newly defined record or replace an
+arbitrary mechanism by a convenient Gaussian example.
+
+For a captured source goal, use the public operations documented in
+`docs/SOURCE_GOAL_CAPTURE.md` and `docs/SOURCE_GOAL_COMPLETION.md`. Check their
+current `--help`. Capture from the pinned owner, then submit a complete term in
+the same original context; retain both JSON receipts. For long terms, pass the
+file contents as a subprocess argument, not interpolated shell text. Completion
+must have the semantic completed outcome, replay success and permitted trust.
+The theorem constant alone is not a proposition to check against itself.
+
+If scratch composition is needed, keep it in the new local run directory and
+use existing pinned donor imports through the bounded ordinary-Lean route.
+The copied runner discussed in the guide's DP-Adam example illustrates that
+route but is donor/toolchain-specific: inspect and bind its paths before reuse.
+Print the complete final proposition and transitive axioms. Only `propext`,
+`Classical.choice`, `Quot.sound` are permitted; an exit-zero proof containing
+`sorryAx` is not acceptance. Native and ordinary results remain separately
+labeled. Missing compiled dependencies produce an operational limitation,
+not a refutation. Do not launch extraction/capsule creation unless that missing
+operation is necessary to the selected question and within its authorized scope.
+
+Retain exact residuals and failed attempts. Try a clear alternative existing
+route when the first theorem has extra premises; do not build a large missing
+theory inside this audit. If the source claim looks false, separately justify
+every source assumption and the failed conclusion for the proposed witness.
+
+#### 5. Produce the bounded reader result
+
+| Evidence | Allowed conclusion | Required next record |
+| --- | --- | --- |
+| Full application and conclusion transfer checked | Supported under the attributed reading and stated assumptions | Exact judgment, source map, compiler or native receipts and remaining source coverage |
+| Checked premise-satisfying counterexample | Refuted at the identified source claim | Full witness realization and original-premise checks |
+| A theorem applies only after an added premise | Conditional support for a separately labeled repair | Original gap and exact additional premise |
+| Inspected route lacks an object/law/conclusion bridge | Unresolved formal support | Exact missing implication, attempted route and alternatives inspected |
+| Source interpretation remains ambiguous | Reading-dependent support or unresolved interpretation | Competing readings and missing source definition |
+| Tool failure/resource stop | Checking unavailable/incomplete for that request | Command, stage, status, input identities and measured resources |
+| Work merely not performed | Unexamined | Coverage queue; do not relabel as a mathematical blocker |
+
+Stop at the recorded deadline, a completed selected assessment, or an actual
+preventing dependency with no remaining useful in-scope work. A supported
+sublemma is not completion of the selected question. No reset, intentional idle
+expiry or blanket blocker conversion. If using `investigation next/finish`,
+retain receipts but independently justify authored labels; a controller does
+not decide their mathematical truth.
+
+Deliver `REPORT.md` with these short sections: **reader question; verdict and
+reading; decisive evidence; original claims covered/unexamined; remaining
+obligation; what Ladon contributed; recommended next action**. Include the
+source/formal map and explain what the result changes for a reader. Do not claim
+independent review, whole-paper correctness or comparative detection benefit.
+
+Deliver `COSTS.json` containing actual UTC start/end, elapsed checking time,
+time to first valid substantive query/result, command/Lean attempt counts,
+resource stops and available setup/review effort. Unmeasured values are `null`
+with a reason, not zero. Preserve command logs and failures. Create a SHA-256
+manifest of the selected durable evidence files (excluding the manifest itself)
+and verify it; hashes attest bytes, not mathematical validity. Keep large raw
+outputs in the run directory and name any omitted dependencies explicitly.
+
+Finish by updating U.7a–e only for delivered outputs. An unresolved result can
+complete the bounded audit, while its mathematical obligation stays open.
+Recommend a Ladon change only for a reproduced missing tool operation; a new
+proof requirement is mathematical work. Strictly validate OpenSpec and check
+new links. No next campaign follows automatically.

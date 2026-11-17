@@ -1,0 +1,72 @@
+% root = ../paper.tex
+\section{$f$-Differential Privacy and Its Basic Properties}
+\label{sec:fDP}
+
+
+%\djs{Replace $\T$ notation.}
+%\djs{Revise roadmap after we agree on the content of this section.}
+
+
+
+In Section~\ref{sub:trade_off_function}, we give a formal definition of $f$-DP. Section~\ref{sub:gaussian_differential_privacy} introduces Gaussian differential privacy, a special case of $f$-DP. In Section~\ref{sec:conn-with-blackw}, we highlight some appealing properties of this new privacy notation from an information-theoretic perspective. Next, Section~\ref{sub:a_primal_dual_connection_with_} offers a profound connection between $f$-DP and $(\epsilon, \delta)$-DP. Finally, we discuss the group privacy properties of $f$-DP.
+
+% Finally, we discuss connections between $f$-DP and Blackwell's theorem, $(\epsilon, \delta)$-DP, and its ``group privacy'' properties in %Sections~\ref{sec:conn-with-blackw}, \ref{sub:a_primal_dual_connection_with_}, and \ref{sub:group_privacy}, respectively.
+
+% %%Then we discuss its properties and relation with other differential privacy notions such as $(\ep,\delta)$-DP and {\Renyi} DP.
+% %%The central novelty of our theory is in the characterization of indistinguishablility: we switch from various divergences to \textit{trade-off functions}, which is
+%introduced in \Cref{sub:trade_off_function}. \djs{Here or intro?}
+%Before that, let's first clarify a few terms for readers not familiar with differential privacy.
+% and then start from the motivation and definition of the central concepts of this paper in \cref{sub:trade_off_function}.
+
+%%As a central idea, differential privacy requires that neighboring datasets should be almost indistinguishable.
+%%Such a dataset is often organized as a $n\times d$ matrix, with rows corresponding to individuals. In this view,
+%%a neighboring dataset of $\vec{x}$ is a matrix $\vec{x}'$ that differs $\vec{x}$ by one row. For example, $\vec{x}' = (x_1',\ldots, x_n)$ is a neighbor of $\vec{x}$ as %long as $x_1'\neq x_1$. What we just described is replace-one neighboring. There is also add-one/remove-one neighboring.
+
+
+%%\djs{Changed to dataset. We might want to distinguish between collection and ordered collection. Now we claim a dataset is a collection, but our mathematical %representation is an ordered collection.}
+%% \djs{Still not very consistent. I use $X^n$ in Sections 4 and 5 without explicitly saying $X=\R^d$.} Without loss of generality, a dataset $x$ can be thought of as a %collection of $n$ records, each consisting of a $d$-dimensional real-valued vector \ar{Any reason to make it a $d$-dimensional real valued vector? Why not have an %abstract data domain $\mathcal{X}$?}. We write:
+
+Before moving on, we first establish several key pieces of notation from the differential privacy literature.
+\begin{itemize}
+\item  % (fold)\label{par:dataset}
+{\bf Dataset.} A dataset $S$ is a collection of $n$ records, each corresponding to an individual. Formally, we write the dataset as $S = (x_1,\ldots, x_n)$, and an individual $x_i \in X$ for some abstract space $X$. Two datasets $S' = (x'_1,\ldots, x'_n)$ and $S$ are said to be \textit{neighbors} if they differ in exactly one record, that is, there exists an index $j$ such that $x_i = x_i'$ for all $i \ne j$ and $x_j \ne x_j'$.
+
+%\wjs{say $Y$}\djs{Removed ``by appropriate permuting''. We do not explicit say our algorithms are invariant under the action of permutation group, and we don't have to.}
+
+% Replace-$k$ neighboring corresponds to group privacy (see \Cref{sub:group_privacy}). In order to minimize such detail, it is helpful to make the following abstraction:
+% % \begin{definition} \label{def:dataset}
+% \begin{center}
+% 	A \emph{dataset space} is an abstract set $X$ equipped with a symmetric binary relation $\sim$.
+% \end{center}
+% \djs{Putting it into a definition environment breaks the ``Database'' and ``Mechanism'' paragraph environments.}
+% % \end{definition}
+%%$X$ is a collection of possible instances of datasets. The neighboring relation is encoded in $\sim$. Note that a transitive $\sim$ typically does not lead to a meaningful privacy notion. \djs{More should be said on this in intro.}
+% \ar{In fact, its not transitive in any interesting setting, right?}
+% paragraph dataset (end)
+
+\item {\bf Mechanism.}  A mechanism $M$ refers to a randomized algorithm that takes as input a dataset $S$ and releases some (randomized) statistics $M(S)$ of the dataset in some abstract space $Y$. For example, a mechanism can release the average salary of individuals in the dataset plus some random noise.
+
+% (fold) \label{par:mechanism}
+%\ar{Is this definition useful/correct? It doesn't have to output ``summary statistics'' -- the range can be anything. All we are saying is mechanism = algorithm. }
+% . For some readers it may be helpful to think of a mechanism $M$ as a Markov kernel or conditional probability. When there is no ambiguity, the notation often intended for mappings, $M:X\to Y$, is abused to mean that $M$ is a mechanism/randomized algorithm whose input and output are elements of $X$ and $Y$ respectively.
+% More precisely, when $M:X\to Y$ is fed with two neighboring datasets $x\sim x'$, the results $M(x)$ and $M(x')$ are distributions on $Y$. For example, $M:\R^{n\times d}\to\R^d$ may take the average of each column and add Gaussian noise to the average vector. $M(x)$ and $M(x')$ will be two $d$-dimensional Gaussian with different means in this case.
+% % paragraph mechanism (end)
+
+\end{itemize}
+
+%%\subsection{Trade-off functions and Testing Regions} % (fold)
+
+\input{fDP/tradeoff}
+\input{fDP/GDP}
+\input{fDP/post}
+\input{fDP/dual}
+\input{fDP/group}
+
+
+
+%\input{fDP/group}
+% subsection a_primal_dual_connection_with_ (end)
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../paper"
+%%% End:

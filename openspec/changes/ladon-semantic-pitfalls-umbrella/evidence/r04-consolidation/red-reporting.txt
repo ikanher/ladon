@@ -1,0 +1,140 @@
+FFFFFFF                                                                  [100%]
+=================================== FAILURES ===================================
+__________ test_public_checker_counts_only_attempted_roles[attempts0] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-472/test_public_checker_counts_onl0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7653b6398a50>
+attempts = []
+
+    @pytest.mark.parametrize('attempts', [[], [0, 1], [2, 3, 4, 5], [0, 1, 2, 3, 4, 5]])
+    def test_public_checker_counts_only_attempted_roles(tmp_path, monkeypatch, attempts):
+        obligations = [{'id': str(i), 'kind': kind} for i, kind in enumerate(KINDS)]
+        (tmp_path / 'Proof.lean').write_text('')
+        plan = {'obligations': obligations, 'interpretation': {},
+                'slice': {'selection': {'sourceFile': 'Proof.lean'}}}
+        checks = [{'obligation': str(i), 'goal': 'True', 'mode': 'prove',
+                   'status': 'unresolved'} for i in attempts]
+        monkeypatch.setattr(checker, '_check_correspondence', lambda *a, **k: {'checks': checks})
+        result = checker.check_correspondence(plan, [], tmp_path)['executionAccounting']
+>       assert result['checkRoleProfile'] == 'correspondence-check-roles-v2'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'checkRoleProfile'
+
+tests/test_correspondence_role_reporting.py:29: KeyError
+__________ test_public_checker_counts_only_attempted_roles[attempts1] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-472/test_public_checker_counts_onl1')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7653b642bcd0>
+attempts = [0, 1]
+
+    @pytest.mark.parametrize('attempts', [[], [0, 1], [2, 3, 4, 5], [0, 1, 2, 3, 4, 5]])
+    def test_public_checker_counts_only_attempted_roles(tmp_path, monkeypatch, attempts):
+        obligations = [{'id': str(i), 'kind': kind} for i, kind in enumerate(KINDS)]
+        (tmp_path / 'Proof.lean').write_text('')
+        plan = {'obligations': obligations, 'interpretation': {},
+                'slice': {'selection': {'sourceFile': 'Proof.lean'}}}
+        checks = [{'obligation': str(i), 'goal': 'True', 'mode': 'prove',
+                   'status': 'unresolved'} for i in attempts]
+        monkeypatch.setattr(checker, '_check_correspondence', lambda *a, **k: {'checks': checks})
+        result = checker.check_correspondence(plan, [], tmp_path)['executionAccounting']
+>       assert result['checkRoleProfile'] == 'correspondence-check-roles-v2'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'checkRoleProfile'
+
+tests/test_correspondence_role_reporting.py:29: KeyError
+__________ test_public_checker_counts_only_attempted_roles[attempts2] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-472/test_public_checker_counts_onl2')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7653b63a3310>
+attempts = [2, 3, 4, 5]
+
+    @pytest.mark.parametrize('attempts', [[], [0, 1], [2, 3, 4, 5], [0, 1, 2, 3, 4, 5]])
+    def test_public_checker_counts_only_attempted_roles(tmp_path, monkeypatch, attempts):
+        obligations = [{'id': str(i), 'kind': kind} for i, kind in enumerate(KINDS)]
+        (tmp_path / 'Proof.lean').write_text('')
+        plan = {'obligations': obligations, 'interpretation': {},
+                'slice': {'selection': {'sourceFile': 'Proof.lean'}}}
+        checks = [{'obligation': str(i), 'goal': 'True', 'mode': 'prove',
+                   'status': 'unresolved'} for i in attempts]
+        monkeypatch.setattr(checker, '_check_correspondence', lambda *a, **k: {'checks': checks})
+        result = checker.check_correspondence(plan, [], tmp_path)['executionAccounting']
+>       assert result['checkRoleProfile'] == 'correspondence-check-roles-v2'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'checkRoleProfile'
+
+tests/test_correspondence_role_reporting.py:29: KeyError
+__________ test_public_checker_counts_only_attempted_roles[attempts3] __________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-472/test_public_checker_counts_onl3')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7653b59e6890>
+attempts = [0, 1, 2, 3, 4, 5]
+
+    @pytest.mark.parametrize('attempts', [[], [0, 1], [2, 3, 4, 5], [0, 1, 2, 3, 4, 5]])
+    def test_public_checker_counts_only_attempted_roles(tmp_path, monkeypatch, attempts):
+        obligations = [{'id': str(i), 'kind': kind} for i, kind in enumerate(KINDS)]
+        (tmp_path / 'Proof.lean').write_text('')
+        plan = {'obligations': obligations, 'interpretation': {},
+                'slice': {'selection': {'sourceFile': 'Proof.lean'}}}
+        checks = [{'obligation': str(i), 'goal': 'True', 'mode': 'prove',
+                   'status': 'unresolved'} for i in attempts]
+        monkeypatch.setattr(checker, '_check_correspondence', lambda *a, **k: {'checks': checks})
+        result = checker.check_correspondence(plan, [], tmp_path)['executionAccounting']
+>       assert result['checkRoleProfile'] == 'correspondence-check-roles-v2'
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'checkRoleProfile'
+
+tests/test_correspondence_role_reporting.py:29: KeyError
+_ test_inspection_counts_all_selected_premises_even_when_rows_are_truncated[0] _
+
+count = 0
+
+    @pytest.mark.parametrize('count', [0, 2])
+    def test_inspection_counts_all_selected_premises_even_when_rows_are_truncated(count):
+        db = context_database()
+        for i in range(count):
+            db.execute('INSERT INTO proofir_v3_correspondence_obligations VALUES(?,?,?,?,?,?,?)',
+                       (OWNER, i, f'p{i}', 'premise-supply', 'True', 'supported', '/'))
+        result = query_v3_correspondence(db, REF, limit=1)
+>       scope = result['premiseScope']
+                ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'premiseScope'
+
+tests/test_correspondence_role_reporting.py:47: KeyError
+_ test_inspection_counts_all_selected_premises_even_when_rows_are_truncated[2] _
+
+count = 2
+
+    @pytest.mark.parametrize('count', [0, 2])
+    def test_inspection_counts_all_selected_premises_even_when_rows_are_truncated(count):
+        db = context_database()
+        for i in range(count):
+            db.execute('INSERT INTO proofir_v3_correspondence_obligations VALUES(?,?,?,?,?,?,?)',
+                       (OWNER, i, f'p{i}', 'premise-supply', 'True', 'supported', '/'))
+        result = query_v3_correspondence(db, REF, limit=1)
+>       scope = result['premiseScope']
+                ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'premiseScope'
+
+tests/test_correspondence_role_reporting.py:47: KeyError
+____________ test_plain_cli_inspection_also_explains_empty_boundary ____________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-472/test_plain_cli_inspection_also0')
+
+    def test_plain_cli_inspection_also_explains_empty_boundary(tmp_path):
+        path = tmp_path / 'plan.json'
+        path.write_text(json.dumps({'planId': 'p', 'obligations': [], 'residuals': []}))
+        result = _inspect(SimpleNamespace(plan=path, context_max_bytes=65536))
+>       assert result['premiseScope']['boundary'] == 'no-direct-premise-obligations'
+               ^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'premiseScope'
+
+tests/test_correspondence_role_reporting.py:61: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_correspondence_role_reporting.py::test_public_checker_counts_only_attempted_roles[attempts0]
+FAILED tests/test_correspondence_role_reporting.py::test_public_checker_counts_only_attempted_roles[attempts1]
+FAILED tests/test_correspondence_role_reporting.py::test_public_checker_counts_only_attempted_roles[attempts2]
+FAILED tests/test_correspondence_role_reporting.py::test_public_checker_counts_only_attempted_roles[attempts3]
+FAILED tests/test_correspondence_role_reporting.py::test_inspection_counts_all_selected_premises_even_when_rows_are_truncated[0]
+FAILED tests/test_correspondence_role_reporting.py::test_inspection_counts_all_selected_premises_even_when_rows_are_truncated[2]
+FAILED tests/test_correspondence_role_reporting.py::test_plain_cli_inspection_also_explains_empty_boundary
+7 failed in 0.12s
