@@ -309,3 +309,39 @@ input does not supply a uniform law, a finite-run rate or finite privacy bounds.
 If the old evidence does not cover the new claim, report that support gap without
 refuting the claim. Follow the selected checkout's `docs/INTERNAL_HANDOFF_0_4_3.md`
 and `docs/PROOF_CORRESPONDENCE_AUDIT.md` for recipes and feedback requirements.
+
+
+For TeX plus a named theorem without a native correspondence bundle, use the
+selected checkout's `docs/PROOF_CORRESPONDENCE_AUDIT.md`, section “Quick review:
+TeX and a named Lean theorem”. The 0.4.4 follow-up exposes slice resource
+controls and a focused `proof-search index freshness` command. Confirm these
+commands in the selected checkout's help before use.
+
+
+In the 0.4.4 current-cache default, `index update` creates no historical
+snapshot and explicitly invalidates derived observations. Save audit outputs
+intentionally when they are needed. `--archive-history` is an explicit opt-in.
+Use `index history-cleanup` to prepare a selected cleanup preview, then apply
+that saved preview; consult checkout `docs/CLI.md` for interruption recovery.
+
+
+For slow incremental updates, retain `phaseSeconds` and `phaseTimingPolicy`
+from `index update`. Enumeration, hashing, lexical extraction and database work
+are reported separately with nested work excluded. No-op extraction is zero;
+remaining orchestration/publication overhead is outside those four totals.
+
+
+Group known name/type-text queries with `proof-search search batch --repo-root
+REPO --queries queries.json --format json --output batch-results.json` when the
+checkout supports it. The input is a JSON array of ordinary query argument lists,
+such as `[["name", "--text", "myLemma"], ["type-text", "--pattern", "Summable"]]`.
+The batch validates sources around one read transaction rather than per query.
+All results carry the same generation and observation-window identities. Share
+that result among workers with its scope; later live queries need a fresh window.
+Edits detected during the batch withhold results. Check caps and full examples in
+checkout `docs/CLI.md`; this remains lexical discovery, not Lean checking.
+
+
+For the internal 0.4.4 release, see the selected checkout's
+`docs/INTERNAL_HANDOFF_0_4_4.md` and `docs/RELEASE_0_4_4.md` for qualified runtime
+scope, changed index defaults, batch validation boundaries and feedback.
