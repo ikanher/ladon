@@ -157,7 +157,7 @@ def test_theorem_replay_memory_error_is_reportable_with_cap_and_measured_peak(mo
 
     monkeypatch.setattr(replay, "run_bounded_target_process", limited)
     result = replay._execute_replay(
-        manifest, plan, tmp_path, 120, 12 * GIB, "deny", {"passed": True}
+        manifest, plan, tmp_path, 120, 12 * GIB, "deny", {"passed": True}, "lake-default"
     )
     assert result["status"] == "resource-limit"
     row = result["stages"][0]

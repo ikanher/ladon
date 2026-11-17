@@ -1,0 +1,47 @@
+============================= test session starts ==============================
+platform linux -- Python 3.11.15, pytest-9.0.3, pluggy-1.6.0 -- /home/codex/projects/ladon/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /home/codex/projects/ladon
+configfile: pyproject.toml
+plugins: platformdirs-4.14.5
+collecting ... collected 2 items
+
+tests/test_memory_limits.py::test_theorem_replay_memory_error_is_reportable_with_cap_and_measured_peak FAILED [ 50%]
+
+=================================== FAILURES ===================================
+__ test_theorem_replay_memory_error_is_reportable_with_cap_and_measured_peak ___
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x70c186a3a3d0>
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-478/test_theorem_replay_memory_err0')
+
+    def test_theorem_replay_memory_error_is_reportable_with_cap_and_measured_peak(monkeypatch, tmp_path):
+        from types import SimpleNamespace
+    
+        import ladon.theorem_capsule_replay as replay
+    
+        plan = SimpleNamespace(
+            payload={
+                "buildGraph": {"externalImports": [], "modules": []},
+                "toolchain": {},
+                "semanticGraph": {"trustFrontier": []},
+            },
+            identity="plan-id",
+            target={"name": "Main.target", "module": "Main", "path": "Main.lean"},
+        )
+        manifest = SimpleNamespace(identity="capsule-id")
+    
+        def limited(*_args, **_kwargs):
+            return ProcessResult(("lake", "build"), 1, "", "", 0.1,
+                                 peak_rss_bytes=13 * GIB, memory_limited=True)
+    
+        monkeypatch.setattr(replay, "run_bounded_target_process", limited)
+>       result = replay._execute_replay(
+            manifest, plan, tmp_path, 120, 12 * GIB, "deny", {"passed": True}
+        )
+E       TypeError: _execute_replay() missing 1 required positional argument: 'build_policy'
+
+tests/test_memory_limits.py:159: TypeError
+=========================== short test summary info ============================
+FAILED tests/test_memory_limits.py::test_theorem_replay_memory_error_is_reportable_with_cap_and_measured_peak - TypeError: _execute_replay() missing 1 required positional argument: 'build_policy'
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!!
+============================== 1 failed in 0.13s ===============================

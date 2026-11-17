@@ -25,8 +25,8 @@ def test_outer_stage_timeout_recovers_a_delegated_goal_without_deleting_its_byte
     shim = tmp_path / 'shim'
     _shim(shim)
     script = shim / 'route_worker_bootstrap.py'
-    text = script.read_text().replace('def _block_at_capture(request):',
-        'def _block_at_capture(request):\n    import signal\n    signal.signal(signal.SIGTERM, signal.SIG_IGN)')
+    text = script.read_text().replace('def _block_at_capture(request, *, workspace_parent=None):',
+        'def _block_at_capture(request, *, workspace_parent=None):\n    import signal\n    signal.signal(signal.SIGTERM, signal.SIG_IGN)')
     text = text.replace('"captureReached": True,', '"captureReached": True, "pid": os.getpid(),')
     text = text.replace('concurrent.write_text("-- changed by concurrent source job\\n")',
                         'concurrent.write_text("-- preexisting concurrent job source\\n")')

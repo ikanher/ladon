@@ -98,7 +98,7 @@ def _fake_typing(command, **kwargs):
         tuple(command), 0, "LADON_TYPED_SUBJECT " + json.dumps(frame) + "\n", "", 0.0,
     )
 
-def _block_at_capture(request):
+def _block_at_capture(request, *, workspace_parent=None):
     root = Path(request.repo_root)
     generated = root / request.source_path
     before_tamper = generated.read_bytes()
