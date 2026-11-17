@@ -571,7 +571,19 @@ __all__ = [
 ]
 
 
-def query_v3_correspondence(connection, correspondence_ref, *, limit):
+DEFAULT_CONTEXT_MAX_BYTES = 65536
+MAX_CONTEXT_BYTES = 8 * 1024**2
+
+
+def validate_context_max_bytes(value):
+    """Reject invalid inspection allowances before reading stored evidence."""
+    if type(value) is not int or not 1 <= value <= MAX_CONTEXT_BYTES:
+        raise ValueError(f"context byte allowance must be an integer in 1..{MAX_CONTEXT_BYTES}")
+
+
+def query_v3_correspondence(
+    connection, correspondence_ref, *, limit, max_context_bytes=DEFAULT_CONTEXT_MAX_BYTES
+):
     """Inspect one exact native owner, retaining bounded child rows and omissions.
 
     Stored dimension labels describe the producer's evidence. Projection does
@@ -579,9 +591,18 @@ def query_v3_correspondence(connection, correspondence_ref, *, limit):
     """
     _validate_limit(limit)
     _validate_correspondence_reference(correspondence_ref)
-    result = {"schema": "ladon-native-correspondence-inspection-v1", "status": "unavailable",
+    validate_context_max_bytes(max_context_bytes)
+    result = {"schema": "ladon-native-correspondence-inspection-v2", "status": "unavailable",
               "subject": dict(correspondence_ref), "coverage": {"complete": False, "limit": limit},
-              "authority": "stored-evidence-only"}
+              "authority": "stored-evidence-only",
+              "limitations": [
+                  {"id": "attributed-source-mapping",
+                   "message": "Stored source mappings do not certify prose fidelity."},
+                  {"id": "historical-context",
+                   "message": "Stored context is not checked against the current filesystem."},
+                  {"id": "stored-check-binding-only",
+                   "message": "Stored record consistency does not establish fresh replay or source fidelity."},
+              ]}
     required_tables = ("proofir_v3_correspondences", "proofir_v3_correspondence_obligations",
                        "proofir_v3_correspondence_residuals", "proofir_v3_correspondence_checks",
                        "proofir_v3_omissions")
@@ -596,6 +617,17 @@ def query_v3_correspondence(connection, correspondence_ref, *, limit):
         return result
     result.update(status="observed", interpretationRef=dict(zip(
         ("artifactRef", "kind", "localId"), row[:3])), dimensions=json.loads(row[3]), objectMap=json.loads(row[4]))
+    from ladon.correspondence_evidence import selected_premise_scope
+
+    premise_count = connection.execute(
+        "SELECT COUNT(*) FROM proofir_v3_correspondence_obligations "
+        "WHERE content_artifact_id=? AND kind='premise-supply'",
+        (correspondence_ref["artifactRef"],),
+    ).fetchone()[0]
+    result["premiseScope"] = selected_premise_scope(premise_count)
+    result["context"] = _correspondence_context(
+        connection, correspondence_ref, result["interpretationRef"], max_context_bytes
+    )
     sections = (
         ("obligations", "proofir_v3_correspondence_obligations", "obligation_id,kind,goal,status,source_pointer"),
         ("residuals", "proofir_v3_correspondence_residuals", "residual_json,source_pointer"),
@@ -616,8 +648,18 @@ def query_v3_correspondence(connection, correspondence_ref, *, limit):
     ).fetchall()
     result["omissions"] = {"rows": [list(row) for row in omissions], "total": omission_count,
                            "omitted": max(0, omission_count - len(omissions))}
-    result["coverage"].update(complete=total_omitted == 0 and omission_count == 0,
-                              storedOmissions=omission_count)
+    checks_complete = _attach_check_evidence(
+        connection, correspondence_ref, result, max_context_bytes
+    )
+    context_complete = all(
+        component["status"] == "observed"
+        for name, component in result["context"].items() if name != "maxBytesPerComponent"
+    )
+    result["coverage"].update(
+        complete=total_omitted == 0 and omission_count == 0 and context_complete and checks_complete,
+        contextComplete=context_complete, checkEvidenceComplete=checks_complete,
+        storedOmissions=omission_count,
+    )
     return result
 
 
@@ -648,3 +690,140 @@ def _copy_correspondence_sections(connection, artifact_ref, limit, sections, res
         result[name] = {"rows": [list(row) for row in rows], "total": count, "omitted": omitted}
         total_omitted += omitted
     return total_omitted
+
+
+def _bounded_context_row(connection, table, columns, where, parameters, allowance):
+    """Select whole text fields only when their combined stored UTF-8 size fits.
+
+    Table/column/predicate inputs are internal constants. SQL CASE gates transfer
+    in the same statement as sizing, including under concurrent database writes.
+    """
+    if not _has_table(connection, table):
+        return {"status": "unavailable", "reason": "missing-context-table"}, None
+    size = " + ".join(f"coalesce(length(CAST({column} AS BLOB)), 0)" for column in columns)
+    selected = ", ".join(f"CASE WHEN ({size}) <= ? THEN {column} END" for column in columns)
+    row = connection.execute(
+        f"SELECT ({size}), {selected} FROM {table} WHERE {where}",
+        (*([allowance] * len(columns)), *parameters),
+    ).fetchone()
+    if row is None:
+        return {"status": "unavailable", "reason": "missing-context-owner"}, None
+    if row[0] > allowance:
+        return {"status": "omitted", "reason": "context-byte-limit", "storedBytes": row[0]}, None
+    return {"status": "observed", "storedBytes": row[0]}, row[1:]
+
+
+def _correspondence_context(connection, correspondence, interpretation, allowance):
+    source, row = _bounded_context_row(
+        connection, "proofir_v3_interpretations",
+        ("record_json", "lowered_formula", "fidelity", "source_owner", "source_kind", "source_local_id"),
+        "content_artifact_id=? AND interpretation_id=?",
+        (interpretation["artifactRef"], interpretation["localId"]), allowance,
+    )
+    if row is not None:
+        source["value"] = {
+            "record": json.loads(row[0]), "loweredFormula": row[1], "fidelity": row[2],
+            "sourceRef": dict(zip(("artifactRef", "kind", "localId"), row[3:])),
+        }
+    formal, row = _bounded_context_row(
+        connection, "proofir_v3_correspondences", ("slice_json",),
+        "content_artifact_id=? AND correspondence_id=?",
+        (correspondence["artifactRef"], correspondence["localId"]), allowance,
+    )
+    if row is not None:
+        formal["value"] = json.loads(row[0])
+    return {"maxBytesPerComponent": allowance, "interpretation": source, "formalSlice": formal}
+
+
+def _correspondence_check_evidence(connection, correspondence, checks, allowance):
+    remaining, rows = allowance, []
+    for owner, kind, local_id, _pointer in checks['rows']:
+        reference = {'artifactRef': owner, 'kind': kind, 'localId': local_id}
+        receipt, values = _bounded_context_row(
+            connection, 'proofir_v3_extensions', ('payload_json', 'storage_state'),
+            'content_artifact_id=? AND namespace=?',
+            (owner, 'ladon.correspondence-receipt/v1'), remaining,
+        )
+        if values is not None:
+            remaining -= receipt['storedBytes']
+            if values[1] == 'full':
+                receipt['value'] = json.loads(values[0])
+            else:
+                receipt.update(status='unavailable', reason='receipt-digest-only')
+        binding = _stored_receipt_binding(connection, correspondence, reference, receipt, allowance)
+        rows.append({'checkRunRef': reference, 'receipt': receipt, 'binding': binding})
+    return {'rows': rows, 'total': checks['total'], 'omitted': checks['omitted'],
+            'maxReceiptBytes': allowance, 'receiptBytesUsed': allowance - remaining}
+
+
+def _stored_receipt_binding(connection, correspondence, reference, receipt, allowance):
+    if receipt['status'] != 'observed':
+        return {'status': 'unavailable', 'reason': receipt['reason']}
+    value = receipt['value']
+    fields = ('planId', 'obligation', 'mode', 'goalDigest', 'checkedGoal', 'status')
+    if not isinstance(value, dict) or not all(isinstance(value.get(k), str) for k in fields):
+        return {'status': 'mismatched', 'reason': 'invalid-receipt-binding'}
+    planned, obligation = _bounded_context_row(
+        connection, 'proofir_v3_correspondence_obligations', ('goal', 'status'),
+        'content_artifact_id=? AND obligation_id=?',
+        (correspondence['artifactRef'], value['obligation']), allowance,
+    )
+    if obligation is None and planned['reason'] == 'missing-context-owner':
+        return {'status': 'mismatched', 'reason': 'unknown-planned-obligation'}
+    if obligation is None:
+        return {'status': 'unavailable', 'reason': 'planned-obligation-' + planned['reason']}
+    checked, operation = _bounded_context_row(
+        connection, 'proofir_v3_check_runs', ('operation',),
+        'content_artifact_id=? AND check_run_id=?',
+        (reference['artifactRef'], reference['localId']), allowance,
+    )
+    if operation is None:
+        return {'status': 'unavailable', 'reason': 'check-run-' + checked['reason']}
+    return _compare_stored_binding(correspondence, value, obligation, operation[0])
+
+
+def _compare_stored_binding(correspondence, receipt, obligation, operation):
+    from ladon.correspondence_evidence import _hash
+
+    goal, status = obligation
+    mode = receipt['mode']
+    expected = {
+        'planId': correspondence['localId'] == 'correspondence:' + receipt['planId'],
+        'mode': mode in {'prove', 'refute'},
+        'operation': operation == 'generated-correspondence-obligation-' + mode,
+        'goalDigest': receipt['goalDigest'] == _hash(goal),
+        'checkedGoal': receipt['checkedGoal'] == (goal if mode == 'prove' else '¬ (' + goal + ')'),
+        'status': receipt['status'] == status,
+        'outcomePolarity': status not in {'supported', 'refuted'} or
+            (mode, status) in {('prove', 'supported'), ('refute', 'refuted')},
+    }
+    mismatches = [key for key, matches in expected.items() if not matches]
+    if mismatches:
+        return {'status': 'mismatched', 'reason': 'stored-target-mismatch', 'fields': mismatches}
+    return {'status': 'matched-stored-records', 'obligation': receipt['obligation'], 'mode': mode}
+
+
+def _complete_correspondence_checks(result):
+    evidence = result['checkEvidence']
+    return not evidence['unboundObligations'] and _all_binding_rows_available(result) and all(
+        row['binding']['status'] == 'matched-stored-records' for row in evidence['rows']
+    )
+
+
+def _attach_check_evidence(connection, correspondence_ref, result, max_context_bytes):
+    result["checkEvidence"] = _correspondence_check_evidence(
+        connection, correspondence_ref, result["checks"], max_context_bytes
+    )
+    matched = {
+        row["binding"].get("obligation") for row in result["checkEvidence"]["rows"]
+        if row["binding"]["status"] == "matched-stored-records"
+    }
+    result["checkEvidence"]["unboundObligations"] = [
+        row[0] for row in result["obligations"]["rows"] if row[3] != "open" and row[0] not in matched
+    ]
+    return _complete_correspondence_checks(result)
+
+
+
+def _all_binding_rows_available(result):
+    return result['checkEvidence']['omitted'] == 0 and result['obligations']['omitted'] == 0

@@ -11,6 +11,28 @@ _STAGE = ContextVar('ladon_correspondence_stage', default='unclassified')
 MAX_PROCESSES = 4096
 
 
+def check_role_accounting(obligations, checks):
+    """Count attempted roles, including unresolved checks, without claiming discovery."""
+    roles = {'welltypedness': 'interpretation-typing',
+             'representation-transport': 'object-map-typing',
+             'conditional-validity': 'conditional-replay',
+             'premise-supply': 'premise-supply',
+             'conclusion-transfer': 'conclusion-transfer',
+             'premise-provider-validity': 'premise-provider-replay'}
+    kinds = {row['id']: row['kind'] for row in obligations}
+    counts = dict.fromkeys(roles.values(), 0)
+    for row in checks:
+        role = roles[kinds[row['obligation']]]
+        counts[role] += 1
+    typing = counts['interpretation-typing'] + counts['object-map-typing']
+    return {'checkRoleProfile': 'correspondence-check-roles-v2', 'checkRoleCounts': counts,
+            # Retain the historical interpretation-only field for existing consumers.
+            'typingProbeCount': counts['interpretation-typing'],
+            'objectMapTypingCount': counts['object-map-typing'],
+            'totalTypingCheckCount': typing, 'substantiveCheckCount': len(checks) - typing,
+            'checkRoleScope': 'attempted obligations, including unresolved; not discoveries or source fidelity'}
+
+
 class ExecutionAccounting:
     def __init__(self):
         self.started = monotonic()

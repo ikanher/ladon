@@ -166,6 +166,7 @@ def canonical_bytes(value: Any, *, max_bytes: int = MAX_CANONICAL_BYTES) -> byte
         value,
         manifest_context=_is_environment_manifest(value),
         envelope_context=_is_environment_envelope(value),
+        module_paths=_slice_module_paths(value) + _receipt_module_paths(value),
     )
     try:
         encoded = json.dumps(
@@ -190,7 +191,8 @@ def canonical_bytes(value: Any, *, max_bytes: int = MAX_CANONICAL_BYTES) -> byte
 
 
 def _validate_bounds(
-    value: Any, *, depth: int = 0, manifest_context: bool = False, envelope_context: bool = False
+    value: Any, *, depth: int = 0, manifest_context: bool = False, envelope_context: bool = False,
+    module_paths: tuple[tuple[str, ...], ...] = (),
 ) -> None:
     """Enforce the bounded cross-language JSON profile recursively.
 
@@ -216,12 +218,13 @@ def _validate_bounds(
         _validate_list_bounds(
             value,
             depth,
-            max_items=MAX_COMPILED_MODULES if manifest_context else MAX_COLLECTION_ITEMS,
+            max_items=MAX_COMPILED_MODULES if manifest_context or () in module_paths else MAX_COLLECTION_ITEMS,
         )
         return
     if isinstance(value, dict):
         _validate_object_bounds(
-            value, depth, manifest_context=manifest_context, envelope_context=envelope_context
+            value, depth, manifest_context=manifest_context, envelope_context=envelope_context,
+            module_paths=module_paths,
         )
         return
     raise ProofIRV3Error(f"value of type {type(value).__name__} is not canonically representable")
@@ -275,6 +278,7 @@ def _validate_object_bounds(
     *,
     manifest_context: bool = False,
     envelope_context: bool = False,
+    module_paths: tuple[tuple[str, ...], ...] = (),
 ) -> None:
     """Validate object cardinality, string-only keys, and descendant depth.
 
@@ -293,10 +297,56 @@ def _validate_object_bounds(
         )
         child_large_modules = manifest_context and key == "compiledModules"
         _validate_bounds(
-            item, depth=depth + 1, manifest_context=(child_manifest_context or child_large_modules)
+            item, depth=depth + 1, manifest_context=(child_manifest_context or child_large_modules),
+            module_paths=tuple(path[1:] for path in module_paths if path and path[0] == key),
         )
 
 
+
+
+def _slice_module_paths(value: Any) -> tuple[tuple[str, ...], ...]:
+    """Bound the two module lists in root slices and correspondence envelopes.
+
+    A standalone slice is serialized when projecting an already validated
+    correspondence into SQLite. This allowance grants no evidence authority;
+    registered validators still check shape and identity. Unrelated descendants
+    and lists inside module rows retain the generic bound.
+    """
+    if not isinstance(value, dict):
+        return ()
+    prefix: tuple[str, ...] = ()
+    selected = value
+    if value.get("proofirVersion") == PROOFIR_V3_VERSION and value.get("artifactKind") == "proofir.correspondence":
+        payload = value.get("payload")
+        selected = payload.get("slice") if isinstance(payload, dict) else None
+        prefix = ("payload", "slice")
+    if not isinstance(selected, dict) or selected.get("schema") != "ladon-proof-slice-v1":
+        return ()
+    return (prefix + ("observation", "importedModules"),
+            prefix + ("compiledInventory", "modules"))
+
+
+
+def _receipt_module_paths(value: Any) -> tuple[tuple[str, ...], ...]:
+    """Allow captured inventories in the two correspondence receipt hash inputs.
+
+    This is a size profile, not receipt admission. All other receipt collections
+    retain generic limits; independent replay and binding checks remain required.
+    """
+    if not isinstance(value, dict):
+        return ()
+    prefix: tuple[str, ...] = ()
+    if set(value) == {"planId", "receipt"}:
+        value = value["receipt"]
+        prefix = ("receipt",)
+    if not isinstance(value, dict) or value.get("goalOrigin") != "generated-correspondence-obligation":
+        return ()
+    capture = value.get("capture")
+    if (not isinstance(capture, dict)
+            or capture.get("schema") != "ladon-source-goal-capture-result-v1"
+            or capture.get("operation") != "capture-source-goal"):
+        return ()
+    return (prefix + ("capture", "capture", "environment", "compiledInventory", "modules"),)
 
 
 def _is_environment_manifest(value: Any) -> bool:
@@ -997,7 +1047,7 @@ def _require_ref(
     ref: Any,
     pointer: str,
     subjects: set[tuple[str, str]],
-    env: str,
+    _env: str,
     value: Mapping[str, Any],
     kind: str | None = None,
 ) -> None:

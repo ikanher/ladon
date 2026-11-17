@@ -13,7 +13,12 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from ladon._proof_contract_goal_scratch import cleanup_worker_goal, worker_workspace, write_goal
-from ladon.correspondence_execution_accounting import execution_accounting, stage
+from ladon.correspondence_evidence import premise_scope_for_obligations
+from ladon.correspondence_execution_accounting import (
+    check_role_accounting,
+    execution_accounting,
+    stage,
+)
 from ladon.correspondence_implementation import implementation_digest
 from ladon.correspondence_interpretation import (
     LOWERING_PROFILE,
@@ -379,12 +384,14 @@ def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None, 
         if capture["status"] != "captured":
             from dataclasses import asdict
 
-            return {"status": "unresolved", "capture": capture, "typecheck": asdict(typed)}
+            return {"status": "unresolved", "capture": capture, "typecheck": asdict(typed),
+                    "goalOrigin": "generated-correspondence-obligation"}
         if (prepared is not None
                 and typed_subject["subject"]["structural"]
                 != capture["capture"]["goal"]["typeStructural"]):
             return {
                 "status": "unresolved", "capture": capture,
+                "goalOrigin": "generated-correspondence-obligation",
                 "typecheck": __import__("dataclasses").asdict(typed),
                 "typedSubject": typed_subject,
                 "diagnostic": {
@@ -398,6 +405,7 @@ def _check_goal(goal, term, root, source, symbols, toolchain, *, prepared=None, 
             return {
                 "status": "unresolved",
                 "capture": capture,
+                "goalOrigin": "generated-correspondence-obligation",
                 "typecheck": __import__("dataclasses").asdict(typed),
                 "diagnostic": {
                     "code": "unexpected-generated-goal-context",
@@ -664,11 +672,11 @@ def check_correspondence(plan, terms, repo_root, *, source_root=None, native_art
         result = _check_correspondence(plan, terms, repo_root, source_root=source_root,
                                        native_artifacts=native_artifacts, preparation=preparation)
     result["executionAccounting"] = accounting.result()
+    result["executionAccounting"].update(check_role_accounting(plan["obligations"], result["checks"]))
     result["executionAccounting"].update(
         distinctProseSubjects=1,
         distinctCheckedSubjects=len({(r["goal"], r["mode"]) for r in result["checks"]}),
-        typingProbeCount=sum(r["obligation"] == "interpretation" for r in result["checks"]),
-        substantiveCheckCount=sum(r["obligation"] != "interpretation" for r in result["checks"]),
+        premiseScope=premise_scope_for_obligations(plan["obligations"]),
         interpretationInputBytes=len(json.dumps(plan["interpretation"], ensure_ascii=False, separators=(",", ":")).encode()),
         suppliedTermBytes=sum(len(row["term"].encode()) for row in terms),
         checkCount=len(result["checks"]), sourceBytes=len((Path(repo_root) / plan["slice"]["selection"]["sourceFile"]).read_bytes()))

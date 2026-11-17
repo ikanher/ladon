@@ -130,6 +130,25 @@ and other unapproved axioms are rejected.
 | `extractionCompleteness` | `selected-application`, including explicit unexpanded providers |
 | `checkerAuthority` | Actual Lean worker authority for completed generated-goal checks |
 
+Read `premiseScope` beside these dimensions in `investigation inspect` output
+(also under `native` for stored evidence). `no-direct-premise-obligations` means
+the selected boundary generated none. It does not mean a record such as
+`Inputs` has no hypotheses, or that the source supplies them. The count covers
+all selected stored obligations even when display limits truncate the rows;
+coverage and residuals still need review. `sourceAssumptions: not-assessed`
+describes this reporting operation, not the absence of any separate review.
+
+New check results identify their accounting with
+`checkRoleProfile: correspondence-check-roles-v2` and give attempted counts in
+`checkRoleCounts`: interpretation typing, object-map typing, conditional replay,
+premise supply, conclusion transfer and premise-provider replay. Unresolved
+attempts count too. For compatibility, `typingProbeCount` remains
+interpretation-only; `objectMapTypingCount` and `totalTypingCheckCount` expose the
+other typing work. `substantiveCheckCount` now excludes both typing roles.
+Historical results keep their old counts. These metrics measure executed
+obligations, not discoveries, established truths or source fidelity. Raw check
+results carry the selected premise scope under `executionAccounting.premiseScope`.
+
 Native `proofir.interpretation` and `proofir.correspondence` artifacts share exact,
 owner-qualified references with source maps, attempt logs, and check runs. The
 plan binds its native interpretation into its identity and must be replayed with

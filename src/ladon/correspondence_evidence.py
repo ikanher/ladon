@@ -10,6 +10,21 @@ from ladon.proofir_correspondence import PRODUCER, _as_exact_decimal_strings
 from ladon.proofir_v3 import canonical_bytes, make_envelope
 
 
+def premise_scope_for_obligations(obligations):
+    return selected_premise_scope(sum(row['kind'] == 'premise-supply' for row in obligations))
+
+
+def selected_premise_scope(count):
+    """Explain the selected boundary without promoting empty obligations to a prose audit."""
+    return {'directObligationCount': count,
+            'boundary': ('no-direct-premise-obligations' if count == 0
+                         else 'selected-direct-premise-obligations'),
+            'sourceAssumptions': 'not-assessed',
+            'message': 'Counts generated direct premise obligations at this selected boundary. '
+                       'Hypotheses in argument types and their correspondence to source assumptions '
+                       'require separate review; this count does not establish absence or necessity.'}
+
+
 def _hash(value):
     return "sha256:" + hashlib.sha256(canonical_bytes(_as_exact_decimal_strings(value))).hexdigest()
 
@@ -74,9 +89,11 @@ def _accepted(row, completion):
 
 def _subject_mismatch_diagnostics(row):
     diagnostic = row.get("diagnostic", {})
-    if diagnostic.get("code") != "prepared-goal-subject-mismatch":
+    stages = {"prepared-goal-subject-mismatch": "context-equivalence",
+              "unexpected-generated-goal-context": "context-isolation"}
+    if diagnostic.get("code") not in stages:
         return []
-    return [{"stage": "context-equivalence", "code": diagnostic["code"],
+    return [{"stage": stages[diagnostic["code"]], "code": diagnostic["code"],
              "pointer": "/checks/" + row["obligation"],
              "message": diagnostic["message"], "order": 0}]
 

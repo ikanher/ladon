@@ -103,6 +103,10 @@ def _parser():
     inspect = commands.add_parser("inspect", help="Inspect generated obligations and residuals")
     inspect.add_argument("--plan", type=Path, required=True)
     inspect.add_argument("--output", type=Path)
+    inspect.add_argument(
+        "--context-max-bytes", type=int, default=65536,
+        help="Native inspection byte allowance per context component (default: 65536; 1..8388608)",
+    )
     inspect.add_argument("--root", type=Path, help="Required for source-bound version-three plans")
     return parser
 
@@ -194,6 +198,10 @@ def _measure_bundle_bytes(result):
 
 
 def _inspect(args):
+    from ladon.correspondence_evidence import premise_scope_for_obligations
+    from ladon.proofir_v3_queries import validate_context_max_bytes
+
+    validate_context_max_bytes(args.context_max_bytes)
     value = load_plan(args.plan)
     if value.get("version") == 3:
         if args.root is None:
@@ -206,6 +214,7 @@ def _inspect(args):
         "schema": "ladon-correspondence-inspection-v1",
         "planId": plan["planId"],
         "obligations": plan["obligations"],
+        "premiseScope": premise_scope_for_obligations(plan["obligations"]),
         "residuals": plan["residuals"],
         "interpretationFidelity": "attributed-unreviewed",
         "methodCorrespondence": "unreviewed",
@@ -235,7 +244,7 @@ def _inspect(args):
                     "kind": "correspondence",
                     "localId": native["payload"]["correspondenceId"],
                 },
-                limit=100,
+                limit=100, max_context_bytes=args.context_max_bytes,
             )
     return result
 
