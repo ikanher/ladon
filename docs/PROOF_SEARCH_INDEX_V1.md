@@ -1,3 +1,9 @@
+> 0.4.4 default change: ordinary `index update` now invalidates derived
+> cache observations without archiving the full database. Use `--archive-history`
+> only when explicitly retaining old cache evidence. The historical preservation
+> descriptions below apply to that opt-in mode. See `docs/CLI.md` for
+> preview-bound `index history-cleanup` and recovery after interrupted cleanup.
+
 # Proof-search index v1
 
 Ladon maintains a repository-local SQLite navigation index. Its

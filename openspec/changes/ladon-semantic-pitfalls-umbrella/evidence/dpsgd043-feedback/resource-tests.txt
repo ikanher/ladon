@@ -1,0 +1,99 @@
+....F...........F.........                                               [100%]
+=================================== FAILURES ===================================
+____________ test_custom_limits_replay_requires_explicit_allowance _____________
+
+    def test_custom_limits_replay_requires_explicit_allowance():
+        from ladon.correspondence_check import check_correspondence, prepare_correspondence
+    
+        root = Path(__file__).parent / 'fixtures/correspondence_m1'
+        result = extract_proof_slice(root, 'Proof.lean', 'Proof', 'Correspondence.term',
+                                     'bridge', scoped=True, timeout_seconds=90,
+                                     max_rss_bytes=DEFAULT_MAX_RSS_BYTES)
+        assert result['complete']
+        assert result['limits']['secondsPerProcess'] == 90
+        record = json.loads((root / 'positive.json').read_text())
+        plan = prepare_correspondence(record, result, {'n': 'n'})
+        with pytest.raises(ValueError, match='explicit slice replay allowance'):
+            check_correspondence(plan, [], root)
+>       replay = check_correspondence(plan, [], root, slice_timeout_seconds=90)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_slice_resource_feedback.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/correspondence_check.py:681: in check_correspondence
+    result["executionAccounting"].update(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+plan = {'interpretation': {'formula': {'binder': {'domain': 'Nat', 'id': 'n', 'name': 'n'}, 'body': {'conclusion': {'left': {...it 0) (instOfNatNat (nat_lit 0))) n', 'id': 'provider-1', 'kind': 'premise-provider-validity', 'status': 'open'}], ...}
+terms = []
+repo_root = PosixPath('/home/codex/projects/ladon/tests/fixtures/correspondence_m1')
+
+    def _check_correspondence(plan, terms, repo_root, *, source_root=None, native_artifacts=None,
+                              preparation="ordinary"):
+        """Rebuild and independently replay the exact original generated obligations."""
+        if implementation_digest() != _LOADED_IMPLEMENTATION:
+            raise ValueError("checker implementation changed after loading")
+        with stage("original-extraction"):
+            root, selection, fresh = _rebuild_original_plan(plan, repo_root, source_root, native_artifacts)
+        supplied = _validate_terms(terms, plan)
+        source = (root / selection["sourceFile"]).read_bytes()
+        with stage("toolchain-setup"):
+            toolchain = pinned_toolchain(root)
+        obligations = {row["id"]: row for row in plan["obligations"]}
+        result = _initial_result(plan)
+        result["implementationDigest"] = _LOADED_IMPLEMENTATION
+        _execute_terms(preparation, supplied, obligations, fresh, plan, source, root, toolchain, result)
+        _summarize_result(result, plan, obligations)
+        with stage("final-freshness"):
+            _verify_inputs_unchanged(root, selection, source, fresh, plan, source_root)
+        if implementation_digest() != _LOADED_IMPLEMENTATION:
+>           raise ValueError("checker implementation changed during checking")
+E           ValueError: checker implementation changed during checking
+
+src/ladon/correspondence_check.py:645: ValueError
+__________________ test_correspondence_replays_custom_budget ___________________
+
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x70cd22b84310>
+
+    def test_correspondence_replays_custom_budget(monkeypatch):
+        from ladon import correspondence_check as check
+    
+        actual = extract_proof_slice(
+            FIXTURE, "Proof.lean", "Proof", "Correspondence.term", "bridge",
+            max_nodes=37_000, scoped=True,
+        )
+        record = json.loads((FIXTURE / "positive.json").read_text())
+        plan = check.prepare_correspondence(record, actual, {"n": "n"})
+        budgets = []
+        original = check.extract_proof_slice
+    
+        def record_replay(*args, **kwargs):
+            budgets.append(kwargs["max_nodes"])
+            return original(*args, **kwargs)
+    
+        monkeypatch.setattr(check, "extract_proof_slice", record_replay)
+>       result = check.check_correspondence(plan, [], FIXTURE)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_proof_slice_limits.py:83: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/correspondence_check.py:681: in check_correspondence
+    result["executionAccounting"].update(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+plan = {'interpretation': {'formula': {'binder': {'domain': 'Nat', 'id': 'n', 'name': 'n'}, 'body': {'conclusion': {'left': {...it 0) (instOfNatNat (nat_lit 0))) n', 'id': 'provider-1', 'kind': 'premise-provider-validity', 'status': 'open'}], ...}
+terms = []
+repo_root = PosixPath('/home/codex/projects/ladon/tests/fixtures/correspondence_m1')
+
+    def _check_correspondence(plan, terms, repo_root, *, source_root=None, native_artifacts=None,
+                              preparation="ordinary"):
+        """Rebuild and independently replay the exact original generated obligations."""
+        if implementation_digest() != _LOADED_IMPLEMENTATION:
+>           raise ValueError("checker implementation changed after loading")
+E           ValueError: checker implementation changed after loading
+
+src/ladon/correspondence_check.py:630: ValueError
+=========================== short test summary info ============================
+FAILED tests/test_slice_resource_feedback.py::test_custom_limits_replay_requires_explicit_allowance
+FAILED tests/test_proof_slice_limits.py::test_correspondence_replays_custom_budget
+2 failed, 24 passed in 119.14s (0:01:59)

@@ -1,5 +1,13 @@
 # Proposal
 
+> Historical implemented design. On 2026-11-17 the owner rejected automatic
+> full-index history as the future default after observed 48.9 GB accumulation
+> and no identified consumer need for those snapshots. The replacement scope is
+> owned by [the current-index H tasks](../ladon-semantic-pitfalls-umbrella/tasks.md)
+> and its design. Preserve this packet's original acceptance evidence; it does
+> not mandate automatic archival in the replacement. Runtime migration and
+> explicit cleanup are still pending.
+
 ## Why
 
 Proof iteration makes lexical search stale, but Ladon currently refuses incremental updates when the same database retains semantic, lineage or ProofIR evidence. Adam field feedback R02 demonstrates this obstacle; users should be able to refresh search without discarding evidence or associating an old proof with new source bytes.

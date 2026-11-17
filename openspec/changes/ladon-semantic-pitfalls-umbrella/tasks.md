@@ -2,6 +2,113 @@
 
 ## Current status and next steps
 
+**Explicit cleanup applied — 2026-11-17.** At the owner's request, the public
+history-cleanup command removed MF's 50 stale catalog entries. A fresh preview
+observed no remaining archive files; the operation deleted zero file bytes.
+The active index remains available. The owner had previously deleted the
+historical directory. See the appended cleanup/continuation record in
+[evidence](evidence/dpsgd043-feedback/CLEANUP-AND-TIMINGS.md).
+
+
+**Owner direction — retire automatic index archives (2026-11-17).** The owner
+reports no remembered use requiring historical index snapshots and rejects
+their continuing disk cost. Replace retention/rotation work with a disposable
+current-index design. Derived search/lineage observations may be invalidated
+and regenerated; intentionally saved audit artifacts remain ordinary explicit
+outputs. Do not build a new archive system merely to preserve every cache row.
+The completed history feature is historical behavior, not a requirement for
+this next design. See [design](design.md#disposable-current-index-and-explicit-results).
+
+[Implementation and verification](evidence/dpsgd043-feedback/HISTORY-IMPLEMENTATION.md)
+record the delivered current-cache behavior and explicit legacy cleanup.
+
+Completed scope:
+
+- [x] H.1 Classify index-owned rows versus separately saved artifacts and check public consumers. Define observable invalidation when old cached observations disappear; preserve explicitly saved outputs without promoting them to current evidence.
+- [x] H.2 Remove automatic whole-index archival from ordinary updates. Keep atomic publication and failure recovery through temporary candidate files, clean them after success, and let current search work independently of obsolete archives. Test updates with derived evidence and no-op updates, with no new persistent archive and no false freshness upgrade.
+- [x] H.3 Provide a concrete catalog-aware cleanup preview for existing history, including paths, bytes and loss of historical lookup. Apply only explicitly selected cleanup; handle interruption without corrupting the active index. Document the changed default and replace obsolete archive-preservation expectations with the new contract.
+
+The owner confirmed personally deleting the donor's snapshot files. The catalog
+still lists 50 entries; the preview observes zero existing bytes. The owner then explicitly authorized catalog cleanup, which has now completed
+through the public command (50 rows, zero file bytes). Reusable freshness tokens and compact slice views remain separate
+possible follow-ups; an automatic retention service is no longer the next step.
+
+**Additional consumer report — 2026-11-17, measured follow-up.** A second
+user reports 58.8 s for unchanged-index checking, 75.7 s for an earlier
+three-module update, approximately 993 MB active storage and 48.9 GB history.
+Priorities: cheap generation comparison, visible phase timings, configurable
+retention and a reusable freshness token. No raw receipts accompanied this
+report; the user has not rerun the large-capsule workload. Record these as
+reported observations, not a diagnosed cause or memory qualification.
+The authorized DP-SGD follow-up is active. The read-only profile attributes 54.631 of 72.778 status seconds to hashing
+50 historical databases. A focused current-generation check took 5.848 seconds
+unprofiled. See [profile](evidence/dpsgd043-feedback/STATUS-PROFILE.json); these
+are different measurement modes, not a controlled speedup estimate. Snapshot
+sharing must retain explicit source freshness semantics. No history deletion follows from this request.
+
+
+**Internal 0.4.3 consumer feedback — received and reconciled 2026-11-17.**
+MF supplied `temp/dpsgd-exposition-ladon043-feedback.zip` (SHA-256
+`8250543933237ceb7439ca5dc3b3a701c519cc9907cd9d373cd38d4a198c1495`),
+reporting use of Ladon `94cfb203f304f9a7cbe98e0e98507b69c8177f9b` with a
+dirty checkout. This assisted, non-blind DP-SGD exposition review reports useful
+exact search, selected application slicing and historical stored-context
+inspection; it makes no new discovery or native correspondence claim. Received
+friction: missing slice time/RSS controls, expensive comprehensive index status,
+inconsistent name/type-text provenance, bulky slice output and a scattered
+exposition recipe. A deliberately selected 4 GiB candidate cap was exhausted;
+the separately launched slice reportedly succeeded under 12 GiB. Neither report
+identifies the memory or status-latency cause. The initial receipt marked these
+claims pending validation before verification began.
+
+[Reconciliation and next-work recommendation](evidence/dpsgd043-feedback/RECONCILIATION.md)
+verify 54 manifest entries, 15 current donor bindings, slice identity and retained
+summary fields. Source/help inspection confirms missing slice resource options;
+a temporary lexical fixture reproduces absent stored type-text provenance.
+Recommend a bounded follow-up for slice time/RSS controls, generation-bound
+search provenance and a short exposition recipe. Assess compact slice delivery
+from saved evidence; measure freshness costs before adding caching or a new
+operation. Keep the 12 GiB default: the failed candidate explicitly selected
+4 GiB. No bundled script, fresh Lean run, candidate retry or production change
+was performed. The user authorized the bounded implementation; the completed release and
+historical acceptance boundaries below remain intact.
+
+### Remaining shared-freshness outcomes
+
+The owner's full feedback recap confirms the following remain unimplemented:
+
+- [ ] V.1 Shared read-only reuse of one validated generation across batch callers, keyed by source/configuration/toolchain and index identity. Define subsequent-edit invalidation and coordinated writer behavior; agent identity is not a freshness key. A generation ID alone is not an authorization token or a guarantee that live files remain unchanged.
+- [x] V.1a Deliver the bounded batch route: 1–32 existing name/type-text queries, one SQLite read transaction, source/configuration/toolchain observations before/after, exact generation provenance, withheld results on edits/replacement, bounded transport and worker-shareable saved results. See [batch evidence](evidence/dpsgd043-feedback/BATCH-IMPLEMENTATION.md).
+
+V.1's persistent cross-process token/invalidation behavior remains open. V.1a
+provides shared validation within one declared batch; it does not certify later
+queries without revalidation. The MF two-query exercise matched standalone rows
+and generations: 5.658 s and 5.749 s separately versus 5.834 s together, one
+sequential observation with uncontrolled cache/order effects.
+
+- [x] V.2 Visible incremental-update timings for enumeration, hashing, extraction and database work. The continuation delivers all four phases with exclusive wall-time accounting on changed/no-op updates. The historical 75.7-second operation itself remains unprofiled.
+
+Scoped, untruncated navigation and lexical/compiled authority distinctions are
+positive received feedback. Historical capsule memory qualification remains
+unreplayed and is not established by freshness or archive changes. The original
+retention request is superseded by the owner-selected current-cache default.
+
+### F: internal consumer follow-up
+
+[Implementation and verification](evidence/dpsgd043-feedback/IMPLEMENTATION.md)
+own the completed scope and remaining work.
+
+- [x] F.1 Expose slice process timeout/RSS controls, preserve execution/identity and require explicit elevated correspondence replay allowances; verify direct consumers.
+- [x] F.2 Bind type-text rows and generation metadata to one read transaction; reject a generation change after validation and preserve legacy freshness-policy labels.
+- [x] F.3 Deliver a short TeX-plus-theorem recipe in docs and both skills, with statement/method distinctions and incomplete-manifest scope.
+- [x] F.4 Provide a focused generation-freshness observation with phase timings and no historical database hashing; test edits, expected-generation mismatch and unavailable input.
+
+The owner subsequently selected removal of automatic archives over retention
+rotation; H.1–H.3 above own that next work. The current optional history cap stops
+growth; it does not rotate history. Existing archives remain until an explicit
+catalog-aware cleanup is applied. F.1–F.4 do not implement that cleanup.
+The historical eleven unchecked tasks remain superseded and unmet.
+
 **Internal release qualification complete — 2026-11-17.** See
 [0.4.3 verification](../../../docs/releases/0.4.3/verification.json) for the
 isolated installed/Lean gates, complete original suite and passing fixture

@@ -1,0 +1,132 @@
+{
+  "schema": "dpsgd-exposition-review-v1",
+  "reviewer": "Codex root",
+  "mode": "audit-only",
+  "createdUTC": "2026-11-17T11:58:21.484818+00:00",
+  "status": "review complete; manuscript unchanged",
+  "document": {
+    "path": "latex/natural-language/dpsgd_direct_calibration.tex",
+    "sha256": "331f4557f61e1a226364e3ceae87de12318642cd992afddefaf598887cfab514"
+  },
+  "assessment": "No substantive error found in the examined conventional proofs. Two local exposition/reproducibility issues and two already accepted scientific extensions deserve integration. This is not a new whole-development Lean verification or novelty assessment.",
+  "scope": {
+    "read": "Complete current 11-page consolidated TeX and table; current audit and result manifest; relevant convergence, optimizer, normalization, reciprocal moment and adaptive transport source bodies; accepted r04 reconciliation.",
+    "rendered": "Fresh warning-free 11-page compile; dense pages 5 and 6 visually inspected.",
+    "sourceBindings": "All 15 recorded main note, table, prerequisite and toolchain hashes match the existing audit.",
+    "notRepeated": "No new privacy accountant, eight-cell arithmetic replay, literature search or independent formalization of the sharp limit. Accepted r04 evidence retained at its original scope."
+  },
+  "findings": [
+    {
+      "id": "centered-reference-coordinate",
+      "priority": "medium",
+      "classification": "notation defect, not a false privacy theorem",
+      "path": "latex/natural-language/dpsgd_direct_calibration.tex",
+      "line": 308,
+      "endLine": 319,
+      "finding": "r(z) is the centered ratio evaluated at a standard-normal z, but the text then writes E_G r^k with G=N(qu,1). A reader taking that expectation literally does not obtain the stated moments.",
+      "evidence": "For q=1/2,u=1, the displayed r has expectation cosh(1/4)>1 under the original G, although its standard-normal expectation is one. The existing formal centered moment owner integrates against gaussianReal 0 1.",
+      "proposedChange": "Define rho=dP/dG and r(z)=rho(qu+z), Z~N(0,1), then write E[r(Z)^k]=M_k. Keep R(x)=product rho(x_i) under G_T. Alternatively write rho(x)=E_A exp(u(A-q)(x-qu)-u^2(A-q)^2/2) throughout.",
+      "adopted": false
+    },
+    {
+      "id": "publish-calibration-inputs",
+      "priority": "medium",
+      "classification": "standalone reproducibility omission",
+      "path": "latex/natural-language/dpsgd_direct_calibration.tex",
+      "line": 376,
+      "endLine": 395,
+      "finding": "The table specifies T,q,V and a resulting budget but omits p,n,theta and a retrievable location for the retained numerical data/code. Proposition 2.1 cannot be numerically instantiated from the note alone.",
+      "evidence": "Existing empirical calibrations include these values; e.g. B4096,T98,V1.079610321663035 uses p5,theta4 and the floor reverse branch. This is an exposition omission, not missing underlying evidence.",
+      "proposedChange": "Add a compact appendix table of exact orders/split/branch, and a reproducibility citation to the scripts, settings, versions and source inputs. Avoid distracting implementation details in the main proof.",
+      "adopted": false
+    },
+    {
+      "id": "explain-calibration-cost",
+      "priority": "recommended integration",
+      "classification": "accepted scientific extension omitted from main note",
+      "path": "latex/natural-language/dpsgd_direct_calibration.tex",
+      "line": 344,
+      "finding": "The finite raw/reciprocal prescription and the sharp canonical minimum appear in the same note, but their conservatism is not quantified there.",
+      "proposedChange": "Integrate the checked r04 addendum: V_raw log T -> k/2, k=min{p>=2:c_p exp(-(p-1)epsilon)<delta}; under delta<1-exp(-E), V_raw/V_min -> k. At delta=1e-5 the ratios are 3 for epsilon8 and 10 for epsilon1. Restrict the theorem to that literal raw-forward and reciprocal/floor allowance, not the stronger complete Lean envelope or its finite grid selections.",
+      "source": "clt-r04-independent-review.json",
+      "adopted": false
+    },
+    {
+      "id": "report-public-gap-sensitivity",
+      "priority": "recommended integration",
+      "classification": "accepted scientific extension omitted from main note",
+      "path": "latex/natural-language/dpsgd_direct_calibration.tex",
+      "line": 382,
+      "endLine": 395,
+      "finding": "The reported winner is correctly restricted to prescribed upper bounds, but the available exact sensitivity result explains its fragility with respect to the chosen public F.",
+      "proposedChange": "State that B4096 wins this fixed-noise exact-decimal family only for approximately 0.121584<F<0.673017, with ties at endpoints; B2048 wins at F=.7. Explain that changing a public gap majorant can change the bound winner for the same objective. Retain the exact capped envelope and crossing proof in an appendix.",
+      "source": "clt-r04-independent-review.json",
+      "adopted": false
+    },
+    {
+      "id": "local-fixed-pass-notation",
+      "priority": "minor",
+      "classification": "standalone theorem readability",
+      "path": "latex/natural-language/dpsgd_direct_calibration.tex",
+      "line": 547,
+      "finding": "The sharp calibration theorem uses q_T in its conclusion but defines it only in the preceding theorem.",
+      "proposedChange": "Restate q_T=E/T locally.",
+      "adopted": false
+    }
+  ],
+  "obligationReview": [
+    {
+      "claim": "Expected-gradient bound and full cap",
+      "status": "source reviewed; no defect found",
+      "formal": "Mf.Optimization.PoissonClippedSGD.gaussian_convergence",
+      "correspondence": "sigmaDP in the theorem is total RMS gradient noise C sqrt(d V)/(qN), not the multiplier. Source normalization owners preserve this. Poisson squared-mean term is retained and absorbed by eta L(1+b)<=1; F majorization is a monotone final relaxation."
+    },
+    {
+      "claim": "Capped optimizer",
+      "status": "conventional proof reviewed; fresh selected compiled application extracted",
+      "formal": "Mf.Optimization.PoissonClippedSGD.stepUpper_optimal",
+      "correspondence": "Same conclusion under positive F,T,L,W,cap,eta and eta<=cap. Lean uses algebraic capped-tradeoff comparison rather than the note differentiation argument. This is valid statement correspondence, not a replay of the differentiation proof. Selected monotonicity application consumes the produced stepRateD_optimal result."
+    },
+    {
+      "claim": "Adaptive transport",
+      "status": "source reviewed; no defect found",
+      "formal": "Mf.Optimization.PoissonClippedSGD.PrivacyData.ActualMixture.optionalTranscript_commonMixtureKernel_variance",
+      "correspondence": "Pair-specific common kernel is constructed and consumed by RawMomentPrivacy; fixed optional slots, public qN denominator and internal masks retained. No assumption of independent actual adaptive privacy-loss increments."
+    },
+    {
+      "claim": "Raw/reciprocal allowance",
+      "status": "conventional proof reviewed; coordinate notation requires correction",
+      "correspondence": "Conventional exp((n+2)beta) Taylor bound is valid and intentionally weaker than formal exp(n beta). The formal complete envelope also has centered and Bennett alternatives; it is not literally the note formula. Scalar feasibility is still a premise of the DP consumer."
+    },
+    {
+      "claim": "Finite truncation, moving-noise transition, attained minimum, inverse squeeze",
+      "status": "conventional proofs reviewed; no substantive defect found",
+      "correspondence": "Gaussian postprocessing, continuity, exposure cap, eventual positive shifts and strict delta<1-exp(-E) domain checked. No claim of fresh Lean formalization."
+    },
+    {
+      "claim": "Fixed-N utility and growing-N qualification",
+      "status": "conventional proof reviewed; no defect found",
+      "correspondence": "Fixed-N limit allows B<1. Growing N to enforce B>=1 with fixed positive stochastic variance yields P/S->0, as stated; no universal practical small-batch conclusion follows."
+    }
+  ],
+  "ladon": {
+    "runtime": "Selected checkout through uv; installed and checkout identities captured separately, both 0.4.3, same observed dirty source commit but different package content digests.",
+    "navigation": "Fresh generation 7fad0d4a9d12f14c733ed3da604390ad5a50111f2cbf92d3942952f3d3dd8c85; exact optimizer and transport matches; type-text query found one-step and product reciprocal moment bounds.",
+    "lineage": "Stored lineage unavailable, reason not_ingested; no lexical fallback promoted.",
+    "slice": "Extracted actual stationarityUpper_mono application, recompiling GDPStepsize privately twice. Extraction complete for selection; provider-boundary and provider-unreplayed frontiers remain.",
+    "candidate": "Separate explicit-pinned candidate command failed at its 4 GiB process-tree limit, sampled peak 4419682304 bytes. No candidate acceptance or rejection inferred; no higher-limit retry.",
+    "resourceDistinction": "Slice was launched before candidate failure, under its separate fixed default 12 GiB cap; observed maximum 7337013248 bytes. It is not a successful retry of the failed candidate check.",
+    "native043Inspection": "Exercised stored context and exact receipt bindings on the documented historical fDP example. Four bindings matched, complete stored coverage, parentSupport refuted-correspondence, fidelity still attributed-unreviewed. This example is not a proof or refutation of the current DP-SGD note.",
+    "manifest": "Valid offline integrity; four optimizer components remain unmapped. No canonical note-wide correspondence acquired.",
+    "mutation": "Manifest, Git-visible state, package names and ignored-root inventory unchanged across live checks.",
+    "feedback": "temp/dpsgd-exposition-ladon043-review/FEEDBACK.txt"
+  },
+  "recommendation": "Retain current theorem statements; make a bounded editorial/scientific integration using existing accepted results. No new privacy accountant or blanket Lean formalization needed for this revision.",
+  "evidenceDirectory": "temp/dpsgd-exposition-ladon043-review",
+  "limits": [
+    "Not a blind evaluation: prior reviewer findings were available.",
+    "No fresh whole-proof Lean replay; one selected module/application extraction only.",
+    "No novelty claim.",
+    "No external message sent to the Ladon team."
+  ]
+}

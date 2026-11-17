@@ -2,6 +2,57 @@
 
 ## Context
 
+### Disposable current index and explicit results
+
+Owner direction on 2026-11-17 supersedes the proposed retention/rotation work.
+No actual reliance on the accumulated full-index history has been identified.
+Ordinary updates should maintain a rebuildable current index without creating
+persistent historical copies. Derived lineage and semantic observations are
+cache entries tied to their observed generation; invalidating them is permitted
+and must be visible to consumers. Old results never acquire current authority
+because their declaration names still exist.
+
+Retain an audit result through the existing explicit artifact/report output
+paths when a caller needs it. Avoid a new automatic evidence archive as a
+substitute for automatic SQLite archives. Inventory any data authored only in
+the database before classifying it as disposable; user-authored data is not
+implicitly expendable merely because it shares the cache database. A saved
+output with an unavailable cache reference must report that limitation.
+
+Temporary database copies needed for atomic publication remain legitimate
+working files. Successful publication cleans up temporary state. Error recovery
+must protect the active index without accumulating permanent backups by default.
+Existing historical inspection may remain as compatibility for explicitly kept
+old archives; it must not impose validation or availability costs on current
+search and updates.
+
+Cleanup is a separate explicit operation: enumerate registered files and bytes,
+explain loss of historical lookup, bind the selection to the owning catalog,
+and handle interruption coherently. Do not unlink unknown files, external
+artifacts or active databases. The owner subsequently confirmed personally deleting the MF snapshot files;
+its remaining catalog entries can be cleaned explicitly. This implementation
+does not automatically mutate the donor catalog. H tasks in tasks.md own
+implementation and cleanup preparation. Preserve prior validation reports as
+historical evidence of the old behavior rather than rewriting them.
+
+### First internal 0.4.3 feedback — 2026-11-17
+
+The [DP-SGD reconciliation](evidence/dpsgd043-feedback/RECONCILIATION.md) owns
+verified observations, proposed follow-up and acceptance checks. Preserve the
+release and historical results. Resource controls must bind actual execution and
+re-extraction without hidden escalation; stored search identities must describe
+the same read snapshot as their rows. Compact output is a projection of full
+evidence, not stronger mathematical authority. Existing verified name search
+offers a narrower freshness path than comprehensive status, but its cost is
+unmeasured here. The user subsequently authorized the bounded follow-up. A focused generation
+check omits history verification and storage diagnostics while retaining the
+existing two-capture source-change detection. Its result binds the read index
+generation and reports phase timings; it is not a reusable token. Type-text
+queries read their rows/metadata in one SQLite transaction and reject mismatched
+verification generations. Higher saved slice budgets require explicit
+correspondence-check allowances, avoiding automatic replay-budget escalation.
+History retention redesign and token invalidation require separate contracts.
+
 ### Consolidation decision — 2026-11-17
 
 The R package is complete and the user adopted internal 0.4.3 consolidation.
@@ -608,3 +659,41 @@ complete the bounded audit, while its mathematical obligation stays open.
 Recommend a Ladon change only for a reproduced missing tool operation; a new
 proof requirement is mathematical work. Strictly validate OpenSpec and check
 new links. No next campaign follows automatically.
+
+
+### Update timing boundary and outstanding shared validation
+
+The continuation instruments enumeration, hashing, extraction and database work
+with request-local exclusive wall-time counters. Nested phases subtract their
+elapsed time from the parent phase. The same scope covers changed and no-op
+updates, including both source captures. Uninstrumented orchestration and atomic
+replacement remain outside the four phase totals; reports retain total elapsed
+seconds. The history catalog cleanup was separately authorized and applied to
+MF after its snapshot files had already been deleted by the owner.
+
+V.1 remains open: a reuse facility must bind source/configuration/toolchain,
+repository/worktree and index-generation identities and expose its observation
+window. Caller identity is not a freshness key. A bounded batch holding one
+read transaction and checking sources around the batch is the preferred first
+candidate; compare its total scans with separate verified queries. Persistent
+cross-process tokens or watchers require explicit invalidation semantics before
+claiming current freshness. No time-based cache may silently grant freshness.
+
+
+### Delivered bounded batch route (V.1a)
+
+The batch accepts ordinary name/type-text query argument lists, with batch-owned
+repository, index, freshness and output policy. It uses existing query engines,
+identity comparison and publication coordination. One SQLite read transaction
+fixes the row generation; two source captures bracket all queries. The active
+index generation is observed again at the end. Stale initial inputs, changed
+source/configuration/toolchain identities or a changed active generation withhold
+results and return a nonzero exit status. Exact source deltas identify observed
+edits; same-source generation replacement is reported separately.
+
+This observation is shareable with workers as saved evidence from its bounded
+window. It does not authorize subsequent live queries from an old token. No new
+historical index copy, daemon, watcher or agent-specific cache is introduced.
+Input/output limits bound the work population and serialized result. A failed
+bound publishes no purported successful partial evidence. V.1a qualifies this
+route; persistent cross-process reuse remains a separate V.1 frontier.

@@ -251,3 +251,47 @@ The umbrella SHALL require the baseline child’s accepted family baseline befor
 - **WHEN** all engineering gates pass but the matched development gate fails
 - **THEN** the umbrella records implementation completion and unestablished improvement without scheduling a broader paper trial
 
+
+### Requirement: Current cache updates avoid automatic historical archives
+Ordinary index updates SHALL create no persistent historical snapshot. They SHALL
+invalidate derived semantic and lineage observations before publishing changed
+lexical inputs and report that scope. No-op updates SHALL retain their existing
+observations. Independently saved artifacts SHALL remain explicit outputs.
+Historical archive validation SHALL NOT block ordinary current-cache updates.
+Explicit opt-in archival MAY retain the prior historical behavior.
+
+#### Scenario: Current inputs change with cached lineage
+- **WHEN** a supported index with derived observations is updated in default mode
+- **THEN** current lexical results are published atomically, derived observations
+  are invalidated visibly, and no full-index historical archive is created
+
+### Requirement: Explicit legacy history cleanup
+Cleanup SHALL first produce a preview binding selected registered snapshot IDs,
+paths and observed file identities. Applying that preview SHALL validate the
+catalog and files under the publication lock, retain the active index and
+unregistered files, and support retry after interrupted deletion. Missing old
+files MAY be removed from the catalog by explicit cleanup. Cleanup SHALL disclose
+the loss of historical lookup.
+
+#### Scenario: Interrupted unlink
+- **WHEN** catalog removal commits but a selected file cannot be unlinked
+- **THEN** the same preview can finish cleanup without deleting a replacement file
+  or leaving the active catalog dependent on a removed snapshot
+
+### Requirement: Bounded shared-generation lexical batches
+Batch search SHALL use one read transaction for all selected lexical name and
+type-text queries. Supported source/configuration/toolchain inputs SHALL be
+observed before and after the batch; the active index generation SHALL be
+checked at the end. Stale or changed inputs SHALL withhold result rows and return
+a nonzero status. Results SHALL preserve the shared generation and validation
+scope, bounded query/output populations and ordinary lexical authority.
+
+#### Scenario: A writer publishes while readers query
+- **WHEN** a coordinated index update publishes a new generation during a batch
+- **THEN** readers observe one coherent old generation, and the batch withholds
+  rows if its source inputs or active generation changed during the window
+
+#### Scenario: Share a completed batch
+- **WHEN** several workers use the same saved successful batch result
+- **THEN** its identities describe the observed batch window and grant no current
+  freshness claim for a later live query without new validation

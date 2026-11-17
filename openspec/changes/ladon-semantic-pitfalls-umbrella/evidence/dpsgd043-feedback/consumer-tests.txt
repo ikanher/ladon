@@ -1,0 +1,54 @@
+.F........                                                               [100%]
+=================================== FAILURES ===================================
+____________________ test_missing_index_does_not_create_one ____________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-485/test_missing_index_does_not_cr0')
+capsys = <_pytest.capture.CaptureFixture object at 0x78763a723d10>
+
+    def test_missing_index_does_not_create_one(tmp_path, capsys):
+>       assert main(['proof-search', 'index', 'freshness', '--repo-root', str(tmp_path),
+                     '--format', 'json']) != 0
+
+tests/test_freshness_generation_controls.py:20: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/ladon/cli.py:388: in main
+    delegated = delegated_command(arguments)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/cli.py:343: in delegated_command
+    return getattr(import_module(module), function)(arguments[1:])
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_search_cli.py:105: in proof_search_main
+    return _run_parsed_operation(args, operation, started)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_search_cli.py:130: in _run_parsed_operation
+    payload = _dispatch(args)
+              ^^^^^^^^^^^^^^^
+src/ladon/proof_search_cli.py:222: in _dispatch
+    return _dispatch_index(args, repo_root, index_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_search_cli.py:339: in _dispatch_index
+    return dispatch(args, repo_root, index_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_search_index_cli.py:44: in _dispatch_index
+    return _dispatch_status(args, repo_root, index_path)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/ladon/proof_search_index_cli.py:113: in _dispatch_status
+    return inspect_freshness(repo_root, index_path=index_path,
+src/ladon/proof_search_freshness.py:145: in inspect_freshness
+    with _open_readonly(path) as connection:
+         ^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+path = PosixPath('/tmp/pytest-of-codex/pytest-485/test_missing_index_does_not_cr0/.ladon/index/proof-search.sqlite')
+
+    def _open_readonly(path: Path) -> sqlite3.Connection:
+        """Open one database without permitting accidental mutation."""
+    
+>       connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       sqlite3.OperationalError: unable to open database file
+
+src/ladon/proof_search_index.py:1337: OperationalError
+=========================== short test summary info ============================
+FAILED tests/test_freshness_generation_controls.py::test_missing_index_does_not_create_one
+1 failed, 9 passed in 152.46s (0:02:32)

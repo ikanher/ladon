@@ -6,6 +6,21 @@ A checked prose-to-Lean implication can be vacuous, depend on the desired conclu
 
 ## Current development sequence
 
+The owner selected a disposable current index after reviewing the 48.9 GB
+archive cost. The next storage change removes automatic full-index snapshots,
+keeps intentional audit results as explicit saved outputs, and prepares an
+explicit cleanup path for existing archives. This replaces the suggested
+retention/rotation service; [H tasks](tasks.md) and [the design](design.md#disposable-current-index-and-explicit-results)
+own its scope. Historical snapshot support is not a prerequisite for current
+theorem discovery or checking.
+
+Internal 0.4.3 is consolidated. The first [DP-SGD consumer feedback](evidence/dpsgd043-feedback/RECONCILIATION.md)
+confirms useful bounded navigation/inspection and identifies resource-control,
+search-provenance and recipe friction. The recommended next scope is those
+interface/documentation fixes, with compact delivery assessed from retained
+evidence and performance work conditional on measurement. This feedback does
+not establish new discovery advantage or reopen broad ProofIR integration.
+
 The received r04 review is [reconciled](evidence/pro-review-r04/RECONCILIATION.md).
 R.1–R.5 are complete: native MF checking/inspection is retained, large diagnostic
 receipts survive, role and premise scope reporting is corrected, and one actual

@@ -156,21 +156,36 @@ lexical modules while reusing extraction from unchanged modules:
 ladon proof-search index update --repo-root /path/to/project --format json
 ```
 
-Update is explicit; search and status do not run it. Supported retained
-semantic, lineage and ProofIR evidence is archived in
-`<index-filename>.history/` before current lexical rows are published. It does
-not run Lean or associate old evidence with changed sources. Use `index history
---limit 10 --format json` to list snapshots, then `theorem lineage NAME --history
-SHA256 --refresh never` for offline historical inspection.
+Update is explicit; search and status do not run it. The default maintains a
+current cache: derived semantic/lineage observations are invalidated during
+publication and no persistent backup is created. Separately saved audit artifacts
+remain explicit outputs. `derivedEvidence` and `currentEvidenceAssociation`
+report the resulting scope. A no-op retains the current index and observations.
+
+`index update --archive-history` explicitly requests the former full-snapshot
+behavior for derived evidence. Only that mode validates old archives and uses
+`--max-history-mib` as a fail-on-growth cap. Missing archives do not block the
+ordinary current-cache update. Historical reads remain available for archives
+that callers explicitly retain.
 
 Missing or incompatible bases and changed configuration report
-`full-build-required`; build to a new path when preserving the old index.
-Concurrent edits report `source-changed` with bounded paths. A no-op reports
-`unchanged`. The base size ceiling applies to the candidate; optional
-`--max-history-mib` bounds history without eviction. Missing or corrupt
-registered archives block updates. Rebuild and prune protect history owners.
-Move the database and adjacent history directory together. See the
-[index guide](PROOF_SEARCH_INDEX_V1.md) for recovery and disk costs.
+`full-build-required`; concurrent edits report `source-changed`. Publication
+uses a temporary candidate and atomic replacement, with temporary state removed
+after the operation. Existing registered archives are left for explicit cleanup:
+
+```bash
+ladon proof-search index history-cleanup --repo-root REPO --all-registered \
+  --format json --output cleanup-preview.json
+ladon proof-search index history-cleanup --repo-root REPO --apply \
+  --preview-file cleanup-preview.json --format json
+```
+
+Use repeatable `--snapshot ID` in place of `--all-registered` for a subset. Read
+the preview's selected paths/bytes and loss of historical lookup. Apply checks
+catalog/file identity, commits catalog removal, then deletes only the selected
+registered files. An interrupted unlink can be completed using the same preview.
+Unknown files and separately saved artifacts are excluded. Retain the preview
+until cleanup completes. See [the index guide](PROOF_SEARCH_INDEX_V1.md).
 
 Verified status compares the indexed generation with current supported inputs.
 `generationIdentity` names the rows in the database;
@@ -751,3 +766,85 @@ cannot be mixed with bundle inputs. See [selection, history, limits and examples
 `ladon proof-search goal capture` observes a selected goal at an exact source position with explicit pinned Lean/Lake binaries. `goal diagnostic` parses a saved type-mismatch record and separately attempts source capture; parsed expected types remain caller-supplied evidence. Neither command applies a candidate or completes a proof. See [source selection, positions, output isolation and status contracts](SOURCE_GOAL_CAPTURE.md#ordinary-cli-handoff).
 
 The additive [source-goal completion workflow](SOURCE_GOAL_COMPLETION.md) consumes saved JSON capture and a full term; independent replay is required for its completed status.
+
+### Focused generation freshness (0.4.4)
+
+`ladon proof-search index freshness --repo-root REPO --format json` reads the
+stored index generation and checks supported current source/configuration inputs.
+`--expected-generation ID` adds `unchangedSinceExpectedGeneration`; false means
+the expected generation was not established as current. The result includes
+`phaseSeconds` for stored identity and source validation. This operation omits
+history integrity, row counts and storage diagnostics. Use comprehensive `index
+status` when those are wanted. It is a fresh observation, not a reusable token
+or a guarantee against subsequent edits.
+
+Stored name and type-text search retain `generationIdentity` and `indexPath`.
+Type-text keeps its legacy `freshness: stored` policy label while adding
+`freshnessStatus: unchecked`; verified type-text uses the focused check and
+rejects a generation change before reading its result rows.
+
+Legacy history consists of full SQLite snapshots. Automatic retention has been
+removed from ordinary updates; explicitly requested `--archive-history` remains
+unbounded unless a growth cap is supplied. Use preview-bound `index history-cleanup`
+for old archives. Reusable freshness tokens remain separate follow-up work.
+
+
+### Incremental update phase timings
+
+Changed and no-op `index update` responses include `phaseSeconds` and
+`phaseTimingPolicy: exclusive-wall-seconds-v1`. The four phases are:
+
+- `enumeration`: discovery of supported Lean source roots and modules.
+- `hashing`: source/configuration/toolchain identity capture, including the final
+  stability capture. It excludes the nested enumeration time.
+- `extraction`: reading/validating and lexically parsing changed Lean sources.
+- `database`: candidate copying, projection maintenance, row insertion, FTS,
+  validation and commit; explicit optional archival is included here. It excludes
+  nested extraction time.
+
+Values accumulate across passes and do not overlap. Uninstrumented orchestration,
+locking and final publication are not assigned to these four phases, so their
+sum can be smaller than `elapsedSeconds`. An unchanged index has zero extraction
+time. These timings are observations rather than performance targets.
+
+### Batch search over one validated read generation
+
+`proof-search search batch` groups 1–32 name/type-text queries in one SQLite
+read transaction. It captures supported source/configuration/toolchain identities
+before querying and again afterward, and checks the active generation at the end.
+All returned rows use the same read generation. Source edits or a generation
+change withhold the results and return a nonzero exit status with the observed
+change information. Readers may finish on the old inode while a coordinated
+updater publishes a replacement; they cannot mix rows from both generations.
+
+Save query arguments as a JSON array, for example `queries.json`:
+
+```json
+[
+  ["name", "--text", "stepUpper_optimal", "--scope", "module", "--root", "Mf.Optimization.PoissonClippedSGD.GDPStepsize", "--limit", "8"],
+  ["type-text", "--pattern", "ReciprocalMomentBound", "--limit", "8"]
+]
+```
+
+```bash
+ladon proof-search search batch --repo-root REPO --queries queries.json \
+  --format json --output batch-results.json
+```
+
+Queries use ordinary name/type-text options; repository, index, output and
+freshness belong to the whole batch. Each option takes one string value. Input
+is capped at 64 KiB, 32 queries, 32 options per query, 4096 characters per value,
+and 100 returned rows per query. Output defaults to 1 MiB; `--max-output-mib`
+allows 1–16 MiB. Oversized output is rejected before publication; reduce the
+query count or limits rather than assuming an incomplete file was certified.
+
+The `ladon-proof-search-batch-v1` result contains `validation` identities and
+capture count, the shared `generationIdentity`, and ordered `queries`. Name
+items use `ladon-proof-search-batch-name-v1`; type-text items retain their existing
+shortlist shape with batch validation fields. Both remain lexical discovery.
+`verified-fresh` describes supported source inputs observed around this batch.
+It is not proof replay, a persistent token, or a guarantee against later edits
+or changes that occur and are reverted between observations. Workers may share
+the saved result as evidence from that window; later live queries require a new
+validation window. No old index copy, agent identity key, daemon or watcher is
+needed for this bounded batch mode.

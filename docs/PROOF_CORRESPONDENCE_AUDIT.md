@@ -372,3 +372,45 @@ the original premise domain; an LP or finite search can find a candidate, but th
 exact law and inequality still need checked justification. This example came
 from informed development work and is not a held-out Ladon discovery or evidence
 of detection advantage.
+
+## Quick review: TeX and a named Lean theorem
+
+Use the selected checkout's CLI. Preserve the passage and first interpretation:
+objects, assumptions, quantifiers, conclusion and ambiguous readings. Read the
+named theorem and the definitions behind its argument types before comparing it
+with the passage.
+
+1. For indexed navigation, use `proof-search index freshness --repo-root REPO
+   --format json`. This checks the current supported source/configuration inputs
+   and reports phase timings. Add `--expected-generation ID` to compare with an
+   earlier generation. It does not inspect historical database integrity, and
+   its result does not remain fresh after later edits. Stored searches should
+   retain their generation identity; they do not independently check freshness.
+2. Select an application in the actual proof and capture it:
+
+   ```bash
+   ladon proof-search proof slice --repo REPO --source FILE.lean \
+     --module MODULE --declaration THEOREM --application PROVIDER \
+     --scoped --timeout-seconds 60 --max-rss-mib 12288 --output slice.json
+   ```
+
+   The timeout is per Lean process; extraction can run several processes.
+   Inspect `selection`, `source`, `limits`, `nodes`, `localContext`, `frontiers`
+   and `processReceipts`. Preserve the full JSON including compiled inventory.
+   A memory-limit result requires reporting back before a higher-cap retry.
+3. Explain which source assumptions supply the application's premises and
+   whether its conclusion is the source conclusion. Distinguish a matching
+   theorem statement from a matching proof method. Record unresolved providers
+   and unexamined passages. A selected slice does not fill unmapped manifest
+   components or establish a whole-paper audit.
+4. If a particular missing implication needs formal checking, prepare an
+   interpretation/object map and use correspondence checking. For a saved slice
+   above the normal replay allowances, explicitly supply
+   `investigation check --slice-timeout-seconds N --slice-max-rss-mib M`.
+   These options authorize slice re-extraction only; they do not raise other
+   checking-stage limits. Context-bridge consumers retain their normal replay
+   allowances and reject saved slices exceeding them.
+
+A short source/application report is a useful endpoint when it resolves the
+reader's question. Native correspondence is optional when no such formal
+obligation is needed.

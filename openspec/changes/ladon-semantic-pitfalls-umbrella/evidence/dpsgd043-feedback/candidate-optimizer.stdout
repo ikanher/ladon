@@ -1,0 +1,103 @@
+{
+  "candidate": {
+    "check": {
+      "applicationTerm": null,
+      "authority": {
+        "analysisCompleteness": "not-assessed",
+        "authorityBasis": "not-assessed",
+        "environmentMatch": "unknown",
+        "executionBinding": "explicit-pinned",
+        "observationState": "failed",
+        "operationOutcome": "failed",
+        "sourceFreshness": "unknown"
+      },
+      "checkRunRef": null,
+      "dischargedHypotheses": [],
+      "environmentRef": null,
+      "executionBindingLimitation": null,
+      "failure": {
+        "diagnostic": {
+          "code": "checker-memory-limit",
+          "message": "Stop progress and report back to user: process memory limit reached. Configured process-tree RSS limit: 4 GiB (4294967296 bytes). Observed sampled peak 4.11615 GiB (4419682304 bytes). Ask the user before retrying with a higher --max-rss-mib limit."
+        },
+        "stage": "checker-memory-limit"
+      },
+      "receiptIdentity": "sha256:4daf2b6604a5f16fa24bbe5ba1d8c261fcd2fddbb671b78925ebceda67c0e776",
+      "residualPremises": [],
+      "scratch": null,
+      "sourceReceiptIdentity": "sha256:4daf2b6604a5f16fa24bbe5ba1d8c261fcd2fddbb671b78925ebceda67c0e776",
+      "status": "memory-limited",
+      "substitutions": []
+    },
+    "name": "Mf.Optimization.PoissonClippedSGD.stepUpper_optimal",
+    "nameFingerprint": "sha256:f0e60d4858d0d1780319320093d565f6d8a86d9e4c655b599dffce3becde29b3",
+    "shortlist": {
+      "source": "explicit-candidate"
+    },
+    "source": null
+  },
+  "coverage": {
+    "candidatePopulation": {
+      "observed": 1,
+      "omitted": 0,
+      "projected": 1,
+      "statusCounts": {
+        "memory-limited": 1
+      }
+    },
+    "omissionPopulation": {
+      "generatedRecords": 0,
+      "observedRecords": 3,
+      "omittedRecords": 0,
+      "projectedRecords": 3,
+      "totalClaims": 3,
+      "transportRecords": 3
+    },
+    "operationalFailure": true
+  },
+  "limitations": [
+    "Artifact bodies and structural Lean expressions are omitted; expand registered evidence for audit.",
+    {
+      "id": "checker-observation-not-theorem-truth",
+      "message": "Acceptance records what this Lean process checked in this exact environment; Ladon does not promote it to an unqualified theorem-truth verdict."
+    }
+  ],
+  "omissions": [
+    {
+      "omitted": 1,
+      "pointer": "/candidate/check/residualContexts",
+      "reason": "canonical-field-unavailable"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidate/check/selectedDeclaration",
+      "reason": "canonical-field-unavailable"
+    },
+    {
+      "omitted": 1,
+      "pointer": "/candidate/source",
+      "reason": "source-location-unavailable"
+    }
+  ],
+  "operation": "check-candidate",
+  "projection": {
+    "canonicalPayloadIdentity": "sha256:e823a8a21ea97ad7b4a19a2e5d9c4be523fec0376ac615cb6c2d5893b0eb7639",
+    "canonicalSchema": "ladon-semantic-candidate-check-result-v1",
+    "limits": {
+      "maxBytes": 8192,
+      "measurement": "pretty-json-utf8-v1"
+    },
+    "name": "llm",
+    "producerResultIdentity": null,
+    "projectionIdentity": "sha256:ab2dd5275dff82338dab97841db44fc77150850bf4a71556d110b757fe21d8b0"
+  },
+  "request": {
+    "goal": "∀ (F T L W cap eta bias C : ℝ), 0 < F → 0 < T → 0 < L → 0 < W → 0 < cap → 0 < eta → eta ≤ cap → 0 ≤ C → Mf.Optimization.PoissonClippedSGD.stationarityUpper C (Mf.Optimization.PoissonClippedSGD.stepRateD (Mf.Optimization.PoissonClippedSGD.optimalStep F T L W cap) F T L W bias) ≤ Mf.Optimization.PoissonClippedSGD.stationarityUpper C (Mf.Optimization.PoissonClippedSGD.stepRateD eta F T L W bias)",
+    "goalFingerprint": "sha256:9e4031438f97ba16f6f7afcd3f00521d7935cfef8e87ee8d66ebb6dc1a5dfcb8",
+    "localContext": [],
+    "module": "Mf.Optimization.PoissonClippedSGD.GDPStepsize",
+    "moduleFingerprint": "sha256:02facc0a6f4f9a51b153601004e30e43a767404a1b749935971aa81d68223869"
+  },
+  "schema": "ladon-semantic-candidate-projection-v1",
+  "status": "memory-limited"
+}

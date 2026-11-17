@@ -1,0 +1,46 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+_______________ test_freshness_avoids_history_and_detects_edits ________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-481/test_freshness_avoids_history_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7c99c42d33d0>
+capsys = <_pytest.capture.CaptureFixture object at 0x7c99c42d3b50>
+
+    def test_freshness_avoids_history_and_detects_edits(tmp_path, monkeypatch, capsys):
+        from ladon import proof_search_history_store as history
+        (tmp_path / 'Main.lean').write_text('theorem first : Nat := 1\n')
+        build_proof_search_index(tmp_path)
+    
+        def forbidden(*args, **kwargs):
+            raise AssertionError('routine freshness must not hash historical databases')
+    
+        monkeypatch.setattr(history, 'validate_history', forbidden)
+        args = ['proof-search', 'index', 'freshness', '--repo-root', str(tmp_path), '--format', 'json']
+>       assert main(args) == 0
+E       AssertionError: assert 2 == 0
+E        +  where 2 = main(['proof-search', 'index', 'freshness', '--repo-root', '/tmp/pytest-of-codex/pytest-481/test_freshness_avoids_history_0', '--format', ...])
+
+tests/test_index_freshness_feedback.py:18: AssertionError
+----------------------------- Captured stderr call -----------------------------
+{"diagnostic":{"code":"invalid-invocation","message":"argument index_operation: invalid choice: 'freshness' (choose from 'build', 'update', 'migrate', 'ideas-sync', 'ideas', 'history', 'status', 'list', 'prune', 'query')"},"exitClass":"invocation","exitCode":2,"operation":"index.freshness","schema":"ladon-proof-search-terminal-v1","status":"failed"}
+___________________ test_stored_type_search_binds_generation ___________________
+
+tmp_path = PosixPath('/tmp/pytest-of-codex/pytest-481/test_stored_type_search_binds_0')
+capsys = <_pytest.capture.CaptureFixture object at 0x7c99c40e2e50>
+
+    def test_stored_type_search_binds_generation(tmp_path, capsys):
+        (tmp_path / 'Main.lean').write_text('theorem first : Nat := 1\n')
+        build_proof_search_index(tmp_path)
+        args = ['proof-search', 'search', 'type-text', '--repo-root', str(tmp_path),
+                '--pattern', 'Nat', '--freshness', 'stored', '--format', 'json']
+        assert main(args) == 0
+        result = json.loads(capsys.readouterr().out)
+>       assert result['generationIdentity']
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'generationIdentity'
+
+tests/test_index_freshness_feedback.py:38: KeyError
+=========================== short test summary info ============================
+FAILED tests/test_index_freshness_feedback.py::test_freshness_avoids_history_and_detects_edits
+FAILED tests/test_index_freshness_feedback.py::test_stored_type_search_binds_generation
+2 failed in 0.29s
