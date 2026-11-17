@@ -32,6 +32,7 @@ from ladon.correspondence_interpretation import (
 from ladon.correspondence_maps import map_references, mapped_expression, validate_object_map
 from ladon.process_supervisor import run_bounded_target_process
 from ladon.proof_slice import digest, extract_proof_slice, pinned_toolchain, slice_identity
+from ladon.proof_slice_limits import authorize_slice_replay, replay_resource_limits
 from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
 from ladon.scoped_slice import profile_is_scoped
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
@@ -469,6 +470,7 @@ def _rebuild_original_plan(plan, repo_root, source_root, native_artifacts):
         scoped=profile_is_scoped(plan["slice"]),
         max_nodes=plan["slice"]["limits"]["nodes"],
         max_depth=plan["slice"]["limits"]["depth"],
+        **replay_resource_limits(plan["slice"]),
     )
     if fresh.get("sliceId") != plan["slice"]["sliceId"]:
         raise ValueError("stale source, context, toolchain, or selected application")
@@ -615,6 +617,7 @@ def _verify_inputs_unchanged(root, selection, source, fresh, plan, source_root):
         scoped=profile_is_scoped(fresh),
         max_nodes=fresh["limits"]["nodes"],
         max_depth=fresh["limits"]["depth"],
+        **replay_resource_limits(fresh),
     )
     if final.get("sliceId") != fresh["sliceId"]:
         raise ValueError("environment changed during correspondence checking")
@@ -667,7 +670,9 @@ def _execute_terms(preparation, supplied, obligations, fresh, plan, source, root
 
 
 def check_correspondence(plan, terms, repo_root, *, source_root=None, native_artifacts=None,
-                         preparation="ordinary"):
+                         preparation="ordinary", slice_timeout_seconds=60,
+                         slice_max_rss_bytes=DEFAULT_MAX_RSS_BYTES):
+    authorize_slice_replay(plan["slice"], slice_timeout_seconds, slice_max_rss_bytes)
     with execution_accounting() as accounting:
         result = _check_correspondence(plan, terms, repo_root, source_root=source_root,
                                        native_artifacts=native_artifacts, preparation=preparation)

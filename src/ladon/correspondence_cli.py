@@ -20,6 +20,7 @@ from ladon.proofir_correspondence import (
     interpretation_artifacts,
 )
 from ladon.proofir_v3 import validate_envelope_batch
+from ladon.resource_limits import DEFAULT_MAX_RSS_MIB
 
 
 def load_plan(path):
@@ -56,6 +57,10 @@ def proof_slice_main(argv):
     )
     parser.add_argument("--max-depth", type=int, default=DEFAULT_MAX_DEPTH,
                         help="Expression traversal depth allowance (default: 128; 1..4096).")
+    parser.add_argument("--timeout-seconds", type=int, default=60,
+                        help="Timeout per Lean process in seconds (default: 60; not total command time).")
+    parser.add_argument("--max-rss-mib", type=int, default=DEFAULT_MAX_RSS_MIB,
+                        help=f"Process-tree memory allowance in MiB (default: {DEFAULT_MAX_RSS_MIB}).")
     parser.add_argument("--scoped", action="store_true", help="Open bounded nested local scopes")
     parser.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
@@ -63,6 +68,7 @@ def proof_slice_main(argv):
         result = extract_proof_slice(
             args.repo, args.source, args.module, args.declaration, args.application, args.occurrence,
             scoped=args.scoped, max_nodes=args.max_nodes, max_depth=args.max_depth,
+            timeout_seconds=args.timeout_seconds, max_rss_bytes=args.max_rss_mib * 1024**2,
         )
         publish(result, args.output)
         return 0 if result["complete"] else 2
@@ -99,6 +105,10 @@ def _parser():
     check.add_argument("--repo", type=Path, required=True)
     check.add_argument("--root", type=Path, required=True)
     check.add_argument("--output", type=Path)
+    check.add_argument("--slice-timeout-seconds", type=int, default=60,
+                       help="Maximum allowed saved slice timeout per process (default: 60).")
+    check.add_argument("--slice-max-rss-mib", type=int, default=DEFAULT_MAX_RSS_MIB,
+                       help=f"Maximum allowed saved slice RSS in MiB (default: {DEFAULT_MAX_RSS_MIB}).")
     check.add_argument("--preparation", choices=("ordinary", "request"), default="ordinary")
     inspect = commands.add_parser("inspect", help="Inspect generated obligations and residuals")
     inspect.add_argument("--plan", type=Path, required=True)
@@ -178,6 +188,8 @@ def _check(args):
         source_root=args.root,
         native_artifacts=artifacts,
         preparation=args.preparation,
+        slice_timeout_seconds=args.slice_timeout_seconds,
+        slice_max_rss_bytes=args.slice_max_rss_mib * 1024**2,
     )
     if artifacts is not None:
         from ladon.correspondence_evidence import completion_artifacts

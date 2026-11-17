@@ -52,6 +52,7 @@ def prepare_context(request):
     from ._proof_contract_context_goals import ContextOutputLimit, build_context_goals
     from .proof_contract_context_bridge import _inputs
     from .proof_slice import extract_proof_slice
+    from .proof_slice_limits import authorize_slice_replay
 
     owned = _inputs(request, None, None, False)
     root = Path(owned['repoRoot']).resolve(strict=True)
@@ -64,7 +65,8 @@ def prepare_context(request):
         raise ValueError('original context source changed after planning')
     actual = extract_proof_slice(root, selection['sourceFile'], selection['module'],
         selection['declaration'], selection['application'], selection['occurrence'], scoped=True,
-        max_nodes=frozen['limits']['nodes'], max_depth=frozen['limits']['depth'])
+        max_nodes=frozen['limits']['nodes'], max_depth=frozen['limits']['depth'],
+        **authorize_slice_replay(frozen))
     if _resource_stop(actual, owned['limits']) or not actual.get('complete'):
         return {'status': 'incomplete', 'extraction': actual}
     if actual['sliceId'] != frozen['sliceId']:

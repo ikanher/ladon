@@ -8,7 +8,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from ladon.process_supervisor import run_bounded_target_process
-from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES, memory_limit_message
+from ladon.resource_limits import memory_limit_message
 from ladon.scoped_slice import premise_rows, profile_is_scoped, provider_frontiers
 from ladon.source_association_inventory import (
     _compiled_roots,
@@ -30,13 +30,13 @@ class SliceRunner:
             [*self.execution.command, *arguments],
             cwd=self.root,
             env=self.environment,
-            timeout_seconds=60,
+            timeout_seconds=self.result["limits"]["secondsPerProcess"],
             max_output_bytes=8 * 1024**2,
-            max_rss_bytes=DEFAULT_MAX_RSS_BYTES,
+            max_rss_bytes=self.result["limits"]["rssBytes"],
         )
         receipt = asdict(process)
         if process.memory_limited:
-            receipt["diagnostic"] = memory_limit_message(DEFAULT_MAX_RSS_BYTES, process.peak_rss_bytes, supports_override=False)
+            receipt["diagnostic"] = memory_limit_message(self.result["limits"]["rssBytes"], process.peak_rss_bytes)
         for stream in ("stdout", "stderr"):
             raw = receipt.pop(stream).encode("utf-8")
             receipt[stream + "Bytes"] = len(raw)
@@ -47,7 +47,7 @@ class SliceRunner:
         if not process.succeeded:
             frontier = {"reason": "bounded-process-failed", "phase": arguments[0]}
             if process.memory_limited:
-                frontier["diagnostic"] = memory_limit_message(DEFAULT_MAX_RSS_BYTES, process.peak_rss_bytes, supports_override=False)
+                frontier["diagnostic"] = memory_limit_message(self.result["limits"]["rssBytes"], process.peak_rss_bytes)
             self.result["frontiers"].append(frontier)
         return process
 

@@ -22,6 +22,7 @@ from ladon.proof_slice_limits import (
     DEFAULT_MAX_NODES,
     validate_max_depth,
     validate_max_nodes,
+    validate_resource_limits,
 )
 from ladon.resource_limits import DEFAULT_MAX_RSS_BYTES
 from ladon.semantic_lean_execution import prepare_direct_lean_execution
@@ -58,7 +59,9 @@ def _validate_selection(module, declaration, application, occurrence):
 
 
 def extract_proof_slice(repo_root, source_file, module, declaration, application, occurrence=0,
-                        *, scoped=False, max_nodes=DEFAULT_MAX_NODES, max_depth=DEFAULT_MAX_DEPTH):
+                        *, scoped=False, max_nodes=DEFAULT_MAX_NODES, max_depth=DEFAULT_MAX_DEPTH,
+                        timeout_seconds=60, max_rss_bytes=DEFAULT_MAX_RSS_BYTES):
+    validate_resource_limits(timeout_seconds, max_rss_bytes)
     max_nodes = validate_max_nodes(max_nodes)
     max_depth = validate_max_depth(max_depth)
     if type(scoped) is not bool:
@@ -93,8 +96,8 @@ def extract_proof_slice(repo_root, source_file, module, declaration, application
             "profile": "scoped-identity-transport-v2" if scoped else "declaration-scoped-application-v1",
         },
         "limits": {
-            "secondsPerProcess": 60,
-            "rssBytes": DEFAULT_MAX_RSS_BYTES,
+            "secondsPerProcess": timeout_seconds,
+            "rssBytes": max_rss_bytes,
             "outputBytes": 8 * 1024**2,
             "nodes": max_nodes,
             "depth": max_depth,

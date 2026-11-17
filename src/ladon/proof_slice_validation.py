@@ -4,7 +4,11 @@ import json
 
 from ladon._expr_graph_protocol import validate_structural_text
 from ladon.correspondence_interpretation import closed, text
-from ladon.proof_slice_limits import validate_max_depth, validate_max_nodes
+from ladon.proof_slice_limits import (
+    validate_max_depth,
+    validate_max_nodes,
+    validate_resource_limits,
+)
 from ladon.scoped_slice import (
     premise_rows,
     profile_is_scoped,
@@ -133,6 +137,7 @@ def validate_slice_shape(value):
         {"secondsPerProcess", "rssBytes", "outputBytes", "nodes", "depth"},
         "limits",
     )
+    validate_resource_limits(value["limits"]["secondsPerProcess"], value["limits"]["rssBytes"])
     validate_max_nodes(value["limits"]["nodes"])
     validate_max_depth(value["limits"]["depth"])
     inventory = value["compiledInventory"]
