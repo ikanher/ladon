@@ -8,9 +8,11 @@ The goal is to make AI-assisted mathematics easier to understand, check,
 attribute, and reuse. Ladon is in **alpha**. Lean performs the proof checking;
 a successful check does not certify the meaning or argument of nearby prose.
 
-The **0.4.1 development snapshot** adds complete stored lineage projections and
-ordered capsule replay builds, retaining the 12 GiB default memory ceiling.
-See the [release notes](docs/RELEASE_0_4_2.md) for verification results and limits.
+The **0.4.3 internal snapshot** adds bounded source/formal context and stored
+check bindings to correspondence inspection, fixes large diagnostic receipts,
+and distinguishes typing checks and selected premise scope. See the
+[release notes](docs/RELEASE_0_4_3.md) for verification and limits, and the
+[internal handoff](docs/INTERNAL_HANDOFF_0_4_3.md) for checkout-local use and feedback.
 
 ## Setup
 

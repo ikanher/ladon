@@ -116,6 +116,8 @@ For reconstruction formulas and representation changes, use the [definition-cons
 
 For a selected theorem's support of a passage, use the [complete-application recipe](../../docs/PROOF_CORRESPONDENCE_AUDIT.md#check-a-complete-application-under-the-source-assumptions). Check one consistently instantiated application and its conclusion transfer under the original source assumptions. A filled premise table or empty residual list alone is insufficient; require the completed replay/trust outcome, or disclose a separate ordinary Lean proof and native failure.
 
+For structured families or mechanisms, follow [object construction and the DP-Adam example](../../docs/PROOF_CORRESPONDENCE_AUDIT.md#construct-the-objects-behind-a-theorem-application). Derive record fields from source assumptions; preserve units, indexing and parameter dependencies. A checked irrelevant field may remove a packaging obligation, but does not justify changing the objective consumed by another theorem. Keep eventual bounds separate from explicit finite-run rates, and unperformed review separate from evidenced blockers.
+
 Follow the [source-first audit procedure](../../docs/CORRESPONDENCE_DISCOVERY.md) and [investigation loop](../../docs/INVESTIGATION_LOOP.md). Initialize the source-bound plan at the actual start with an explicit budget. After every batch save a plan snapshot and use `ladon investigation next`. Before reporting, use `finish`: if it returns `continue` (exit 2), continue useful work within the budget. A budget or blocker exit remains incomplete. The commands validate source bindings and authored workflow records; they do not compare mathematical meanings or certify inventory completeness.
 Compare exact local hypotheses, domains, quantifiers, conclusions and quantitative
 dependencies. State the implication required by the consumer, check it in that
@@ -277,3 +279,33 @@ cover every remaining queue item to permit early blocked termination; retain
 policy-limited references as unverified. Terminal permission does not certify
 mathematical completion, and plain prose is not mechanically controlled by these
 commands. See [the investigation guide](../../docs/INVESTIGATION_LOOP.md).
+
+## Internal 0.4.3 correspondence evidence
+
+Use the explicitly selected Ladon checkout, including from a consumer project:
+`uv run --project /path/to/ladon --locked python -m ladon.entrypoint`.
+Record `version --json`, checkout revision, dirty state and target identity.
+For the installed wheel, record its runtime identity separately from the checkout.
+
+`investigation inspect --plan CHECKED.json --context-max-bytes 8388608`
+retrieves stored native correspondence context and check bindings without a
+fresh Lean run. The default per-component allowance is 65536 bytes; the maximum
+is 8388608. Inspect omissions and owner/goal/polarity bindings. Complete coverage
+means retrieval completeness; `matched-stored-records` means stored consistency.
+Neither establishes current replay or faithful source interpretation.
+
+Inspect the definitions behind named predicates and structured arguments.
+`premiseScope` reports selected direct obligations: zero does not reconcile
+hypotheses packaged inside an input record with the source. New role accounting
+separates interpretation typing and object-map typing from mathematical check
+attempts. The legacy `typingProbeCount` remains interpretation-only; use
+`checkRoleProfile`, `checkRoleCounts` and `totalTypingCheckCount` to interpret new
+records. Attempt counts are not discoveries, successes or independent claims.
+Historical receipts keep their original counters.
+
+Before reusing a certificate for a newer passage, reconcile objects, assumptions,
+parameter schedules, quantifiers and conclusion. A common limiting law for each
+input does not supply a uniform law, a finite-run rate or finite privacy bounds.
+If the old evidence does not cover the new claim, report that support gap without
+refuting the claim. Follow the selected checkout's `docs/INTERNAL_HANDOFF_0_4_3.md`
+and `docs/PROOF_CORRESPONDENCE_AUDIT.md` for recipes and feedback requirements.
