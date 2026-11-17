@@ -1,0 +1,22 @@
+{
+  "baselineRevision": "cf9bb12",
+  "productionInterfacesAlreadyPresentAtBaseline": true,
+  "memoryTest": {
+    "failure": "_execute_replay() missing 1 required positional argument: 'build_policy'",
+    "correction": "Supply lake-default in the private helper fixture."
+  },
+  "ownershipTests": {
+    "workerStatus": "rejected",
+    "workerDiagnostic": {
+      "code": "worker-rejected",
+      "message": "_block_at_capture() got an unexpected keyword argument 'workspace_parent'"
+    },
+    "correction": "Capture shim accepts the existing workspace_parent keyword; nested SIGTERM hook uses the same signature."
+  },
+  "assertionsPreserved": 56,
+  "affectedRun": {
+    "passed": 11,
+    "seconds": 7.68
+  },
+  "runtimeChangesRequired": false
+}

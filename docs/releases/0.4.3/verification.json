@@ -1,0 +1,143 @@
+{
+  "version": "0.4.3",
+  "scope": "internal development snapshot; no push or publication",
+  "installedCandidate": "1f16a600e7835c39394835a9fd789f6f867dc4f8",
+  "productionTree": "c5b2e777dfc61b883e62dd2d8b5e63000ec733de",
+  "finalProductionTree": "c5b2e777dfc61b883e62dd2d8b5e63000ec733de",
+  "finalTestTree": "1f92a66bf9794926324566b0d6d926d6ed69feab",
+  "scriptsTree": "388b809dde2d6eb739adb78dc4304916b930167b",
+  "fixtureCorrectionCommit": "401f49e3050bb166ad375fcdb22747a8715bc8fd",
+  "sharedSkillCommit": "2b74682bbb572a007948c87db054e102bcc573c8",
+  "python": "3.11.15",
+  "candidateResolution": "HEAD resolved to installedCandidate for both isolated gates; use that immutable commit when reproducing.",
+  "isolation": "TMPDIR outside checkout on the main disk; isolated gates sanitize Python/environment state.",
+  "installedDistribution": {
+    "exitCode": 0,
+    "cliTestsPassed": 41,
+    "testSeconds": 23.43,
+    "command": ".venv/bin/python scripts/installed_distribution_smoke.py --candidate HEAD --package-resource ladon:correspondence_execution_accounting.py --package-resource ladon:proofir_v3_queries.py --package-resource ladon:lean/ladon_source_goal_completion_helper.lean",
+    "log": "installed-smoke.txt"
+  },
+  "installedLean": {
+    "exitCode": 0,
+    "toolchain": "Lean 4.32.1",
+    "command": ".venv/bin/python scripts/lean_integration_gate.py --candidate HEAD --required",
+    "log": "installed-lean.txt"
+  },
+  "firstCandidateFailure": {
+    "candidate": "5f02c684aca44bc59b64a0c593c2d32793239be6",
+    "cause": "Two local Lake dependency links were accidentally tracked with evidence; archive gate rejected symlinks.",
+    "resolution": "1f16a600e7835c39394835a9fd789f6f867dc4f8",
+    "logs": [
+      "installed-smoke-initial.txt",
+      "installed-lean-initial.txt"
+    ],
+    "frozenEvidenceChanged": false
+  },
+  "fullSuite": {
+    "command": ".venv/bin/python scripts/python_quality.py --strict",
+    "exitCode": 1,
+    "passed": 5734,
+    "failed": 3,
+    "skipped": 86,
+    "seconds": 4877.75,
+    "failures": [
+      "tests/test_memory_limits.py::test_theorem_replay_memory_error_is_reportable_with_cap_and_measured_peak",
+      "tests/test_proof_contract_audit_nested_ownership.py::test_outer_stage_timeout_recovers_a_delegated_goal_without_deleting_its_bytes",
+      "tests/test_proof_contract_worker_scratch.py::test_timeout_after_real_goal_write_cleans_only_the_owned_goal_tree"
+    ],
+    "log": "strict-quality.txt",
+    "resolution": "All failures were stale fixtures calling existing APIs. All 11 affected tests pass after fixture-only corrections; 56 assertions retained.",
+    "wholeSuiteRepeatedAfterFixtureEdits": false,
+    "identityScope": "Runtime and test sources were fixed at start; editable package metadata was refreshed to 0.4.3 during the run. Isolated distribution gates qualify the exact versioned candidate. Fixture edits were separately tested; production sources did not change."
+  },
+  "fixtureCorrection": {
+    "exitCode": 0,
+    "passed": 11,
+    "seconds": 7.68,
+    "command": ".venv/bin/python -m pytest -q tests/test_memory_limits.py tests/test_proof_contract_audit_nested_ownership.py tests/test_proof_contract_worker_scratch.py",
+    "diagnosis": "fixture-diagnosis.json",
+    "assertions": "fixture-assertions.json",
+    "log": "fixture-corrections.txt"
+  },
+  "staticQuality": {
+    "status": "clean",
+    "scope": "all src/tests/scripts after fixture corrections",
+    "tenPreexistingComplexityFindingsResolved": true,
+    "ruff": "passed",
+    "compileall": "passed in full run",
+    "log": "static-quality-final.txt"
+  },
+  "qualityRefactor": {
+    "before": {
+      "passed": 38,
+      "skipped": 7,
+      "seconds": 132.13
+    },
+    "after": {
+      "passed": 38,
+      "skipped": 7,
+      "seconds": 132.77
+    },
+    "assertionsPreserved": 136,
+    "testFiles": 5,
+    "evidence": "preservation.json"
+  },
+  "freshMathlibRelationChecks": {
+    "passed": 4,
+    "deselected": 1,
+    "seconds": 94.65,
+    "toolchain": "leanprover/lean4:v4.33.0",
+    "donorPolicy": "read only",
+    "reproductionCommand": "LADON_MATHLIB_TEST_ROOT=../lean/matrix-factorization .venv/bin/python -m pytest -q tests/test_real_bound_relation_macro.py -k \"not live_public\"",
+    "log": "real-relation-lean.txt"
+  },
+  "retainedEvidence": {
+    "manifests": 14,
+    "verifiedEntries": 345,
+    "nativeChecksInspected": 8,
+    "currentCliInspections": 2,
+    "freshReplayOfRetainedMath": false,
+    "custody": "evidence-preservation.json",
+    "inspection": "native-inspection.json"
+  },
+  "planning": {
+    "strictOpenSpecItemsPassed": 94,
+    "nativeContextTasks": "12/12 complete; specification synchronized",
+    "r04Tasks": "R.1\u2013R.5 complete",
+    "historicalUmbrellaTasks": "11 unmet; investment plan superseded, not passed"
+  },
+  "skills": {
+    "bundledValidation": "passed",
+    "sharedValidation": "passed",
+    "unrelatedSharedEdits": "preserved"
+  },
+  "limits": [
+    "No repeated whole-suite run after fixture corrections.",
+    "Python 3.12 CI and the complete outside-checkout test suite were not run.",
+    "Natural-language interpretation and comparative discovery/effort benefit remain unestablished.",
+    "Historical inventories and native receipts do not confer current replay authority."
+  ],
+  "logs": {
+    "evidence-preservation.json": "3d8565edbadbbb0de9c40da1707626dda5f857d2ab4dc8b3e19d96f4582383b2",
+    "fixture-assertions.json": "4058cbce9bf7bfd916ed66ef95ea9f50b660e68185be6fb2b6be1a65aecab034",
+    "fixture-corrections.txt": "8844987a63b032ffd7c1a013b9dab3cdb28a8b45e7f30d352a9a6acd4328c5c4",
+    "fixture-diagnosis.json": "d9fe88486db9afa6af8a790ba20b455245fe32a51df0357463c59a940e290a4a",
+    "fixture-memory-before.txt": "14a8bb3d15708561a1ce619c7273a063293d16a7744475eda96f4359d56c5962",
+    "fixture-ownership-before.txt": "8da59f19d1207758630f5aa5da6bf6ff92b4f1f8238e245e4e20b64727fbdbe9",
+    "installed-lean-initial.txt": "6be05ed27ee0ac62d787790579f5b215acbb7d7a1813d0b06b7146d4783c62f7",
+    "installed-lean.txt": "48d74369cf7c83bf762b1792ba4be18e8cb7636fdd84a0da23f75afefb579bac",
+    "installed-smoke-initial.txt": "4783a179165b12199287bf50e37060b98307519b11e771b2bb90b4e78643f813",
+    "installed-smoke.txt": "02a760aa1e0d84ea67b02ee733be1c9b10ba064f0b8f7169aece7735c272836a",
+    "native-custody.txt": "2ade6cde530b7b876447335f8c355b3917161aacf4f199261df79815f7d23e8c",
+    "native-inspection.json": "4510762937f3315bcfdfef18075d4182e00592f5a83b184e681103817eabf399",
+    "openspec.txt": "4d60a374be5181d9f31689c2ecba69f523a068d921dd5b233673516655efd4d0",
+    "preservation.json": "fd7ea2c73a528bb1c1e1dc9e30fc99dde00fdf17058e57e215668cf24fc661f4",
+    "quality-after-tests.txt": "7764b4e3e78875aba4b65061aa3026f3253b56be41718b12091bf63d6ab8daad",
+    "quality-before-tests.txt": "4fa39f48a0e07d5eb39448db41fdc20a3d5228b388611875b0826dba372577a2",
+    "quality-before.txt": "a2233dedf358c7fb10016a5d58cd28632263ef0a363ed25bd5c8ec8c96c06c82",
+    "real-relation-lean.txt": "a3217fad4bed298209265ec7b344ba57b00d785fd4a3b819cfc13020cf1c2547",
+    "static-quality-final.txt": "95f13926ebc470cf8bf48a8d85a9be4c2b2fc668a6fe0997b683e6cbbe5feeed",
+    "strict-quality.txt": "b08f2b344b19c2edae1a38686b0c936f65994a9c510c3c38924943a849bea0ca"
+  }
+}

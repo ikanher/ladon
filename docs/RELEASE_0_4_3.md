@@ -18,7 +18,7 @@ judgments; their interpretation of prose remains separately reviewable.
   from conditional replay, premise supply and conclusion transfer. Counts mean
   attempted checks. Zero direct premise obligations explicitly leave hypotheses
   packaged in argument types and source-assumption correspondence unassessed.
-- The source-goal completion heartbeat default and generated-auxiliary replay
+- The 800,000-heartbeat source-goal completion default and generated-auxiliary replay
   repair committed after the earlier snapshot are included. Existing authority
   and forbidden-axiom checks remain required.
 - Reader guidance covers structured inputs, source context, object maps and
@@ -37,14 +37,38 @@ reporting identifies `correspondence-check-roles-v2`. Frozen records are unchang
 
 ## Verification
 
-Release qualification is in progress; the final candidate and results will be
-recorded in `releases/0.4.3/verification.json` before handoff. The earlier native
+Candidate `1f16a60` built and installed successfully, passed all 41 installed
+CLI contracts, and passed the pinned Lean 4.32.1 integration gate. Four fresh
+Mathlib-backed relation tests also passed under Lean 4.33.0. All 94 strict
+OpenSpec items and both skill validations pass. The lockfile is synchronized.
+
+The full source-suite run completed with **5734 passed, 3 failed and
+86 skipped** in 4,877.75 seconds. Its three failures came from
+stale replay/capture test fixtures calling existing APIs. Fixture-only
+corrections preserve all 56 assertions, and all 11 affected tests pass. No
+production change was needed. The original failed run is retained; the whole
+suite was not repeated after these corrections. Final repository static quality
+and Ruff pass, resolving the ten complexity findings recorded in 0.4.2.
+
+[The verification receipt](releases/0.4.3/verification.json) binds candidate,
+source/test trees, commands, logs, failure diagnoses and follow-up results.
+The initial archive attempt rejected two accidentally tracked local Lake links;
+those links were untracked and ignored, preserving local files and all 345
+entries in 14 frozen evidence manifests. Later commits contain test/documentation
+corrections; the installed candidate's production tree is unchanged.
+
+The earlier native
 MF qualification retained eight checks with accepted replay/trust across f-DP
 and DP-Adam, taking about 8.3/7.5 minutes and 8.99/9.46 GiB peak process-tree RSS.
 These are retained measurements, not new release benchmarks or product speedups.
 The f-DP result remains conditional on inherited ordering; the manuscript's
 ordering is unresolved. DP-Adam common-law support is per admitted input and
 does not establish a finite-run rate or a complete source-method audit.
+
+The release checks here use Python 3.11. The Python 3.12 CI job and a complete
+outside-checkout test-suite run are not established by the installed CLI and
+pinned-Lean gates. Historical source interpretations remain attributed even
+when their supplied formal obligations have accepted replay and trust records.
 
 ## OpenSpec disposition and use
 

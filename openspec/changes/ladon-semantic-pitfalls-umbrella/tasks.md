@@ -2,6 +2,14 @@
 
 ## Current status and next steps
 
+**Internal release qualification complete — 2026-11-17.** See
+[0.4.3 verification](../../../docs/releases/0.4.3/verification.json) for the
+isolated installed/Lean gates, complete original suite and passing fixture
+corrections, clean static quality, and preserved evidence. The original suite
+is not relabeled green; its three stale-fixture failures and 11-test correction
+run remain separate. No production change followed installed qualification.
+The next work is internal consumer feedback, not another automatic audit.
+
 **Internal 0.4.3 consolidation — 2026-11-17.** R.1–R.5 and the native
 correspondence-context child (12/12) are complete. The user adopted consolidation
 and internal handoff. The original three-diagnostic integration/full-scorer
@@ -69,8 +77,9 @@ failure because `tests/test_correspondence_real_application.py` required an abse
 external Navier–Stokes checkout. At the user's request, that test file was removed
 on 2026-11-17; the historical run output remains unchanged. The 180 passing
 results are preserved. Changed-file strict quality and repository lint passed;
-ten global complexity findings remain in unchanged
-real-bound files. All R tasks are complete within scope. This is one internal
+that checkpoint retained ten global complexity findings in unchanged
+real-bound files. The subsequent 0.4.3 helper-only refactor resolves those static
+findings; the release notes own its separate qualification. All R tasks are complete within scope. This is one internal
 consumer exercise, not measured product advantage; the broader gates are not green.
 
 The proposed five-day ceiling remains advisory, not a newly adopted budget.
