@@ -60,8 +60,14 @@ def propagate_real_bound_identity(productions, root, *, timeout_seconds=600):
         edge = _compare_fresh(fresh_left, fresh_right)
         checked = _check_fresh_relation(edge, fresh_left, fresh_right, root,
                                         _remaining(deadline))
-        accepted = checked["status"] == "resolved"
-        candidates.append({
+        candidates.append(_identity_edge(edge, checked, fresh_left, fresh_right))
+        fresh_left = fresh_right
+    return _propagation_result(candidates, contract_refs)
+
+
+def _identity_edge(edge, checked, fresh_left, fresh_right):
+    accepted = checked["status"] == "resolved"
+    return {
             "rule": "identity-v1" if accepted else None,
             "ruleCandidate": "identity-v1",
             "contextMatch": edge["contextMatch"],
@@ -78,8 +84,10 @@ def propagate_real_bound_identity(productions, root, *, timeout_seconds=600):
                 "code": checked.get("residuals", [{"code": "real-rule-application-not-checked"}])[0]["code"]
             },
             "comparisonDiagnostic": edge,
-        })
-        fresh_left = fresh_right
+    }
+
+
+def _propagation_result(candidates, contract_refs):
     complete = all(row["status"] == "resolved" for row in candidates)
     result = {
         "schema": SCHEMA,
@@ -136,24 +144,15 @@ def _check_fresh_relation(result, left_fresh, right_fresh, root, timeout_seconds
     right_plan = right_fresh["request"]["plan"]
     run = check_real_bound_relation(root, left_plan, right_plan,
                                     timeout_seconds=timeout_seconds)
-    receipt = run.get("processReceipt") if isinstance(run, dict) else None
-    process_ok = (isinstance(receipt, dict) and receipt.get("returnCode") == 0
-                  and not any(receipt.get(field, False) for field in
-                              ("timedOut", "memoryLimited", "outputLimited")))
     checked = run.get("result") if run.get("status") == "completed" else None
-    evidence = checked.get("check") if isinstance(checked, dict) else None
-    goal = checked.get("goal") if isinstance(checked, dict) else None
-    if (process_ok and isinstance(checked, dict) and checked.get("status") == "checked"
-            and isinstance(evidence, dict) and isinstance(goal, dict)
-            and checked.get("leftPlanId") == left_plan["planId"]
-            and checked.get("rightPlanId") == right_plan["planId"]):
+    if _relation_accepted(run, checked, left_plan, right_plan):
         result.update({
             "status": "resolved",
             "relation": "equivalent",
             "residuals": [],
             "authority": "fresh-source-predicate-scalar-and-relation-checks",
             "relationCheckEvidence": {
-                "goalDigest": goal["sha256"],
+                "goalDigest": checked["goal"]["sha256"],
                 "checkerIdentity": checked["checkerIdentity"],
                 "leftPlanId": checked["leftPlanId"],
                 "rightPlanId": checked["rightPlanId"],
@@ -171,6 +170,22 @@ def _check_fresh_relation(result, left_fresh, right_fresh, root, timeout_seconds
     return result
 
 
+def _process_accepted(run):
+    receipt = run.get("processReceipt") if isinstance(run, dict) else None
+    return (isinstance(receipt, dict) and receipt.get("returnCode") == 0
+            and not any(receipt.get(field, False) for field in
+                        ("timedOut", "memoryLimited", "outputLimited")))
+
+
+def _relation_accepted(run, checked, left_plan, right_plan):
+    return (_process_accepted(run) and isinstance(checked, dict)
+            and checked.get("status") == "checked"
+            and isinstance(checked.get("check"), dict)
+            and isinstance(checked.get("goal"), dict)
+            and checked.get("leftPlanId") == left_plan["planId"]
+            and checked.get("rightPlanId") == right_plan["planId"])
+
+
 def _fresh(production, root, timeout_seconds):
     fresh = replay_real_bound(production, root, timeout_seconds=timeout_seconds)
     if fresh.get("status") != "admitted" or fresh.get("authority") != "fresh-lean-check":
@@ -184,6 +199,11 @@ def _fresh(production, root, timeout_seconds):
     refs = _check_refs(fresh)
     if len(refs) != 2:
         raise ValueError("fresh Real admission is missing predicate or scalar check evidence")
+    _require_fresh_goals(fresh)
+    return fresh
+
+
+def _require_fresh_goals(fresh):
     check = fresh.get("check", {})
     inner = check.get("result") or {}
     if check.get("status") != "completed" or inner.get("status") != "checked":
@@ -192,7 +212,6 @@ def _fresh(production, root, timeout_seconds):
     observed_goals = {row.get("goal", {}).get("id") for row in inner.get("checks", [])}
     if observed_goals != expected_goals or len(inner.get("checks", [])) != len(expected_goals):
         raise ValueError("fresh Real replay does not cover every exact admission goal")
-    return fresh
 
 
 def _bound_inputs(productions):

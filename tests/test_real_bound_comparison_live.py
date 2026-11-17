@@ -70,9 +70,7 @@ def test_live_cli_comparison_history_sqlite_and_explicit_replay(tmp_path, capsys
     assert contract_main(['replay-real-comparison', '--input', str(saved),
                           '--root', str(tmp_path), '--output', str(replayed)]) == 0
     fresh = json.loads(replayed.read_text())
-    assert fresh['authority'] == 'fresh-source-predicate-scalar-and-relation-checks'
-    assert fresh['artifacts'][-1]['payload']['result']['authority'] == 'none'
-    assert fresh['analysisRef'] != first['analysisRef']
+    _assert_fresh_comparison(fresh, first)
     productions, run = decode_replay(fresh['artifacts'][-1]['payload']['replay'])
     peaks = [run['processReceipt']['peakRssBytes']]
     peaks += [row['check']['processReceipt']['peakRssBytes'] for row in productions]
@@ -84,3 +82,9 @@ def test_live_cli_comparison_history_sqlite_and_explicit_replay(tmp_path, capsys
                           'totalSeconds': time.monotonic() - started,
                           'maxWorkerPeakRssBytes': max(peaks),
                           'bundleBytes': saved.stat().st_size}))
+
+
+def _assert_fresh_comparison(fresh, first):
+    assert fresh['authority'] == 'fresh-source-predicate-scalar-and-relation-checks'
+    assert fresh['artifacts'][-1]['payload']['result']['authority'] == 'none'
+    assert fresh['analysisRef'] != first['analysisRef']

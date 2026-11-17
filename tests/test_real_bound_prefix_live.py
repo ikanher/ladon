@@ -66,21 +66,14 @@ def test_live_public_prefix_rule_across_two_families(tmp_path, capsys):
         assert contract_main(['check-real-bound-prefix', '--stronger', str(strong_path),
                               '--weaker', str(weak_path), '--root', str(tmp_path), '--output', str(target)]) == 0
         result = json.loads(target.read_text())
-        assert result['relation'] == 'input-prefix-implies'
-        assert result['rule'] == 'order-prefix-v1'
-        assert result['sourceTheoremProof'] == 'not-checked'
-        assert result['paperNormBridge'] == 'unresolved'
-        assert result['strongerInputContractRef'] != result['weakerInputContractRef']
-        assert result['relationCheckRun']['result']['status'] == 'checked'
+        _assert_prefix_result(result)
         peaks.append(result['relationCheckRun']['processReceipt']['peakRssBytes'])
         rejection_mutations(result['relationCheckRun'], strong, weak)
         capsys.readouterr()
         assert contract_main(['check-real-bound-prefix', '--stronger', str(weak_path),
                               '--weaker', str(strong_path), '--root', str(tmp_path)]) == 2
         reverse = json.loads(capsys.readouterr().out)
-        assert reverse['status'] == 'unresolved' and reverse['rule'] is None
-        assert reverse['relationCheckRun'] is None
-        assert reverse['residuals'] == [{'code': 'real-prefix-direction-unproved'}]
+        _assert_reverse_unresolved(reverse)
         cases.append({'family': label, 'status': result['status'], 'reverseStatus': reverse['status']})
     source.write_text(FIXTURE.read_text() + '\n-- current source drift\n')
     assert contract_main(['check-real-bound-prefix', '--stronger', str(strong_path),
@@ -89,3 +82,18 @@ def test_live_public_prefix_rule_across_two_families(tmp_path, capsys):
     with capsys.disabled():
         print(json.dumps({'cases': cases, 'elapsedSeconds': time.monotonic() - started,
                           'maximumMeasuredWorkerRssBytes': max(peaks), 'runDirectory': str(tmp_path)}))
+
+
+def _assert_prefix_result(result):
+    assert result['relation'] == 'input-prefix-implies'
+    assert result['rule'] == 'order-prefix-v1'
+    assert result['sourceTheoremProof'] == 'not-checked'
+    assert result['paperNormBridge'] == 'unresolved'
+    assert result['strongerInputContractRef'] != result['weakerInputContractRef']
+    assert result['relationCheckRun']['result']['status'] == 'checked'
+
+
+def _assert_reverse_unresolved(reverse):
+    assert reverse['status'] == 'unresolved' and reverse['rule'] is None
+    assert reverse['relationCheckRun'] is None
+    assert reverse['residuals'] == [{'code': 'real-prefix-direction-unproved'}]

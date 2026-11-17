@@ -36,16 +36,7 @@ def test_genuine_recorded_relation_roundtrips_through_native_batch_and_sqlite():
     artifact = analysis(bundle)
     validate_envelope_batch(bundle['artifacts'])
     p = artifact['payload']
-    assert bundle['authority'] == 'none'
-    assert p['stage'] == 'comparison'
-    assert p['result']['authority'] == 'none'
-    assert p['result']['status'] == 'recorded-checked'
-    assert p['result']['relation'] == 'equivalent'
-    assert p['result']['sourceTheoremProof'] == 'not-checked'
-    assert p['result']['paperNormBridge'] == 'unresolved'
-    assert p['contractRefs'][0] != p['contractRefs'][1]
-    assert len(p['checkRunRefs']) == 1
-    assert all(row['authority'] == 'none' for row in p['replay']['productions'])
+    _assert_recorded_authority(bundle, p)
     connection = sqlite3.connect(':memory:')
     project_envelopes(connection, bundle['artifacts'])
     validate_v3_database(connection)
@@ -218,3 +209,20 @@ def test_oversized_bundle_stops_before_any_replay(monkeypatch):
     with pytest.raises(ValueError):
         replay_comparison_bundle(bundle, '/source')
     assert calls == []
+
+
+def _assert_recorded_authority(bundle, p):
+    assert bundle['authority'] == 'none'
+    assert p['stage'] == 'comparison'
+    assert p['result']['authority'] == 'none'
+    assert p['result']['status'] == 'recorded-checked'
+    assert p['result']['relation'] == 'equivalent'
+    _assert_recorded_limits(p)
+    assert p['contractRefs'][0] != p['contractRefs'][1]
+    assert len(p['checkRunRefs']) == 1
+    assert all(row['authority'] == 'none' for row in p['replay']['productions'])
+
+
+def _assert_recorded_limits(p):
+    assert p['result']['sourceTheoremProof'] == 'not-checked'
+    assert p['result']['paperNormBridge'] == 'unresolved'

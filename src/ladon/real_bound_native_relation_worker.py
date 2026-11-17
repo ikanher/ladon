@@ -78,11 +78,11 @@ def _compute(job):
               "compilations": [], "check": None,
               "limitations": ["only-definitional-iff-is-proved", "no-source-theorem-proof",
                               "no-paper-norm-bridge"]}
-    if not _same_source(left_plan, right_plan) or left_source != right_source:
-        result["residual"] = "real-relation-source-context-mismatch"
-        return result
-    if root != right_root or context.library_roots != right_context.library_roots:
-        result["residual"] = "real-relation-environment-mismatch"
+    mismatch = _context_mismatch(left_plan, right_plan,
+                                 (root, left_source, context),
+                                 (right_root, right_source, right_context))
+    if mismatch is not None:
+        result["residual"] = mismatch
         return result
     if any((library / "LadonRealBoundScalars.olean").exists()
            for library in context.library_roots):
@@ -91,26 +91,7 @@ def _compute(job):
     base_job = {**job, "plan": left_plan["bindingPlan"]}
     _verify_reserved(context, base_job)
     workspace = _workspace(base_job, root, context)
-    compile_steps = [_compile, _compile_binding]
-    for step in compile_steps:
-        actual = step(workspace, base_job)
-        result["compilations"].append(asdict(actual))
-        if not actual.succeeded:
-            if actual.memory_limited:
-                result["diagnostic"] = memory_limit_message(
-                    DEFAULT_MAX_RSS_BYTES, actual.peak_rss_bytes
-                )
-            result["residual"] = "real-relation-helper-compilation-failed"
-            return result
-    scalar_job = {**job, "plan": left_plan}
-    actual = _compile_helper(workspace, scalar_job, SCALAR_SOURCE, "scalarSourceDigest")
-    result["compilations"].append(asdict(actual))
-    if not actual.succeeded:
-        if actual.memory_limited:
-            result["diagnostic"] = memory_limit_message(
-                DEFAULT_MAX_RSS_BYTES, actual.peak_rss_bytes
-            )
-        result["residual"] = "real-relation-helper-compilation-failed"
+    if not _compile_relation_helpers(workspace, base_job, job, left_plan, result):
         return result
 
     proposition = _relation_goal(left_plan, right_plan)
@@ -130,6 +111,36 @@ def _compute(job):
     if job["checkerIdentity"] != native_checker_identity():
         raise ValueError("Real relation checker changed during execution")
     return result
+
+
+def _context_mismatch(left_plan, right_plan, left, right):
+    root, source, context = left
+    right_root, right_source, right_context = right
+    if not _same_source(left_plan, right_plan) or source != right_source:
+        return "real-relation-source-context-mismatch"
+    if root != right_root or context.library_roots != right_context.library_roots:
+        return "real-relation-environment-mismatch"
+    return None
+
+
+def _retain_compilation(result, actual):
+    result["compilations"].append(asdict(actual))
+    if not actual.succeeded:
+        if actual.memory_limited:
+            result["diagnostic"] = memory_limit_message(
+                DEFAULT_MAX_RSS_BYTES, actual.peak_rss_bytes
+            )
+        result["residual"] = "real-relation-helper-compilation-failed"
+    return actual.succeeded
+
+
+def _compile_relation_helpers(workspace, base_job, job, left_plan, result):
+    for step in (_compile, _compile_binding):
+        if not _retain_compilation(result, step(workspace, base_job)):
+            return False
+    scalar_job = {**job, "plan": left_plan}
+    actual = _compile_helper(workspace, scalar_job, SCALAR_SOURCE, "scalarSourceDigest")
+    return _retain_compilation(result, actual)
 
 
 def main():

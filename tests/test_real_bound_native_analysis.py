@@ -77,11 +77,7 @@ def test_same_exact_context_resolves_only_with_a_checked_relation(monkeypatch):
     assert len(relations) == 1
     assert relations[0][0] == "/source"
     assert 0 < relations[0][3] <= 17
-    assert result["relationCheckEvidence"]["goalDigest"] == "sha256:goal-0"
-    assert len(result["freshCheckEvidence"]) == 4
-    assert "checkRunRefs" not in result  # saved native refs are historical
-    assert result["sourceTheoremProof"] == "not-checked"
-    assert result["paperNormBridge"] == "unresolved"
+    _assert_comparison_evidence(result)
 
 
 def test_unaccepted_live_relation_check_never_promotes_context_equality(monkeypatch):
@@ -222,3 +218,11 @@ def test_singleton_cannot_claim_complete_propagation(monkeypatch):
     install_fresh_replay(monkeypatch)
     with pytest.raises(ValueError, match="2 to 128"):
         propagate_real_bound_identity([production()], "/source")
+
+
+def _assert_comparison_evidence(result):
+    assert result["relationCheckEvidence"]["goalDigest"] == "sha256:goal-0"
+    assert len(result["freshCheckEvidence"]) == 4
+    assert "checkRunRefs" not in result  # saved native refs are historical
+    assert result["sourceTheoremProof"] == "not-checked"
+    assert result["paperNormBridge"] == "unresolved"

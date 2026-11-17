@@ -187,13 +187,7 @@ def test_supervised_relation_worker_checks_current_source_bound_plans(relation_p
 
     run = check_real_bound_relation(root, plans[0], plans[1], timeout_seconds=120)
 
-    assert run["status"] == "completed", run.get("diagnostic")
-    assert run["result"]["status"] == "checked", json.dumps(run["result"], indent=2)[:6000]
-    assert run["result"]["leftPlanId"] == plans[0]["planId"]
-    assert run["result"]["rightPlanId"] == plans[1]["planId"]
-    assert run["result"]["goal"]["proposition"].startswith("ladon_real_bound_relation%")
-    assert run["result"]["check"]["status"] == "supported"
-    assert run["processReceipt"]["returnCode"] == 0
+    _assert_checked_relation(run, plans)
 
     source_path = root / "ScalarExamples.lean"
     original = source_path.read_bytes()
@@ -258,6 +252,23 @@ def test_live_public_comparison_replays_both_native_productions(relation_project
     assert all(row["authority"] == "fresh-lean-check" for row in saved)
     result = compare_real_bounds(saved[0], saved[1], root, timeout_seconds=600)
 
+    _assert_live_comparison(result, plans)
+
+    propagated = propagate_real_bound_identity(saved, root, timeout_seconds=600)
+    _assert_live_propagation(propagated)
+
+
+def _assert_checked_relation(run, plans):
+    assert run["status"] == "completed", run.get("diagnostic")
+    assert run["result"]["status"] == "checked", json.dumps(run["result"], indent=2)[:6000]
+    assert run["result"]["leftPlanId"] == plans[0]["planId"]
+    assert run["result"]["rightPlanId"] == plans[1]["planId"]
+    assert run["result"]["goal"]["proposition"].startswith("ladon_real_bound_relation%")
+    assert run["result"]["check"]["status"] == "supported"
+    assert run["processReceipt"]["returnCode"] == 0
+
+
+def _assert_live_comparison(result, plans):
     assert result["status"] == "resolved"
     assert result["relation"] == "equivalent"
     assert result["contextMatch"] is True
@@ -268,7 +279,8 @@ def test_live_public_comparison_replays_both_native_productions(relation_project
     assert result["sourceTheoremProof"] == "not-checked"
     assert result["paperNormBridge"] == "unresolved"
 
-    propagated = propagate_real_bound_identity(saved, root, timeout_seconds=600)
+
+def _assert_live_propagation(propagated):
     assert propagated["status"] == "resolved"
     assert propagated["complete"] is True
     assert len(propagated["candidateEdges"]) == 1
