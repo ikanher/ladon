@@ -73,7 +73,7 @@ def test_supported_mixed_evidence_update_archives_exact_rows_and_refreshes_lexic
     )
     with monkeypatch.context() as process_guard:
         process_guard.setattr("subprocess.Popen", lambda *args, **kwargs: pytest.fail("update invoked a process"))
-        result = update_proof_search_index(repo)
+        result = update_proof_search_index(repo, archive_history=True)
 
     assert result.payload["status"] == "complete"
     assert result.payload["preservedSnapshots"]
@@ -129,7 +129,7 @@ def test_semantic_only_override_in_unchanged_module_is_not_inherited(tmp_path: P
     (repo / "Main.lean").write_text(
         "import Base\ntheorem newlyNamed : baseValue ≤ 2 := by omega\n", encoding="utf-8"
     )
-    result = update_proof_search_index(repo)
+    result = update_proof_search_index(repo, archive_history=True)
     assert result.payload["status"] == "complete"
     clean = build_proof_search_index(repo, index_path=tmp_path / "clean.sqlite")
     _assert_declarations_equal(database, clean.index_path)

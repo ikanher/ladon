@@ -8,8 +8,9 @@ from typing import Any
 
 from ladon.proof_search_index import (
     ProofSearchIndexError,
+    _metadata,
+    _require_query_schema,
     default_proof_search_index_path,
-    inspect_proof_search_index,
 )
 from ladon.proof_search_type import TypeSearchRequest, query_type_shortlist
 
@@ -32,11 +33,22 @@ def dispatch_type_text(
     path = index_path or default_proof_search_index_path(repo_root)
     with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
         connection.row_factory = sqlite3.Row
+        connection.execute("BEGIN")
+        metadata = _metadata(connection)
+        _require_query_schema(metadata)
+        if evidence and evidence.get("generationIdentity") != metadata.get("generationIdentity"):
+            raise ProofSearchIndexError("index generation changed after freshness verification")
         payload = query_type_shortlist(
             connection,
             request,
             verifier=(lambda _candidates, _pattern: {}) if args.freshness == "verify" else None,
         )
+    payload.update(
+        generationIdentity=metadata.get("generationIdentity"), indexPath=str(path.resolve()),
+        generationIdentityMeaning="stored rows in the queried index",
+        freshnessStatus="verified-fresh" if evidence else "unchecked",
+        currentGenerationIdentity=evidence.get("currentGenerationIdentity"),
+    )
     if evidence:
         payload["freshnessEvidence"] = evidence
     return payload
@@ -47,7 +59,9 @@ def type_text_freshness(
 ) -> dict[str, Any]:
     if args.freshness != "verify":
         return {}
-    status = inspect_proof_search_index(repo_root, index_path=index_path, verify_sources=True)
+    from ladon.proof_search_freshness import inspect_freshness
+
+    status = inspect_freshness(repo_root, index_path=index_path)
     if status.get("freshness") != "fresh":
         raise ProofSearchIndexError("type-text index is stale or unavailable")
     fields = (

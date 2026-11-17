@@ -209,7 +209,7 @@ def test_incremental_update_preserves_supported_evidence_and_refuses_unknown(
         assert raised.value.code == "full-build-required"
         assert database.read_bytes() == previous
     else:
-        result = update_proof_search_index(repo)
+        result = update_proof_search_index(repo, archive_history=True)
         assert result.payload["status"] == "complete"
         entry = result.payload["preservedSnapshots"][0]
         archive = database.with_name(database.name + ".history") / entry["path"]

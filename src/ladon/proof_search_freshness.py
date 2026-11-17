@@ -124,3 +124,65 @@ def _freshness_from_snapshot(
     if metadata.get("generationIdentity") != snapshot.generation_identity:
         return "stale-configuration", snapshot.generation_identity
     return "fresh", snapshot.generation_identity
+
+
+def inspect_freshness(repo_root, *, index_path=None, expected_generation=None):
+    """Check supported current inputs without auditing historical databases."""
+    import time
+
+    from ladon.proof_search_index import (
+        _resolved_index_path,
+        capture_repository_snapshot,
+    )
+
+    root = repo_root.resolve()
+    path = _resolved_index_path(root, index_path)
+    started = time.monotonic()
+    metadata, sources = _read_freshness_identity(path)
+    read_seconds = time.monotonic() - started
+    freshness, current, changes = _freshness_details(
+        root, metadata, sources, verify_sources=True, changed_limit=5,
+        capture=capture_repository_snapshot,
+    )
+    generation = metadata.get('generationIdentity')
+    return {
+        'schema': 'ladon-proof-search-freshness-v1', 'operation': 'freshness',
+        'status': 'available', 'indexPath': str(path), 'repository': str(root),
+        **{key: metadata.get(key) for key in ('sourceFingerprint', 'configurationFingerprint',
+                                             'toolchainIdentity', 'helperIdentity', 'indexSchema')},
+        'generationIdentity': generation, 'currentGenerationIdentity': current,
+        'freshness': freshness, 'sourceChanges': changes,
+        'expectedGenerationIdentity': expected_generation,
+        'unchangedSinceExpectedGeneration': (
+            freshness == 'fresh' and generation == expected_generation
+            if expected_generation is not None else None
+        ),
+        'historyIntegrity': 'not-assessed',
+        'phaseSeconds': {'storedIdentity': read_seconds,
+                         'sourceValidation': time.monotonic() - started - read_seconds},
+        'elapsedSeconds': time.monotonic() - started,
+        'nonclaim': 'Observation of supported source/configuration inputs against the read index generation; not proof replay or a guarantee against later edits.',
+    }
+
+
+def _read_freshness_identity(path):
+    import sqlite3
+    from contextlib import closing
+
+    from ladon.proof_search_index import (
+        ProofSearchIndexError,
+        _metadata,
+        _open_readonly,
+        _require_query_schema,
+        _stored_sources,
+    )
+
+    try:
+        with closing(_open_readonly(path)) as connection:
+            connection.execute("BEGIN")
+            metadata = _metadata(connection)
+            _require_query_schema(metadata)
+            return metadata, _stored_sources(connection)
+    except (OSError, sqlite3.Error) as error:
+        raise ProofSearchIndexError(f"index unavailable for freshness check: {error}",
+                                    exit_class="operational") from error

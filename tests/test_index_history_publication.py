@@ -28,7 +28,7 @@ def test_history_budget_failure_preserves_base_and_reports_bound(tmp_path):
     repo, database = evidence_index(tmp_path)
     original = database.read_bytes()
     with pytest.raises(ProofSearchIndexError) as raised:
-        update_proof_search_index(repo, max_history_bytes=1)
+        update_proof_search_index(repo, max_history_bytes=1, archive_history=True)
     assert raised.value.code == "history-storage-limit"
     assert raised.value.details["maxHistoryBytes"] == 1
     assert raised.value.details["requiredHistoryBytes"] > 1
@@ -47,7 +47,7 @@ def test_post_replace_failure_is_uncertain_and_retains_history(tmp_path, monkeyp
 
     monkeypatch.setattr(owner, "durable_replace", uncertain)
     with pytest.raises(ProofSearchIndexError) as raised:
-        update_proof_search_index(repo)
+        update_proof_search_index(repo, archive_history=True)
     assert raised.value.code == "publication-uncertain"
     with sqlite3.connect(database) as connection:
         assert connection.execute("SELECT name FROM declarations").fetchall() == [("after",)]
@@ -68,7 +68,7 @@ def test_observed_source_change_lists_paths_and_keeps_base(tmp_path, monkeypatch
 
     monkeypatch.setattr(owner, "_populate_updated_copy", source_changes)
     with pytest.raises(ProofSearchIndexError) as raised:
-        update_proof_search_index(repo)
+        update_proof_search_index(repo, archive_history=True)
     assert raised.value.code == "source-changed"
     assert raised.value.details["sourceChanges"]["added"] == [{"module": "New", "path": "New.lean"}]
     assert "settle" in raised.value.remediation
@@ -80,7 +80,7 @@ def test_old_reader_finishes_on_a_complete_generation(tmp_path):
     reader = sqlite3.connect(f"file:{database}?mode=ro", uri=True)
     try:
         assert reader.execute("SELECT name FROM declarations").fetchall() == [("before",)]
-        update_proof_search_index(repo)
+        update_proof_search_index(repo, archive_history=True)
         assert reader.execute("SELECT name FROM declarations").fetchall() == [("before",)]
         with sqlite3.connect(database) as current:
             assert current.execute("SELECT name FROM declarations").fetchall() == [("after",)]
@@ -102,7 +102,7 @@ def test_legacy_noop_retains_actual_generation_and_bytes(tmp_path):
         }.items():
             connection.execute("UPDATE metadata SET value=? WHERE key=?", (value, key))
     original = database.read_bytes()
-    result = update_proof_search_index(repo)
+    result = update_proof_search_index(repo, archive_history=True)
     assert result.payload["status"] == "unchanged"
     assert result.payload["generationIdentity"] == "legacy-generation"
     assert database.read_bytes() == original

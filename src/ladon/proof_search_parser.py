@@ -58,7 +58,9 @@ def build_proof_search_parser(*, evidence_kinds: Sequence[str]) -> argparse.Argu
     update = commands.add_parser("update", help="Explicitly refresh changed lexical modules.")
     _add_repository_options(update)
     _add_output_options(update)
-    update.add_argument("--max-history-mib", type=_positive_integer)
+    update.add_argument("--max-history-mib", type=_positive_integer, help="Growth cap for explicitly requested archives; no eviction.")
+    update.add_argument("--archive-history", action="store_true",
+                        help="Explicitly retain a full old index with derived evidence (default: discard derived cache observations).")
 
     for operation, help_text in (("migrate", "Preserve evidence while adding historical schema."),
                                  ("ideas-sync", "Synchronize the authored ladon-ideas.json catalogue."),
@@ -69,11 +71,24 @@ def build_proof_search_parser(*, evidence_kinds: Sequence[str]) -> argparse.Argu
         if operation == "ideas":
             command.add_argument("--limit", type=_positive_integer, default=1000)
 
+    cleanup = commands.add_parser("history-cleanup", help="Preview or explicitly apply cleanup of registered old index snapshots.")
+    _add_repository_options(cleanup)
+    _add_output_options(cleanup)
+    cleanup.add_argument("--snapshot", action="append", default=[])
+    cleanup.add_argument("--all-registered", action="store_true")
+    cleanup.add_argument("--apply", action="store_true")
+    cleanup.add_argument("--preview-file", type=Path)
+
     history = commands.add_parser("history", help="List preserved evidence snapshots.")
     _add_repository_options(history)
     _add_output_options(history)
     history.add_argument("--limit", type=_positive_integer, default=100)
     history.add_argument("--offset", type=int, default=0)
+
+    freshness = commands.add_parser("freshness", help="Check current generation without historical integrity or storage diagnostics.")
+    _add_repository_options(freshness)
+    _add_output_options(freshness)
+    freshness.add_argument("--expected-generation", help="Compare against this previously recorded generation identity.")
 
     status = commands.add_parser("status", help="Inspect index identity and freshness.")
     _add_repository_options(status)
@@ -160,6 +175,12 @@ def build_proof_search_parser(*, evidence_kinds: Sequence[str]) -> argparse.Argu
     query.add_argument("--min-matched-segments", type=_positive_integer, default=1)
     search = operations.add_parser("search", help="Run the versioned name-search contract.")
     search_commands = search.add_subparsers(dest="search_operation", required=True)
+    batch = search_commands.add_parser("batch", help="Share one read generation and source-validation window across bounded queries.")
+    _add_repository_options(batch)
+    _add_output_options(batch)
+    batch.add_argument("--queries", type=Path, required=True,
+                       help="JSON array of 1..32 name/type-text argument lists; batch owns repository/freshness.")
+    batch.add_argument("--max-output-mib", type=_positive_integer, default=1)
     name = search_commands.add_parser("name", help="Search declarations by normalized name.")
     _add_repository_options(name)
     _add_output_options(name)

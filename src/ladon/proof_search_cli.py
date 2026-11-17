@@ -132,7 +132,8 @@ def _run_parsed_operation(args, operation: str, started: float) -> int:
     exit_code = (
         EXIT_OPERATIONAL
         if semantic_payload_failed(operation, payload) or (
-            operation == "index.prune" and payload.get("status") == "partial"
+            (operation == "index.prune" and payload.get("status") == "partial")
+            or (payload.get("operation") == "search-batch" and payload.get("status") != "available")
         )
         else EXIT_SUCCESS
     )
@@ -342,6 +343,10 @@ def _dispatch_index(
 def _dispatch_search(
     args: argparse.Namespace, repo_root: Path, index_path: Path | None
 ) -> Mapping[str, Any]:
+    if args.search_operation == "batch":
+        from ladon.proof_search_batch import dispatch_search_batch
+
+        return dispatch_search_batch(args, repo_root, index_path)
     if args.search_operation == "type-text":
         return dispatch_type_text(args, repo_root, index_path)
     if args.search_operation != "name":

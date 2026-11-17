@@ -51,6 +51,7 @@ from ladon.proof_search_schema import (
     schema_query_surfaces,
 )
 from ladon.proof_search_storage import database_storage_accounting
+from ladon.proof_search_timing import phase, timed_phase
 from ladon.proof_search_v3_projection import project_v3_catalog
 from ladon.proofir_catalog import (
     CatalogArtifact,
@@ -176,13 +177,15 @@ def default_proof_search_index_path(repo_root: Path) -> Path:
     return repo_root.resolve() / DEFAULT_INDEX_RELATIVE_PATH
 
 
+@timed_phase("hashing")
 def capture_repository_snapshot(repo_root: Path) -> RepositorySnapshot:
     """Hash the supported project source/configuration population."""
 
     root = repo_root.resolve()
     if not root.is_dir():
         raise ProofSearchIndexError(f"repository does not exist: {root}")
-    layout = discover_lean_source_map(root)
+    with phase("enumeration"):
+        layout = discover_lean_source_map(root)
     sources = tuple(
         _indexed_source(root, layout, module, path)
         for module, path in sorted(layout.modules.items())
@@ -284,12 +287,14 @@ def update_proof_search_index(
     *,
     index_path: Path | None = None,
     max_history_bytes: int | None = None,
+    archive_history: bool = False,
 ) -> IndexBuildResult:
     """Refresh a compatible lexical generation without changing the public API."""
 
     from ladon.proof_search_index_update import update_proof_search_index as update
 
-    return update(repo_root, index_path=index_path, max_history_bytes=max_history_bytes)
+    return update(repo_root, index_path=index_path, max_history_bytes=max_history_bytes,
+                  archive_history=archive_history)
 
 
 def inspect_proof_search_index(
@@ -759,27 +764,29 @@ def _insert_catalog_relations(
         raise ProofSearchIndexError(str(error)) from error
 
 
+@timed_phase("database")
 def _insert_source(
     connection: sqlite3.Connection,
     source: IndexedSource,
 ) -> tuple[int, int, int, int]:
     """Parse and insert one source while checking the captured bytes."""
 
-    raw = source.path.read_bytes()
-    if hashlib.sha256(raw).hexdigest() != source.sha256:
-        raise ProofSearchIndexError(
-            f"Lean source changed while building index: {source.relative_path}"
+    with phase("extraction"):
+        raw = source.path.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != source.sha256:
+            raise ProofSearchIndexError(
+                f"Lean source changed while building index: {source.relative_path}"
+            )
+        text = raw.decode("utf-8")
+        masks = mask_lean_source(text)
+        masked = masks.lexical.rstrip()
+        imports = parse_import_sites(text, masked_text=masked)
+        declarations = parse_text_declarations(
+            text,
+            masked_text=masked,
+            module=source.module,
+            source_path=source.relative_path,
         )
-    text = raw.decode("utf-8")
-    masks = mask_lean_source(text)
-    masked = masks.lexical.rstrip()
-    imports = parse_import_sites(text, masked_text=masked)
-    declarations = parse_text_declarations(
-        text,
-        masked_text=masked,
-        module=source.module,
-        source_path=source.relative_path,
-    )
     connection.execute(
         """
         INSERT INTO modules(

@@ -31,7 +31,10 @@ def _dispatch_index(
         return update_proof_search_index(
             repo_root, index_path=index_path,
             max_history_bytes=args.max_history_mib * 1024 * 1024 if args.max_history_mib else None,
+            archive_history=args.archive_history,
         ).payload
+    if args.index_operation == "history-cleanup":
+        return _dispatch_history_cleanup(args, repo_root, index_path)
     if args.index_operation == "history":
         from ladon.proof_search_history import list_history
 
@@ -40,15 +43,8 @@ def _dispatch_index(
         return list_indexes(repo_root, directory=args.directory, limit=args.limit)
     if args.index_operation == "prune":
         return _dispatch_prune(args, repo_root)
-    if args.index_operation == "status":
-        payload = inspect_proof_search_index(
-            repo_root, index_path=index_path, verify_sources=not args.no_verify_sources,
-            changed_limit=1000 if args.changed else 5,
-        )
-        return {
-            **payload, "detailsRequested": bool(args.details),
-            "changedRequested": bool(args.changed),
-        }
+    if args.index_operation in {"freshness", "status"}:
+        return _dispatch_status(args, repo_root, index_path)
     return query_proof_search_index(
         repo_root,
         index_path=index_path,
@@ -111,3 +107,34 @@ def _build_index(args, repo_root, index_path):
         max_index_bytes=args.max_index_mib * 1024 * 1024,
         **({"progress": _stage_reporter()} if args.progress else {}),
     ).payload
+
+
+def _dispatch_status(args, repo_root, index_path):
+    if args.index_operation == "freshness":
+        from ladon.proof_search_freshness import inspect_freshness
+
+        return inspect_freshness(repo_root, index_path=index_path,
+                                 expected_generation=args.expected_generation)
+    payload = inspect_proof_search_index(
+        repo_root, index_path=index_path, verify_sources=not args.no_verify_sources,
+        changed_limit=1000 if args.changed else 5,
+    )
+    return {
+        **payload, "detailsRequested": bool(args.details),
+        "changedRequested": bool(args.changed),
+    }
+
+
+def _dispatch_history_cleanup(args, repo_root, index_path):
+    from ladon.proof_search_history_cleanup import apply_history_cleanup, preview_history_cleanup
+
+    if args.apply:
+        if args.preview_file is None or args.snapshot or args.all_registered:
+            raise ProofSearchIndexError("--apply requires --preview-file and no new selection")
+        from ladon.investigation import load_plan
+
+        return apply_history_cleanup(repo_root, load_plan(args.preview_file), index_path=index_path)
+    if args.preview_file is not None:
+        raise ProofSearchIndexError("--preview-file requires --apply")
+    return preview_history_cleanup(repo_root, index_path=index_path,
+                                   snapshots=args.snapshot, all_registered=args.all_registered)

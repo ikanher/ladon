@@ -87,7 +87,7 @@ def semantic_modules(connection) -> set[str]:
 
 
 def clear_retained_projection(connection) -> None:
-    """Clear supported owners after their original database has been archived."""
+    """Invalidate derived cache owners before publishing a new lexical generation."""
     from ladon.proofir_sqlite_v3 import project_envelopes
 
     project_envelopes(connection, [], exact_inventory=False, manage_user_version=False)

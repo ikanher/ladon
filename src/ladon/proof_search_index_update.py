@@ -52,17 +52,29 @@ from ladon.proof_search_schema import (
     PROOF_SEARCH_HELPER_IDENTITY,
     SECOND_PREVIOUS_LEXICAL_HELPER_IDENTITY,
 )
+from ladon.proof_search_timing import timed_phase, update_timing
 from ladon.sqlite_publication import durable_replace, release_publication_lock
 
 
-def update_proof_search_index(
+def update_proof_search_index(repo_root, *, index_path=None, max_history_bytes=None,
+                              archive_history=False):
+    with update_timing() as timings:
+        result = _update_proof_search_index(repo_root, index_path=index_path,
+            max_history_bytes=max_history_bytes, archive_history=archive_history)
+    return IndexBuildResult({**result.payload, "phaseSeconds": timings,
+                             "phaseTimingPolicy": "exclusive-wall-seconds-v1"})
+
+
+def _update_proof_search_index(
     repo_root: Path,
     *,
     index_path: Path | None = None,
     max_history_bytes: int | None = None,
+    archive_history: bool = False,
 ) -> IndexBuildResult:
     """Reuse unchanged lexical modules in an owned, atomically published copy."""
 
+    _validate_archive_mode(archive_history)
     started = time.monotonic()
     root = repo_root.resolve()
     destination = _resolved_index_path(root, index_path)
@@ -79,8 +91,7 @@ def update_proof_search_index(
             changed, removed = _source_delta(snapshot, old_sources)
             extractor_changed = metadata.get("helperIdentity") != PROOF_SEARCH_HELPER_IDENTITY
             history = read_history(old)
-            validate_history(destination, history)
-            enforce_history_budget(history_directory(destination), max_history_bytes)
+            _validate_requested_history(destination, history, archive_history, max_history_bytes)
             if not _needs_publication(changed, removed, extractor_changed):
                 _ensure_source_stable(root, snapshot)
                 return IndexBuildResult({
@@ -89,22 +100,18 @@ def update_proof_search_index(
                     "baseGenerationIdentity": base_generation,
                     "generationIdentity": base_generation,
                     "reusedModules": len(snapshot.sources), "extractedModules": 0,
+                    "historyPolicy": "explicit-archive" if archive_history else "current-cache-only",
+                    "historyIntegrity": "validated" if archive_history else "not-assessed",
+                    "derivedEvidence": "unchanged",
                     "sourceChanges": {"added": 0, "changed": 0, "removed": 0},
                     "databaseBytes": destination.stat().st_size,
                     "elapsedSeconds": round(time.monotonic() - started, 6),
                 })
             require_supported_layout(old)
-            retained = first_retained_evidence_table(old)
-            preserved = []
-            if retained is not None:
-                entry = archive_base(old, history_directory(destination), max_history_bytes)
-                entry["path"] = Path(entry["path"]).name
-                preserved.append(entry)
-                history = [row for row in history if row["snapshotId"] != entry["snapshotId"]] + preserved
+            retained, preserved, history = _archive_if_requested(
+                old, destination, history, archive_history, max_history_bytes)
             recovery_modules = _recovery_modules(old, snapshot, removed, extractor_changed)
-            max_index_bytes = _integer_metadata(metadata, "maxIndexBytes")
-            if not max_index_bytes:
-                raise _full_build_required("base index has no stored size policy")
+            max_index_bytes = _size_policy(metadata)
             counts, temporary_bytes = _publish_copy(
                 root, destination, old, snapshot, changed | recovery_modules, removed,
                 max_index_bytes, history,
@@ -118,6 +125,9 @@ def update_proof_search_index(
             "extractedModules": len(changed | recovery_modules), "removedModules": len(removed),
             "lexicalRecoveryModules": len(recovery_modules - changed - removed),
             "preservedSnapshots": preserved,
+            "historyPolicy": "explicit-archive" if archive_history else "current-cache-only",
+            "historyIntegrity": "validated" if archive_history else "not-assessed",
+            "derivedEvidence": "invalidated" if retained is not None else "none",
             "historyBytes": sum(row["bytes"] for row in history),
             "currentEvidenceAssociation": "not-established",
             "sourceChanges": {
@@ -210,6 +220,7 @@ def _publish_copy(root, destination, old, snapshot, changed, removed, max_index_
         temporary.unlink(missing_ok=True)
 
 
+@timed_phase("database")
 def _populate_updated_copy(temporary, old, snapshot, changed, removed, max_index_bytes, history):
     with sqlite3.connect(temporary) as copy:
         old.backup(copy)
@@ -295,3 +306,31 @@ def _full_build_required(reason: str) -> ProofSearchIndexError:
         exit_class="operational", code="full-build-required",
         remediation="Preserve the old index; build with the intended --repo-root and a new --index path.",
     )
+
+
+def _validate_requested_history(destination, history, enabled, max_bytes):
+    if enabled:
+        validate_history(destination, history)
+        enforce_history_budget(history_directory(destination), max_bytes)
+
+
+@timed_phase("database")
+def _archive_if_requested(old, destination, history, enabled, max_bytes):
+    retained = first_retained_evidence_table(old)
+    if not enabled or retained is None:
+        return retained, [], history
+    entry = archive_base(old, history_directory(destination), max_bytes)
+    entry["path"] = Path(entry["path"]).name
+    return retained, [entry], [row for row in history if row["snapshotId"] != entry["snapshotId"]] + [entry]
+
+
+def _validate_archive_mode(enabled):
+    if type(enabled) is not bool:
+        raise ValueError("archive_history must be boolean")
+
+
+def _size_policy(metadata):
+    maximum = _integer_metadata(metadata, "maxIndexBytes")
+    if not maximum:
+        raise _full_build_required("base index has no stored size policy")
+    return maximum

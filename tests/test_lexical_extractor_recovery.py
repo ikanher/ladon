@@ -47,7 +47,7 @@ def test_extractor_recovery_archives_retained_rows_before_replacement(tmp_path: 
     index = prior_index(tmp_path, retained=True)
     with sqlite3.connect(index) as db:
         expected = db.execute("SELECT * FROM binders").fetchall()
-    result = update_proof_search_index(tmp_path).payload
+    result = update_proof_search_index(tmp_path, archive_history=True).payload
     assert result["status"] == "complete"
     assert len(result["preservedSnapshots"]) == 1
     with sqlite3.connect(index) as db:

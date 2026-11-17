@@ -14,7 +14,7 @@ from ladon.sqlite_publication import acquire_publication_lock, release_publicati
 
 def test_hardlink_alias_is_rejected_before_in_place_mutation(tmp_path):
     repo, index = evidence_index(tmp_path)
-    result = update_proof_search_index(repo)
+    result = update_proof_search_index(repo, archive_history=True)
     snapshot = history_directory(index) / result.payload['preservedSnapshots'][0]['path']
     alias = tmp_path / 'looks-active.sqlite'
     os.link(snapshot, alias)

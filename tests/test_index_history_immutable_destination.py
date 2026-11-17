@@ -13,13 +13,13 @@ from ladon.sqlite_publication import acquire_publication_lock, release_publicati
 @pytest.mark.parametrize('writer', ['update', 'build', 'proofir', 'lock'])
 def test_mutation_rejects_direct_snapshot_destination(tmp_path, writer):
     repo, index = evidence_index(tmp_path)
-    result = update_proof_search_index(repo)
+    result = update_proof_search_index(repo, archive_history=True)
     snapshot = history_directory(index) / result.payload['preservedSnapshots'][0]['path']
     original = snapshot.read_bytes()
     (repo / 'Main.lean').write_text('theorem furtherEdit : True := True.intro\n')
     with pytest.raises((RuntimeError, ValueError), match='histor'):
         if writer == 'update':
-            update_proof_search_index(repo, index_path=snapshot)
+            update_proof_search_index(repo, index_path=snapshot, archive_history=True)
         elif writer == 'build':
             build_proof_search_index(repo, index_path=snapshot)
         elif writer == 'proofir':
@@ -33,7 +33,7 @@ def test_mutation_rejects_direct_snapshot_destination(tmp_path, writer):
 
 def test_snapshot_alias_does_not_bypass_mutation_guard(tmp_path):
     repo, index = evidence_index(tmp_path)
-    result = update_proof_search_index(repo)
+    result = update_proof_search_index(repo, archive_history=True)
     snapshot = history_directory(index) / result.payload['preservedSnapshots'][0]['path']
     alias = tmp_path / 'looks-active.sqlite'
     alias.symlink_to(snapshot)

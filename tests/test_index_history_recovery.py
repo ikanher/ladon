@@ -30,7 +30,7 @@ def test_changed_legacy_v5_layout_migrates_with_original_rows(tmp_path):
             connection.execute('UPDATE metadata SET value=? WHERE key=?', (value, key))
     with sqlite3.connect(index) as connection:
         original = _all_table_rows(connection)
-    result = update_proof_search_index(repo)
+    result = update_proof_search_index(repo, archive_history=True)
     entry = result.payload['preservedSnapshots'][0]
     with open_history_snapshot(repo, index, entry['snapshotId']) as (connection, _entry, metadata):
         assert metadata['indexSchema'] == 'ladon-proof-search-index-v5'
@@ -48,7 +48,7 @@ def test_archive_directory_sync_failure_keeps_active_and_discloses_orphan(tmp_pa
         raise OSError('injected archive directory sync failure')
     monkeypatch.setattr(owner, '_sync_directory', fail_sync)
     with pytest.raises((OSError, ProofSearchIndexError), match='injected archive'):
-        update_proof_search_index(repo)
+        update_proof_search_index(repo, archive_history=True)
     assert index.read_bytes() == original
     inventory = list_history(repo)
     assert inventory['total'] == 0
@@ -62,7 +62,7 @@ def test_existing_publisher_prevents_archive_and_active_mutation(tmp_path):
     lock = acquire_publication_lock(index)
     try:
         with pytest.raises(ProofSearchIndexError) as raised:
-            update_proof_search_index(repo)
+            update_proof_search_index(repo, archive_history=True)
         assert 'active' in str(raised.value).lower() or 'progress' in str(raised.value).lower()
         assert index.read_bytes() == original
         assert not history_directory(index).exists()
@@ -72,7 +72,7 @@ def test_existing_publisher_prevents_archive_and_active_mutation(tmp_path):
 
 def test_proofir_full_publication_cannot_overwrite_history_owner(tmp_path):
     repo, index = evidence_index(tmp_path)
-    update_proof_search_index(repo)
+    update_proof_search_index(repo, archive_history=True)
     original = index.read_bytes()
     with pytest.raises(ProofSearchIndexError):
         publish_v3_database(index, [])
@@ -81,7 +81,7 @@ def test_proofir_full_publication_cannot_overwrite_history_owner(tmp_path):
 
 def test_joint_relocation_retains_history_selection(tmp_path):
     repo, index = evidence_index(tmp_path)
-    result = update_proof_search_index(repo)
+    result = update_proof_search_index(repo, archive_history=True)
     selected = result.payload['preservedSnapshots'][0]['snapshotId']
     folder = tmp_path / 'moved'
     folder.mkdir()

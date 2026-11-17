@@ -155,7 +155,7 @@ def test_predecessor_identity_update_archives_evidence_and_is_then_noop(
             "INSERT INTO binders VALUES(?,?,?,?,?,?,?,?)",
             (declaration_id, 0, "h", "explicit", "True", 1, "lean_environment", "True"),
         )
-    updated = update_proof_search_index(tmp_path).payload
+    updated = update_proof_search_index(tmp_path, archive_history=True).payload
     assert updated["status"] == "complete"
     assert updated["sourceChanges"] == {"added": 0, "changed": 0, "removed": 0}
     assert updated["lexicalRecoveryModules"] == 1

@@ -53,7 +53,7 @@ def seed_archived_lineage(
     (repo / "Demo.lean").write_text(
         "namespace Demo\ntheorem replacement : True := True.intro\nend Demo\n", encoding="utf-8"
     )
-    update = update_proof_search_index(repo, index_path=index)
+    update = update_proof_search_index(repo, index_path=index, archive_history=True)
     archive_id = update.payload["preservedSnapshots"][0]["snapshotId"]
     archive = index.parent / (index.name + ".history") / f"{archive_id}.sqlite"
     return repo, index, archive_id, archive, update
@@ -125,7 +125,7 @@ def test_registered_archive_damage_blocks_next_update_without_replacing_active(
     (repo / "Base.lean").write_text("def baseValue : Nat := 2\n", encoding="utf-8")
 
     with pytest.raises(ProofSearchIndexError):
-        update_proof_search_index(repo, index_path=index)
+        update_proof_search_index(repo, index_path=index, archive_history=True)
 
     assert index.read_bytes() == before
 

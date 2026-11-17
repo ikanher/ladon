@@ -25,7 +25,7 @@ def test_structure_authority_is_archived_before_reextraction(tmp_path):
         connection.execute("UPDATE structures SET authority='lean_environment'")
         original = connection.execute('SELECT * FROM structures').fetchall()
     (repo / 'Main.lean').write_text('structure Box where\n  value : Int\n')
-    result = update_proof_search_index(repo)
+    result = update_proof_search_index(repo, archive_history=True)
     assert len(result.payload['preservedSnapshots']) == 1
     entry = result.payload['preservedSnapshots'][0]
     with sqlite3.connect(history_directory(index) / entry['path']) as connection:
@@ -34,18 +34,18 @@ def test_structure_authority_is_archived_before_reextraction(tmp_path):
 
 def test_existing_history_ceiling_applies_to_lexical_update(tmp_path):
     repo, index = evidence_index(tmp_path)
-    update_proof_search_index(repo)
+    update_proof_search_index(repo, archive_history=True)
     original = index.read_bytes()
     (repo / 'Main.lean').write_text('theorem third : True := True.intro\n')
     with pytest.raises(ProofSearchIndexError) as raised:
-        update_proof_search_index(repo, max_history_bytes=1)
+        update_proof_search_index(repo, max_history_bytes=1, archive_history=True)
     assert raised.value.code == 'history-storage-limit'
     assert index.read_bytes() == original
 
 
 def test_orphan_and_temporary_history_are_visible_and_not_deleted(tmp_path):
     repo, index = evidence_index(tmp_path)
-    update_proof_search_index(repo)
+    update_proof_search_index(repo, archive_history=True)
     folder = history_directory(index)
     orphan = folder / ('f' * 64 + '.sqlite')
     orphan.write_bytes(b'uncertain complete archive')
@@ -74,7 +74,7 @@ def test_same_generation_different_evidence_has_distinct_content_identity(tmp_pa
 
 def test_catalog_observation_substitution_is_rejected(tmp_path):
     repo, index = evidence_index(tmp_path)
-    result = update_proof_search_index(repo)
+    result = update_proof_search_index(repo, archive_history=True)
     entry = result.payload['preservedSnapshots'][0]
     import json
     with sqlite3.connect(index) as connection:
