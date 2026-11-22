@@ -12,6 +12,6 @@
 
 ## 3. Acceptance Scenarios
 
-- [ ] 3.1 Add portable equivalents of the six `TODO.md` Matrix-Factorization scenarios covering type search, missing premises, reverse consumers, constructor coverage, goal probing, and scale-aware routing.
+- [ ] 3.1 Add portable equivalents of the six [TODO.md](../../../docs/history/TODO.md) Matrix-Factorization scenarios covering type search, missing premises, reverse consumers, constructor coverage, goal probing, and scale-aware routing.
 - [ ] 3.2 Exercise the real Matrix-Factorization repository as optional observational evidence while keeping portable fixtures authoritative.
 - [ ] 3.3 Strictly validate this change and run focused frontier, revision, packet, bounds, and determinism gates.

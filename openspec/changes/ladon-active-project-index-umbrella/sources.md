@@ -2,7 +2,7 @@
 
 ## Frozen input
 
-- Source: [FIRST-HAND-REPORT.md](../../../FIRST-HAND-REPORT.md).
+- Source: [FIRST-HAND-REPORT.md](../../../docs/history/FIRST-HAND-REPORT.md).
 - Report SHA-256 at planning: `15e5a7256f1fc777c6803acb0d87df9f500e1050c60f2e39e12f6baa37512a96`.
 - Inspection baseline: Ladon commit `a073eadc3d6204f80f87a8eacc6e43d3797b46b5`; report has user edits in the working tree. Those edits are preserved.
 - August sections report historical sessions. The October 8 section identifies the installed commit and a concurrently changing source tree. No new real-project run or 18 GB directory audit has been performed. The historical 93-second benchmark has not been renewed; the r01 portable workload is a different population.

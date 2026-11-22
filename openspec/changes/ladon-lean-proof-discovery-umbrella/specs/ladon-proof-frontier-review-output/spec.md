@@ -35,7 +35,7 @@ preserving its backend, freshness, truncation, and theorem-authority nonclaims.
 - **THEN** packet evidence summarizes its endpoints and gaps but does not call the mathematical proof verified or replay its Lean routes
 
 ### Requirement: Integrated proof-discovery acceptance scenarios
-The umbrella exit SHALL include portable analogues of all six `TODO.md` discovery
+The umbrella exit SHALL include portable analogues of all six [TODO.md](../../../../../docs/history/TODO.md) discovery
 questions and label any lexical or heuristic fallback explicitly.
 
 #### Scenario: Six-scenario gate

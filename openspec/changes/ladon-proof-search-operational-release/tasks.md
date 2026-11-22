@@ -28,7 +28,7 @@
 - [x] 5.1 Inspect Matrix-Factorization status read-only and rebuild only with explicit task authorization if the disposable schema is incompatible.
 - [ ] 5.2 Run exact/segmented/type search, consumers, constructor, explain, owner report, lineage summary, and bounded lineage views with exact commands and finite external safety timeouts.
 - [ ] 5.3 Record repository/toolchain/source/database identities, plans, exits or signals, elapsed time, peak RSS, output bytes, result quality, and before/after storage accounting.
-- [x] 5.4 Compare with `FIRST-HAND-REPORT.md`, state confirmed improvements and remaining nonclaims, and avoid modifying target Lean source.
+- [x] 5.4 Compare with [FIRST-HAND-REPORT.md](../../../docs/history/FIRST-HAND-REPORT.md), state confirmed improvements and remaining nonclaims, and avoid modifying target Lean source.
 
 ## 6. Close The Release
 

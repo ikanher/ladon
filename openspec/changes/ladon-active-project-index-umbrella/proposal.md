@@ -2,7 +2,7 @@
 
 ## Why
 
-The October follow-up in `FIRST-HAND-REPORT.md` records useful declarations being missed or replaced by unrelated lexical matches while a shared repository changes. Rebuilding private 775 MB indexes took about 93 seconds and contributed to an 18 GB index directory; the caller needs visible search limitations, an affordable update path and safe lifecycle management.
+The October follow-up in [FIRST-HAND-REPORT.md](../../../docs/history/FIRST-HAND-REPORT.md) records useful declarations being missed or replaced by unrelated lexical matches while a shared repository changes. Rebuilding private 775 MB indexes took about 93 seconds and contributed to an 18 GB index directory; the caller needs visible search limitations, an affordable update path and safe lifecycle management.
 
 ## What Changes
 

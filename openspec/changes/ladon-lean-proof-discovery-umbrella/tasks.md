@@ -27,7 +27,7 @@
 
 - [ ] 5.1 Apply `ladon-proof-frontier-review-output` only after all upstream evidence schemas and portable exits are stable.
 - [ ] 5.2 Join route history and theorem-surface revision evidence without erasing scope, freshness, omission, or rejected-route facts.
-- [ ] 5.3 Pass portable equivalents of all six `TODO.md` acceptance scenarios and use Matrix-Factorization only as fingerprinted observational evidence.
+- [ ] 5.3 Pass portable equivalents of all six [TODO.md](../../../docs/history/TODO.md) acceptance scenarios and use Matrix-Factorization only as fingerprinted observational evidence.
 
 ## 6. Full Acceptance
 

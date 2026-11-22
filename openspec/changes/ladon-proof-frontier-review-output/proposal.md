@@ -15,7 +15,7 @@ authority.
   theorem-surface changelog rather than only file/module changes.
 - Feed the compact frontier into existing packet-evidence reports without replaying
   or certifying the mathematical proof.
-- Gate the six `TODO.md` acceptance scenarios as an integrated review handoff.
+- Gate the six [TODO.md](../../../docs/history/TODO.md) acceptance scenarios as an integrated review handoff.
 
 ## Capabilities
 

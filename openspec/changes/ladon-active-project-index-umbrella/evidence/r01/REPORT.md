@@ -1,6 +1,6 @@
 # Active-index implementation, r01
 
-The implementation adds source-change and exact-miss diagnostics, explicit lexical `index update`, and preview-first local index inventory/cleanup. The frozen [first-hand report](../../../../../FIRST-HAND-REPORT.md) is an input, not a file modified by this change. [Candidate hashes](candidate-hashes.json) identify the code and documentation bytes used for final verification; the base commit is recorded there. A [wheel-installed baseline](baseline.json) from that commit returned one lexical fallback for the untracked theorem in stored and verified modes, without an exact-miss summary; verified mode reported `stale-source`.
+The implementation adds source-change and exact-miss diagnostics, explicit lexical `index update`, and preview-first local index inventory/cleanup. The frozen [first-hand report](../../../../../docs/history/FIRST-HAND-REPORT.md) is an input, not a file modified by this change. [Candidate hashes](candidate-hashes.json) identify the code and documentation bytes used for final verification; the base commit is recorded there. A [wheel-installed baseline](baseline.json) from that commit returned one lexical fallback for the untracked theorem in stored and verified modes, without an exact-miss summary; verified mode reported `stale-source`.
 
 ## Observed behavior
 

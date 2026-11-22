@@ -16,7 +16,7 @@ owns revision comparisons; and packet evidence owns review-artifact normalizatio
 
 **Goals:**
 
-- Answer the six `TODO.md` discovery scenarios with elaborated evidence when
+- Answer the six [TODO.md](../../../docs/history/TODO.md) discovery scenarios with elaborated evidence when
   available and explicit lexical/heuristic fallback labels otherwise.
 - Return useful indexed candidates in seconds without rebuilding the target for each
   query.

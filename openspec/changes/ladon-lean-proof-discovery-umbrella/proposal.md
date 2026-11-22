@@ -3,7 +3,7 @@
 Ladon's architecture reports help reviewers locate proof surfaces, but active Lean
 work still falls back to name guessing and repeated compiler failures when the
 needed declaration, adapter, or constructor field is unknown. The concrete
-acceptance cases in `TODO.md` justify a dependency-ordered proof-discovery program
+acceptance cases in [TODO.md](../../../docs/history/TODO.md) justify a dependency-ordered proof-discovery program
 that uses elaborated Lean evidence without presenting heuristics as compiled proofs.
 
 ## What Changes
