@@ -8,11 +8,10 @@ The goal is to make AI-assisted mathematics easier to understand, check,
 attribute, and reuse. Ladon is in **alpha**. Lean performs the proof checking;
 a successful check does not certify the meaning or argument of nearby prose.
 
-The **0.4.4 internal snapshot** adds focused generation freshness, batch search,
-update phase timings and explicit slice resource controls. Ordinary index updates
-now use a current cache without automatic historical snapshots. See the
-[release notes](docs/RELEASE_0_4_4.md) for verification and limits, and the
-[internal handoff](docs/INTERNAL_HANDOFF_0_4_4.md) for checkout-local use and feedback.
+**Ladon 0.5.0** includes the Apache-2.0 license and a worked example of finding
+reusable mathematics in a million-declaration Lean index. Index freshness,
+batch search, and proof-slicing resource controls are documented in the
+[0.4.4 release notes](docs/RELEASE_0_4_4.md).
 
 ## An LLM found a Gaussian integral in a number theory archive
 
