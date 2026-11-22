@@ -17,23 +17,38 @@ While working on differentially private Adam, we needed the exponential moment
 of a Gaussian quadratic form with off-diagonal terms. We suspected a Fourier
 transform theorem could supply the integral, but didn't know its name.
 We searched Levent Alpöge’s Riemann Hypothesis archive for the square root of
-a matrix determinant. Given the local index from the walkthrough, the query is:
+a matrix determinant. To reproduce the example, give your coding agent this prompt:
+
+> Follow [the RH walkthrough](docs/RH_INDEX_EXAMPLE.md) from this checkout.
+> Get the index, run both searches, and report the declaration names and source
+> lines. The type search should return three matches, including
+> `fourier_gaussian_real_place` at line 122. The scoped name search should
+> return `qf_add` at line 24. Both searches work without a Lean build.
+
+From a Ladon checkout with [uv](https://docs.astral.sh/uv/) and Python 3.11 or
+3.12, run this in Bash. The example fetches three checksum-verified Lean files
+from a pinned source mirror and indexes them locally.
 
 ```bash
-uv run --locked ladon proof-search search type-text \
-  --repo-root . --index "$RH_INDEX" --freshness stored \
-  --pattern 'Real.sqrt |S.det|' --limit 10
+RH_SRC="$(mktemp -d)/src"
+uv run --locked python scripts/rh_lookup.py prepare --directory "$RH_SRC" &&
+  uv run --locked ladon proof-search index build --repo-root "$RH_SRC" &&
+  uv run --locked ladon proof-search search type-text --repo-root "$RH_SRC" \
+    --pattern 'Real.sqrt |S.det|' --limit 10 &&
+  uv run --locked ladon proof-search search name --repo-root "$RH_SRC" \
+    --text qf_add --scope module \
+    --root GroundTheory.HeightsAndTheta.Heights.HeightKernels.PThetaSummandNorm --limit 1
 ```
 
-Three declarations matched. One was `fourier_gaussian_real_place`. Setting its
-frequency to zero gave the integral for a positive-definite matrix. A second
-search found the identity for completing the square, and we checked the
-resulting expectation formula in Lean on our project's toolchain.
+The three files were selected using the index of **1,057,634 declarations in
+175,187 files**. The first search returns three declarations. Specializing
+`fourier_gaussian_real_place` to zero frequency gave us the Gaussian integral
+for a positive-definite matrix. The second search returns the lemma for
+completing the square. We checked the resulting expectation in Lean in the
+project where we use it.
 
-The walkthrough downloads the author’s archive and builds a local index. On our
-machine, indexing **1,057,634 declarations in 175,187 files** took 10 min 34 s
-and produced a 3.83 GiB SQLite file. Both example searches read that snapshot
-without building the RH project. [Build the index and reproduce both searches](docs/RH_INDEX_EXAMPLE.md)
+The walkthrough includes the expected hits, the downloadable module lookup
+for other type fragments, and the full local index build. [RH walkthrough](docs/RH_INDEX_EXAMPLE.md)
 
 ## Setup
 

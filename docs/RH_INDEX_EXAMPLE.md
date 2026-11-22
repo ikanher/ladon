@@ -4,6 +4,38 @@ Suppose a proof needs the expectation of `exp(Zᵀ H Z / 2 + Zᵀ b)` for a stan
 
 ## Get a searchable index
 
+For the two published queries, use the [README example](../README.md#finding-a-gaussian-integral-in-a-number-theory-archive). The checkout includes the three selected source paths and their SHA-256 digests. The helper fetches those files from the Lean community mirror at commit `40e56bab026552e089d7afcfeff08d2defb9c005`. If you already have the original archive, add `--source-root /path/to/lean/src` to read the same files locally.
+
+### Use the release lookup for another type fragment
+
+The [snapshot release](https://github.com/ikanher/ladon/releases/tag/rh-lookup-2026-11-20) contains `module-lookup.sqlite.gz` and `SHA256SUMS`. The packaged module list in the README works independently of this download. It contains source paths, file digests, and fingerprints of consecutive words in lexical declaration signatures across the corpus. Supply a literal type fragment and the module for your scoped name search. The helper selects candidate files and verifies their downloaded bytes. Run Ladon's ordinary searches on the resulting directory to check the literal and name matches. The subset index covers the files selected for **those queries**; select again when the fragment or module changes.
+
+From the Ladon checkout, with Bash, curl and sha256sum:
+
+```bash
+RH_WORK=$(mktemp -d)
+RH_RELEASE=https://github.com/ikanher/ladon/releases/download/rh-lookup-2026-11-20
+(
+  set -e
+  cd "$RH_WORK"
+  for asset in SHA256SUMS module-lookup.sqlite.gz; do
+    curl --fail --location --retry 3 --output "$asset" "$RH_RELEASE/$asset"
+  done
+  sha256sum --check SHA256SUMS
+) &&
+  RH_SRC="$RH_WORK/src" &&
+  uv run --locked python scripts/rh_lookup.py prepare \
+    --lookup "$RH_WORK/module-lookup.sqlite.gz" --directory "$RH_SRC" \
+    --type-text 'Real.sqrt |S.det|' \
+    --module GroundTheory.HeightsAndTheta.Heights.HeightKernels.PThetaSummandNorm &&
+  uv run --locked ladon proof-search index build --repo-root "$RH_SRC" &&
+  RH_INDEX="$RH_SRC/.ladon/index/proof-search.sqlite"
+```
+
+The lookup uses triples of consecutive ASCII words (letters, digits, and underscores). A word touching either end of the query can be a partial identifier and is excluded. A true literal match contains every interior triple; fingerprint collisions can select extra modules, which the subsequent literal search filters. For shorter fragments or unrestricted name searches, use the full local index below.
+
+### Build the full index locally
+
 From the Ladon checkout, complete the [setup](../README.md#setup). The following Bash commands download the 14 parts linked in Levent Alpöge’s announcement, join them in order, verify the snapshot used here, and build the index. Allow about 8 GiB of free disk for the archive, extracted sources, and index. [Author’s announcement](https://alpo.ge/remark.pdf)
 
 ```bash
