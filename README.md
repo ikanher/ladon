@@ -1,203 +1,121 @@
 # Ladon
 
-Ladon helps people and LLMs search Lean projects, check proposed theorem
-applications, and examine the formal support behind mathematical explanations.
-It works alongside Lean and ordinary proof-development tools.
+Ladon helps mathematicians and coding agents find Lean theorems they can reuse
+and trace the dependencies of a compiled proof. **Version 0.5.0 · alpha.**
 
-The goal is to make AI-assisted mathematics easier to understand, check,
-attribute, and reuse. Ladon is in **alpha**. Lean performs the proof checking;
-a successful check does not certify the meaning or argument of nearby prose.
+- **Find a theorem when you don't know its name.** Search an indexed library
+  for a fragment of the type you need. A source match gives you a declaration
+  and a file location. Inspect its hypotheses, then ask Lean to check the
+  application against your goal. [Find and check Lean results](#find-and-check-lean-results)
+- **See what a proof actually uses.** Trace a compiled dependency to the
+  statement or proof that uses it. Ladon reports when the stored evidence is
+  stale or the displayed graph is incomplete. [Inspect compiled theorem lineage](#inspect-compiled-theorem-lineage)
 
-**Ladon 0.5.0** includes the Apache-2.0 license and a worked example of finding
-reusable mathematics in a million-declaration Lean index. Index freshness,
-batch search, and proof-slicing resource controls are documented in the
-[0.4.4 release notes](docs/RELEASE_0_4_4.md).
+## Finding a Gaussian integral in a number theory archive
 
-## An LLM found a Gaussian integral in a number theory archive
+While working on differentially private Adam, we needed the exponential moment
+of a Gaussian quadratic form with off-diagonal terms. We suspected a Fourier
+transform theorem could supply the integral, but didn't know its name.
+We searched Levent Alpöge’s Riemann Hypothesis archive for the square root of
+a matrix determinant. Given the local index from the walkthrough, the query is:
 
-While working on differentially private Adam, we needed the exponential moment of
-a Gaussian quadratic form with off-diagonal terms. We searched Levent Alpöge’s
-Riemann Hypothesis Lean archive. Ladon indexed **1,057,634 declarations in
-175,187 files** in about 11 minutes on one machine, using source text alone.
+```bash
+uv run --locked ladon proof-search search type-text \
+  --repo-root . --index "$RH_INDEX" --freshness stored \
+  --pattern 'Real.sqrt |S.det|' --limit 10
+```
 
-A search for the type fragment `Real.sqrt |S.det|` returned three declarations.
-One was a Fourier transform theorem. Setting its frequency to zero turned it
-into the real Gaussian integral we needed. A second lemma supplied the
-cross term for completing the square. We then checked the resulting expectation
-in Lean on the consuming project's toolchain.
+Three declarations matched. One was `fourier_gaussian_real_place`. Setting its
+frequency to zero gave the integral for a positive-definite matrix. A second
+search found the identity for completing the square, and we checked the
+resulting expectation formula in Lean on our project's toolchain.
 
-[Try the two searches, with prompts for an LLM and the expected results.](docs/RH_INDEX_EXAMPLE.md)
+The walkthrough downloads the author’s archive and builds a local index. On our
+machine, indexing **1,057,634 declarations in 175,187 files** took 10 min 34 s
+and produced a 3.83 GiB SQLite file. Both example searches read that snapshot
+without building the RH project. [Build the index and reproduce both searches](docs/RH_INDEX_EXAMPLE.md)
 
 ## Setup
 
-Requires Python 3.11 or 3.12 and [uv](https://docs.astral.sh/uv/).
-From this checkout:
+From the Ladon checkout, use Python 3.11 or 3.12 and [uv](https://docs.astral.sh/uv/).
 
 ```bash
 uv sync --locked
 uv run --locked ladon --version
 ```
 
-The examples below run from the Ladon checkout. Replace `/path/to/project`
-with your Lean project's root. Lean-backed operations need that project's
-pinned Lean/Lake toolchain and compiled dependencies. They can execute project
-code, so use them with trusted projects.
+Source search works without running Lean. Application checks and compiled
+dependency inspection need the project's pinned toolchain and compiled
+dependencies. Use Lean-backed operations with trusted projects because they can
+execute project code. [Instructions for coding agents](skills/ladon/SKILL.md)
 
 ## Find and check Lean results
 
-Build a local index, then search declaration names or type text:
+Set `PROJECT` to your Lean project's root. Build its index once, then search by
+name or type. To search another library, point the same commands at its root.
 
 ```bash
-uv run --locked ladon proof-search index build --repo-root /path/to/project
-uv run --locked ladon proof-search search name \
-  --repo-root /path/to/project --text integrable --limit 10
-uv run --locked ladon proof-search search type-text \
-  --repo-root /path/to/project --pattern 'Nat → Nat' --limit 10
+uv run --locked ladon proof-search index build --repo-root "$PROJECT"
+uv run --locked ladon proof-search search name --repo-root "$PROJECT" --text integrable --limit 10
+uv run --locked ladon proof-search search type-text --repo-root "$PROJECT" --pattern 'Nat → Nat' --limit 10
 ```
 
-Indexing and search read source text without running Lean. Results are
-candidates to investigate, not proof that a theorem applies. The disposable
-index lives in `.ladon/index/`; add that directory to your project's ignore
-file, or choose another location with `--index`.
-After edits, use `proof-search index status --changed` to see stale sources and
-`proof-search index update` to refresh source search while preserving retained
-evidence in history. See the
-[CLI reference](docs/CLI.md) for index cleanup and evidence limits.
+Check the reported search scope and freshness before reusing a match. For
+example, the RH search above explicitly asks for the stored snapshot. After
+source edits, `proof-search index status --changed` identifies stale files and
+`proof-search index update` refreshes the index. [Index and search options](docs/CLI.md#proof-search-index)
 
-Check a candidate against a goal in a compiled module from your project:
+To try a candidate, replace `Project.Basic` below with a compiled module in
+your project. Lean checks the application in that module's environment.
 
 ```bash
 uv run --locked ladon proof-search check candidate \
-  --repo-root /path/to/project --module Project.Basic \
+  --repo-root "$PROJECT" --module Project.Basic \
   --goal '∀ a b : Nat, a + b = b + a' --candidate Nat.add_comm
 ```
 
-`proof-search discover` searches a bounded shortlist and checks candidates
-against a goal. It accepts ordered local hypotheses with repeated
-`--local NAME:TYPE` arguments. Results show the attempted application and any
-remaining goals, including their local context. An application with remaining
-goals is incomplete.
+If a candidate leaves premises open, Ladon shows the remaining goals. Use
+`proof-search discover` to try a shortlist against a goal with local hypotheses,
+or capture a goal directly at a position in your Lean file.
+[Application checks](docs/APPLICATION_OBSERVATIONS.md) · [Source goals](docs/SOURCE_GOAL_CAPTURE.md)
 
-For an existing proof, `proof-search goal capture` reads the goal and context
-at a source position. `proof-search goal complete` checks a proposed term
-against that capture, replays it through the Lean compiler, and checks its
-axiom dependencies. Completion concerns the selected goal; it does not edit
-the file or complete the enclosing declaration.
+## Inspect compiled theorem lineage
 
-See [search and checking](docs/CLI.md),
-[application details](docs/APPLICATION_OBSERVATIONS.md),
-[goal capture](docs/SOURCE_GOAL_CAPTURE.md), and
-[goal completion](docs/SOURCE_GOAL_COMPLETION.md).
-
-## Review proof explanations and formal coverage
-
-A result manifest maps written claims and their components to formal results.
-An optional guide adds explanations, citations, and attributed reviews.
-Ladon shows which components have formal links, what the supplied evidence
-supports, and which reviews need reassessment after a revision.
-
-Read a supplied result bundle without its original project or cache:
+When reviewing a proof, it helps to distinguish declarations mentioned in the
+theorem's type from lemmas used in its proof. The `closure` view reports both
+kinds of dependency. For example, in a spectral-coordinate proof it let us
+trace the polynomial spectral mapping step back to the Lean result supplying it.
 
 ```bash
-uv run --locked ladon result inspect result.zip --section components
-uv run --locked ladon result guide result.zip --section steps
+uv run --locked ladon theorem lineage Fully.Qualified.theorem \
+  --repo-root "$PROJECT" --view closure --refresh missing
 ```
 
-These views read stored evidence; they do not run Lean or automatically judge
-whether prose faithfully describes a proof. The [correspondence audit
-recipe](docs/PROOF_CORRESPONDENCE_AUDIT.md) shows how to check a disputed step,
-preserve its assumptions, and propose a correction using ordinary files and
-Lean.
+Replace the theorem name with one from your compiled project. Use
+`--refresh never` to inspect an existing record. Check the reported coverage
+before treating the graph as complete. In one audit, a 100-node cap displayed
+100 of 2,242 declarations and reported the 2,142 omitted.
+[Lineage, graph limits, and historical snapshots](docs/CLI.md#theorem-lineage)
 
-Use `result validate` for a manifest, `result export` to package explicitly
-selected files, and `result verify` to check bundle integrity. Integrity,
-proof checking, and human review remain separate.
+## More workflows
 
-See [manifests](docs/RESULT_MANIFEST.md), [reading guides](docs/RESULT_GUIDES.md),
-[paragraph review](docs/RESULT_EXPOSITION.md), and
-[portable bundles](docs/RESULT_BUNDLES.md).
+- **Review an exposition.** Map written claims to Lean statements and compare
+  their hypotheses and conclusions. [Proof correspondence walkthrough](docs/PROOF_CORRESPONDENCE_AUDIT.md)
+- **Review a project’s structure.** Inspect module imports, duplicate imports,
+  and dependency boundaries. [Architecture analysis](docs/CLI.md#analyzer-command)
+- **Explore a declaration.** Use `proof-search explain`, `consumers`, and
+  `constructor` to inspect available type and usage evidence. [CLI reference](docs/CLI.md)
 
-## Review project structure
+## Development and license
 
-Inspect module imports, duplicate imports, large modules, and dependency
-structure around a root file:
+Run `uv run --locked python scripts/python_quality.py --strict` for the Python
+quality and test checks. [Reproducibility](docs/REPRODUCIBILITY.md) ·
+[Measured alpha capabilities and limits](docs/MEASURED_ALPHA_PROFILE.md)
 
-```bash
-uv run --locked ladon --repo-root /path/to/project --root Project/Basic.lean
-```
+Ladon's own code and documentation are licensed under Apache-2.0. External
+Lean projects and their declaration text retain their own terms. [License](LICENSE)
 
-Default analysis reads source text without running Lean or building the project.
-Add `--architecture-policy policy.json` to check your project's module-boundary
-rules. Optional Lean extraction adds declaration evidence.
+## A personal note
 
-Use `--format json --output report.json` for a saved machine-readable report.
-See the [CLI reference](docs/CLI.md) and
-[example architecture policy](docs/policies/architecture-policy.example.json).
-
-## Other tools
-
-| Tool | Purpose |
-| --- | --- |
-| `proof-search explain`, `consumers`, `constructor` | Inspect available type, usage, and constructor evidence. [Reference](docs/CLI.md) |
-| `proofir`, `proof-search evidence` | Validate proof-evidence files and inspect stored checks. [Reference](docs/CLI.md#stored-proofir-evidence) |
-| `theorem lineage` | Inspect representative routes or the complete stored typed dependency closure of a compiled proof. [Reference](docs/CLI.md#theorem-lineage) |
-| `theorem extract` | Package a theorem's source context and replay it in a fresh copy. [Theorem capsules](docs/THEOREM_CAPSULES.md) |
-| `inspect` | Filter and page through an existing report. [Reference](docs/CLI.md) |
-| Atlas, runsets, and reportsets | Compare reports and manage batches of analysis. [Reference](docs/CLI.md) |
-| `doctor` | Inspect the installation and a project's execution prerequisites. [Reference](docs/CLI.md#build-and-execution-security) |
-
-For memory-heavy capsule builds, `theorem replay --build-policy ordered` (also
-available with `theorem extract --verify`) builds project modules in dependency
-order under one shared build-stage deadline. See the
-[resource controls](docs/THEOREM_CAPSULES.md#control-replay-build-concurrency)
-for required imported artifacts and memory limits.
-
-### Inspect compiled theorem lineage
-
-Use the `closure` view to read the typed dependency graph already stored for a
-compiled theorem. It is independent of representative-route limits and includes
-disconnected records in the selected closure. If you only need example paths,
-use `graph` instead; that view remains route-based.
-
-```bash
-ladon theorem lineage Fully.Qualified.theorem \
-  --repo-root "$PWD" --index "$INDEX" --refresh never \
-  --view closure --edge-kind all \
-  --max-nodes 100000 --max-edges 200000 \
-  --max-output-bytes 33554432 --format json --output -
-```
-
-Node, edge, and output-byte limits are finite. The JSON reports source-closure
-coverage separately from selected-graph coverage and route coverage; inspect
-omissions and truncation before treating a projection as complete. Filters such
-as `--edge-kind type` and `--exclude-generated` change the selected graph and
-are recorded in the result. The projection stops at recorded external library
-frontiers and does not verify theorem truth or expand all library proofs.
-
-For a preserved observation, pass `--history SNAPSHOT_ID --refresh never`.
-Historical coverage describes that snapshot and does not establish current
-source freshness. See the [lineage CLI reference](docs/CLI.md#theorem-lineage)
-for route and closure options.
-
-## Development and status
-
-Run the maintained Python quality and test gate:
-
-```bash
-uv run --locked python scripts/python_quality.py --strict
-```
-
-See [reproducibility](docs/REPRODUCIBILITY.md) for the full verification workflow,
-Python and Lean support, and distribution status. Ladon is developed primarily
-with AI assistance.
-
-For current support and known limits, see [product scope](docs/PRODUCT_SCOPE.md)
-and the [measured alpha profile](docs/MEASURED_ALPHA_PROFILE.md). Agent
-instructions are in the [Ladon skill](skills/ladon/SKILL.md).
-
-Historical idea dates, source attributions and the evidence-preserving v6→v7 migration
-are documented in [Historical ideas](docs/HISTORICAL_IDEAS.md).
-
-## License
-
-Ladon’s own code and documentation are licensed under the [Apache License, Version 2.0](LICENSE). External Lean projects, their declaration text, and other third-party materials retain their own terms.
+Ladon is **fully VIBE CODED**. I build it in my spare time alongside my day job
+and my main research. It grew out of needing these tools in my own Lean work.
