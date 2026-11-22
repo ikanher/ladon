@@ -14,6 +14,21 @@ now use a current cache without automatic historical snapshots. See the
 [release notes](docs/RELEASE_0_4_4.md) for verification and limits, and the
 [internal handoff](docs/INTERNAL_HANDOFF_0_4_4.md) for checkout-local use and feedback.
 
+## An LLM found a Gaussian integral in a number theory archive
+
+While working on differentially private Adam, we needed the exponential moment of
+a Gaussian quadratic form with off-diagonal terms. We searched Levent Alpöge’s
+Riemann Hypothesis Lean archive. Ladon indexed **1,057,634 declarations in
+175,187 files** in about 11 minutes on one machine, using source text alone.
+
+A search for the type fragment `Real.sqrt |S.det|` returned three declarations.
+One was a Fourier transform theorem. Setting its frequency to zero turned it
+into the real Gaussian integral we needed. A second lemma supplied the
+cross term for completing the square. We then checked the resulting expectation
+in Lean on the consuming project's toolchain.
+
+[Try the two searches, with prompts for an LLM and the expected results.](docs/RH_INDEX_EXAMPLE.md)
+
 ## Setup
 
 Requires Python 3.11 or 3.12 and [uv](https://docs.astral.sh/uv/).
