@@ -1,0 +1,72 @@
+name: Publish RH module lookup
+on:
+  push:
+    branches: [main]
+    paths: [assets/rh/example-modules.json]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency: rh-lookup-snapshot
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: leanprover-community/riemann-hypothesis
+          ref: 40e56bab026552e089d7afcfeff08d2defb9c005
+          path: rh-snapshot
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.10.2'
+      - name: Generate lookup and verify the worked example
+        run: |
+          uv run --locked ladon proof-search index build --repo-root rh-snapshot/src --max-index-mib 5120
+          mkdir release
+          python scripts/rh_lookup.py build --index rh-snapshot/src/.ladon/index/proof-search.sqlite --output release/module-lookup.sqlite.gz
+          python scripts/rh_lookup.py prepare --lookup release/module-lookup.sqlite.gz --source-root rh-snapshot/src --directory "$RUNNER_TEMP/rh-example"
+          (cd release && sha256sum module-lookup.sqlite.gz > SHA256SUMS)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rh-module-lookup
+          path: |
+            release/module-lookup.sqlite.gz
+            release/SHA256SUMS
+          compression-level: 0
+
+  publish:
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: rh-module-lookup
+      - name: Attach lookup and checksum to the snapshot release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          REVISION: ${{ github.sha }}
+        run: |
+          set -eu
+          sha256sum -c SHA256SUMS
+          tag=rh-lookup-2026-11-20
+          if gh release view "$tag" --repo "$REPO" >/dev/null 2>&1; then
+            gh release download "$tag" --repo "$REPO" --dir existing --pattern SHA256SUMS --pattern module-lookup.sqlite.gz
+            (cd existing && sha256sum -c SHA256SUMS)
+          else
+            gh release create "$tag" module-lookup.sqlite.gz SHA256SUMS --repo "$REPO" --target "$REVISION" \
+              --latest=false --title 'RH module lookup · 2026-11-20 snapshot' \
+              --notes 'Source locations, file digests, and lexical search fingerprints for the original RH snapshot. See the RH walkthrough in the Ladon README.'
+          fi
