@@ -130,4 +130,13 @@ def test_reproducibility_document_records_external_boundaries() -> None:
     assert "Quux is outside Ladon's maintained inputs" in text
     assert "never inspected, executed" in text
     assert "Matrix-factorization, mathlib" in text
-    assert "publication blocked—no license granted" in text
+    assert "[Apache-2.0 license](../LICENSE)" in text
+
+
+def test_distribution_metadata_declares_the_project_license() -> None:
+    project = tomllib.loads((REPO_ROOT / "pyproject.toml").read_text())["project"]
+    workspace = tomllib.loads((REPO_ROOT / "rust" / "Cargo.toml").read_text())["workspace"]
+
+    assert project["license"] == workspace["package"]["license"] == "Apache-2.0"
+    assert project["license-files"] == ["LICENSE"]
+    assert "Version 2.0, January 2004" in (REPO_ROOT / "LICENSE").read_text()

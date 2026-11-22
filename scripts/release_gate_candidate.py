@@ -16,6 +16,7 @@ from release_gate_types import GateError, MaterializedCandidate
 REQUIRED_INPUT_PATHS = (
     ".github",
     ".gitignore",
+    "LICENSE",
     "README.md",
     "build-constraints.txt",
     "docs",

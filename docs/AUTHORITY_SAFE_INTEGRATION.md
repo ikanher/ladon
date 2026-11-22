@@ -37,7 +37,7 @@ and evidence/lineage supply its audit layer. Readiness still depends on exact
 candidate evidence, including the separate discovery exit.
 
 See [Reproducibility](REPRODUCIBILITY.md) for tracked inputs, runtime and Lean
-pins, package gates and the owner-granted license prerequisite. Packaged
+pins, package gates and the project license. Packaged
 schemas are maintained source contracts; their tests and installed resource
 checks detect drift. The supported-feature matrix has its own generator and
 check mode. Historical exposition snapshots remain immutable comparisons,

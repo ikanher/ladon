@@ -198,3 +198,7 @@ instructions are in the [Ladon skill](skills/ladon/SKILL.md).
 
 Historical idea dates, source attributions and the evidence-preserving v6→v7 migration
 are documented in [Historical ideas](docs/HISTORICAL_IDEAS.md).
+
+## License
+
+Ladon’s own code and documentation are licensed under the [Apache License, Version 2.0](LICENSE). External Lean projects, their declaration text, and other third-party materials retain their own terms.

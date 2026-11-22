@@ -90,13 +90,13 @@ does not replace the pinned real-Lean integration and declaration gates.
 
 ## Distribution status
 
-**publication blocked—no license granted**
+Ladon's own software and documentation carry the [Apache-2.0 license](../LICENSE).
+The Python wheel and source distribution include the license text and declare
+the SPDX license expression in their metadata. CI builds and tests local
+artifacts. Publishing a package is a separate release action.
 
-No owner-granted license text is present, so workflows build and install local
-sdist/wheel artifacts for technical verification but do not publish them. A
-future distribution authorization must add the granted license text and
-matching package metadata before any publication step is enabled. Technical
-alpha readiness does not imply permission to distribute.
+Third-party source archives and search indexes containing their declaration
+text require their own distribution terms.
 
 The [measured alpha profile](MEASURED_ALPHA_PROFILE.md) records the exact
 qualified candidate and the remaining external-evaluation gaps. A successful

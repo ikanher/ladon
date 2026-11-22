@@ -62,5 +62,5 @@ are separate measurements. No scalar combines them into proof or LLM quality.
 Architecture-finding precision and actionability require independent maintainer
 labels. The implementing agent and automated feedback cannot supply those
 labels. The registered cold architecture runs currently have timeout outcomes,
-so those metrics remain unassessed. Public publication still requires an
-owner-granted license; technical readiness supplies no such authority.
+so those metrics remain unassessed. The [distribution status](REPRODUCIBILITY.md#distribution-status)
+records the project license and release process.

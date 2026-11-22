@@ -3,8 +3,8 @@
 Use the candidate-specific receipts when choosing a workflow. Portable
 contracts establish bounded installed behavior; external measurements describe
 the particular projects and environments exercised. The prerequisite umbrella
-remains incomplete, and public publication remains blocked without an
-owner-granted license.
+remains incomplete. See the [distribution status](REPRODUCIBILITY.md#distribution-status)
+for the project license and release process.
 
 The reference contract qualification is r37, commit
 `3f182566c19afe82f8029685fe77f20759582d4c`, on CPython 3.11.15 and 3.12.12.
