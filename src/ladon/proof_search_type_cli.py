@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-import sqlite3
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
 from ladon.proof_search_index import (
     ProofSearchIndexError,
     _metadata,
+    _open_readonly,
     _require_query_schema,
     default_proof_search_index_path,
 )
@@ -18,21 +19,24 @@ from ladon.proof_search_type import TypeSearchRequest, query_type_shortlist
 def dispatch_type_text(
     args: Any, repo_root: Path, index_path: Path | None
 ) -> dict[str, Any]:
-    request = TypeSearchRequest(
-        pattern=args.pattern,
-        module=args.module,
-        namespace=args.namespace,
-        package=args.package,
-        scope=args.scope,
-        roots=tuple(args.root),
-        limit=args.limit,
-        diagnostic_limit=args.diagnostic_limit,
-        freshness=args.freshness,
-    )
+    try:
+        request = TypeSearchRequest(
+            pattern=getattr(args, "pattern", None),
+            module=args.module,
+            namespace=args.namespace,
+            package=args.package,
+            scope=args.scope,
+            roots=tuple(args.root),
+            limit=args.limit,
+            diagnostic_limit=args.diagnostic_limit,
+            freshness=args.freshness,
+            fragments=tuple(getattr(args, "fragment", ()) or ()),
+        )
+    except ValueError as exc:
+        raise ProofSearchIndexError(str(exc)) from exc
     evidence = type_text_freshness(args, repo_root, index_path)
     path = index_path or default_proof_search_index_path(repo_root)
-    with sqlite3.connect(f"file:{path}?mode=ro", uri=True) as connection:
-        connection.row_factory = sqlite3.Row
+    with closing(_open_readonly(path)) as connection:
         connection.execute("BEGIN")
         metadata = _metadata(connection)
         _require_query_schema(metadata)

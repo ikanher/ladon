@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ladon-proof-search-named-batch-v1.schema.json",
+  "title": "Ladon named proof search batch result",
+  "type": "object",
+  "required": ["schema", "operation", "status", "groups", "returnedGroups", "nonclaims"],
+  "properties": {
+    "schema": {"const": "ladon-proof-search-named-batch-v1"},
+    "operation": {"const": "search-batch"},
+    "status": {"enum": ["available", "partial", "unavailable"]},
+    "returnedGroups": {"type": "integer", "minimum": 0, "maximum": 8},
+    "groups": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["name", "status", "repoRoot", "indexPath", "freshness"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "status": {"enum": ["available", "unavailable"]},
+          "repoRoot": {"type": ["string", "null"]},
+          "indexPath": {"type": ["string", "null"]},
+          "freshness": {"type": "string"},
+          "generationIdentity": {"type": ["string", "null"]},
+          "batch": {"type": "object"},
+          "error": {
+            "type": "object",
+            "required": ["message", "exitClass"],
+            "properties": {
+              "message": {"type": "string"},
+              "exitClass": {"type": "string"},
+              "freshness": {"type": ["string", "null"]}
+            }
+          }
+        },
+        "allOf": [
+          {"if": {"properties": {"status": {"const": "available"}}, "required": ["status"]},
+           "then": {"required": ["batch", "generationIdentity"]}},
+          {"if": {"properties": {"status": {"const": "unavailable"}}, "required": ["status"]},
+           "then": {"required": ["error"]}}
+        ]
+      }
+    },
+    "nonclaims": {"type": "array", "items": {"type": "string"}}
+  },
+  "additionalProperties": false
+}

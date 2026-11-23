@@ -7,12 +7,14 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from typing import Any
 
+from ladon.proof_search_fragment_query import fragment_evidence, fragment_rows
+from ladon.proof_search_fragments import normalized_fragments
 from ladon.proof_search_query import resolve_scope_modules
 
 
 @dataclass(frozen=True)
 class TypeSearchRequest:
-    pattern: str
+    pattern: str | None = None
     module: str | None = None
     namespace: str | None = None
     package: str | None = None
@@ -21,15 +23,27 @@ class TypeSearchRequest:
     limit: int = 20
     diagnostic_limit: int = 0
     freshness: str = "stored"
+    fragments: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
-        if not self.pattern.strip() or self.limit < 1 or self.limit > 1000:
-            raise ValueError("type search pattern and limit are required")
+        self._validate_match()
+        if not 1 <= self.limit <= 1000:
+            raise ValueError("type search limit must be between 1 and 1000")
         if type(self.diagnostic_limit) is not int or not 0 <= self.diagnostic_limit <= 1000:
             raise ValueError("type-text diagnostic limit must be an integer between 0 and 1000")
         _validate_type_scope(self.scope, self.module, self.namespace, self.roots)
         if self.freshness not in {"stored", "verify"}:
             raise ValueError("type-text freshness must be stored or verify")
+
+    def _validate_match(self) -> None:
+        if self.pattern is None:
+            if not self.fragments:
+                raise ValueError("provide a literal pattern or normalized fragments")
+            if len(self.fragments) > 32 or any(len(item) > 4096 for item in self.fragments):
+                raise ValueError("type-text accepts at most 32 fragments of at most 4096 characters each")
+            object.__setattr__(self, "fragments", normalized_fragments(self.fragments))
+        elif self.fragments or not self.pattern.strip():
+            raise ValueError("a literal pattern must be nonempty and used without fragments")
 
 
 def _validate_type_scope(
@@ -51,17 +65,35 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
 
     if request.freshness == "verify" and verifier is None:
         raise ValueError("type-text freshness verification requires the index verifier")
-    clauses, values, scope_evidence = _type_text_predicate(connection, request)
-    where = " AND ".join(clauses)
-    rows = connection.execute(
-        "SELECT d.id,d.name,d.candidate_name,d.namespace,d.module,d.package,d.path,d.line,d.type_status,"
-        "d.type_text,d.type_text_bytes,d.type_text_truncated,d.rendered_type,d.conclusion_text "
-        f"FROM declarations AS d WHERE {where} ORDER BY d.type_status DESC,d.candidate_name,d.module,d.line,d.id LIMIT ?",
-        (*values, request.limit + request.diagnostic_limit + 1),
-    ).fetchall()
-    verification = verifier(tuple(str(row[2]) for row in rows[: request.limit]), request.pattern) if verifier else {}
+    clauses, values, scope_evidence = _selection(connection, request)
+    if request.fragments:
+        rows = fragment_rows(connection, _COLUMNS, clauses, values, request)
+    else:
+        rows = _literal_rows(connection, clauses, values, request)
+    verification = verifier(tuple(str(row[2]) for row in rows[: request.limit]), request.pattern or "") if verifier else {}
     if any(verification.values()):
         raise ValueError("type-text freshness verifier cannot supply candidate verification")
+    payload = _shortlist_payload(connection, request, rows, scope_evidence)
+    if request.fragments:
+        _record_signature_omissions(connection, clauses, values, payload)
+    return payload
+
+
+def _record_signature_omissions(connection, clauses, values, payload):
+    # A missing suffix may contain the entire search term, even on a zero-hit query.
+    where = " AND ".join(["o.kind = 'declaration'", *clauses])
+    counts = dict(connection.execute(
+        f"""SELECT o.reason, count(*) FROM omissions o JOIN declarations d ON d.id = o.subject
+            WHERE {where} AND o.reason IN ('lexical_signature_unavailable', 'lexical_type_truncated')
+            GROUP BY o.reason""", values))
+    payload["coverage"]["indexedTypeOmissions"] = counts
+    if counts:
+        payload["coverage"]["populationComplete"] = False
+        payload["omissions"].extend({"kind": "indexed-type", "reason": key, "count": count}
+                                    for key, count in counts.items())
+
+
+def _shortlist_payload(connection, request, rows, scope_evidence):
     result_rows, diagnostics = _result_rows(rows, request)
     from ladon.idea_history import attach_declaration_history
 
@@ -69,7 +101,7 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
     truncated = len(rows) > request.limit + request.diagnostic_limit
     omission_rows = _omissions(scope_evidence, truncated, len(rows), request)
     field_counts = _field_counts(result_rows)
-    return {
+    payload = {
         "schema": "ladon-proof-search-type-text-result-v2",
         "schemaVersion": 2,
         "operation": "search-type-text",
@@ -101,13 +133,19 @@ def query_type_shortlist(connection: sqlite3.Connection, request: TypeSearchRequ
         "omissions": omission_rows,
         "nonclaims": ["Shortlist rows are not Lean elaboration or proof verification."],
     }
+    if request.fragments:
+        payload.update(schema="ladon-proof-search-type-fragment-result-v1", schemaVersion=1,
+                       matchMode="normalized-type-fragments", matchingPolicy="case-sensitive-lean-token-sequence-v1")
+        del payload["query"]["pattern"]
+        payload["query"]["fragments"] = list(request.fragments)
+    return payload
 
 
 def _result_rows(
     rows: Sequence[sqlite3.Row],
     request: TypeSearchRequest,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    result_rows = [_result_row(row, request.pattern) for row in rows[: request.limit]]
+    result_rows = [_result_row(row, request) for row in rows[: request.limit]]
     diagnostics = [
         {"declarationId": row[0], "candidateName": row[2], "reason": "shortlist_not_verified"}
         for row in rows[request.limit : request.limit + request.diagnostic_limit]
@@ -142,18 +180,10 @@ def _field_counts(result_rows: Sequence[Mapping[str, Any]]) -> dict[str, int]:
     }
 
 
-def _result_row(row: sqlite3.Row, pattern: str) -> dict[str, Any]:
+def _result_row(row: sqlite3.Row, request: TypeSearchRequest) -> dict[str, Any]:
     """Expose bounded type evidence without returning unbounded source text."""
 
-    field_contributions = {
-        field: _sqlite_lower(pattern) in _sqlite_lower(str(value or ""))
-        for field, value in (
-            ("renderedType", row[12]),
-            ("conclusionText", row[13]),
-            ("typeText", row[9]),
-        )
-    }
-    return {
+    result = {
         "declarationId": row[0],
         "name": row[1],
         "candidateName": row[2],
@@ -170,9 +200,17 @@ def _result_row(row: sqlite3.Row, pattern: str) -> dict[str, Any]:
         "typeTextTruncated": bool(row[11]),
         "renderedType": row[12],
         "conclusionText": row[13],
-        "fieldContributions": field_contributions,
         "bucket": "text-overlap",
     }
+    if request.fragments:
+        result.update(fragment_evidence(row, request.fragments))
+    else:
+        literal = _sqlite_lower(request.pattern or "")
+        result["fieldContributions"] = {
+            field: literal in _sqlite_lower(str(result[field] or ""))
+            for field in ("renderedType", "conclusionText", "typeText")
+        }
+    return result
 
 
 def _sqlite_lower(value: str) -> str:
@@ -180,18 +218,26 @@ def _sqlite_lower(value: str) -> str:
     return value.translate(str.maketrans("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"))
 
 
-def _type_text_predicate(
-    connection: sqlite3.Connection, request: TypeSearchRequest
-) -> tuple[list[str], list[Any], dict[str, Any]]:
-    clauses = [
-        """(instr(lower(COALESCE(d.rendered_type,'')), lower(?)) > 0
+_COLUMNS = (
+    "d.id,d.name,d.candidate_name,d.namespace,d.module,d.package,d.path,d.line,d.type_status,"
+    "d.type_text,d.type_text_bytes,d.type_text_truncated,d.rendered_type,d.conclusion_text"
+)
+
+
+def _literal_rows(connection, clauses, values, request):
+    literal = """(instr(lower(COALESCE(d.rendered_type,'')), lower(?)) > 0
         OR instr(lower(COALESCE(d.conclusion_text,'')), lower(?)) > 0
         OR instr(lower(COALESCE(d.type_text,'')), lower(?)) > 0)"""
-    ]
-    values: list[Any] = [request.pattern, request.pattern, request.pattern]
-    scope_clauses, scope_values, scope_evidence = _scope_predicate(connection, request)
-    clauses.extend(scope_clauses)
-    values.extend(scope_values)
+    where = " AND ".join([literal, *clauses])
+    return connection.execute(
+        f"SELECT {_COLUMNS} FROM declarations d WHERE {where} "
+        "ORDER BY d.type_status DESC,d.candidate_name,d.module,d.line,d.id LIMIT ?",
+        (request.pattern, request.pattern, request.pattern, *values, request.limit + request.diagnostic_limit + 1),
+    ).fetchall()
+
+
+def _selection(connection, request):
+    clauses, values, scope_evidence = _scope_predicate(connection, request)
     filters = ((request.module, "d.module = ?"), (request.package, "d.package = ?"))
     for value, clause in filters:
         if value:

@@ -9,6 +9,8 @@ from ladon.cli import main
 @pytest.mark.parametrize('queries', [[], [[]], [['batch']], [['name', '--text']],
     [['name', '--repo-root', '/elsewhere']], [['name', '--limit', '101', '--text', 'x']],
     [['type-text', '--pattern', 2]], [[[]]], [['name', [], 'x']],
+    [['name', '--scope', 'module', '--text', 'x']],
+    [['type-text', '--pattern', '   ']], [['type-text', '--fragment', '   ']],
     [['name', '--text', 'x']] * 33])
 def test_invalid_queries_are_diagnostics(tmp_path, capsys, queries):
     path = tmp_path / 'queries.json'

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "ladon-proof-search-batch-v2.schema.json",
+  "title": "Lexical queries sharing one index snapshot",
+  "type": "object",
+  "required": ["schema", "operation", "status", "freshness", "generationIdentity", "indexPath", "validation", "queries", "returnedQueries"],
+  "properties": {
+    "schema": {"const": "ladon-proof-search-batch-v2"},
+    "operation": {"const": "search-batch"},
+    "status": {"enum": ["available", "unavailable"]},
+    "freshness": {"type": "string"},
+    "generationIdentity": {"type": "string"},
+    "indexPath": {"type": "string"},
+    "validation": {
+      "type": "object",
+      "required": ["authority", "captureCount", "repository", "indexSchema"],
+      "properties": {
+        "authority": {"enum": ["stored-index-generation", "observed-source-window"]},
+        "captureCount": {"type": "integer", "minimum": 0, "maximum": 2},
+        "repository": {"type": "string"},
+        "indexSchema": {"type": "string"}
+      }
+    },
+    "queries": {
+      "type": "array", "maxItems": 32,
+      "items": {
+        "type": "object",
+        "required": ["schema", "operation", "query", "results", "generationIdentity", "indexPath", "freshnessStatus"],
+        "properties": {
+          "schema": {"enum": ["ladon-proof-search-batch-name-v1", "ladon-proof-search-type-text-result-v2", "ladon-proof-search-type-fragment-result-v1"]},
+          "freshnessStatus": {"enum": ["unchecked", "verified-fresh"]}
+        }
+      }
+    },
+    "returnedQueries": {"type": "integer", "minimum": 0, "maximum": 32}
+  },
+  "if": {"properties": {"freshness": {"const": "stored"}}},
+  "then": {
+    "required": ["freshnessStatus"],
+    "properties": {
+      "status": {"const": "available"},
+      "freshnessStatus": {"const": "unchecked"},
+      "validation": {"properties": {"authority": {"const": "stored-index-generation"}, "captureCount": {"const": 0}}},
+      "queries": {"items": {"properties": {"freshnessStatus": {"const": "unchecked"}}}}
+    },
+    "not": {"required": ["activeGenerationAtEnd"]}
+  },
+  "else": {
+    "properties": {
+      "validation": {"properties": {"authority": {"const": "observed-source-window"}, "captureCount": {"minimum": 1}}},
+      "queries": {"items": {"properties": {"freshnessStatus": {"const": "verified-fresh"}}}}
+    }
+  }
+}

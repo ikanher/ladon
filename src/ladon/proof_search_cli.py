@@ -217,7 +217,7 @@ def _operation_from_tokens(arguments: Sequence[str]) -> str:
 def _dispatch(args: argparse.Namespace) -> Mapping[str, Any]:
     """Dispatch a parsed index operation."""
 
-    repo_root = Path(args.repo_root)
+    repo_root = Path(args.repo_root or ".")
     index_path = Path(args.index_path) if args.index_path else None
     if getattr(args, "index_operation", None):
         return _dispatch_index(args, repo_root, index_path)
@@ -346,7 +346,7 @@ def _dispatch_search(
     if args.search_operation == "batch":
         from ladon.proof_search_batch import dispatch_search_batch
 
-        return dispatch_search_batch(args, repo_root, index_path)
+        return dispatch_search_batch(args, repo_root if args.repo_root is not None else None, index_path)
     if args.search_operation == "type-text":
         return dispatch_type_text(args, repo_root, index_path)
     if args.search_operation != "name":
@@ -407,6 +407,8 @@ def _write_payload(
 
 
 def _render_text(payload: Mapping[str, Any]) -> str:
+    if payload.get("schema") in {"ladon-proof-search-batch-v2", "ladon-proof-search-named-batch-v1"}:
+        return _render_search_batch(payload)
     if payload.get("schema") == "ladon-proof-search-index-history-v1":
         from ladon.proof_search_history import render_history
 
@@ -438,6 +440,28 @@ def _render_text(payload: Mapping[str, Any]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _render_search_batch(payload: Mapping[str, Any]) -> str:
+    if "groups" in payload:
+        lines = [f"search batch: {payload['status']}"]
+        for group in payload["groups"]:
+            lines.append(f"{group['name']} [{group['status']}]")
+            if group.get("error"):
+                lines.append(group["error"]["message"])
+            if group.get("batch"):
+                lines.extend(_render_batch_queries(group["batch"]))
+    else:
+        lines = _render_batch_queries(payload)
+    return "\n".join(lines) + "\n"
+
+
+def _render_batch_queries(batch: Mapping[str, Any]) -> list[str]:
+    lines = _render_header(batch)
+    for position, query in enumerate(batch["queries"], 1):
+        lines.append(f"query {position}: {query['operation']}")
+        lines.extend(_render_core_rows(query))
+    return lines
+
+
 def _render_source_association(payload: Mapping[str, Any]) -> str:
     """Render the independent source result without semantic projection."""
 
@@ -462,6 +486,8 @@ def _render_core_rows(payload: Mapping[str, Any]) -> list[str]:
     rows = payload.get("rows", payload.get("results"))
     if isinstance(rows, list):
         lines.extend(_render_query_rows(rows))
+        if payload.get("matchMode") == "normalized-type-fragments":
+            lines.extend(_render_fragment_matches(rows))
         lines.append(f"returned: {payload.get('returned', len(rows))}")
         lines.append(f"truncated: {str(bool(payload.get('truncated'))).lower()}")
     candidates = payload.get("candidates")
@@ -555,6 +581,15 @@ def _render_warnings(payload: Mapping[str, Any]) -> list[str]:
     ]
     if payload.get("reason"):
         lines.append(f"reason: {payload['reason']}")
+    return lines
+
+
+def _render_fragment_matches(rows: Sequence[Mapping[str, Any]]) -> list[str]:
+    lines = []
+    for row in rows:
+        conclusion = "available" if row["conclusionAvailable"] else "unavailable"
+        fields = [f"{item['fragment']!r} in {', '.join(item['fields'])}" for item in row["fragmentEvidence"]]
+        lines.append(f"{row['candidateName']} (conclusion {conclusion}): " + "; ".join(fields))
     return lines
 
 

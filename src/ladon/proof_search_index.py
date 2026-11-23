@@ -1341,7 +1341,7 @@ def _require_query_schema(metadata: Mapping[str, str]) -> None:
 def _open_readonly(path: Path) -> sqlite3.Connection:
     """Open one database without permitting accidental mutation."""
 
-    connection = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
+    connection = sqlite3.connect(path.resolve().as_uri() + "?mode=ro", uri=True)
     connection.row_factory = sqlite3.Row
     return connection
 

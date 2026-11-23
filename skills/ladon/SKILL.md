@@ -342,6 +342,22 @@ Edits detected during the batch withhold results. Check caps and full examples i
 checkout `docs/CLI.md`; this remains lexical discovery, not Lean checking.
 
 
+For formula discovery, use repeatable `search type-text --fragment` options
+(e.g. `--fragment 'Measure.pi' --fragment '∫⁻' --fragment '∏'`). Each result
+must match all fragments. Read its field evidence before attributing a match to a
+conclusion. A source-only signature includes hypotheses. Use `--pattern` when
+replaying a literal substring query.
+
+For a detached archive, use `search batch --freshness stored --index "$RH_INDEX"
+--queries queries.json --format json` with no asserted repository. To compare
+Mf, pinned Mathlib and RH, use `search batch --indexes libraries.json --queries
+queries.json --format json`. The manifest maps each name to its local checkout
+or database. Copy the three-library example and query file in
+[the CLI reference](../../docs/CLI.md#search-a-detached-index-or-compare-libraries).
+Read each group's freshness, generation, cap and source locations. A nonzero
+exit with partial JSON preserves successful groups.
+
+
 For the internal 0.4.4 release, see the selected checkout's
 `docs/INTERNAL_HANDOFF_0_4_4.md` and `docs/RELEASE_0_4_4.md` for qualified runtime
 scope, changed index defaults, batch validation boundaries and feedback.

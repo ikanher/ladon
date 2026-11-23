@@ -848,3 +848,73 @@ or changes that occur and are reverted between observations. Workers may share
 the saved result as evidence from that window; later live queries require a new
 validation window. No old index copy, agent identity key, daemon or watcher is
 needed for this bounded batch mode.
+
+### Search several type fragments
+
+Use repeatable `--fragment` when a declaration must contain several pieces of a
+type. For example, this finds a squared norm and a specific coefficient in the
+same RH declaration, even when the source has spaces around the operators.
+
+```sh
+ladon proof-search search type-text --index "$RH_INDEX" \
+  --fragment '‖y-a‖^2' --fragment 's * c / (s + c)' --format json
+```
+
+Each fragment matches a contiguous, case-sensitive sequence of tokens in an
+indexed field. Inspect `fragmentEvidence` for the fields that contributed.
+Distinct fragments in an extracted conclusion rank first. On a source-only
+index the signature includes the hypotheses, and each row reports
+`conclusionAvailable: false`. A copied signature receives zero conclusion
+matches. `coverage.indexedTypeOmissions` counts missing or truncated signatures
+in the selected scope, including rows a query could have missed. The `--pattern` form retains its literal substring policy and v2 result.
+The fragment form emits `ladon-proof-search-type-fragment-result-v1`.
+
+### Search a detached index or compare libraries
+
+Save the following as `queries.json`. The first query finds product integrals
+and the second searches for a dyadic sum.
+
+```json
+[
+  ["type-text", "--fragment", "Measure.pi", "--fragment", "∫⁻", "--fragment", "∏"],
+  ["type-text", "--fragment", "dy k x =", "--fragment", "∑'", "--fragment", "else 0"]
+]
+```
+
+To read an archive with only its database available:
+
+```sh
+ladon proof-search search batch --index "$RH_INDEX" --freshness stored \
+  --queries queries.json --format json
+```
+
+Stored mode reads one generation with zero live source captures. Omitting
+`--repo-root` uses the database's recorded origin. Supplying it, even as `.`,
+asserts ownership. If an index is replaced during the read, the results still
+refer to the opened generation. A verified batch checks the available checkout
+and the generation at the end of the observation window.
+
+To compare the same queries across Mf, pinned Mathlib and RH, save a manifest
+such as the following as `libraries.json`. Paths are relative to the manifest.
+Set them to the checkout and database locations on your machine.
+
+```json
+[
+  {"name": "Mf", "repoRoot": "matrix-factorization", "freshness": "verify"},
+  {"name": "mathlib", "indexPath": "matrix-factorization/.ladon/index/mathlib-proof-search.sqlite", "freshness": "stored"},
+  {"name": "RH", "indexPath": "RH/lean/src/.ladon/index/proof-search.sqlite", "freshness": "stored"}
+]
+```
+
+```sh
+ladon proof-search search batch --indexes libraries.json --queries queries.json \
+  --format json --output matches.json
+```
+
+Inspect each ordered group's status and `batch.queries`. A successful query
+with zero rows searched its index. An unavailable group reports an error.
+A partial result keeps successful groups and exits nonzero. Each group has its
+own freshness and generation. The manifest supports up to eight libraries and
+128 library-query pairs within the ordinary batch limits. The output budget
+applies to each library and the complete aggregate. Aggregate overflow leaves
+the output file intact.
