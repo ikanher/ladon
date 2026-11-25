@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import json
 import os
+import sqlite3
 from pathlib import Path
 
 from ladon import lean_layout
+from ladon.cli import main
 from ladon.extraction import discover_modules
 from ladon.lean_layout import discover_lean_source_map, lean_paths_under_root
 
@@ -195,3 +198,208 @@ roots = ["Pkg"]
     assert diagnostic["subject"] == "Pkg.Core"
     assert "first/Pkg/Core.lean" in diagnostic["message"]
     assert "second/Pkg/Core.lean" in diagnostic["message"]
+
+
+SHARED_PATH = "Challenges/Preserved/HodgeHelpers/Shared.lean"
+CANONICAL = "HodgeHelpers.Shared"
+ALIAS = "Challenges.Preserved.HodgeHelpers.Shared"
+
+
+def write_overlapping_layout(root: Path) -> None:
+    (root / "lakefile.lean").write_text(
+        'import Lake\nopen Lake DSL\n\npackage overlapRepro\n\n'
+        'lean_lib HodgeHelpers where\n  srcDir := "Challenges/Preserved"\n'
+        'lean_lib Challenges\n',
+        encoding="utf-8",
+    )
+    shared = root / SHARED_PATH
+    shared.parent.mkdir(parents=True, exist_ok=True)
+    shared.write_text("theorem overlapSharedTruth : True := True.intro\n", encoding="utf-8")
+    ordinary = root / "Challenges/Ordinary.lean"
+    ordinary.write_text("theorem overlapOrdinaryTruth : True := True.intro\n", encoding="utf-8")
+
+
+def test_one_source_path_with_two_module_names_requires_confirmation(tmp_path: Path) -> None:
+    write_overlapping_layout(tmp_path)
+    layout = discover_lean_source_map(tmp_path)
+
+    assert set(layout.modules) == {"Challenges.Ordinary"}
+    diagnostic = next(
+        row for row in layout.diagnostics if row["id"] == "lean.layout.ambiguous_source"
+    )
+    assert diagnostic["subject"] == SHARED_PATH
+    assert diagnostic["candidateModules"] == [ALIAS, CANONICAL]
+
+
+def test_declared_source_owner_can_select_either_discovered_name(tmp_path: Path) -> None:
+    write_overlapping_layout(tmp_path)
+    config = tmp_path / ".ladon/source-layout.toml"
+    config.parent.mkdir()
+    directory = '"Challenges/Preserved/HodgeHelpers/" = "HodgeHelpers"'
+    file = f'"{SHARED_PATH}" = "{ALIAS}"'
+    for rule, module in ((f"{directory}\n{file}", ALIAS), (directory, CANONICAL)):
+        config.write_text(f"[module_owners]\n{rule}\n", encoding="utf-8")
+        layout = discover_lean_source_map(tmp_path)
+        assert not {
+            row["id"] for row in layout.diagnostics
+        } & lean_layout.FATAL_OWNERSHIP_DIAGNOSTICS
+        assert layout.modules == {
+            "Challenges.Ordinary": tmp_path / "Challenges/Ordinary.lean",
+            module: tmp_path / SHARED_PATH,
+        }
+        discovery = discover_modules(tmp_path, SHARED_PATH)
+        assert discovery.analysis_root_module == module
+
+
+def test_same_resolved_file_with_distinct_symlink_names_is_ambiguous(tmp_path: Path) -> None:
+    (tmp_path / "Original.lean").write_text("def original := 1\n", encoding="utf-8")
+    (tmp_path / "Alias.lean").symlink_to("Original.lean")
+
+    layout = discover_lean_source_map(tmp_path, resolve_paths=True)
+
+    assert not layout.modules
+    diagnostic = next(
+        row for row in layout.diagnostics if row["id"] == "lean.layout.ambiguous_source"
+    )
+    assert diagnostic["subject"] == "Original.lean"
+    assert diagnostic["candidateModules"] == ["Alias", "Original"]
+
+
+def test_static_lake_roots_can_exclude_a_candidate(tmp_path: Path) -> None:
+    write_overlapping_layout(tmp_path)
+    (tmp_path / "lakefile.toml").write_text(
+        'name = "fixture"\n[[lean_lib]]\nname = "Challenges"\n'
+        'roots = ["Challenges.Ordinary"]\n[[lean_lib]]\nname = "HodgeHelpers"\n'
+        'srcDir = "Challenges/Preserved"\n',
+        encoding="utf-8",
+    )
+
+    layout = discover_lean_source_map(tmp_path)
+
+    assert set(layout.modules) == {"Challenges.Ordinary", CANONICAL}
+    assert not layout.diagnostics
+
+
+def test_lean_library_does_not_inherit_srcdir_from_next_library(tmp_path: Path) -> None:
+    write_overlapping_layout(tmp_path)
+    lakefile = tmp_path / "lakefile.lean"
+    header, nested = lakefile.read_text().split("lean_lib HodgeHelpers", 1)
+    nested_body, broader_body = nested.split("lean_lib Challenges", 1)
+    lakefile.write_text(
+        header + "lean_lib Challenges" + broader_body + "\nlean_lib HodgeHelpers" + nested_body
+    )
+    layout = discover_lean_source_map(tmp_path)
+
+    assert set(layout.modules) == {"Challenges.Ordinary"}
+    assert layout.diagnostics[0]["candidateModules"] == [ALIAS, CANONICAL]
+
+
+def invoke_index(tmp_path, capsys, *args):
+    result = main([
+        "proof-search", *args, "--repo-root", str(tmp_path),
+        "--index", str(tmp_path / "index.sqlite"), "--format", "json", "--output", "-",
+    ])
+    captured = capsys.readouterr()
+    if result:
+        assert not captured.out
+        return result, json.loads(captured.err.splitlines()[-1])
+    return result, json.loads(captured.out)
+
+
+def confirm_owner(tmp_path: Path) -> Path:
+    config = tmp_path / ".ladon/source-layout.toml"
+    config.parent.mkdir()
+    config.write_text('[module_owners]\n"Challenges/Preserved/HodgeHelpers/" = "HodgeHelpers"\n')
+    return config
+
+
+def scoped_search(tmp_path, capsys, name, module, freshness="verify"):
+    status, result = invoke_index(
+        tmp_path, capsys, "search", "name", "--text", name, "--scope", "module",
+        "--root", module, "--freshness", freshness,
+    )
+    assert status == 0
+    return result
+
+
+def test_overlapping_index_build_reports_candidates(tmp_path: Path, capsys):
+    write_overlapping_layout(tmp_path)
+
+    status, error = invoke_index(tmp_path, capsys, "index", "build")
+
+    assert status == 1 and not (tmp_path / "index.sqlite").exists()
+    diagnostic = error["diagnostic"]
+    assert diagnostic["code"] == "ambiguous-source"
+    assert diagnostic["details"] == {"path": SHARED_PATH, "candidateModules": [ALIAS, CANONICAL]}
+    assert ".ladon/source-layout.toml" in diagnostic["remediation"]
+
+
+def test_confirmed_index_publishes_selected_module_and_unaffected_sources(tmp_path: Path, capsys):
+    write_overlapping_layout(tmp_path)
+    confirm_owner(tmp_path)
+
+    status, built = invoke_index(tmp_path, capsys, "index", "build")
+
+    assert status == 0 and built["counts"]["modules"] == 2
+    with sqlite3.connect(tmp_path / "index.sqlite") as connection:
+        assert connection.execute("SELECT name,path,package FROM modules ORDER BY name").fetchall() == [
+            ("Challenges.Ordinary", "Challenges/Ordinary.lean", "Challenges"),
+            (CANONICAL, SHARED_PATH, "HodgeHelpers"),
+        ]
+        detail, = connection.execute(
+            "SELECT details_json FROM omissions WHERE reason='lean.layout.source_owner_selected'"
+        ).fetchone()
+        assert json.loads(detail)["candidateModules"] == [ALIAS, CANONICAL]
+
+    shared = scoped_search(tmp_path, capsys, "overlapSharedTruth", CANONICAL)
+    assert shared["matchSummary"]["exactMatches"] == 1
+    assert shared["results"][0]["module"] == CANONICAL
+    ordinary = scoped_search(tmp_path, capsys, "overlapOrdinaryTruth", "Challenges.Ordinary")
+    assert ordinary["matchSummary"]["exactMatches"] == 1
+    assert scoped_search(tmp_path, capsys, "overlapSharedTruth", ALIAS)["results"] == []
+
+
+def test_confirmed_index_updates_and_reports_freshness(tmp_path: Path, capsys):
+    write_overlapping_layout(tmp_path)
+    config = confirm_owner(tmp_path)
+    status, built = invoke_index(tmp_path, capsys, "index", "build")
+    assert status == 0
+    changed = tmp_path / SHARED_PATH
+    changed.write_text(changed.read_text() + "theorem anotherSharedTruth : True := True.intro\n")
+
+    status, updated = invoke_index(tmp_path, capsys, "index", "update")
+
+    assert status == 0 and updated["extractedModules"] == 1
+    assert updated["generationIdentity"] != built["generationIdentity"]
+    assert scoped_search(tmp_path, capsys, "anotherSharedTruth", CANONICAL)[
+        "matchSummary"
+    ]["exactMatches"] == 1
+    status, current = invoke_index(tmp_path, capsys, "index", "status", "--changed")
+    assert status == 0 and current["freshness"] == "fresh"
+
+    config.write_text(f'[module_owners]\n"{SHARED_PATH}" = "{ALIAS}"\n')
+    status, stale = invoke_index(tmp_path, capsys, "index", "status", "--changed")
+    assert status == 0 and stale["freshness"] == "stale-configuration"
+    status, error = invoke_index(tmp_path, capsys, "index", "update")
+    assert status == 1 and error["diagnostic"]["code"] == "full-build-required"
+
+
+def test_unresolved_or_invalid_replacement_preserves_published_index(tmp_path: Path, capsys):
+    write_overlapping_layout(tmp_path)
+    config = confirm_owner(tmp_path)
+    status, _ = invoke_index(tmp_path, capsys, "index", "build")
+    assert status == 0
+    index = tmp_path / "index.sqlite"
+    published = index.read_bytes()
+
+    config.write_text(config.read_text().replace('"HodgeHelpers"', '"Unknown"'))
+    status, error = invoke_index(tmp_path, capsys, "index", "build")
+    assert status == 1 and error["diagnostic"]["code"] == "invalid-source-owner"
+    assert index.read_bytes() == published
+    config.unlink()
+    status, error = invoke_index(tmp_path, capsys, "index", "update")
+    assert status == 1 and error["diagnostic"]["code"] == "ambiguous-source"
+    assert error["diagnostic"]["details"]["candidateModules"] == [ALIAS, CANONICAL]
+    assert index.read_bytes() == published
+    stored = scoped_search(tmp_path, capsys, "overlapSharedTruth", CANONICAL, "stored")
+    assert stored["matchSummary"]["exactMatches"] == 1

@@ -767,6 +767,31 @@ cannot be mixed with bundle inputs. See [selection, history, limits and examples
 
 The additive [source-goal completion workflow](SOURCE_GOAL_COMPLETION.md) consumes saved JSON capture and a full term; independent replay is required for its completed status.
 
+### Overlapping Lake source roots
+
+Lexical index discovery reads supported Lake declarations without running Lake.
+If two discovered module names refer to one resolved source file, Ladon reports
+`ambiguous-source` with its path and candidate names. If the Lake roots alone
+do not settle ownership, put the confirmed mapping in
+`.ladon/source-layout.toml` at the indexed repository root.
+
+```toml
+[module_owners]
+"Challenges/Preserved/HodgeHelpers/" = "HodgeHelpers"
+```
+
+A directory key ending in `/` selects the given module prefix followed by the
+file's path within that directory, with dots as separators and `.lean` removed.
+For a single file, use its complete repository-relative path and the full module
+name, such as `"Challenges/Preserved/HodgeHelpers/Shared.lean" = "HodgeHelpers.Shared"`.
+File rules take precedence over directory rules, and the longest matching directory
+wins. The selected name must be one of the discovered candidates.
+
+Build the lexical index with the selected layout in place. Verified search,
+freshness, and incremental source updates use the same mapping. An ownership
+configuration change requires an explicit build. Invalid or unresolved ownership
+prevents publication and leaves any prior index available for stored queries.
+
 ### Focused generation freshness (0.4.4)
 
 `ladon proof-search index freshness --repo-root REPO --format json` reads the

@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from ladon.extraction import parse_lean_module
-from ladon.lean_layout import LeanSourceMap, discover_lean_source_map
+from ladon.lean_layout import SOURCE_LAYOUT_CONFIG, LeanSourceMap, discover_lean_source_map
 from ladon.lexical_command_skeleton import (
     command_skeleton_evidence_complete,
 )
@@ -654,6 +654,9 @@ def _fingerprint_manifest(
     layout: LeanSourceMap,
     options: Mapping[str, Any],
 ) -> dict[str, Any]:
+    state_files = LAYOUT_STATE_FILES
+    if (repo_root / SOURCE_LAYOUT_CONFIG).is_file():
+        state_files = (*state_files, SOURCE_LAYOUT_CONFIG)
     return {
         "fingerprintVersion": SOURCE_INDEX_FINGERPRINT_VERSION,
         "indexSchema": SOURCE_INDEX_SCHEMA,
@@ -670,7 +673,7 @@ def _fingerprint_manifest(
             ],
             "stateFiles": [
                 _file_state(repo_root, repo_root / name, name=name)
-                for name in LAYOUT_STATE_FILES
+                for name in state_files
             ],
         },
         "options": dict(options),

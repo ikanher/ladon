@@ -553,6 +553,9 @@ def declared_root_path(repo_root: Path, raw_root: str) -> Path | None:
 def declared_module_name(path: Path, layout: LeanSourceMap) -> str:
     """Map one path through its most-specific declared source root."""
 
+    for module, source in layout.modules.items():
+        if source == path:
+            return module
     source_root = root_for_path(path, layout.roots)
     if source_root is None:
         raise ValueError(

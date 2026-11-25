@@ -25,9 +25,10 @@ from pathlib import Path
 from typing import Any
 
 from ladon.extraction import parse_import_sites, parse_text_declarations
-from ladon.lean_layout import LeanSourceMap, discover_lean_source_map, root_for_path
+from ladon.lean_layout import SOURCE_LAYOUT_CONFIG, LeanSourceMap
 from ladon.lexical_mask import mask_lean_source
 from ladon.proof_search_exact_counts import exact_name_counts, match_summary
+from ladon.proof_search_layout import discover_index_source_map
 from ladon.proof_search_name_query import (
     name_casefold,
     query_name_database,
@@ -92,6 +93,7 @@ _CONFIGURATION_NAMES = (
     "lakefile.toml",
     "lakefile.lean",
     "lake-manifest.json",
+    SOURCE_LAYOUT_CONFIG,
 )
 _MAX_LEXICAL_TYPE_BYTES = 16 * 1024
 
@@ -185,7 +187,7 @@ def capture_repository_snapshot(repo_root: Path) -> RepositorySnapshot:
     if not root.is_dir():
         raise ProofSearchIndexError(f"repository does not exist: {root}")
     with phase("enumeration"):
-        layout = discover_lean_source_map(root)
+        layout = discover_index_source_map(root)
     sources = tuple(
         _indexed_source(root, layout, module, path)
         for module, path in sorted(layout.modules.items())
@@ -1148,7 +1150,7 @@ def _indexed_source(
     """Capture one module source without retaining its bytes."""
 
     raw = path.read_bytes()
-    owner = root_for_path(path, layout.roots)
+    owner = layout.owners.get(module)
     return IndexedSource(
         module=module,
         path=path,

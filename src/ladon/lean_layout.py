@@ -11,12 +11,16 @@ import os
 import re
 import tomllib
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 LEAN_LIBRARY_RE = re.compile(r"^\s*lean_lib\s+(?P<name>[A-Za-z0-9_.]+)")
 SOURCE_DIR_RE = re.compile(r'\bsrcDir\s*:=\s*"(?P<path>[^"]+)"')
+SOURCE_LAYOUT_CONFIG = ".ladon/source-layout.toml"
+FATAL_OWNERSHIP_DIAGNOSTICS = frozenset({
+    "lean.layout.ambiguous_source", "lean.layout.invalid_source_owner",
+})
 GENERATED_KEYS = ("generatedRoots", "generated_roots", "generatedSrcDirs")
 IGNORED_SOURCE_PARTS = frozenset({".git", ".lake", ".venv", "__pycache__", "temp"})
 
@@ -51,38 +55,30 @@ class LeanSourceMap:
     roots: tuple[LeanSourceRoot, ...]
     status: str
     diagnostics: tuple[dict[str, Any], ...] = ()
+    owners: dict[str, LeanSourceRoot] = field(default_factory=dict)
 
 
-def discover_lean_source_map(repo_root: Path) -> LeanSourceMap:
+def discover_lean_source_map(
+    repo_root: Path, *, resolve_paths: bool = False,
+) -> LeanSourceMap:
     """Prefer usable Lake declarations, otherwise expose fallback status."""
 
     root = repo_root.resolve()
     roots, diagnostics = declared_source_roots(root)
     if roots:
-        modules, mapping_diagnostics = modules_from_roots(root, roots)
-        return LeanSourceMap(
-            modules,
-            roots,
-            "lake_declared",
-            (*diagnostics, *mapping_diagnostics),
-        )
-    fallback = LeanSourceRoot(root, "conventional", "conventional_fallback")
-    modules, mapping_diagnostics = modules_from_roots(root, (fallback,))
-    status = "conventional_fallback" if not diagnostics else "fallback_unsupported_lake"
-    fallback_diagnostic = {
-        "id": "lean.layout.conventional_fallback",
-        "severity": "warning",
-        "message": (
-            "No usable Lake library source roots were found; Ladon used the "
-            "repository-relative conventional module layout."
-        ),
-    }
-    return LeanSourceMap(
-        modules,
-        (fallback,),
-        status,
-        (*diagnostics, fallback_diagnostic, *mapping_diagnostics),
-    )
+        status = "lake_declared"
+    else:
+        roots = (LeanSourceRoot(root, "conventional", "conventional_fallback"),)
+        status = "conventional_fallback" if not diagnostics else "fallback_unsupported_lake"
+        diagnostics.append({
+            "id": "lean.layout.conventional_fallback",
+            "severity": "warning",
+            "message": (
+                "No usable Lake library source roots were found; Ladon used the "
+                "repository-relative conventional module layout."
+            ),
+        })
+    return modules_from_roots(root, roots, status, diagnostics, resolve_paths=resolve_paths)
 
 
 def declared_source_roots(
@@ -214,7 +210,14 @@ def lean_file_source_roots(
         match = LEAN_LIBRARY_RE.match(line)
         if not match:
             continue
-        body = "\n".join(lines[index:index + 12])
+        indent = len(line) - len(line.lstrip())
+        block = [line]
+        for continuation in lines[index + 1:index + 12]:
+            if continuation.strip() and not continuation.lstrip().startswith("--"):
+                if len(continuation) - len(continuation.lstrip()) <= indent:
+                    break
+                block.append(continuation)
+        body = "\n".join(block)
         src_match = SOURCE_DIR_RE.search(body)
         source_dir = src_match.group("path") if src_match else "."
         name = match.group("name")
@@ -274,12 +277,44 @@ def unique_source_roots(
 
 def modules_from_roots(
     repo_root: Path,
-    roots: Iterable[LeanSourceRoot],
-) -> tuple[dict[str, Path], list[dict[str, Any]]]:
-    """Scan declared roots and reject ambiguous module ownership visibly."""
+    roots: tuple[LeanSourceRoot, ...],
+    status: str,
+    diagnostics: list[dict[str, Any]],
+    *, resolve_paths: bool,
+) -> LeanSourceMap:
+    """Resolve candidate names before producing a source inventory."""
 
+    selections = source_owner_selections(repo_root, diagnostics)
+    unused = set(selections)
     modules: dict[str, Path] = {}
-    diagnostics: list[dict[str, Any]] = []
+    owners: dict[str, LeanSourceRoot] = {}
+    for path, choices in source_candidates(roots, diagnostics, resolve_paths=resolve_paths).items():
+        matches = matching_source_names(repo_root, path, selections)
+        unused.difference_update(rule for rule, _ in matches)
+        selected = matches[0][1] if matches else None
+        name = confirmed_source_name(repo_root, path, choices, selected, diagnostics)
+        if name is None:
+            continue
+        previous = modules.get(name)
+        if previous is not None and previous != path:
+            diagnostics.append(ambiguous_module_diagnostic(name, previous, path))
+        else:
+            modules[name] = path
+            owners[name] = choices[name]
+    for rule in sorted(unused):
+        diagnostics.append(invalid_source_owner(
+            SOURCE_LAYOUT_CONFIG, f"owner rule {rule!r} matched no source",
+        ))
+    return LeanSourceMap(dict(sorted(modules.items())), roots, status, tuple(diagnostics), owners)
+
+
+def source_candidates(
+    roots: tuple[LeanSourceRoot, ...], diagnostics: list[dict[str, Any]],
+    *, resolve_paths: bool,
+) -> dict[Path, dict[str, LeanSourceRoot]]:
+    """Collect every discovered name under the consumer’s path identity."""
+
+    candidates: dict[Path, dict[str, LeanSourceRoot]] = {}
     for root in roots:
         if not root.path.is_dir():
             diagnostics.append(layout_diagnostic(root.path, "declared source root is absent"))
@@ -288,14 +323,124 @@ def modules_from_roots(
             if ignored_source_path(path, root.path):
                 continue
             name = module_name_under_root(root.path, path)
-            if not selected_by_module_roots(name, root.module_roots):
-                continue
-            previous = modules.get(name)
-            if previous is not None and previous != path:
-                diagnostics.append(ambiguous_module_diagnostic(name, previous, path))
-                continue
-            modules[name] = path
-    return dict(sorted(modules.items())), diagnostics
+            if selected_by_module_roots(name, root.module_roots):
+                source = path.resolve() if resolve_paths else path
+                candidates.setdefault(source, {}).setdefault(name, root)
+
+    return candidates
+
+
+def confirmed_source_name(
+    repo_root: Path, path: Path, choices: Mapping[str, LeanSourceRoot],
+    selected: str | None, diagnostics: list[dict[str, Any]],
+) -> str | None:
+    if selected is not None and selected not in choices:
+        diagnostics.append(source_owner_diagnostic(
+            repo_root, path, choices, selected=selected, invalid=True,
+        ))
+        return None
+    if len(choices) > 1:
+        diagnostics.append(source_owner_diagnostic(repo_root, path, choices, selected=selected))
+        return selected
+    return next(iter(choices))
+
+
+def source_owner_selections(
+    repo_root: Path, diagnostics: list[dict[str, Any]],
+) -> dict[str, str]:
+    """Read literal file names and module-prefix rules from project configuration."""
+
+    path = repo_root / SOURCE_LAYOUT_CONFIG
+    if not path.exists() and not path.is_symlink():
+        return {}
+    try:
+        payload = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, tomllib.TOMLDecodeError) as exc:
+        diagnostics.append(invalid_source_owner(SOURCE_LAYOUT_CONFIG, str(exc)))
+        return {}
+    rules = payload.get("module_owners")
+    if not isinstance(rules, dict) or set(payload) != {"module_owners"}:
+        diagnostics.append(invalid_source_owner(
+            SOURCE_LAYOUT_CONFIG, "expected a [module_owners] table",
+        ))
+        return {}
+    result = {}
+    for raw, owner in rules.items():
+        if not valid_source_owner_rule(raw, owner):
+            diagnostics.append(invalid_source_owner(
+                SOURCE_LAYOUT_CONFIG, f"invalid owner rule {raw!r}",
+            ))
+        else:
+            result[raw] = owner
+    return result
+
+
+def valid_source_owner_rule(path: str, owner: Any) -> bool:
+    name = path.removesuffix("/")
+    return (
+        (path.endswith("/") or name.endswith(".lean"))
+        and not any(part in {"", ".", ".."} for part in name.split("/"))
+        and isinstance(owner, str)
+        and bool(owner.strip())
+    )
+
+
+def matching_source_names(
+    repo_root: Path, path: Path, selections: Mapping[str, str],
+) -> list[tuple[str, str]]:
+    """Return the file rule first, then matching directory rules deepest first."""
+
+    if not selections or not path.is_relative_to(repo_root):
+        return []
+    relative = path.relative_to(repo_root)
+    name = relative.as_posix()
+    matches = [(name, selections[name])] if name in selections else []
+    for parent in relative.parents:
+        rule = f"{parent.as_posix()}/"
+        if rule in selections:
+            suffix = module_name_under_root(parent, relative)
+            matches.append((rule, f"{selections[rule]}.{suffix}"))
+    return matches
+
+
+def invalid_source_owner(subject: str, reason: str) -> dict[str, Any]:
+    return {
+        "id": "lean.layout.invalid_source_owner",
+        "severity": "error",
+        "message": f"Could not use {SOURCE_LAYOUT_CONFIG}: {reason}",
+        "subject": subject,
+    }
+
+
+def source_owner_diagnostic(
+    repo_root: Path, path: Path, choices: Mapping[str, LeanSourceRoot], *,
+    selected: str | None = None, invalid: bool = False,
+) -> dict[str, Any]:
+    subject = path.relative_to(repo_root).as_posix() if path.is_relative_to(repo_root) else str(path)
+    names = sorted(choices)
+    candidates = ", ".join(names)
+    if invalid:
+        result = invalid_source_owner(
+            subject, f"{selected!r} is not a candidate for {subject}: {candidates}",
+        )
+    elif selected is None:
+        result = {
+            "id": "lean.layout.ambiguous_source",
+            "severity": "error",
+            "message": f"Source {subject} has competing module names: {candidates}",
+            "subject": subject,
+        }
+    else:
+        result = {
+            "id": "lean.layout.source_owner_selected",
+            "severity": "info",
+            "message": f"Selected {selected} for {subject} from: {candidates}",
+            "subject": subject,
+        }
+    result["candidateModules"] = names
+    if selected is not None:
+        result["selectedModule"] = selected
+    return result
 
 
 def lean_paths_under_root(source_root: Path) -> tuple[Path, ...]:
