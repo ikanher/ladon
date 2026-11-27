@@ -459,6 +459,8 @@ def _render_batch_queries(batch: Mapping[str, Any]) -> list[str]:
     for position, query in enumerate(batch["queries"], 1):
         lines.append(f"query {position}: {query['operation']}")
         lines.extend(_render_core_rows(query))
+        omissions = query.get("omissions", query.get("scope", {}).get("omissions", []))
+        lines.extend(f"omission: {json.dumps(item, ensure_ascii=False)}" for item in omissions)
     return lines
 
 

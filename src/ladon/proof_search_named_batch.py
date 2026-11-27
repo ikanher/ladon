@@ -26,7 +26,10 @@ def _text(value, label):
 def _manifest(path, default_freshness):
     from ladon.investigation import load_plan
 
-    path = Path(path).resolve()
+    try:
+        path = Path(path).resolve()
+    except (OSError, RuntimeError, ValueError) as error:
+        raise ProofSearchIndexError(f"cannot resolve named-index manifest: {error}") from error
     try:
         raw = load_plan(path, max_bytes=_MAX_MANIFEST_BYTES)
     except (OSError, ValueError) as error:
@@ -49,8 +52,8 @@ def _manifest_entry(raw_entry, base, default_freshness):
     mode = _entry_freshness(raw_entry, default_freshness, name)
     repo_value, index_value = _entry_paths(raw_entry)
     _validate_entry_requirements(name, mode, repo_value, index_value)
-    repo = (base / repo_value).resolve() if repo_value is not None else None
-    index = (base / index_value).resolve() if index_value is not None else None
+    repo = base / repo_value if repo_value is not None else None
+    index = base / index_value if index_value is not None else None
     return {"name": name, "repoRoot": repo, "indexPath": index, "freshness": mode}
 
 

@@ -29,3 +29,13 @@ Owner: [Named index search batch](specs/ladon-named-index-search-batch/spec.md).
 - [x] 4.2 Replay the Gaussian, product-integral and dyadic tail-sum examples on the existing RH index read-only, with a two-minute limit per field run. Check that each normalized fragment query returns its expected qualified name and signature-only evidence. Retain queries, index identities, target ranks, truncation, timings and peak memory for the literal, normalized and batch paths. Record any timeout or missing corpus as a field-evidence gap. A field replay requires only supported existing indexes and stays separate from portable CI.
 
 The [field replay](field-replay.json) records the existing database generations, query arguments, target ranks, signature omissions, elapsed time and peak memory. On the named batch, the clean wheel produced the same child queries and results as the development checkout.
+
+## Staged follow-up verification
+
+- The focused type, stored batch, named batch, and cross-library CLI suites passed all 56 tests. They cover distinct `head`, `head?`, and `head!` fragments, compact arrow and binder notation, index symlink loops with a healthy sibling, and per-query missing-scope diagnostics. [Type tests](../../../../tests/test_proof_search_type.py) · [Cross-library CLI tests](../../../../tests/test_cross_library_search_cli.py)
+- A separate CLI replay used three zero-row queries against a portable index. The ordinary empty result printed no omission, the long type printed `lexical_type_truncated`, and the missing scope printed `root_not_indexed`. Both the single-index and named-index text renderers placed the diagnostics under the correct query.
+
+## Closeout verification
+
+- All 101 cases passed across the normalized type, stored batch, named batch, batch bounds, cross-library CLI, and installed CLI contract suites. Ruff and strict OpenSpec validation passed.
+- A clean installation of the wheel built from this checkout replayed the three archived normalized queries in one stored batch. Mf, Mathlib, and RH matched the recorded generation identities and returned row counts. All three RH targets were present with signature-only evidence.

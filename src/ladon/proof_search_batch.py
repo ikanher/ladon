@@ -117,11 +117,10 @@ def run_search_batch(repo_root, queries, *, index_path=None, freshness='verify',
 def run_prepared_batch(repo_root, requests, *, index_path=None, freshness='verify',
                        max_output_bytes=1024**2):
     _validate_prepared_batch(requests, freshness, max_output_bytes)
-    root = _batch_root(repo_root, index_path, freshness)
-    path = index_path.resolve() if root is None else _resolved_index_path(root, index_path)
     started = time.monotonic()
     try:
-        with closing(_open_readonly(path)) as connection:
+        root, path, connection = _open_batch_index(repo_root, index_path, freshness)
+        with closing(connection):
             connection.row_factory = sqlite3.Row
             connection.execute('BEGIN')
             return _run_prepared_snapshot(connection, root, path, requests, freshness,
@@ -139,6 +138,16 @@ def _validate_prepared_batch(requests, freshness, max_output_bytes):
         raise ProofSearchIndexError('freshness must be stored or verify')
     if type(max_output_bytes) is not int or not 1024**2 <= max_output_bytes <= 16 * 1024**2:
         raise ProofSearchIndexError('batch output allowance must be 1..16 MiB')
+
+
+def _open_batch_index(repo_root, index_path, freshness):
+    try:
+        root = _batch_root(repo_root, index_path, freshness)
+        path = index_path.resolve() if root is None else _resolved_index_path(root, index_path)
+        connection = _open_readonly(path)
+    except (OSError, RuntimeError) as error:
+        raise ProofSearchIndexError(f'batch path unavailable: {error}', exit_class='operational') from error
+    return root, path, connection
 
 
 def _batch_root(repo_root, index_path, freshness):

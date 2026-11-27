@@ -938,7 +938,10 @@ ladon proof-search search type-text --index "$RH_INDEX" \
 ```
 
 Each fragment matches a contiguous, case-sensitive sequence of tokens in an
-indexed field. Inspect `fragmentEvidence` for the fields that contributed.
+indexed field. Identifier suffixes such as `?` and `!` are significant. The
+tokenizer recognizes common Lean binders and arrows, and keeps other adjacent
+symbols together as operator tokens. Inspect `fragmentEvidence` for the fields
+that contributed.
 Distinct fragments in an extracted conclusion rank first. On a source-only
 index the signature includes the hypotheses, and each row reports
 `conclusionAvailable: false`. A copied signature receives zero conclusion
@@ -988,9 +991,11 @@ ladon proof-search search batch --indexes libraries.json --queries queries.json 
   --format json --output matches.json
 ```
 
-Inspect each ordered group's status and `batch.queries`. A successful query
-with zero rows searched its index. An unavailable group reports an error.
-A partial result keeps successful groups and exits nonzero. Each group has its
+Inspect each ordered group's status and `batch.queries`. For zero-row queries,
+check the reported omissions for missing scopes or incomplete indexed text.
+The text output prints these omissions under the affected query. An unavailable
+group reports an error. A partial result keeps successful groups and exits
+nonzero. Each group has its
 own freshness and generation. The manifest supports up to eight libraries and
 128 library-query pairs within the ordinary batch limits. The output budget
 applies to each library and the complete aggregate. Aggregate overflow leaves

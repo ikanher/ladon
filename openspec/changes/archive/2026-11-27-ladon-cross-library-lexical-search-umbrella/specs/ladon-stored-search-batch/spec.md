@@ -39,3 +39,13 @@ A stored batch SHALL report one generation identity and index path for every suc
 
 - **WHEN** the encoded results exceed the selected byte limit
 - **THEN** Ladon reports the limit failure without publishing a truncated output artifact
+
+### Requirement: Per-query omissions in batch text
+
+Batch text SHALL show reported scope and indexed-type omissions under the affected query, including within named-library groups. The query's row count and status SHALL retain their ordinary meaning.
+
+#### Scenario: Zero returned rows with different coverage
+
+- **WHEN** three queries return zero rows, one after a complete search, one with an unindexed scope root, and one with truncated indexed type text
+- **THEN** the latter two queries print their respective omissions under their own results
+- **AND** the complete search reports zero rows with no omission

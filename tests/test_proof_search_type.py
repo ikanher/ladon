@@ -132,6 +132,8 @@ def test_fragment_tokenizer_preserves_identifiers_primes_quotes_and_operators() 
     assert contains_fragment('term "a b" + x', '"a b"')
     assert tokenize_lean_text("x' := y") != tokenize_lean_text("x := y")
     assert tokenize_lean_text(":=") != tokenize_lean_text(": =")
+    assert tokenize_lean_text("Nat→∃! n") == tokenize_lean_text("Nat → ∃! n")
+    assert tokenize_lean_text("∃!") != tokenize_lean_text("∃ !")
 
 
 def test_tokenizer_preserves_content_and_numeric_boundaries():

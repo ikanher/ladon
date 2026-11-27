@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import unicodedata
 
+_SYMBOL_BOUNDARIES = "‖()[]{}⟨⟩⦃⦄,;«»\"'_∀∃→←↔¬"
+
 
 def tokenize_lean_text(text: str) -> tuple[str, ...]:
-    """Tokenize identifiers, quoted strings, and maximal operator runs.
+    """Tokenize identifiers, quoted strings, and operators.
 
     Whitespace is insignificant between tokens. Identifier spelling and quoted
-    contents remain exact; adjacent operator characters form one token.
+    contents remain exact. Common binder and arrow symbols delimit operator
+    runs, and other adjacent operator characters can form a compound token.
     """
     tokens: list[str] = []
     i = 0
@@ -57,12 +60,13 @@ def _word_token(text: str, i: int) -> tuple[str, int] | None:
 
 def _symbol_token(text: str, i: int) -> tuple[str, int]:
     char = text[i]
-    delimiters = "‖()[]{}⟨⟩,;«»\"'_"
-    if char in delimiters:
+    if text.startswith("∃!", i):
+        return "∃!", i + 2
+    if char in _SYMBOL_BOUNDARIES:
         return char, i + 1
     if _operator(char):
         end = i + 1
-        while end < len(text) and _operator(text[end]) and text[end] not in delimiters:
+        while end < len(text) and text[end] not in _SYMBOL_BOUNDARIES and _operator(text[end]):
             end += 1
         return text[i:end], end
     return char, i + 1
@@ -97,7 +101,7 @@ def _identifier_start(char: str) -> bool:
 
 def _identifier_continue(char: str) -> bool:
     category = unicodedata.category(char)
-    return _identifier_start(char) or char.isdigit() or category.startswith("M") or char == "'"
+    return _identifier_start(char) or char.isdigit() or category.startswith("M") or char in "'!?"
 
 
 def _operator(char: str) -> bool:

@@ -1,10 +1,10 @@
-# Named index search batch
+# ladon-named-index-search-batch Specification
 
 ## Purpose
 
 Compare declaration search results from several independently maintained Lean libraries in one bounded invocation, with source and freshness provenance for each library.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Named indexes and library groups
 
@@ -28,6 +28,11 @@ An unavailable library SHALL have an explicit diagnostic and status. Successful 
 
 - **WHEN** one requested index is missing, one available index has an empty result and another returns matches
 - **THEN** Ladon identifies the missing index, reports the successful empty and nonempty groups, and returns partial status
+
+#### Scenario: A valid library entry has an unresolvable path
+
+- **WHEN** an otherwise valid manifest names an index path that fails filesystem resolution, such as a symlink loop at an explicit or default index path
+- **THEN** that group is unavailable with an operational diagnostic, healthy groups retain their results in caller order, and the aggregate reports partial with a nonzero exit
 
 ### Requirement: Validated and bounded requests
 

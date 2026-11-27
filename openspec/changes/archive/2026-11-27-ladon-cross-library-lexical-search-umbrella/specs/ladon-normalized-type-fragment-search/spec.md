@@ -25,6 +25,17 @@ Ladon SHALL accept one or more normalized fragments in a type query. Each reques
 - **WHEN** a fragment contains the single identifier `ab` and a declaration contains the two tokens `a b`
 - **THEN** those two tokens alone do not match that fragment
 
+#### Scenario: Lean identifier punctuation is significant
+
+- **WHEN** otherwise matching types contain `xs.head`, `xs.head?`, or `xs.head!`
+- **THEN** each fragment matches the spelling it requests, including any identifier suffix
+
+#### Scenario: Adjacent binders and arrows retain their boundaries
+
+- **WHEN** a stored type contains `Nat→∀ n` and the fragment contains `Nat → ∀ n`
+- **THEN** the fragment matches the stored type
+- **AND** `∃!` is one token while `∃ !` is two tokens
+
 ### Requirement: Conclusion-first ranking and match evidence
 
 Ladon SHALL rank full matches by the number of distinct fragments found in a separately extracted conclusion, then by a documented stable tie-break. The ranked order SHALL precede display truncation. Each returned declaration SHALL identify the matched fragments and fields, its source location, conclusion availability and lexical authority.
