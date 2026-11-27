@@ -4,51 +4,62 @@ Ladon helps mathematicians and coding agents find Lean theorems they can reuse
 and trace the dependencies of a compiled proof. **Version 0.5.2 · alpha.**
 
 - **Find a theorem when you don't know its name.** Search an indexed library
-  for a fragment of the type you need. A source match gives you a declaration
+  for fragments of the type you need. A source match gives you a declaration
   and a file location. Inspect its hypotheses, then ask Lean to check the
   application against your goal. [Find and check Lean results](#find-and-check-lean-results)
 - **See what a proof actually uses.** Trace a compiled dependency to the
   statement or proof that uses it. Ladon reports when the stored evidence is
   stale or the displayed graph is incomplete. [Inspect compiled theorem lineage](#inspect-compiled-theorem-lineage)
 
-## Finding a Gaussian integral in a number theory archive
+## Search Mathlib by theorem type
 
-While working on differentially private Adam, we needed the exponential moment
-of a Gaussian quadratic form with off-diagonal terms. We suspected a Fourier
-transform theorem could supply the integral, but didn't know its name.
-We searched Levent Alpöge’s Riemann Hypothesis archive for the square root of
-a matrix determinant. To reproduce the example, give your coding agent this prompt:
+Start with the pieces of the statement you expect. Each `--fragment` matches
+a sequence of Lean tokens, regardless of spacing between those tokens.
+Multiple fragments must occur in the same declaration signature.
+All three searches use the same source-only index.
+[Build the Mathlib index](docs/MATHLIB_TYPE_SEARCH_EXAMPLE.md#build-the-mathlib-index)
 
-> Follow [the RH walkthrough](docs/RH_INDEX_EXAMPLE.md) from this checkout.
-> Get the index, run both searches, and report the declaration names and source
-> lines. The type search should return three matches, including
-> `fourier_gaussian_real_place` at line 122. The scoped name search should
-> return `qf_add` at line 24. Both searches work without a Lean build.
-
-From a Ladon checkout with [uv](https://docs.astral.sh/uv/) and Python 3.11 or
-3.12, run this in Bash. The example fetches three checksum-verified Lean files
-from a pinned source mirror and indexes them locally.
+### When does distance zero imply equality?
 
 ```bash
-RH_SRC="$(mktemp -d)/src"
-uv run --locked python scripts/rh_lookup.py prepare --directory "$RH_SRC" &&
-  uv run --locked ladon proof-search index build --repo-root "$RH_SRC" &&
-  uv run --locked ladon proof-search search type-text --repo-root "$RH_SRC" \
-    --pattern 'Real.sqrt |S.det|' --limit 10 &&
-  uv run --locked ladon proof-search search name --repo-root "$RH_SRC" \
-    --text qf_add --scope module \
-    --root GroundTheory.HeightsAndTheta.Heights.HeightKernels.PThetaSummandNorm --limit 1
+uv run --locked ladon proof-search search type-text \
+  --repo-root "$MATHLIB" --index "$MATHLIB_INDEX" \
+  --fragment 'dist x y=0 ↔ x=y'
 ```
 
-The three files were selected using the index of **1,057,634 declarations in
-175,187 files**. The first search returns three declarations. Specializing
-`fourier_gaussian_real_place` to zero frequency gave us the Gaussian integral
-for a positive-definite matrix. The second search returns the lemma for
-completing the square. We checked the resulting expectation in Lean in the
-project where we use it.
+The search returns `dist_eq_zero` in `Mathlib/Topology/MetricSpace/Defs.lean`.
 
-The walkthrough includes the expected hits, the downloadable module lookup
-for other type fragments, and the full local index build. [RH walkthrough](docs/RH_INDEX_EXAMPLE.md)
+### Does an injective map preserve intersections?
+
+Look for injectivity and the image of an intersection in the same signature.
+
+```bash
+uv run --locked ladon proof-search search type-text \
+  --repo-root "$MATHLIB" --index "$MATHLIB_INDEX" \
+  --fragment 'Injective f' --fragment "f '' (s∩t)"
+```
+
+The search returns `Set.image_inter` in `Mathlib/Data/Set/Image.lean`. Its
+conclusion identifies the image of the intersection with the intersection
+of the images.
+
+### Which version of Fubini fits the goal?
+
+To turn an integral over a product measure into an iterated integral, look
+for integrability, the product measure, and the two nested integrals.
+
+```bash
+uv run --locked ladon proof-search search type-text \
+  --repo-root "$MATHLIB" --index "$MATHLIB_INDEX" \
+  --fragment 'Integrable' --fragment 'μ.prod ν' --fragment '∫ x,∫ y'
+```
+
+The shortlist includes both `MeasureTheory.integral_prod` and
+`MeasureTheory.integral_integral`. For the goal with the product integral on
+the left and the integral in `x` outermost on the right, Lean accepts
+`integral_prod` with no remaining goals. Direct application of
+`integral_integral` is rejected because its equality goes the other way.
+[Run the Lean check](docs/MATHLIB_TYPE_SEARCH_EXAMPLE.md#check-the-fubini-candidates)
 
 ## Setup
 
@@ -75,8 +86,7 @@ uv run --locked ladon proof-search search name --repo-root "$PROJECT" --text int
 uv run --locked ladon proof-search search type-text --repo-root "$PROJECT" --pattern 'Nat → Nat' --limit 10
 ```
 
-Check the reported search scope and freshness before reusing a match. For
-example, the RH search above explicitly asks for the stored snapshot. After
+Check the reported search scope and freshness before reusing a match. After
 source edits, `proof-search index status --changed` identifies stale files and
 `proof-search index update` refreshes the index. [Index and search options](docs/CLI.md#proof-search-index)
 

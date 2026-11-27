@@ -1,14 +1,38 @@
 # Find a Gaussian integral in the RH archive
 
-Suppose a proof needs the expectation of `exp(Zᵀ H Z / 2 + Zᵀ b)` for a standard Gaussian vector. The matrix can have off-diagonal entries. How would an agent find something useful in a million declarations without knowing a theorem name?
+Suppose a proof needs the expectation of `exp(Zᵀ H Z / 2 + Zᵀ b)` for a standard Gaussian vector. The matrix can have off-diagonal entries. This walkthrough records two lookups from the pinned RH archive snapshot.
 
 ## Get a searchable index
 
-For the two published queries, use the [README example](../README.md#finding-a-gaussian-integral-in-a-number-theory-archive). The checkout includes the three selected source paths and their SHA-256 digests. The helper fetches those files from the Lean community mirror at commit `40e56bab026552e089d7afcfeff08d2defb9c005`. If you already have the original archive, add `--source-root /path/to/lean/src` to read the same files locally.
+### Index the three files for the worked queries
+
+From a Ladon checkout, follow the [Ladon setup](../README.md#setup) and run
+these commands in Bash. The helper fetches the three selected Lean files
+from the Lean community mirror at commit
+`40e56bab026552e089d7afcfeff08d2defb9c005` and verifies their SHA-256
+digests. If you have the original archive, add
+`--source-root /path/to/lean/src` to read the files locally.
+
+```bash
+RH_SRC="$(mktemp -d)/src"
+uv run --locked python scripts/rh_lookup.py prepare --directory "$RH_SRC" &&
+  uv run --locked ladon proof-search index build --repo-root "$RH_SRC" &&
+  RH_INDEX="$RH_SRC/.ladon/index/proof-search.sqlite"
+```
+
+With `RH_INDEX` set, run [the type search](#1-search-by-the-mathematics)
+and [the scoped name search](#2-find-the-missing-algebra) below. Both work
+without building Lean.
 
 ### Use the release lookup for another type fragment
 
-The [snapshot release](https://github.com/ikanher/ladon/releases/tag/rh-lookup-2026-11-20) contains `module-lookup.sqlite.gz` and `SHA256SUMS`. The packaged module list in the README works independently of this download. It contains source paths, file digests, and fingerprints of consecutive words in lexical declaration signatures across the corpus. Supply a literal type fragment and the module for your scoped name search. The helper selects candidate files and verifies their downloaded bytes. Run Ladon's ordinary searches on the resulting directory to check the literal and name matches. The subset index covers the files selected for **those queries**; select again when the fragment or module changes.
+The three-file setup above works independently of the release lookup. The
+lookup file contains source paths, file digests, and fingerprints of
+consecutive words in lexical declaration signatures across the corpus.
+Supply a literal type fragment and the module for your scoped name search.
+The helper selects candidate files and verifies the downloaded bytes.
+Select files again when the fragment or module changes.
+[Snapshot release](https://github.com/ikanher/ladon/releases/tag/rh-lookup-2026-11-20)
 
 From the Ladon checkout, with Bash, curl and sha256sum:
 
@@ -85,7 +109,7 @@ uv run --locked ladon proof-search search name \
   --limit 1
 ```
 
-This targeted lookup reproduces the selected hit, `KThetaSummandNorm.qf_add`, at line 24 of `GroundTheory/HeightsAndTheta/Heights/HeightKernels/PThetaSummandNorm.lean`. For symmetric $A$ it expands $(z+v)^\top A(z+v)$ with cross term $2z^\top Av$. Writing $A=I-H$ and shifting by $v=A^{-1}b$ completes the square in the Gaussian **density**. For $A$ positive definite the resulting expectation is
+This targeted lookup returns `GroundTheory.Heights₂.Heights.KThetaSummandNorm.qf_add` at line 24 of `GroundTheory/HeightsAndTheta/Heights/HeightKernels/PThetaSummandNorm.lean`. For symmetric $A$ it expands $(z+v)^\top A(z+v)$ with cross term $2z^\top Av$. Writing $A=I-H$ and shifting by $v=A^{-1}b$ completes the square in the Gaussian **density**. For $A$ positive definite the resulting expectation is
 
 $$
 \mathbb E\exp\!\left(\tfrac12 Z^\top HZ + Z^\top b\right)
