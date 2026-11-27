@@ -165,6 +165,35 @@ def build_theorem_parser() -> argparse.ArgumentParser:
     _add_result_options(lineage, default_output="-")
     lineage.set_defaults(max_output_bytes=33554432)
     _add_timeout(lineage)
+    feasibility = commands.add_parser(
+        "feasibility",
+        help="Check the joint declared premises of one compiled theorem.",
+    )
+    feasibility.add_argument("theorem", help="Exact Lean theorem name.")
+    feasibility.add_argument("--module", required=True, help="Owning compiled Lean module.")
+    feasibility.add_argument("--lean-path", type=Path, help="Explicit pinned Lean executable.")
+    feasibility.add_argument("--lake-path", type=Path, help="Explicit pinned Lake executable.")
+    feasibility.add_argument("--max-binders", type=_positive_integer, default=64)
+    feasibility.add_argument("--max-dependencies", type=_positive_integer, default=30000)
+    feasibility.add_argument(
+        "--max-projection-depth", type=_positive_integer, default=4,
+        help="Maximum number of projections from one witness (default 4).",
+    )
+    feasibility.add_argument(
+        "--max-derived-facts", type=_positive_integer, default=128,
+        help="Maximum new projections and propositional facts (default 128).",
+    )
+    feasibility.add_argument(
+        "--max-inferences", type=_positive_integer, default=4096,
+        help="Maximum propositional implication matches attempted (default 4096).",
+    )
+    feasibility.add_argument(
+        "--fail-on-unresolved", action="store_true",
+        help="Return exit 1 when the result status is unresolved.",
+    )
+    _add_repository_options(feasibility)
+    _add_result_options(feasibility, default_output="-")
+    _add_timeout(feasibility)
     return parser
 
 
@@ -259,6 +288,14 @@ def _dispatch(args: argparse.Namespace) -> int:
         from ladon.theorem_lineage_cli import run_lineage_command
 
         return run_lineage_command(args)
+    if args.theorem_command == "feasibility":
+        from ladon.theorem_feasibility import check_theorem_feasibility, render_feasibility
+
+        code, result = check_theorem_feasibility(args, max_rss_bytes=_max_rss_bytes(args))
+        _write_result(result, args.output, args.format, text=render_feasibility(result))
+        if args.fail_on_unresolved and result["status"] == "unresolved":
+            return EXIT_OPERATIONAL
+        return code
     raise CapsuleInvocationError(f"unsupported theorem operation {args.theorem_command!r}")
 
 

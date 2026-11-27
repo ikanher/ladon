@@ -266,6 +266,58 @@ obligation context, lineage, diagnostics, coverage, and nonclaims separate.
 Missing, stale, ambiguous, unsupported, and unconfigured evidence are not
 collapsed into theorem failure. Use the explicit index build command to refresh.
 
+## Theorem premise feasibility
+
+Check one theorem's declared premises against its existing compiled module.
+Use the exact theorem name, including a namespace when present, and pass the
+module that owns it. Build the project first with its pinned Lean toolchain.
+
+```bash
+ladon theorem feasibility silly_theorem --repo-root /path/to/project \
+  --module FeasibilityFixture --format text
+ladon theorem feasibility prove_anything --repo-root /path/to/project \
+  --module FeasibilityFixture --format json
+```
+
+The command reads the outer binders of the compiled theorem type. It follows
+transparent aliases at the head of the statement, up to 64 reductions per
+binder, and preserves negation as a proposition. It existentially quantifies
+data and proposition parameters over their Lean domains. A proof used by a
+later binder is also quantified, so its dependent type remains in the joint
+premise.
+
+The search combines propositional implication, structure projection, linear
+arithmetic with `omega`, and a bounded `grind only` fallback. It can use
+conditional fields from structures produced by implications. It also checks
+integer self-products for nonnegativity, strict descent along a
+natural-number sequence, and single non-indexed recursive types whose
+induction branches all supply a proof of `False`.
+
+A result of `inconsistent` means Lean independently replayed a refutation of
+the exact joint premise and accepted its dependencies under the standard
+axiom policy. Temporary assumptions introduced inside the reviewed theorem's
+proof are outside the check.
+
+An `unresolved` result means the check supplied no accepted refutation.
+Read the result's `status` in automation. By default, exit 0 covers completed
+assessments, including `unresolved`. Use `--fail-on-unresolved` to return exit 1
+for any `unresolved` status. Exit 1 also covers operational failures and
+exhausted resource bounds. Exit 2 covers invalid selections.
+
+The result identifies the compiled input snapshot. Rebuild to assess source
+edits. The command uses existing compiled artifacts without an index or a build
+of its own. The current fixtures use Lean 4.32.1. To select executables
+explicitly, pass both `--lean-path` and `--lake-path` as absolute paths matching
+the repository pin. Set process bounds with `--timeout` and `--max-rss-mib`.
+`--max-binders` defaults to 64 and `--max-dependencies` defaults to 30,000.
+`--max-projection-depth` defaults to 4 fields along a path.
+`--max-derived-facts` defaults to 128 projections and newly derived propositions
+combined. `--max-inferences` defaults to 4,096 implication matches attempted.
+The fallback runs after the earlier search completes within those limits.
+It allows four `grind` search splits per branch and four E-matching rounds
+before each split, within the worker's heartbeat and process limits.
+JSON is the default output. Both formats accept `--output`.
+
 ## Theorem lineage
 
 Stored-only lineage (`--refresh never`) looks up the requested closure before

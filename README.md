@@ -1,7 +1,7 @@
 # Ladon
 
 Ladon helps mathematicians and coding agents find Lean theorems they can reuse
-and trace the dependencies of a compiled proof. **Version 0.5.2 · alpha.**
+and trace the dependencies of a compiled proof. **Version 0.5.3 · alpha.**
 
 - **Find a theorem when you don't know its name.** Search an indexed library
   for fragments of the type you need. A source match gives you a declaration
